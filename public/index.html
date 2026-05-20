@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <!-- ========================= -->
+  <!-- BASIC SEO -->
+  <!-- ========================= -->
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="
+      width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no
+    "/>
+<link rel="icon" href="ANH.png" type="image/png" />
+  <title>
+    DPGNotes | Notes, Exams, Tutorials & Placement Resources
+  </title>
+<meta name="google-site-verification" content="GcRmUrIPZNUQjc7onJavMmzT2IwIg-9oJ26cr4pNGBI" />
+  <meta
+    name="description"
+    content="
+      DPGNotes is a modern educational platform
+      for notes, tutorials, university exams,
+      interview preparation, aptitude and placement resources.
+    "
+  />
+
+  <meta
+    name="keywords"
+    content="
+      DPGNotes,
+      Notes,
+      University Exam,
+      Sessional Exam,
+      Sample Papers,
+      Aptitude,
+      Logical Reasoning,
+      Placement Preparation,
+      AI ML,
+      Computer Science,
+      Tutorials,
+      Interview Questions
+    "
+  />
+
+  <meta
+    name="author"
+    content="DPGNotes"
+  />
+
+  <meta
+    name="robots"
+    content="index, follow"
+  />
+
+  <meta
+    name="theme-color"
+    content="#020617"
+  />
+
+  <!-- ========================= -->
+  <!-- OPEN GRAPH -->
+  <!-- ========================= -->
+
+  <meta
+    property="og:type"
+    content="website"
+  />
+
+  <meta
+    property="og:title"
+    content="DPGNotes"
+  />
+
+  <meta
+    property="og:description"
+    content="
+      Educational platform for exams,
+      notes, tutorials and placement preparation.
+    "
+  />
+
+  <meta
+    property="og:image"
+    content="ANH.png"
+  />
+
+  <!-- ========================= -->
+  <!-- FONT -->
+  <!-- ========================= -->
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+
+  <link
+    href="
+      https://fonts.googleapis.com/css2?
+      family=Inter:wght@300;400;500;600;700;800&
+      display=swap
+    "
+    rel="stylesheet"
+  />
+
+  <!-- ========================= -->
+  <!-- CSS -->
+  <!-- ========================= -->
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  />
+
+  <!-- ========================= -->
+  <!-- JSON LD -->
+  <!-- ========================= -->
+
+  <script type="application/ld+json">
+
+  {
+    "@context":"https://schema.org",
+
+    "@type":"EducationalOrganization",
+
+    "name":"DPGNotes",
+
+    "description":
+    "Educational platform for notes, tutorials, exams and placement preparation.",
+
+    "educationalUse":
+    "Study Material",
+
+    "learningResourceType":[
+
+      "Notes",
+      "Tutorials",
+      "Question Papers",
+      "Interview Questions"
+    ]
+  }
+
+  </script>
+
+</head>
+
+<body>
+
+  <!-- ========================= -->
+  <!-- APP -->
+  <!-- ========================= -->
+
+  <div class="app-shell">
+
+    <!-- ========================= -->
+    <!-- TOP HEADER -->
+    <!-- ========================= -->
+
+    <header class="top-header">
+
+      <div class="brand-area">
+
+        <div class="brand-logo">
+          D
+        </div>
+
+        <div class="brand-text">
+
+          <h1>
+            DPGNotes
+          </h1>
+
+          <p>
+            Learn • Practice • Grow
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="auth-area">
+
+        <button
+          id="googleLogin"
+          class="auth-btn"
+        >
+          Google
+        </button>
+
+        <button
+          id="githubLogin"
+          class="auth-btn secondary"
+        >
+          GitHub
+        </button>
+
+      </div>
+
+    </header>
+
+    <!-- ========================= -->
+    <!-- HERO -->
+    <!-- ========================= -->
+
+    <section class="hero-section">
+
+      <div class="hero-content">
+
+        <span class="hero-badge">
+          Educational Resource Platform
+        </span>
+
+        <h2>
+
+          Notes,
+          Exams,
+          Tutorials &
+          Placement Preparation
+
+        </h2>
+
+        <p>
+
+          Explore discipline-wise resources
+          including university exams,
+          sessional papers,
+          interview preparation,
+          aptitude and tutorials.
+
+        </p>
+
+      </div>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- SEARCH -->
+    <!-- ========================= -->
+
+    <section class="search-wrapper">
+
+      <div class="search-box">
+
+        <span class="search-icon">
+          ⌕
+        </span>
+
+        <input
+          type="text"
+          id="globalSearch"
+          placeholder="
+            Search notes, tutorials, exams...
+          "
+        />
+
+      </div>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- CATEGORY FILTER -->
+    <!-- ========================= -->
+
+    <section class="category-strip">
+
+      <button data-category="SE">
+        SE
+      </button>
+
+      <button data-category="SP">
+        SP
+      </button>
+
+      <button data-category="UE">
+        UE
+      </button>
+
+      <button data-category="T&N">
+        T&N
+      </button>
+
+      <button data-category="IQ">
+        IQ
+      </button>
+
+      <button data-category="A&LR">
+        A&LR
+      </button>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- SEO CONTENT -->
+    <!-- ========================= -->
+
+    <section class="seo-section">
+
+      <article class="seo-card">
+
+        <h3>
+          Exam Resources
+        </h3>
+
+        <p>
+
+          Access university exams,
+          sessional papers and sample papers
+          across multiple disciplines.
+
+        </p>
+
+      </article>
+
+      <article class="seo-card">
+
+        <h3>
+          Tutorials & Notes
+        </h3>
+
+        <p>
+
+          Explore tutorials and notes
+          related to Computer Science,
+          AI & ML, Cyber Security and more.
+
+        </p>
+
+      </article>
+
+      <article class="seo-card">
+
+        <h3>
+          Placement Preparation
+        </h3>
+
+        <p>
+
+          Practice interview questions,
+          aptitude and logical reasoning
+          for placement preparation.
+
+        </p>
+
+      </article>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- MAIN CONTENT -->
+    <!-- ========================= -->
+
+    <main class="main-content">
+
+      <!-- ========================= -->
+      <!-- RESOURCES -->
+      <!-- ========================= -->
+
+      <section
+        class="spa-page active"
+        id="resourcesPage"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <span class="section-label">
+              Dashboard
+            </span>
+
+            <h2>
+              Latest Resources
+            </h2>
+
+          </div>
+
+          <button class="section-action">
+            View All
+          </button>
+
+        </div>
+
+        <div
+          class="resource-grid"
+          id="latestResources"
+        >
+
+        </div>
+
+      </section>
+
+      <!-- ========================= -->
+      <!-- EXAMS -->
+      <!-- ========================= -->
+
+      <section
+        class="spa-page"
+        id="examsPage"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <span class="section-label">
+              Category
+            </span>
+
+            <h2>
+              Exams
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div
+          class="resource-grid"
+          id="examResources"
+        >
+
+        </div>
+
+      </section>
+
+      <!-- ========================= -->
+      <!-- LEARNING -->
+      <!-- ========================= -->
+
+      <section
+        class="spa-page"
+        id="learningPage"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <span class="section-label">
+              Tutorials
+            </span>
+
+            <h2>
+              Learning Resources
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div
+          class="resource-grid"
+          id="learningResources"
+        >
+
+        </div>
+
+      </section>
+
+      <!-- ========================= -->
+      <!-- PLACEMENT -->
+      <!-- ========================= -->
+
+      <section
+        class="spa-page"
+        id="placementPage"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <span class="section-label">
+              Placement
+            </span>
+
+            <h2>
+              Placement Resources
+            </h2>
+
+          </div>
+
+        </div>
+
+        <div
+          class="resource-grid"
+          id="placementResources"
+        >
+
+        </div>
+
+      </section>
+
+      <!-- ========================= -->
+      <!-- CONTRIBUTION -->
+      <!-- ========================= -->
+
+      <section
+        class="spa-page"
+        id="contributionPage"
+      >
+
+        <div class="section-header">
+
+          <div>
+
+            <span class="section-label">
+              Community
+            </span>
+
+            <h2>
+              Upload Resource
+            </h2>
+
+          </div>
+
+        </div>
+
+        <form id="uploadForm">
+
+          <div class="form-grid">
+
+            <select id="category">
+
+              <option value="">
+                Select Category
+              </option>
+
+              <option value="SE">
+                Sessional Exam
+              </option>
+
+              <option value="SP">
+                Sample Paper
+              </option>
+
+              <option value="UE">
+                University Exam
+              </option>
+
+              <option value="T&N">
+                Tutorial & Notes
+              </option>
+
+              <option value="IQ">
+                Interview Questions
+              </option>
+
+              <option value="A&LR">
+                Aptitude & LR
+              </option>
+
+            </select>
+
+            <input
+              type="text"
+              id="discipline"
+              placeholder="Discipline"
+            />
+
+            <input
+              type="text"
+              id="title"
+              placeholder="Document Title"
+            />
+
+            <textarea
+              id="description"
+              placeholder="Description"
+            ></textarea>
+
+            <input
+              type="text"
+              id="tags"
+              placeholder="Tags separated by commas"
+            />
+
+            <input
+              type="text"
+              id="documentId"
+              placeholder="Document ID"
+            />
+
+            <input
+              type="url"
+              id="pdfUrl"
+              placeholder="PDF URL"
+            />
+
+            <button
+              type="submit"
+              class="upload-btn"
+            >
+              Upload Resource
+            </button>
+
+          </div>
+
+        </form>
+
+      </section>
+
+    </main>
+
+    <!-- ========================= -->
+    <!-- BOTTOM NAV -->
+    <!-- ========================= -->
+
+    <nav class="bottom-nav">
+
+      <button data-page="resourcesPage">
+
+        <span>⌂</span>
+
+        <small>Home</small>
+
+      </button>
+
+      <button data-page="examsPage">
+
+        <span>✎</span>
+
+        <small>Exams</small>
+
+      </button>
+
+      <button data-page="learningPage">
+
+        <span>◈</span>
+
+        <small>Learning</small>
+
+      </button>
+
+      <button data-page="placementPage">
+
+        <span>⌘</span>
+
+        <small>Placement</small>
+
+      </button>
+
+      <button data-page="contributionPage">
+
+        <span>＋</span>
+
+        <small>Upload</small>
+
+      </button>
+
+    </nav>
+
+  </div>
+
+  <!-- ========================= -->
+  <!-- SCRIPT -->
+  <!-- ========================= -->
+
+  <script
+    type="module"
+    src="script.js"
+  ></script>
+
+</body>
+
+</html>
