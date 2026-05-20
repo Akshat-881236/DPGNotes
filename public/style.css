@@ -994,3 +994,43 @@ body{
     repeat(4,1fr);
   }
 }
+
+pre {
+
+  background:
+  rgba(255,255,255,.04);
+
+  border:
+  1px solid rgba(255,255,255,.05);
+
+  padding:1rem;
+
+  border-radius:18px;
+
+  color:#cbd5e1;
+
+  font-size:.92rem;
+
+  line-height:1.6;
+
+  overflow-x:auto;
+  margin-top:1rem;
+}
+
+pre p{
+
+  margin:0;
+}
+
+pre p a{
+
+  color:#93c5fd;
+
+  text-decoration:none;
+}
+
+pre p a:hover{
+
+  color:#60a5fa;
+  text-decoration:underline;
+}
