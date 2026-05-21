@@ -838,10 +838,6 @@ categoryButtons.forEach((button)=>{
    UPLOAD
 ========================================= */
 
-/* =========================================
-   UPLOAD
-========================================= */
-
 uploadForm.addEventListener(
   "submit",
   async (e)=>{

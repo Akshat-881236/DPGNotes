@@ -63,9 +63,11 @@ service cloud.firestore {
         'SE',
         'SP',
         'UE',
+        'EV',
         'T&N',
         'IQ',
-        'A&LR'
+        'A&LR',
+        'PQ'
       ]
 
       &&
