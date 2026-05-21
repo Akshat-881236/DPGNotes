@@ -534,17 +534,11 @@ function createCard(data){
 
     </div>
 
-    <a
-      href="${PDF_VIEWER}${encodeURIComponent(data.pdfUrl)}"
-      target="_blank"
-      class="open-btn"
-    >
-
-      Open PDF
-
-    </a>
-
-  </article>
+    <a href="https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(
+    Array.isArray(data.tags)
+    ? data.tags.join(", ")
+    : ""
+  )}"target="_blank" class="open-btn">Open PDF</a></article>
 
   `;
 }
