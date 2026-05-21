@@ -838,6 +838,10 @@ categoryButtons.forEach((button)=>{
    UPLOAD
 ========================================= */
 
+/* =========================================
+   UPLOAD
+========================================= */
+
 uploadForm.addEventListener(
   "submit",
   async (e)=>{
@@ -883,7 +887,9 @@ uploadForm.addEventListener(
             "tags"
           )
           .value
-          .split(","),
+          .split(",")
+          .map(tag => tag.trim())
+          .filter(tag => tag !== ""),
 
         documentId:
         document.getElementById(
@@ -921,7 +927,24 @@ uploadForm.addEventListener(
 
       uploadForm.reset();
 
-      /* =========================================
+      fetchDocuments();
+
+      openPage(
+        "resourcesPage"
+      );
+
+    }catch(error){
+
+      console.log(error);
+
+      alert(
+        "Upload Failed"
+      );
+    }
+  }
+);
+
+/* =========================================
    INIT
 ========================================= */
 
@@ -998,20 +1021,3 @@ try{
     error
   );
 }
-
-    }catch(error){
-
-      console.log(error);
-    }
-  }
-);
-
-/* =========================================
-   INITIAL LOAD
-========================================= */
-
-fetchDocuments();
-
-openPage(
-  "resourcesPage"
-);
