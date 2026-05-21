@@ -1,22 +1,53 @@
 {
-  "firestore": {
-    "database": "(default)",
-    "location": "asia-south1",
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
   "hosting": {
+
     "public": "public",
+
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
+
     "rewrites": [
       {
         "source": "**",
         "destination": "/index.html"
       }
+    ],
+
+    "headers": [
+
+      {
+        "source": "**/*.pdf",
+
+        "headers": [
+
+          {
+            "key":
+            "Access-Control-Allow-Origin",
+
+            "value": "*"
+          },
+
+          {
+            "key":
+            "Access-Control-Allow-Methods",
+
+            "value":
+            "GET, OPTIONS"
+          },
+
+          {
+            "key":
+            "Access-Control-Allow-Headers",
+
+            "value": "*"
+          }
+
+        ]
+      }
+
     ]
   }
 }
