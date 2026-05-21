@@ -41,9 +41,7 @@ service cloud.firestore {
 
     function validateDocument() {
 
-      return
-
-      request.resource.data.keys().hasAll([
+      return request.resource.data.keys().hasAll([
         'category',
         'discipline',
         'title',
