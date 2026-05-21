@@ -86,6 +86,9 @@ const auth =
 const db =
   getFirestore(app);
 
+const PDF_VIEWER =
+"https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=";
+
 /* =========================================
    PROVIDERS
 ========================================= */
@@ -450,7 +453,7 @@ function createCard(data){
     </div>
 
     <a
-      href="${data.pdfUrl}"
+      href="${PDF_VIEWER}=${encodeURIComponent(data.pdfUrl)}"
       target="_blank"
       class="open-btn"
     >
@@ -502,6 +505,10 @@ function renderResources(data){
 
       doc.category === "UE"
 
+      ||
+
+      doc.category === "EV"
+
     ){
 
       examResources.innerHTML +=
@@ -529,6 +536,10 @@ function renderResources(data){
       ||
 
       doc.category === "A&LR"
+
+      ||
+
+      doc.category === "PQ"
 
     ){
 
