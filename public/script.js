@@ -165,6 +165,88 @@ let currentUser = null;
 let allDocuments = [];
 
 /* =========================================
+   URL PARAM ENGINE
+========================================= */
+
+const urlParams =
+new URLSearchParams(
+  window.location.search
+);
+
+/* -----------------------------------------
+   SAFE PARAM
+----------------------------------------- */
+
+function getParam(key){
+
+  try{
+
+    return urlParams.get(key);
+
+  }catch(error){
+
+    console.log(
+      "Param Error:",
+      error
+    );
+
+    return null;
+  }
+}
+
+/* -----------------------------------------
+   PARAMS
+----------------------------------------- */
+
+const urlTab =
+getParam("tab");
+
+const urlCategory =
+getParam("category");
+
+const urlSearch =
+getParam("search");
+
+const urlPdf =
+getParam("pdf");
+
+const urlRef =
+getParam("ref");
+
+const urlUploader =
+getParam("uploader");
+
+/* -----------------------------------------
+   OPTIONAL DEBUG
+----------------------------------------- */
+
+try{
+
+  if(urlRef){
+
+    console.log(
+      "Project Ref:",
+      urlRef
+    );
+  }
+
+  if(urlUploader){
+
+    console.log(
+      "Uploader:",
+      urlUploader
+    );
+  }
+
+}catch(error){
+
+  console.log(
+    "URL Debug Error:",
+    error
+  );
+}
+
+/* =========================================
    AUTH
 ========================================= */
 
@@ -453,7 +535,7 @@ function createCard(data){
     </div>
 
     <a
-      href="${PDF_VIEWER}=${encodeURIComponent(data.pdfUrl)}"
+      href="${PDF_VIEWER}${encodeURIComponent(data.pdfUrl)}"
       target="_blank"
       class="open-btn"
     >
@@ -587,13 +669,95 @@ async function fetchDocuments(){
       });
     });
 
-    renderResources(
-      allDocuments
-    );
+    applyURLFilters();
 
   }catch(error){
 
     console.log(error);
+  }
+}
+
+/* =========================================
+   URL FILTERS
+========================================= */
+
+function applyURLFilters(){
+
+  try{
+
+    let filtered =
+    [...allDocuments];
+
+    /* CATEGORY */
+
+    if(urlCategory){
+
+      filtered =
+      filtered.filter((doc)=>{
+
+        return(
+
+          doc.category
+          ===
+          urlCategory
+        );
+      });
+    }
+
+    /* SEARCH */
+
+    if(urlSearch){
+
+      filtered =
+      filtered.filter((doc)=>{
+
+        return(
+
+          doc.title
+          ?.toLowerCase()
+          .includes(
+            urlSearch
+            .toLowerCase()
+          )
+
+          ||
+
+          doc.description
+          ?.toLowerCase()
+          .includes(
+            urlSearch
+            .toLowerCase()
+          )
+
+          ||
+
+          doc.discipline
+          ?.toLowerCase()
+          .includes(
+            urlSearch
+            .toLowerCase()
+          )
+        );
+      });
+
+      globalSearch.value =
+      urlSearch;
+    }
+
+    renderResources(
+      filtered
+    );
+
+  }catch(error){
+
+    console.log(
+      "URL Filter Error:",
+      error
+    );
+
+    renderResources(
+      allDocuments
+    );
   }
 }
 
@@ -763,11 +927,83 @@ uploadForm.addEventListener(
 
       uploadForm.reset();
 
-      fetchDocuments();
+      /* =========================================
+   INIT
+========================================= */
 
-      openPage(
-        "resourcesPage"
-      );
+fetchDocuments();
+
+/* -----------------------------------------
+   SAFE TAB OPEN
+----------------------------------------- */
+
+try{
+
+  const validTabs = [
+
+    "resourcesPage",
+
+    "examsPage",
+
+    "learningPage",
+
+    "placementPage",
+
+    "contributionPage"
+  ];
+
+  if(
+
+    urlTab
+    &&
+    validTabs.includes(urlTab)
+
+  ){
+
+    openPage(urlTab);
+
+  }else{
+
+    openPage(
+      "resourcesPage"
+    );
+  }
+
+}catch(error){
+
+  console.log(
+    "Tab Error:",
+    error
+  );
+
+  openPage(
+    "resourcesPage"
+  );
+}
+
+/* -----------------------------------------
+   DIRECT PDF
+----------------------------------------- */
+
+try{
+
+  if(urlPdf){
+
+    window.open(
+
+      `${PDF_VIEWER}${encodeURIComponent(urlPdf)}`,
+
+      "_blank"
+    );
+  }
+
+}catch(error){
+
+  console.log(
+    "PDF Error:",
+    error
+  );
+}
 
     }catch(error){
 
