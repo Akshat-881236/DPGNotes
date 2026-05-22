@@ -59,6 +59,108 @@ html{
   scroll-behavior:smooth;
 }
 
+/* =========================================
+   REFERRAL DIAGNOSIS CARD
+========================================= */
+
+.dpg-diagnosis-card{
+
+  margin:1rem;
+
+  padding:1.5rem;
+
+  border-radius:24px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #0f172a,
+    #111827
+  );
+
+  border:
+  1px solid #1e293b;
+
+  color:white;
+
+  box-shadow:
+  0 10px 30px rgba(0,0,0,.25);
+}
+
+.dpg-badge{
+
+  display:inline-block;
+
+  background:#2563eb;
+
+  color:white;
+
+  padding:.45rem .9rem;
+
+  border-radius:999px;
+
+  font-size:.8rem;
+
+  font-weight:700;
+
+  margin-bottom:1rem;
+}
+
+.dpg-diagnosis-card h2{
+
+  font-size:1.4rem;
+
+  margin-bottom:.8rem;
+}
+
+.dpg-diagnosis-card p{
+
+  color:#cbd5e1;
+
+  line-height:1.7;
+
+  margin-bottom:1rem;
+}
+
+.dpg-diagnosis-card ul{
+
+  padding-left:1rem;
+
+  color:#94a3b8;
+
+  line-height:1.9;
+}
+
+.dpg-meta{
+
+  margin-top:1rem;
+
+  display:flex;
+
+  gap:1rem;
+
+  flex-wrap:wrap;
+
+  color:#60a5fa;
+
+  font-size:.85rem;
+}
+
+@media(max-width:768px){
+
+  .dpg-diagnosis-card{
+
+    padding:1rem;
+
+    border-radius:18px;
+  }
+
+  .dpg-diagnosis-card h2{
+
+    font-size:1.1rem;
+  }
+}
+
 body{
 
   font-family:'Inter',sans-serif;
