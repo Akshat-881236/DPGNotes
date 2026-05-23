@@ -394,9 +394,11 @@ Users must select the correct category based on the resource type.
 | SE | Sessional Exam |
 | SP | Sample Paper |
 | UE | University Exam |
+| EV | Events , Schedule , Curriculum |
 | T&N | Tutorial & Notes |
 | IQ | Interview Questions |
 | A&LR | Aptitude & Logical Reasoning |
+| PQ | Placement Question |
 
 ### Rules
 
@@ -671,6 +673,62 @@ DPGNotes is designed to become a collaborative educational ecosystem where stude
 - Access Quality Resources
 
 through a modern, optimized and responsive web platform.
+
+---
+
+## 🌟 Monthly Featured Community Resources
+
+DPGNotes highlights high-quality educational contributions from the community every month.  
+Featured resources help contributors gain visibility, credibility and stronger educational impact.
+
+---
+
+| Title | Category | Discipline | Uploaded On | Uploaded By | Resource Link |
+|---|---|---|---|---|---|
+| DBMS Notes for BCA Students | T&N | Computer Science | 22 May 2026 | Aman Akshat | [View Resource](https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=https%3A%2F%2Fakshat-881236.github.io%2FLearningClub-Key-of-Success-Learning-Point%2FPdfLibrary%2FPdfFiles%2FDBMS_SQ.pdf&title=DBMS%20Notes%20for%20BCA%20Students&category=T%26N&discipline=Computer%20Science&uploader=Aman%20Akshat&docid=DSC-CG-002&description=Database%20Management%20System%20Notes%20for%20all%20BCA%20and%20Minor%20opted%20DBMS%20Students.&tags=Database%2C%20DBMS%2C%20SQL%2C%20Entity%2C%20ER%20-%20Model%2C%20Atomicity) |
+| Minor Physical Education Notes | T&P | UG / PG Courses | 22 May 2026 | Akshat Prasad | [Open PDF](https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FMICPhysicalEducationSem-4UGPGNotes.pdf&title=Minor%20Physical%20Education%20Notes%20&category=T%26N&discipline=UG%20%2F%20PG%20Courses&uploader=Akshat%20Prasad&docid=MIC-PE-001&description=Health%20Education%20%2C%20First%20Aid%20%26%20Safety%20Measure%20Notes%20for%20All%20UG%20%2F%20PG%20Course%20Students.&tags=MIC%20%2C%20%20Physical%20Education%20%2C%20%20PE%20%2C%20%20Health%20Education%20%2C%20%20Safety%20Education%20%2C%20%20First%20Aid%20Kit) |
+| Physical Education Sem-2 Practical File | T&P | Physical Education | 20 May 2026 | Aman Akshat | [Explore Resource](https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=https%3A%2F%2Fakshat-881236.github.io%2FLearningClub-Key-of-Success-Learning-Point%2FPdfLibrary%2FPdfFiles%2FPhysical%2520Education%2520Practical%2520File%2520Demo.pdf&title=Physical%20Education%20Sem-2%20Practical%20File&category=T%26N&discipline=Physical%20Education&uploader=Aman%20Akshat&docid=MIC-PE-001&description=Comprehensive%20Practical%20File%20of%20Physical%20Education%20covering%20all%20practical%20as%20per%20curriculum.&tags=PE%20Practical%20File%20%2C%20%20Physical%20Education%20%2C%20%20History%20of%20Physical%20Education%20%2C%20%20Somatotypes%20) |
+
+---
+
+## 🏆 Featured Resource Selection Criteria
+
+| Criteria | Description |
+|---|---|
+| Educational Quality | Resource should provide meaningful academic value |
+| SEO Friendly Title | Proper readable and searchable titles |
+| Useful Tags | Relevant keywords and categorization |
+| PDF Accessibility | Valid public PDF links |
+| Community Engagement | Frequently viewed or helpful resources |
+| Clean Documentation | Proper descriptions and formatting |
+
+---
+
+## 🚀 Contributor Benefits
+
+| Benefit | Description |
+|---|---|
+| README Recognition | Featured directly in official repository |
+| GitHub Visibility | Increased contributor exposure |
+| Educational Impact | Help students and learners |
+| Portfolio Value | Strong contribution showcase |
+| SEO Backlinks | Better discoverability on search engines |
+| Community Reputation | Recognition among contributors |
+
+---
+
+## 📢 Want Your Resource Featured?
+
+Upload high-quality resources with:
+
+✅ Proper Category  
+✅ Correct Discipline  
+✅ SEO Friendly Title  
+✅ Clean Description  
+✅ Valid PDF Link  
+✅ Educational Relevance  
+
+Outstanding resources may be added to the official DPGNotes README showcase every month.
 
 ---
 
