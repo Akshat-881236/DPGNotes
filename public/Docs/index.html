@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DPGNotes Documentation</title>
+<meta name="description" content="Professional README.md Documentation Viewer for DPGNotes"/>
+<meta name="theme-color" content="#020617"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="theme-color" content="#020617">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="googlebot" content="index,follow">
+<meta name="bingbot" content="index,follow">
+<meta name="author" content="Akshat Prasad">
+<meta name="creator" content="Akshat Prasad">
+<meta name="publisher" content="DPGNotes">
+<meta name="application-name" content="DPGNotes">
+<meta name="apple-mobile-web-app-title" content="DPGNotes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<meta name="language" content="English">
+<meta name="rating" content="general">
+<meta name="distribution" content="global">
+<meta name="revisit-after" content="1 days">
+<meta name="copyright" content="DPGNotes">
+<meta name="description" content="DPGNotes is a smart educational platform providing university notes, sessional exams, sample papers, placement preparation resources, interview questions, aptitude material and advanced PDF reading experience powered by Firebase and PDF.js.">
+<meta name="keywords" content="DPGNotes,University Notes,Sessional Exam,Sample Paper,Placement Preparation,Interview Questions,Aptitude Notes,Logical Reasoning,PDF Viewer,Firebase Project,Educational Platform,Computer Science Notes,AI ML Notes,Cyber Security Notes,PDF.js Viewer,Student Resources">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DPGNotes">
+<meta property="og:title" content="DPGNotes - Documentation">
+<meta property="og:description" content="Documenation , Term and Condition of DPGNotes. This specify user about how to use this tools.">
+<meta property="og:url" content="https://dpgnotes.web.app/Docs/index.html">
+<meta property="og:image" content="https://dpgnotes.web.app/ANH.png">
+<meta property="og:image:alt" content="DPGNotes">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DPGNotes - Documenation">
+<meta name="twitter:description" content="Documenation , Term and Condition of DPGNotes. This specify user about how to use this tools.">
+<meta name="twitter:image" content="https://dpgnotes.web.app/ANH.png">
+<meta name="twitter:site" content="@DPGNotes">
+<meta name="twitter:creator" content="@DPGNotes">
+<meta name="msapplication-TileColor" content="#020617">
+<meta name="msapplication-navbutton-color" content="#020617">
+<meta name="msapplication-starturl" content="/">
+<meta name="apple-touch-fullscreen" content="yes">
+<meta name="HandheldFriendly" content="true">
+<meta name="coverage" content="Worldwide">
+<meta name="target" content="all">
+<meta name="url" content="https://dpgnotes.web.app/Docs/index.html">
+<meta name="identifier-URL" content="https://dpgnotes.web.app">
+<meta name="directory" content="submission">
+<meta name="category" content="education">
+<meta name="classification" content="Educational Platform">
+<link rel="canonical" href="https://dpgnotes.web.app/Docs/index.html">
+<link rel="icon" type="image/png" href="/DPGNotes/public/ANH.png">
+<link rel="apple-touch-icon" href="./ANH.png">
+<link rel="manifest" href="./manifest.json">
+
+<script type="application/ld+json">
+{
+"@context":"https://schema.org",
+"@type":"WebSite",
+"name":"DPGNotes",
+"url":"https://dpgnotes.web.app/",
+"description":"Smart educational platform for university notes, placement preparation and advanced PDF learning.",
+"publisher":{
+"@type":"Organization",
+"name":"DPGNotes",
+"logo":{
+"@type":"ImageObject",
+"url":"https://dpgnotes.web.app/ANH.png"
+}
+},
+"potentialAction":{
+"@type":"SearchAction",
+"target":"https://dpgnotes.web.app/?search={search_term_string}",
+"query-input":"required name=search_term_string"
+}
+}
+</script>
+
+<link
+rel="icon"
+type="image/png"
+href="./ANH.png"
+/>
+
+<!-- =====================================
+     MARKDOWN ENGINE
+===================================== -->
+
+<script
+src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
+></script>
+
+<!-- =====================================
+     HIGHLIGHT ENGINE
+===================================== -->
+
+<link
+rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css"
+/>
+
+<script
+src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"
+></script>
+
+<style>
+
+/* =========================================
+   RESET
+========================================= */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+
+  background:#020617;
+
+  color:white;
+
+  font-family:
+  Inter,
+  Arial,
+  sans-serif;
+
+  overflow-x:hidden;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header{
+
+  position:sticky;
+
+  top:0;
+
+  z-index:999;
+
+  background:
+  rgba(2,6,23,.92);
+
+  backdrop-filter:blur(14px);
+
+  border-bottom:
+  1px solid #1e293b;
+}
+
+.header-inner{
+
+  max-width:1300px;
+
+  margin:auto;
+
+  padding:1rem;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:1rem;
+
+  flex-wrap:wrap;
+}
+
+.logo{
+
+  font-size:1.3rem;
+
+  font-weight:800;
+
+  color:#60a5fa;
+}
+
+.actions{
+
+  display:flex;
+
+  gap:.7rem;
+
+  align-items:center;
+}
+
+.btn{
+
+  border:none;
+
+  background:#2563eb;
+
+  color:white;
+
+  padding:.78rem 1rem;
+
+  border-radius:14px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:.25s ease;
+
+  white-space:nowrap;
+
+  min-width:120px;
+}
+
+.btn:hover{
+
+  transform:translateY(-2px);
+
+  opacity:.92;
+}
+
+/* =========================================
+   MAIN
+========================================= */
+
+.main{
+
+  max-width:1300px;
+
+  margin:auto;
+
+  padding:2rem 1rem;
+}
+
+/* =========================================
+   DOCUMENTATION WRAPPER
+========================================= */
+
+.doc-wrapper{
+
+  background:#0f172a;
+
+  border:
+  1px solid #1e293b;
+
+  border-radius:28px;
+
+  overflow:hidden;
+
+  box-shadow:
+  0 25px 60px rgba(0,0,0,.4);
+}
+
+.doc-top{
+
+  padding:1rem 1.2rem;
+
+  border-bottom:
+  1px solid #1e293b;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:1rem;
+
+  flex-wrap:wrap;
+}
+
+.doc-top h2{
+
+  color:#60a5fa;
+
+  font-size:1rem;
+}
+
+#status{
+
+  color:#94a3b8;
+
+  font-size:.92rem;
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.doc-content{
+
+  padding:2rem;
+
+  overflow:auto;
+}
+
+/* =========================================
+   MARKDOWN
+========================================= */
+
+.markdown{
+
+  line-height:1.8;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4{
+
+  margin-top:2rem;
+
+  margin-bottom:1rem;
+
+  padding-bottom:.5rem;
+
+  border-bottom:
+  1px solid #1e293b;
+
+  color:white;
+}
+
+.markdown h1{
+
+  font-size:2rem;
+}
+
+.markdown h2{
+
+  font-size:1.5rem;
+}
+
+.markdown h3{
+
+  font-size:1.2rem;
+}
+
+.markdown p{
+
+  margin:1rem 0;
+
+  color:#cbd5e1;
+}
+
+.markdown ul{
+
+  padding-left:1.4rem;
+
+  margin:1rem 0;
+}
+
+.markdown li{
+
+  margin:.5rem 0;
+
+  color:#cbd5e1;
+}
+
+.markdown strong{
+
+  color:white;
+}
+
+.markdown a{
+
+  color:#60a5fa;
+
+  text-decoration:none;
+
+  word-break:break-word;
+}
+
+.markdown a:hover{
+
+  text-decoration:underline;
+}
+
+.markdown blockquote{
+
+  border-left:
+  4px solid #2563eb;
+
+  padding-left:1rem;
+
+  margin:1rem 0;
+
+  color:#94a3b8;
+}
+
+.markdown img{
+
+  max-width:100%;
+
+  border-radius:16px;
+
+  margin:1rem 0;
+}
+
+/* =========================================
+   TABLES
+========================================= */
+
+.markdown table{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  margin:1.5rem 0;
+
+  overflow:auto;
+
+  display:block;
+}
+
+.markdown th{
+
+  background:#111827;
+
+  padding:1rem;
+
+  border:
+  1px solid #1e293b;
+
+  text-align:left;
+}
+
+.markdown td{
+
+  padding:1rem;
+
+  border:
+  1px solid #1e293b;
+
+  color:#cbd5e1;
+}
+
+/* =========================================
+   CODE
+========================================= */
+
+.markdown pre{
+
+  background:#020617;
+
+  border:
+  1px solid #1e293b;
+
+  border-radius:18px;
+
+  overflow:auto;
+
+  padding:1rem;
+
+  margin:1.5rem 0;
+}
+
+.markdown code{
+
+  font-family:
+  Consolas,
+  monospace;
+}
+
+/* =========================================
+   LOADER
+========================================= */
+
+.loader{
+
+  min-height:300px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  color:#94a3b8;
+}
+
+/* =========================================
+   ERROR BOX
+========================================= */
+
+.error-box{
+
+  background:#450a0a;
+
+  border:
+  1px solid #7f1d1d;
+
+  color:#fecaca;
+
+  padding:1.5rem;
+
+  border-radius:18px;
+
+  line-height:1.8;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.footer{
+
+  text-align:center;
+
+  padding:2rem 1rem;
+
+  color:#64748b;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media(max-width:768px){
+
+  .header-inner{
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:1rem;
+  }
+
+  .logo{
+
+    font-size:1rem;
+  }
+
+  .actions{
+
+    width:100%;
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(2,1fr);
+
+    gap:.8rem;
+  }
+
+  .btn{
+
+    width:100%;
+
+    padding:.9rem .8rem;
+
+    font-size:.92rem;
+
+    border-radius:14px;
+  }
+
+  .doc-content{
+
+    padding:1rem;
+  }
+
+  .markdown table{
+
+    font-size:.9rem;
+  }
+
+  .markdown h1{
+
+    font-size:1.7rem;
+  }
+
+  .markdown h2{
+
+    font-size:1.35rem;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- =====================================
+     HEADER
+===================================== -->
+
+<header class="header">
+
+  <div class="header-inner">
+
+    <div class="logo">
+
+      🚀 DPGNotes Documentation
+
+    </div>
+
+    <div class="actions">
+
+      <button
+        class="btn"
+        onclick="loadREADME()"
+      >
+
+        Refresh
+
+      </button>
+
+      <button
+        class="btn"
+        onclick="window.scrollTo({
+          top:0,
+          behavior:'smooth'
+        })"
+      >
+
+        Back To Top
+
+      </button>
+
+    </div>
+
+  </div>
+
+</header>
+
+<!-- =====================================
+     MAIN
+===================================== -->
+
+<main class="main">
+
+  <div class="doc-wrapper">
+
+    <div class="doc-top">
+
+      <h2>
+
+        README.md Renderer
+
+      </h2>
+
+      <span id="status">
+
+        Initializing...
+
+      </span>
+
+    </div>
+
+    <div
+      id="docContent"
+      class="doc-content"
+    >
+
+      <div class="loader">
+
+        Loading README.md...
+
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+<!-- =====================================
+     FOOTER
+===================================== -->
+
+<footer class="footer">
+
+  DPGNotes • Smart Documentation Engine
+
+</footer>
+
+<script>
+
+/* =========================================
+   ABSOLUTE README PATH
+========================================= */
+
+/*
+IMPORTANT:
+
+Move README.md inside:
+
+public/
+
+Final Structure:
+
+public/
+ ├── Documentation.htm
+ ├── README.md
+ ├── index.html
+
+*/
+
+const README_PATH =
+
+"./docs.md";
+
+/* =========================================
+   MARKED CONFIG
+========================================= */
+
+if(window.marked){
+
+  marked.setOptions({
+
+    breaks:true,
+
+    gfm:true
+  });
+}
+
+/* =========================================
+   CUSTOM FALLBACK ENGINE
+========================================= */
+
+function fallbackMarkdown(md){
+
+  md = md.replace(
+    /^# (.*$)/gim,
+    "<h1>$1</h1>"
+  );
+
+  md = md.replace(
+    /^## (.*$)/gim,
+    "<h2>$1</h2>"
+  );
+
+  md = md.replace(
+    /^### (.*$)/gim,
+    "<h3>$1</h3>"
+  );
+
+  md = md.replace(
+    /^#### (.*$)/gim,
+    "<h4>$1</h4>"
+  );
+
+  md = md.replace(
+    /\*\*(.*?)\*\*/gim,
+    "<strong>$1</strong>"
+  );
+
+  md = md.replace(
+    /\[(.*?)\]\((.*?)\)/gim,
+    '<a href="$2" target="_blank">$1</a>'
+  );
+
+  md = md.replace(
+    /`(.*?)`/gim,
+    "<code>$1</code>"
+  );
+
+  md = md.replace(
+    /^\- (.*$)/gim,
+    "<li>$1</li>"
+  );
+
+  md = md.replace(
+    /\n/g,
+    "<br>"
+  );
+
+  return md;
+}
+
+/* =========================================
+   LOAD README
+========================================= */
+
+async function loadREADME(){
+
+  try{
+
+    document.getElementById(
+      "status"
+    ).textContent =
+
+    "Fetching README...";
+
+    const response =
+
+    await fetch(
+      README_PATH,
+      {
+        cache:"no-cache"
+      }
+    );
+
+    if(!response.ok){
+
+      throw new Error(
+        "README.md not found"
+      );
+    }
+
+    const markdown =
+
+    await response.text();
+
+    let html = "";
+
+    /* PRIMARY ENGINE */
+
+    if(window.marked){
+
+      html = marked.parse(
+        markdown
+      );
+
+    }else{
+
+      console.warn(
+        "Marked.js failed. Using fallback engine."
+      );
+
+      html = fallbackMarkdown(
+        markdown
+      );
+    }
+
+    document.getElementById(
+      "docContent"
+    ).innerHTML =
+
+    `
+    <div class="markdown">
+
+${html}
+
+    </div>
+    `;
+
+    document.getElementById(
+      "status"
+    ).textContent =
+
+    "README Loaded";
+
+    /* HIGHLIGHT */
+
+    if(window.hljs){
+
+      hljs.highlightAll();
+
+    }else{
+
+      console.warn(
+        "Highlight.js not loaded"
+      );
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById(
+      "docContent"
+    ).innerHTML =
+
+    `
+    <div class="error-box">
+
+      <h2>
+
+        README Load Failed
+
+      </h2>
+
+      <br>
+
+      Possible reasons:
+
+      <ul>
+
+        <li>
+          README.md not inside public folder
+        </li>
+
+        <li>
+          Wrong README path
+        </li>
+
+        <li>
+          Firebase Hosting cache issue
+        </li>
+
+        <li>
+          CDN blocked
+        </li>
+
+      </ul>
+
+    </div>
+    `;
+
+    document.getElementById(
+      "status"
+    ).textContent =
+
+    "Load Failed";
+  }
+}
+
+/* =========================================
+   INIT
+========================================= */
+
+window.addEventListener(
+
+  "DOMContentLoaded",
+
+  ()=>{
+
+    loadREADME();
+  }
+);
+
+</script>
+
+</body>
+</html>

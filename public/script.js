@@ -1017,3 +1017,331 @@ try{
     error
   );
 }
+
+/* =========================================
+   DPG SIMPLE DIAGNOSIS
+========================================= */
+
+(function(){
+
+  const params =
+
+  new URLSearchParams(
+    window.location.search
+  );
+
+  const source =
+
+  params.get(
+    "utm_source"
+  );
+
+  const medium =
+
+  params.get(
+    "utm_medium"
+  );
+
+  const campaign =
+
+  params.get(
+    "utm_campaign"
+  );
+
+  const error =
+
+  params.get(
+    "error"
+  );
+
+  /* ONLY PDF VIEWER */
+
+  if(source !== "pdfviewer"){
+
+    return;
+  }
+
+  console.log({
+
+    source,
+    medium,
+    campaign,
+    error,
+
+    timestamp:
+    new Date().toISOString()
+  });
+
+  /* CARD */
+
+  const card =
+
+  document.createElement(
+    "div"
+  );
+
+  card.style = `
+
+    position:fixed;
+
+    left:1rem;
+    right:1rem;
+    bottom:1rem;
+
+    z-index:999999;
+
+    max-width:560px;
+
+    margin:auto;
+
+    background:
+    linear-gradient(
+      135deg,
+      #0f172a,
+      #111827
+    );
+
+    color:white;
+
+    border:
+    1px solid #1e293b;
+
+    border-radius:24px;
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,.45);
+
+    overflow:hidden;
+
+    font-family:
+    Arial,sans-serif;
+  `;
+
+  card.innerHTML = `
+
+    <div
+      style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:1rem;
+      border-bottom:
+      1px solid #1e293b;
+      "
+    >
+
+      <strong
+        style="
+        color:#60a5fa;
+        font-size:1rem;
+        "
+      >
+
+        DPGNotes Diagnosis
+
+      </strong>
+
+      <button
+        id="dpgClose"
+
+        style="
+        width:40px;
+        height:40px;
+        border:none;
+        border-radius:12px;
+        background:#1e293b;
+        color:white;
+        cursor:pointer;
+        font-size:1rem;
+        "
+      >
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <div
+      style="
+      padding:1rem;
+      "
+    >
+
+      <h2
+        style="
+        margin-bottom:.7rem;
+        "
+      >
+
+        PDF Resource Failed
+
+      </h2>
+
+      <p
+        style="
+        color:#cbd5e1;
+        line-height:1.7;
+        margin-bottom:1rem;
+        "
+      >
+
+        DPGNotes detected that the
+        PDF Viewer redirected here
+        because the requested
+        PDF could not be loaded.
+
+      </p>
+
+      <div
+        style="
+        display:grid;
+        gap:.6rem;
+        "
+      >
+
+        <div
+          style="
+          background:#0f172a;
+          border:1px solid #1e293b;
+          padding:.75rem;
+          border-radius:14px;
+          "
+        >
+
+          <strong>
+            Source:
+          </strong>
+
+          ${source || "N/A"}
+
+        </div>
+
+        <div
+          style="
+          background:#0f172a;
+          border:1px solid #1e293b;
+          padding:.75rem;
+          border-radius:14px;
+          "
+        >
+
+          <strong>
+            Medium:
+          </strong>
+
+          ${medium || "N/A"}
+
+        </div>
+
+        <div
+          style="
+          background:#0f172a;
+          border:1px solid #1e293b;
+          padding:.75rem;
+          border-radius:14px;
+          "
+        >
+
+          <strong>
+            Campaign:
+          </strong>
+
+          ${campaign || "N/A"}
+
+        </div>
+
+        <div
+          style="
+          background:#0f172a;
+          border:1px solid #1e293b;
+          padding:.75rem;
+          border-radius:14px;
+          "
+        >
+
+          <strong>
+            Error:
+          </strong>
+
+          ${error || "Unknown"}
+
+        </div>
+
+      </div>
+
+      <button
+        id="dpgLearn"
+
+        style="
+        margin-top:1rem;
+        width:100%;
+        border:none;
+        padding:1rem;
+        border-radius:16px;
+        background:#2563eb;
+        color:white;
+        font-weight:700;
+        cursor:pointer;
+        "
+      >
+
+        Learn More
+
+      </button>
+
+    </div>
+
+  `;
+
+  document.body.appendChild(
+    card
+  );
+
+  /* CLOSE */
+
+  document.getElementById(
+    "dpgClose"
+  ).onclick = ()=>{
+
+    card.remove();
+  };
+
+  /* LEARN */
+
+  document.getElementById(
+    "dpgLearn"
+  ).onclick = ()=>{
+
+    alert(
+
+`DPGNotes PDF Diagnosis
+
+Possible Reasons:
+
+• Missing PDF URL
+• Invalid Redirect
+• Firebase Hosting Restriction
+• CORS Issue
+• Deleted PDF Resource
+
+Referral Details:
+
+Source:
+${source}
+
+Medium:
+${medium}
+
+Campaign:
+${campaign}
+
+Error:
+${error}
+
+Timestamp:
+${new Date().toISOString()}`
+    );
+  };
+
+})();
