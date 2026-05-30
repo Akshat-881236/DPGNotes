@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ANH Advanced Image To PDF Converter - Convert exam paper images into professionally formatted PDF archives offline. No server, no cloud storage required.">
+    <meta name="keywords" content="PDF converter, image to PDF, exam paper archival, offline converter, PDF generator, academic archive, ANH">
+    <meta name="author" content="Akshat Network Hub">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#101010">
+    <meta property="og:title" content="ANH Advanced Image To PDF Converter">
+    <meta property="og:description" content="Convert exam papers to professional PDFs offline. No server required.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://akshat-881236.github.io/AkshatNetworkHub/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ANH Advanced Image To PDF Converter">
+    <meta name="twitter:description" content="Professional offline exam paper PDF converter">
+    <meta name="application-name" content="ANH PDF Converter">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="canonical" href="https://akshat-881236.github.io/AkshatNetworkHub/">
+    
+    <title>ANH Advanced Image To PDF Converter - Offline Exam Paper Archive</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #101010;
+            --bg-secondary: #1B1B1B;
+            --accent-primary: #00D4FF;
+            --accent-secondary: #00FF99;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --error: #FF4444;
+            --success: #00FF99;
+            --border-radius: 15px;
+            --transition: 0.3s ease;
+        }
+
+        html, body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(27, 27, 27, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .header-status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-secondary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-content {
+            display: flex;
+            width: 100%;
+            margin-top: 70px;
+            height: calc(100vh - 70px);
+            overflow: hidden;
+        }
+
+        /* Desktop Layout */
+        .left-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: var(--bg-primary);
+        }
+
+        .right-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: var(--bg-secondary);
+            border-left: 2px solid rgba(0, 212, 255, 0.1);
+        }
+
+        /* Form Styling */
+        .form-section {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all var(--transition);
+        }
+
+        .form-section:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all var(--transition);
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="url"]:focus,
+        input[type="file"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        input[type="file"] {
+            padding: 8px 12px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .file-input-label:hover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* Button Styling */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #0099CC);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-secondary), #00CC77);
+            color: var(--bg-primary);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 153, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #FF6666;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Page Upload Grid */
+        .pages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .page-upload-card {
+            background: var(--bg-primary);
+            border: 2px dashed rgba(0, 212, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-upload-card:hover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .page-upload-card.filled {
+            border-style: solid;
+            border-color: var(--accent-secondary);
+        }
+
+        .page-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 10px;
+        }
+
+        .page-preview {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .page-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .page-status.ready {
+            color: var(--accent-secondary);
+        }
+
+        /* Preview Panel */
+        .preview-container {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .preview-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .preview-viewer {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: auto;
+            margin-bottom: 15px;
+        }
+
+        #pdfCanvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .preview-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Messages */
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .message.success {
+            background: rgba(0, 255, 153, 0.1);
+            color: var(--accent-secondary);
+            border: 1px solid var(--accent-secondary);
+        }
+
+        .message.error {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .message.info {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .right-panel {
+                border-left: none;
+                border-top: 2px solid rgba(0, 212, 255, 0.1);
+            }
+
+            .left-panel, .right-panel {
+                flex: auto;
+                height: auto;
+                max-height: 50%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 15px;
+            }
+
+            .header-title {
+                font-size: 18px;
+            }
+
+            .left-panel, .right-panel {
+                padding: 15px;
+            }
+
+            .form-section {
+                padding: 15px;
+            }
+
+            .pages-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+
+            .modal-content {
+                max-width: 95%;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 425px) {
+            .header {
+                height: 60px;
+                padding: 0 10px;
+            }
+
+            .header-title {
+                font-size: 16px;
+            }
+
+            .header-status {
+                flex-direction: column;
+                gap: 5px;
+                font-size: 12px;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+            .main-content {
+                margin-top: 60px;
+                height: calc(100vh - 60px);
+                flex-direction: column;
+            }
+
+            .left-panel, .right-panel {
+                flex: 1;
+                overflow-y: auto;
+                padding: 10px;
+            }
+
+            .form-section {
+                margin-bottom: 15px;
+                padding: 12px;
+            }
+
+            .pages-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .section-title {
+                font-size: 15px;
+            }
+
+            .form-group label {
+                font-size: 12px;
+            }
+
+            input, textarea {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .pages-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 320px) {
+            .header-title {
+                font-size: 14px;
+                gap: 5px;
+            }
+
+            .logo-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+
+            .pages-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+
+            .modal-content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <div class="logo-icon">📄</div>
+            <span>ANH PDF Converter</span>
+        </div>
+        <div class="header-status">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Offline Mode</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Left Panel: Form -->
+            <div class="left-panel">
+                <div id="messagesContainer"></div>
+
+                <!-- Metadata Section -->
+                <div class="form-section">
+                    <div class="section-title">📋 Paper Metadata</div>
+                    
+                    <div class="form-group">
+                        <label for="paperID">Paper ID *</label>
+                        <input type="text" id="paperID" placeholder="e.g., ANH-SEM1-CS101" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paperName">Paper Name *</label>
+                        <input type="text" id="paperName" placeholder="e.g., Data Structures" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subjectName">Subject Name *</label>
+                        <input type="text" id="subjectName" placeholder="e.g., Computer Science" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subjectCode">Subject Code *</label>
+                        <input type="text" id="subjectCode" placeholder="e.g., CS101" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="copyrightValue">Copyright Notice *</label>
+                        <input type="text" id="copyrightValue" placeholder="e.g., © 2026 Akshat Network Hub" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="referenceLink">Reference Link *</label>
+                        <input type="url" id="referenceLink" placeholder="https://example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="anhSiteUrl">ANH Site URL *</label>
+                        <input type="url" id="anhSiteUrl" value="https://akshat-881236.github.io/" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="anhLogoUpload">ANH Logo (Optional)</label>
+                        <input type="file" id="anhLogoUpload" accept="image/*">
+                    </div>
+                </div>
+
+                <!-- Pages Configuration -->
+                <div class="form-section">
+                    <div class="section-title">📄 Pages Configuration</div>
+                    
+                    <div class="form-group">
+                        <label for="totalPages">Total Number of Pages *</label>
+                        <input type="number" id="totalPages" min="1" max="500" placeholder="e.g., 15" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orientation">Page Orientation</label>
+                        <select id="orientation">
+                            <option value="auto">Auto Detect</option>
+                            <option value="portrait">Portrait (A4)</option>
+                            <option value="landscape">Landscape (A4)</option>
+                        </select>
+                    </div>
+
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-label">
+                            <span>Generating PDF...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generatePages()">🔄 Generate Pages</button>
+                        <button class="btn btn-success" onclick="generatePDF()" id="generatePdfBtn" disabled>✓ Generate PDF</button>
+                    </div>
+                </div>
+
+                <!-- Pages Upload Area -->
+                <div class="form-section">
+                    <div class="section-title">📸 Upload Pages</div>
+                    <div class="pages-grid" id="pagesGrid"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Preview -->
+            <div class="right-panel">
+                <div class="preview-container">
+                    <div class="preview-header">
+                        <div class="preview-title">📊 PDF Preview</div>
+                        <div class="preview-controls">
+                            <button class="btn btn-secondary" id="zoomInBtn" onclick="zoomPDF(1.2)">🔍+</button>
+                            <button class="btn btn-secondary" id="zoomOutBtn" onclick="zoomPDF(0.8)">🔍−</button>
+                            <button class="btn btn-secondary" id="resetZoomBtn" onclick="resetZoom()">↺</button>
+                        </div>
+                    </div>
+                    <div class="preview-viewer" id="pdfViewer">
+                        <div style="text-align: center; color: var(--text-secondary);">
+                            <div style="font-size: 48px; margin-bottom: 10px;">📋</div>
+                            <div>PDF Preview will appear here</div>
+                        </div>
+                    </div>
+                    <div class="preview-footer">
+                        <span id="previewPageInfo">No PDF loaded</span>
+                        <button class="btn btn-success" id="downloadBtn" onclick="downloadPDF()" disabled style="margin-left: auto;">⬇ Download PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts: External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Main Application Script -->
+    <script>
+        // ============================================
+        // ANH ADVANCED IMAGE TO PDF CONVERTER
+        // Production-Ready Single File Application
+        // FIXED: Base64 Image Handling
+        // ============================================
+
+        // Global State Management
+        const state = {
+            metadata: {
+                paperID: '',
+                paperName: '',
+                subjectName: '',
+                subjectCode: '',
+                copyrightValue: '',
+                referenceLink: '',
+                anhSiteUrl: 'https://akshat-881236.github.io/',
+                anhLogo: null
+            },
+            pages: [],
+            currentPDFDoc: null,
+            currentScale: 1,
+            generatedPDF: null,
+            totalPages: 0,
+            trackingID: generateUUID()
+        };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        /**
+         * Generate UUID for PDF tracking
+         */
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        /**
+         * Get current ISO timestamp
+         */
+        function getCurrentTimestamp() {
+            return new Date().toISOString();
+        }
+
+        /**
+         * Get current date-time string for filename
+         */
+        function getDateTimeString() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+        }
+
+        /**
+         * Show message to user
+         */
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messagesContainer');
+            const msgElement = document.createElement('div');
+            msgElement.className = `message ${type}`;
+            
+            const iconMap = {
+                success: '✓',
+                error: '✕',
+                info: 'ℹ'
+            };
+            
+            msgElement.innerHTML = `<span>${iconMap[type]}</span><span>${message}</span>`;
+            container.appendChild(msgElement);
+            
+            setTimeout(() => msgElement.remove(), 5000);
+        }
+
+        /**
+         * Validate metadata form
+         */
+        function validateMetadata() {
+            const required = ['paperID', 'paperName', 'subjectName', 'subjectCode', 'copyrightValue', 'referenceLink'];
+            
+            for (const field of required) {
+                const value = document.getElementById(field).value.trim();
+                if (!value) {
+                    showMessage(`${field} is required`, 'error');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        /**
+         * Update metadata from form
+         */
+        function updateMetadata() {
+            state.metadata.paperID = document.getElementById('paperID').value.trim();
+            state.metadata.paperName = document.getElementById('paperName').value.trim();
+            state.metadata.subjectName = document.getElementById('subjectName').value.trim();
+            state.metadata.subjectCode = document.getElementById('subjectCode').value.trim();
+            state.metadata.copyrightValue = document.getElementById('copyrightValue').value.trim();
+            state.metadata.referenceLink = document.getElementById('referenceLink').value.trim();
+            state.metadata.anhSiteUrl = document.getElementById('anhSiteUrl').value.trim();
+        }
+
+        /**
+         * Convert base64 data URL to Uint8Array
+         * FIXED: Properly handle base64 images without fetch()
+         */
+        function base64ToUint8Array(base64String) {
+            try {
+                // Extract base64 part from data URL
+                const base64 = base64String.split(',')[1] || base64String;
+                
+                // Decode base64 to binary string
+                const binaryString = atob(base64);
+                
+                // Convert binary string to Uint8Array
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                
+                return bytes;
+            } catch (error) {
+                console.error('Error converting base64:', error);
+                throw new Error('Failed to process image data');
+            }
+        }
+
+        /**
+         * Detect image type from base64
+         */
+        function detectImageType(base64String) {
+            if (base64String.includes('image/jpeg') || base64String.includes('image/jpg')) {
+                return 'jpg';
+            } else if (base64String.includes('image/png')) {
+                return 'png';
+            }
+            return 'jpg'; // Default
+        }
+
+        /**
+         * Detect image orientation
+         */
+        function detectImageOrientation(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        if (img.width > img.height) {
+                            resolve('landscape');
+                        } else {
+                            resolve('portrait');
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        /**
+         * Compress image for better performance
+         */
+        function compressImage(canvas, maxWidth = 1920, quality = 0.8) {
+            if (canvas.width > maxWidth) {
+                const ratio = maxWidth / canvas.width;
+                const ctx = canvas.getContext('2d');
+                const newCanvas = document.createElement('canvas');
+                newCanvas.width = maxWidth;
+                newCanvas.height = canvas.height * ratio;
+                const newCtx = newCanvas.getContext('2d');
+                newCtx.drawImage(canvas, 0, 0, newCanvas.width, newCanvas.height);
+                return newCanvas.toDataURL('image/jpeg', quality);
+            }
+            return canvas.toDataURL('image/jpeg', quality);
+        }
+
+        // ============================================
+        // PAGE MANAGEMENT
+        // ============================================
+
+        /**
+         * Generate page upload cards
+         */
+        function generatePages() {
+            const totalPages = parseInt(document.getElementById('totalPages').value);
+            
+            if (!totalPages || totalPages < 1 || totalPages > 500) {
+                showMessage('Please enter a valid number of pages (1-500)', 'error');
+                return;
+            }
+
+            state.totalPages = totalPages;
+            state.pages = new Array(totalPages).fill(null);
+
+            const grid = document.getElementById('pagesGrid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < totalPages; i++) {
+                const card = document.createElement('div');
+                card.className = 'page-upload-card';
+                card.innerHTML = `
+                    <div class="page-number">${i + 1}</div>
+                    <img class="page-preview" id="preview-${i}" src="" alt="Page ${i + 1}" style="display: none;">
+                    <input type="file" id="input-${i}" accept="image/*" style="display: none;">
+                    <div class="page-status" id="status-${i}">Click to upload</div>
+                `;
+                
+                card.addEventListener('click', () => document.getElementById(`input-${i}`).click());
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    card.style.borderColor = 'var(--accent-primary)';
+                });
+                card.addEventListener('dragleave', () => {
+                    card.style.borderColor = '';
+                });
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    card.style.borderColor = '';
+                    if (e.dataTransfer.files.length > 0) {
+                        document.getElementById(`input-${i}`).files = e.dataTransfer.files;
+                        handlePageUpload(i);
+                    }
+                });
+
+                const input = card.querySelector(`#input-${i}`);
+                input.addEventListener('change', () => handlePageUpload(i));
+
+                grid.appendChild(card);
+            }
+
+            showMessage(`Generated ${totalPages} page upload cards`, 'info');
+        }
+
+        /**
+         * Handle individual page upload
+         */
+        function handlePageUpload(pageIndex) {
+            const input = document.getElementById(`input-${pageIndex}`);
+            const file = input.files[0];
+
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showMessage('Please upload an image file', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    const compressedData = compressImage(canvas);
+                    state.pages[pageIndex] = compressedData;
+
+                    // Update UI
+                    const preview = document.getElementById(`preview-${pageIndex}`);
+                    preview.src = compressedData;
+                    preview.style.display = 'block';
+
+                    const card = preview.closest('.page-upload-card');
+                    card.classList.add('filled');
+
+                    const status = document.getElementById(`status-${pageIndex}`);
+                    status.textContent = '✓ Ready';
+                    status.classList.add('ready');
+
+                    // Enable PDF generation if all pages are filled
+                    checkAllPagesReady();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /**
+         * Check if all pages are ready
+         */
+        function checkAllPagesReady() {
+            const allReady = state.pages.every(page => page !== null);
+            document.getElementById('generatePdfBtn').disabled = !allReady || state.totalPages === 0;
+        }
+
+        // ============================================
+        // PDF GENERATION
+        // ============================================
+
+        /**
+         * Main PDF generation function
+         */
+        async function generatePDF() {
+            if (!validateMetadata()) return;
+            if (state.pages.some(page => page === null)) {
+                showMessage('All pages must be uploaded', 'error');
+                return;
+            }
+
+            updateMetadata();
+
+            const progressContainer = document.getElementById('progressContainer');
+            progressContainer.classList.add('active');
+
+            try {
+                // Use PDF-LIB for advanced metadata support
+                const pdfDoc = await PDFLib.PDFDocument.create();
+                pdfDoc.setTitle(state.metadata.paperName);
+                pdfDoc.setSubject(state.metadata.subjectName);
+                pdfDoc.setKeywords(['Semester Exam', 'ANH', 'Academic Archive']);
+                pdfDoc.setAuthor('Akshat Network Hub');
+                pdfDoc.setCreator('ANH Advanced Image To PDF Converter');
+                pdfDoc.setProducer('Akshat Network Hub PDF Engine');
+
+                // Process each page
+                for (let i = 0; i < state.pages.length; i++) {
+                    await addPageToPDF(pdfDoc, state.pages[i], i + 1, state.pages.length);
+                    updateProgress((i + 1) / state.pages.length * 100);
+                }
+
+                // Add QR code on last page
+                await addQRCodeToLastPage(pdfDoc);
+
+                // Save PDF
+                const pdfBytes = await pdfDoc.save();
+                state.generatedPDF = pdfBytes;
+
+                progressContainer.classList.remove('active');
+                showMessage('PDF generated successfully!', 'success');
+                document.getElementById('downloadBtn').disabled = false;
+
+                // Display preview
+                await displayPDFPreview(pdfBytes);
+
+            } catch (error) {
+                progressContainer.classList.remove('active');
+                showMessage(`Error generating PDF: ${error.message}`, 'error');
+                console.error('PDF Generation Error:', error);
+            }
+        }
+
+        /**
+         * Add page to PDF with metadata and watermarks
+         * FIXED: Properly handle base64 images
+         */
+        async function addPageToPDF(pdfDoc, imageData, pageNumber, totalPages) {
+            try {
+                // Convert base64 to Uint8Array
+                const imageBytes = base64ToUint8Array(imageData);
+                const imageType = detectImageType(imageData);
+
+                let image;
+
+                if (imageType === 'png') {
+                    image = await pdfDoc.embedPng(imageBytes);
+                } else {
+                    image = await pdfDoc.embedJpg(imageBytes);
+                }
+
+                const orientation = document.getElementById('orientation').value;
+                let page;
+                let pageWidth;
+                let pageHeight;
+
+                if (orientation === 'auto') {
+
+                    const imgAspect = image.width / image.height;
+
+                    if (imgAspect > 1) {
+
+                        page = pdfDoc.addPage([842,595]);
+
+                        pageWidth = 842;
+                        pageHeight = 595;
+
+                    } else {
+                        page = pdfDoc.addPage([595,842]);
+                        const { width, height } = page.getSize();
+                        pageWidth = width;
+                        pageHeight = height;
+                    }
+                }
+
+                // Draw image to fit page
+                const imgAspect = image.width / image.height;
+                const pageAspect = pageWidth / pageHeight;
+                let drawWidth, drawHeight;
+
+                if (imgAspect > pageAspect) {
+                    drawWidth = pageWidth;
+                    drawHeight = pageWidth / imgAspect;
+                } else {
+                    drawHeight = pageHeight;
+                    drawWidth = pageHeight * imgAspect;
+                }
+
+                const x = (pageWidth - drawWidth) / 2;
+                const y = (pageHeight - drawHeight) / 2;
+
+                page.drawImage(image, { x, y, width: drawWidth, height: drawHeight });
+
+                // Add watermark
+                addWatermark(page, pageWidth, pageHeight);
+
+                // Add borders with reference link
+                addBordersWithLink(page, pageWidth, pageHeight);
+
+                // Add metadata text
+                addPageMetadata(page, pageWidth, pageHeight, pageNumber, totalPages);
+
+            } catch (error) {
+                console.error(`Error adding page ${pageNumber}:`, error);
+                throw new Error(`Failed to process page ${pageNumber}: ${error.message}`);
+            }
+        }
+
+        /**
+         * Add watermark to page
+         */
+        function addWatermark(page, width, height) {
+            const watermarkText = 'AKSHAT NETWORK HUB';
+            
+            // Draw semi-transparent watermark at 45 degrees
+            page.drawText(
+            watermarkText,
+            {
+            rotate: PDFLib.degrees(45),
+            color: PDFLib.rgb(
+            0.85,
+            0.85,
+            0.85
+            )
+            });
+        }
+
+        /**
+         * Add borders with reference link
+         */
+        function addBordersWithLink(page, width, height) {
+            const link = state.metadata.referenceLink;
+            const borderSize = 20;
+            const fontSize = 8;
+            const textColor = PDFLib.rgb(0.6, 0.6, 0.6);
+
+            // Top border
+            const topText = link + ' • ' + link + ' • ' + link;
+            page.drawText(topText, {
+                x: borderSize,
+                y: height - borderSize,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.5
+            });
+
+            // Bottom border
+            page.drawText(topText, {
+                x: borderSize,
+                y: borderSize - 5,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.5
+            });
+
+            // Left border (rotated)
+            page.drawText(link, {
+                x: borderSize - 10,
+                y: height / 2 - 50,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.5,
+                rotate: PDFLib.degrees(90)
+            });
+
+            // Right border (rotated)
+            page.drawText(link, {
+                x: width - borderSize + 5,
+                y: height / 2 - 50,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.5,
+                rotate: PDFLib.degrees(90)
+            });
+        }
+
+        /**
+         * Add page metadata
+         */
+        function addPageMetadata(page, width, height, pageNumber, totalPages) {
+            const fontSize = 9;
+            const textColor = PDFLib.rgb(0.4, 0.4, 0.4);
+            const margin = 10;
+
+            // Top left: Copyright
+            page.drawText('© Akshat Network Hub', {
+                x: margin,
+                y: height - margin - 10,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.7
+            });
+
+            // Top right: Paper ID
+            page.drawText(state.metadata.paperID, {
+                x: width - margin - 80,
+                y: height - margin - 10,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.7
+            });
+
+            // Bottom left: Reference Link
+            page.drawText(state.metadata.referenceLink.substring(0, 40), {
+                x: margin,
+                y: margin,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.7
+            });
+
+            // Bottom right: Page number
+            page.drawText(`Page ${pageNumber} of ${totalPages}`, {
+                x: width - margin - 60,
+                y: margin,
+                size: fontSize,
+                color: textColor,
+                opacity: 0.7
+            });
+        }
+
+        /**
+         * Add QR code to last page
+         */
+        async function addQRCodeToLastPage(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            const lastPage =
+            pdfDoc.getPage(
+            pdfDoc.getPageCount() - 1
+            );
+            const { width, height } = lastPage.getSize();
+
+            // Generate QR code data
+            const qrData = JSON.stringify({
+                PaperID: state.metadata.paperID,
+                SubjectCode: state.metadata.subjectCode,
+                PaperName: state.metadata.paperName,
+                GeneratedTimestamp: getCurrentTimestamp(),
+                ReferenceLink: state.metadata.referenceLink,
+                TrackingID: state.trackingID
+            });
+
+            // Create QR code canvas
+            const qrContainer = document.createElement('div');
+            qrContainer.style.position = 'absolute';
+            qrContainer.style.left = '-9999px';
+            document.body.appendChild(qrContainer);
+
+            const qr = new QRCode(qrContainer, {
+                text: qrData,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const qrCanvas = qrContainer.querySelector('canvas');
+            const qrDataUrl = qrCanvas.toDataURL('image/png');
+            const qrBytes = base64ToUint8Array(qrDataUrl);
+            const qrImage = await pdfDoc.embedPng(qrBytes);
+
+            // Draw QR code on last page
+            lastPage.drawImage(qrImage, {
+                x: width - 120,
+                y: 30,
+                width: 100,
+                height: 100
+            });
+
+            // Label
+            lastPage.drawText('Scan QR', {
+                x: width - 120,
+                y: 20,
+                size: 8,
+                color: PDFLib.rgb(0.4, 0.4, 0.4)
+            });
+
+            document.body.removeChild(qrContainer);
+        }
+
+        /**
+         * Update progress bar
+         */
+        function updateProgress(percent) {
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            progressFill.style.width = percent + '%';
+            progressPercent.textContent = Math.round(percent) + '%';
+        }
+
+        // ============================================
+        // PDF PREVIEW
+        // ============================================
+
+        /**
+         * Display PDF preview
+         */
+        async function displayPDFPreview(pdfBytes) {
+            const blobUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+            
+            // Set up PDF.js worker
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+            const pdf = await pdfjsLib.getDocument(blobUrl).promise;
+            state.currentPDFDoc = pdf;
+
+            // Display first page
+            displayPDFPage(1);
+        }
+
+        /**
+         * Display specific PDF page
+         */
+        async function displayPDFPage(pageNum) {
+            const pdf = state.currentPDFDoc;
+            if (!pdf || pageNum < 1 || pageNum > pdf.numPages) return;
+
+            try {
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: state.currentScale });
+
+                const canvas = document.getElementById('pdfCanvas') || document.createElement('canvas');
+                canvas.id = 'pdfCanvas';
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const context = canvas.getContext('2d');
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+
+                const viewer = document.getElementById('pdfViewer');
+                viewer.innerHTML = '';
+                viewer.appendChild(canvas);
+
+                document.getElementById('previewPageInfo').textContent = 
+                    `Page ${pageNum} of ${pdf.numPages}`;
+
+            } catch (error) {
+                console.error('Error displaying PDF page:', error);
+            }
+        }
+
+        /**
+         * Zoom PDF
+         */
+        function zoomPDF(factor) {
+            if (!state.currentPDFDoc) return;
+            state.currentScale *= factor;
+            state.currentScale = Math.max(0.5, Math.min(3, state.currentScale));
+            displayPDFPage(parseInt(document.getElementById('previewPageInfo').textContent.split(' ')[1]) || 1);
+        }
+
+        /**
+         * Reset zoom
+         */
+        function resetZoom() {
+            state.currentScale = 1;
+            if (state.currentPDFDoc) {
+                displayPDFPage(1);
+            }
+        }
+
+        // ============================================
+        // PDF DOWNLOAD
+        // ============================================
+
+        /**
+         * Download generated PDF
+         */
+        function downloadPDF() {
+            if (!state.generatedPDF) {
+                showMessage('No PDF to download', 'error');
+                return;
+            }
+
+            const filename = `${state.metadata.paperID}_${state.metadata.subjectCode}_${getDateTimeString()}.pdf`;
+            const blob = new Blob([state.generatedPDF], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showMessage(`PDF downloaded as ${filename}`, 'success');
+        }
+
+        // ============================================
+        // MODAL MANAGEMENT
+        // ============================================
+
+        /**
+         * Close page modal
+         */
+        function closePageModal() {
+            document.getElementById('pageModal').classList.remove('active');
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showMessage('ANH PDF Converter ready. All processing is offline and local.', 'info');
+        });
+
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', (e) => {
+            if (state.generatedPDF) {
+                e.preventDefault();
+                e.returnValue = 'You have an unsaved PDF. Are you sure you want to leave?';
+            }
+        });
+    </script>
+</body>
+</html>
