@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ANH PDF Meta Adder – Professional offline-first PDF metadata editor. Add metadata, watermarks, logos, QR codes, borders, and archival information while preserving original PDF quality, searchable text, hyperlinks, and vector graphics.">
+    <meta name="keywords" content="PDF editor, PDF metadata, watermark, QR code, archival, offline PDF tool, PDF metadata editor, academic archive, ANH, professional PDF">
+    <meta name="author" content="Akshat Network Hub">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#101010">
+    <meta property="og:title" content="ANH PDF Meta Adder – Professional PDF Metadata & Archive Editor">
+    <meta property="og:description" content="Advanced offline-first PDF metadata editor with watermarks, QR codes, and archival features. Preserve original PDF quality.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dpgnotes.web.app/PdfMetaAdder.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ANH PDF Meta Adder">
+    <meta name="twitter:description" content="Professional PDF metadata editor with advanced archival features">
+    <meta name="twitter:image" content="https://dpgnotes.web.app/ANH.png">
+    <meta name="twitter:site" content="@AkshatNetworkHub">
+    <meta name="twitter:url" content="https://dpgnotes.web.app/PdfMetaAdder.html">
+    <meta name="application-name" content="ANH PDF Meta Adder">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="canonical" href="https://dpgnotes.web.app/PdfMetaAdder.html">
+    <link rel="icon" href="https://dpgnotes.web.app/ANH.png" type="image/png">
+
+    <title>ANH PDF Meta Adder – Professional PDF Metadata & Archive Editor</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #101010;
+            --bg-secondary: #1B1B1B;
+            --accent-primary: #00D4FF;
+            --accent-secondary: #00FF99;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --error: #FF4444;
+            --warning: #FFB800;
+            --success: #00FF99;
+            --border-radius: 15px;
+            --transition: 0.3s ease;
+        }
+
+        html, body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: rgba(27, 27, 27, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            height: 70px;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
+            z-index: 1000;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .header-status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-secondary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            width: 40%;
+            background: var(--bg-primary);
+            border-right: 2px solid rgba(0, 212, 255, 0.1);
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            width: 60%;
+            background: var(--bg-secondary);
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(0, 212, 255, 0.4);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: 20px;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .upload-text strong {
+            color: var(--accent-primary);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        #pdfInput {
+            display: none;
+        }
+
+        .form-section {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all var(--transition);
+        }
+
+        .form-section:hover {
+            border-color: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.08);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all var(--transition);
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="url"]:focus,
+        input[type="file"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #0099CC);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-secondary), #00CC77);
+            color: var(--bg-primary);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 153, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(0, 212, 255, 0.05);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .checkbox-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .preview-viewer {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        #pdfCanvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .preview-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .message.success {
+            background: rgba(0, 255, 153, 0.1);
+            color: var(--accent-secondary);
+            border: 1px solid var(--accent-secondary);
+        }
+
+        .message.error {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .message.info {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .message.warning {
+            background: rgba(255, 184, 0, 0.1);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--accent-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-info {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .file-name {
+            color: var(--accent-primary);
+            font-weight: 600;
+            word-break: break-all;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .metadata-display {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .metadata-label {
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metadata-value {
+            color: var(--text-primary);
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        .metadata-value.empty {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .empty-subtext {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .range-slider {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            display: inline-block;
+            margin-left: 8px;
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .logo-preview {
+            width: 100%;
+            max-height: 120px;
+            object-fit: contain;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .verification-block {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+
+        .verification-item {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .verification-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .verification-label {
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .verification-value {
+            color: var(--text-primary);
+            margin-top: 2px;
+            word-break: break-all;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid rgba(0, 212, 255, 0.1);
+                max-height: 40%;
+            }
+
+            .right-panel {
+                width: 100%;
+                flex: 1;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 15px;
+                height: 60px;
+            }
+
+            .header-title {
+                font-size: 18px;
+            }
+
+            .header-status {
+                display: none;
+            }
+
+            .left-panel, .right-panel {
+                padding: 15px;
+            }
+
+            .form-section {
+                padding: 15px;
+            }
+
+            .upload-zone {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 425px) {
+            .header-title {
+                font-size: 16px;
+            }
+
+            .logo-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+
+            .left-panel, .right-panel {
+                padding: 10px;
+            }
+
+            .form-section {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .section-title {
+                font-size: 14px;
+            }
+
+            .btn {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-zone {
+                padding: 20px;
+            }
+
+            .upload-icon {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .header-title {
+                font-size: 14px;
+                gap: 6px;
+            }
+
+            .form-group label {
+                font-size: 11px;
+            }
+
+            input, textarea, select {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .tab-buttons {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .header {
+                padding: 0 8px;
+            }
+
+            .header-title {
+                font-size: 13px;
+                gap: 4px;
+            }
+
+            .logo-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+
+            .left-panel, .right-panel {
+                padding: 8px;
+            }
+
+            .form-section {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+
+            .btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            input, textarea, select {
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <div class="logo-icon">📑</div>
+            <span>ANH PDF Meta Adder</span>
+        </div>
+        <div class="header-status">
+            <span>Offline-First PDF Editor</span>
+            <div class="status-dot"></div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Panel: Form -->
+        <div class="left-panel">
+            <div id="messagesContainer"></div>
+
+            <!-- PDF Upload -->
+            <div class="form-section">
+                <div class="section-title">📤 Load PDF</div>
+                
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">
+                        <strong>Click or Drag PDF</strong>
+                        Drop your PDF or select file
+                    </div>
+                </div>
+
+                <input type="file" id="pdfInput" accept=".pdf" />
+
+                <div id="fileInfo" class="file-info" style="display: none;">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                </div>
+            </div>
+
+            <!-- Metadata Form -->
+            <div class="form-section">
+                <div class="section-title">📋 Metadata</div>
+                
+                <div class="form-group">
+                    <label for="paperID">Paper ID</label>
+                    <input type="text" id="paperID" placeholder="e.g., ANH-SEM1-CS101">
+                </div>
+
+                <div class="form-group">
+                    <label for="paperName">Paper Name</label>
+                    <input type="text" id="paperName" placeholder="e.g., Data Structures">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subjectName">Subject Name</label>
+                        <input type="text" id="subjectName" placeholder="Computer Science">
+                    </div>
+                    <div class="form-group">
+                        <label for="subjectCode">Subject Code</label>
+                        <input type="text" id="subjectCode" placeholder="CS101">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="copyrightNotice">Copyright Notice</label>
+                    <input type="text" id="copyrightNotice" placeholder="© 2026 Akshat Network Hub">
+                </div>
+
+                <div class="form-group">
+                    <label for="referenceUrl">Reference URL</label>
+                    <input type="url" id="referenceUrl" placeholder="https://example.com">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="author">Author</label>
+                        <input type="text" id="author" placeholder="Author Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" placeholder="Department">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="keywords">Keywords (comma separated)</label>
+                    <input type="text" id="keywords" placeholder="exam, paper, archive">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="institution">Institution</label>
+                        <input type="text" id="institution" placeholder="Institution Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="academicSession">Academic Session</label>
+                        <input type="text" id="academicSession" placeholder="2025-2026">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="anhSiteUrl">ANH Site URL</label>
+                    <input type="url" id="anhSiteUrl" value="https://akshat-881236.github.io/" placeholder="https://...">
+                </div>
+
+                <div class="form-group">
+                    <label>Metadata Options</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="radio" name="metadataMode" value="replace" id="metadataReplace" checked>
+                            <label for="metadataReplace" style="margin: 0; font-weight: 500; text-transform: none;">Replace Existing</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="metadataMode" value="merge" id="metadataMerge">
+                            <label for="metadataMerge" style="margin: 0; font-weight: 500; text-transform: none;">Merge Metadata</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="metadataMode" value="preserve" id="metadataPreserve">
+                            <label for="metadataPreserve" style="margin: 0; font-weight: 500; text-transform: none;">Preserve Existing</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logo Section -->
+            <div class="form-section">
+                <div class="section-title">🖼️ Logo</div>
+                
+                <div class="form-group">
+                    <label for="logoUpload">Upload Logo (PNG/JPG/WEBP)</label>
+                    <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/webp">
+                    <img id="logoPreview" class="logo-preview" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="logoPlacement">Logo Position</label>
+                    <select id="logoPlacement">
+                        <option value="top-left">Top Left</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="bottom-right">Bottom Right</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="logoSize">Logo Size: <span class="slider-value" id="logoSizeValue">80</span>px</label>
+                        <input type="range" id="logoSize" class="range-slider" min="30" max="150" value="80">
+                    </div>
+                    <div class="form-group">
+                        <label for="logoOpacity">Opacity: <span class="slider-value" id="logoOpacityValue">100</span>%</label>
+                        <input type="range" id="logoOpacity" class="range-slider" min="0" max="100" value="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Watermark Section -->
+            <div class="form-section">
+                <div class="section-title">💧 Watermark</div>
+                
+                <div class="form-group">
+                    <label for="watermarkType">Watermark Type</label>
+                    <select id="watermarkType">
+                        <option value="text">Text</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="watermarkText">Watermark Text</label>
+                    <input type="text" id="watermarkText" placeholder="Akshat Network Hub" value="AKSHAT NETWORK HUB">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="watermarkOpacity">Opacity: <span class="slider-value" id="watermarkOpacityValue">15</span>%</label>
+                        <input type="range" id="watermarkOpacity" class="range-slider" min="0" max="100" value="15">
+                    </div>
+                    <div class="form-group">
+                        <label for="watermarkRotation">Rotation: <span class="slider-value" id="watermarkRotationValue">45</span>°</label>
+                        <input type="range" id="watermarkRotation" class="range-slider" min="0" max="360" value="45">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Apply Watermark</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="radio" name="watermarkPages" value="all" id="watermarkAll" checked>
+                            <label for="watermarkAll" style="margin: 0; font-weight: 500; text-transform: none;">Every Page</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="watermarkPages" value="last" id="watermarkLast">
+                            <label for="watermarkLast" style="margin: 0; font-weight: 500; text-transform: none;">Last Page Only</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Borders Section -->
+            <div class="form-section">
+                <div class="section-title">🔲 Borders</div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="enableBorders" checked>
+                    <label for="enableBorders" style="margin: 0; font-weight: 500; text-transform: none;">Enable Archival Borders</label>
+                </div>
+
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="borderContent">Border Content</label>
+                    <select id="borderContent">
+                        <option value="reference">Reference URL</option>
+                        <option value="paperid">Paper ID</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="borderOpacity">Border Opacity: <span class="slider-value" id="borderOpacityValue">60</span>%</label>
+                    <input type="range" id="borderOpacity" class="range-slider" min="0" max="100" value="60">
+                </div>
+            </div>
+
+            <!-- Page Numbering -->
+            <div class="form-section">
+                <div class="section-title">📑 Page Numbers</div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="enablePageNumbers" checked>
+                    <label for="enablePageNumbers" style="margin: 0; font-weight: 500; text-transform: none;">Enable Page Numbering</label>
+                </div>
+
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="pageNumberFormat">Format</label>
+                    <select id="pageNumberFormat">
+                        <option value="page">Page X of Y</option>
+                        <option value="simple">X / Y</option>
+                        <option value="count">Page X</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pageNumberPosition">Position</label>
+                    <select id="pageNumberPosition">
+                        <option value="bottom-right">Bottom Right</option>
+                        <option value="bottom-center">Bottom Center</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="top-center">Top Center</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- QR Code -->
+            <div class="form-section">
+                <div class="section-title">🔲 QR Code</div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="enableQR" checked>
+                    <label for="enableQR" style="margin: 0; font-weight: 500; text-transform: none;">Generate QR Code</label>
+                </div>
+
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>QR Code Position</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="radio" name="qrPosition" value="last" id="qrLast" checked>
+                            <label for="qrLast" style="margin: 0; font-weight: 500; text-transform: none;">Last Page Footer</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="qrPosition" value="every" id="qrEvery">
+                            <label for="qrEvery" style="margin: 0; font-weight: 500; text-transform: none;">Every Page</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Processing Controls -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-label">
+                    <span id="progressText">Processing PDF...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="processPDF()" id="processBtn" disabled style="flex: 1;">
+                    ⚙️ Process PDF
+                </button>
+                <button class="btn btn-success" onclick="downloadPDF()" id="downloadBtn" disabled>
+                    ⬇ Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div class="right-panel">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('preview', event)">👁️ Preview</button>
+                <button class="tab-btn" onclick="switchTab('metadata', event)">📋 Metadata</button>
+                <button class="tab-btn" onclick="switchTab('verification', event)">✓ Verification</button>
+            </div>
+
+            <!-- Preview Tab -->
+            <div id="preview" class="tab-content active">
+                <div id="emptyPreview" class="empty-state">
+                    <div class="empty-icon">📄</div>
+                    <div class="empty-text">No PDF Loaded</div>
+                    <div class="empty-subtext">Upload or drag a PDF to begin editing</div>
+                </div>
+
+                <div id="previewContent" style="display: none; flex: 1; display: flex; flex-direction: column;">
+                    <div class="preview-controls">
+                        <button class="btn btn-secondary" onclick="prevPage()" id="prevBtn">← Previous</button>
+                        <button class="btn btn-secondary" onclick="zoomOut()" id="zoomOutBtn">🔍−</button>
+                        <button class="btn btn-secondary" onclick="resetZoom()" id="resetZoomBtn">↺</button>
+                        <button class="btn btn-secondary" onclick="zoomIn()" id="zoomInBtn">🔍+</button>
+                        <button class="btn btn-secondary" onclick="nextPage()" id="nextBtn">Next →</button>
+                    </div>
+
+                    <div class="preview-viewer" id="pdfViewer">
+                        <canvas id="pdfCanvas"></canvas>
+                    </div>
+
+                    <div class="preview-info">
+                        <span id="pageInfo">Page 1 of 1</span>
+                        <span id="zoomLevel">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata Tab -->
+            <div id="metadata" class="tab-content">
+                <div id="metadataContent"></div>
+            </div>
+
+            <!-- Verification Tab -->
+            <div id="verification" class="tab-content">
+                <div id="verificationContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts: Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Main Application -->
+    <script>
+        // ============================================
+        // ANH PDF META ADDER - CORE APPLICATION
+        // Fixed: CORS & Keywords Array Error
+        // ============================================
+
+        const AppState = {
+            pdfDoc: null,
+            pdfPages: null,
+            currentPageNum: 1,
+            totalPages: 0,
+            scale: 1,
+            currentFile: null,
+            processedPDF: null,
+            logoImage: null,
+            trackingID: generateUUID()
+        };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function getCurrentTimestamp() {
+            return new Date().toISOString();
+        }
+
+        function getDateTimeString() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messagesContainer');
+            const msgElement = document.createElement('div');
+            msgElement.className = `message ${type}`;
+            
+            const iconMap = {
+                success: '✓',
+                error: '✕',
+                info: 'ℹ',
+                warning: '⚠'
+            };
+            
+            msgElement.innerHTML = `<span>${iconMap[type]}</span><span>${message}</span>`;
+            container.appendChild(msgElement);
+            
+            setTimeout(() => msgElement.remove(), 5000);
+        }
+
+        function updateProgress(percent, text) {
+            const container = document.getElementById('progressContainer');
+            container.classList.add('active');
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+            document.getElementById('progressText').textContent = text || 'Processing...';
+        }
+
+        function hideProgress() {
+            document.getElementById('progressContainer').classList.remove('active');
+        }
+
+        function switchTab(tabName, event) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ============================================
+        // SLIDER VALUE DISPLAYS
+        // ============================================
+
+        document.getElementById('logoSize').addEventListener('input', (e) => {
+            document.getElementById('logoSizeValue').textContent = e.target.value;
+        });
+
+        document.getElementById('logoOpacity').addEventListener('input', (e) => {
+            document.getElementById('logoOpacityValue').textContent = e.target.value;
+        });
+
+        document.getElementById('watermarkOpacity').addEventListener('input', (e) => {
+            document.getElementById('watermarkOpacityValue').textContent = e.target.value;
+        });
+
+        document.getElementById('watermarkRotation').addEventListener('input', (e) => {
+            document.getElementById('watermarkRotationValue').textContent = e.target.value;
+        });
+
+        document.getElementById('borderOpacity').addEventListener('input', (e) => {
+            document.getElementById('borderOpacityValue').textContent = e.target.value;
+        });
+
+        // ============================================
+        // PDF UPLOAD AND LOADING
+        // ============================================
+
+        function setupUploadZone() {
+            const uploadZone = document.getElementById('uploadZone');
+            const pdfInput = document.getElementById('pdfInput');
+
+            uploadZone.addEventListener('click', () => pdfInput.click());
+
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.type === 'application/pdf') {
+                        loadPDF(file);
+                    } else {
+                        showMessage('Please drop a PDF file', 'error');
+                    }
+                }
+            });
+
+            pdfInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    loadPDF(e.target.files[0]);
+                }
+            });
+        }
+
+        async function loadPDF(file) {
+            if (file.size > 100 * 1024 * 1024) {
+                showMessage('PDF file is too large (max 100MB)', 'error');
+                return;
+            }
+
+            AppState.currentFile = file;
+            updateProgress(10, 'Loading PDF...');
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                AppState.pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                AppState.totalPages = AppState.pdfDoc.getPageCount();
+
+                // Display file info
+                const fileInfo = document.getElementById('fileInfo');
+                document.getElementById('fileName').textContent = '📄 ' + file.name;
+                document.getElementById('fileSize').textContent = '📊 ' + formatFileSize(file.size);
+                fileInfo.style.display = 'block';
+
+                // Load with PDF.js for preview
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                AppState.pdfPages = pdf;
+
+                AppState.currentPageNum = 1;
+                displayPDFPage(1);
+
+                // Show preview content
+                document.getElementById('emptyPreview').style.display = 'none';
+                document.getElementById('previewContent').style.display = 'flex';
+
+                // Enable processing
+                document.getElementById('processBtn').disabled = false;
+
+                // Display metadata
+                displayExistingMetadata();
+
+                updateProgress(100, 'PDF loaded!');
+                setTimeout(hideProgress, 1500);
+
+                showMessage(`PDF loaded: ${AppState.totalPages} pages`, 'success');
+
+            } catch (error) {
+                hideProgress();
+                showMessage(`Error loading PDF: ${error.message}`, 'error');
+                console.error('PDF Load Error:', error);
+            }
+        }
+
+        // ============================================
+        // LOGO HANDLING
+        // ============================================
+
+        document.getElementById('logoUpload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                try {
+                    if (file.type === 'image/png') {
+                        AppState.logoImage = await AppState.pdfDoc.embedPng(base64ToUint8Array(evt.target.result));
+                    } else if (file.type === 'image/jpeg') {
+                        AppState.logoImage = await AppState.pdfDoc.embedJpg(base64ToUint8Array(evt.target.result));
+                    } else if (file.type === 'image/webp') {
+                        AppState.logoImage = await AppState.pdfDoc.embedPng(base64ToUint8Array(evt.target.result));
+                    }
+
+                    const preview = document.getElementById('logoPreview');
+                    preview.src = evt.target.result;
+                    preview.style.display = 'block';
+
+                    showMessage('Logo uploaded successfully', 'success');
+                } catch (error) {
+                    showMessage(`Error loading logo: ${error.message}`, 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function base64ToUint8Array(base64String) {
+            try {
+                const base64 = base64String.split(',')[1] || base64String;
+                const binaryString = atob(base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes;
+            } catch (error) {
+                console.error('Error converting base64:', error);
+                throw new Error('Failed to process image data');
+            }
+        }
+
+        // ============================================
+        // METADATA DISPLAY
+        // ============================================
+
+        function displayExistingMetadata() {
+            const pdfDoc = AppState.pdfDoc;
+            const metadataContent = document.getElementById('metadataContent');
+
+            const metadata = {
+                Title: pdfDoc.getTitle() || 'Not set',
+                Author: pdfDoc.getAuthor() || 'Not set',
+                Subject: pdfDoc.getSubject() || 'Not set',
+                Keywords: pdfDoc.getKeywords() || 'Not set',
+                Creator: pdfDoc.getCreator() || 'Not set',
+                Producer: pdfDoc.getProducer() || 'Not set'
+            };
+
+            metadataContent.innerHTML = `
+                <div class="section-title">📑 Current PDF Metadata</div>
+                ${Object.entries(metadata).map(([key, value]) => `
+                    <div class="metadata-display">
+                        <div class="metadata-label">${key}</div>
+                        <div class="metadata-value ${value === 'Not set' ? 'empty' : ''}">${value}</div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // ============================================
+        // PDF PREVIEW
+        // ============================================
+
+        async function displayPDFPage(pageNum) {
+            if (!AppState.pdfPages || pageNum < 1 || pageNum > AppState.totalPages) return;
+
+            try {
+                const page = await AppState.pdfPages.getPage(pageNum);
+                const viewport = page.getViewport({ scale: AppState.scale });
+
+                const canvas = document.getElementById('pdfCanvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const context = canvas.getContext('2d');
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+
+                document.getElementById('pageInfo').textContent = `Page ${pageNum} of ${AppState.totalPages}`;
+                document.getElementById('zoomLevel').textContent = (AppState.scale * 100).toFixed(0) + '%';
+
+            } catch (error) {
+                console.error('Error displaying page:', error);
+            }
+        }
+
+        function prevPage() {
+            if (AppState.currentPageNum > 1) {
+                AppState.currentPageNum--;
+                displayPDFPage(AppState.currentPageNum);
+            }
+        }
+
+        function nextPage() {
+            if (AppState.currentPageNum < AppState.totalPages) {
+                AppState.currentPageNum++;
+                displayPDFPage(AppState.currentPageNum);
+            }
+        }
+
+        function zoomIn() {
+            AppState.scale = Math.min(AppState.scale + 0.2, 3);
+            displayPDFPage(AppState.currentPageNum);
+        }
+
+        function zoomOut() {
+            AppState.scale = Math.max(AppState.scale - 0.2, 0.5);
+            displayPDFPage(AppState.currentPageNum);
+        }
+
+        function resetZoom() {
+            AppState.scale = 1;
+            displayPDFPage(AppState.currentPageNum);
+        }
+
+        // ============================================
+        // PDF PROCESSING ENGINE - FIXED
+        // ============================================
+
+        async function processPDF() {
+            if (!AppState.pdfDoc) {
+                showMessage('Please load a PDF first', 'error');
+                return;
+            }
+
+            updateProgress(5, 'Starting PDF processing...');
+
+            try {
+                const newPdfDoc = await PDFLib.PDFDocument.create();
+                const pages = AppState.pdfDoc.getPages();
+                const metadataMode = document.querySelector('input[name="metadataMode"]:checked').value;
+
+                // Copy pages
+                updateProgress(15, 'Copying pages...');
+                const copiedPages = await newPdfDoc.copyPages(AppState.pdfDoc, Array.from({ length: pages.length }, (_, i) => i));
+                
+                copiedPages.forEach(page => newPdfDoc.addPage(page));
+
+                // Add metadata - FIXED: Handle keywords as array
+                updateProgress(30, 'Adding metadata...');
+                addMetadataToDocument(newPdfDoc, metadataMode);
+
+                // Add watermark
+                updateProgress(45, 'Adding watermarks...');
+                if (document.getElementById('watermarkType').value === 'text') {
+                    addWatermarks(newPdfDoc);
+                }
+
+                // Add borders
+                updateProgress(55, 'Adding borders...');
+                if (document.getElementById('enableBorders').checked) {
+                    addBorders(newPdfDoc);
+                }
+
+                // Add page numbers
+                updateProgress(65, 'Adding page numbers...');
+                if (document.getElementById('enablePageNumbers').checked) {
+                    addPageNumbers(newPdfDoc);
+                }
+
+                // Add logo
+                updateProgress(75, 'Adding logo...');
+                if (AppState.logoImage) {
+                    addLogo(newPdfDoc);
+                }
+
+                // Add QR code
+                updateProgress(85, 'Generating QR codes...');
+                if (document.getElementById('enableQR').checked) {
+                    await addQRCode(newPdfDoc);
+                }
+
+                // Add verification block
+                updateProgress(95, 'Finalizing document...');
+                addVerificationBlock(newPdfDoc);
+
+                // Save
+                const pdfBytes = await newPdfDoc.save();
+                AppState.processedPDF = pdfBytes;
+
+                updateProgress(100, 'PDF processing complete!');
+                setTimeout(hideProgress, 1500);
+
+                document.getElementById('downloadBtn').disabled = false;
+                showMessage('PDF processed successfully!', 'success');
+
+                // Display verification info
+                displayVerificationInfo();
+
+            } catch (error) {
+                hideProgress();
+                showMessage(`Error processing PDF: ${error.message}`, 'error');
+                console.error('Processing Error:', error);
+            }
+        }
+
+        function addMetadataToDocument(pdfDoc, mode) {
+            const metadataMode = mode || 'replace';
+
+            if (metadataMode === 'preserve') {
+                return;
+            }
+
+            const paperName = document.getElementById('paperName').value || 'Untitled';
+            const subjectName = document.getElementById('subjectName').value || 'Document';
+            const author = document.getElementById('author').value || 'Akshat Network Hub';
+            const keywordsText = document.getElementById('keywords').value || 'document, archive';
+            
+            // FIXED: Convert keywords string to array
+            const keywordsArray = keywordsText.split(',').map(k => k.trim()).filter(k => k.length > 0);
+
+            if (metadataMode === 'replace') {
+                pdfDoc.setTitle(paperName);
+                pdfDoc.setSubject(subjectName);
+                pdfDoc.setAuthor(author);
+                pdfDoc.setKeywords(keywordsArray);
+                pdfDoc.setProducer('ANH PDF Meta Adder');
+                pdfDoc.setCreator('Akshat Network Hub');
+            } else if (metadataMode === 'merge') {
+                if (paperName) pdfDoc.setTitle(paperName);
+                if (subjectName) pdfDoc.setSubject(subjectName);
+                if (author) pdfDoc.setAuthor(author);
+                if (keywordsArray.length > 0) pdfDoc.setKeywords(keywordsArray);
+            }
+        }
+
+        function addWatermarks(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            const watermarkText = document.getElementById('watermarkText').value;
+            const opacity = parseFloat(document.getElementById('watermarkOpacity').value) / 100;
+            const rotation = parseFloat(document.getElementById('watermarkRotation').value);
+            const applyTo = document.querySelector('input[name="watermarkPages"]:checked').value;
+
+            const pagesToAdd = applyTo === 'all' ? pages : [pages[pages.length - 1]];
+
+            pagesToAdd.forEach(page => {
+                const { width, height } = page.getSize();
+                
+                try {
+                    page.drawText(watermarkText, {
+                        x: width / 2 - (watermarkText.length * 10),
+                        y: height / 2,
+                        size: 60,
+                        color: PDFLib.rgb(0.3, 0.3, 0.3),
+                        opacity: opacity,
+                        rotate: PDFLib.degrees(rotation)
+                    });
+                } catch (e) {
+                    console.warn('Error adding watermark:', e);
+                }
+            });
+        }
+
+        function addBorders(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            const content = document.getElementById('borderContent').value;
+            const opacity = parseFloat(document.getElementById('borderOpacity').value) / 100;
+            
+            let borderText = '';
+            if (content === 'reference') {
+                borderText = document.getElementById('referenceUrl').value || 'Reference';
+            } else if (content === 'paperid') {
+                borderText = document.getElementById('paperID').value || 'PaperID';
+            } else {
+                borderText = (document.getElementById('referenceUrl').value || 'Reference') + ' | ' + (document.getElementById('paperID').value || 'PaperID');
+            }
+
+            pages.forEach(page => {
+                const { width, height } = page.getSize();
+                const fontSize = 8;
+                const margin = 10;
+                const textColor = PDFLib.rgb(0.6, 0.6, 0.6);
+
+                try {
+                    page.drawText(borderText, {
+                        x: margin,
+                        y: height - margin - 5,
+                        size: fontSize,
+                        color: textColor,
+                        opacity: opacity
+                    });
+
+                    page.drawText(borderText, {
+                        x: margin,
+                        y: margin,
+                        size: fontSize,
+                        color: textColor,
+                        opacity: opacity
+                    });
+                } catch (e) {
+                    console.warn('Error adding borders:', e);
+                }
+            });
+        }
+
+        function addPageNumbers(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            const format = document.getElementById('pageNumberFormat').value;
+            const position = document.getElementById('pageNumberPosition').value;
+
+            const getPositionCoords = (width, height, pos, pageNum) => {
+                const margin = 15;
+                const fontSize = 10;
+                
+                const positions = {
+                    'bottom-right': { x: width - margin - 60, y: margin },
+                    'bottom-center': { x: width / 2 - 30, y: margin },
+                    'bottom-left': { x: margin, y: margin },
+                    'top-right': { x: width - margin - 60, y: height - margin },
+                    'top-center': { x: width / 2 - 30, y: height - margin }
+                };
+                
+                return positions[pos] || positions['bottom-right'];
+            };
+
+            pages.forEach((page, idx) => {
+                const pageNum = idx + 1;
+                const totalPages = pages.length;
+                let numberText = '';
+
+                if (format === 'page') {
+                    numberText = `Page ${pageNum} of ${totalPages}`;
+                } else if (format === 'simple') {
+                    numberText = `${pageNum} / ${totalPages}`;
+                } else {
+                    numberText = `Page ${pageNum}`;
+                }
+
+                const { width, height } = page.getSize();
+                const coords = getPositionCoords(width, height, position, pageNum);
+
+                try {
+                    page.drawText(numberText, {
+                        x: coords.x,
+                        y: coords.y,
+                        size: 10,
+                        color: PDFLib.rgb(0.4, 0.4, 0.4),
+                        opacity: 0.7
+                    });
+                } catch (e) {
+                    console.warn('Error adding page number:', e);
+                }
+            });
+        }
+
+        function addLogo(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            const placement = document.getElementById('logoPlacement').value;
+            const size = parseInt(document.getElementById('logoSize').value);
+            const opacity = parseFloat(document.getElementById('logoOpacity').value) / 100;
+
+            const getPlacementCoords = (width, height, placement, logoSize) => {
+                const margin = 15;
+                const placements = {
+                    'top-left': { x: margin, y: height - margin - logoSize },
+                    'top-right': { x: width - margin - logoSize, y: height - margin - logoSize },
+                    'bottom-left': { x: margin, y: margin },
+                    'bottom-right': { x: width - margin - logoSize, y: margin }
+                };
+                return placements[placement] || placements['top-left'];
+            };
+
+            pages.forEach(page => {
+                const { width, height } = page.getSize();
+                const coords = getPlacementCoords(width, height, placement, size);
+
+                try {
+                    page.drawImage(AppState.logoImage, {
+                        x: coords.x,
+                        y: coords.y,
+                        width: size,
+                        height: size,
+                        opacity: opacity
+                    });
+                } catch (e) {
+                    console.warn('Error adding logo:', e);
+                }
+            });
+        }
+
+        async function addQRCode(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            const position = document.querySelector('input[name="qrPosition"]:checked').value;
+
+            const qrData = JSON.stringify({
+                PaperID: document.getElementById('paperID').value || 'N/A',
+                PaperName: document.getElementById('paperName').value || 'N/A',
+                SubjectCode: document.getElementById('subjectCode').value || 'N/A',
+                ReferenceLink: document.getElementById('referenceUrl').value || 'N/A',
+                TrackingID: AppState.trackingID,
+                Timestamp: getCurrentTimestamp(),
+                ANHUrl: document.getElementById('anhSiteUrl').value
+            });
+
+            const pagesToAdd = position === 'every' ? pages : [pages[pages.length - 1]];
+
+            for (const page of pagesToAdd) {
+                try {
+                    const qrContainer = document.createElement('div');
+                    qrContainer.style.position = 'absolute';
+                    qrContainer.style.left = '-9999px';
+                    document.body.appendChild(qrContainer);
+
+                    const qr = new QRCode(qrContainer, {
+                        text: qrData,
+                        width: 200,
+                        height: 200,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
+                    const qrCanvas = qrContainer.querySelector('canvas');
+                    const qrDataUrl = qrCanvas.toDataURL('image/png');
+                    const qrImage = await pdfDoc.embedPng(base64ToUint8Array(qrDataUrl));
+
+                    const { width, height } = page.getSize();
+                    page.drawImage(qrImage, {
+                        x: width - 110,
+                        y: 20,
+                        width: 90,
+                        height: 90
+                    });
+
+                    document.body.removeChild(qrContainer);
+                } catch (e) {
+                    console.warn('Error adding QR code:', e);
+                }
+            }
+        }
+
+        function addVerificationBlock(pdfDoc) {
+            const lastPage = pdfDoc.getPages()[pdfDoc.getPages().length - 1];
+            const { width, height } = lastPage.getSize();
+
+            const verificationText = `Generated By: Akshat Network Hub | Tracking ID: ${AppState.trackingID} | Timestamp: ${getCurrentTimestamp()}`;
+
+            try {
+                lastPage.drawText(verificationText, {
+                    x: 20,
+                    y: 50,
+                    size: 7,
+                    color: PDFLib.rgb(0.5, 0.5, 0.5),
+                    opacity: 0.6
+                });
+            } catch (e) {
+                console.warn('Error adding verification block:', e);
+            }
+        }
+
+        function displayVerificationInfo() {
+            const verificationContent = document.getElementById('verificationContent');
+            const paperID = document.getElementById('paperID').value || 'N/A';
+            const reference = document.getElementById('referenceUrl').value || 'N/A';
+
+            verificationContent.innerHTML = `
+                <div class="section-title">✓ Processing Verification</div>
+                <div class="verification-block">
+                    <div class="verification-item">
+                        <div class="verification-label">Tracking ID</div>
+                        <div class="verification-value">${AppState.trackingID}</div>
+                    </div>
+                    <div class="verification-item">
+                        <div class="verification-label">Generated Timestamp</div>
+                        <div class="verification-value">${getCurrentTimestamp()}</div>
+                    </div>
+                    <div class="verification-item">
+                        <div class="verification-label">Paper ID</div>
+                        <div class="verification-value">${paperID}</div>
+                    </div>
+                    <div class="verification-item">
+                        <div class="verification-label">Reference URL</div>
+                        <div class="verification-value">${reference}</div>
+                    </div>
+                    <div class="verification-item">
+                        <div class="verification-label">Total Pages</div>
+                        <div class="verification-value">${AppState.totalPages}</div>
+                    </div>
+                    <div class="verification-item">
+                        <div class="verification-label">Generated By</div>
+                        <div class="verification-value">Akshat Network Hub PDF Meta Adder</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // PDF DOWNLOAD
+        // ============================================
+
+        function downloadPDF() {
+            if (!AppState.processedPDF) {
+                showMessage('No processed PDF available', 'error');
+                return;
+            }
+
+            const paperID = document.getElementById('paperID').value || 'Document';
+            const subjectCode = document.getElementById('subjectCode').value || 'PDF';
+            const filename = `${paperID}_${subjectCode}_${getDateTimeString()}.pdf`;
+
+            const blob = new Blob([AppState.processedPDF], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showMessage(`PDF downloaded: ${filename}`, 'success');
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupUploadZone();
+            showMessage('ANH PDF Meta Adder ready. Upload a PDF to begin editing.', 'info');
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (AppState.processedPDF) {
+                e.preventDefault();
+                e.returnValue = 'You have an unsaved PDF. Are you sure you want to leave?';
+            }
+        });
+    </script>
+</body>
+</html>

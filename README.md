@@ -14,6 +14,9 @@ https://dpgnotes.web.app/ImagetoPdfConverter.html
 📄🛡️ PDF Metadata Analyzer
 https://dpgnotes.web.app/PdfMetaAnalyzer.html
 
+📄🛡️ PDF Metadata Adder
+https://dpgnotes.web.app/PdfMetaAdder.html
+
 ---
 
 # 📖 About

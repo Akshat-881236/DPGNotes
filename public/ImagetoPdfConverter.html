@@ -11,15 +11,19 @@
     <meta property="og:title" content="ANH Advanced Image To PDF Converter">
     <meta property="og:description" content="Convert exam papers to professional PDFs offline. No server required.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://akshat-881236.github.io/AkshatNetworkHub/">
+    <meta property="og:url" content="https://dpgnotes.web.app/ImagetoPdfConverter.html">
+    <meta property="og:image" content="https://dpgnotes.web.app/ANH.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ANH Advanced Image To PDF Converter">
     <meta name="twitter:description" content="Professional offline exam paper PDF converter">
+    <meta name="twitter:image" content="https://dpgnotes.web.app/ANH.png">
+    <meta name="twitter:site" content="@AkshatNetworkHub">
+    <meta name="twitter:url" content="https://dpgnotes.web.app/ImagetoPdfConverter.html">
     <meta name="application-name" content="ANH PDF Converter">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="canonical" href="https://akshat-881236.github.io/AkshatNetworkHub/">
-    
+    <link rel="canonical" href="https://dpgnotes.web.app/ImagetoPdfConverter.html">
+    <link rel="icon" href="https://dpgnotes.web.app/ANH.png" type="image/png">
     <title>ANH Advanced Image To PDF Converter - Offline Exam Paper Archive</title>
     
     <style>
@@ -1202,6 +1206,22 @@
 
                 // Add QR code on last page
                 await addQRCodeToLastPage(pdfDoc);
+                
+                pdfDoc.setTitle(state.metadata.paperName);
+
+                pdfDoc.setAuthor('Akshat Network Hub');
+
+                pdfDoc.setSubject(
+                    `${state.metadata.subjectName} (${state.metadata.subjectCode})`
+                );
+
+                pdfDoc.setKeywords([
+                    state.metadata.paperID,
+                    state.metadata.subjectCode,
+                    state.metadata.paperName,
+                    state.metadata.referenceLink,
+                    state.trackingID
+                ]);
 
                 // Save PDF
                 const pdfBytes = await pdfDoc.save();
@@ -1227,7 +1247,6 @@
          */
         async function addPageToPDF(pdfDoc, imageData, pageNumber, totalPages) {
             try {
-                // Convert base64 to Uint8Array
                 const imageBytes = base64ToUint8Array(imageData);
                 const imageType = detectImageType(imageData);
 
@@ -1240,38 +1259,53 @@
                 }
 
                 const orientation = document.getElementById('orientation').value;
+
                 let page;
                 let pageWidth;
                 let pageHeight;
 
-                if (orientation === 'auto') {
+                const imgWidth = image.width;
+                const imgHeight = image.height;
+                const imgAspect = imgWidth / imgHeight;
 
-                    const imgAspect = image.width / image.height;
+                if (orientation === 'portrait') {
 
-                    if (imgAspect > 1) {
+                    pageWidth = 595;
+                    pageHeight = 842;
+                    page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-                        page = pdfDoc.addPage([842,595]);
+                } else if (orientation === 'landscape') {
 
-                        pageWidth = 842;
-                        pageHeight = 595;
+                    pageWidth = 842;
+                    pageHeight = 595;
+                    page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-                    } else {
-                        page = pdfDoc.addPage([595,842]);
-                        const { width, height } = page.getSize();
-                        pageWidth = width;
-                        pageHeight = height;
-                    }
+                } else {
+
+                    // AUTO MODE
+                    // Create page matching image dimensions
+
+                    pageWidth = imgWidth;
+                    pageHeight = imgHeight;
+
+                    page = pdfDoc.addPage([
+                        pageWidth,
+                        pageHeight
+                    ]);
                 }
 
-                // Draw image to fit page
-                const imgAspect = image.width / image.height;
                 const pageAspect = pageWidth / pageHeight;
-                let drawWidth, drawHeight;
+
+                let drawWidth;
+                let drawHeight;
 
                 if (imgAspect > pageAspect) {
+
                     drawWidth = pageWidth;
                     drawHeight = pageWidth / imgAspect;
+
                 } else {
+
                     drawHeight = pageHeight;
                     drawWidth = pageHeight * imgAspect;
                 }
@@ -1279,20 +1313,33 @@
                 const x = (pageWidth - drawWidth) / 2;
                 const y = (pageHeight - drawHeight) / 2;
 
-                page.drawImage(image, { x, y, width: drawWidth, height: drawHeight });
+                page.drawImage(image, {
+                    x,
+                    y,
+                    width: drawWidth,
+                    height: drawHeight
+                });
 
-                // Add watermark
+                await drawLogo(
+                    pdfDoc,
+                    page,
+                    pageWidth,
+                    pageHeight
+                );
+
                 addWatermark(page, pageWidth, pageHeight);
-
-                // Add borders with reference link
                 addBordersWithLink(page, pageWidth, pageHeight);
-
-                // Add metadata text
-                addPageMetadata(page, pageWidth, pageHeight, pageNumber, totalPages);
+                addPageMetadata(
+                    page,
+                    pageWidth,
+                    pageHeight,
+                    pageNumber,
+                    totalPages
+                );
 
             } catch (error) {
-                console.error(`Error adding page ${pageNumber}:`, error);
-                throw new Error(`Failed to process page ${pageNumber}: ${error.message}`);
+                console.error(error);
+                throw error;
             }
         }
 
@@ -1300,19 +1347,22 @@
          * Add watermark to page
          */
         function addWatermark(page, width, height) {
-            const watermarkText = 'AKSHAT NETWORK HUB';
-            
-            // Draw semi-transparent watermark at 45 degrees
+
             page.drawText(
-            watermarkText,
-            {
-            rotate: PDFLib.degrees(45),
-            color: PDFLib.rgb(
-            0.85,
-            0.85,
-            0.85
-            )
-            });
+                'DPGNotes • Akshat Network Hub',
+                {
+                    x: width * 0.2,
+                    y: height * 0.45,
+                    size: Math.min(width, height) / 18,
+                    rotate: PDFLib.degrees(45),
+                    opacity: 0.12,
+                    color: PDFLib.rgb(
+                        0.2,
+                        0.2,
+                        0.2
+                    )
+                }
+            );
         }
 
         /**
@@ -1508,12 +1558,14 @@
 
             try {
                 const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: state.currentScale });
+                const viewport = page.getViewport({
+                    scale: state.currentScale || 1
+                });
 
                 const canvas = document.getElementById('pdfCanvas') || document.createElement('canvas');
                 canvas.id = 'pdfCanvas';
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
+                canvas.width = Math.max(1, viewport.width);
+                canvas.height = Math.max(1, viewport.height);
 
                 const context = canvas.getContext('2d');
                 await page.render({
@@ -1596,8 +1648,92 @@
         // ============================================
 
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('anhLogoUpload')
+                .addEventListener('change', handleLogoUpload);
             showMessage('ANH PDF Converter ready. All processing is offline and local.', 'info');
         });
+
+        function handleLogoUpload(event) {
+
+            const file = event.target.files[0];
+
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+
+                state.metadata.anhLogo = {
+                    data: e.target.result,
+                    type: file.type
+                };
+
+                showMessage(
+                    'ANH Logo loaded successfully',
+                    'success'
+                );
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        async function drawLogo(
+    pdfDoc,
+    page,
+    pageWidth,
+    pageHeight
+) {
+
+    if (!state.metadata.anhLogo) return;
+
+    try {
+
+        const logoBytes =
+            base64ToUint8Array(
+                state.metadata.anhLogo.data
+            );
+
+        let logoImage;
+
+        if (
+            state.metadata.anhLogo.type.includes('png')
+        ) {
+
+            logoImage =
+                await pdfDoc.embedPng(
+                    logoBytes
+                );
+
+        } else {
+
+            logoImage =
+                await pdfDoc.embedJpg(
+                    logoBytes
+                );
+        }
+
+        const logoSize = 40;
+
+        page.drawImage(
+            logoImage,
+            {
+                x: 20,
+                y: pageHeight - 60,
+                width: logoSize,
+                height: logoSize
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            'Logo drawing failed:',
+            error
+        );
+    }
+}
+
+
 
         // Prevent accidental navigation
         window.addEventListener('beforeunload', (e) => {
