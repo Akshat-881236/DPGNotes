@@ -260,6 +260,55 @@
       display: none; align-items: center; justify-content: center; z-index: 2000;
     }
     .modal-overlay.active { display: flex; }
+    /* RESPONSIVE & MOBILE SUPPORT */
+    .admin-mobile-header {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: var(--admin-surface);
+      border-bottom: 1px solid var(--admin-border);
+      position: sticky;
+      top: 0;
+      z-index: 900;
+    }
+    .hamburger-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .admin-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 950;
+      display: none; opacity: 0; transition: opacity 0.3s;
+    }
+    .admin-overlay.active { display: block; opacity: 1; }
+    
+    @media (max-width: 768px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+        z-index: 1000;
+        transition: transform 0.3s ease;
+      }
+      .admin-sidebar.active {
+        transform: translateX(0);
+      }
+      .admin-main {
+        margin-left: 0;
+        padding: 1rem;
+      }
+      .admin-header {
+        display: none; /* Hide desktop header on mobile */
+      }
+      .admin-mobile-header {
+        display: flex;
+        margin-bottom: 1rem;
+      }
+      .stat-cards {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -293,7 +342,9 @@
   <!-- ADMIN DASHBOARD -->
   <div id="dashboardLayer" style="display:none; width:100%;">
     
-    <aside class="admin-sidebar">
+    <div id="adminOverlay" class="admin-overlay" onclick="closeAdminSidebar()"></div>
+    
+    <aside id="adminSidebar" class="admin-sidebar">
       <div class="admin-brand">
         <i class="ri-triangle-fill"></i>
         DPGNotes
@@ -317,6 +368,15 @@
     </aside>
 
     <main class="admin-main">
+      <!-- MOBILE HEADER -->
+      <div class="admin-mobile-header">
+        <div class="admin-brand" style="color:var(--admin-primary);">
+          <i class="ri-triangle-fill"></i> DPGNotes
+        </div>
+        <button class="hamburger-btn" onclick="openAdminSidebar()">
+          <i class="ri-menu-line"></i>
+        </button>
+      </div>
       <div class="admin-header">
         <h1>Command Center</h1>
         <div style="display:flex; align-items:center; gap:12px;">

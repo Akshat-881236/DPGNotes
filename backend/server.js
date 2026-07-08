@@ -249,14 +249,20 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
-app.post('/api/admin/verify', (req, res) => {
+app.post('/api/admin/verify', async (req, res) => {
   const { email, otp } = req.body;
   const record = otpStore.get(email);
   if (record && record.otp === otp && record.expires > Date.now()) {
     otpStore.delete(email);
-    // Generate JWT valid for 3 days
-    const token = jwt.sign({ role: 'admin', email }, process.env.JWT_SECRET, { expiresIn: '3d' });
-    res.json({ token, message: "Login successful" });
+    try {
+      // Generate JWT valid for 3 days
+      const token = jwt.sign({ role: 'admin', email }, process.env.JWT_SECRET, { expiresIn: '3d' });
+      const firebaseToken = await admin.auth().createCustomToken(email, { admin: true });
+      res.json({ token, firebaseToken, message: "Login successful" });
+    } catch (error) {
+      console.error("Custom token error:", error);
+      res.status(500).json({ error: "Failed to authenticate with Firebase" });
+    }
   } else {
     res.status(401).json({ error: "Invalid or expired OTP" });
   }
@@ -370,8 +376,8 @@ app.post('/api/share/generate', async (req, res) => {
       uploader,
       pdfUrl,
       description,
-      tags,
-      originalUrl,
+      tags: tags || "",
+      originalUrl: originalUrl || "",
       clicks: 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -502,6 +508,7 @@ app.post('/api/email/like-notification', async (req, res) => {
   const { email, resourceTitle, likerName } = req.body;
   const html = createTemplate("Someone loved your resource! ❤️", `<p><strong>${likerName}</strong> just liked your document:</p><p style="font-size: 18px; color: #f43f5e; font-weight: bold;">${resourceTitle}</p>`);
   await sendEmail(email, "New Like on your Resource", html);
+  await createInAppNotification(email, "New Like ❤️", `${likerName} liked your document: ${resourceTitle}`, "like");
   res.json({ message: "Sent" });
 });
 
@@ -510,6 +517,7 @@ app.post('/api/email/admin-delete', async (req, res) => {
   const { email, resourceTitle, reason } = req.body;
   const html = createTemplate("Resource Removed ⚠️", `<p>Your resource <strong>${resourceTitle}</strong> was removed by the moderation team.</p><p><strong>Reason:</strong> ${reason}</p><p>Please ensure future uploads comply with our community guidelines.</p>`);
   await sendEmail(email, "Notice: Resource Removed", html);
+  await createInAppNotification(email, "Resource Removed ⚠️", `Your resource ${resourceTitle} was removed. Reason: ${reason}`, "alert");
   res.json({ message: "Sent" });
 });
 

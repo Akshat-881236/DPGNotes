@@ -1,6 +1,6 @@
-import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -86,7 +86,7 @@ otpForm.addEventListener("submit", async (e) => {
     const data = await res.json();
     if (res.ok) {
       try {
-        await signInWithEmailAndPassword(auth, adminEmailGlobal, document.getElementById("adminPassword").value);
+        await signInWithCustomToken(auth, data.firebaseToken);
       } catch (authError) {
         console.error("Firebase Auth failed:", authError);
         alert("Firebase Auth failed. Some actions may be restricted.");
@@ -168,6 +168,14 @@ deleteDocForm.addEventListener("submit", async (e) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: contributorEmail, resourceTitle: docItem.title, reason })
+      }).catch(console.error);
+      
+      addDoc(collection(db, "notifications"), {
+        email: contributorEmail,
+        type: "alert",
+        title: "Document Removed ⚠️",
+        message: `Your document "${docItem.title}" was removed by an admin. Reason: ${reason}`,
+        createdAt: serverTimestamp()
       }).catch(console.error);
     }
     
@@ -307,6 +315,14 @@ async function loadUsers() {
             body: JSON.stringify({ email: email, reason })
           }).catch(console.error);
           
+          addDoc(collection(db, "notifications"), {
+            email: email,
+            type: "alert",
+            title: "Account Suspended 🚫",
+            message: `Your account has been suspended by an administrator. Reason: ${reason}`,
+            createdAt: serverTimestamp()
+          }).catch(console.error);
+          
           loadUsers();
         } catch(e) {
           alert("Failed to block user.");
@@ -438,5 +454,40 @@ async function loadActivityLogs() {
   } catch (error) {
     console.error("Failed to load activity logs", error);
     table.innerHTML = `<tr><td colspan="4" style="color:#ef4444; text-align:center;">Failed to load logs.</td></tr>`;
+  }
+}
+
+
+window.openAdminSidebar = function() {
+  document.getElementById('adminSidebar').classList.add('active');
+  document.getElementById('adminOverlay').classList.add('active');
+};
+
+window.closeAdminSidebar = function() {
+  document.getElementById('adminSidebar').classList.remove('active');
+  document.getElementById('adminOverlay').classList.remove('active');
+};
+
+// Touch swipe gestures
+let touchstartX = 0;
+let touchendX = 0;
+document.addEventListener('touchstart', e => {
+  touchstartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', e => {
+  touchendX = e.changedTouches[0].screenX;
+  handleSwipe();
+});
+
+function handleSwipe() {
+  const swipeDist = touchendX - touchstartX;
+  if (swipeDist > 50) {
+    // Swipe Right -> Open Sidebar
+    window.openAdminSidebar();
+  }
+  if (swipeDist < -50) {
+    // Swipe Left -> Close Sidebar
+    window.closeAdminSidebar();
   }
 }

@@ -46,6 +46,13 @@ service cloud.firestore {
       allow create: if true;
       allow read: if true;
     }
+
+    /* ---------- NOTIFICATIONS ---------- */
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null && resource.data.email == request.auth.token.email;
+      allow create: if false; // Only backend can create
+      allow update, delete: if request.auth != null && resource.data.email == request.auth.token.email;
+    }
     
     /* ---------- VALIDATION ---------- */
 

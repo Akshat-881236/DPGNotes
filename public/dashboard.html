@@ -73,6 +73,14 @@
               <h4>Total Likes Received</h4>
               <p id="statLikes">0</p>
             </div>
+            <div class="stat-card">
+              <h4>Total Shares Generated</h4>
+              <p id="statShares">0</p>
+            </div>
+            <div class="stat-card">
+              <h4>Total Link Clicks</h4>
+              <p id="statCtr">0</p>
+            </div>
           </div>
           
           <div style="margin-top:2rem;">
@@ -173,7 +181,15 @@
         <!-- EXPLORE TAB -->
         <section id="exploreTab" class="dashboard-tab">
           <h2>Explore Resources</h2>
-          <input type="text" id="exploreSearch" placeholder="Search resources..." class="search-bar" />
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <input type="text" id="exploreSearch" placeholder="Search resources..." class="search-bar" style="margin-bottom: 0;" />
+            <select id="exploreSort" style="padding: 0.5rem; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="likes">Most Liked</option>
+              <option value="shares">Most Shared</option>
+            </select>
+          </div>
           <div class="resource-grid" id="exploreGrid">
             <!-- Rendered via JS -->
           </div>

@@ -68,8 +68,65 @@ tabBtns.forEach(btn => {
     
     // Close sidebar on mobile after click
     if (window.innerWidth <= 768) closeSidebar();
+    
+    // Load specific tab data
+    if (btn.dataset.target === "notificationTab") {
+      loadNotifications();
+    }
   });
 });
+
+// =========================================
+// NOTIFICATIONS ENGINE
+// =========================================
+async function loadNotifications() {
+  const notifList = document.getElementById("notificationList");
+  notifList.innerHTML = "<p>Loading notifications...</p>";
+  
+  if (!currentUser) return;
+  
+  try {
+    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    
+    let html = "";
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data.email === currentUser.email) {
+        let icon = "🔔";
+        if (data.type === "like") icon = "❤️";
+        if (data.type === "alert") icon = "⚠️";
+        if (data.type === "success") icon = "✅";
+        if (data.type === "milestone") icon = "🎉";
+        
+        let timeString = "Just now";
+        if (data.createdAt) {
+          timeString = new Date(data.createdAt.toMillis()).toLocaleString();
+        }
+        
+        html += `
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+            <div style="font-size: 1.5rem;">${icon}</div>
+            <div>
+              <h4 style="margin: 0 0 0.25rem 0; color: var(--text-light);">${data.title}</h4>
+              <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">${data.message}</p>
+              <small style="color: var(--primary-light); opacity: 0.8; margin-top: 0.5rem; display: block;">${timeString}</small>
+            </div>
+          </div>
+        `;
+      }
+    });
+    
+    if (html === "") {
+      notifList.innerHTML = "<p style='color: var(--text-muted);'>No new notifications.</p>";
+    } else {
+      notifList.innerHTML = html;
+    }
+  } catch (err) {
+    console.error("Failed to load notifications:", err);
+    notifList.innerHTML = "<p style='color: #ef4444;'>Failed to load notifications.</p>";
+  }
+}
 
 // =========================================
 // THEME ENGINE
@@ -161,7 +218,14 @@ async function loadProfile() {
       }
       
       if (userData.bio) {
-        document.getElementById("profileBio").innerText = userData.bio;
+        let htmlBio = userData.bio;
+        // Basic url detection that ignores URLs inside quotes
+        htmlBio = htmlBio.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" style="color:var(--primary-light); text-decoration:underline;">$2</a>');
+        // Convert newlines to <br> if there are no existing <br> tags (basic heuristic)
+        if (!htmlBio.includes("<br")) {
+          htmlBio = htmlBio.replace(/\n/g, "<br>");
+        }
+        document.getElementById("profileBio").innerHTML = htmlBio;
         document.getElementById("settingBio").value = userData.bio;
       }
       
@@ -190,6 +254,9 @@ async function loadProfile() {
   let count = 0;
   let totalLikes = 0;
   
+  let totalShares = 0;
+  let totalCtr = 0;
+  
   const delSelect = document.getElementById("contributorDelDocSelect");
   if (delSelect) {
     delSelect.innerHTML = '<option value="">-- Choose Document --</option>';
@@ -202,6 +269,8 @@ async function loadProfile() {
     if (data.userId === currentUser.uid) {
       count++;
       if (data.likes) totalLikes += data.likes.length;
+      if (data.shareCount) totalShares += data.shareCount;
+      if (data.ctrCount) totalCtr += data.ctrCount;
       
       window.myDocsCache.push({ id: doc.id, ...data });
       
@@ -216,6 +285,12 @@ async function loadProfile() {
   
   document.getElementById("statContributions").innerText = count;
   document.getElementById("statLikes").innerText = totalLikes;
+  
+  const statShares = document.getElementById("statShares");
+  if (statShares) statShares.innerText = totalShares;
+  
+  const statCtr = document.getElementById("statCtr");
+  if (statCtr) statCtr.innerText = totalCtr;
 }
 
 // =========================================
@@ -307,12 +382,31 @@ async function loadExplore() {
     uSnap.forEach(uDoc => { usersCache[uDoc.id] = uDoc.data(); });
   } catch(e) {}
   
-  const q = query(collection(db, "documents"), orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
+  const snap = await getDocs(query(collection(db, "documents")));
+  
+  let docsArray = [];
+  snap.forEach(doc => {
+    docsArray.push({ id: doc.id, ...doc.data() });
+  });
+  
+  const sortVal = document.getElementById("exploreSort") ? document.getElementById("exploreSort").value : "newest";
+  
+  docsArray.sort((a, b) => {
+    if (sortVal === "oldest") {
+      return (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0);
+    } else if (sortVal === "likes") {
+      return (b.likes ? b.likes.length : 0) - (a.likes ? a.likes.length : 0);
+    } else if (sortVal === "shares") {
+      return (b.shareCount || 0) - (a.shareCount || 0);
+    } else {
+      // newest
+      return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+    }
+  });
   
   exploreGrid.innerHTML = "";
-  snap.forEach(doc => {
-    const data = doc.data();
+  docsArray.forEach(data => {
+    const docId = data.id;
     const likes = data.likes || [];
     const hasLiked = likes.includes(currentUser.uid);
     
@@ -342,10 +436,10 @@ async function loadExplore() {
       <a href="https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}" target="_blank" class="open-btn">Open PDF</a>
       
       <div class="card-actions">
-        <button class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${doc.id}" data-owner="${data.userId}" data-title="${data.title}">
+        <button class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${docId}" data-owner="${data.userId}" data-title="${data.title}">
           ${hasLiked ? '❤️ Liked' : '🤍 Like'} (${likes.length})
         </button>
-        <button class="action-btn share-action share-btn" data-url="${window.location.origin}/index.html?view=${doc.id}" data-title="${data.title}">
+        <button class="action-btn share-action share-btn" data-url="${window.location.origin}/index.html?view=${docId}" data-title="${data.title}">
           🔗 Share
         </button>
       </div>
@@ -684,7 +778,7 @@ if(settingsForm) {
 // ENGAGEMENT (Like & Share)
 // =========================================
 function attachEngagementListeners() {
-  document.querySelectorAll(".like-btn").forEach(btn => {
+  document.querySelectorAll(".like-action").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       const docId = btn.dataset.id;
       const title = btn.dataset.title;
@@ -730,6 +824,15 @@ function attachEngagementListeners() {
                body: JSON.stringify({ email: ownerEmail, resourceTitle: title, likerName: currentUser.displayName })
              }).catch(e => console.error("Email API failed:", e));
              
+             // Create in-app notification
+             addDoc(collection(db, "notifications"), {
+               email: ownerEmail,
+               type: "like",
+               title: "New Like! ❤️",
+               message: `${currentUser.displayName || "Someone"} liked your resource "${title}"`,
+               createdAt: serverTimestamp()
+             }).catch(e => console.error(e));
+             
              // 2. 30+ Likes Milestone Check
              // Query all documents by this owner
              const qOwner = query(collection(db, "documents"));
@@ -746,6 +849,14 @@ function attachEngagementListeners() {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: ownerEmail, name: ownerName })
+                }).catch(e => console.error(e));
+                
+                addDoc(collection(db, "notifications"), {
+                  email: ownerEmail,
+                  type: "milestone",
+                  title: "🎉 Milestone Reached!",
+                  message: "Your resources have reached 30 total likes! Keep up the great work.",
+                  createdAt: serverTimestamp()
                 }).catch(e => console.error(e));
              }
            }
@@ -801,6 +912,15 @@ function attachEngagementListeners() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: currentUser.email, name: currentUser.displayName })
               }).catch(e => console.error(e));
+              
+              // In-app milestone notification
+              addDoc(collection(db, "notifications"), {
+                email: currentUser.email,
+                type: "milestone",
+                title: "🎉 Super Sharer!",
+                message: "You've shared 15 resources! Thanks for spreading the word.",
+                createdAt: serverTimestamp()
+              }).catch(e => console.error(e));
             }
           });
         } catch (err) {
@@ -808,5 +928,29 @@ function attachEngagementListeners() {
         }
       }
     });
+  });
+}
+
+// Live Search for Explore Tab
+const exploreSearchInput = document.getElementById('exploreSearch');
+if (exploreSearchInput) {
+  exploreSearchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('#exploreGrid .resource-card');
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      if (text.includes(query)) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+}
+
+const exploreSortSelect = document.getElementById('exploreSort');
+if (exploreSortSelect) {
+  exploreSortSelect.addEventListener('change', () => {
+    loadExplore();
   });
 }

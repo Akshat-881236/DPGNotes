@@ -911,7 +911,7 @@ function applyURLFilters(){
     }
 
     renderResources(
-      filtered
+      sortDocuments(filtered)
     );
 
   }catch(error){
@@ -922,9 +922,26 @@ function applyURLFilters(){
     );
 
     renderResources(
-      allDocuments
+      sortDocuments(allDocuments)
     );
   }
+}
+
+function sortDocuments(docsArray) {
+  const sortVal = document.getElementById("globalSort") ? document.getElementById("globalSort").value : "newest";
+  
+  return [...docsArray].sort((a, b) => {
+    if (sortVal === "oldest") {
+      return (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0);
+    } else if (sortVal === "likes") {
+      return (b.likes ? b.likes.length : 0) - (a.likes ? a.likes.length : 0);
+    } else if (sortVal === "shares") {
+      return (b.shareCount || 0) - (a.shareCount || 0);
+    } else {
+      // newest
+      return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+    }
+  });
 }
 
 /* =========================================
@@ -965,6 +982,15 @@ if (globalSearch) {
 
   if(addDocBtn) addDocBtn.addEventListener("click", openModal);
   if(closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
+  
+  const globalSortSelect = document.getElementById("globalSort");
+  if (globalSortSelect) {
+    globalSortSelect.addEventListener("change", () => {
+      // Trigger the search input event to re-filter and re-sort
+      globalSearch.dispatchEvent(new Event("input"));
+    });
+  }
+  
   globalSearch.addEventListener(
     "input",
   (e)=>{
@@ -1004,7 +1030,7 @@ if (globalSearch) {
       );
     });
 
-    renderResources(filtered);
+    renderResources(sortDocuments(filtered));
   }
 );
 });
@@ -1451,5 +1477,20 @@ Timestamp:
 ${new Date().toISOString()}`
     );
   };
+
+  // Live Search & Filtering
+  const gSearch = document.getElementById("globalSearch");
+  if (gSearch) {
+    gSearch.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allDocuments.filter(doc => 
+        (doc.title && doc.title.toLowerCase().includes(query)) ||
+        (doc.description && doc.description.toLowerCase().includes(query)) ||
+        (doc.discipline && doc.discipline.toLowerCase().includes(query)) ||
+        (doc.tags && doc.tags.some(t => t.toLowerCase().includes(query)))
+      );
+      renderResources(filtered);
+    });
+  }
 
 })();
