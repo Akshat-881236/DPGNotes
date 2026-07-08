@@ -7,7 +7,7 @@
    FIREBASE
 ========================================= */
 
-import { initializeApp }
+import { initializeApp, getApps, getApp }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
 import {
@@ -15,8 +15,6 @@ import {
   getAuth,
 
   GoogleAuthProvider,
-
-  GithubAuthProvider,
 
   signInWithPopup,
 
@@ -26,6 +24,14 @@ import {
 
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+// =========================================
+// THEME ENGINE (Global Load)
+// =========================================
+const savedTheme = localStorage.getItem("dpgTheme");
+if (savedTheme && savedTheme !== "default") {
+  document.body.classList.add(`theme-${savedTheme}`);
+}
 
 import {
 
@@ -43,7 +49,11 @@ import {
 
   limit,
 
-  serverTimestamp
+  serverTimestamp,
+
+  getDoc,
+
+  doc
 
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -77,8 +87,7 @@ const firebaseConfig = {
    INIT
 ========================================= */
 
-const app =
-  initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 const auth =
   getAuth(app);
@@ -95,9 +104,6 @@ const PDF_VIEWER =
 
 const googleProvider =
   new GoogleAuthProvider();
-
-const githubProvider =
-  new GithubAuthProvider();
 
 /* =========================================
    DOM
@@ -116,24 +122,18 @@ const categoryButtons =
     ".category-strip button"
   );
 
+const uploadForm =
+  document.getElementById(
+    "uploadForm"
+  );
 const googleLogin =
   document.getElementById(
     "googleLogin"
   );
 
-const githubLogin =
-  document.getElementById(
-    "githubLogin"
-  );
-
 const globalSearch =
   document.getElementById(
     "globalSearch"
-  );
-
-const uploadForm =
-  document.getElementById(
-    "uploadForm"
   );
 
 const latestResources =
@@ -163,6 +163,26 @@ const placementResources =
 let currentUser = null;
 
 let allDocuments = [];
+let usersCache = {};
+
+/* =========================================
+   ACTIVITY LOGGING
+========================================= */
+async function logActivity(action, details = "") {
+  try {
+    if (!currentUser) return;
+    await addDoc(collection(db, "activity_logs"), {
+      userId: currentUser.uid,
+      name: currentUser.displayName || currentUser.email,
+      action: action,
+      details: details,
+      timestamp: serverTimestamp()
+    });
+  } catch(e) { console.error("Log failed", e); }
+}
+
+window.usersCache = usersCache;
+window.logActivity = logActivity;
 
 /* =========================================
    URL PARAM ENGINE
@@ -216,6 +236,32 @@ getParam("ref");
 const urlUploader =
 getParam("uploader");
 
+const urlView = getParam("view");
+
+/* -----------------------------------------
+   AUTO-VIEW SHARED PDF
+----------------------------------------- */
+if (urlView) {
+  (async () => {
+    try {
+      const docSnap = await getDoc(doc(db, "documents", urlView));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(Array.isArray(data.tags) ? data.tags.join(", ") : "")}`;
+        
+        // Redirect to viewer
+        window.location.replace(viewerUrl);
+      } else {
+        alert("This shared document is no longer available.");
+        // Remove param from URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    } catch(err) {
+      console.error("Failed to load shared document:", err);
+    }
+  })();
+}
+
 /* -----------------------------------------
    OPTIONAL DEBUG
 ----------------------------------------- */
@@ -258,8 +304,9 @@ let authMode = "login";
 
 /* GOOGLE */
 
-googleLogin.addEventListener(
-  "click",
+if (googleLogin) {
+  googleLogin.addEventListener(
+    "click",
   async () => {
 
     try {
@@ -274,64 +321,69 @@ googleLogin.addEventListener(
       }
 
       // LOGIN
-
       await signInWithPopup(
         auth,
         googleProvider
       );
+      
+      // Activity logged in onAuthStateChanged
 
     } catch(error){
 
       console.log(error);
     }
-  }
-);
+  });
+}
 
-/* GITHUB */
-
-githubLogin.addEventListener(
-  "click",
-  async () => {
-
-    try {
-
-      await signInWithPopup(
-        auth,
-        githubProvider
-      );
-
-    } catch(error){
-
-      console.log(error);
-    }
-  }
-);
+/* GITHUB LOGIN REMOVED */
 
 /* AUTH STATE */
 
 onAuthStateChanged(
   auth,
-  (user)=>{
-
+  async (user)=>{
     if(user){
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          if (userData.isBlocked) {
+            if (userData.suspendedUntil && userData.suspendedUntil <= Date.now()) {
+              // Suspension expired! Auto-unblock.
+              await updateDoc(userRef, { isBlocked: false, suspendedUntil: null });
+            } else {
+              const msg = (userData.suspendedUntil && userData.suspendedUntil > Date.now()) 
+                ? `Your account is suspended for ${Math.ceil((userData.suspendedUntil - Date.now()) / 86400000)} more days.`
+                : "Your account has been permanently blocked by the Administrator.";
+              alert(msg + " Please contact support.");
+              await signOut(auth);
+              return;
+            }
+          }
+        }
+      } catch (e) { console.error(e); }
 
+      const isNewLogin = !currentUser;
       currentUser = user;
-
-      googleLogin.innerHTML =
-      "Logout";
-
-      githubLogin.style.display =
-      "none";
-
+      if (googleLogin) googleLogin.innerHTML = "Logout";
+      
+      if (isNewLogin) logActivity("LOGIN", "Logged into DPGNotes");
+      
+      const isDashboard = window.location.pathname.endsWith("dashboard.html");
+      const isAdmin = window.location.pathname.endsWith("admin.html");
+      if (!isDashboard && !isAdmin) {
+        window.location.href = "dashboard.html";
+      }
     }else{
-
+      if (currentUser) logActivity("LOGOUT", "User logged out");
       currentUser = null;
-
-      googleLogin.innerHTML =
-      "Google";
-
-      githubLogin.style.display =
-      "flex";
+      if (googleLogin) googleLogin.innerHTML = "Google";
+      
+      const isDashboard = window.location.pathname.endsWith("dashboard.html");
+      if (isDashboard) {
+        window.location.href = "index.html";
+      }
     }
   }
 );
@@ -517,6 +569,16 @@ function createCard(data){
     <h3>
       ${data.title}
     </h3>
+    
+    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+      ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].profilePic 
+        ? `<img src="${window.usersCache[data.userId].profilePic}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">` 
+        : (window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].photoURL ? `<img src="${window.usersCache[data.userId].photoURL}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">` : `<div style="width:24px; height:24px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:12px;">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
+      }
+      <span>By ${data.userName || "Contributor"}</span>
+      ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].linkedin ? `<a href="${window.usersCache[data.userId].linkedin}" target="_blank" style="color:#0077b5; text-decoration:none;" title="LinkedIn">🔗</a>` : ""}
+      ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].github ? `<a href="${window.usersCache[data.userId].github}" target="_blank" style="color:#fff; text-decoration:none;" title="GitHub">🐙</a>` : ""}
+    </div>
 
     <p>
       ${data.description}
@@ -534,13 +596,54 @@ function createCard(data){
 
     </div>
 
-    <a href="https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(
-    Array.isArray(data.tags)
-    ? data.tags.join(", ")
-    : ""
-  )}"target="_blank" class="open-btn">Open PDF</a></article>
+    <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
+      <span title="Total Likes">🤍 ${data.likes ? data.likes.length : 0}</span>
+      <span title="Total Shares Generated">🔗 ${data.shareCount || 0}</span>
+      <span title="Link Clicks (CTR)">👀 ${data.ctrCount || 0}</span>
+    </div>
+
+    <a href="https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(
+    Array.isArray(data.tags) ? data.tags.join(", ") : ""
+    )}" target="_blank" class="open-btn" onclick="if(window.logActivity) window.logActivity('VIEW', 'Viewed document: ${data.title}')">Open PDF</a>
+  
+    <div style="display:flex; justify-content:space-between; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.05);">
+      <button onclick="alert('Please login via Dashboard to like this resource.')" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-weight:bold;">🤍 Like</button>
+      <button onclick="handleShare('${data.id}', '${data.title}', '${data.category}', '${data.discipline}', '${data.userName}', '${data.pdfUrl}', '${data.description}', '${Array.isArray(data.tags) ? data.tags.join(", ") : ""}')" style="background:transparent; border:none; color:var(--primary); cursor:pointer; font-weight:bold;">🔗 Share</button>
+    </div>
+  </article>
 
   `;
+}
+
+// Global Share Handler for Token Engine
+window.handleShare = async function(docId, title, category, discipline, uploader, pdfUrl, description, tags) {
+  const btn = event.currentTarget;
+  const originalText = btn.innerText;
+  btn.innerText = "⏳ Generating...";
+  try {
+    const res = await fetch("http://localhost:5000/api/share/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ docId, title, category, discipline, uploader, pdfUrl, description, tags })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      const shareUrl = data.shareUrl;
+      if (navigator.share) {
+        await navigator.share({ title: `Check out ${title} on DPGNotes`, url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Smart Link copied to clipboard!");
+      }
+      btn.innerText = "✅ Shared";
+    } else {
+      throw new Error();
+    }
+  } catch (e) {
+    alert("Failed to generate share link.");
+    btn.innerText = originalText;
+  }
+  setTimeout(() => btn.innerText = originalText, 3000);
 }
 
 /* =========================================
@@ -630,8 +733,12 @@ function renderResources(data){
 ========================================= */
 
 async function fetchDocuments(){
-
   try{
+    // PRELOAD USERS CACHE
+    const uSnap = await getDocs(collection(db, "users"));
+    uSnap.forEach(uDoc => {
+      usersCache[uDoc.id] = uDoc.data();
+    });
 
     const q = query(
 
@@ -664,10 +771,73 @@ async function fetchDocuments(){
     });
 
     applyURLFilters();
+    renderLeaderboard();
 
   }catch(error){
 
     console.log(error);
+  }
+}
+
+async function renderLeaderboard() {
+  const list = document.getElementById("indexLeaderboardList");
+  if (!list) return;
+  
+  const userStats = {};
+  allDocuments.forEach(doc => {
+    const uid = doc.userId;
+    if (!uid) return;
+    if (!userStats[uid]) {
+      userStats[uid] = { name: doc.userName || "Unknown", likes: 0, uploads: 0 };
+    }
+    userStats[uid].uploads++;
+    if (doc.likes) userStats[uid].likes += doc.likes.length;
+  });
+  
+  const sortedUsers = Object.entries(userStats)
+    .map(([uid, stats]) => ({ uid, ...stats }))
+    .sort((a, b) => b.likes - a.likes || b.uploads - a.uploads)
+    .slice(0, 3);
+    
+  if (sortedUsers.length === 0) {
+    list.innerHTML = `<li style="color:var(--text-muted); text-align:center;">No contributors yet.</li>`;
+    return;
+  }
+  
+  list.innerHTML = "";
+  for (let i = 0; i < sortedUsers.length; i++) {
+    const user = sortedUsers[i];
+    const badges = ["🥇", "🥈", "🥉"];
+    
+    // Fetch profile photo from users collection
+    let photoHtml = `<div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;">👤</div>`;
+    try {
+      // NOTE: getDoc is not imported by default in script.js, we need to make sure we have access to it or skip photo.
+      // Since script.js doesn't import getDoc from firestore, I'll fallback to initial if we can't get it.
+      // I'll add the getDoc import to script.js shortly.
+      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
+      const uDoc = await getDoc(doc(db, "users", user.uid));
+      if (uDoc.exists() && uDoc.data().photoURL) {
+         photoHtml = `<img src="${uDoc.data().photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
+      }
+    } catch(e) {}
+
+    const li = document.createElement("li");
+    li.style.display = "flex";
+    li.style.alignItems = "center";
+    li.style.gap = "1rem";
+    li.style.padding = "0.8rem 0";
+    li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+    
+    li.innerHTML = `
+      <div style="font-size:1.5rem;">${badges[i]}</div>
+      ${photoHtml}
+      <div style="flex-grow:1;">
+        <h4 style="margin:0; color:var(--text-light);">${user.name}</h4>
+        <span style="font-size:0.85rem; color:var(--text-muted);">${user.likes} Likes • ${user.uploads} Uploads</span>
+      </div>
+    `;
+    list.appendChild(li);
   }
 }
 
@@ -759,8 +929,42 @@ function applyURLFilters(){
    SEARCH
 ========================================= */
 
-globalSearch.addEventListener(
-  "input",
+if (globalSearch) {
+  document.addEventListener("DOMContentLoaded", async ()=>{
+  // Check for Share Token
+  const urlParams = new URLSearchParams(window.location.search);
+  const shareToken = urlParams.get('share');
+  if (shareToken) {
+    document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:var(--primary); font-family:var(--font-heading);'>Opening Shared Document...</h2>";
+    try {
+      const res = await fetch(`http://localhost:5000/api/share/click?token=${shareToken}`);
+      const data = await res.json();
+      if (res.ok && data.documentData) {
+        const d = data.documentData;
+        const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
+        window.location.href = viewerUrl;
+        return;
+      } else {
+        alert("Share link expired or invalid.");
+        window.location.href = "index.html";
+      }
+    } catch (e) {
+      alert("Network error.");
+      window.location.href = "index.html";
+    }
+    return;
+  }
+
+  // Normal initialization
+  initFirebase();
+  loadAllUsers();
+  loadDocuments();
+  setupFilters();
+
+  if(addDocBtn) addDocBtn.addEventListener("click", openModal);
+  if(closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
+  globalSearch.addEventListener(
+    "input",
   (e)=>{
 
     const value =
@@ -801,6 +1005,7 @@ globalSearch.addEventListener(
     renderResources(filtered);
   }
 );
+}
 
 /* =========================================
    CATEGORY FILTER
@@ -838,107 +1043,7 @@ categoryButtons.forEach((button)=>{
    UPLOAD
 ========================================= */
 
-uploadForm.addEventListener(
-  "submit",
-  async (e)=>{
-
-    e.preventDefault();
-
-    if(!currentUser){
-
-      alert(
-        "Please login first"
-      );
-
-      return;
-    }
-
-    try{
-
-      const data = {
-
-        category:
-        document.getElementById(
-          "category"
-        ).value,
-
-        discipline:
-        document.getElementById(
-          "discipline"
-        ).value,
-
-        title:
-        document.getElementById(
-          "title"
-        ).value,
-
-        description:
-        document.getElementById(
-          "description"
-        ).value,
-
-        tags:
-        document
-          .getElementById(
-            "tags"
-          )
-          .value
-          .split(",")
-          .map(tag => tag.trim())
-          .filter(tag => tag !== ""),
-
-        documentId:
-        document.getElementById(
-          "documentId"
-        ).value,
-
-        pdfUrl:
-        document.getElementById(
-          "pdfUrl"
-        ).value,
-
-        userId:
-        currentUser.uid,
-
-        userName:
-        currentUser.displayName,
-
-        createdAt:
-        serverTimestamp()
-      };
-
-      await addDoc(
-
-        collection(
-          db,
-          "documents"
-        ),
-
-        data
-      );
-
-      alert(
-        "Resource Uploaded"
-      );
-
-      uploadForm.reset();
-
-      fetchDocuments();
-
-      openPage(
-        "resourcesPage"
-      );
-
-    }catch(error){
-
-      console.log(error);
-
-      alert(
-        "Upload Failed"
-      );
-    }
-  }
-);
+// Upload logic moved to dashboard.js
 
 /* =========================================
    INIT
@@ -962,7 +1067,7 @@ try{
 
     "placementPage",
 
-    "contributionPage"
+    "leaderboardPage"
   ];
 
   if(

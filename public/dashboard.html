@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>DPGNotes | Contributor Dashboard</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="dashboard.js"></script>
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-shell">
+    
+    <!-- OVERLAY FOR MOBILE -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">D</div>
+        <div class="brand-text"><h2>Dashboard</h2></div>
+        <button id="closeSidebarBtn" class="close-btn mobile-only">×</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="tab-btn active" data-target="profileTab">Profile</button>
+        <button class="tab-btn" data-target="contributionTab">Contribution</button>
+        <button class="tab-btn" data-target="exploreTab">Explore</button>
+        <button class="tab-btn" data-target="settingsTab">Settings</button>
+        <button class="tab-btn" data-target="notificationTab">Notification</button>
+        <button class="tab-btn logout-btn" id="logoutBtn">Log Out</button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="dashboard-main" id="dashboardMain">
+      
+      <!-- MOBILE HEADER -->
+      <header class="mobile-header mobile-only">
+        <button id="openSidebarBtn" class="hamburger-btn">☰</button>
+        <div class="brand-text"><h2>DPGNotes</h2></div>
+      </header>
+
+      <!-- TABS CONTAINER -->
+      <div class="tabs-container">
+        
+        <!-- PROFILE TAB -->
+        <section id="profileTab" class="dashboard-tab active">
+          <h2>Your Profile</h2>
+          <div class="profile-card">
+            <div class="profile-avatar" id="profileAvatar">👤</div>
+            <div class="profile-info">
+              <h3 id="profileName">Loading...</h3>
+              <p id="profileEmail">Loading...</p>
+              <p id="profileBio" class="bio-text">Welcome to your dashboard!</p>
+              <div id="profileSocialLinks" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                <!-- Social links injected here -->
+              </div>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h4>Contributions</h4>
+              <p id="statContributions">0</p>
+            </div>
+            <div class="stat-card">
+              <h4>Total Likes Received</h4>
+              <p id="statLikes">0</p>
+            </div>
+          </div>
+          
+          <div style="margin-top:2rem;">
+            <h2>Top Contributors</h2>
+            <ul id="leaderboardList" style="list-style:none; padding:0; background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:1rem;">
+              <li style="color:var(--text-muted);">Loading Leaderboard...</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- CONTRIBUTION TAB -->
+        <section id="contributionTab" class="dashboard-tab">
+          <h2>Upload Resource</h2>
+          <form id="uploadForm" class="upload-form">
+            <div class="form-grid">
+              <select id="category" required>
+                <option value="">Select Category</option>
+                <option value="SE">Sessional Exam</option>
+                <option value="SP">Sample Paper</option>
+                <option value="UE">University Exam</option>
+                <option value="EV">Event Material</option>
+                <option value="T&N">Tutorial & Notes</option>
+                <option value="IQ">Interview Questions</option>
+                <option value="A&LR">Aptitude & LR</option>
+                <option value="PQ">Placement Question</option>
+              </select>
+              <input type="text" id="discipline" placeholder="Discipline" required />
+              <input type="text" id="title" placeholder="Document Title" required />
+              <textarea id="description" placeholder="Description" required></textarea>
+              <input type="text" id="tags" placeholder="Tags separated by commas" required />
+              <input type="text" id="documentId" placeholder="Document ID" required />
+              
+              <p class="helper-text">Upload PDF File OR enter a Link</p>
+              <input type="file" id="pdfFile" accept="application/pdf" />
+              <input type="url" id="pdfUrl" placeholder="Or enter PDF URL directly" />
+              
+              <button type="submit" class="upload-btn">Upload Document</button>
+            </div>
+          </form>
+          
+          <!-- COMPRESSION MODAL -->
+          <div id="compressionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; align-items:center; justify-content:center;">
+            <div style="background:var(--surface); padding:2rem; border-radius:var(--radius-md); border:1px solid var(--border); width:90%; max-width:500px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+              <h2 style="color:var(--primary-light); margin-bottom:1rem;">File Too Large! ⚠️</h2>
+              <p style="color:var(--text-muted); margin-bottom:1.5rem;">Your file exceeds 9.5MB. Please compress it using our built-in ILovePDF compressor before uploading.</p>
+              
+              <div style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;">
+                <label style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.05); padding:1rem; border-radius:var(--radius-sm); cursor:pointer;">
+                  <input type="radio" name="compressQuality" value="extreme" />
+                  <div style="text-align:left;">
+                    <strong style="display:block;">Extreme Compression</strong>
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Less quality, high compression</span>
+                  </div>
+                </label>
+                <label style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.05); padding:1rem; border-radius:var(--radius-sm); cursor:pointer;">
+                  <input type="radio" name="compressQuality" value="recommended" checked />
+                  <div style="text-align:left;">
+                    <strong style="display:block;">Recommended Compression</strong>
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Good quality, good compression</span>
+                  </div>
+                </label>
+                <label style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.05); padding:1rem; border-radius:var(--radius-sm); cursor:pointer;">
+                  <input type="radio" name="compressQuality" value="low" />
+                  <div style="text-align:left;">
+                    <strong style="display:block;">Low Compression</strong>
+                    <span style="font-size:0.8rem; color:var(--text-muted);">High quality, less compression</span>
+                  </div>
+                </label>
+              </div>
+              
+              <div style="display:flex; gap:1rem; justify-content:center;">
+                <button type="button" id="cancelCompressBtn" style="padding:0.75rem 1.5rem; border-radius:var(--radius-sm); border:1px solid var(--border); background:transparent; color:white; cursor:pointer;">Cancel</button>
+                <button type="button" id="startCompressBtn" class="upload-btn" style="flex:1;">Compress Now</button>
+              </div>
+            </div>
+          </div>
+          <!-- END COMPRESSION MODAL -->
+          
+          <div style="margin-top: 3rem;">
+            <h2>Delete Uploaded Document</h2>
+            <form id="contributorDeleteForm" class="upload-form">
+              <div class="form-grid">
+                <label>Select Document</label>
+                <select id="contributorDelDocSelect" required style="padding:0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(0,0,0,0.2); color:white;">
+                  <option value="">-- Choose Document --</option>
+                  <!-- Populated via JS -->
+                </select>
+                
+                <label>Reason for deletion (Optional)</label>
+                <textarea id="contributorDelReason" placeholder="Enter custom reason. If empty, a default reason is used."></textarea>
+                
+                <button type="submit" class="upload-btn" style="background:#ef4444;">Delete & Notify</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- EXPLORE TAB -->
+        <section id="exploreTab" class="dashboard-tab">
+          <h2>Explore Resources</h2>
+          <input type="text" id="exploreSearch" placeholder="Search resources..." class="search-bar" />
+          <div class="resource-grid" id="exploreGrid">
+            <!-- Rendered via JS -->
+          </div>
+        </section>
+
+        <!-- SETTINGS TAB -->
+        <section id="settingsTab" class="dashboard-tab">
+          <h2>Settings</h2>
+          <form id="settingsForm" class="upload-form">
+            <div class="form-grid">
+              <label>Profile Photo</label>
+              <input type="file" id="settingPhoto" accept="image/*" />
+              
+              <label>Bio</label>
+              <textarea id="settingBio" placeholder="Tell us about yourself"></textarea>
+              
+              <label>LinkedIn URL</label>
+              <input type="url" id="settingLinkedin" placeholder="https://linkedin.com/in/..." />
+              
+              <label>GitHub URL</label>
+              <input type="url" id="settingGithub" placeholder="https://github.com/..." />
+              
+              <label>Theme</label>
+              <select id="settingTheme" style="padding:0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(0,0,0,0.2); color:white;">
+                <option value="default">Midnight Default</option>
+                <option value="ocean">Ocean Deep</option>
+                <option value="sunset">Sunset Glow</option>
+                <option value="forest">Emerald Forest</option>
+              </select>
+              
+              <button type="submit" class="upload-btn">Save Changes</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- NOTIFICATION TAB -->
+        <section id="notificationTab" class="dashboard-tab">
+          <h2>Notifications</h2>
+          <div class="notification-list" id="notificationList">
+            <p style="color: var(--text-muted);">No new notifications.</p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

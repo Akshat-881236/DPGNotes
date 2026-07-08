@@ -212,11 +212,13 @@
   }
 
   </script>
+  <!--
   <script src="https://akshat-881236.github.io/TrackerJS/akshatnetworkhub.min.js" defer></script>
   <script src="https://akshat-881236.github.io/TrackerJS/akshat-add-nav.js" defer></script>
   <script src="https://akshat-881236.github.io/TrackerJS/redirect.js" defer></script>
   <script src="https://akshat-881236.github.io/TrackerJS/global-subscribe.js"></script>
   <script src="https://akshat-881236.github.io/TrackerJS/TrackID/track_id_100.111.js"></script>
+  -->
 </head>
 
 <body>
@@ -256,13 +258,6 @@
           class="auth-btn"
         >
           Google
-        </button>
-
-        <button
-          id="githubLogin"
-          class="auth-btn secondary"
-        >
-          GitHub
         </button>
 
       </div>
@@ -571,120 +566,27 @@
       </section>
 
       <!-- ========================= -->
-      <!-- CONTRIBUTION -->
+      <!-- LEADERBOARD -->
       <!-- ========================= -->
 
       <section
         class="spa-page"
-        id="contributionPage"
+        id="leaderboardPage"
       >
-
         <div class="section-header">
-
           <div>
-
             <span class="section-label">
-              Community
+              Hall of Fame
             </span>
-
             <h2>
-              Upload Resource
+              Top Contributors
             </h2>
-
           </div>
-
         </div>
 
-        <form id="uploadForm">
-
-          <div class="form-grid">
-
-            <select id="category">
-
-              <option value="">
-                Select Category
-              </option>
-
-              <option value="SE">
-                Sessional Exam
-              </option>
-
-              <option value="SP">
-                Sample Paper
-              </option>
-
-              <option value="UE">
-                University Exam
-              </option>
-
-              <option value="EV">
-                Event Material
-              </option>
-
-              <option value="T&N">
-                Tutorial & Notes
-              </option>
-
-              <option value="IQ">
-                Interview Questions
-              </option>
-
-              <option value="A&LR">
-                Aptitude & LR
-              </option>
-
-              <option value="PQ">
-                Placement Question
-              </option>
-
-            </select>
-
-            <input
-              type="text"
-              id="discipline"
-              placeholder="Discipline" required
-            />
-
-            <input
-              type="text"
-              id="title"
-              placeholder="Document Title" required
-            />
-
-            <textarea
-              id="description"
-              placeholder="Description" required
-            ></textarea>
-
-            <input
-              type="text"
-              id="tags"
-              placeholder="Tags separated by commas" required
-            />
-
-            <input
-              type="text"
-              id="documentId"
-              placeholder="Document ID" required
-            />
-
-            <input
-              type="url"
-              id="pdfUrl"
-              placeholder="PDF URL" required
-            />
-
-            <button
-              type="submit"
-              class="upload-btn"
-            >
-              Upload Resource
-            </button>
-
-          </div>
-
-        </form>
-
+        <ul id="indexLeaderboardList" style="list-style:none; padding:0; background:var(--surface); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:1.5rem; max-width: 600px; margin: 0 auto;">
+          <li style="color:var(--text-muted); text-align:center;">Loading Leaderboard...</li>
+        </ul>
       </section>
 
     </main>
@@ -721,19 +623,21 @@
 
       <button data-page="placementPage">
 
-        <span>⌘</span>
+        <span>💼</span>
 
         <small>Placement</small>
 
       </button>
 
-      <button data-page="contributionPage">
+      <button data-page="leaderboardPage">
 
-        <span>＋</span>
+        <span>🏆</span>
 
-        <small>Upload</small>
+        <small>Top Users</small>
 
       </button>
+
+      <!-- CONTRIBUTION NAV REMOVED -->
 
     </nav>
 

@@ -774,16 +774,23 @@ The Smart PDF Viewer can detect:
 
 ---
 
+# 🚀 Recent Updates
+
+- **Admin Portal Dashboard:** Comprehensive CMS for managing users, tracking CTR/Shares, blocking/suspending users, and deleting resources.
+- **Dynamic Share Engine:** Unique share tokens (e.g. `?share=abcXYZ`) with auto-routing to PDF Viewer.
+- **Engagement Analytics:** Track Clicks (CTR), Shares, and Likes dynamically on every resource.
+- **Smart PDF Compression:** Frontend integration warning users and offering ILovePdf compression tools for files > 9.5MB.
+- **Cloudinary Integration:** User profiles now support custom Profile Photos securely hosted on Cloudinary.
+- **Dynamic Sitemap:** Built-in XML Sitemap Engine (`/sitemap.xml`) to submit dynamically rendered PDF Viewer links to Google Search Console.
+
+---
+
 # 📌 Future Plans
 
-- Admin Dashboard
 - AI Search Engine
 - OCR PDF Analysis
 - Offline Reading
-- User Profiles
-- Analytics Dashboard
-
----
+- Dedicated User Profiles Page
 
 # 👨‍💻 Developer
 

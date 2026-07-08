@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="ANH.png" type="image/png" />
+  <title>DPGNotes | Enterprise Admin</title>
+  
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      --admin-bg: #0f111a;
+      --admin-surface: rgba(20, 24, 39, 0.7);
+      --admin-border: rgba(255, 255, 255, 0.08);
+      --admin-primary: #3b82f6;
+      --admin-danger: #ef4444;
+      --admin-success: #10b981;
+      --admin-warning: #f59e0b;
+      --admin-text: #f8fafc;
+      --admin-muted: #94a3b8;
+    }
+    
+    body {
+      background: var(--admin-bg);
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      color: var(--admin-text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* LOGIN & OTP SCREENS */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 50%),
+                  radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.05), transparent 50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      background-color: var(--admin-bg);
+    }
+    .auth-card {
+      background: var(--admin-surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--admin-border);
+      border-radius: 24px;
+      padding: 3rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .auth-card h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    .auth-card p {
+      color: var(--admin-muted);
+      margin-bottom: 2rem;
+    }
+    
+    /* DASHBOARD LAYOUT */
+    .admin-sidebar {
+      width: 280px;
+      background: var(--admin-surface);
+      border-right: 1px solid var(--admin-border);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      position: fixed;
+      height: 100vh;
+      backdrop-filter: blur(20px);
+    }
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+    }
+    .admin-brand i {
+      color: var(--admin-primary);
+      font-size: 2rem;
+    }
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .nav-link {
+      padding: 1rem;
+      border-radius: 12px;
+      color: var(--admin-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--admin-primary);
+    }
+    
+    .admin-main {
+      flex: 1;
+      margin-left: 280px;
+      padding: 2rem 4rem;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
+    .admin-header h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .stat-card {
+      background: var(--admin-surface);
+      border: 1px solid var(--admin-border);
+      padding: 1.5rem;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--admin-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    .stat-info h3 { margin: 0; font-size: 2rem; }
+    .stat-info p { margin: 0; color: var(--admin-muted); font-size: 0.9rem; }
+    
+    /* TABLES & FORMS */
+    .section-card {
+      background: var(--admin-surface);
+      border: 1px solid var(--admin-border);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .data-table th { 
+      padding: 1rem; 
+      color: var(--admin-muted); 
+      font-weight: 500;
+      border-bottom: 1px solid var(--admin-border);
+    }
+    .data-table td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      vertical-align: middle;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .badge.active { background: rgba(16, 185, 129, 0.1); color: var(--admin-success); }
+    .badge.blocked { background: rgba(239, 68, 68, 0.1); color: var(--admin-danger); }
+    .badge.suspended { background: rgba(245, 158, 11, 0.1); color: var(--admin-warning); }
+    
+    .action-group {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-action {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--admin-border);
+      color: var(--admin-text);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-action:hover { background: rgba(255,255,255,0.1); }
+    .btn-action.danger { color: var(--admin-danger); border-color: rgba(239, 68, 68, 0.2); }
+    .btn-action.danger:hover { background: var(--admin-danger); color: white; }
+    .btn-action.warn { color: var(--admin-warning); border-color: rgba(245, 158, 11, 0.2); }
+    .btn-action.warn:hover { background: var(--admin-warning); color: white; }
+    .btn-action.success { color: var(--admin-success); border-color: rgba(16, 185, 129, 0.2); }
+    .btn-action.success:hover { background: var(--admin-success); color: white; }
+    
+    .admin-input {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--admin-border);
+      border-radius: 12px;
+      color: white;
+      font-family: inherit;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+    .admin-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--admin-primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s;
+    }
+    .admin-btn:hover { opacity: 0.9; }
+
+    .step-container { display: none; }
+    .step-container.active { display: flex; }
+    
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.4s ease; }
+
+    @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+      display: none; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .modal-overlay.active { display: flex; }
+  </style>
+</head>
+<body>
+
+  <!-- AUTH LAYER -->
+  <div class="auth-overlay" id="authLayer">
+    <!-- STEP 1: LOGIN -->
+    <div id="step1" class="auth-card step-container active" style="flex-direction:column;">
+      <i class="ri-shield-keyhole-line" style="font-size: 3rem; color: var(--admin-primary); margin-bottom: 1rem;"></i>
+      <h2>Enterprise Admin</h2>
+      <p>Secure access required.</p>
+      <form id="adminLoginForm">
+        <input type="email" id="adminEmail" class="admin-input" placeholder="Admin Email" required />
+        <input type="password" id="adminPassword" class="admin-input" placeholder="Password" required />
+        <button type="submit" class="admin-btn">Send OTP Request</button>
+      </form>
+    </div>
+
+    <!-- STEP 2: OTP -->
+    <div id="step2" class="auth-card step-container" style="flex-direction:column;">
+      <i class="ri-mail-check-line" style="font-size: 3rem; color: var(--admin-success); margin-bottom: 1rem;"></i>
+      <h2>Verify OTP</h2>
+      <p>A secure code was sent to your email.</p>
+      <form id="adminOtpForm">
+        <input type="text" id="adminOtp" class="admin-input" placeholder="6-digit OTP code" required />
+        <button type="submit" class="admin-btn">Authenticate</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="dashboardLayer" style="display:none; width:100%;">
+    
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <i class="ri-triangle-fill"></i>
+        DPGNotes
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link active" onclick="switchTab('users')">
+          <i class="ri-group-line"></i> Contributors
+        </a>
+        <a class="nav-link" onclick="switchTab('content')">
+          <i class="ri-folder-shield-2-line"></i> Content Mgmt
+        </a>
+        <a class="nav-link" onclick="switchTab('logs')">
+          <i class="ri-history-line"></i> Activity Logs
+        </a>
+      </nav>
+      <div style="margin-top:auto;">
+        <button class="btn-action" style="width:100%; border-color:transparent; background:rgba(239,68,68,0.1); color:var(--admin-danger);" onclick="localStorage.removeItem('adminToken'); location.reload();">
+          <i class="ri-logout-circle-r-line"></i> Secure Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Command Center</h1>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="text-align:right;">
+            <div style="font-weight:600;">System Administrator</div>
+            <div style="font-size:0.8rem; color:var(--admin-muted);" id="adminStatusTxt">Session Active</div>
+          </div>
+          <div style="width:40px; height:40px; border-radius:50%; background:var(--admin-primary); display:flex; align-items:center; justify-content:center; font-weight:bold;">A</div>
+        </div>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="ri-user-star-line"></i></div>
+          <div class="stat-info"><h3 id="statUsers">0</h3><p>Total Contributors</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="color:var(--admin-success); background:rgba(16,185,129,0.1);"><i class="ri-file-pdf-line"></i></div>
+          <div class="stat-info"><h3 id="statDocs">0</h3><p>Hosted Resources</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="color:var(--admin-warning); background:rgba(245,158,11,0.1);"><i class="ri-share-forward-line"></i></div>
+          <div class="stat-info"><h3 id="statShares">0</h3><p>Total Shares Generated</p></div>
+        </div>
+      </div>
+
+      <!-- VIEW: USERS -->
+      <section id="view-users" class="view-section active">
+        <div class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">Contributor Management</h2>
+            <input type="text" id="userSearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search email...">
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Identity</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Uploads</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">Loading infrastructure...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: CONTENT -->
+      <section id="view-content" class="view-section">
+        <div class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">Enforce Document Deletion</h2>
+          </div>
+          <form id="deleteDocForm" style="max-width: 500px;">
+            <label style="color:var(--admin-muted); font-size:0.9rem; display:block; margin-bottom:0.5rem;">Select Contributor</label>
+            <select id="delContributorSelect" class="admin-input" required>
+              <option value="">-- Choose Contributor --</option>
+            </select>
+            
+            <label style="color:var(--admin-muted); font-size:0.9rem; display:block; margin-bottom:0.5rem;">Select Document</label>
+            <select id="delDocSelect" class="admin-input" required disabled>
+              <option value="">-- Choose Document --</option>
+            </select>
+            
+            <label style="color:var(--admin-muted); font-size:0.9rem; display:block; margin-bottom:0.5rem;">Reason for Enforced Deletion</label>
+            <textarea id="delReason" class="admin-input" style="resize:vertical; min-height:80px;" placeholder="Optional custom reason (50 - 150 chars)."></textarea>
+            
+            <button type="submit" class="admin-btn" id="deleteDocBtn" disabled style="background:var(--admin-danger);">Delete Resource & Notify</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- VIEW: LOGS -->
+      <section id="view-logs" class="view-section">
+        <div class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">System Audit Logs</h2>
+          </div>
+          <div style="overflow-x:auto; max-height: 500px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Identity</th>
+                  <th>Action</th>
+                  <th>Metadata</th>
+                </tr>
+              </thead>
+              <tbody id="activityLogsTableBody">
+                <tr><td colspan="4" style="text-align:center; color:var(--admin-muted);">Querying logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- DELETION MODAL -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="auth-card" style="max-width:450px;">
+      <i class="ri-alarm-warning-line" style="font-size: 3rem; color: var(--admin-danger); margin-bottom: 1rem;"></i>
+      <h2 style="color:var(--admin-danger);">Critical Action</h2>
+      <p>You are about to irreversibly delete <strong id="delTargetName"></strong> and ALL their hosted files.</p>
+      <form id="deleteConfirmForm">
+        <p style="font-size:0.85rem; color:var(--admin-warning);">An authorization key was sent to your email.</p>
+        <input type="text" id="deleteAuthKey" class="admin-input" placeholder="16-character Auth Key" required />
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+          <button type="button" class="admin-btn" style="background:rgba(255,255,255,0.1);" onclick="closeDeleteModal()">Cancel</button>
+          <button type="submit" class="admin-btn" style="background:var(--admin-danger);" id="confirmDeleteBtn">Execute Deletion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+  </script>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
