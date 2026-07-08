@@ -69,7 +69,16 @@ app.get('/sitemap.xml', async (req, res) => {
 try {
   let serviceAccount;
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    let envVar = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+    // If it doesn't start with '{', assume it is Base64 encoded
+    if (!envVar.startsWith('{')) {
+      envVar = Buffer.from(envVar, 'base64').toString('utf8');
+    }
+    
+    // Sometimes platforms escape newlines, so we ensure \n is properly handled for the private key
+    envVar = envVar.replace(/\\\\n/g, '\\n');
+    
+    serviceAccount = JSON.parse(envVar);
   } else {
     serviceAccount = require('./serviceAccountKey.json');
   }
