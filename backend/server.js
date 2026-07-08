@@ -19,6 +19,13 @@ app.use(cors());
 app.use(express.json());
 
 // ==========================================
+// ROUTES: HEALTH CHECK
+// ==========================================
+app.get('/', (req, res) => {
+  res.send('DPGNotes API is running successfully!');
+});
+
+// ==========================================
 // ROUTES: SITEMAP (SEO)
 // ==========================================
 app.get('/sitemap.xml', async (req, res) => {
