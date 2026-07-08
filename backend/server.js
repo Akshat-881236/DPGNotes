@@ -67,13 +67,19 @@ app.get('/sitemap.xml', async (req, res) => {
 // INIT FIREBASE ADMIN
 // ==========================================
 try {
-  const serviceAccount = require('./serviceAccountKey.json');
+  let serviceAccount;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    serviceAccount = require('./serviceAccountKey.json');
+  }
+  
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
   console.log("Firebase Admin Initialized.");
 } catch (error) {
-  console.error("Firebase Admin Initialization Error: Please provide a valid serviceAccountKey.json");
+  console.error("Firebase Admin Initialization Error: Please provide a valid serviceAccountKey.json or set FIREBASE_SERVICE_ACCOUNT environment variable. Details:", error.message);
 }
 const db = admin.firestore ? admin.firestore() : null;
 
