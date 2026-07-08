@@ -356,7 +356,7 @@ app.post('/api/share/generate', async (req, res) => {
       shareCount: admin.firestore.FieldValue.increment(1)
     });
 
-    res.json({ token, shareUrl: `http://localhost:3000/index.html?share=${token}` });
+    res.json({ token, shareUrl: `https://dpgnotes.web.app/index.html?share=${token}` });
   } catch (error) {
     console.error("Failed to generate share link:", error);
     res.status(500).json({ error: "Failed to generate share link" });
@@ -569,7 +569,7 @@ app.get('/sitemap.xml', async (req, res) => {
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
     
     // Add main static pages
-    const baseUrl = "https://dpg-notes-45564.web.app"; 
+    const baseUrl = "https://dpgnotes.web.app"; 
     xml += `  <url>\n    <loc>${baseUrl}/index.html</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
     xml += `  <url>\n    <loc>${baseUrl}/dashboard.html</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
     xml += `  <url>\n    <loc>${baseUrl}/admin.html</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.5</priority>\n  </url>\n`;

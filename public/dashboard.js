@@ -100,7 +100,7 @@ onAuthStateChanged(auth, async (user) => {
       
       if (!userSnap.exists()) {
         // First Login! Trigger Welcome Email
-        fetch("http://localhost:5000/api/email/welcome", {
+        fetch("https://dpgnotes.web.app/api/email/welcome", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email, name: user.displayName })
@@ -324,22 +324,30 @@ async function loadExplore() {
         <span class="discipline">${data.discipline}</span>
       </div>
       <h3>${data.title}</h3>
-      <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
-        <span>By ${data.userName || "Contributor"}</span>
-        ${usersCache[data.userId] && usersCache[data.userId].linkedin ? `<a href="${usersCache[data.userId].linkedin}" target="_blank" style="color:#0077b5; text-decoration:none;" title="LinkedIn">🔗</a>` : ""}
-        ${usersCache[data.userId] && usersCache[data.userId].github ? `<a href="${usersCache[data.userId].github}" target="_blank" style="color:#fff; text-decoration:none;" title="GitHub">🐙</a>` : ""}
+      <div class="card-author">
+        ${usersCache && usersCache[data.userId] && usersCache[data.userId].profilePic 
+          ? `<img src="${usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar">` 
+          : (usersCache && usersCache[data.userId] && usersCache[data.userId].photoURL ? `<img src="${usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar">` : `<div class="author-avatar-fallback">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
+        }
+        <span class="author-name">By ${data.userName || "Contributor"}</span>
+        <div class="author-socials">
+          ${usersCache[data.userId] && usersCache[data.userId].linkedin ? `<a href="${usersCache[data.userId].linkedin}" target="_blank" title="LinkedIn">🔗</a>` : ""}
+          ${usersCache[data.userId] && usersCache[data.userId].github ? `<a href="${usersCache[data.userId].github}" target="_blank" title="GitHub">🐙</a>` : ""}
+        </div>
       </div>
-      <p>${data.description}</p>
+      <p class="card-desc">${data.description}</p>
       <div class="tags">
         ${(data.tags || []).map(t => `<span>#${t}</span>`).join("")}
       </div>
       <a href="https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}" target="_blank" class="open-btn">Open PDF</a>
       
-      <div style="display:flex; justify-content:space-between; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.05);">
-        <button class="like-btn" data-id="${doc.id}" data-owner="${data.userId}" data-title="${data.title}" style="background:transparent; border:none; cursor:pointer; font-weight:bold; color: ${hasLiked ? 'var(--primary-light)' : 'var(--text-muted)'};">
+      <div class="card-actions">
+        <button class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${doc.id}" data-owner="${data.userId}" data-title="${data.title}">
           ${hasLiked ? '❤️ Liked' : '🤍 Like'} (${likes.length})
         </button>
-        <button class="share-btn" data-url="${window.location.origin}/index.html?view=${doc.id}" data-title="${data.title}" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer;">🔗 Share</button>
+        <button class="action-btn share-action share-btn" data-url="${window.location.origin}/index.html?view=${doc.id}" data-title="${data.title}">
+          🔗 Share
+        </button>
       </div>
     `;
     
@@ -397,7 +405,7 @@ if(uploadForm) {
                 formData.append("pdfFile", pdfFile);
                 formData.append("quality", quality);
                 
-                const compRes = await fetch("http://localhost:5000/api/compress", {
+                const compRes = await fetch("https://dpgnotes.web.app/api/compress", {
                   method: "POST",
                   body: formData
                 });
@@ -436,7 +444,7 @@ if(uploadForm) {
         const formData = new FormData();
         formData.append("pdfFile", pdfFile);
         
-        const res = await fetch("http://localhost:5000/api/upload", {
+        const res = await fetch("https://dpgnotes.web.app/api/upload", {
           method: "POST",
           body: formData
         });
@@ -499,7 +507,7 @@ if(uploadForm) {
         followerSet.delete(currentUser.uid);
         
         // 1. Thank You Email (Standard)
-        fetch("http://localhost:5000/api/upload/notify", {
+        fetch("https://dpgnotes.web.app/api/upload/notify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: currentUser.email, title: title })
@@ -508,7 +516,7 @@ if(uploadForm) {
         // 2. First Contribution Check
         // If userDocCount === 1, it's their first time! (Since we just added one, if they had 0 before, it's 1 now).
         if (userDocCount === 1) {
-          fetch("http://localhost:5000/api/email/first-contribution", {
+          fetch("https://dpgnotes.web.app/api/email/first-contribution", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: currentUser.email, title: title })
@@ -526,7 +534,7 @@ if(uploadForm) {
              }
           }
           if (followerEmails.length > 0) {
-            fetch("http://localhost:5000/api/email/new-resource", {
+            fetch("https://dpgnotes.web.app/api/email/new-resource", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -585,7 +593,7 @@ if (contributorDeleteForm) {
     
     try {
       // 1. Send Notification request to Backend FIRST (so backend can read 'likes' array before it's deleted)
-      await fetch("http://localhost:5000/api/email/contributor-delete", {
+      await fetch("https://dpgnotes.web.app/api/email/contributor-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -639,7 +647,7 @@ if(settingsForm) {
         const formData = new FormData();
         formData.append("pdfFile", photoFile); // API expects pdfFile key
         
-        const res = await fetch("http://localhost:5000/api/upload?type=profile", {
+        const res = await fetch("https://dpgnotes.web.app/api/upload?type=profile", {
           method: "POST",
           body: formData
         });
@@ -716,7 +724,7 @@ function attachEngagementListeners() {
              const ownerName = ownerDoc.data().name;
              
              // 1. Basic Like Email
-             fetch("http://localhost:5000/api/email/like-notification", {
+             fetch("https://dpgnotes.web.app/api/email/like-notification", {
                method: "POST",
                headers: { "Content-Type": "application/json" },
                body: JSON.stringify({ email: ownerEmail, resourceTitle: title, likerName: currentUser.displayName })
@@ -734,7 +742,7 @@ function attachEngagementListeners() {
              });
              
              if (totalLikes === 30) {
-                fetch("http://localhost:5000/api/email/thirty-likes", {
+                fetch("https://dpgnotes.web.app/api/email/thirty-likes", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: ownerEmail, name: ownerName })
@@ -788,7 +796,7 @@ function attachEngagementListeners() {
             
             if (currentShares === 15) {
               // Trigger 15+ shares email
-              fetch("http://localhost:5000/api/email/fifteen-shares", {
+              fetch("https://dpgnotes.web.app/api/email/fifteen-shares", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: currentUser.email, name: currentUser.displayName })

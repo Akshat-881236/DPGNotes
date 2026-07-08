@@ -570,17 +570,19 @@ function createCard(data){
       ${data.title}
     </h3>
     
-    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+    <div class="card-author">
       ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].profilePic 
-        ? `<img src="${window.usersCache[data.userId].profilePic}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">` 
-        : (window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].photoURL ? `<img src="${window.usersCache[data.userId].photoURL}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">` : `<div style="width:24px; height:24px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:12px;">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
+        ? `<img src="${window.usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar">` 
+        : (window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].photoURL ? `<img src="${window.usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar">` : `<div class="author-avatar-fallback">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
       }
-      <span>By ${data.userName || "Contributor"}</span>
-      ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].linkedin ? `<a href="${window.usersCache[data.userId].linkedin}" target="_blank" style="color:#0077b5; text-decoration:none;" title="LinkedIn">🔗</a>` : ""}
-      ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].github ? `<a href="${window.usersCache[data.userId].github}" target="_blank" style="color:#fff; text-decoration:none;" title="GitHub">🐙</a>` : ""}
+      <span class="author-name">By ${data.userName || "Contributor"}</span>
+      <div class="author-socials">
+        ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].linkedin ? `<a href="${window.usersCache[data.userId].linkedin}" target="_blank" title="LinkedIn">🔗</a>` : ""}
+        ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].github ? `<a href="${window.usersCache[data.userId].github}" target="_blank" title="GitHub">🐙</a>` : ""}
+      </div>
     </div>
 
-    <p>
+    <p class="card-desc">
       ${data.description}
     </p>
 
@@ -596,7 +598,7 @@ function createCard(data){
 
     </div>
 
-    <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
+    <div class="card-stats">
       <span title="Total Likes">🤍 ${data.likes ? data.likes.length : 0}</span>
       <span title="Total Shares Generated">🔗 ${data.shareCount || 0}</span>
       <span title="Link Clicks (CTR)">👀 ${data.ctrCount || 0}</span>
@@ -606,9 +608,9 @@ function createCard(data){
     Array.isArray(data.tags) ? data.tags.join(", ") : ""
     )}" target="_blank" class="open-btn" onclick="if(window.logActivity) window.logActivity('VIEW', 'Viewed document: ${data.title}')">Open PDF</a>
   
-    <div style="display:flex; justify-content:space-between; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.05);">
-      <button onclick="alert('Please login via Dashboard to like this resource.')" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-weight:bold;">🤍 Like</button>
-      <button onclick="handleShare('${data.id}', '${data.title}', '${data.category}', '${data.discipline}', '${data.userName}', '${data.pdfUrl}', '${data.description}', '${Array.isArray(data.tags) ? data.tags.join(", ") : ""}')" style="background:transparent; border:none; color:var(--primary); cursor:pointer; font-weight:bold;">🔗 Share</button>
+    <div class="card-actions">
+      <button class="action-btn like-action" onclick="alert('Please login via Dashboard to like this resource.')">🤍 Like</button>
+      <button class="action-btn share-action" onclick="handleShare('${data.id}', '${data.title}', '${data.category}', '${data.discipline}', '${data.userName}', '${data.pdfUrl}', '${data.description}', '${Array.isArray(data.tags) ? data.tags.join(", ") : ""}')">🔗 Share</button>
     </div>
   </article>
 
@@ -621,7 +623,7 @@ window.handleShare = async function(docId, title, category, discipline, uploader
   const originalText = btn.innerText;
   btn.innerText = "⏳ Generating...";
   try {
-    const res = await fetch("http://localhost:5000/api/share/generate", {
+    const res = await fetch("https://dpgnotes.web.app/api/share/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ docId, title, category, discipline, uploader, pdfUrl, description, tags })
@@ -937,7 +939,7 @@ if (globalSearch) {
   if (shareToken) {
     document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:var(--primary); font-family:var(--font-heading);'>Opening Shared Document...</h2>";
     try {
-      const res = await fetch(`http://localhost:5000/api/share/click?token=${shareToken}`);
+      const res = await fetch(`https://dpgnotes.web.app/api/share/click?token=${shareToken}`);
       const data = await res.json();
       if (res.ok && data.documentData) {
         const d = data.documentData;
