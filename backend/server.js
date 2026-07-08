@@ -90,7 +90,11 @@ try {
 } catch (error) {
   console.error("Firebase Admin Initialization Error: Please provide a valid serviceAccountKey.json or set FIREBASE_SERVICE_ACCOUNT environment variable. Details:", error.message);
 }
-const db = admin.firestore ? admin.firestore() : null;
+let db = null;
+if (admin.firestore) {
+  db = admin.firestore();
+  db.settings({ ignoreUndefinedProperties: true });
+}
 
 // ==========================================
 // INIT CLOUDINARY
