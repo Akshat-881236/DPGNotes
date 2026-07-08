@@ -100,7 +100,7 @@ onAuthStateChanged(auth, async (user) => {
       
       if (!userSnap.exists()) {
         // First Login! Trigger Welcome Email
-        fetch("https://dpgnotes.web.app/api/email/welcome", {
+        fetch(window.API_BASE_URL + "/api/email/welcome", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email, name: user.displayName })
@@ -405,7 +405,7 @@ if(uploadForm) {
                 formData.append("pdfFile", pdfFile);
                 formData.append("quality", quality);
                 
-                const compRes = await fetch("https://dpgnotes.web.app/api/compress", {
+                const compRes = await fetch(window.API_BASE_URL + "/api/compress", {
                   method: "POST",
                   body: formData
                 });
@@ -444,7 +444,7 @@ if(uploadForm) {
         const formData = new FormData();
         formData.append("pdfFile", pdfFile);
         
-        const res = await fetch("https://dpgnotes.web.app/api/upload", {
+        const res = await fetch(window.API_BASE_URL + "/api/upload", {
           method: "POST",
           body: formData
         });
@@ -507,7 +507,7 @@ if(uploadForm) {
         followerSet.delete(currentUser.uid);
         
         // 1. Thank You Email (Standard)
-        fetch("https://dpgnotes.web.app/api/upload/notify", {
+        fetch(window.API_BASE_URL + "/api/upload/notify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: currentUser.email, title: title })
@@ -516,7 +516,7 @@ if(uploadForm) {
         // 2. First Contribution Check
         // If userDocCount === 1, it's their first time! (Since we just added one, if they had 0 before, it's 1 now).
         if (userDocCount === 1) {
-          fetch("https://dpgnotes.web.app/api/email/first-contribution", {
+          fetch(window.API_BASE_URL + "/api/email/first-contribution", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: currentUser.email, title: title })
@@ -534,7 +534,7 @@ if(uploadForm) {
              }
           }
           if (followerEmails.length > 0) {
-            fetch("https://dpgnotes.web.app/api/email/new-resource", {
+            fetch(window.API_BASE_URL + "/api/email/new-resource", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -593,7 +593,7 @@ if (contributorDeleteForm) {
     
     try {
       // 1. Send Notification request to Backend FIRST (so backend can read 'likes' array before it's deleted)
-      await fetch("https://dpgnotes.web.app/api/email/contributor-delete", {
+      await fetch(window.API_BASE_URL + "/api/email/contributor-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -647,7 +647,7 @@ if(settingsForm) {
         const formData = new FormData();
         formData.append("pdfFile", photoFile); // API expects pdfFile key
         
-        const res = await fetch("https://dpgnotes.web.app/api/upload?type=profile", {
+        const res = await fetch(window.API_BASE_URL + "/api/upload?type=profile", {
           method: "POST",
           body: formData
         });
@@ -724,7 +724,7 @@ function attachEngagementListeners() {
              const ownerName = ownerDoc.data().name;
              
              // 1. Basic Like Email
-             fetch("https://dpgnotes.web.app/api/email/like-notification", {
+             fetch(window.API_BASE_URL + "/api/email/like-notification", {
                method: "POST",
                headers: { "Content-Type": "application/json" },
                body: JSON.stringify({ email: ownerEmail, resourceTitle: title, likerName: currentUser.displayName })
@@ -742,7 +742,7 @@ function attachEngagementListeners() {
              });
              
              if (totalLikes === 30) {
-                fetch("https://dpgnotes.web.app/api/email/thirty-likes", {
+                fetch(window.API_BASE_URL + "/api/email/thirty-likes", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ email: ownerEmail, name: ownerName })
@@ -796,7 +796,7 @@ function attachEngagementListeners() {
             
             if (currentShares === 15) {
               // Trigger 15+ shares email
-              fetch("https://dpgnotes.web.app/api/email/fifteen-shares", {
+              fetch(window.API_BASE_URL + "/api/email/fifteen-shares", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: currentUser.email, name: currentUser.displayName })

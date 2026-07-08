@@ -15,7 +15,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const API_URL = "https://dpgnotes.web.app/api";
+const API_URL = window.API_BASE_URL + "/api";
 
 const step1 = document.getElementById("step1");
 const step2 = document.getElementById("step2");

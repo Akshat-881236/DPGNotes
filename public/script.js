@@ -623,7 +623,7 @@ window.handleShare = async function(docId, title, category, discipline, uploader
   const originalText = btn.innerText;
   btn.innerText = "⏳ Generating...";
   try {
-    const res = await fetch("https://dpgnotes.web.app/api/share/generate", {
+    const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ docId, title, category, discipline, uploader, pdfUrl, description, tags })
@@ -939,7 +939,7 @@ if (globalSearch) {
   if (shareToken) {
     document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:var(--primary); font-family:var(--font-heading);'>Opening Shared Document...</h2>";
     try {
-      const res = await fetch(`https://dpgnotes.web.app/api/share/click?token=${shareToken}`);
+      const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${shareToken}`);
       const data = await res.json();
       if (res.ok && data.documentData) {
         const d = data.documentData;
