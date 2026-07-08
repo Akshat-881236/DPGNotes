@@ -1005,6 +1005,7 @@ if (globalSearch) {
     renderResources(filtered);
   }
 );
+});
 }
 
 /* =========================================
