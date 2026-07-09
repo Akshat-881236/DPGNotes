@@ -404,7 +404,24 @@ async function loadExplore() {
     }
   });
   
+  // Apply search filter
+  const searchInput = document.getElementById("exploreSearch");
+  const queryStr = searchInput ? searchInput.value.toLowerCase().trim() : "";
+  if (queryStr) {
+    docsArray = docsArray.filter(d =>
+      (d.title || "").toLowerCase().includes(queryStr) ||
+      (d.description || "").toLowerCase().includes(queryStr) ||
+      (d.category || "").toLowerCase().includes(queryStr) ||
+      (d.discipline || "").toLowerCase().includes(queryStr) ||
+      (d.tags || []).join(" ").toLowerCase().includes(queryStr)
+    );
+  }
+
   exploreGrid.innerHTML = "";
+  if (docsArray.length === 0) {
+    exploreGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;'>No resources found matching your search.</p>";
+    return;
+  }
   docsArray.forEach(data => {
     const docId = data.id;
     const likes = data.likes || [];
@@ -934,17 +951,8 @@ function attachEngagementListeners() {
 // Live Search for Explore Tab
 const exploreSearchInput = document.getElementById('exploreSearch');
 if (exploreSearchInput) {
-  exploreSearchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase();
-    const cards = document.querySelectorAll('#exploreGrid .resource-card');
-    cards.forEach(card => {
-      const text = card.innerText.toLowerCase();
-      if (text.includes(query)) {
-        card.style.display = 'flex';
-      } else {
-        card.style.display = 'none';
-      }
-    });
+  exploreSearchInput.addEventListener('input', () => {
+    loadExplore();
   });
 }
 
