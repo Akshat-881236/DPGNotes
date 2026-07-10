@@ -359,6 +359,9 @@
         <a class="nav-link" onclick="switchTab('logs')">
           <i class="ri-history-line"></i> Activity Logs
         </a>
+        <a class="nav-link" onclick="switchTab('shares')">
+          <i class="ri-share-forward-line"></i> Share Analysis
+        </a>
       </nav>
       <div style="margin-top:auto;">
         <button class="btn-action" style="width:100%; border-color:transparent; background:rgba(239,68,68,0.1); color:var(--admin-danger);" onclick="localStorage.removeItem('adminToken'); location.reload();">
@@ -472,6 +475,32 @@
               </thead>
               <tbody id="activityLogsTableBody">
                 <tr><td colspan="4" style="text-align:center; color:var(--admin-muted);">Querying logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: SHARES -->
+      <section id="view-shares" class="view-section">
+        <div class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">Smart Share Link Directory & Traffic Analysis</h2>
+            <input type="text" id="shareSearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search share token / title...">
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Share Code</th>
+                  <th>Resource Title</th>
+                  <th>Uploader</th>
+                  <th>Total CTR (Clicks)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="sharesTableBody">
+                <tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">Loading Share Engine statistics...</td></tr>
               </tbody>
             </table>
           </div>

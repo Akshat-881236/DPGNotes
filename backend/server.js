@@ -194,6 +194,7 @@ app.post('/api/compress', upload.single('pdfFile'), async (req, res) => {
     const task = startRes.data.task;
     
     // 3. Upload File
+    const FormData = require('form-data');
     const form = new FormData();
     form.append('task', task);
     form.append('file', req.file.buffer, { filename: req.file.originalname || 'document.pdf' });
@@ -344,6 +345,35 @@ app.post('/api/admin/delete-contributor', verifyAdmin, async (req, res) => {
   }
 });
 
+app.post('/api/contributor/delete-account', async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) return res.status(400).json({ error: "idToken required" });
+  
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    
+    // 1. Delete all documents uploaded by this user
+    const docsSnapshot = await db.collection("documents").where("userId", "==", uid).get();
+    const batch = db.batch();
+    docsSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+    
+    // 2. Delete user's profile from Firestore
+    await db.collection("users").doc(uid).delete();
+    
+    // 3. Delete user from Firebase Auth
+    await admin.auth().deleteUser(uid);
+    
+    res.json({ message: "Account successfully deleted." });
+  } catch (err) {
+    console.error("Account self-deletion error:", err);
+    res.status(500).json({ error: "Failed to delete account" });
+  }
+});
+
 // ==========================================
 // SHARE LINK ENGINE & CTR TRACKING
 // ==========================================
@@ -396,7 +426,7 @@ app.post('/api/share/generate', async (req, res) => {
 });
 
 app.get('/api/share/click', async (req, res) => {
-  const { token } = req.query;
+  const { token, openedBy } = req.query;
   if (!token) return res.status(400).json({ error: "Token required" });
 
   try {
@@ -408,6 +438,32 @@ app.get('/api/share/click', async (req, res) => {
     }
     
     const data = docSnap.data();
+    const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || "Unknown";
+    const userAgent = req.headers['user-agent'] || "Unknown";
+    
+    // Check for unusual activity (rate limit click tracking)
+    // Query recent clicks from this IP for this token in the last 5 minutes
+    const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentClicksSnap = await db.collection("share_engagements")
+      .where("shareToken", "==", token)
+      .where("ipAddress", "==", ipAddress)
+      .where("timestamp", ">=", fiveMinsAgo)
+      .get();
+      
+    let status = "Usual";
+    if (recentClicksSnap.size >= 3) {
+      status = "Unusual";
+    }
+
+    // Log engagement detail
+    await db.collection("share_engagements").add({
+      shareToken: token,
+      openedBy: openedBy || "Guest",
+      ipAddress,
+      userAgent,
+      status,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
     
     // Increment clicks on the share link
     await shareRef.update({
@@ -426,6 +482,42 @@ app.get('/api/share/click', async (req, res) => {
   } catch (error) {
     console.error("CTR tracking error:", error);
     res.status(500).json({ error: "Failed to process share link" });
+  }
+});
+
+// Admin share report secure endpoint
+app.get('/api/admin/share-report/:token', verifyAdmin, async (req, res) => {
+  try {
+    const token = req.params.token;
+    
+    // Fetch Share Link Info
+    const shareQuery = await db.collection('share_links').doc(token).get();
+    if (!shareQuery.exists) return res.status(404).json({ error: "Share link not found" });
+    const shareDoc = shareQuery.data();
+    
+    // Fetch Engagements
+    const engQuery = await db.collection('share_engagements')
+      .where('shareToken', '==', token)
+      .orderBy('timestamp', 'desc')
+      .get();
+      
+    const engagements = [];
+    engQuery.forEach(doc => {
+      const engData = doc.data();
+      // convert timestamp to milliseconds for JSON serialization if it's a Firestore Timestamp
+      if (engData.timestamp) {
+        engData.timestamp = { _seconds: engData.timestamp.seconds };
+      }
+      engagements.push(engData);
+    });
+    
+    res.json({
+      shareInfo: shareDoc,
+      engagements: engagements
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load report" });
   }
 });
 
@@ -487,6 +579,30 @@ app.post('/api/email/fifteen-shares', async (req, res) => {
   const { email, name } = req.body;
   const html = createTemplate("Viral Contributor! 🚀", `<p>Amazing, <strong>${name}</strong>!</p><p>Your resources have been shared over <strong>15 times</strong> across the web. You are making a massive impact!</p>`);
   await sendEmail(email, "15+ Shares Milestone Reached!", html);
+  res.json({ message: "Sent" });
+});
+
+// 4.1 Honours on Reaching 70+ likes
+app.post('/api/email/seventy-likes', async (req, res) => {
+  const { email, name } = req.body;
+  const html = createTemplate("Elite Contributor Milestone! 🏆", `<p>Incredible work, <strong>${name}</strong>!</p><p>Your resources have accumulated over <strong>70 likes</strong>. You have reached elite status in our community!</p>`);
+  await sendEmail(email, "70+ Likes Milestone Reached!", html);
+  res.json({ message: "Sent" });
+});
+
+// 4.2 Honours on Reaching 10 Shares Generated
+app.post('/api/email/ten-shares-generation', async (req, res) => {
+  const { email, name } = req.body;
+  const html = createTemplate("Word Spreader Honour! 📣", `<p>Thank you, <strong>${name}</strong>!</p><p>You have generated <strong>10 short share links</strong> for DPGNotes resources. Thank you for spreading the word and growing our community!</p>`);
+  await sendEmail(email, "10 Share Links Generated Honour!", html);
+  res.json({ message: "Sent" });
+});
+
+// 4.3 Useful Resource Upload Honour Email
+app.post('/api/email/useful-resource-honour', async (req, res) => {
+  const { email, name, resourceTitle, likesCount, sharesCount } = req.body;
+  const html = createTemplate("Useful Resource Honour! 🌟", `<p>Congratulations <strong>${name}</strong>!</p><p>Your uploaded resource <strong>"${resourceTitle}"</strong> has been declared <strong>Highly Useful</strong> by the community!</p><p>It has received <strong>${likesCount} likes</strong> and <strong>${sharesCount} shares</strong>.</p><p>Thank you for contributing highly valuable content!</p>`);
+  await sendEmail(email, "Useful Resource Milestone Reached!", html);
   res.json({ message: "Sent" });
 });
 

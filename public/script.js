@@ -373,7 +373,7 @@ onAuthStateChanged(
       const isDashboard = window.location.pathname.endsWith("dashboard.html");
       const isAdmin = window.location.pathname.endsWith("admin.html");
       if (!isDashboard && !isAdmin) {
-        window.location.href = "dashboard.html";
+        window.location.href = "dashboard.html" + window.location.search;
       }
     }else{
       if (currentUser) logActivity("LOGOUT", "User logged out");

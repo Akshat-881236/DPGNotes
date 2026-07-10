@@ -1189,6 +1189,19 @@ pre p a:hover {
 @media(max-width: 768px) {
   .mobile-only { display: flex; }
   
+  .profile-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+  }
+  
   .sidebar {
     position: absolute;
     top: 0; left: 0;

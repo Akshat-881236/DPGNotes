@@ -491,3 +491,96 @@ function handleSwipe() {
     window.closeAdminSidebar();
   }
 }
+
+// Global cache for shares
+let adminSharesCache = [];
+
+async function loadShares() {
+  const tbody = document.getElementById("sharesTableBody");
+  if (!tbody) return;
+  
+  try {
+    const snap = await getDocs(query(collection(db, "share_links"), orderBy("createdAt", "desc")));
+    adminSharesCache = [];
+    snap.forEach(doc => {
+      adminSharesCache.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Update stats
+    const statShares = document.getElementById("statShares");
+    if (statShares) statShares.innerText = adminSharesCache.length;
+    
+    renderSharesTable(adminSharesCache);
+  } catch (err) {
+    console.error("Failed to load shares", err);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-danger);">Failed to load shares data.</td></tr>`;
+  }
+}
+
+function renderSharesTable(shares) {
+  const tbody = document.getElementById("sharesTableBody");
+  if (!tbody) return;
+  
+  tbody.innerHTML = "";
+  if (shares.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">No share links found.</td></tr>`;
+    return;
+  }
+  
+  shares.forEach(link => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-family:monospace; font-weight:600;">${link.token}</td>
+      <td>${link.title || "Untitled"}</td>
+      <td style="color:var(--admin-muted);">${link.uploader || "Unknown"}</td>
+      <td><strong>${link.clicks || 0}</strong> clicks</td>
+      <td>
+        <a href="report.html?code=${link.token}" target="_blank" class="btn-action success" style="text-decoration:none;">View Report</a>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Live search for shares
+const shareSearch = document.getElementById("shareSearch");
+if (shareSearch) {
+  shareSearch.addEventListener("input", (e) => {
+    const queryStr = e.target.value.toLowerCase().trim();
+    if (!queryStr) {
+      renderSharesTable(adminSharesCache);
+      return;
+    }
+    const filtered = adminSharesCache.filter(link => 
+      link.token.toLowerCase().includes(queryStr) ||
+      (link.title || "").toLowerCase().includes(queryStr) ||
+      (link.uploader || "").toLowerCase().includes(queryStr)
+    );
+    renderSharesTable(filtered);
+  });
+}
+
+// Hook into switchTab
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tabId) {
+  if (typeof originalSwitchTab === 'function') {
+    originalSwitchTab(tabId);
+  } else {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-' + tabId).classList.add('active');
+    if (event && event.currentTarget) {
+      event.currentTarget.classList.add('active');
+    }
+  }
+  
+  if (tabId === 'shares') {
+    loadShares();
+  } else if (tabId === 'users') {
+    loadUsers();
+  } else if (tabId === 'logs') {
+    loadActivityLogs();
+  }
+};
+
+window.loadShares = loadShares;

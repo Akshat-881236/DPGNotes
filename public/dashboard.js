@@ -177,6 +177,28 @@ onAuthStateChanged(auth, async (user) => {
     loadExplore();
     loadLeaderboard();
     
+    // Check for Share Token parameter in dashboard
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareToken = urlParams.get('share');
+    if (shareToken) {
+      (async () => {
+        try {
+          const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${shareToken}&openedBy=${currentUser.uid}`);
+          const data = await res.json();
+          if (res.ok && data.documentData) {
+            const d = data.documentData;
+            const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
+            window.location.href = viewerUrl;
+          } else {
+            alert("Share link expired or invalid.");
+            window.location.href = "dashboard.html";
+          }
+        } catch (e) {
+          console.error("Failed to process share link in dashboard", e);
+        }
+      })();
+    }
+    
     // Listen for Account Block
     onSnapshot(doc(db, "users", currentUser.uid), (snap) => {
       if (snap.exists() && snap.data().isBlocked) {
@@ -456,7 +478,7 @@ async function loadExplore() {
         <button class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${docId}" data-owner="${data.userId}" data-title="${data.title}">
           ${hasLiked ? '❤️ Liked' : '🤍 Like'} (${likes.length})
         </button>
-        <button class="action-btn share-action share-btn" data-url="${window.location.origin}/index.html?view=${docId}" data-title="${data.title}">
+        <button class="action-btn share-action share-btn" onclick="handleDashboardShare(event, '${docId}', '${data.title.replace(/'/g, "\\'")}', '${data.category}', '${data.discipline}', '${data.userName.replace(/'/g, "\\'")}', '${data.pdfUrl}', '${data.description ? data.description.replace(/'/g, "\\'") : ""}', '${(data.tags || []).join(", ")}')">
           🔗 Share
         </button>
       </div>
@@ -791,6 +813,49 @@ if(settingsForm) {
   });
 }
 
+// Account Deletion Logic
+const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+if (deleteAccountBtn) {
+  deleteAccountBtn.addEventListener("click", async () => {
+    if (!currentUser) return;
+    
+    const confirm1 = confirm("Are you absolutely sure you want to delete your account? This will permanently delete your profile and ALL your uploaded documents from DPGNotes. This action CANNOT be undone.");
+    if (!confirm1) return;
+    
+    const confirm2 = confirm("FINAL CONFIRMATION: Type 'DELETE' to permanently delete your account:");
+    if (confirm2 !== true && String(confirm2).toUpperCase() !== 'DELETE' && prompt("To confirm deletion, please type 'DELETE':") !== 'DELETE') {
+      alert("Account deletion cancelled.");
+      return;
+    }
+    
+    deleteAccountBtn.innerText = "Deleting Account...";
+    deleteAccountBtn.disabled = true;
+    
+    try {
+      const idToken = await currentUser.getIdToken(true);
+      const res = await fetch(window.API_BASE_URL + "/api/contributor/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        alert("Your account and all associated documents have been successfully deleted. Thank you for your contributions.");
+        await signOut(auth);
+        window.location.href = "index.html";
+      } else {
+        throw new Error(data.error || "Server deletion failed");
+      }
+    } catch (err) {
+      console.error("Self deletion failed:", err);
+      alert("Failed to delete account. You may need to log out and log back in to refresh your credentials before trying again.");
+      deleteAccountBtn.innerText = "Delete My Account";
+      deleteAccountBtn.disabled = false;
+    }
+  });
+}
+
 // =========================================
 // ENGAGEMENT (Like & Share)
 // =========================================
@@ -801,6 +866,9 @@ function attachEngagementListeners() {
       const title = btn.dataset.title;
       // Optimistic UI update could go here, but for simplicity we rely on backend response
       btn.innerText = "⏳...";
+      let newlyUseful = false;
+      let newLikesCount = 0;
+      let shareCount = 0;
       
       try {
         const docRef = doc(db, "documents", docId);
@@ -810,7 +878,8 @@ function attachEngagementListeners() {
           if (!docSnap.exists()) throw "Document missing!";
           
           let currentLikes = docSnap.data().likes || [];
-          const ownerId = docSnap.data().userId;
+          shareCount = docSnap.data().shareCount || 0;
+          const usefulResourceEmailed = docSnap.data().usefulResourceEmailed || false;
           
           if (currentLikes.includes(currentUser.uid)) {
             // Unlike
@@ -819,11 +888,15 @@ function attachEngagementListeners() {
           } else {
             // Like
             currentLikes.push(currentUser.uid);
-            t.update(docRef, { likes: currentLikes });
             
-            // Note: Since we are in frontend, we shouldn't trigger an email inside a transaction directly.
-            // We'll just call the backend asynchronously below.
+            const updates = { likes: currentLikes };
+            if ((currentLikes.length >= 15 || shareCount >= 5) && !usefulResourceEmailed) {
+              updates.usefulResourceEmailed = true;
+              newlyUseful = true;
+            }
+            t.update(docRef, updates);
           }
+          newLikesCount = currentLikes.length;
         });
         
         // Notify Owner via Backend if it was a Like (not unlike)
@@ -850,8 +923,7 @@ function attachEngagementListeners() {
                createdAt: serverTimestamp()
              }).catch(e => console.error(e));
              
-             // 2. 30+ Likes Milestone Check
-             // Query all documents by this owner
+             // 2. 30+ / 70+ Likes Milestone Check
              const qOwner = query(collection(db, "documents"));
              const snapOwner = await getDocs(qOwner);
              let totalLikes = 0;
@@ -862,19 +934,58 @@ function attachEngagementListeners() {
              });
              
              if (totalLikes === 30) {
-                fetch(window.API_BASE_URL + "/api/email/thirty-likes", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email: ownerEmail, name: ownerName })
-                }).catch(e => console.error(e));
-                
-                addDoc(collection(db, "notifications"), {
-                  email: ownerEmail,
-                  type: "milestone",
-                  title: "🎉 Milestone Reached!",
-                  message: "Your resources have reached 30 total likes! Keep up the great work.",
-                  createdAt: serverTimestamp()
-                }).catch(e => console.error(e));
+                 fetch(window.API_BASE_URL + "/api/email/thirty-likes", {
+                   method: "POST",
+                   headers: { "Content-Type": "application/json" },
+                   body: JSON.stringify({ email: ownerEmail, name: ownerName })
+                 }).catch(e => console.error(e));
+                 
+                 addDoc(collection(db, "notifications"), {
+                   email: ownerEmail,
+                   type: "milestone",
+                   title: "🎉 Milestone Reached!",
+                   message: "Your resources have reached 30 total likes! Keep up the great work.",
+                   createdAt: serverTimestamp()
+                 }).catch(e => console.error(e));
+             }
+             
+             if (totalLikes === 70) {
+                 fetch(window.API_BASE_URL + "/api/email/seventy-likes", {
+                   method: "POST",
+                   headers: { "Content-Type": "application/json" },
+                   body: JSON.stringify({ email: ownerEmail, name: ownerName })
+                 }).catch(e => console.error(e));
+                 
+                 addDoc(collection(db, "notifications"), {
+                   email: ownerEmail,
+                   type: "milestone",
+                   title: "🏆 Elite Milestone Reached!",
+                   message: "Your resources have reached 70 total likes! You are an elite contributor.",
+                   createdAt: serverTimestamp()
+                 }).catch(e => console.error(e));
+             }
+
+             // 3. Useful Resource Upload Honour Check
+             if (newlyUseful) {
+                 fetch(window.API_BASE_URL + "/api/email/useful-resource-honour", {
+                   method: "POST",
+                   headers: { "Content-Type": "application/json" },
+                   body: JSON.stringify({ 
+                     email: ownerEmail, 
+                     name: ownerName, 
+                     resourceTitle: title, 
+                     likesCount: newLikesCount, 
+                     sharesCount: shareCount 
+                   })
+                 }).catch(e => console.error(e));
+                 
+                 addDoc(collection(db, "notifications"), {
+                   email: ownerEmail,
+                   type: "milestone",
+                   title: "🌟 Highly Useful Resource!",
+                   message: `Your resource "${title}" has been declared highly useful by the community!`,
+                   createdAt: serverTimestamp()
+                 }).catch(e => console.error(e));
              }
            }
         }
@@ -888,26 +999,53 @@ function attachEngagementListeners() {
     });
   });
 
-  document.querySelectorAll(".share-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const url = btn.dataset.url;
-      const title = btn.dataset.title;
+  window.handleDashboardShare = async function(event, docId, title, category, discipline, uploader, pdfUrl, description, tags) {
+    const btn = event.currentTarget;
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ Generating...";
+    
+    try {
+      const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          docId, 
+          title, 
+          category, 
+          discipline, 
+          uploader, 
+          pdfUrl, 
+          description, 
+          tags,
+          originalUrl: window.location.origin + "/dashboard.html?share="
+        })
+      });
       
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate link");
+      
+      const shareUrl = data.shareUrl;
       let shared = false;
+      
       if (navigator.share) {
         try {
           await navigator.share({
             title: `Check out ${title} on DPGNotes`,
-            url: url
+            url: shareUrl
           });
           shared = true;
-        } catch(err) { console.error("Share failed", err); }
-      } else {
-        // Fallback
-        navigator.clipboard.writeText(url);
-        alert("Link copied to clipboard!");
+        } catch(err) { 
+          console.error("Share failed", err); 
+        }
+      } 
+      
+      if (!shared) {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Smart Link copied to clipboard!");
         shared = true;
       }
+      
+      btn.innerText = "✅ Shared";
       
       // Track share
       if (shared && currentUser) {
@@ -922,15 +1060,30 @@ function attachEngagementListeners() {
             currentShares++;
             t.set(userRef, { shares: currentShares }, { merge: true });
             
+            // Email milestones
+            if (currentShares === 10) {
+              fetch(window.API_BASE_URL + "/api/email/ten-shares-generation", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: currentUser.email, name: currentUser.displayName })
+              }).catch(e => console.error(e));
+              
+              addDoc(collection(db, "notifications"), {
+                email: currentUser.email,
+                type: "milestone",
+                title: "📣 Word Spreader!",
+                message: "You've generated 10 share links! Thank you for sharing.",
+                createdAt: serverTimestamp()
+              }).catch(e => console.error(e));
+            }
+            
             if (currentShares === 15) {
-              // Trigger 15+ shares email
               fetch(window.API_BASE_URL + "/api/email/fifteen-shares", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: currentUser.email, name: currentUser.displayName })
               }).catch(e => console.error(e));
               
-              // In-app milestone notification
               addDoc(collection(db, "notifications"), {
                 email: currentUser.email,
                 type: "milestone",
@@ -944,8 +1097,54 @@ function attachEngagementListeners() {
           console.error("Share tracking failed", err);
         }
       }
-    });
-  });
+      
+      // Useful Resource check on Share
+      if (shared) {
+        (async () => {
+          try {
+            const docSnap = await getDoc(doc(db, "documents", docId));
+            if (docSnap.exists()) {
+              const dData = docSnap.data();
+              const lCount = dData.likes ? dData.likes.length : 0;
+              const sCount = dData.shareCount || 0;
+              const usefulEmailed = dData.usefulResourceEmailed || false;
+              
+              if ((lCount >= 15 || sCount >= 5) && !usefulEmailed) {
+                await updateDoc(doc(db, "documents", docId), { usefulResourceEmailed: true });
+                
+                const ownerDoc = await getDoc(doc(db, "users", dData.userId));
+                if (ownerDoc.exists() && ownerDoc.data().email) {
+                  fetch(window.API_BASE_URL + "/api/email/useful-resource-honour", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                      email: ownerDoc.data().email, 
+                      name: ownerDoc.data().name, 
+                      resourceTitle: dData.title, 
+                      likesCount: lCount, 
+                      sharesCount: sCount 
+                    })
+                  }).catch(e => console.error(e));
+                  
+                  addDoc(collection(db, "notifications"), {
+                    email: ownerDoc.data().email,
+                    type: "milestone",
+                    title: "🌟 Highly Useful Resource!",
+                    message: `Your resource "${dData.title}" has been declared highly useful by the community!`,
+                    createdAt: serverTimestamp()
+                  }).catch(e => console.error(e));
+                }
+              }
+            }
+          } catch(e) { console.error("Useful resource check on share failed", e); }
+        })();
+      }
+    } catch (e) {
+      alert("Failed to share resource: " + e.message);
+      btn.innerText = originalText;
+    }
+    setTimeout(() => btn.innerText = originalText, 3000);
+  };
 }
 
 // Live Search for Explore Tab
