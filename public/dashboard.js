@@ -1,5 +1,5 @@
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
 const firebaseConfig = {
@@ -86,23 +86,28 @@ async function loadNotifications() {
   if (!currentUser) return;
   
   try {
-    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "notifications"), where("email", "==", currentUser.email));
     const snap = await getDocs(q);
     
+    // Sort in memory to avoid needing composite indexes
+    const docs = [];
+    snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+    docs.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+    
     let html = "";
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
-      if (data.email === currentUser.email) {
-        let icon = "🔔";
-        if (data.type === "like") icon = "❤️";
-        if (data.type === "alert") icon = "⚠️";
-        if (data.type === "success") icon = "✅";
-        if (data.type === "milestone") icon = "🎉";
-        
-        let timeString = "Just now";
-        if (data.createdAt) {
-          timeString = new Date(data.createdAt.toMillis()).toLocaleString();
-        }
+    docs.forEach(data => {
+      let icon = "🔔";
+      if (data.type === "like") icon = "❤️";
+      if (data.type === "alert") icon = "⚠️";
+      if (data.type === "success") icon = "✅";
+      if (data.type === "milestone") icon = "🎉";
+      
+      let timeString = "Just now";
+      if (data.createdAt) {
+        // Handle firestore timestamp format
+        const millis = data.createdAt.toMillis ? data.createdAt.toMillis() : (data.createdAt.seconds * 1000);
+        timeString = new Date(millis).toLocaleString();
+      }
         
         html += `
           <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
@@ -528,9 +533,22 @@ if(uploadForm) {
             };
             
             document.getElementById("startCompressBtn").onclick = async () => {
-              const compBtn = document.getElementById("startCompressBtn");
-              compBtn.innerText = "Compressing... (Please wait)";
-              compBtn.disabled = true;
+              const actionsDiv = document.getElementById("compressActions");
+              const progressDiv = document.getElementById("compressProgressContainer");
+              const progressStatus = document.getElementById("compressProgressStatus");
+              const progressPercent = document.getElementById("compressProgressPercent");
+              const progressBar = document.getElementById("compressProgressBar");
+              
+              actionsDiv.style.display = "none";
+              progressDiv.style.display = "block";
+              
+              const updateProgress = (pct, status) => {
+                progressBar.style.width = pct + "%";
+                progressPercent.innerText = pct + "%";
+                progressStatus.innerText = status;
+              };
+              
+              updateProgress(0, "Preparing file...");
               
               try {
                 const quality = document.querySelector('input[name="compressQuality"]:checked').value;
@@ -538,36 +556,83 @@ if(uploadForm) {
                 formData.append("pdfFile", pdfFile);
                 formData.append("quality", quality);
                 
-                const compRes = await fetch(window.API_BASE_URL + "/api/compress", {
-                  method: "POST",
-                  body: formData
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", window.API_BASE_URL + "/api/compress");
+                
+                // Track Upload Progress (first 50% of overall progress)
+                xhr.upload.addEventListener("progress", (e) => {
+                  if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 50);
+                    updateProgress(pct, `Uploading to server (${(e.loaded / (1024*1024)).toFixed(1)}MB / ${(e.total / (1024*1024)).toFixed(1)}MB)...`);
+                  }
                 });
                 
-                if (!compRes.ok) {
-                  const errText = await compRes.text();
-                  throw new Error("Compression failed: " + errText);
-                }
+                let processInterval;
+                // Once upload completes, process state kicks in
+                xhr.upload.addEventListener("load", () => {
+                  let currentPct = 50;
+                  updateProgress(currentPct, "Upload complete. Connecting to ILovePDF API...");
+                  processInterval = setInterval(() => {
+                    if (currentPct < 95) {
+                      currentPct += 1;
+                      let statusMsg = "Compressing document...";
+                      if (currentPct > 65) statusMsg = "Optimizing PDF structure...";
+                      if (currentPct > 80) statusMsg = "Generating compressed download...";
+                      updateProgress(currentPct, statusMsg);
+                    }
+                  }, 250);
+                });
                 
-                const blob = await compRes.blob();
+                xhr.responseType = "blob";
                 
-                // Trigger download
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.style.display = "none";
-                a.href = url;
-                a.download = pdfFile.name.replace(".pdf", "_compressed.pdf");
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
+                xhr.onload = () => {
+                  clearInterval(processInterval);
+                  if (xhr.status >= 200 && xhr.status < 300) {
+                    updateProgress(100, "Compression complete! Downloading...");
+                    const blob = xhr.response;
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.style.display = "none";
+                    a.href = url;
+                    a.download = pdfFile.name.replace(".pdf", "_compressed.pdf");
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    setTimeout(() => {
+                      alert("Compression successful! The compressed PDF has been downloaded. Please upload the new compressed file.");
+                      document.getElementById("compressionModal").style.display = "none";
+                      actionsDiv.style.display = "flex";
+                      progressDiv.style.display = "none";
+                      reject(new Error("Please upload the newly downloaded compressed file."));
+                    }, 500);
+                  } else {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      alert("Compression failed: " + reader.result);
+                      actionsDiv.style.display = "flex";
+                      progressDiv.style.display = "none";
+                      reject(new Error(reader.result));
+                    };
+                    reader.readAsText(xhr.response);
+                  }
+                };
                 
-                alert("Compression successful! The compressed PDF has been downloaded. Please upload the new compressed file.");
-                document.getElementById("compressionModal").style.display = "none";
-                reject(new Error("Please upload the newly downloaded compressed file."));
+                xhr.onerror = () => {
+                  clearInterval(processInterval);
+                  alert("Network error occurred during compression.");
+                  actionsDiv.style.display = "flex";
+                  progressDiv.style.display = "none";
+                  reject(new Error("Network error"));
+                };
+                
+                xhr.send(formData);
+                
               } catch (e) {
                 alert(e.message);
-                compBtn.innerText = "Compress Now";
-                compBtn.disabled = false;
+                actionsDiv.style.display = "flex";
+                progressDiv.style.display = "none";
                 reject(e);
               }
             };

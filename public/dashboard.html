@@ -151,9 +151,19 @@
                 </label>
               </div>
               
-              <div style="display:flex; gap:1rem; justify-content:center;">
+              <div id="compressActions" style="display:flex; gap:1rem; justify-content:center;">
                 <button type="button" id="cancelCompressBtn" style="padding:0.75rem 1.5rem; border-radius:var(--radius-sm); border:1px solid var(--border); background:transparent; color:white; cursor:pointer;">Cancel</button>
                 <button type="button" id="startCompressBtn" class="upload-btn" style="flex:1;">Compress Now</button>
+              </div>
+              
+              <div id="compressProgressContainer" style="display:none; margin-top:1.5rem; text-align:left;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;">
+                  <span id="compressProgressStatus" style="color:var(--text-muted);">Initializing...</span>
+                  <span id="compressProgressPercent" style="color:var(--primary-light); font-weight:bold;">0%</span>
+                </div>
+                <div style="background:rgba(255,255,255,0.1); border-radius:10px; height:8px; overflow:hidden; width:100%;">
+                  <div id="compressProgressBar" style="background:var(--primary); height:100%; width:0%; transition:width 0.3s ease;"></div>
+                </div>
               </div>
             </div>
           </div>
