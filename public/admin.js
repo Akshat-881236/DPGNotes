@@ -535,12 +535,46 @@ function renderSharesTable(shares) {
       <td style="color:var(--admin-muted);">${link.uploader || "Unknown"}</td>
       <td><strong>${link.clicks || 0}</strong> clicks</td>
       <td>
-        <a href="report.html?code=${link.token}" target="_blank" class="btn-action success" style="text-decoration:none;">View Report</a>
+        <div style="display:flex; gap:0.5rem;">
+          <a href="report.html?code=${link.token}" target="_blank" class="btn-action success" style="text-decoration:none;">View Report</a>
+          <button onclick="window.deleteShareCode('${link.token}')" class="btn-action danger">Delete</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 }
+
+window.deleteShareCode = async function(token) {
+  const confirmDelete = await window.customConfirm(`Are you sure you want to permanently delete share code "${token}"? This will terminate access for all visitors and notify the generator.`, {
+    title: "Delete Share Code?",
+    isDanger: true,
+    confirmText: "Delete Code"
+  });
+  
+  if (!confirmDelete) return;
+  
+  try {
+    const res = await fetch(`${API_URL}/admin/delete-share-code`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
+      },
+      body: JSON.stringify({ token })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      alert("Share code deleted successfully!");
+      loadShares(); // refresh
+    } else {
+      alert(data.error || "Failed to delete share code");
+    }
+  } catch (err) {
+    alert("Server error deleting share code");
+  }
+};
 
 // Live search for shares
 const shareSearch = document.getElementById("shareSearch");

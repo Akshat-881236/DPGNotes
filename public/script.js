@@ -626,7 +626,17 @@ window.handleShare = async function(docId, title, category, discipline, uploader
     const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ docId, title, category, discipline, uploader, pdfUrl, description, tags })
+      body: JSON.stringify({ 
+        docId, 
+        title, 
+        category, 
+        discipline, 
+        uploader, 
+        pdfUrl, 
+        description, 
+        tags,
+        uploaderUid: (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.uid : ""
+      })
     });
     const data = await res.json();
     if (res.ok) {

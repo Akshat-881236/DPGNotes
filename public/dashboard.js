@@ -884,11 +884,11 @@ if (deleteAccountBtn) {
   deleteAccountBtn.addEventListener("click", async () => {
     if (!currentUser) return;
     
-    const confirm1 = confirm("Are you absolutely sure you want to delete your account? This will permanently delete your profile and ALL your uploaded documents from DPGNotes. This action CANNOT be undone.");
+    const confirm1 = await window.customConfirm("Are you absolutely sure you want to delete your account? This will permanently delete your profile and ALL your uploaded documents from DPGNotes. This action CANNOT be undone.", { title: "Delete Account?", isDanger: true });
     if (!confirm1) return;
     
-    const confirm2 = confirm("FINAL CONFIRMATION: Type 'DELETE' to permanently delete your account:");
-    if (confirm2 !== true && String(confirm2).toUpperCase() !== 'DELETE' && prompt("To confirm deletion, please type 'DELETE':") !== 'DELETE') {
+    const confirm2 = await window.customConfirm("Click confirm to permanently delete your account and all files. This is your final warning.", { title: "Final Warning", isDanger: true, confirmText: "Delete Permanently" });
+    if (!confirm2) {
       alert("Account deletion cancelled.");
       return;
     }
@@ -1082,7 +1082,8 @@ function attachEngagementListeners() {
           pdfUrl, 
           description, 
           tags,
-          originalUrl: window.location.origin + "/dashboard.html?share="
+          originalUrl: window.location.origin + "/dashboard.html?share=",
+          uploaderUid: currentUser.uid
         })
       });
       

@@ -345,6 +345,63 @@ app.post('/api/admin/delete-contributor', verifyAdmin, async (req, res) => {
   }
 });
 
+app.post('/api/admin/delete-share-code', verifyAdmin, async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ error: "Share token required" });
+  
+  try {
+    // 1. Fetch Share Link
+    const linkQuery = await db.collection("share_links").where("token", "==", token).get();
+    if (linkQuery.empty) return res.status(404).json({ error: "Share link not found" });
+    
+    const linkDoc = linkQuery.docs[0];
+    const linkData = linkDoc.data();
+    const uploaderUid = linkData.uploaderUid || linkData.userId;
+    const resourceTitle = linkData.title || "Untitled Resource";
+    
+    // 2. Fetch generator/uploader email
+    let uploaderEmail = "";
+    if (uploaderUid) {
+      const uploaderDoc = await db.collection("users").doc(uploaderUid).get();
+      if (uploaderDoc.exists) uploaderEmail = uploaderDoc.data().email;
+    }
+    
+    // 3. Fetch engagements & visitor emails
+    const engagements = await db.collection("share_engagements").where("token", "==", token).get();
+    const visitorUids = [...new Set(engagements.docs.map(d => d.data().openedBy).filter(e => e && e !== uploaderUid))];
+    
+    const visitorEmails = [];
+    for (const vUid of visitorUids) {
+      const vDoc = await db.collection("users").doc(vUid).get();
+      if (vDoc.exists && vDoc.data().email) {
+        visitorEmails.push(vDoc.data().email);
+      }
+    }
+    
+    // 4. Send email notifications
+    if (uploaderEmail) {
+      const htmlGen = createTemplate("Share Code Terminated ⚠️", `<p>Your generated share code <strong>${token}</strong> for <strong>"${resourceTitle}"</strong> has been terminated/deleted by an Administrator.</p>`);
+      await sendEmail(uploaderEmail, "Notice: Terminated Share Link", htmlGen).catch(e => console.error(e));
+    }
+    
+    for (const visitorEmail of visitorEmails) {
+      const htmlVis = createTemplate("Resource Access Terminated ⚠️", `<p>A DPGNotes share link for <strong>"${resourceTitle}"</strong> (Code: <strong>${token}</strong>) that you visited has been deleted by an Administrator.</p>`);
+      await sendEmail(visitorEmail, "Notice: Share Link Deleted", htmlVis).catch(e => console.error(e));
+    }
+    
+    // 5. Delete from DB
+    const batch = db.batch();
+    batch.delete(linkDoc.ref);
+    engagements.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    
+    res.json({ message: "Share link and engagements deleted successfully. Notifications sent." });
+  } catch (err) {
+    console.error("Failed to delete share link:", err);
+    res.status(500).json({ error: "Server error deleting share link" });
+  }
+});
+
 app.post('/api/contributor/delete-account', async (req, res) => {
   const { idToken } = req.body;
   if (!idToken) return res.status(400).json({ error: "idToken required" });
@@ -389,7 +446,7 @@ function generateShortToken(length = 8) {
 }
 
 app.post('/api/share/generate', async (req, res) => {
-  const { docId, title, category, discipline, uploader, pdfUrl, description, tags, originalUrl } = req.body;
+  const { docId, title, category, discipline, uploader, pdfUrl, description, tags, originalUrl, uploaderUid } = req.body;
   
   if (!docId) return res.status(400).json({ error: "Document ID required" });
 
@@ -404,6 +461,7 @@ app.post('/api/share/generate', async (req, res) => {
       category,
       discipline,
       uploader,
+      uploaderUid: uploaderUid || "",
       pdfUrl,
       description,
       tags: tags || "",
