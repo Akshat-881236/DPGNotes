@@ -934,15 +934,6 @@ function sortDocuments(docsArray) {
 ========================================= */
 
 if (globalSearch) {
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    // Normal initialization
-  loadAllUsers();
-  loadDocuments();
-  setupFilters();
-
-  if(addDocBtn) addDocBtn.addEventListener("click", openModal);
-  if(closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
-  
   window.applyIndexFilters = function() {
     const searchValue = globalSearch ? globalSearch.value.toLowerCase().trim() : "";
     let filtered = [...allDocuments];
@@ -975,7 +966,6 @@ if (globalSearch) {
       window.applyIndexFilters();
     });
   }
-});
 }
 
 /* =========================================
