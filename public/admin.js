@@ -286,10 +286,10 @@ async function loadUsers() {
         const uid = btn.dataset.id;
         const email = btn.dataset.email;
         
-        const days = prompt("Enter days to suspend (0 for permanent block):", "0");
+        const days = await window.customPrompt("Enter days to suspend (0 for permanent block):", "0");
         if (days === null) return;
         
-        const reason = prompt("Enter reason for suspension/blocking:");
+        const reason = await window.customPrompt("Enter reason for suspension/blocking:");
         if (reason === null) return;
         
         btn.innerText = "⏳";

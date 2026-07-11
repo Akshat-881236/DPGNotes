@@ -119,7 +119,6 @@ async function loadNotifications() {
             </div>
           </div>
         `;
-      }
     });
     
     if (html === "") {

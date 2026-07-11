@@ -65,7 +65,7 @@ function renderReport(data) {
   const { shareInfo, engagements } = data;
   
   document.getElementById("resourceTitle").innerText = shareInfo.title || "Unknown Document";
-  document.getElementById("totalOpens").innerText = engagements.length;
+  document.getElementById("totalOpens").innerText = shareInfo.clicks || 0;
   
   const uniqueIps = new Set(engagements.map(e => e.ipAddress)).size;
   document.getElementById("uniqueVisitors").innerText = uniqueIps;

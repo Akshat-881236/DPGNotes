@@ -194,4 +194,56 @@
       });
     });
   };
+
+  // Helper for prompt dialogs (Promise-based)
+  window.customPrompt = function(message, defaultValue = "") {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'dpg-modal-overlay';
+      
+      overlay.innerHTML = `
+        <div class="dpg-modal-box" style="text-align:left;">
+          <h3 class="dpg-modal-title" style="text-align:center; margin-bottom:1.5rem;">Action Required</h3>
+          <p class="dpg-modal-text" style="margin-bottom:1rem;">${message}</p>
+          <input type="text" id="dpgPromptInput" value="${defaultValue}" style="width:100%; padding:0.85rem; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:#f8fafc; font-family:'Outfit', sans-serif; font-size:1rem; margin-bottom:1.5rem; box-sizing:border-box;" />
+          <div class="dpg-confirm-actions">
+            <button class="dpg-modal-btn cancel" id="dpgPromptCancelBtn">Cancel</button>
+            <button class="dpg-modal-btn" id="dpgPromptOkBtn">Submit</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      const input = overlay.querySelector('#dpgPromptInput');
+      input.focus();
+      input.select();
+      
+      setTimeout(() => overlay.classList.add('active'), 10);
+      
+      overlay.querySelector('#dpgPromptCancelBtn').addEventListener('click', () => {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+          overlay.remove();
+          resolve(null);
+        }, 300);
+      });
+      
+      overlay.querySelector('#dpgPromptOkBtn').addEventListener('click', () => {
+        const val = input.value;
+        overlay.classList.remove('active');
+        setTimeout(() => {
+          overlay.remove();
+          resolve(val);
+        }, 300);
+      });
+
+      // Handle Enter key
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          overlay.querySelector('#dpgPromptOkBtn').click();
+        }
+      });
+    });
+  };
 })();
