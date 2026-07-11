@@ -499,17 +499,24 @@ app.get('/api/share/click', async (req, res) => {
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || "Unknown";
     const userAgent = req.headers['user-agent'] || "Unknown";
     
-    // Check for unusual activity (rate limit click tracking)
-    // Query recent clicks from this IP for this token in the last 5 minutes
-    const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const fiveMinsAgo = Date.now() - 5 * 60 * 1000;
     const recentClicksSnap = await db.collection("share_engagements")
       .where("shareToken", "==", token)
-      .where("ipAddress", "==", ipAddress)
-      .where("timestamp", ">=", fiveMinsAgo)
       .get();
       
     let status = "Usual";
-    if (recentClicksSnap.size >= 3) {
+    let clickCount = 0;
+    recentClicksSnap.forEach(doc => {
+      const eng = doc.data();
+      if (eng.ipAddress === ipAddress) {
+        const ts = eng.timestamp ? (eng.timestamp.toMillis ? eng.timestamp.toMillis() : (eng.timestamp._seconds * 1000 || eng.timestamp.seconds * 1000)) : 0;
+        if (ts >= fiveMinsAgo) {
+          clickCount++;
+        }
+      }
+    });
+    
+    if (clickCount >= 3) {
       status = "Unusual";
     }
 
