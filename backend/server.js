@@ -488,14 +488,14 @@ app.get('/api/share/click', async (req, res) => {
   if (!token) return res.status(400).json({ error: "Token required" });
 
   try {
-    const shareRef = db.collection("share_links").doc(token);
-    const docSnap = await shareRef.get();
-    
-    if (!docSnap.exists) {
+    const shareQuery = await db.collection("share_links").where("token", "==", token).get();
+    if (shareQuery.empty) {
       return res.status(404).json({ error: "Share link not found or expired" });
     }
     
+    const docSnap = shareQuery.docs[0];
     const data = docSnap.data();
+    const shareRef = docSnap.ref;
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || "Unknown";
     const userAgent = req.headers['user-agent'] || "Unknown";
     
@@ -549,9 +549,9 @@ app.get('/api/admin/share-report/:token', verifyAdmin, async (req, res) => {
     const token = req.params.token;
     
     // Fetch Share Link Info
-    const shareQuery = await db.collection('share_links').doc(token).get();
-    if (!shareQuery.exists) return res.status(404).json({ error: "Share link not found" });
-    const shareDoc = shareQuery.data();
+    const shareQuery = await db.collection('share_links').where('token', '==', token).get();
+    if (shareQuery.empty) return res.status(404).json({ error: "Share link not found" });
+    const shareDoc = shareQuery.docs[0].data();
     
     // Fetch Engagements
     const engQuery = await db.collection('share_engagements')
