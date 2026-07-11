@@ -131,6 +131,8 @@ const googleLogin =
     "googleLogin"
   );
 
+let selectedCategory = "";
+
 const globalSearch =
   document.getElementById(
     "globalSearch"
@@ -383,6 +385,29 @@ onAuthStateChanged(
       const isDashboard = window.location.pathname.endsWith("dashboard.html");
       if (isDashboard) {
         window.location.href = "index.html";
+      } else {
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareToken = urlParams.get('share');
+        if (shareToken) {
+          document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:var(--primary); font-family:var(--font-heading);'>Opening Shared Document...</h2>";
+          (async () => {
+            try {
+              const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${shareToken}`);
+              const data = await res.json();
+              if (res.ok && data.documentData) {
+                const d = data.documentData;
+                const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
+                window.location.href = viewerUrl;
+              } else {
+                alert("Share link expired or invalid.");
+                window.location.href = "index.html";
+              }
+            } catch (e) {
+              alert("Network error.");
+              window.location.href = "index.html";
+            }
+          })();
+        }
       }
     }
   }
@@ -858,72 +883,18 @@ async function renderLeaderboard() {
 ========================================= */
 
 function applyURLFilters(){
-
   try{
-
-    let filtered =
-    [...allDocuments];
-
-    /* CATEGORY */
-
     if(urlCategory){
-
-      filtered =
-      filtered.filter((doc)=>{
-
-        return(
-
-          doc.category
-          ===
-          urlCategory
-        );
-      });
+      selectedCategory = urlCategory;
     }
-
-    /* SEARCH */
-
+    
     if(urlSearch){
-
-      filtered =
-      filtered.filter((doc)=>{
-
-        return(
-
-          doc.title
-          ?.toLowerCase()
-          .includes(
-            urlSearch
-            .toLowerCase()
-          )
-
-          ||
-
-          doc.description
-          ?.toLowerCase()
-          .includes(
-            urlSearch
-            .toLowerCase()
-          )
-
-          ||
-
-          doc.discipline
-          ?.toLowerCase()
-          .includes(
-            urlSearch
-            .toLowerCase()
-          )
-        );
-      });
-
-      globalSearch.value =
-      urlSearch;
+      globalSearch.value = urlSearch;
     }
-
-    renderResources(
-      sortDocuments(filtered)
-    );
-
+    
+    if (typeof window.applyIndexFilters === 'function') {
+      window.applyIndexFilters();
+    }
   }catch(error){
 
     console.log(
@@ -960,32 +931,8 @@ function sortDocuments(docsArray) {
 
 if (globalSearch) {
   document.addEventListener("DOMContentLoaded", async ()=>{
-  // Check for Share Token
-  const urlParams = new URLSearchParams(window.location.search);
-  const shareToken = urlParams.get('share');
-  if (shareToken) {
-    document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:var(--primary); font-family:var(--font-heading);'>Opening Shared Document...</h2>";
-    try {
-      const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${shareToken}`);
-      const data = await res.json();
-      if (res.ok && data.documentData) {
-        const d = data.documentData;
-        const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
-        window.location.href = viewerUrl;
-        return;
-      } else {
-        alert("Share link expired or invalid.");
-        window.location.href = "index.html";
-      }
-    } catch (e) {
-      alert("Network error.");
-      window.location.href = "index.html";
-    }
-    return;
-  }
-
-  // Normal initialization
-  initFirebase();
+    // Normal initialization
+    initFirebase();
   loadAllUsers();
   loadDocuments();
   setupFilters();
@@ -993,56 +940,38 @@ if (globalSearch) {
   if(addDocBtn) addDocBtn.addEventListener("click", openModal);
   if(closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
   
+  window.applyIndexFilters = function() {
+    const searchValue = globalSearch ? globalSearch.value.toLowerCase().trim() : "";
+    let filtered = [...allDocuments];
+    
+    if (selectedCategory) {
+      filtered = filtered.filter(doc => doc.category === selectedCategory);
+    }
+    
+    if (searchValue) {
+      filtered = filtered.filter(doc => 
+        (doc.title || "").toLowerCase().includes(searchValue) ||
+        (doc.description || "").toLowerCase().includes(searchValue) ||
+        (doc.discipline || "").toLowerCase().includes(searchValue) ||
+        (Array.isArray(doc.tags) ? doc.tags.join(" ") : (doc.tags || "")).toLowerCase().includes(searchValue)
+      );
+    }
+    
+    renderResources(sortDocuments(filtered));
+  };
+
   const globalSortSelect = document.getElementById("globalSort");
   if (globalSortSelect) {
     globalSortSelect.addEventListener("change", () => {
-      // Trigger the search input event to re-filter and re-sort
-      globalSearch.dispatchEvent(new Event("input"));
+      window.applyIndexFilters();
     });
   }
   
-  globalSearch.addEventListener(
-    "input",
-  (e)=>{
-
-    const value =
-    e.target.value
-    .toLowerCase()
-    .trim();
-
-    const filtered =
-    allDocuments.filter((doc)=>{
-
-      return(
-
-        doc.title
-        ?.toLowerCase()
-        .includes(value)
-
-        ||
-
-        doc.description
-        ?.toLowerCase()
-        .includes(value)
-
-        ||
-
-        doc.discipline
-        ?.toLowerCase()
-        .includes(value)
-
-        ||
-
-        doc.tags
-        ?.join(" ")
-        .toLowerCase()
-        .includes(value)
-      );
+  if (globalSearch) {
+    globalSearch.addEventListener("input", () => {
+      window.applyIndexFilters();
     });
-
-    renderResources(sortDocuments(filtered));
   }
-);
 });
 }
 
@@ -1056,24 +985,9 @@ categoryButtons.forEach((button)=>{
     "click",
     ()=>{
 
-      const category =
-      button.dataset.category;
-
-      const filtered =
-      allDocuments.filter((doc)=>{
-
-        return(
-          doc.category
-          ===
-          category
-        );
-      });
-
-      renderResources(filtered);
-
-      openPage(
-        "resourcesPage"
-      );
+      selectedCategory = button.dataset.category;
+      window.applyIndexFilters();
+      openPage("resourcesPage");
     }
   );
 });

@@ -556,17 +556,22 @@ app.get('/api/admin/share-report/:token', verifyAdmin, async (req, res) => {
     // Fetch Engagements
     const engQuery = await db.collection('share_engagements')
       .where('shareToken', '==', token)
-      .orderBy('timestamp', 'desc')
       .get();
       
     const engagements = [];
     engQuery.forEach(doc => {
       const engData = doc.data();
-      // convert timestamp to milliseconds for JSON serialization if it's a Firestore Timestamp
       if (engData.timestamp) {
         engData.timestamp = { _seconds: engData.timestamp.seconds };
       }
       engagements.push(engData);
+    });
+    
+    // Sort in memory to avoid index requirements
+    engagements.sort((a, b) => {
+      const aTime = a.timestamp ? a.timestamp._seconds : 0;
+      const bTime = b.timestamp ? b.timestamp._seconds : 0;
+      return bTime - aTime;
     });
     
     res.json({
