@@ -772,10 +772,14 @@ function renderResources(data){
 async function fetchDocuments(){
   try{
     // PRELOAD USERS CACHE
-    const uSnap = await getDocs(collection(db, "users"));
-    uSnap.forEach(uDoc => {
-      usersCache[uDoc.id] = uDoc.data();
-    });
+    try {
+      const uSnap = await getDocs(collection(db, "users"));
+      uSnap.forEach(uDoc => {
+        usersCache[uDoc.id] = uDoc.data();
+      });
+    } catch (e) {
+      console.warn("Could not preload users cache:", e);
+    }
 
     const q = query(
 
@@ -932,7 +936,6 @@ function sortDocuments(docsArray) {
 if (globalSearch) {
   document.addEventListener("DOMContentLoaded", async ()=>{
     // Normal initialization
-    initFirebase();
   loadAllUsers();
   loadDocuments();
   setupFilters();
