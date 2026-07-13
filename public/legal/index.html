@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DPGNotes Legal Center</title>
+  <meta name="description" content="Official Legal Documentation and Policies for DPGNotes Academic Portal.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dark.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body class="theme-auto">
+  <div class="reading-progress-container">
+    <div id="readingProgress" class="reading-progress-bar"></div>
+  </div>
+
+  <!-- Header Section -->
+  <header class="legal-header">
+    <div class="header-container">
+      <a href="../index.html" class="legal-logo">
+        <i class="ri-shield-user-fill logo-icon"></i>
+        <span>DPGNotes <span class="accent-text">Legal</span></span>
+      </a>
+      
+      <div class="search-trigger" id="searchTrigger" title="Search documentation (Ctrl + K)">
+        <i class="ri-search-line"></i>
+        <span class="search-placeholder">Search policies...</span>
+        <span class="search-shortcut">⌘K</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme">
+          <i class="ri-sun-line light-icon"></i>
+          <i class="ri-moon-line dark-icon"></i>
+        </button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu">
+          <i class="ri-menu-4-line menu-icon"></i>
+          <i class="ri-close-line close-icon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="legal-layout-container">
+    <!-- Sidebar Navigation -->
+    <aside class="legal-sidebar" id="legalSidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-group">
+          <h3 class="group-title">Overview</h3>
+          <ul class="nav-list">
+            <li><a href="#overview" class="nav-link active" data-section="overview"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="#updates" class="nav-link" data-section="updates"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-group">
+          <h3 class="group-title">Standard Policies</h3>
+          <ul class="nav-list">
+            <li><a href="#privacy" class="nav-link" data-section="privacy"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
+            <li><a href="#terms" class="nav-link" data-section="terms"><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="#cookies" class="nav-link" data-section="cookies"><i class="ri-cookie-line"></i> Cookie Policy</a></li>
+            <li><a href="#disclaimer" class="nav-link" data-section="disclaimer"><i class="ri-alert-line"></i> Disclaimer</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-group">
+          <h3 class="group-title">Intellectual Property</h3>
+          <ul class="nav-list">
+            <li><a href="#copyright" class="nav-link" data-section="copyright"><i class="ri-copyright-line"></i> Copyright Policy</a></li>
+            <li><a href="#dmca" class="nav-link" data-section="dmca"><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-group">
+          <h3 class="group-title">Data & Security</h3>
+          <ul class="nav-list">
+            <li><a href="#analytics" class="nav-link" data-section="analytics"><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="#security" class="nav-link" data-section="security"><i class="ri-shield-check-line"></i> Security Policy</a></li>
+            <li><a href="#retention" class="nav-link" data-section="retention"><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-group">
+          <h3 class="group-title">Help & Support</h3>
+          <ul class="nav-list">
+            <li><a href="#faq" class="nav-link" data-section="faq"><i class="ri-questionnaire-line"></i> FAQ</a></li>
+            <li><a href="#contact" class="nav-link" data-section="contact"><i class="ri-mail-send-line"></i> Contact Center</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="legal-content">
+      <div class="content-wrapper">
+        
+        <!-- Breadcrumbs Navigation -->
+        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="index.html">Legal Center</a></li>
+            <li class="current-crumb" id="currentCrumb">Overview</li>
+          </ol>
+        </nav>
+
+        <!-- Document Viewer and Action Panel -->
+        <div class="doc-viewer-card">
+          <div class="viewer-actions">
+            <span class="current-policy-title" id="actionTitle">Legal Overview</span>
+            <div class="btn-group">
+              <button id="shareBtn" class="action-btn" title="Copy Share Link"><i class="ri-share-line"></i> Share</button>
+              <button id="printBtn" class="action-btn" title="Print document"><i class="ri-printer-line"></i> Print</button>
+              <button id="downloadPdfBtn" class="action-btn primary" title="Download PDF Version"><i class="ri-file-download-line"></i> Download PDF</button>
+            </div>
+          </div>
+          
+          <!-- Content Sections -->
+          <div class="policy-article-container">
+            <!-- Section: Overview -->
+            <article id="overviewSection" class="policy-section active-section">
+              <h1>DPGNotes Legal Documentation Overview</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>Welcome to the DPGNotes Legal Documentation Center. We believe in providing robust transparency, safety, and operational clarity to all contributors, university students, administrators, and visitors. This portal outlines all regulatory policies, terms of services, cookie consents, intellectual property protocols, and security standards implemented on the platform.</p>
+              
+              <h2>Legal Roadmap and Compliance Directory</h2>
+              <p>Use the sidebar or the navigation indicators below to review each policy document. All documentation is available as web-readable semantic HTML5 format as well as official PDF versions downloadable directly from the dashboard.</p>
+              
+              <div class="policy-grid">
+                <div class="policy-card-item">
+                  <i class="ri-shield-keyhole-fill"></i>
+                  <h4>Privacy Policy</h4>
+                  <p>Learn how we securely manage your credentials, profiles, and resources under the DPDP Act 2023 compliance standard.</p>
+                  <a href="#privacy" class="read-link">Read Policy <i class="ri-arrow-right-line"></i></a>
+                </div>
+                <div class="policy-card-item">
+                  <i class="ri-article-fill"></i>
+                  <h4>Terms & Conditions</h4>
+                  <p>Understand the code of conduct, license terms for uploaded resources, account deletion, and administration rights.</p>
+                  <a href="#terms" class="read-link">Read Terms <i class="ri-arrow-right-line"></i></a>
+                </div>
+                <div class="policy-card-item">
+                  <i class="ri-bar-chart-box-fill"></i>
+                  <h4>Tracking & Analytics</h4>
+                  <p>Detailed outline of anonymous and logged-in visitor event telemetry, CTR metrics, and browser configurations tracked.</p>
+                  <a href="#analytics" class="read-link">Read Telemetry <i class="ri-arrow-right-line"></i></a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Section: Policy Updates -->
+            <article id="updatesSection" class="policy-section">
+              <h1>Recent Policy & Legal Revisions</h1>
+              <p class="subtitle">Last Updated: July 13, 2026</p>
+              <p>DPGNotes periodically reviews and adjusts its policies to match compliance amendments (like the Indian Digital Personal Data Protection (DPDP) Act 2023) and new feature integrations.</p>
+              <div class="update-timeline">
+                <div class="timeline-item">
+                  <span class="timeline-date">July 13, 2026</span>
+                  <h4>Version 2.4 - Unified Analytics & Custom Modals release</h4>
+                  <p>Released detailed telemetry logging metrics. Replaced native alert window functions with custom professional brand overlays globally. Updated DPDP compliance schemas for visitor tracking.</p>
+                </div>
+                <div class="timeline-item">
+                  <span class="timeline-date">May 20, 2026</span>
+                  <h4>Version 2.3 - Share Link click logs integration</h4>
+                  <p>Added detailed share click logging tables to the Admin Portal, enabling traffic analytics reporting on guest/uploader metrics.</p>
+                </div>
+              </div>
+            </article>
+
+            <!-- Section: Privacy Policy -->
+            <article id="privacySection" class="policy-section">
+              <h1>Privacy Policy</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>This Privacy Policy describes how DPGNotes ("we", "our", or "us") collects, uses, and shares information in connection with your use of our platform. We are committed to protecting your personal data in accordance with modern privacy frameworks, including the Digital Personal Data Protection (DPDP) Act, 2023.</p>
+              
+              <h2>1. Information Collection</h2>
+              <p>We collect credentials and information to provide better services to our users. This includes account profile information (names, emails) and resource uploads (notes, exams, sample papers).</p>
+              
+              <h2>2. Information Security</h2>
+              <p>All data is hosted securely in Google Firebase / Cloud Firestore. We enforce strict Firebase Security Rules, restricting read/write permissions to verified account uploaders and administrators. Sensitive transactions are processed behind JWT token authorization headers.</p>
+            </article>
+
+            <!-- Section: Terms & Conditions -->
+            <article id="termsSection" class="policy-section">
+              <h1>Terms & Conditions</h1>
+              <p class="subtitle">Last Revised: July 13, 2026</p>
+              <p>By accessing or uploading materials to DPGNotes, you agree to comply with and be bound by the following Terms & Conditions of use. Please review them carefully.</p>
+              
+              <h2>1. Platform Use & Account Eligibility</h2>
+              <p>DPGNotes is designed as an open educational repository. Users may register to upload academic notes, sample papers, sessional guides, and tutorials. Contributors retain the right to delete their own uploaded documents as well as delete their entire account profile via the dashboard Danger Zone at any time.</p>
+              
+              <h2>2. Administration Rights</h2>
+              <p>Administrators have the authority to suspend or permanently block user profiles found violating sessional content standards or copyright guidelines. Suspended contributors are barred from uploading or generating share links for the suspension duration. Administrators can also permanently delete generated share codes, terminating access for visitors and sending automated email warnings to all interested parties.</p>
+            </article>
+
+            <!-- Section: Cookie Policy -->
+            <article id="cookiesSection" class="policy-section">
+              <h1>Cookie Policy</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>DPGNotes uses cookies, local storage key-values, and similar tracking technologies to enhance your interface interaction and persist session state preferences.</p>
+              
+              <h2>1. What Technologies We Use</h2>
+              <ul>
+                <li><strong>Local Storage:</strong> Used to persist theme preferences (dark/light mode), secure admin JWT tokens, and contributor session states.</li>
+                <li><strong>Firebase Authentication Cookies:</strong> Firebase Auth SDK utilizes browser tokens to persist logged-in statuses securely.</li>
+              </ul>
+              
+              <h2>2. Consent Management</h2>
+              <p>By using DPGNotes, you consent to the storage of essential session tokens necessary for account authorization, security, and theme preferences.</p>
+            </article>
+
+            <!-- Section: Disclaimer -->
+            <article id="disclaimerSection" class="policy-section">
+              <h1>Disclaimer</h1>
+              <p class="subtitle">Last Updated: July 13, 2026</p>
+              <p>The materials, documents, notes, sessional papers, and resources available on DPGNotes are provided "as is" and without warranties of any kind, either express or implied.</p>
+              
+              <h2>1. Academic Content Accuracy</h2>
+              <p>Uploaded documents represent user contributions. DPGNotes does not guarantee the absolute accuracy, completeness, or grades resulting from the study of resources shared on the platform.</p>
+              
+              <h2>2. Third-Party Links</h2>
+              <p>Shared links containing external references or PDF rendering interfaces are third-party locations. DPGNotes is not responsible for the stability, privacy, or security of external endpoints.</p>
+            </article>
+
+            <!-- Section: Copyright Policy -->
+            <article id="copyrightSection" class="policy-section">
+              <h1>Copyright Policy</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>DPGNotes respects the intellectual property rights of academic authors, universities, and creators. We expect our contributors to do the same.</p>
+              
+              <h2>1. Contributor Submissions</h2>
+              <p>Contributors must hold rights or licenses for any educational materials, books, or notes they upload to DPGNotes. Uploading copyrighted textbooks, premium guides, or restricted university materials without authorization is strictly prohibited.</p>
+            </article>
+
+            <!-- Section: DMCA Policy -->
+            <article id="dmcaSection" class="policy-section">
+              <h1>DMCA Policy</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>In accordance with the Digital Millennium Copyright Act (DMCA), we have established a take-down procedure to address complaints about copyright violations on our platform.</p>
+              
+              <h2>1. Submitting a Take-Down Request</h2>
+              <p>If you believe that any material residing on DPGNotes infringes your copyright, you may submit a formal notification containing:
+                <ul>
+                  <li>Your legal signature and contact details.</li>
+                  <li>Identification of the copyrighted work claimed to be infringed.</li>
+                  <li>The exact URL (e.g. share code or document ID) hosting the material.</li>
+                </ul>
+              Requests should be sent directly via our Contact form.</p>
+            </article>
+
+            <!-- Section: Tracking & Analytics Policy -->
+            <article id="analyticsSection" class="policy-section">
+              <h1>Tracking & Analytics Policy</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>We collect essential analytics to improve site load speeds, monitor security anomalies, and track academic resource engagement (Click Through Rate / CTR).</p>
+              
+              <h2>1. Telemetry for Guest Users</h2>
+              <p>When you visit the site anonymously, the platform may track:
+                <ul>
+                  <li>Anonymous Guest ID / Session ID</li>
+                  <li>Timestamps, document views, and PDF download counts</li>
+                  <li>Operating system, browser agent version, device type, and screen resolution</li>
+                  <li>Search queries and custom theme selections</li>
+                </ul>
+              </p>
+
+              <h2>2. Telemetry for Authenticated Contributors</h2>
+              <p>For logged-in users, the platform records:
+                <ul>
+                  <li>User ID, Username, Role, and masked Email address</li>
+                  <li>Detailed action logs (uploads, likes, shares, login/logout timestamps)</li>
+                  <li>Document click-through records mapping back to the generating token</li>
+                </ul>
+              </p>
+            </article>
+
+            <!-- Section: Security Policy -->
+            <article id="securitySection" class="policy-section">
+              <h1>Security Policy</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>We utilize best-in-class security measures to protect contributor uploads and administrative accounts from unauthorized access.</p>
+              
+              <h2>1. Server Security</h2>
+              <p>All database queries undergo validation via Google Firebase server-side Firestore Rules. Admin actions require JWT authentication tokens verified on the Render server.</p>
+              
+              <h2>2. API Security</h2>
+              <p>Our backend APIs employ CORS protection and JWT token verification. Deletions and user modifications are strictly logged in the Activity Logs database.</p>
+            </article>
+
+            <!-- Section: Data Retention Policy -->
+            <article id="retentionSection" class="policy-section">
+              <h1>Data Retention Policy</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              <p>We only retain collected personal data and document records for as long as necessary to fulfill academic usage and compliance mandates.</p>
+              
+              <h2>1. Contributor Deletion</h2>
+              <p>When a contributor deletes their account, all associated documents, user logs, and database profiles are permanently and immediately deleted from Firestore.</p>
+              
+              <h2>2. Activity and Traffic Logs</h2>
+              <p>Click engagements, telemetry logs, and activity entries are archived or scrubbed after 180 days to minimize data footprint.</p>
+            </article>
+
+            <!-- Section: FAQ -->
+            <article id="faqSection" class="policy-section">
+              <h1>Legal FAQ</h1>
+              <p class="subtitle">Last Updated: July 13, 2026</p>
+              
+              <div class="faq-item">
+                <h4>Can I delete notes that I uploaded to the portal?</h4>
+                <p>Yes. Contributors have full ownership and rights to edit or permanently delete any resources they uploaded directly from their Contributor Dashboard.</p>
+              </div>
+              <div class="faq-item">
+                <h4>What happens if a share link I generated is deleted by an admin?</h4>
+                <p>If an administrator terminates a share link, the link becomes invalid and redirects to DPGNotes homepage. An automated email notice is sent to you (the generator) and any regular visitors logged in our database.</p>
+              </div>
+            </article>
+
+            <!-- Section: Contact Center -->
+            <article id="contactSection" class="policy-section">
+              <h1>Contact Legal Team</h1>
+              <p class="subtitle">We value your inquiries and comments</p>
+              <p>If you have any questions regarding these policies, privacy rights, DPDP Act 2023 compliance, or copyright take-down notices, you can contact our legal representative at:</p>
+              <div class="contact-info-box">
+                <p><strong>Email:</strong> legal@dpgnotes.web.app</p>
+                <p><strong>Department:</strong> DPGNotes Legal and Compliance Division</p>
+                <p><strong>Network Admin:</strong> Akshat Network Hub Support Team</p>
+              </div>
+            </article>
+          </div>
+          
+          <!-- Embedded PDF Viewer Container -->
+          <div class="pdf-viewer-container">
+            <div class="pdf-viewer-header">
+              <i class="ri-file-pdf-fill pdf-icon"></i>
+              <span>Official PDF Document</span>
+            </div>
+            <div class="pdf-iframe-wrapper" id="pdfWrapper">
+              <!-- Will be loaded dynamically, falling back to Coming Soon if PDF is not found -->
+              <div class="pdf-coming-soon">
+                <i class="ri-file-warning-line"></i>
+                <h3>PDF Document Coming Soon</h3>
+                <p>The official signed PDF version is currently being compiled. The full HTML text is readable in the view panel.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Table of Contents (Right Sidebar) -->
+    <aside class="legal-toc">
+      <div class="toc-sticky-box">
+        <h4 class="toc-title">On This Page</h4>
+        <ul class="toc-list" id="tocList">
+          <!-- Will be loaded dynamically based on active article headers -->
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Search Modal -->
+  <div class="search-modal" id="searchModal">
+    <div class="search-modal-box">
+      <div class="search-modal-header">
+        <i class="ri-search-line"></i>
+        <input type="text" id="searchInput" placeholder="Search across all policies..." aria-label="Search policies">
+        <button id="closeSearchBtn" class="close-search-btn"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="search-results" id="searchResults">
+        <p class="no-results">Type keywords to search...</p>
+      </div>
+      <div class="search-modal-footer">
+        <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select, <kbd>ESC</kbd> to close.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/theme.js"></script>
+  <script src="js/sidebar.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

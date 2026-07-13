@@ -1,0 +1,104 @@
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+  .legal-content {
+    margin-right: 0;
+    padding: 2rem;
+  }
+  .legal-toc {
+    display: none;
+  }
+}
+
+@media (max-width: 991px) {
+  :root {
+    --sidebar-width: 250px;
+  }
+  .search-trigger {
+    width: 200px;
+  }
+  .search-shortcut {
+    display: none;
+  }
+  .legal-content {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+  
+  .search-trigger {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  
+  .search-placeholder, .search-shortcut {
+    display: none;
+  }
+  
+  .legal-sidebar {
+    left: -100%;
+    width: 280px;
+    transition: left var(--transition-normal);
+  }
+  
+  .legal-sidebar.active {
+    left: 0;
+  }
+  
+  .legal-content {
+    margin-left: 0;
+    padding: 1.5rem 1rem;
+  }
+  
+  .viewer-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .btn-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .action-btn {
+    flex-grow: 1;
+    justify-content: center;
+  }
+  
+  .policy-article-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .policy-section h1 {
+    font-size: 1.8rem;
+  }
+  
+  .pdf-viewer-container {
+    padding: 1rem;
+  }
+}
+
+@media print {
+  .legal-header, .legal-sidebar, .legal-toc, .viewer-actions, .pdf-viewer-container, .legal-breadcrumbs {
+    display: none !important;
+  }
+  .legal-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+  .doc-viewer-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .policy-article-container {
+    padding: 0 !important;
+  }
+}

@@ -1,0 +1,71 @@
+/* Dark Theme Override Variables */
+.theme-dark {
+  --bg-primary: #090d16;
+  --bg-secondary: #111827;
+  --bg-active: #1f2937;
+  --border-color: #374151;
+  
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-light: rgba(99, 102, 241, 0.15);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .legal-header {
+  background-color: rgba(17, 24, 39, 0.85);
+}
+
+.theme-dark .nav-link:hover, .theme-dark .nav-link.active {
+  color: #fff;
+  background-color: var(--primary-light);
+}
+
+.theme-dark .nav-link:hover i, .theme-dark .nav-link.active i {
+  color: var(--primary);
+}
+
+.theme-dark .search-result-item:hover, .theme-dark .search-result-item.selected {
+  background-color: var(--bg-active);
+}
+
+.theme-dark .search-modal {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* System preferences auto-dark selector */
+@media (prefers-color-scheme: dark) {
+  .theme-auto {
+    --bg-primary: #090d16;
+    --bg-secondary: #111827;
+    --bg-active: #1f2937;
+    --border-color: #374151;
+    
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-light: rgba(99, 102, 241, 0.15);
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  }
+  
+  .theme-auto .legal-header {
+    background-color: rgba(17, 24, 39, 0.85);
+  }
+  
+  .theme-auto .nav-link:hover, .theme-auto .nav-link.active {
+    color: #fff;
+    background-color: var(--primary-light);
+  }
+}
