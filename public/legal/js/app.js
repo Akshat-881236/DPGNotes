@@ -47,6 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Active section track
   let currentSection = 'overview';
   let watermarkText = '';
+  let lastWatermarkText = '';
+  let renderSessionId = 0;
 
   // Get or Generate unique Guest ID
   let guestId = localStorage.getItem('guestId');
@@ -58,22 +60,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup Dynamic Watermark based on User Authentication state
   onAuthStateChanged(auth, (user) => {
     const adminToken = localStorage.getItem('adminToken');
+    let newWatermark = '';
     if (adminToken) {
       // Admin Watermark
       const loginTime = localStorage.getItem('adminLoginTime') || new Date().toLocaleString();
-      watermarkText = `Admin-${loginTime}`;
+      newWatermark = `Admin-${loginTime}`;
     } else if (user) {
       // Contributor Watermark
       const name = user.displayName || user.email.split('@')[0];
-      watermarkText = `${name}-${user.uid}`;
+      newWatermark = `${name}-${user.uid}`;
     } else {
       // Guest Watermark
-      watermarkText = `Guest-${guestId}`;
+      newWatermark = `Guest-${guestId}`;
     }
-    
-    // Refresh viewer if showing a PDF
-    if (pdfWrapper && !['overview', 'updates', 'contact'].includes(currentSection)) {
-      updatePdfViewer(currentSection);
+
+    if (newWatermark !== lastWatermarkText) {
+      watermarkText = newWatermark;
+      lastWatermarkText = newWatermark;
+      
+      // Refresh viewer if showing a PDF
+      if (pdfWrapper && !['overview', 'updates', 'contact'].includes(currentSection)) {
+        updatePdfViewer(currentSection);
+      }
     }
   });
 
@@ -97,6 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Dynamic Custom PDF Viewer using PDF.js & Canvas Watermark Overlay
   function updatePdfViewer(sectionName) {
     if (!pdfWrapper) return;
+    
+    renderSessionId++;
+    const localSessionId = renderSessionId;
+
     pdfWrapper.innerHTML = '';
     pdfWrapper.style.display = 'flex';
 
@@ -127,6 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
     pdfWrapper.style.display = 'block';
     pdfWrapper.style.height = 'auto';
     pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
+      if (localSessionId !== renderSessionId) return;
+
       const viewerDiv = document.createElement('div');
       viewerDiv.style.width = '100%';
       viewerDiv.style.height = '700px';
@@ -139,6 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Render all pages sequentially
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         pdf.getPage(pageNum).then(page => {
+          if (localSessionId !== renderSessionId) return;
+
           const viewport = page.getViewport({ scale: 1.2 });
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -157,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
 
           page.render(renderContext).promise.then(() => {
+            if (localSessionId !== renderSessionId) return;
             // Apply Watermark Overlay
             ctx.save();
             ctx.font = 'bold 24px Outfit';
