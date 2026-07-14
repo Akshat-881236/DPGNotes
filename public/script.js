@@ -11,17 +11,13 @@ import { initializeApp, getApps, getApp }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
 import {
-
   getAuth,
-
   GoogleAuthProvider,
-
   signInWithPopup,
-
   signOut,
-
-  onAuthStateChanged
-
+  onAuthStateChanged,
+  getAdditionalUserInfo,
+  deleteUser
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
@@ -306,32 +302,159 @@ let authMode = "login";
 
 /* GOOGLE */
 
+function showSuspensionModal(suspendedUntil) {
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(15, 17, 26, 0.95)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '10000';
+  modal.style.padding = '20px';
+  modal.style.backdropFilter = 'blur(10px)';
+
+  const box = document.createElement('div');
+  box.style.background = 'rgba(30, 41, 59, 0.95)';
+  box.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+  box.style.borderRadius = '16px';
+  box.style.padding = '30px';
+  box.style.maxWidth = '450px';
+  box.style.width = '100%';
+  box.style.textAlign = 'center';
+  box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+  box.style.color = '#f8fafc';
+  box.style.fontFamily = "'Inter', sans-serif";
+
+  box.innerHTML = `
+    <div style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"><i class="ri-alarm-warning-line"></i></div>
+    <h2 style="margin: 0 0 10px 0; font-size: 1.5rem;">Account Suspended</h2>
+    <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;">
+      Your contributor account is temporarily suspended under the DPGNotes Regulations & Suspension Act (DRASA).
+    </p>
+    <div style="background: rgba(239,68,68,0.1); border-radius: 12px; padding: 15px; margin-bottom: 25px;">
+      <span style="font-size: 0.8rem; color: #fca5a5; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Time Remaining</span>
+      <div id="suspensionCountdown" style="font-size: 2rem; font-weight: 700; color: #ef4444; margin-top: 5px; font-family: monospace;">--:--:--</div>
+    </div>
+    <button id="closeSuspensionBtn" style="width:100%; padding: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Acknowledge</button>
+  `;
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  const countdownEl = modal.querySelector('#suspensionCountdown');
+  const closeBtn = modal.querySelector('#closeSuspensionBtn');
+
+  const updateCountdown = () => {
+    const diff = suspendedUntil - Date.now();
+    if (diff <= 0) {
+      clearInterval(interval);
+      modal.remove();
+      return;
+    }
+    const totalSecs = Math.floor(diff / 1000);
+    const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
+    const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
+    const secs = String(totalSecs % 60).padStart(2, '0');
+    countdownEl.innerText = `${hrs}:${mins}:${secs}`;
+  };
+
+  updateCountdown();
+  const interval = setInterval(updateCountdown, 1000);
+
+  closeBtn.addEventListener('click', () => {
+    clearInterval(interval);
+    modal.remove();
+  });
+}
+
+function showSignUpModal(confirmCallback, cancelCallback) {
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(15, 17, 26, 0.95)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '10000';
+  modal.style.padding = '20px';
+  modal.style.backdropFilter = 'blur(10px)';
+
+  const box = document.createElement('div');
+  box.style.background = 'rgba(30, 41, 59, 0.95)';
+  box.style.border = '1px solid rgba(99, 102, 241, 0.2)';
+  box.style.borderRadius = '16px';
+  box.style.padding = '30px';
+  box.style.maxWidth = '480px';
+  box.style.width = '100%';
+  box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+  box.style.color = '#f8fafc';
+  box.style.fontFamily = "'Inter', sans-serif";
+
+  box.innerHTML = `
+    <div style="font-size: 2.5rem; color: #6366f1; text-align: center; margin-bottom: 15px;"><i class="ri-shield-user-line"></i></div>
+    <h2 style="margin: 0 0 15px 0; font-size: 1.4rem; text-align: center;">DPGNotes Registration Consent</h2>
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 25px; font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
+      <p style="margin: 0 0 10px 0;"><strong>Official Legal Agreement Summary:</strong></p>
+      By continuing with your DPGNotes registration, you explicitly agree that:
+      <ul style="margin: 8px 0; padding-left: 20px; color: #94a3b8; text-align: left;">
+        <li>Your profile information will be stored securely under our <a href="legal/index.html#privacy" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Privacy Policy</a>.</li>
+        <li>All uploads must comply with copyright guidelines listed in our <a href="legal/index.html#copyright" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Copyright Policy</a>.</li>
+        <li>Your account activity and resources are governed strictly by the <a href="legal/index.html#drasa" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Regulations & Suspension Act (DRASA)</a>.</li>
+      </ul>
+      Unauthorized distribution of intellectual property is strictly prohibited.
+    </div>
+    <div style="display: flex; gap: 12px;">
+      <button id="cancelSignUpBtn" style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Cancel</button>
+      <button id="confirmSignUpBtn" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); transition: transform 0.2s;">Accept & Register</button>
+    </div>
+  `;
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  const confirmBtn = modal.querySelector('#confirmSignUpBtn');
+  const cancelBtn = modal.querySelector('#cancelSignUpBtn');
+
+  confirmBtn.addEventListener('click', () => {
+    modal.remove();
+    confirmCallback();
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    modal.remove();
+    cancelCallback();
+  });
+}
+
 if (googleLogin) {
-  googleLogin.addEventListener(
-    "click",
-  async () => {
-
+  googleLogin.addEventListener("click", async () => {
     try {
-
-      // LOGOUT
-
-      if(currentUser){
-
+      if (currentUser) {
         await signOut(auth);
-
         return;
       }
 
-      // LOGIN
-      await signInWithPopup(
-        auth,
-        googleProvider
-      );
-      
-      // Activity logged in onAuthStateChanged
+      const result = await signInWithPopup(auth, googleProvider);
+      const additionalInfo = getAdditionalUserInfo(result);
+      const isNewUser = additionalInfo ? additionalInfo.isNewUser : false;
 
-    } catch(error){
-
+      if (isNewUser) {
+        showSignUpModal(
+          () => {
+            console.log("New contributor registration consent accepted.");
+          },
+          async () => {
+            try {
+              await deleteUser(result.user);
+            } catch (err) {
+              console.error("Failed to revert user registration", err);
+            }
+            await signOut(auth);
+          }
+        );
+      }
+    } catch (error) {
       console.log(error);
     }
   });
