@@ -474,7 +474,7 @@ app.post('/api/share/generate', async (req, res) => {
     const docRef = db.collection("documents").doc(docId);
     await docRef.update({
       shareCount: admin.firestore.FieldValue.increment(1)
-    });
+    }).catch(err => console.log("Virtual or missing doc, skipping shareCount increment: " + err.message));
 
     res.json({ token, shareUrl: `https://dpgnotes.web.app/index.html?share=${token}` });
   } catch (error) {
@@ -604,13 +604,23 @@ const createTemplate = (title, message) => `
       <h2 style="margin-top: 0; color: #f8fafc; font-size: 20px;">${title}</h2>
       <div style="color: #cbd5e1; font-size: 16px; line-height: 1.6;">
         ${message}
+        <br><br>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0;">
+        <span style="font-size: 11px; color: #64748b; display: block; line-height: 1.4;">
+          <strong>Legal & Compliance Notice:</strong> This activity is tracked, validated, and logged in our secure audit trails under our Tracking & Analytics Policy. Contributor profiles, uploads, suspensions, and access privileges are governed strictly in accordance with DPGNotes Regulations & Suspension Act (DRASA) and general Terms & Conditions.
+        </span>
       </div>
       <div style="margin-top: 40px; text-align: center;">
         <a href="https://dpgnotes.web.app/dashboard.html" style="background: #3b82f6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">Go to Dashboard</a>
       </div>
     </div>
-    <div style="background: #0f172a; padding: 20px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.05);">
-      © ${new Date().getFullYear()} Akshat Network Hub. All rights reserved.
+    <div style="background: #0f172a; padding: 20px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.05); line-height: 1.6;">
+      <p style="margin: 0 0 8px 0;">© ${new Date().getFullYear()} Akshat Network Hub. All rights reserved.</p>
+      <p style="margin: 0;">
+        <a href="https://dpgnotes.web.app/legal/index.html#privacy" style="color: #64748b; text-decoration: underline; margin: 0 5px;">Privacy Policy</a> | 
+        <a href="https://dpgnotes.web.app/legal/index.html#terms" style="color: #64748b; text-decoration: underline; margin: 0 5px;">Terms & Conditions</a> | 
+        <a href="https://dpgnotes.web.app/legal/index.html#drasa" style="color: #64748b; text-decoration: underline; margin: 0 5px;">DRASA Regulations</a>
+      </p>
     </div>
   </div>
 </div>

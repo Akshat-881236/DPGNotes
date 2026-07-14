@@ -113,9 +113,9 @@
     
     .back-btn {
       padding: 0.8rem 1.5rem;
-      background: rgba(255,255,255,0.1);
+      background: rgba(20, 24, 39, 0.7);
       color: white;
-      border: none;
+      border: 1px solid var(--report-border);
       border-radius: 12px;
       cursor: pointer;
       text-decoration: none;
@@ -124,8 +124,14 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    .back-btn:hover {
+      background: linear-gradient(135deg, var(--report-primary), #6366f1);
+      border-color: transparent;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -138,7 +144,7 @@
   
   <div class="report-container" id="reportContainer">
     <div class="report-header">
-      <h1><i class="ri-bar-chart-box-line"></i> Engagement Report</h1>
+      <h1><i class="ri-bar-chart-box-line"></i> Engagement Report <i class="ri-information-line" style="font-size: 1.1rem; color: var(--report-primary); cursor: pointer; vertical-align: middle; margin-left: 6px;" title="Reports track anonymous visitor click CTR under our Tracking & Analytics Policy. Click to view." onclick="window.open('legal/index.html#analytics', '_blank')"></i></h1>
       <div style="display:flex; gap:10px;">
         <a href="legal/index.html" class="back-btn" style="background:rgba(139,92,246,0.1); color:var(--report-primary);"><i class="ri-shield-user-line"></i> Legal Policies</a>
         <button onclick="window.close()" class="back-btn"><i class="ri-close-line"></i> Close Report</button>

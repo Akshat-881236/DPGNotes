@@ -201,6 +201,10 @@ onAuthStateChanged(auth, async (user) => {
           const data = await res.json();
           if (res.ok && data.documentData) {
             const d = data.documentData;
+            if (d.docId && d.docId.startsWith('legal_')) {
+              window.location.href = `legal/index.html#${d.docId.replace('legal_', '')}`;
+              return;
+            }
             const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
             window.location.href = viewerUrl;
           } else {

@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updatePdfViewer(sectionName) {
     if (!pdfWrapper) return;
     pdfWrapper.innerHTML = '';
+    pdfWrapper.style.display = 'flex';
 
     const noPdfSections = ['overview', 'updates', 'contact'];
     if (noPdfSections.includes(sectionName)) {
@@ -123,13 +124,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfPath = `docs/${pdfName}`;
 
     // PDF.js Canvas Rendering with Watermark
+    pdfWrapper.style.display = 'block';
+    pdfWrapper.style.height = 'auto';
     pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
       const viewerDiv = document.createElement('div');
       viewerDiv.style.width = '100%';
-      viewerDiv.style.height = '600px';
+      viewerDiv.style.height = '700px';
       viewerDiv.style.overflowY = 'auto';
-      viewerDiv.style.background = '#e2e8f0';
+      viewerDiv.style.background = '#0e111d';
       viewerDiv.style.padding = '20px 0';
+      viewerDiv.style.display = 'block';
       pdfWrapper.appendChild(viewerDiv);
 
       // Render all pages sequentially
@@ -173,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showPdfPlaceholder(sectionName) {
+    pdfWrapper.style.display = 'flex';
     pdfWrapper.innerHTML = `
       <div class="pdf-coming-soon">
         <i class="ri-file-warning-line"></i>
@@ -252,15 +257,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Share link action handler
   if (shareBtn) {
-    shareBtn.addEventListener('click', () => {
-      const shareUrl = `${window.location.origin}${window.location.pathname}#${currentSection}`;
-      navigator.clipboard.writeText(shareUrl)
-        .then(() => {
-          alert(`Link copied to clipboard: ${shareUrl}`);
-        })
-        .catch(() => {
-          alert('Could not copy link.');
+    shareBtn.addEventListener('click', async () => {
+      const pdfName = pdfFileMapping[currentSection];
+      const originalText = shareBtn.innerHTML;
+      shareBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Generating...';
+      shareBtn.disabled = true;
+
+      try {
+        const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            docId: `legal_${currentSection}`, 
+            title: `${currentSection.toUpperCase()} Policy`, 
+            category: "Legal", 
+            discipline: "Compliance", 
+            uploader: "DPGNotes System", 
+            pdfUrl: pdfName ? `${window.location.origin}/legal/docs/${pdfName}` : "", 
+            description: `Official DPGNotes Compliance Policy for ${currentSection}`, 
+            tags: "legal, policy, compliance",
+            originalUrl: window.location.origin + "/index.html?share=",
+            uploaderUid: (auth.currentUser) ? auth.currentUser.uid : ""
+          })
         });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed");
+
+        const shareUrl = data.shareUrl;
+        if (navigator.share) {
+          await navigator.share({
+            title: `Check out ${currentSection.toUpperCase()} Policy on DPGNotes`,
+            url: shareUrl
+          });
+        } else {
+          // Show custom system modal instead of simple copy
+          if (window.customConfirm) {
+            await window.customConfirm(`Tracked Smart Link generated! Copy it from here: <br><br><strong style="word-break:break-all;color:var(--primary-light);">${shareUrl}</strong>`, { title: "Share Policy", confirmText: "Copy Link" })
+              .then(ok => {
+                if (ok) {
+                  navigator.clipboard.writeText(shareUrl);
+                }
+              });
+          } else {
+            navigator.clipboard.writeText(shareUrl);
+            alert(`Link copied: ${shareUrl}`);
+          }
+        }
+      } catch (err) {
+        alert("Failed to generate share link: " + err.message);
+      } finally {
+        shareBtn.innerHTML = originalText;
+        shareBtn.disabled = false;
+      }
     });
   }
 
