@@ -16,7 +16,7 @@ const firebaseConfig = {
   appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
 
-const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
+const app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Actual PDF filenames uploaded to legal/docs
@@ -57,28 +57,42 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('guestId', guestId);
   }
 
+  // Parse redirection origin parameters and referrers
+  const urlParams = new URLSearchParams(window.location.search);
+  const fromParam = urlParams.get('from');
+  const referrer = document.referrer;
+
+  let userContext = 'guest';
+  if (fromParam === 'contributor' || referrer.includes('dashboard.html')) {
+    userContext = 'contributor';
+  } else if (fromParam === 'admin' || referrer.includes('admin.html') || referrer.includes('report.html')) {
+    userContext = 'admin';
+  } else if (referrer.includes('index.html')) {
+    userContext = 'guest';
+  }
+
   // Setup Dynamic Watermark based on User Authentication state
   onAuthStateChanged(auth, (user) => {
     const adminToken = localStorage.getItem('adminToken');
     let newWatermark = '';
-    const isGuest = !user && !adminToken;
+    let isGuestUser = true;
 
-    if (adminToken) {
-      // Admin Watermark
+    if (userContext === 'admin' && adminToken) {
+      isGuestUser = false;
       const loginTime = localStorage.getItem('adminLoginTime') || new Date().toLocaleString();
       newWatermark = `Admin-${loginTime}`;
-    } else if (user) {
-      // Contributor Watermark
+    } else if (userContext === 'contributor' && user) {
+      isGuestUser = false;
       const name = user.displayName || user.email.split('@')[0];
       newWatermark = `${name}-${user.uid}`;
     } else {
-      // Guest Watermark
+      isGuestUser = true;
       newWatermark = `Guest-${guestId}`;
     }
 
     // Block Download feature for Guest Users
     if (downloadPdfBtn) {
-      if (isGuest) {
+      if (isGuestUser) {
         downloadPdfBtn.style.display = 'none';
       } else {
         if (!['overview', 'updates', 'contact'].includes(currentSection)) {
@@ -144,8 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const adminToken = localStorage.getItem('adminToken');
-    const isGuest = !auth.currentUser && !adminToken;
-    if (downloadPdfBtn) downloadPdfBtn.style.display = isGuest ? 'none' : 'inline-flex';
+    let isGuestUser = true;
+    if (userContext === 'admin' && adminToken) {
+      isGuestUser = false;
+    } else if (userContext === 'contributor' && auth.currentUser) {
+      isGuestUser = false;
+    }
+    if (downloadPdfBtn) downloadPdfBtn.style.display = isGuestUser ? 'none' : 'inline-flex';
 
     const pdfName = pdfFileMapping[sectionName];
     if (!pdfName) {
@@ -330,7 +349,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (downloadPdfBtn) {
     downloadPdfBtn.addEventListener('click', async () => {
       const adminToken = localStorage.getItem('adminToken');
-      if (!auth.currentUser && !adminToken) {
+      let isGuestUser = true;
+      if (userContext === 'admin' && adminToken) {
+        isGuestUser = false;
+      } else if (userContext === 'contributor' && auth.currentUser) {
+        isGuestUser = false;
+      }
+      if (isGuestUser) {
         alert("Downloads are restricted to authenticated contributors only.");
         return;
       }
