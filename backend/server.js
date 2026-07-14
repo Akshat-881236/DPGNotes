@@ -367,7 +367,7 @@ app.post('/api/admin/delete-share-code', verifyAdmin, async (req, res) => {
     }
     
     // 3. Fetch engagements & visitor emails
-    const engagements = await db.collection("share_engagements").where("token", "==", token).get();
+    const engagements = await db.collection("share_engagements").where("shareToken", "==", token).get();
     const visitorUids = [...new Set(engagements.docs.map(d => d.data().openedBy).filter(e => e && e !== uploaderUid))];
     
     const visitorEmails = [];

@@ -141,43 +141,89 @@ document.addEventListener('DOMContentLoaded', () => {
     pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
       if (localSessionId !== renderSessionId) return;
 
+      let currentPageNum = 1;
+      const totalPages = pdf.numPages;
+
       const viewerDiv = document.createElement('div');
       viewerDiv.style.width = '100%';
-      viewerDiv.style.height = '700px';
-      viewerDiv.style.overflowY = 'auto';
+      viewerDiv.style.minHeight = '500px';
       viewerDiv.style.background = '#0e111d';
       viewerDiv.style.padding = '20px 0';
       viewerDiv.style.display = 'block';
+      viewerDiv.style.position = 'relative';
       pdfWrapper.appendChild(viewerDiv);
 
-      // Render all pages sequentially
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      // Create Page Container
+      const pageContainer = document.createElement('div');
+      pageContainer.style.width = '100%';
+      pageContainer.style.display = 'flex';
+      pageContainer.style.justifyContent = 'center';
+      viewerDiv.appendChild(pageContainer);
+
+      // Create Controls Overlay
+      const controlsDiv = document.createElement('div');
+      controlsDiv.style.display = 'flex';
+      controlsDiv.style.alignItems = 'center';
+      controlsDiv.style.justifyContent = 'center';
+      controlsDiv.style.gap = '1.5rem';
+      controlsDiv.style.marginTop = '15px';
+      controlsDiv.style.padding = '10px';
+      controlsDiv.style.background = 'var(--bg-secondary)';
+      controlsDiv.style.borderRadius = '12px';
+      controlsDiv.style.border = '1px solid var(--border-color)';
+      viewerDiv.appendChild(controlsDiv);
+
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'action-btn';
+      prevBtn.style.padding = '8px 16px';
+      prevBtn.style.borderRadius = '8px';
+      prevBtn.style.display = 'inline-flex';
+      prevBtn.style.alignItems = 'center';
+      prevBtn.style.gap = '6px';
+      prevBtn.innerHTML = '<i class="ri-arrow-left-s-line"></i> Prev';
+      controlsDiv.appendChild(prevBtn);
+
+      const pageIndicator = document.createElement('span');
+      pageIndicator.style.fontWeight = '600';
+      pageIndicator.style.fontFamily = 'var(--font-heading)';
+      pageIndicator.innerText = `Page 1 of ${totalPages}`;
+      controlsDiv.appendChild(pageIndicator);
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'action-btn';
+      nextBtn.style.padding = '8px 16px';
+      nextBtn.style.borderRadius = '8px';
+      nextBtn.style.display = 'inline-flex';
+      nextBtn.style.alignItems = 'center';
+      nextBtn.style.gap = '6px';
+      nextBtn.innerHTML = 'Next <i class="ri-arrow-right-s-line"></i>';
+      controlsDiv.appendChild(nextBtn);
+
+      function renderPage(pageNum) {
+        pageContainer.innerHTML = '';
         pdf.getPage(pageNum).then(page => {
           if (localSessionId !== renderSessionId) return;
 
-          const viewport = page.getViewport({ scale: 1.2 });
+          const viewport = page.getViewport({ scale: 1.1 });
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
           canvas.height = viewport.height;
           canvas.width = viewport.width;
           canvas.style.display = 'block';
-          canvas.style.margin = '0 auto 20px auto';
-          canvas.style.boxShadow = '0 4px 10px rgba(0,0,0,0.15)';
+          canvas.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
           canvas.style.background = 'white';
-          viewerDiv.appendChild(canvas);
+          canvas.style.borderRadius = '8px';
+          canvas.style.maxWidth = '100%';
+          canvas.style.height = 'auto';
+          pageContainer.appendChild(canvas);
 
-          const renderContext = {
-            canvasContext: ctx,
-            viewport: viewport
-          };
-
-          page.render(renderContext).promise.then(() => {
+          page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
             if (localSessionId !== renderSessionId) return;
             // Apply Watermark Overlay
             ctx.save();
-            ctx.font = 'bold 24px Outfit';
-            ctx.fillStyle = 'rgba(100, 100, 100, 0.15)';
+            ctx.font = 'bold 22px Outfit';
+            ctx.fillStyle = 'rgba(100, 100, 100, 0.12)';
             ctx.translate(viewport.width / 2, viewport.height / 2);
             ctx.rotate(-45 * Math.PI / 180);
             ctx.textAlign = 'center';
@@ -186,7 +232,60 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillText(watermarkText, 150, 100);
             ctx.restore();
           });
+
+          pageIndicator.innerText = `Page ${pageNum} of ${totalPages}`;
+          prevBtn.disabled = (pageNum === 1);
+          nextBtn.disabled = (pageNum === totalPages);
         });
+      }
+
+      // Initial render
+      renderPage(currentPageNum);
+
+      // Prev Page Action
+      prevBtn.addEventListener('click', () => {
+        if (currentPageNum > 1) {
+          currentPageNum--;
+          renderPage(currentPageNum);
+        }
+      });
+
+      // Next Page Action
+      nextBtn.addEventListener('click', () => {
+        if (currentPageNum < totalPages) {
+          currentPageNum++;
+          renderPage(currentPageNum);
+        }
+      });
+
+      // Touch / Hand Swipe gestures support
+      let touchStartX = 0;
+      let touchEndX = 0;
+
+      viewerDiv.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      viewerDiv.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+      }, { passive: true });
+
+      function handleSwipeGesture() {
+        const threshold = 55; // swipe distance threshold in pixels
+        if (touchEndX < touchStartX - threshold) {
+          // Swipe Left -> Next Page
+          if (currentPageNum < totalPages) {
+            currentPageNum++;
+            renderPage(currentPageNum);
+          }
+        } else if (touchEndX > touchStartX + threshold) {
+          // Swipe Right -> Prev Page
+          if (currentPageNum > 1) {
+            currentPageNum--;
+            renderPage(currentPageNum);
+          }
+        }
       }
     }).catch(() => {
       showPdfPlaceholder(sectionName);
