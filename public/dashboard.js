@@ -1137,6 +1137,9 @@ function attachEngagementListeners() {
           shared = true;
         } catch(err) { 
           console.error("Share failed", err); 
+          if (err.name === 'AbortError') {
+            shared = true;
+          }
         }
       } 
       

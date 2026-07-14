@@ -794,7 +794,13 @@ window.handleShare = async function(docId, title, category, discipline, uploader
     if (res.ok) {
       const shareUrl = data.shareUrl;
       if (navigator.share) {
-        await navigator.share({ title: `Check out ${title} on DPGNotes`, url: shareUrl });
+        try {
+          await navigator.share({ title: `Check out ${title} on DPGNotes`, url: shareUrl });
+        } catch (shareErr) {
+          if (shareErr.name !== 'AbortError') {
+            alert("Failed to share: " + shareErr.message);
+          }
+        }
       } else {
         await navigator.clipboard.writeText(shareUrl);
         alert("Smart Link copied to clipboard!");

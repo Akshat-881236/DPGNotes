@@ -450,10 +450,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const shareUrl = data.shareUrl;
         if (navigator.share) {
-          await navigator.share({
-            title: `Check out ${currentSection.toUpperCase()} Policy on DPGNotes`,
-            url: shareUrl
-          });
+          try {
+            await navigator.share({
+              title: `Check out ${currentSection.toUpperCase()} Policy on DPGNotes`,
+              url: shareUrl
+            });
+          } catch (shareErr) {
+            if (shareErr.name !== 'AbortError') {
+              alert("Failed to share: " + shareErr.message);
+            }
+          }
         } else {
           navigator.clipboard.writeText(shareUrl);
           alert("Smart Link copied to clipboard:\n" + shareUrl);
