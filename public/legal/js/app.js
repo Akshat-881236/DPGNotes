@@ -8,10 +8,10 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAsJ_8V_rFf08H5517J881238",
+  apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
   authDomain: "dpgnotes.firebaseapp.com",
   projectId: "dpgnotes",
-  storageBucket: "dpgnotes.appspot.com",
+  storageBucket: "dpgnotes.firebasestorage.app",
   messagingSenderId: "910494426039",
   appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
@@ -455,18 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
             url: shareUrl
           });
         } else {
-          // Show custom system modal instead of simple copy
-          if (window.customConfirm) {
-            await window.customConfirm(`Tracked Smart Link generated! Copy it from here: <br><br><strong style="word-break:break-all;color:var(--primary-light);">${shareUrl}</strong>`, { title: "Share Policy", confirmText: "Copy Link" })
-              .then(ok => {
-                if (ok) {
-                  navigator.clipboard.writeText(shareUrl);
-                }
-              });
-          } else {
-            navigator.clipboard.writeText(shareUrl);
-            alert(`Link copied: ${shareUrl}`);
-          }
+          navigator.clipboard.writeText(shareUrl);
+          alert("Smart Link copied to clipboard:\n" + shareUrl);
         }
       } catch (err) {
         alert("Failed to generate share link: " + err.message);

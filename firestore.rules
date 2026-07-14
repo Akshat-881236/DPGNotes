@@ -32,7 +32,7 @@ service cloud.firestore {
       // Only uploader can edit/delete, EXCEPT for likes array, AND admin can do anything
       allow update: if request.auth != null && (
         request.auth.uid == resource.data.userId || 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'usefulResourceEmailed']) ||
         request.auth.token.admin == true
       );
       
