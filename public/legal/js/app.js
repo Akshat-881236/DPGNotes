@@ -61,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
   onAuthStateChanged(auth, (user) => {
     const adminToken = localStorage.getItem('adminToken');
     let newWatermark = '';
+    const isGuest = !user && !adminToken;
+
     if (adminToken) {
       // Admin Watermark
       const loginTime = localStorage.getItem('adminLoginTime') || new Date().toLocaleString();
@@ -72,6 +74,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       // Guest Watermark
       newWatermark = `Guest-${guestId}`;
+    }
+
+    // Block Download feature for Guest Users
+    if (downloadPdfBtn) {
+      if (isGuest) {
+        downloadPdfBtn.style.display = 'none';
+      } else {
+        if (!['overview', 'updates', 'contact'].includes(currentSection)) {
+          downloadPdfBtn.style.display = 'inline-flex';
+        }
+      }
     }
 
     if (newWatermark !== lastWatermarkText) {
@@ -125,7 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (downloadPdfBtn) downloadPdfBtn.style.display = 'inline-flex';
+    const adminToken = localStorage.getItem('adminToken');
+    const isGuest = !auth.currentUser && !adminToken;
+    if (downloadPdfBtn) downloadPdfBtn.style.display = isGuest ? 'none' : 'inline-flex';
 
     const pdfName = pdfFileMapping[sectionName];
     if (!pdfName) {
@@ -306,6 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Watermark PDF using PDF-Lib and download
   if (downloadPdfBtn) {
     downloadPdfBtn.addEventListener('click', async () => {
+      const adminToken = localStorage.getItem('adminToken');
+      if (!auth.currentUser && !adminToken) {
+        alert("Downloads are restricted to authenticated contributors only.");
+        return;
+      }
       const pdfName = pdfFileMapping[currentSection];
       if (!pdfName) return alert('PDF not found.');
 
