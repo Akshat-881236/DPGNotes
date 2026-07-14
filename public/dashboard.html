@@ -54,7 +54,7 @@
         
         <!-- PROFILE TAB -->
         <section id="profileTab" class="dashboard-tab active">
-          <h2>Your Profile</h2>
+          <h2>Your Profile <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Your profile is protected under our Privacy Policy. Click to view." onclick="window.open('legal/index.html#privacy', '_blank')"></i></h2>
           <div class="profile-card">
             <div class="profile-avatar" id="profileAvatar">👤</div>
             <div class="profile-info">
@@ -95,7 +95,7 @@
 
         <!-- CONTRIBUTION TAB -->
         <section id="contributionTab" class="dashboard-tab">
-          <h2>Upload Resource</h2>
+          <h2>Upload Resource <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="All uploads must comply with Copyright, DMCA, and DRASA Policies. Click to view." onclick="window.open('legal/index.html#copyright', '_blank')"></i></h2>
           <form id="uploadForm" class="upload-form">
             <div class="form-grid">
               <select id="category" required>
@@ -119,6 +119,13 @@
               <input type="file" id="pdfFile" accept="application/pdf" />
               <input type="url" id="pdfUrl" placeholder="Or enter PDF URL directly" />
               
+              <p style="font-size:0.8rem; color:var(--text-muted); margin:10px 0; text-align:center; line-height:1.4;">
+                By Uploading Documents to DPGNotes, you agree to our 
+                <a href="legal/index.html#copyright" target="_blank" style="color:var(--primary-light); text-decoration:underline;">Copyright Policy</a>, 
+                <a href="legal/index.html#dmca" target="_blank" style="color:var(--primary-light); text-decoration:underline;">DMCA and Legal Compliance Policy</a>, 
+                <a href="legal/index.html#retention" target="_blank" style="color:var(--primary-light); text-decoration:underline;">Data Retention Policy</a> and 
+                <a href="legal/index.html#drasa" target="_blank" style="color:var(--primary-light); text-decoration:underline;">DRASA</a>.
+              </p>
               <button type="submit" class="upload-btn">Upload Document</button>
             </div>
           </form>
@@ -192,7 +199,7 @@
 
         <!-- EXPLORE TAB -->
         <section id="exploreTab" class="dashboard-tab">
-          <h2>Explore Resources</h2>
+          <h2>Explore Resources <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Resources are shared under user-agreement policies and our Disclaimer. Click to view." onclick="window.open('legal/index.html#disclaimer', '_blank')"></i></h2>
           <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
             <input type="text" id="exploreSearch" placeholder="Search resources..." class="search-bar" style="margin-bottom: 0;" />
             <select id="exploreSort" style="padding: 0.5rem; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;">
@@ -209,7 +216,7 @@
 
         <!-- SETTINGS TAB -->
         <section id="settingsTab" class="dashboard-tab">
-          <h2>Settings</h2>
+          <h2>Settings <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Your configuration data is saved securely on DPGNotes Servers. Click to view Data Retention Policy." onclick="window.open('legal/index.html#retention', '_blank')"></i></h2>
           <form id="settingsForm" class="upload-form">
             <div class="form-grid">
               <label>Profile Photo</label>

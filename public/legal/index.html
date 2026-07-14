@@ -14,8 +14,21 @@
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <!-- PDF & Document Watermarking Engines -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
 <body class="theme-auto">
+  <!-- Security Warning Overlay -->
+  <div id="securityOverlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.98); backdrop-filter:blur(8px); z-index:9999999; align-items:center; justify-content:center; flex-direction:column; color:white; font-family:var(--font-heading); text-align:center; padding:2rem;">
+    <i class="ri-git-repository-private-fill" style="font-size:4rem; color:#6366f1; margin-bottom:1.5rem;"></i>
+    <h2 style="font-size:2rem; font-weight:800; margin-bottom:1rem;">Security Protocol Triggered</h2>
+    <p style="font-size:1.1rem; color:#9ca3af; max-width:500px; margin-bottom:2rem;">Tab switching, inspect tools, screen recording, and screenshots are strictly blocked in the DPGNotes Legal Center. Your security activity has been logged.</p>
+    <button onclick="document.getElementById('securityOverlay').style.display='none'; location.reload();" class="action-btn primary" style="padding:0.75rem 2rem; font-size:1rem; border-radius:12px;">Return to Hub</button>
+  </div>
+
   <div class="reading-progress-container">
     <div id="readingProgress" class="reading-progress-bar"></div>
   </div>
@@ -66,6 +79,7 @@
             <li><a href="#terms" class="nav-link" data-section="terms"><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="#cookies" class="nav-link" data-section="cookies"><i class="ri-cookie-line"></i> Cookie Policy</a></li>
             <li><a href="#disclaimer" class="nav-link" data-section="disclaimer"><i class="ri-alert-line"></i> Disclaimer</a></li>
+            <li><a href="#drasa" class="nav-link" data-section="drasa"><i class="ri-scales-line"></i> DRASA Policy</a></li>
           </ul>
         </div>
 
@@ -149,6 +163,12 @@
                   <h4>Tracking & Analytics</h4>
                   <p>Detailed outline of anonymous and logged-in visitor event telemetry, CTR metrics, and browser configurations tracked.</p>
                   <a href="#analytics" class="read-link">Read Telemetry <i class="ri-arrow-right-line"></i></a>
+                </div>
+                <div class="policy-card-item">
+                  <i class="ri-scales-fill"></i>
+                  <h4>DRASA Policy</h4>
+                  <p>Read the official Platform Suspension and Regulations guidelines governing uploads and conduct.</p>
+                  <a href="#drasa" class="read-link">Read Regulations <i class="ri-arrow-right-line"></i></a>
                 </div>
               </div>
             </article>
@@ -303,6 +323,26 @@
               
               <h2>2. Activity and Traffic Logs</h2>
               <p>Click engagements, telemetry logs, and activity entries are archived or scrubbed after 180 days to minimize data footprint.</p>
+            </article>
+
+            <!-- Section: DRASA -->
+            <article id="drasaSection" class="policy-section">
+              <h1>DPGNotes Regulations & Suspension Act (DRASA)</h1>
+              <p class="subtitle">Effective Date: July 13, 2026</p>
+              
+              <h2>1. Introduction & Scope</h2>
+              <p>The DPGNotes Regulations & Suspension Act (DRASA) establishes the official governance framework for DPGNotes. It defines conduct standards, uploader responsibilities, and administrative enforcement procedures including temporary suspensions, long-term bans, appeal procedures, and disciplinary metrics.</p>
+              
+              <h2>2. Disciplinary Classifications</h2>
+              <p>Violations on the portal are categorized from Level I to Level V:
+                <ul>
+                  <li><strong>Level I (Informational):</strong> Minor duplicate uploads or formatting errors resulting in educational guidance.</li>
+                  <li><strong>Level II (Minor):</strong> Low quality submissions or spam resulting in warning notices.</li>
+                  <li><strong>Level III (Moderate):</strong> Repeated category errors or share link abuse resulting in temporary contributor suspension.</li>
+                  <li><strong>Level IV (Serious):</strong> Direct copyright infringement or uploading commercial textbook PDFs without license, leading to 15 to 90 days suspension.</li>
+                  <li><strong>Level V (Critical Security):</strong> Phishing, credential scraping, database tampering, or host infrastructure attack attempts resulting in immediate, permanent ban and account deletion.</li>
+                </ul>
+              </p>
             </article>
 
             <!-- Section: FAQ -->

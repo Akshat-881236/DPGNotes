@@ -166,6 +166,16 @@ onAuthStateChanged(auth, async (user) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email, name: user.displayName })
         }).catch(console.error);
+
+        // Show Legal Consent Modal
+        setTimeout(() => {
+          if (window.customConfirm) {
+            window.customConfirm(
+              `By creating a DPGNotes Contributor Account, you agree to our <a href="legal/index.html#privacy" target="_blank" style="color:var(--primary-light);text-decoration:underline;">Privacy Policy</a>, <a href="legal/index.html#terms" target="_blank" style="color:var(--primary-light);text-decoration:underline;">Terms & Conditions</a>, and <a href="legal/index.html#drasa" target="_blank" style="color:var(--primary-light);text-decoration:underline;">DRASA Regulations</a>.`,
+              false
+            );
+          }
+        }, 1000);
       }
       
       await setDoc(userDocRef, {
@@ -778,6 +788,14 @@ if (contributorDeleteForm) {
     const docItem = window.myDocsCache.find(d => d.id === docId);
     if (!docItem) return;
     
+    if (window.customConfirm) {
+      const confirmDelete = await window.customConfirm(
+        `Are you sure you want to delete "${docItem.title}"? This will permanently delete the resource under our <a href="legal/index.html#retention" target="_blank" style="color:var(--primary-light);text-decoration:underline;">Data Retention Policy</a>.`,
+        { title: "Delete Document?", isDanger: true }
+      );
+      if (!confirmDelete) return;
+    }
+    
     let reason = reasonInput;
     if (reason.length > 0 && (reason.length < 50 || reason.length > 150)) {
       alert("Custom reason must be between 50 and 150 characters.");
@@ -863,9 +881,23 @@ if(settingsForm) {
       }
 
       // Update Firestore securely by merging
+      // Check for first setting update
+      const isFirstUpdate = !localStorage.getItem("firstSettingUpdateDone");
       await setDoc(doc(db, "users", currentUser.uid), updateData, { merge: true });
       
-      alert("Settings saved!");
+      if (isFirstUpdate) {
+        localStorage.setItem("firstSettingUpdateDone", "true");
+        if (window.customConfirm) {
+          window.customConfirm(
+            `Your data must be uploaded to DPGNotes Server. <a href="legal/index.html#privacy" target="_blank" style="color:var(--primary-light);text-decoration:underline;">Learn More</a>`,
+            false
+          );
+        } else {
+          alert("Your data must be uploaded to DPGNotes Server.");
+        }
+      } else {
+        alert("Settings saved!");
+      }
       loadProfile();
     } catch(err) {
       console.error(err);
