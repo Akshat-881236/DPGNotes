@@ -81,9 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
       isGuestUser = false;
       const loginTime = localStorage.getItem('adminLoginTime') || new Date().toLocaleString();
       newWatermark = `Admin-${loginTime}`;
-    } else if (userContext === 'contributor' && user) {
-      isGuestUser = false;
-      const name = user.displayName || user.email.split('@')[0];
+    } else if (user) {
+      isGuestUser = true; // Contributor cannot download PDFs in Legal Center
+      const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
       newWatermark = `${name}-${user.uid}`;
     } else {
       isGuestUser = true;
@@ -160,8 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminToken = localStorage.getItem('adminToken');
     let isGuestUser = true;
     if (userContext === 'admin' && adminToken) {
-      isGuestUser = false;
-    } else if (userContext === 'contributor' && auth.currentUser) {
       isGuestUser = false;
     }
     if (downloadPdfBtn) downloadPdfBtn.style.display = isGuestUser ? 'none' : 'inline-flex';
@@ -352,11 +350,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let isGuestUser = true;
       if (userContext === 'admin' && adminToken) {
         isGuestUser = false;
-      } else if (userContext === 'contributor' && auth.currentUser) {
-        isGuestUser = false;
       }
       if (isGuestUser) {
-        alert("Downloads are restricted to authenticated contributors only.");
+        alert("Downloads are restricted to administrators only.");
         return;
       }
       const pdfName = pdfFileMapping[currentSection];
