@@ -122,7 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSessionId++;
     const localSessionId = renderSessionId;
 
-    pdfWrapper.innerHTML = '';
+    pdfWrapper.innerHTML = `
+      <div class="pdf-loading-spinner" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem; color:var(--text-muted); width:100%;">
+        <i class="ri-loader-4-line ri-spin" style="font-size:3rem; color:#6366f1; margin-bottom:1rem;"></i>
+        <p style="font-family:var(--font-heading); font-weight:600; font-size:1.1rem; color:#f8fafc;">Loading secure document stream...</p>
+      </div>
+    `;
     pdfWrapper.style.display = 'flex';
 
     const noPdfSections = ['overview', 'updates', 'contact'];
@@ -155,6 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pdfWrapper.style.height = 'auto';
     pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
       if (localSessionId !== renderSessionId) return;
+
+      // Clear the loading spinner right before rendering the viewer container
+      pdfWrapper.innerHTML = '';
 
       let currentPageNum = 1;
       const totalPages = pdf.numPages;
