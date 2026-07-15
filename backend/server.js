@@ -1005,16 +1005,94 @@ app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) =
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    if (isViolation) {
+    if (isViolation && req.user.role !== 'admin') {
+      // 1. Log the security violation to security_violations collection
+      const reasonStr = `Visibility/Focus changed (visibilityState: ${visibilityState}, focusState: ${focusState})`;
       await db.collection("security_violations").add({
         userId,
         email: req.user.email,
         role: req.user.role,
-        reason: `Visibility/Focus changed (visibilityState: ${visibilityState}, focusState: ${focusState})`,
+        reason: reasonStr,
         ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
 
+      // 2. Fetch all previous security violations for this user to determine attemptCount
+      const violationsSnap = await db.collection("security_violations").where("userId", "==", userId).get();
+      const attemptCount = violationsSnap.size; // includes the one we just added!
+
+      // 3. Compute suspension duration
+      function getSuspensionDays(attempt) {
+        if (attempt <= 1) return 0;       // 1st Attempt: Warning
+        if (attempt === 2) return 1;      // 2nd Attempt: 1 day
+        if (attempt === 3) return 3;      // 3rd Attempt: 3 days (1 + 2)
+        if (attempt === 4) return 5;      // 4th Attempt: 5 days (3 + 2)
+        if (attempt === 5) return 15;     // 5th Attempt: 15 days
+        if (attempt === 6) return 30;     // 6th Attempt: 30 days
+        if (attempt === 7) return 45;     // 7th Attempt: 45 days
+        return -1;                        // 8th+ Attempt: Permanent Suspension
+      }
+
+      const days = getSuspensionDays(attemptCount);
+
+      if (days === 0) {
+        // 1st violation: Warning Email to Contributor + Notification alert
+        const warningHtml = createTemplate("Security Warning ⚠️", `<p>A security protocol violation was detected on your account (visibility switch or blurred window).</p><p>Please note that repeated violations will trigger automatic account suspensions.</p>`);
+        await sendEmail(req.user.email, "Security Warning Alert", warningHtml).catch(console.error);
+
+        // Add admin/user dashboard notification
+        await db.collection("notifications").add({
+          email: req.user.email,
+          type: "alert",
+          title: "Security Warning Alert ⚠️",
+          message: `A security violation (visibility state loss or window blur) was detected. Please comply with compliance terms.`,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        }).catch(console.error);
+      } else if (days > 0) {
+        // Temporary suspension
+        const durationMs = days * 24 * 60 * 60 * 1000;
+        const suspendedUntil = Date.now() + durationMs;
+
+        await db.collection("users").doc(userId).set({
+          isBlocked: true,
+          suspendedUntil: suspendedUntil,
+          blockedReason: `Auto-Suspended: Repeated Security Violations (Attempt #${attemptCount})`,
+          suspendedAt: Date.now(),
+          suspensionDurationMs: durationMs
+        }, { merge: true });
+
+        const blockHtml = createTemplate("Account Suspended 🚫", `<p>Your DPGNotes account has been automatically suspended for <strong>${days} days</strong> due to repeated security protocol violations (Attempt #${attemptCount}).</p><p>If you believe this is an error, please contact support.</p>`);
+        await sendEmail(req.user.email, `Notice: Account Suspended (${days} Days)`, blockHtml).catch(console.error);
+        
+        // Also notify admin
+        await sendEmail(process.env.ADMIN_EMAIL, `Notification: Contributor Suspended (${req.user.email})`, createTemplate("User Blocked 🚫", `<p>User <strong>${req.user.email}</strong> has been auto-suspended for ${days} days (Attempt #${attemptCount}).</p>`)).catch(console.error);
+      } else if (days === -1) {
+        // Permanent Block
+        await db.collection("users").doc(userId).set({
+          isBlocked: true,
+          suspendedUntil: null,
+          blockedReason: `Auto-Blocked Permanently: Repeated Security Violations (Attempt #${attemptCount})`,
+          suspendedAt: Date.now(),
+          suspensionDurationMs: -1
+        }, { merge: true });
+
+        // Preserve in permanent_blocks collection
+        const blockActionId = 'BLK-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        await db.collection("permanent_blocks").add({
+          block_action_id: blockActionId,
+          block_email: req.user.email,
+          UID: userId,
+          Permanent_Block_on: admin.firestore.FieldValue.serverTimestamp(),
+          Reason: `System Auto-Block: Repeated Security Violations (${attemptCount} attempts)`,
+          Case_Status: "Active"
+        });
+
+        const blockHtml = createTemplate("Account Blocked Permanently 🚫", `<p>Your DPGNotes account has been permanently blocked due to repeated security violations (Attempt #${attemptCount}).</p>`);
+        await sendEmail(req.user.email, "Notice: Account Permanently Blocked", blockHtml).catch(console.error);
+        await sendEmail(process.env.ADMIN_EMAIL, `Notification: Contributor Permanently Blocked (${req.user.email})`, createTemplate("User Blocked 🚫", `<p>User <strong>${req.user.email}</strong> has been permanently blocked (Attempt #${attemptCount}).</p>`)).catch(console.error);
+      }
+
+      // Evict Session ID
       const sessionId = req.headers['x-session-id'] || req.query.sessionId;
       const sessionRef = db.collection("active_sessions").doc(userId);
       const docSnap = await sessionRef.get();

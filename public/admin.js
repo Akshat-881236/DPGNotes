@@ -272,7 +272,23 @@ async function loadUsers() {
         <td>
           <div class="action-group">
             ${isBlocked || (user.suspendedUntil && user.suspendedUntil > Date.now())
-              ? `<button class="btn-action success unblock-btn" data-id="${user.id}">Reactivate</button>` 
+              ? (() => {
+                  if (user.suspendedUntil && user.suspendedUntil > Date.now()) {
+                    const suspensionDurationMs = user.suspensionDurationMs || (user.suspendedUntil - (user.suspendedAt || (user.suspendedUntil - 10000)));
+                    const suspendedAt = user.suspendedAt || (user.suspendedUntil - suspensionDurationMs);
+                    const elapsedMs = Date.now() - suspendedAt;
+                    const eligibleForReactivation = elapsedMs >= (suspensionDurationMs * 0.5);
+
+                    if (!eligibleForReactivation) {
+                      const totalSecsRemaining = Math.max(0, Math.ceil(((suspendedAt + (suspensionDurationMs * 0.5)) - Date.now()) / 1000));
+                      const hrs = Math.floor(totalSecsRemaining / 3600);
+                      const mins = Math.floor((totalSecsRemaining % 3600) / 60);
+                      const lockLabel = hrs > 0 ? `${hrs}h ${mins}m left` : `${mins}m left`;
+                      return `<span class="badge suspended" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; border: 1px solid rgba(239, 68, 68, 0.2); cursor:not-allowed; padding:6px 12px; border-radius:6px;" title="Admin can reactivate only after 50% completion of suspension.">🔒 Locked (${lockLabel})</span>`;
+                    }
+                  }
+                  return `<button class="btn-action success unblock-btn" data-id="${user.id}">Reactivate</button>`;
+                })()
               : `<button class="btn-action warn block-btn" data-id="${user.id}" data-email="${user.email}">Suspend</button>`
             }
             <button class="btn-action danger delete-user-btn" data-id="${user.id}" data-email="${user.email}" data-name="${user.name}">Delete</button>
@@ -677,7 +693,24 @@ async function loadSecurityViolations() {
         const userProfile = usersDataMap[userId];
         const isBlocked = userProfile ? (userProfile.isBlocked || (userProfile.suspendedUntil && userProfile.suspendedUntil > Date.now())) : false;
         if (isBlocked) {
-          actionBtn = `<button class="btn-action success unblock-sec-btn" style="background:var(--admin-success);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-uid="${userId}">Reactivate</button>`;
+          if (userProfile && userProfile.suspendedUntil && userProfile.suspendedUntil > Date.now()) {
+            const suspensionDurationMs = userProfile.suspensionDurationMs || (userProfile.suspendedUntil - (userProfile.suspendedAt || (userProfile.suspendedUntil - 10000)));
+            const suspendedAt = userProfile.suspendedAt || (userProfile.suspendedUntil - suspensionDurationMs);
+            const elapsedMs = Date.now() - suspendedAt;
+            const eligibleForReactivation = elapsedMs >= (suspensionDurationMs * 0.5);
+
+            if (!eligibleForReactivation) {
+              const totalSecsRemaining = Math.max(0, Math.ceil(((suspendedAt + (suspensionDurationMs * 0.5)) - Date.now()) / 1000));
+              const hrs = Math.floor(totalSecsRemaining / 3600);
+              const mins = Math.floor((totalSecsRemaining % 3600) / 60);
+              const lockLabel = hrs > 0 ? `${hrs}h ${mins}m left` : `${mins}m left`;
+              actionBtn = `<span class="badge suspended" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; border: 1px solid rgba(239, 68, 68, 0.2); cursor:not-allowed; font-size:0.75rem; padding:4px 8px; border-radius:4px;" title="Admin can reactivate only after 50% completion of suspension.">🔒 Locked (${lockLabel})</span>`;
+            } else {
+              actionBtn = `<button class="btn-action success unblock-sec-btn" style="background:var(--admin-success);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-uid="${userId}">Reactivate</button>`;
+            }
+          } else {
+            actionBtn = `<button class="btn-action success unblock-sec-btn" style="background:var(--admin-success);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-uid="${userId}">Reactivate</button>`;
+          }
         } else {
           actionBtn = `<button class="btn-action warn block-sec-btn" style="background:var(--admin-warning);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-uid="${userId}" data-email="${email}">Suspend</button>`;
         }
