@@ -995,13 +995,13 @@ app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) =
 
   try {
     await db.collection("telemetry_logs").add({
-      userId,
-      email: req.user.email,
-      role: req.user.role,
-      visibilityState,
-      focusState,
-      isViolation,
-      ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      userId: userId || 'Unknown',
+      email: req.user.email || 'N/A',
+      role: req.user.role || 'N/A',
+      visibilityState: visibilityState || 'visible',
+      focusState: focusState || 'focused',
+      isViolation: isViolation || false,
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'N/A',
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -1009,11 +1009,11 @@ app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) =
       // 1. Log the security violation to security_violations collection
       const reasonStr = `Visibility/Focus changed (visibilityState: ${visibilityState}, focusState: ${focusState})`;
       await db.collection("security_violations").add({
-        userId,
-        email: req.user.email,
-        role: req.user.role,
+        userId: userId || 'Unknown',
+        email: req.user.email || 'N/A',
+        role: req.user.role || 'N/A',
         reason: reasonStr,
-        ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'N/A',
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
 
@@ -1038,11 +1038,13 @@ app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) =
       if (days === 0) {
         // 1st violation: Warning Email to Contributor + Notification alert
         const warningHtml = createTemplate("Security Warning ⚠️", `<p>A security protocol violation was detected on your account (visibility switch or blurred window).</p><p>Please note that repeated violations will trigger automatic account suspensions.</p>`);
-        await sendEmail(req.user.email, "Security Warning Alert", warningHtml).catch(console.error);
+        if (req.user.email && req.user.email.includes('@')) {
+          await sendEmail(req.user.email, "Security Warning Alert", warningHtml).catch(console.error);
+        }
 
         // Add admin/user dashboard notification
         await db.collection("notifications").add({
-          email: req.user.email,
+          email: req.user.email || 'N/A',
           type: "alert",
           title: "Security Warning Alert ⚠️",
           message: `A security violation (visibility state loss or window blur) was detected. Please comply with compliance terms.`,
@@ -1062,10 +1064,14 @@ app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) =
         }, { merge: true });
 
         const blockHtml = createTemplate("Account Suspended 🚫", `<p>Your DPGNotes account has been automatically suspended for <strong>${days} days</strong> due to repeated security protocol violations (Attempt #${attemptCount}).</p><p>If you believe this is an error, please contact support.</p>`);
-        await sendEmail(req.user.email, `Notice: Account Suspended (${days} Days)`, blockHtml).catch(console.error);
+        if (req.user.email && req.user.email.includes('@')) {
+          await sendEmail(req.user.email, `Notice: Account Suspended (${days} Days)`, blockHtml).catch(console.error);
+        }
         
         // Also notify admin
-        await sendEmail(process.env.ADMIN_EMAIL, `Notification: Contributor Suspended (${req.user.email})`, createTemplate("User Blocked 🚫", `<p>User <strong>${req.user.email}</strong> has been auto-suspended for ${days} days (Attempt #${attemptCount}).</p>`)).catch(console.error);
+        if (process.env.ADMIN_EMAIL) {
+          await sendEmail(process.env.ADMIN_EMAIL, `Notification: Contributor Suspended (${req.user.email || 'N/A'})`, createTemplate("User Blocked 🚫", `<p>User <strong>${req.user.email || 'N/A'}</strong> has been auto-suspended for ${days} days (Attempt #${attemptCount}).</p>`)).catch(console.error);
+        }
       } else if (days === -1) {
         // Permanent Block
         await db.collection("users").doc(userId).set({
@@ -1080,7 +1086,7 @@ app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) =
         const blockActionId = 'BLK-' + Math.random().toString(36).substring(2, 10).toUpperCase();
         await db.collection("permanent_blocks").add({
           block_action_id: blockActionId,
-          block_email: req.user.email,
+          block_email: req.user.email || 'N/A',
           UID: userId,
           Permanent_Block_on: admin.firestore.FieldValue.serverTimestamp(),
           Reason: `System Auto-Block: Repeated Security Violations (${attemptCount} attempts)`,
@@ -1088,8 +1094,12 @@ app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) =
         });
 
         const blockHtml = createTemplate("Account Blocked Permanently 🚫", `<p>Your DPGNotes account has been permanently blocked due to repeated security violations (Attempt #${attemptCount}).</p>`);
-        await sendEmail(req.user.email, "Notice: Account Permanently Blocked", blockHtml).catch(console.error);
-        await sendEmail(process.env.ADMIN_EMAIL, `Notification: Contributor Permanently Blocked (${req.user.email})`, createTemplate("User Blocked 🚫", `<p>User <strong>${req.user.email}</strong> has been permanently blocked (Attempt #${attemptCount}).</p>`)).catch(console.error);
+        if (req.user.email && req.user.email.includes('@')) {
+          await sendEmail(req.user.email, "Notice: Account Permanently Blocked", blockHtml).catch(console.error);
+        }
+        if (process.env.ADMIN_EMAIL) {
+          await sendEmail(process.env.ADMIN_EMAIL, `Notification: Contributor Permanently Blocked (${req.user.email || 'N/A'})`, createTemplate("User Blocked 🚫", `<p>User <strong>${req.user.email || 'N/A'}</strong> has been permanently blocked (Attempt #${attemptCount}).</p>`)).catch(console.error);
+        }
       }
 
       // Evict Session ID
