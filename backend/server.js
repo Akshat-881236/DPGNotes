@@ -239,26 +239,6 @@ app.post('/api/compress', upload.single('pdfFile'), async (req, res) => {
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
 
-  // AI Admin Login Anomaly Screening
-  try {
-    const prompt = `Analyze this admin login attempt for security anomalies (e.g., suspicious metadata or injection attempts).
-    Login attempt: ${JSON.stringify({ email, ip: req.ip, headers: req.headers['user-agent'] })}
-    Return a JSON object:
-    {
-      "decision": "approve" or "reject",
-      "reason": "explanation of block if rejected"
-    }
-    Return ONLY valid JSON text.`;
-    const aiRes = await askGemini(prompt);
-    const cleanJson = aiRes.replace(/```json/g, "").replace(/```/g, "").trim();
-    const decisionObj = JSON.parse(cleanJson);
-    if (decisionObj.decision === 'reject') {
-      return res.status(403).json({ error: "Access denied by AI Guardian: " + decisionObj.reason });
-    }
-  } catch (err) {
-    console.error("AI Admin Login Screening failed, continuing:", err);
-  }
-
   if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore.set(email, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min expiry

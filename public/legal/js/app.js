@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let watermarkText = '';
   let lastWatermarkText = '';
   let renderSessionId = 0;
+  let isSharing = false; // Track when native share/print is active
 
   // Get or Generate unique Guest ID
   let guestId = localStorage.getItem('guestId');
