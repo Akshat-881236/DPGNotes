@@ -604,7 +604,6 @@ const createTemplate = (title, message) => `
       <h2 style="margin-top: 0; color: #f8fafc; font-size: 20px;">${title}</h2>
       <div style="color: #cbd5e1; font-size: 16px; line-height: 1.6;">
         ${message}
-        <br><br>
         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0;">
         <span style="font-size: 11px; color: #64748b; display: block; line-height: 1.4;">
           <strong>Legal & Compliance Notice:</strong> This activity is tracked, validated, and logged in our secure audit trails under our Tracking & Analytics Policy. Contributor profiles, uploads, suspensions, and access privileges are governed strictly in accordance with DPGNotes Regulations & Suspension Act (DRASA) and general Terms & Conditions.
