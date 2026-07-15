@@ -469,6 +469,18 @@ onAuthStateChanged(
   async (user)=>{
     if(user){
       try {
+        // 1. Check Permanent Blocks Directory
+        const { query, collection, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
+        const blockQ = query(collection(db, "permanent_blocks"), where("block_email", "==", user.email));
+        const blockSnap = await getDocs(blockQ);
+        if (!blockSnap.empty) {
+          const blockData = blockSnap.docs[0].data();
+          alert(`Your account has been permanently blocked by the Administrator.\nReason: ${blockData.Reason || "N/A"}\nCase Status: ${blockData.Case_Status || "N/A"}`);
+          await signOut(auth);
+          return;
+        }
+
+        // 2. Check Standard users collection
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
@@ -478,10 +490,15 @@ onAuthStateChanged(
               // Suspension expired! Auto-unblock.
               await updateDoc(userRef, { isBlocked: false, suspendedUntil: null });
             } else {
-              const msg = (userData.suspendedUntil && userData.suspendedUntil > Date.now()) 
-                ? `Your account is suspended for ${Math.ceil((userData.suspendedUntil - Date.now()) / 86400000)} more days.`
-                : "Your account has been permanently blocked by the Administrator.";
-              alert(msg + " Please contact support.");
+              const diff = userData.suspendedUntil ? (userData.suspendedUntil - Date.now()) : 0;
+              if (diff > 0 && diff <= 4 * 24 * 60 * 60 * 1000) {
+                showSuspensionModal(userData.suspendedUntil);
+              } else {
+                const msg = (userData.suspendedUntil && userData.suspendedUntil > Date.now()) 
+                  ? `Your account is suspended for ${Math.ceil(diff / 86400000)} more days.`
+                  : "Your account has been permanently blocked by the Administrator.";
+                alert(msg + " Please contact support.");
+              }
               await signOut(auth);
               return;
             }

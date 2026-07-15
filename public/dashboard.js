@@ -217,11 +217,24 @@ onAuthStateChanged(auth, async (user) => {
       })();
     }
     
-    // Listen for Account Block
+    // 1. Check Permanent Blocks Directory
+    (async () => {
+      const blockQ = query(collection(db, "permanent_blocks"), where("block_email", "==", currentUser.email));
+      const blockSnap = await getDocs(blockQ);
+      if (!blockSnap.empty) {
+        const blockData = blockSnap.docs[0].data();
+        alert(`Your account has been permanently blocked by the Administrator.\nReason: ${blockData.Reason || "N/A"}`);
+        signOut(auth);
+        window.location.href = "index.html";
+      }
+    })();
+
+    // 2. Listen for Account Block
     onSnapshot(doc(db, "users", currentUser.uid), (snap) => {
       if (snap.exists() && snap.data().isBlocked) {
         alert("Your account has been suspended by an Administrator.");
         signOut(auth);
+        window.location.href = "index.html";
       }
     });
     
