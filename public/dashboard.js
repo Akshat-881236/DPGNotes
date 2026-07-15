@@ -99,8 +99,10 @@ async function loadNotifications() {
       let icon = "🔔";
       if (data.type === "like") icon = "❤️";
       if (data.type === "alert") icon = "⚠️";
+      if (data.type === "warning") icon = "🚨";
       if (data.type === "success") icon = "✅";
       if (data.type === "milestone") icon = "🎉";
+      if (data.type === "system") icon = "🤖";
       
       let timeString = "Just now";
       if (data.createdAt) {
@@ -696,6 +698,33 @@ if(uploadForm) {
         likes: []
       };
 
+      // AI Content Screening
+      const token = await currentUser.getIdToken();
+      const aiScreenRes = await fetch(window.API_BASE_URL + "/api/ai/screen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          type: "document",
+          data: {
+            title: docData.title,
+            description: docData.description,
+            tags: docData.tags,
+            category: docData.category,
+            discipline: docData.discipline
+          }
+        })
+      });
+      const aiScreenData = await aiScreenRes.json();
+      if (aiScreenData.decision === 'reject') {
+        alert("Upload Blocked by AI QA Officer: " + aiScreenData.reason);
+        submitBtn.innerText = "Upload Document";
+        submitBtn.disabled = false;
+        return;
+      }
+
       await addDoc(collection(db, "documents"), docData);
       
       // LOG UPLOAD ACTIVITY
@@ -873,6 +902,27 @@ if(settingsForm) {
 
       // Apply theme immediately
       applyTheme(theme);
+      
+      // AI Profile Screening
+      const token = await currentUser.getIdToken();
+      const aiScreenRes = await fetch(window.API_BASE_URL + "/api/ai/screen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          type: "profile",
+          data: { bio, name: currentUser.displayName }
+        })
+      });
+      const aiScreenData = await aiScreenRes.json();
+      if (aiScreenData.decision === 'reject') {
+        alert("QA Refusal: " + aiScreenData.reason);
+        submitBtn.innerText = "Save Settings";
+        submitBtn.disabled = false;
+        return;
+      }
       
       let profileUrl = null;
       if (photoFile) {

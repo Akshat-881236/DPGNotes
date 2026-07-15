@@ -132,6 +132,47 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
     }
+
+    /* AI Analysis Panel */
+    .ai-panel {
+      background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(99,102,241,0.05));
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .ai-panel h2 { margin-top: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
+    .ai-panel h2 span { font-size: 1.5rem; }
+    .ai-analyze-btn {
+      padding: 0.75rem 1.8rem;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ai-analyze-btn:hover { opacity: 0.85; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
+    .ai-analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    #aiReportOutput {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: rgba(0,0,0,0.3);
+      border-radius: 14px;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      color: var(--report-text);
+      display: none;
+    }
+    #aiReportOutput h1, #aiReportOutput h2, #aiReportOutput h3 { color: #a78bfa; }
+    #aiReportOutput strong { color: #c4b5fd; }
   </style>
 </head>
 <body>
@@ -187,6 +228,16 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- AI Analysis Panel -->
+    <div class="ai-panel" id="aiAnalysisPanel">
+      <h2><span>🤖</span> AI Compliance Analysis — DPGNotes Intelligence</h2>
+      <p style="color: var(--report-muted); margin-bottom: 1.5rem;">Run an AI-powered compliance brief on this share report. DPGNotes Intelligence will summarize engagement patterns, highlight anomalies, and provide security risk assessment.</p>
+      <button class="ai-analyze-btn" id="runAiAnalysisBtn" onclick="runAiAnalysis()">
+        <i class="ri-sparkling-line"></i> Analyze with AI
+      </button>
+      <div id="aiReportOutput"></div>
     </div>
   </div>
 

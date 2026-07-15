@@ -99,6 +99,64 @@ function renderReport(data) {
     `;
     tbody.appendChild(tr);
   });
+
+  // Cache report data for AI analysis
+  window._cachedReportData = data;
 }
+
+window.runAiAnalysis = async function() {
+  const btn = document.getElementById("runAiAnalysisBtn");
+  const output = document.getElementById("aiReportOutput");
+  const token = localStorage.getItem("adminToken");
+  
+  if (!token) { alert("Admin session required."); return; }
+  if (!window._cachedReportData) { alert("Report data not loaded yet."); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ri-loader-4-line"></i> Analyzing...';
+  output.style.display = "block";
+  output.innerHTML = '<span style="color:#a78bfa;">🤖 DPGNotes Intelligence is generating your compliance brief...</span>';
+
+  try {
+    const res = await fetch(window.API_BASE_URL + "/api/ai/screen", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        type: "report",
+        data: {
+          title: window._cachedReportData.shareInfo?.title || "Unknown",
+          totalClicks: window._cachedReportData.shareInfo?.clicks || 0,
+          engagements: (window._cachedReportData.engagements || []).slice(0, 30).map(e => ({
+            ip: e.ipAddress,
+            status: e.status,
+            agent: e.userAgent
+          }))
+        }
+      })
+    });
+    const aiData = await res.json();
+    if (aiData.report) {
+      // Convert basic markdown to HTML for display
+      const formatted = aiData.report
+        .replace(/### (.+)/g, '<h3>$1</h3>')
+        .replace(/## (.+)/g, '<h2>$1</h2>')
+        .replace(/# (.+)/g, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+      output.innerHTML = formatted;
+    } else {
+      output.innerHTML = '<span style="color:#ef4444;">No analysis returned. Please try again.</span>';
+    }
+  } catch(err) {
+    output.innerHTML = '<span style="color:#ef4444;">AI Analysis failed: ' + err.message + '</span>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyze';
+};
 
 document.addEventListener("DOMContentLoaded", initReport);

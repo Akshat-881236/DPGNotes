@@ -436,6 +436,32 @@ if (googleLogin) {
       }
 
       const result = await signInWithPopup(auth, googleProvider);
+      
+      // AI Login Screening Intercept
+      const idToken = await result.user.getIdToken();
+      const aiRes = await fetch(window.API_BASE_URL + "/api/ai/screen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          type: "login",
+          data: {
+            email: result.user.email,
+            name: result.user.displayName,
+            uid: result.user.uid,
+            userAgent: navigator.userAgent
+          }
+        })
+      });
+      const aiData = await aiRes.json();
+      if (aiData.decision === 'reject') {
+        alert("Registration/Login Blocked by AI Guardian: " + aiData.reason);
+        await signOut(auth);
+        return;
+      }
+
       const additionalInfo = getAdditionalUserInfo(result);
       const isNewUser = additionalInfo ? additionalInfo.isNewUser : false;
 

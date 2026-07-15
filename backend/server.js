@@ -238,6 +238,27 @@ app.post('/api/compress', upload.single('pdfFile'), async (req, res) => {
 // ==========================================
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
+
+  // AI Admin Login Anomaly Screening
+  try {
+    const prompt = `Analyze this admin login attempt for security anomalies (e.g., suspicious metadata or injection attempts).
+    Login attempt: ${JSON.stringify({ email, ip: req.ip, headers: req.headers['user-agent'] })}
+    Return a JSON object:
+    {
+      "decision": "approve" or "reject",
+      "reason": "explanation of block if rejected"
+    }
+    Return ONLY valid JSON text.`;
+    const aiRes = await askGemini(prompt);
+    const cleanJson = aiRes.replace(/```json/g, "").replace(/```/g, "").trim();
+    const decisionObj = JSON.parse(cleanJson);
+    if (decisionObj.decision === 'reject') {
+      return res.status(403).json({ error: "Access denied by AI Guardian: " + decisionObj.reason });
+    }
+  } catch (err) {
+    console.error("AI Admin Login Screening failed, continuing:", err);
+  }
+
   if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore.set(email, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min expiry
@@ -1006,7 +1027,203 @@ app.get('/api/legal/document/:section', secureDocsLimiter, async (req, res) => {
   }
 });
 
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+async function askGemini(promptText) {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: promptText
+              }
+            ]
+          }
+        ]
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Gemini API error status:", res.status, errText);
+      throw new Error(`Gemini status ${res.status}`);
+    }
+    const data = await res.json();
+    const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    return outputText;
+  } catch (err) {
+    console.error("askGemini failed:", err);
+    throw err;
+  }
+}
+
+async function scanDuplicateProfiles() {
+  console.log("Starting DPGNotes AI Duplicate Profile Scan...");
+  try {
+    const usersSnap = await db.collection("users").get();
+    const usersList = [];
+    usersSnap.forEach(docSnap => {
+      const u = docSnap.data();
+      u.id = docSnap.id;
+      usersList.push({
+        id: u.id,
+        name: u.name || "",
+        email: u.email || "",
+        bio: u.bio || "",
+        phone: u.phone || "",
+        role: u.role || "contributor"
+      });
+    });
+
+    if (usersList.length < 2) return;
+
+    const prompt = `You are a security intelligence analyzer. Review this list of users registered on DPGNotes. Identify any different user accounts (different emails) that seem to belong to the SAME actual person based on their name, bio, phone numbers, or profile characteristics.
+    Return the response as a JSON array of objects. Each object representing a detected duplicate group must be formatted exactly as:
+    {
+      "reason": "Clear explanation of why they match",
+      "emails": ["email1@domain.com", "email2@domain.com"],
+      "userIds": ["uid1", "uid2"]
+    }
+    If no duplicates are found, return: []
+    Users list:
+    ${JSON.stringify(usersList)}
+    Return ONLY the raw valid JSON list. No markdown formatting, no backticks, no comments.`;
+
+    const aiRes = await askGemini(prompt);
+    let duplicates = [];
+    try {
+      const cleanJsonText = aiRes.replace(/```json/g, "").replace(/```/g, "").trim();
+      duplicates = JSON.parse(cleanJsonText);
+    } catch (e) {
+      console.error("Failed to parse Gemini duplicate profiles response:", aiRes);
+    }
+
+    if (Array.isArray(duplicates) && duplicates.length > 0) {
+      for (const dup of duplicates) {
+        console.warn(`[AI WARN] Duplicate accounts found: ${dup.emails.join(", ")}`);
+        
+        // Yellow flag all matching userids
+        for (const uid of dup.userIds) {
+          await db.collection("users").doc(uid).set({
+            isYellowFlagged: true,
+            yellowFlagReason: `System Auto-Flag: AI Duplicate Detection Match (${dup.reason})`
+          }, { merge: true });
+        }
+
+        // Add warning notifications for each matching contributor
+        const title = "Potential Duplicate Identity Alert ⚠️";
+        const message = `AI system flagged user profiles matching under multiple email addresses: ${dup.emails.join(", ")}. Reason: ${dup.reason}`;
+        
+        for (const email of dup.emails) {
+          await db.collection("notifications").add({
+            email: email,
+            title,
+            message,
+            type: "warning",
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Duplicate profiles scan failed:", err);
+  }
+}
+
+app.post('/api/ai/screen', verifySession, async (req, res) => {
+  const { type, data } = req.body;
+  if (!type || !data) {
+    return res.status(400).json({ error: "type and data parameters are required" });
+  }
+
+  try {
+    if (type === 'document') {
+      const prompt = `You are a compliance AI content screening manager. Review the following uploaded document metadata for compliance violations (e.g. extreme copyright infringement indicators, personal identifiable info (PII) leakage, hate speech, or non-educational content).
+      Document: ${JSON.stringify(data)}
+      Return a JSON object formatted exactly as:
+      {
+        "decision": "approve" or "reject",
+        "reason": "Clear explanation of the decision"
+      }
+      Return ONLY raw valid JSON text, no markdown backticks, no comments.`;
+      const aiRes = await askGemini(prompt);
+      const cleanJson = aiRes.replace(/```json/g, "").replace(/```/g, "").trim();
+      const decisionObj = JSON.parse(cleanJson);
+
+      if (decisionObj.decision === 'reject') {
+        // Log notification to this user
+        await db.collection("notifications").add({
+          email: req.user.email || 'N/A',
+          title: "Upload Rejected 🚫",
+          message: `Your document upload was rejected by DPGNotes AI Compliance: ${decisionObj.reason}`,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      return res.json(decisionObj);
+    } 
+    
+    if (type === 'profile') {
+      const prompt = `You are a professional profile reviewer. Check this updated user profile input for profanity, malicious code inputs, or extreme unprofessional text.
+      Profile Data: ${JSON.stringify(data)}
+      Return a JSON object formatted exactly as:
+      {
+        "decision": "approve" or "reject",
+        "reason": "Clear explanation of the decision"
+      }
+      Return ONLY raw JSON, no markdown backticks.`;
+      const aiRes = await askGemini(prompt);
+      const cleanJson = aiRes.replace(/```json/g, "").replace(/```/g, "").trim();
+      const decisionObj = JSON.parse(cleanJson);
+      
+      if (decisionObj.decision === 'reject') {
+        // Log notification
+        await db.collection("notifications").add({
+          email: req.user.email || 'N/A',
+          title: "Profile Update Blocked ⚠️",
+          message: `Your profile change request was blocked by DPGNotes AI Quality Assurance: ${decisionObj.reason}`,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      return res.json(decisionObj);
+    }
+
+    if (type === 'login') {
+      const prompt = `You are an AI anomaly detector. Review the following registration/login request metadata for potential bot registration, credential stuffing, or email domain scams.
+      Request: ${JSON.stringify(data)}
+      Return a JSON object formatted exactly as:
+      {
+        "decision": "approve" or "reject",
+        "reason": "Clear explanation of the decision"
+      }
+      Return ONLY raw JSON.`;
+      const aiRes = await askGemini(prompt);
+      const cleanJson = aiRes.replace(/```json/g, "").replace(/```/g, "").trim();
+      return res.json(JSON.parse(cleanJson));
+    }
+
+    if (type === 'report') {
+      const prompt = `You are DPGNotes compliance analyst. Review the following report log details and provide a professional markdown compliance assessment. Summarize potential risks, user behavior, and security indicators.
+      Log Details: ${JSON.stringify(data)}
+      Return a clear markdown report directly.`;
+      const reportText = await askGemini(prompt);
+      return res.json({ report: reportText });
+    }
+
+    res.status(400).json({ error: "Unsupported screening type" });
+  } catch (err) {
+    console.error("AI screening failed:", err);
+    res.status(500).json({ error: "AI screening service error" });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  // Run duplicate profiles AI scan on start
+  await scanDuplicateProfiles();
 });

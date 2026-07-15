@@ -509,6 +509,28 @@
             </table>
           </div>
         </div>
+
+        <div class="section-card" style="margin-top:2rem;">
+          <div class="section-header">
+            <h2 class="section-title">All System Notifications Log</h2>
+            <input type="text" id="notifSearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search email or title...">
+          </div>
+          <div style="overflow-x:auto; max-height: 400px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Recipient Email</th>
+                  <th>Title</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody id="adminNotifsTableBody">
+                <tr><td colspan="4" style="text-align:center; color:var(--admin-muted);">Loading system notifications...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- VIEW: SHARES -->
