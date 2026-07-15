@@ -71,23 +71,129 @@ document.addEventListener('DOMContentLoaded', () => {
     userContext = 'guest';
   }
 
+  // Telemetry Interval reference
+  let telemetryInterval = null;
+
+  function forceSessionEviction() {
+    if (telemetryInterval) clearInterval(telemetryInterval);
+    sessionStorage.removeItem('dpgSessionId');
+    triggerSecurityBreach();
+    alert("Session conflict or security violation. Your access has been revoked.");
+    setTimeout(() => {
+      window.location.href = '../index.html';
+    }, 2000);
+  }
+
+  function startTelemetryInterval(token, sessionId) {
+    if (telemetryInterval) clearInterval(telemetryInterval);
+    
+    telemetryInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`${window.API_BASE_URL}/api/telemetry`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-Session-Id': sessionId
+          },
+          body: JSON.stringify({
+            visibilityState: document.visibilityState,
+            focusState: document.hasFocus() ? 'focused' : 'blurred',
+            violation: false
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || data.evict) {
+          forceSessionEviction();
+        }
+      } catch (err) {
+        console.error("Telemetry heartbeat failed:", err);
+      }
+    }, 5000);
+  }
+
+  async function reportImmediateViolation(token, sessionId, reason) {
+    if (!token || !sessionId) return;
+    try {
+      const res = await fetch(`${window.API_BASE_URL}/api/telemetry`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Session-Id': sessionId
+        },
+        body: JSON.stringify({
+          visibilityState: document.visibilityState,
+          focusState: document.hasFocus() ? 'focused' : 'blurred',
+          violation: true
+        })
+      });
+      const data = await res.json();
+      if (data.evict || !res.ok) {
+        forceSessionEviction();
+      }
+    } catch (err) {
+      console.error("Violation report failed:", err);
+      forceSessionEviction();
+    }
+  }
+
   // Setup Dynamic Watermark based on User Authentication state
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     const adminToken = localStorage.getItem('adminToken');
     let newWatermark = '';
     let isGuestUser = true;
+    let sessionToken = '';
 
     if (userContext === 'admin' && adminToken) {
       isGuestUser = false;
       const loginTime = localStorage.getItem('adminLoginTime') || new Date().toLocaleString();
       newWatermark = `Admin-${loginTime}`;
+      sessionToken = adminToken;
     } else if (user) {
       isGuestUser = true; // Contributor cannot download PDFs in Legal Center
       const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
       newWatermark = `${name}-${user.uid}`;
+      sessionToken = await user.getIdToken();
     } else {
       isGuestUser = true;
       newWatermark = `Guest-${guestId}`;
+    }
+
+    // Register active session for secure logging if token is present
+    if (sessionToken) {
+      let deviceId = localStorage.getItem('dpgDeviceId');
+      if (!deviceId) {
+        deviceId = 'DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        localStorage.setItem('dpgDeviceId', deviceId);
+      }
+
+      let browserName = "Other";
+      const ua = navigator.userAgent;
+      if (ua.includes("Chrome")) browserName = "Chrome";
+      else if (ua.includes("Safari") && !ua.includes("Chrome")) browserName = "Safari";
+      else if (ua.includes("Firefox")) browserName = "Firefox";
+      else if (ua.includes("Edge")) browserName = "Edge";
+
+      try {
+        const res = await fetch(`${window.API_BASE_URL}/api/auth/register-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`
+          },
+          body: JSON.stringify({ deviceId, browserName })
+        });
+        const data = await res.json();
+        if (res.ok && data.sessionId) {
+          sessionStorage.setItem('dpgSessionId', data.sessionId);
+          startTelemetryInterval(sessionToken, data.sessionId);
+        } else if (data.evict) {
+          forceSessionEviction();
+        }
+      } catch (err) {
+        console.error("Session registration failed:", err);
+      }
     }
 
     // Block Download feature for Guest Users
@@ -170,13 +276,34 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const pdfPath = `docs/${pdfName}`;
-
     // PDF.js Canvas Rendering with Watermark
     pdfWrapper.style.display = 'block';
     pdfWrapper.style.height = 'auto';
-    pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
-      if (localSessionId !== renderSessionId) return;
+
+    (async () => {
+      let token = '';
+      if (userContext === 'admin') {
+        token = localStorage.getItem('adminToken') || '';
+      } else if (auth.currentUser) {
+        token = await auth.currentUser.getIdToken();
+      }
+
+      const sessionId = sessionStorage.getItem('dpgSessionId') || '';
+      const docEndpointUrl = `${window.API_BASE_URL}/api/legal/document/${sectionName}`;
+
+      const headers = {
+        'X-Session-Id': sessionId,
+        'X-Guest-Id': guestId
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      pdfjsLib.getDocument({
+        url: docEndpointUrl,
+        httpHeaders: headers
+      }).promise.then(pdf => {
+        if (localSessionId !== renderSessionId) return;
 
       // Clear the loading spinner right before rendering the viewer container
       pdfWrapper.innerHTML = '';
@@ -268,8 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.rotate(-45 * Math.PI / 180);
             ctx.textAlign = 'center';
             ctx.fillText(watermarkText, 0, 0);
-            ctx.fillText(watermarkText, -150, -100);
-            ctx.fillText(watermarkText, 150, 100);
             ctx.restore();
           });
 
@@ -330,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(() => {
       showPdfPlaceholder(sectionName);
     });
+    })();
   }
 
   function showPdfPlaceholder(sectionName) {
@@ -552,14 +678,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 4. Block Tab Switching (Visibility API) & Screen Recording
-  document.addEventListener('visibilitychange', () => {
+  document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'hidden') {
       triggerSecurityBreach();
+      const token = (userContext === 'admin') ? localStorage.getItem('adminToken') : (auth.currentUser ? await auth.currentUser.getIdToken() : '');
+      const sessionId = sessionStorage.getItem('dpgSessionId');
+      if (token && sessionId) {
+        await reportImmediateViolation(token, sessionId, "Visibility State Hidden");
+      }
     }
   });
 
-  // 4. Blur page when window loses focus (Screenshot/Recorder overlay intercept)
-  window.addEventListener('blur', () => {
+  // 5. Blur page when window loses focus (Screenshot/Recorder overlay intercept)
+  window.addEventListener('blur', async () => {
     triggerSecurityBreach();
+    const token = (userContext === 'admin') ? localStorage.getItem('adminToken') : (auth.currentUser ? await auth.currentUser.getIdToken() : '');
+    const sessionId = sessionStorage.getItem('dpgSessionId');
+    if (token && sessionId) {
+      await reportImmediateViolation(token, sessionId, "Window Blurred");
+    }
   });
 });

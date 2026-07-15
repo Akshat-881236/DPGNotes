@@ -18,9 +18,11 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^7.1.5",
     "firebase-admin": "^11.11.1",
     "form-data": "^4.0.6",
     "jsonwebtoken": "^9.0.3",
-    "multer": "^2.2.0"
+    "multer": "^2.2.0",
+    "pdf-lib": "^1.17.1"
   }
 }

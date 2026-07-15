@@ -10,6 +10,9 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const ILovePDFApi = require('@ilovepdf/ilovepdf-nodejs');
+const crypto = require('crypto');
+const { PDFDocument, rgb, degrees, StandardFonts } = require('pdf-lib');
+const rateLimit = require('express-rate-limit');
 
 // ==========================================
 // INIT APP
@@ -823,6 +826,300 @@ app.get('/sitemap.xml', async (req, res) => {
   } catch (error) {
     console.error("Failed to generate sitemap:", error);
     res.status(500).send("Server Error");
+  }
+});
+
+// ==========================================
+// HIGH-LEVEL SECURITY & TELEMETRY ENGINE
+// ==========================================
+
+const pdfFileMapping = {
+  analytics: 'DOC_ANH_06_2026_001_DOC_ANH_06_2026_001_20260714_130156.pdf',
+  cookies: 'DOC_ANH_06_2026_002_DOC_ANH_06_2026_002_20260714_130555.pdf',
+  copyright: 'DOC_ANH_06_2026_003_DOC_ANH_06_2026_003_20260714_130927.pdf',
+  disclaimer: 'DOC_ANH_06_2026_004_DOC_ANH_06_2026_004_20260714_131118.pdf',
+  dmca: 'DOC_ANH_06_2026_005_DOC_ANH_06_2026_005_20260714_131342.pdf',
+  faq: 'DOC_ANH_06_2026_006_DOC_ANH_06_2026_006_20260714_131844.pdf',
+  privacy: 'DOC_ANH_06_2026_007_DOC_ANH_06_2026_007_20260714_132144.pdf',
+  retention: 'DOC_ANH_06_2026_008_DOC_ANH_06_2026_008_20260714_132349.pdf',
+  security: 'DOC_ANH_06_2026_009_DOC_ANH_06_2026_009_20260714_132558.pdf',
+  terms: 'DOC_ANH_06_2026_010_DOC_ANH_06_2026_010_20260714_132730.pdf',
+  drasa: 'DOC_ANH_06_2026_011_DOC_ANH_06_2026_010_20260714_140930.pdf'
+};
+
+async function watermarkPdf(filePath, watermarkText) {
+  const existingPdfBytes = fs.readFileSync(filePath);
+  const pdfDoc = await PDFDocument.load(existingPdfBytes);
+  const pages = pdfDoc.getPages();
+  const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  for (const page of pages) {
+    const { width, height } = page.getSize();
+    const textWidth = font.widthOfTextAtSize(watermarkText, 20);
+    const textHeight = 20;
+
+    // Single centered watermark on the page
+    page.drawText(watermarkText, {
+      x: (width - textWidth) / 2 + 50,
+      y: (height - textHeight) / 2 - 50,
+      size: 20,
+      font: font,
+      color: rgb(0.5, 0.5, 0.5),
+      opacity: 0.12,
+      rotate: degrees(45)
+    });
+  }
+
+  // Stamp disclaimer on last page: Subject to Copyright in exactly 10 words
+  const lastPage = pages[pages.length - 1];
+  lastPage.drawText("Subject to copyright: Unauthorized replication of this material is prohibited.", {
+    x: 50,
+    y: 25,
+    size: 10,
+    font: font,
+    color: rgb(0.4, 0.4, 0.4),
+    opacity: 0.8
+  });
+
+  return await pdfDoc.save();
+}
+
+const verifySession = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized: Missing token' });
+  }
+  const token = authHeader.split('Bearer ')[1];
+  
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email,
+      role: 'contributor'
+    };
+    return next();
+  } catch (err) {
+    try {
+      const decodedAdmin = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = {
+        email: decodedAdmin.email,
+        role: 'admin'
+      };
+      return next();
+    } catch (adminErr) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid credentials' });
+    }
+  }
+};
+
+const checkActiveSession = async (req, res, next) => {
+  const sessionId = req.headers['x-session-id'] || req.query.sessionId;
+  if (!sessionId) {
+    return res.status(401).json({ error: "Session ID missing" });
+  }
+
+  const userId = req.user.role === 'admin' ? `admin_${req.user.email.replace(/[@.]/g, '_')}` : req.user.uid;
+  
+  try {
+    const docSnap = await db.collection("active_sessions").doc(userId).get();
+    if (!docSnap.exists) {
+      return res.status(401).json({ error: "Session conflict: No active sessions found", evict: true });
+    }
+
+    let sessions = docSnap.data().sessions || [];
+    const activeSession = sessions.find(s => s.sessionId === sessionId);
+    if (!activeSession) {
+      return res.status(401).json({ error: "Session conflict: Session evicted by another login", evict: true });
+    }
+
+    activeSession.lastActive = Date.now();
+    await db.collection("active_sessions").doc(userId).set({ sessions });
+    next();
+  } catch (err) {
+    console.error("Session verification failed:", err);
+    res.status(500).json({ error: "Internal session validation failure" });
+  }
+};
+
+app.post('/api/auth/register-session', verifySession, async (req, res) => {
+  const { deviceId, browserName } = req.body;
+  if (!deviceId || !browserName) {
+    return res.status(400).json({ error: "deviceId and browserName required" });
+  }
+
+  const userId = req.user.role === 'admin' ? `admin_${req.user.email.replace(/[@.]/g, '_')}` : req.user.uid;
+  const sessionRef = db.collection("active_sessions").doc(userId);
+  const newSessionId = crypto.randomUUID();
+
+  try {
+    const docSnap = await sessionRef.get();
+    let sessions = [];
+    if (docSnap.exists) {
+      sessions = docSnap.data().sessions || [];
+    }
+
+    sessions = sessions.filter(s => Date.now() - s.lastActive < 24 * 60 * 60 * 1000);
+
+    const distinctBrowsers = [...new Set(sessions.map(s => s.browserName))];
+    if (!distinctBrowsers.includes(browserName) && distinctBrowsers.length >= 2) {
+      const oldestBrowser = distinctBrowsers[0];
+      sessions = sessions.filter(s => s.browserName !== oldestBrowser);
+    }
+
+    const distinctDevices = [...new Set(sessions.map(s => s.deviceId))];
+    if (!distinctDevices.includes(deviceId) && distinctDevices.length >= 3) {
+      sessions.shift();
+    }
+
+    sessions.push({
+      sessionId: newSessionId,
+      deviceId,
+      browserName,
+      lastActive: Date.now()
+    });
+
+    await sessionRef.set({ sessions });
+    res.json({ sessionId: newSessionId });
+  } catch (err) {
+    console.error("Failed to register session:", err);
+    res.status(500).json({ error: "Failed to register session" });
+  }
+});
+
+app.post('/api/telemetry', verifySession, checkActiveSession, async (req, res) => {
+  const { visibilityState, focusState, violation } = req.body;
+  const userId = req.user.role === 'admin' ? `admin_${req.user.email.replace(/[@.]/g, '_')}` : req.user.uid;
+  const isViolation = violation || visibilityState === 'hidden' || focusState === 'blurred';
+
+  try {
+    await db.collection("telemetry_logs").add({
+      userId,
+      email: req.user.email,
+      role: req.user.role,
+      visibilityState,
+      focusState,
+      isViolation,
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    if (isViolation) {
+      await db.collection("security_violations").add({
+        userId,
+        email: req.user.email,
+        role: req.user.role,
+        reason: `Visibility/Focus changed (visibilityState: ${visibilityState}, focusState: ${focusState})`,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      const sessionId = req.headers['x-session-id'] || req.query.sessionId;
+      const sessionRef = db.collection("active_sessions").doc(userId);
+      const docSnap = await sessionRef.get();
+      if (docSnap.exists) {
+        let sessions = docSnap.data().sessions || [];
+        sessions = sessions.filter(s => s.sessionId !== sessionId);
+        await sessionRef.set({ sessions });
+      }
+
+      return res.status(403).json({ error: "Security violation: access revoked.", evict: true });
+    }
+
+    res.json({ status: "healthy" });
+  } catch (err) {
+    console.error("Telemetry tracking failed:", err);
+    res.status(500).json({ error: "Failed to process telemetry" });
+  }
+});
+
+const secureDocsLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 15,
+  message: { error: "Too many document requests from this device. Please wait 5 minutes." },
+  handler: async (req, res, next, options) => {
+    const authHeader = req.headers.authorization;
+    let userId = 'Guest';
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split('Bearer ')[1];
+        const decoded = await admin.auth().verifyIdToken(token);
+        userId = decoded.uid;
+      } catch (e) {}
+    }
+    
+    await db.collection("security_violations").add({
+      userId,
+      reason: "Suspicious Activity: Rate Limit Exceeded (Rapid consecutive document requests)",
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.status(options.statusCode).send(options.message);
+  }
+});
+
+app.get('/api/legal/document/:section', secureDocsLimiter, async (req, res) => {
+  const { section } = req.params;
+  const sessionId = req.headers['x-session-id'] || req.query.sessionId;
+  const authHeader = req.headers.authorization;
+  
+  let watermarkVal = '';
+  let isGuest = true;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split('Bearer ')[1];
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const sessionSnap = await db.collection("active_sessions").doc(decodedToken.uid).get();
+      if (sessionSnap.exists) {
+        const sessions = sessionSnap.data().sessions || [];
+        if (sessions.some(s => s.sessionId === sessionId)) {
+          const name = decodedToken.name || decodedToken.email.split('@')[0];
+          watermarkVal = `${name}-${decodedToken.uid}`;
+          isGuest = false;
+        }
+      }
+    } catch (err) {
+      try {
+        const decodedAdmin = jwt.verify(token, process.env.JWT_SECRET);
+        const adminId = `admin_${decodedAdmin.email.replace(/[@.]/g, '_')}`;
+        const sessionSnap = await db.collection("active_sessions").doc(adminId).get();
+        if (sessionSnap.exists) {
+          const sessions = sessionSnap.data().sessions || [];
+          if (sessions.some(s => s.sessionId === sessionId)) {
+            // For admin, use current login timestamp
+            const loginTime = new Date().toLocaleString();
+            watermarkVal = `Admin-${loginTime}`;
+            isGuest = false;
+          }
+        }
+      } catch (adminErr) {}
+    }
+  }
+
+  if (isGuest) {
+    const guestId = req.headers['x-guest-id'] || req.query.guestId || 'GST-UNKNOWN';
+    watermarkVal = `Guest-${guestId}`;
+  }
+
+  const pdfName = pdfFileMapping[section];
+  if (!pdfName) {
+    return res.status(404).json({ error: "Document not found" });
+  }
+
+  const filePath = path.join(__dirname, 'public/legal/docs', pdfName);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "Physical PDF file not found" });
+  }
+
+  try {
+    const watermarkedBuffer = await watermarkPdf(filePath, watermarkVal);
+    res.contentType("application/pdf");
+    res.send(Buffer.from(watermarkedBuffer));
+  } catch (err) {
+    console.error("Watermarking stream failed:", err);
+    res.status(500).json({ error: "Failed to load document stream" });
   }
 });
 
