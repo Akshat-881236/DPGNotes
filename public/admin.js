@@ -40,6 +40,7 @@ auth.authStateReady().then(() => {
       dashboardLayer.style.display = "flex";
       loadUsers();
       loadActivityLogs();
+      loadSecurityViolations();
     } else {
       // Firebase auth missing but backend token exists. Needs re-login.
       localStorage.removeItem("adminToken");
@@ -614,7 +615,159 @@ window.switchTab = function(tabId) {
     loadUsers();
   } else if (tabId === 'logs') {
     loadActivityLogs();
+  } else if (tabId === 'security') {
+    loadSecurityViolations();
   }
 };
 
+async function loadSecurityViolations() {
+  const tableBody = document.getElementById("securityTableBody");
+  if (!tableBody) return;
+  
+  tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">Loading security logs...</td></tr>`;
+  
+  try {
+    const q = query(collection(db, "security_violations"), orderBy("timestamp", "desc"));
+    const querySnapshot = await getDocs(q);
+    tableBody.innerHTML = "";
+    
+    if (querySnapshot.empty) {
+      tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">No security violations logged.</td></tr>`;
+      return;
+    }
+
+    const usersSnap = await getDocs(collection(db, "users"));
+    const usersDataMap = {};
+    usersSnap.forEach(docSnap => {
+      usersDataMap[docSnap.id] = docSnap.data();
+    });
+
+    querySnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const docId = docSnap.id;
+      const time = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : 'N/A';
+      const userId = data.userId || 'Unknown';
+      const email = data.email || 'N/A';
+      const ip = data.ipAddress || 'N/A';
+      const reason = data.reason || 'N/A';
+
+      const isContributor = !userId.startsWith('admin_') && userId !== 'Guest';
+      let actionBtn = '';
+      if (isContributor) {
+        const userProfile = usersDataMap[userId];
+        const isBlocked = userProfile ? (userProfile.isBlocked || (userProfile.suspendedUntil && userProfile.suspendedUntil > Date.now())) : false;
+        if (isBlocked) {
+          actionBtn = `<button class="btn-action success unblock-sec-btn" style="background:var(--admin-success);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-uid="${userId}">Reactivate</button>`;
+        } else {
+          actionBtn = `<button class="btn-action warn block-sec-btn" style="background:var(--admin-warning);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-uid="${userId}" data-email="${email}">Suspend</button>`;
+        }
+      } else {
+        actionBtn = `<button class="btn-action danger dismiss-sec-btn" style="background:var(--admin-danger);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-id="${docId}">Dismiss</button>`;
+      }
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${time}</td>
+        <td>
+          <div style="font-weight:600;">${email}</div>
+          <div style="font-size:0.8rem; color:var(--admin-muted);">${userId}</div>
+        </td>
+        <td>${ip}</td>
+        <td><span style="color:var(--admin-danger); font-weight:500;">${reason}</span></td>
+        <td>
+          <div style="display:flex; gap:0.5rem;">
+            ${actionBtn}
+            ${isContributor ? `<button class="btn-action danger dismiss-sec-btn" style="background:rgba(239, 68, 68, 0.1);color:var(--admin-danger);padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-id="${docId}">Dismiss</button>` : ''}
+          </div>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    // Bind button events
+    document.querySelectorAll(".dismiss-sec-btn").forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.dataset.id;
+        btn.innerText = "⏳";
+        try {
+          await deleteDoc(doc(db, "security_violations", id));
+          loadSecurityViolations();
+        } catch (e) {
+          alert("Failed to delete log");
+        }
+      };
+    });
+
+    document.querySelectorAll(".block-sec-btn").forEach(btn => {
+      btn.onclick = async () => {
+        const uid = btn.dataset.uid;
+        const email = btn.dataset.email;
+        const days = await window.customPrompt("Enter days to suspend this violator (0 for permanent block):", "3");
+        if (days === null) return;
+        const reason = await window.customPrompt("Enter reason for suspension/blocking:", "Security Violation: Visibility change or Blur detected");
+        if (reason === null) return;
+
+        btn.innerText = "⏳";
+        const userRef = doc(db, "users", uid);
+        const updateData = {
+          isBlocked: true,
+          suspendedUntil: null,
+          blockedReason: reason
+        };
+        if (parseInt(days) > 0) {
+          updateData.suspendedUntil = Date.now() + parseInt(days) * 24 * 60 * 60 * 1000;
+        }
+        
+        try {
+          await updateDoc(userRef, updateData);
+          fetch(`${API_URL}/email/admin-block`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email, reason })
+          }).catch(console.error);
+
+          addDoc(collection(db, "notifications"), {
+            email: email,
+            type: "alert",
+            title: "Account Suspended 🚫",
+            message: `Your account has been suspended by an administrator. Reason: ${reason}`,
+            createdAt: serverTimestamp()
+          }).catch(console.error);
+
+          loadSecurityViolations();
+        } catch (e) {
+          alert("Failed to suspend user.");
+        }
+      };
+    });
+
+    document.querySelectorAll(".unblock-sec-btn").forEach(btn => {
+      btn.onclick = async () => {
+        const uid = btn.dataset.uid;
+        btn.innerText = "⏳";
+        try {
+          await updateDoc(doc(db, "users", uid), { isBlocked: false, suspendedUntil: null });
+          loadSecurityViolations();
+        } catch(e) {
+          alert("Failed to reactivate user.");
+        }
+      };
+    });
+
+  } catch (err) {
+    console.error("Failed to load security violations:", err);
+    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-danger);">Failed to query database logs.</td></tr>`;
+  }
+}
+
+// Add real-time text filter to security logs
+document.getElementById("securitySearch").addEventListener("input", (e) => {
+  const queryStr = e.target.value.toLowerCase();
+  document.querySelectorAll("#securityTableBody tr").forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(queryStr) ? "" : "none";
+  });
+});
+
 window.loadShares = loadShares;
+window.loadSecurityViolations = loadSecurityViolations;

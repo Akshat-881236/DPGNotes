@@ -363,6 +363,9 @@
         <a class="nav-link" onclick="switchTab('shares')">
           <i class="ri-share-forward-line"></i> Share Analysis
         </a>
+        <a class="nav-link" onclick="switchTab('security')">
+          <i class="ri-git-repository-private-line"></i> Security Violations
+        </a>
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
         </a>
@@ -509,6 +512,31 @@
             </table>
           </div>
         </div>
+      <!-- VIEW: SECURITY -->
+      <section id="view-security" class="view-section">
+        <div class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">Legal Portal Security Violations <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="These are security logs flagged by client telemetry pings (Visibility Loss or Blurs)."></i></h2>
+            <input type="text" id="securitySearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search user ID or email...">
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Identity / Email</th>
+                  <th>IP Address</th>
+                  <th>Reason / Details</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="securityTableBody">
+                <tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">Querying security telemetry...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
       </section>
 
     </main>
