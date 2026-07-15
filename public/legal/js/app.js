@@ -5,7 +5,7 @@ import { initSearch } from './search.js';
 
 // Import Firebase dependencies for state checks
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -74,14 +74,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // Telemetry Interval reference
   let telemetryInterval = null;
 
-  function forceSessionEviction() {
+  async function forceSessionEviction() {
     if (telemetryInterval) clearInterval(telemetryInterval);
     sessionStorage.removeItem('dpgSessionId');
     triggerSecurityBreach();
-    alert("Session conflict or security violation. Your access has been revoked.");
-    setTimeout(() => {
+    
+    const isAdminUser = (userContext === 'admin');
+    if (isAdminUser) {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminLoginTime');
+    } else {
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error("Signout error:", e);
+      }
+    }
+
+    if (window.customAlert) {
+      await window.customAlert("Security violation or session conflict detected. Your active session has been terminated.", { title: "Session Terminated" });
+    } else {
+      alert("Security violation or session conflict detected. Your active session has been terminated.");
+    }
+
+    if (isAdminUser) {
+      window.location.href = '../admin.html';
+    } else {
       window.location.href = '../index.html';
-    }, 2000);
+    }
   }
 
   function startTelemetryInterval(token, sessionId) {
