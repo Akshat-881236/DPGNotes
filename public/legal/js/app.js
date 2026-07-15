@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Telemetry Interval reference
   let telemetryInterval = null;
   let isEvicting = false;
+  let isSharing = false;
 
   async function forceSessionEviction() {
     if (telemetryInterval) clearInterval(telemetryInterval);
@@ -546,7 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Print Action
   if (printBtn) {
     printBtn.addEventListener('click', () => {
+      isSharing = true;
       window.print();
+      setTimeout(() => {
+        isSharing = false;
+      }, 2000);
     });
   }
 
@@ -580,6 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const shareUrl = data.shareUrl;
         if (navigator.share) {
+          isSharing = true;
           try {
             await navigator.share({
               title: `Check out ${currentSection.toUpperCase()} Policy on DPGNotes`,
@@ -589,6 +595,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (shareErr.name !== 'AbortError') {
               alert("Failed to share: " + shareErr.message);
             }
+          } finally {
+            setTimeout(() => {
+              isSharing = false;
+            }, 2000);
           }
         } else {
           navigator.clipboard.writeText(shareUrl);
@@ -701,6 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 5. Blur page when window loses focus (Screenshot/Recorder overlay intercept)
   window.addEventListener('blur', async () => {
+    if (isSharing) return;
     triggerSecurityBreach();
     const token = (userContext === 'admin') ? localStorage.getItem('adminToken') : (auth.currentUser ? await auth.currentUser.getIdToken() : '');
     const sessionId = sessionStorage.getItem('dpgSessionId');
