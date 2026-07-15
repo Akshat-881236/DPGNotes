@@ -73,11 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Telemetry Interval reference
   let telemetryInterval = null;
+  let isEvicting = false;
 
   async function forceSessionEviction() {
     if (telemetryInterval) clearInterval(telemetryInterval);
     sessionStorage.removeItem('dpgSessionId');
-    triggerSecurityBreach();
+    
+    if (!isEvicting) {
+      isEvicting = true;
+      triggerSecurityBreach();
+    }
     
     const isAdminUser = (userContext === 'admin');
     if (isAdminUser) {
@@ -635,6 +640,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Prevent interaction
     document.body.style.overflow = 'hidden';
+
+    // Auto-terminate the user session
+    if (!isEvicting) {
+      isEvicting = true;
+      forceSessionEviction();
+    }
   }
 
   // 1. Block Context Menu (Inspect Element Right Click)
