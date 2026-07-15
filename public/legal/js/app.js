@@ -71,155 +71,23 @@ document.addEventListener('DOMContentLoaded', () => {
     userContext = 'guest';
   }
 
-  // Telemetry Interval reference
-  let telemetryInterval = null;
-  let isEvicting = false;
-  let isSharing = false;
-
-  async function forceSessionEviction() {
-    if (telemetryInterval) clearInterval(telemetryInterval);
-    sessionStorage.removeItem('dpgSessionId');
-    
-    if (!isEvicting) {
-      isEvicting = true;
-      triggerSecurityBreach();
-    }
-    
-    const isAdminUser = (userContext === 'admin');
-    if (isAdminUser) {
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminLoginTime');
-    } else {
-      try {
-        await signOut(auth);
-      } catch (e) {
-        console.error("Signout error:", e);
-      }
-    }
-
-    if (window.customAlert) {
-      await window.customAlert("Security violation or session conflict detected. Your active session has been terminated.", { title: "Session Terminated" });
-    } else {
-      alert("Security violation or session conflict detected. Your active session has been terminated.");
-    }
-
-    if (isAdminUser) {
-      window.location.href = '../admin.html';
-    } else {
-      window.location.href = '../index.html';
-    }
-  }
-
-  function startTelemetryInterval(token, sessionId) {
-    if (telemetryInterval) clearInterval(telemetryInterval);
-    
-    telemetryInterval = setInterval(async () => {
-      try {
-        const res = await fetch(`${window.API_BASE_URL}/api/telemetry`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'X-Session-Id': sessionId
-          },
-          body: JSON.stringify({
-            visibilityState: document.visibilityState,
-            focusState: document.hasFocus() ? 'focused' : 'blurred',
-            violation: false
-          })
-        });
-        const data = await res.json();
-        if (!res.ok || data.evict) {
-          forceSessionEviction();
-        }
-      } catch (err) {
-        console.error("Telemetry heartbeat failed:", err);
-      }
-    }, 5000);
-  }
-
-  async function reportImmediateViolation(token, sessionId, reason) {
-    if (!token || !sessionId) return;
-    try {
-      const res = await fetch(`${window.API_BASE_URL}/api/telemetry`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'X-Session-Id': sessionId
-        },
-        body: JSON.stringify({
-          visibilityState: document.visibilityState,
-          focusState: document.hasFocus() ? 'focused' : 'blurred',
-          violation: true
-        })
-      });
-      const data = await res.json();
-      if (data.evict || !res.ok) {
-        forceSessionEviction();
-      }
-    } catch (err) {
-      console.error("Violation report failed:", err);
-      forceSessionEviction();
-    }
-  }
-
   // Setup Dynamic Watermark based on User Authentication state
   onAuthStateChanged(auth, async (user) => {
     const adminToken = localStorage.getItem('adminToken');
     let newWatermark = '';
     let isGuestUser = true;
-    let sessionToken = '';
 
     if (userContext === 'admin' && adminToken) {
       isGuestUser = false;
       const loginTime = localStorage.getItem('adminLoginTime') || new Date().toLocaleString();
       newWatermark = `Admin-${loginTime}`;
-      sessionToken = adminToken;
     } else if (user) {
       isGuestUser = true; // Contributor cannot download PDFs in Legal Center
       const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
       newWatermark = `${name}-${user.uid}`;
-      sessionToken = await user.getIdToken();
     } else {
       isGuestUser = true;
       newWatermark = `Guest-${guestId}`;
-    }
-
-    // Register active session for secure logging if token is present
-    if (sessionToken) {
-      let deviceId = localStorage.getItem('dpgDeviceId');
-      if (!deviceId) {
-        deviceId = 'DEV-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-        localStorage.setItem('dpgDeviceId', deviceId);
-      }
-
-      let browserName = "Other";
-      const ua = navigator.userAgent;
-      if (ua.includes("Chrome")) browserName = "Chrome";
-      else if (ua.includes("Safari") && !ua.includes("Chrome")) browserName = "Safari";
-      else if (ua.includes("Firefox")) browserName = "Firefox";
-      else if (ua.includes("Edge")) browserName = "Edge";
-
-      try {
-        const res = await fetch(`${window.API_BASE_URL}/api/auth/register-session`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionToken}`
-          },
-          body: JSON.stringify({ deviceId, browserName })
-        });
-        const data = await res.json();
-        if (res.ok && data.sessionId) {
-          sessionStorage.setItem('dpgSessionId', data.sessionId);
-          startTelemetryInterval(sessionToken, data.sessionId);
-        } else if (data.evict) {
-          forceSessionEviction();
-        }
-      } catch (err) {
-        console.error("Session registration failed:", err);
-      }
     }
 
     // Block Download feature for Guest Users
@@ -629,94 +497,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // =========================================
-  // STRICT SECURITY POLICIES
-  // =========================================
-  const securityOverlay = document.getElementById('securityOverlay');
-
-  function triggerSecurityBreach() {
-    if (securityOverlay) {
-      securityOverlay.style.display = 'flex';
-    }
-    // Prevent interaction
-    document.body.style.overflow = 'hidden';
-
-    // Auto-terminate the user session
-    if (!isEvicting) {
-      isEvicting = true;
-      forceSessionEviction();
-    }
-  }
-
-  // 1. Block Context Menu (Inspect Element Right Click)
-  window.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    triggerSecurityBreach();
-  });
-
-  // 2. Block Keyboard Shortcuts (F12, Inspect, Screenshots)
-  window.addEventListener('keydown', (e) => {
-    // F12
-    if (e.key === 'F12') {
-      e.preventDefault();
-      triggerSecurityBreach();
-    }
-    // Ctrl + Shift + I or Cmd + Option + I (Inspect)
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'i') {
-      e.preventDefault();
-      triggerSecurityBreach();
-    }
-    // Ctrl + Shift + C or Cmd + Option + C (Element selector)
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'c') {
-      e.preventDefault();
-      triggerSecurityBreach();
-    }
-    // Ctrl + Shift + S or Cmd + Shift + S or Cmd + Shift + 3/4/5 (Screenshots)
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key.toLowerCase() === 's' || e.key === '3' || e.key === '4' || e.key === '5')) {
-      e.preventDefault();
-      triggerSecurityBreach();
-    }
-    // Ctrl + P or Cmd + P (Block native print shortcut)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-      e.preventDefault();
-      alert("Please use the official 'Print' button on the portal header to generate compliance outputs.");
-    }
-    // Screen Capture keys (PrintScreen/Meta+Shift+S)
-    if (e.key === 'PrintScreen' || e.keyCode === 44) {
-      navigator.clipboard.writeText(''); // Clear clipboard immediately
-      e.preventDefault();
-      triggerSecurityBreach();
-    }
-  });
-
-  // 3. Override getDisplayMedia to block Screen Recording/Sharing
-  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-    navigator.mediaDevices.getDisplayMedia = function() {
-      triggerSecurityBreach();
-      return Promise.reject(new DOMException("Screen capture is disabled for security reasons.", "NotAllowedError"));
-    };
-  }
-
-  // 4. Block Tab Switching (Visibility API) & Screen Recording
-  document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'hidden') {
-      triggerSecurityBreach();
-      const token = (userContext === 'admin') ? localStorage.getItem('adminToken') : (auth.currentUser ? await auth.currentUser.getIdToken() : '');
-      const sessionId = sessionStorage.getItem('dpgSessionId');
-      if (token && sessionId) {
-        await reportImmediateViolation(token, sessionId, "Visibility State Hidden");
-      }
-    }
-  });
-
-  // 5. Blur page when window loses focus (Screenshot/Recorder overlay intercept)
-  window.addEventListener('blur', async () => {
-    if (isSharing) return;
-    triggerSecurityBreach();
-    const token = (userContext === 'admin') ? localStorage.getItem('adminToken') : (auth.currentUser ? await auth.currentUser.getIdToken() : '');
-    const sessionId = sessionStorage.getItem('dpgSessionId');
-    if (token && sessionId) {
-      await reportImmediateViolation(token, sessionId, "Window Blurred");
-    }
-  });
 });
