@@ -327,7 +327,7 @@ function showSuspensionModal(suspendedUntil) {
   box.style.fontFamily = "'Inter', sans-serif";
 
   box.innerHTML = `
-    <div style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"><i class="ri-alarm-warning-line"></i></div>
+    <div style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"><a href="https://dpgnotes.web.app/legal/index.html?from=admin#copyright" target="blank"><i class="ri-alarm-warning-line"></i></a></div>
     <h2 style="margin: 0 0 10px 0; font-size: 1.5rem;">Account Suspended</h2>
     <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;">
       Your contributor account is temporarily suspended under the DPGNotes Regulations & Suspension Act (DRASA).
