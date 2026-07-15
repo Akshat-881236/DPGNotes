@@ -313,8 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
         token = await auth.currentUser.getIdToken();
       }
 
-      const sessionId = sessionStorage.getItem('dpgSessionId') || '';
-      const docEndpointUrl = `${window.API_BASE_URL}/api/legal/document/${sectionName}?sessionId=${encodeURIComponent(sessionId)}&guestId=${encodeURIComponent(guestId)}&token=${encodeURIComponent(token)}`;
+      const docEndpointUrl = `docs/${pdfName}`;
 
       pdfjsLib.getDocument(docEndpointUrl).promise.then(pdf => {
         if (localSessionId !== renderSessionId) return;
