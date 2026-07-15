@@ -501,7 +501,11 @@ app.post('/api/share/generate', async (req, res) => {
       shareCount: admin.firestore.FieldValue.increment(1)
     }).catch(err => console.log("Virtual or missing doc, skipping shareCount increment: " + err.message));
 
-    res.json({ token, shareUrl: `https://dpgnotes.web.app/index.html?share=${token}` });
+    const baseUrl = (originalUrl && originalUrl.trim()) 
+      ? originalUrl.trim().replace(/\?share=$/, '') 
+      : 'https://dpgnotes.web.app/index.html';
+    const shareUrl = `${baseUrl}?share=${token}`;
+    res.json({ token, shareUrl });
   } catch (error) {
     console.error("Failed to generate share link:", error);
     res.status(500).json({ error: "Failed to generate share link" });
