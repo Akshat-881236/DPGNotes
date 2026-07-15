@@ -309,20 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const sessionId = sessionStorage.getItem('dpgSessionId') || '';
-      const docEndpointUrl = `${window.API_BASE_URL}/api/legal/document/${sectionName}`;
+      const docEndpointUrl = `${window.API_BASE_URL}/api/legal/document/${sectionName}?sessionId=${encodeURIComponent(sessionId)}&guestId=${encodeURIComponent(guestId)}&token=${encodeURIComponent(token)}`;
 
-      const headers = {
-        'X-Session-Id': sessionId,
-        'X-Guest-Id': guestId
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      pdfjsLib.getDocument({
-        url: docEndpointUrl,
-        httpHeaders: headers
-      }).promise.then(pdf => {
+      pdfjsLib.getDocument(docEndpointUrl).promise.then(pdf => {
         if (localSessionId !== renderSessionId) return;
 
       // Clear the loading spinner right before rendering the viewer container

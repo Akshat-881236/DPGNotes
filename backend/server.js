@@ -1067,8 +1067,8 @@ app.get('/api/legal/document/:section', secureDocsLimiter, async (req, res) => {
   let watermarkVal = '';
   let isGuest = true;
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split('Bearer ')[1];
+  const token = (authHeader && authHeader.startsWith('Bearer ')) ? authHeader.split('Bearer ')[1] : req.query.token;
+  if (token) {
     try {
       const decodedToken = await admin.auth().verifyIdToken(token);
       const sessionSnap = await db.collection("active_sessions").doc(decodedToken.uid).get();
