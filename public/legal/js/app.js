@@ -305,18 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pdfWrapper.style.display = 'block';
     pdfWrapper.style.height = 'auto';
 
-    (async () => {
-      let token = '';
-      if (userContext === 'admin') {
-        token = localStorage.getItem('adminToken') || '';
-      } else if (auth.currentUser) {
-        token = await auth.currentUser.getIdToken();
-      }
-
-      const docEndpointUrl = `docs/${pdfName}`;
-
-      pdfjsLib.getDocument(docEndpointUrl).promise.then(pdf => {
-        if (localSessionId !== renderSessionId) return;
+    const pdfPath = `docs/${pdfName}`;
+    pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
+      if (localSessionId !== renderSessionId) return;
 
       // Clear the loading spinner right before rendering the viewer container
       pdfWrapper.innerHTML = '';
@@ -465,10 +456,10 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
-    }).catch(() => {
+    }).catch((err) => {
+      console.error("PDF load error:", err);
       showPdfPlaceholder(sectionName);
     });
-    })();
   }
 
   function showPdfPlaceholder(sectionName) {
