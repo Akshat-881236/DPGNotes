@@ -475,7 +475,12 @@ onAuthStateChanged(
         const blockSnap = await getDocs(blockQ);
         if (!blockSnap.empty) {
           const blockData = blockSnap.docs[0].data();
-          alert(`Your account has been permanently blocked by the Administrator.\nReason: ${blockData.Reason || "N/A"}\nCase Status: ${blockData.Case_Status || "N/A"}`);
+          const blockMsg = `Your account has been permanently blocked by the Administrator.<br><br><strong>Reason:</strong> ${blockData.Reason || "N/A"}<br><strong>Case Status:</strong> ${blockData.Case_Status || "N/A"}`;
+          if (window.customAlert) {
+            await window.customAlert(blockMsg, { title: "Access Denied" });
+          } else {
+            alert(`Your account has been permanently blocked by the Administrator.\nReason: ${blockData.Reason || "N/A"}\nCase Status: ${blockData.Case_Status || "N/A"}`);
+          }
           await signOut(auth);
           return;
         }
@@ -497,7 +502,11 @@ onAuthStateChanged(
                 const msg = (userData.suspendedUntil && userData.suspendedUntil > Date.now()) 
                   ? `Your account is suspended for ${Math.ceil(diff / 86400000)} more days.`
                   : "Your account has been permanently blocked by the Administrator.";
-                alert(msg + " Please contact support.");
+                if (window.customAlert) {
+                  await window.customAlert(msg + "<br><br>Please contact support.", { title: "Access Denied" });
+                } else {
+                  alert(msg + " Please contact support.");
+                }
               }
               await signOut(auth);
               return;
