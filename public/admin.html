@@ -492,19 +492,25 @@
         <div class="section-card">
           <div class="section-header">
             <h2 class="section-title">System Audit Logs <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Activity traces are kept for 180 days under our Data Retention Policy. Click to view." onclick="window.open('legal/index.html?from=admin#retention', '_blank')"></i></h2>
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+              <span id="selectedLogsCount" style="display:none; color:var(--admin-warning); font-size:0.9rem; font-weight:600;">0 selected</span>
+              <button id="deleteSelectedLogsBtn" onclick="deleteSelectedLogs()" style="display:none; padding:0.5rem 1.2rem; background:var(--admin-danger); color:white; border:none; border-radius:10px; cursor:pointer; font-family:'Outfit',sans-serif; font-weight:600; font-size:0.9rem;"><i class="ri-delete-bin-line"></i> Delete Selected</button>
+            </div>
           </div>
           <div style="overflow-x:auto; max-height: 500px;">
             <table class="data-table">
               <thead>
                 <tr>
+                  <th style="width:40px;"><input type="checkbox" id="selectAllLogs" title="Select All" style="cursor:pointer; width:16px; height:16px;" onchange="toggleAllLogs(this)"></th>
                   <th>Timestamp</th>
                   <th>Identity</th>
                   <th>Action</th>
                   <th>Metadata</th>
+                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody id="activityLogsTableBody">
-                <tr><td colspan="4" style="text-align:center; color:var(--admin-muted);">Querying logs...</td></tr>
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Querying logs...</td></tr>
               </tbody>
             </table>
           </div>
@@ -586,6 +592,80 @@
       event.currentTarget.classList.add('active');
     }
     function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+
+    function toggleAllLogs(masterCb) {
+      const checkboxes = document.querySelectorAll('.log-row-check');
+      checkboxes.forEach(cb => { cb.checked = masterCb.checked; });
+      updateLogSelectionBar();
+    }
+
+    function updateLogSelectionBar() {
+      const checked = document.querySelectorAll('.log-row-check:checked');
+      const countEl = document.getElementById('selectedLogsCount');
+      const deleteBtn = document.getElementById('deleteSelectedLogsBtn');
+      if (checked.length > 0) {
+        countEl.style.display = 'inline';
+        countEl.textContent = checked.length + ' selected';
+        deleteBtn.style.display = 'inline-flex';
+        deleteBtn.style.alignItems = 'center';
+        deleteBtn.style.gap = '6px';
+      } else {
+        countEl.style.display = 'none';
+        deleteBtn.style.display = 'none';
+      }
+    }
+
+    async function deleteSelectedLogs() {
+      const checked = document.querySelectorAll('.log-row-check:checked');
+      if (checked.length === 0) return;
+      const confirmed = confirm(`Delete ${checked.length} selected log entries? This cannot be undone.`);
+      if (!confirmed) return;
+      const token = localStorage.getItem('adminToken');
+      const ids = Array.from(checked).map(cb => cb.dataset.id);
+      try {
+        const res = await fetch(`${window.API_BASE_URL}/api/admin/delete-logs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          // Remove deleted rows
+          ids.forEach(id => {
+            const row = document.querySelector(`.log-row-check[data-id="${id}"]`);
+            if (row) row.closest('tr').remove();
+          });
+          updateLogSelectionBar();
+          document.getElementById('selectAllLogs').checked = false;
+        } else {
+          alert(data.error || 'Delete failed');
+        }
+      } catch(e) {
+        alert('Server error: ' + e.message);
+      }
+    }
+
+    async function deleteSingleLog(id) {
+      const confirmed = confirm('Delete this log entry?');
+      if (!confirmed) return;
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`${window.API_BASE_URL}/api/admin/delete-logs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ ids: [id] })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const row = document.querySelector(`.log-row-check[data-id="${id}"]`);
+          if (row) row.closest('tr').remove();
+        } else {
+          alert(data.error || 'Delete failed');
+        }
+      } catch(e) {
+        alert('Server error: ' + e.message);
+      }
+    }
   </script>
   <script type="module" src="admin.js"></script>
 </body>

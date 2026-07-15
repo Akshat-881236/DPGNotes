@@ -467,31 +467,36 @@ async function loadActivityLogs() {
   if (!table) return;
   
   try {
-    const q = query(collection(db, "activity_logs"), orderBy("timestamp", "desc"), limit(100));
+    const q = query(collection(db, "activity_logs"), orderBy("timestamp", "desc"), limit(200));
     const snap = await getDocs(q);
     
     table.innerHTML = "";
     if (snap.empty) {
-      table.innerHTML = `<tr><td colspan="4" style="text-align:center;">No activity yet.</td></tr>`;
+      table.innerHTML = `<tr><td colspan="6" style="text-align:center;">No activity yet.</td></tr>`;
       return;
     }
     
-    snap.forEach(doc => {
-      const data = doc.data();
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const docId = docSnap.id;
       const timeStr = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : "Just now";
       
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td style="color:var(--text-muted);">${timeStr}</td>
-        <td>${data.name || data.userId}</td>
-        <td><span style="background:var(--primary); color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem;">${data.action}</span></td>
-        <td>${data.details || ""}</td>
+        <td style="padding:0.5rem 0.75rem; text-align:center;">
+          <input type="checkbox" class="log-row-check" data-id="${docId}" style="cursor:pointer; width:16px; height:16px;" onchange="updateLogSelectionBar()">
+        </td>
+        <td style="color:var(--admin-muted); font-size:0.85rem;">${timeStr}</td>
+        <td>${data.name || data.userId || 'N/A'}</td>
+        <td><span style="background:var(--admin-primary); color:white; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:600;">${data.action || 'N/A'}</span></td>
+        <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.details || ''}">${data.details || ""}</td>
+        <td><button onclick="deleteSingleLog('${docId}')" style="padding:4px 10px; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:600;" title="Delete this log"><i class="ri-delete-bin-line"></i></button></td>
       `;
       table.appendChild(tr);
     });
   } catch (error) {
     console.error("Failed to load activity logs", error);
-    table.innerHTML = `<tr><td colspan="4" style="color:#ef4444; text-align:center;">Failed to load logs.</td></tr>`;
+    table.innerHTML = `<tr><td colspan="6" style="color:#ef4444; text-align:center;">Failed to load logs.</td></tr>`;
   }
 }
 

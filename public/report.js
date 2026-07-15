@@ -139,15 +139,9 @@ window.runAiAnalysis = async function() {
     });
     const aiData = await res.json();
     if (aiData.report) {
-      // Convert basic markdown to HTML for display
-      const formatted = aiData.report
-        .replace(/### (.+)/g, '<h3>$1</h3>')
-        .replace(/## (.+)/g, '<h2>$1</h2>')
-        .replace(/# (.+)/g, '<h1>$1</h1>')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/\n/g, '<br>');
-      output.innerHTML = formatted;
+      output.innerHTML = typeof renderMarkdown === 'function'
+        ? renderMarkdown(aiData.report)
+        : aiData.report.replace(/\n/g, '<br>');
     } else {
       output.innerHTML = '<span style="color:#ef4444;">No analysis returned. Please try again.</span>';
     }

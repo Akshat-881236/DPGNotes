@@ -288,6 +288,26 @@ const verifyAdmin = (req, res, next) => {
   }
 };
 
+// Delete activity log entries (single or batch)
+app.post('/api/admin/delete-logs', verifyAdmin, async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: "ids array is required" });
+  }
+  try {
+    const batch = db.batch();
+    ids.forEach(id => {
+      const ref = db.collection("activity_logs").doc(id);
+      batch.delete(ref);
+    });
+    await batch.commit();
+    res.json({ message: `${ids.length} log(s) deleted` });
+  } catch (err) {
+    console.error("Log delete failed:", err);
+    res.status(500).json({ error: "Failed to delete logs" });
+  }
+});
+
 app.post('/api/admin/send-delete-key', verifyAdmin, async (req, res) => {
   const { contributorId, contributorEmail } = req.body;
   if (!contributorId) return res.status(400).json({ error: "Contributor ID required" });
@@ -1114,6 +1134,27 @@ async function scanDuplicateProfiles() {
     console.error("Duplicate profiles scan failed:", err);
   }
 }
+
+// Public Legal Center AI Q&A — no auth required
+app.post('/api/ai/legal-query', async (req, res) => {
+  const { question } = req.body;
+  if (!question || typeof question !== 'string' || question.trim().length < 3) {
+    return res.status(400).json({ error: "A valid question is required" });
+  }
+  try {
+    const prompt = `You are DPGNotes Legal Intelligence, an AI assistant for the DPGNotes Academic Portal legal center. 
+Answer the following question in clear, user-friendly language about DPGNotes policies, privacy, terms, data handling, copyright, or DRASA regulations. 
+If the question is completely unrelated to legal/compliance/DPGNotes platform, politely decline and redirect.
+Format your response in proper markdown with headers, bullet points, and bold key terms where helpful.
+
+Question: ${question.trim()}`;
+    const answer = await askGemini(prompt);
+    res.json({ answer });
+  } catch (err) {
+    console.error("Legal AI query failed:", err);
+    res.status(500).json({ error: "AI service temporarily unavailable" });
+  }
+});
 
 app.post('/api/ai/screen', verifySession, async (req, res) => {
   const { type, data } = req.body;
