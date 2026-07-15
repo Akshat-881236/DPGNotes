@@ -515,29 +515,43 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       triggerSecurityBreach();
     }
-    // Ctrl + Shift + I (Inspect)
-    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i') {
+    // Ctrl + Shift + I or Cmd + Option + I (Inspect)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'i') {
       e.preventDefault();
       triggerSecurityBreach();
     }
-    // Ctrl + Shift + C (Inspect element select)
-    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+    // Ctrl + Shift + C or Cmd + Option + C (Element selector)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'c') {
       e.preventDefault();
       triggerSecurityBreach();
     }
-    // Ctrl + P (Block native print shortcut to enforce our watermark print flow)
-    if (e.ctrlKey && e.key.toLowerCase() === 'p') {
+    // Ctrl + Shift + S or Cmd + Shift + S or Cmd + Shift + 3/4/5 (Screenshots)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key.toLowerCase() === 's' || e.key === '3' || e.key === '4' || e.key === '5')) {
+      e.preventDefault();
+      triggerSecurityBreach();
+    }
+    // Ctrl + P or Cmd + P (Block native print shortcut)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
       e.preventDefault();
       alert("Please use the official 'Print' button on the portal header to generate compliance outputs.");
     }
     // Screen Capture keys (PrintScreen/Meta+Shift+S)
-    if (e.key === 'PrintScreen') {
+    if (e.key === 'PrintScreen' || e.keyCode === 44) {
       navigator.clipboard.writeText(''); // Clear clipboard immediately
+      e.preventDefault();
       triggerSecurityBreach();
     }
   });
 
-  // 3. Block Tab Switching (Visibility API) & Screen Recording
+  // 3. Override getDisplayMedia to block Screen Recording/Sharing
+  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+    navigator.mediaDevices.getDisplayMedia = function() {
+      triggerSecurityBreach();
+      return Promise.reject(new DOMException("Screen capture is disabled for security reasons.", "NotAllowedError"));
+    };
+  }
+
+  // 4. Block Tab Switching (Visibility API) & Screen Recording
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       triggerSecurityBreach();
