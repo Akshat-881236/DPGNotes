@@ -40,6 +40,7 @@ auth.authStateReady().then(() => {
       dashboardLayer.style.display = "flex";
       loadUsers();
       loadActivityLogs();
+      loadPermanentBlocks();
     } else {
       // Firebase auth missing but backend token exists. Needs re-login.
       localStorage.removeItem("adminToken");
@@ -358,6 +359,7 @@ async function loadUsers() {
           }).catch(console.error);
           
           loadUsers();
+          loadPermanentBlocks();
 
         } catch(e) {
           alert("Failed to block user.");
@@ -373,6 +375,7 @@ async function loadUsers() {
         try {
           await updateDoc(doc(db, "users", uid), { isBlocked: false, suspendedUntil: null });
           loadUsers();
+          loadPermanentBlocks();
         } catch(e) {
           alert("Failed to unblock user.");
           console.error(e);
@@ -653,4 +656,86 @@ window.switchTab = function(tabId) {
   }
 };
 
+async function loadPermanentBlocks() {
+  const tableBody = document.getElementById("permanentTableBody");
+  if (!tableBody) return;
+  
+  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading permanent blocks...</td></tr>`;
+  
+  try {
+    const q = query(collection(db, "permanent_blocks"), orderBy("Permanent_Block_on", "desc"));
+    const querySnapshot = await getDocs(q);
+    tableBody.innerHTML = "";
+    
+    if (querySnapshot.empty) {
+      tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">No permanent blocks found.</td></tr>`;
+      return;
+    }
+
+    querySnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const docId = docSnap.id;
+      const blockId = data.block_action_id || 'N/A';
+      const email = data.block_email || 'N/A';
+      const uid = data.UID || 'N/A';
+      const time = data.Permanent_Block_on ? new Date(data.Permanent_Block_on.seconds * 1000).toLocaleString() : 'N/A';
+      const reason = data.Reason || 'N/A';
+      const caseStatus = data.Case_Status || 'Active';
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><strong style="color:var(--admin-warning);">${blockId}</strong></td>
+        <td>${email}</td>
+        <td><code style="font-size:0.8rem; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px;">${uid}</code></td>
+        <td>${time}</td>
+        <td>${reason}</td>
+        <td><span class="badge blocked" style="text-transform:uppercase;">${caseStatus}</span></td>
+        <td>
+          <button class="btn-action success lift-block-btn" style="background:var(--admin-success);color:white;padding:4px 8px;border-radius:6px;border:none;font-size:0.8rem;cursor:pointer;" data-id="${docId}" data-uid="${uid}" data-email="${email}">Lift Block</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    // Bind Lift Block button events
+    document.querySelectorAll(".lift-block-btn").forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.dataset.id;
+        const uid = btn.dataset.uid;
+        const email = btn.dataset.email;
+        btn.innerText = "⏳";
+        try {
+          await deleteDoc(doc(db, "permanent_blocks", id));
+          try {
+            await updateDoc(doc(db, "users", uid), { isBlocked: false, suspendedUntil: null });
+          } catch (e) {
+            console.log("User doc didn't exist or unblock skipped");
+          }
+          loadPermanentBlocks();
+          if (typeof loadUsers === 'function') loadUsers();
+        } catch (e) {
+          alert("Failed to lift permanent block");
+        }
+      };
+    });
+
+  } catch (err) {
+    console.error("Failed to load permanent blocks:", err);
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-danger);">Failed to query permanent blocks.</td></tr>`;
+  }
+}
+
+// Add real-time text filter to permanent blocks
+const permanentSearch = document.getElementById("permanentSearch");
+if (permanentSearch) {
+  permanentSearch.addEventListener("input", (e) => {
+    const queryStr = e.target.value.toLowerCase();
+    document.querySelectorAll("#permanentTableBody tr").forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(queryStr) ? "" : "none";
+    });
+  });
+}
+
 window.loadShares = loadShares;
+window.loadPermanentBlocks = loadPermanentBlocks;

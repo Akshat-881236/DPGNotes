@@ -435,6 +435,31 @@
             </table>
           </div>
         </div>
+
+        <div class="section-card" style="margin-top:2rem;">
+          <div class="section-header">
+            <h2 class="section-title">Permanent Suspension Directory <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-danger); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="These blocks are preserved permanently even if user accounts are deleted."></i></h2>
+            <input type="text" id="permanentSearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search email...">
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Block ID</th>
+                  <th>Blocked Email</th>
+                  <th>Preserved UID</th>
+                  <th>Blocked On</th>
+                  <th>Reason</th>
+                  <th>Case Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="permanentTableBody">
+                <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading permanent blocks...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- VIEW: CONTENT -->
