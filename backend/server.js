@@ -1312,14 +1312,14 @@ app.post('/api/ai/screen', verifySession, async (req, res) => {
 });
 
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
-app.all('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
   res.status(404).json({ 
     error: "Endpoint not found or method not allowed.", 
     message: "This is a DPGNotes API endpoint. It requires a specific request method (usually POST) and payload. It cannot be accessed directly via the browser." 
   });
 });
 
-app.all('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).send("404 - Not Found");
 });
 const PORT = process.env.PORT || 5000;
