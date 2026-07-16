@@ -1193,6 +1193,38 @@ Question: ${question.trim()}`;
   }
 });
 
+// Public Document Analysis AI — no auth required (Used by PDF Viewer)
+app.post('/api/ai/analyse-document', async (req, res) => {
+  const { data } = req.body;
+  if (!data) {
+    return res.status(400).json({ error: "document data is required" });
+  }
+  try {
+    const prompt = `You are DPGNotes Intelligence, an advanced AI tutor and document analyzer for students.
+Analyze the following document metadata and provide a comprehensive, structured summary and key insights that a student would find highly useful.
+Format your response in GitHub Flavored Markdown, using headers, bullet points, bold text for emphasis, and clear sections.
+
+Document Info:
+Title: ${data.title}
+Category: ${data.category}
+Discipline: ${data.discipline}
+Description: ${data.description || 'N/A'}
+Tags: ${data.tags || 'N/A'}
+
+Provide:
+1. A brief overview of what this document likely covers based on its metadata.
+2. The target audience (e.g., which semester or course).
+3. 3-4 key learning objectives or topics expected to be found inside.
+4. A concluding encouraging remark for the student.`;
+
+    const answer = await askGemini(prompt);
+    res.json({ analysis: answer });
+  } catch (err) {
+    console.error("Document AI analysis failed:", err);
+    res.status(500).json({ error: "AI analysis temporarily unavailable" });
+  }
+});
+
 app.post('/api/ai/screen', verifySession, async (req, res) => {
   const { type, data } = req.body;
   if (!type || !data) {
