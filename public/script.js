@@ -814,6 +814,7 @@ window.handleShare = async function(docId, title, category, discipline, uploader
         pdfUrl, 
         description, 
         tags,
+        originalUrl: window.location.origin + "/dpgnotes-pdf-viewer.html",
         uploaderUid: (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.uid : ""
       })
     });
