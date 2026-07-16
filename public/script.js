@@ -92,7 +92,7 @@ const db =
   getFirestore(app);
 
 const PDF_VIEWER =
-"https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=";
+"https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=";
 
 /* =========================================
    PROVIDERS
@@ -245,7 +245,7 @@ if (urlView) {
       const docSnap = await getDoc(doc(db, "documents", urlView));
       if (docSnap.exists()) {
         const data = docSnap.data();
-        const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(Array.isArray(data.tags) ? data.tags.join(", ") : "")}`;
+        const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(Array.isArray(data.tags) ? data.tags.join(", ") : "")}`;
         
         // Redirect to viewer
         window.location.replace(viewerUrl);
@@ -550,7 +550,7 @@ onAuthStateChanged(
                   window.location.href = `legal/index.html#${d.docId.replace('legal_', '')}`;
                   return;
                 }
-                const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
+                const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
                 window.location.href = viewerUrl;
               } else {
                 alert("Share link expired or invalid.");
@@ -783,7 +783,7 @@ function createCard(data){
       <span title="Link Clicks (CTR)">👀 ${data.ctrCount || 0}</span>
     </div>
 
-    <a href="https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(
+    <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(
     Array.isArray(data.tags) ? data.tags.join(", ") : ""
     )}" target="_blank" class="open-btn" onclick="if(window.logActivity) window.logActivity('VIEW', 'Viewed document: ${data.title}')">Open PDF</a>
   

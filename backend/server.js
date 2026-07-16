@@ -658,11 +658,38 @@ const createTemplate = (title, message) => `
 // ROUTES: EMAIL HOOKS (Frontend calls these)
 // ==========================================
 
+// Helper: Write in-app notification to Firestore
+async function createInAppNotification(email, title, message, type = 'system', dedupKey = null) {
+  if (!email) return;
+  try {
+    // If dedupKey provided, check for existing unread notification to avoid duplicates
+    if (dedupKey) {
+      const existing = await db.collection('notifications')
+        .where('email', '==', email)
+        .where('dedupKey', '==', dedupKey)
+        .limit(1).get();
+      if (!existing.empty) return; // Already notified
+    }
+    await db.collection('notifications').add({
+      email,
+      title,
+      message,
+      type,
+      isRead: false,
+      dedupKey: dedupKey || null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    console.error('createInAppNotification failed:', e.message);
+  }
+}
+
 // 1. Welcome New Contributor
 app.post('/api/email/welcome', async (req, res) => {
   const { email, name } = req.body;
   const html = createTemplate("Welcome to DPGNotes! 🎉", `<p>Hi <strong>${name}</strong>,</p><p>We are thrilled to have you join our contributor community. Your knowledge will help thousands of students succeed.</p>`);
   await sendEmail(email, "Welcome to DPGNotes!", html);
+  await createInAppNotification(email, "Welcome to DPGNotes! 🎉", `Hi ${name}, we're thrilled to have you! Your knowledge will help thousands of students.`, "success");
   res.json({ message: "Sent" });
 });
 
@@ -671,8 +698,14 @@ app.post('/api/email/first-contribution', async (req, res) => {
   const { email, title } = req.body;
   const html = createTemplate("First Contribution Honour! 🏅", `<p>Congratulations on uploading your very first resource: <strong>${title}</strong>.</p><p>You are officially a DPGNotes Contributor!</p>`);
   await sendEmail(email, "Your First Contribution!", html);
+  await createInAppNotification(email, "First Contribution Honour! 🏅", `Congratulations! You uploaded your first resource: "${title}". You are officially a DPGNotes Contributor!`, "milestone");
   res.json({ message: "Sent" });
 });
+
+// ==========================================
+// HIGH-LEVEL SECURITY & TELEMETRY ENGINE
+// ==========================================
+
 
 // 3. Honours on Reaching 30+ likes
 app.post('/api/email/thirty-likes', async (req, res) => {

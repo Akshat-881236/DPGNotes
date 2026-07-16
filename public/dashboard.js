@@ -89,12 +89,20 @@ async function loadNotifications() {
     const q = query(collection(db, "notifications"), where("email", "==", currentUser.email));
     const snap = await getDocs(q);
     
-    // Sort in memory to avoid needing composite indexes
+    // Sort newest first, exclude read notifications
     const docs = [];
-    snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => {
+      const data = d.data();
+      if (!data.isRead) docs.push({ id: d.id, ...data });
+    });
     docs.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
     
-    let html = "";
+    if (docs.length === 0) {
+      notifList.innerHTML = "<p style='color: var(--text-muted);'>No new notifications.</p>";
+      return;
+    }
+    
+    notifList.innerHTML = "";
     docs.forEach(data => {
       let icon = "🔔";
       if (data.type === "like") icon = "❤️";
@@ -106,37 +114,62 @@ async function loadNotifications() {
       
       let timeString = "Just now";
       if (data.createdAt) {
-        // Handle firestore timestamp format
         const millis = data.createdAt.toMillis ? data.createdAt.toMillis() : (data.createdAt.seconds * 1000);
         timeString = new Date(millis).toLocaleString();
       }
-        
-        html += `
-          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
-            <div style="font-size: 1.5rem;">${icon}</div>
-            <div>
-              <h4 style="margin: 0 0 0.25rem 0; color: var(--text-light);">${data.title}</h4>
-              <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">${data.message}</p>
-              <small style="color: var(--primary-light); opacity: 0.8; margin-top: 0.5rem; display: block;">${timeString}</small>
-            </div>
-          </div>
-        `;
+      
+      const card = document.createElement("div");
+      card.id = `notif-${data.id}`;
+      card.style.cssText = "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;display:flex;gap:1rem;align-items:flex-start;transition:opacity 0.3s;";
+      card.innerHTML = `
+        <div style="font-size:1.5rem;">${icon}</div>
+        <div style="flex:1;">
+          <h4 style="margin:0 0 0.25rem 0;color:var(--text-light);">${data.title}</h4>
+          <p style="margin:0;color:var(--text-muted);font-size:0.9rem;">${data.message}</p>
+          <small style="color:var(--primary-light);opacity:0.8;margin-top:0.5rem;display:block;">${timeString}</small>
+        </div>
+        <button data-notifid="${data.id}" class="mark-read-btn" style="flex-shrink:0;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#818cf8;padding:4px 10px;border-radius:6px;font-size:0.78rem;cursor:pointer;white-space:nowrap;" title="Mark as read">✓ Read</button>
+      `;
+      notifList.appendChild(card);
     });
     
-    if (html === "") {
-      notifList.innerHTML = "<p style='color: var(--text-muted);'>No new notifications.</p>";
-    } else {
-      notifList.innerHTML = html;
-    }
+    // Mark-as-read handlers
+    notifList.querySelectorAll(".mark-read-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const notifId = btn.dataset.notifid;
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          await updateDoc(doc(db, "notifications", notifId), { isRead: true });
+          const card = document.getElementById(`notif-${notifId}`);
+          if (card) {
+            card.style.opacity = "0";
+            setTimeout(() => card.remove(), 300);
+          }
+          // Show empty state if no cards left
+          setTimeout(() => {
+            if (notifList.querySelectorAll("[id^='notif-']").length === 0) {
+              notifList.innerHTML = "<p style='color:var(--text-muted);'>No new notifications.</p>";
+            }
+          }, 350);
+        } catch(err) {
+          console.error("Mark read failed:", err);
+          btn.disabled = false;
+          btn.textContent = "✓ Read";
+        }
+      });
+    });
+    
   } catch (err) {
     console.error("Failed to load notifications:", err);
-    notifList.innerHTML = "<p style='color: #ef4444;'>Failed to load notifications.</p>";
+    notifList.innerHTML = "<p style='color:#ef4444;'>Failed to load notifications.</p>";
   }
 }
 
 // =========================================
 // THEME ENGINE
 // =========================================
+
 function applyTheme(themeName) {
   document.body.classList.remove("theme-ocean", "theme-sunset", "theme-forest");
   if (themeName && themeName !== "default") {
@@ -207,7 +240,7 @@ onAuthStateChanged(auth, async (user) => {
               window.location.href = `legal/index.html#${d.docId.replace('legal_', '')}`;
               return;
             }
-            const viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
+            const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
             window.location.href = viewerUrl;
           } else {
             alert("Share link expired or invalid.");
@@ -505,7 +538,7 @@ async function loadExplore() {
       <div class="tags">
         ${(data.tags || []).map(t => `<span>#${t}</span>`).join("")}
       </div>
-      <a href="https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}" target="_blank" class="open-btn">Open PDF</a>
+      <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}" target="_blank" class="open-btn">Open PDF</a>
       
       <div class="card-actions">
         <button class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${docId}" data-owner="${data.userId}" data-title="${data.title}">

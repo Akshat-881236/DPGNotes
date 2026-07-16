@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DPGNotes PDF Viewer</title>
+  <meta name="description" content="View academic resources on DPGNotes — the premier academic portal for DPG College students.">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script>
+    if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
+    function renderMarkdown(md) {
+      if (!md) return '';
+      if (typeof marked === 'undefined') return md.replace(/\n/g,'<br>');
+      return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(md)) : marked.parse(md);
+    }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0c0e1a;--sb:#111427;--surface:#161929;--bdr:rgba(255,255,255,0.08);--pri:#6366f1;--pli:#818cf8;--txt:#e2e8f0;--mut:#64748b;--acc:#8b5cf6}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
+    /* TOP BAR */
+    .topbar{height:56px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.25rem;gap:1rem;position:sticky;top:0;z-index:200}
+    .topbar .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;color:white;text-decoration:none}
+    .topbar .logo .dot{color:var(--pri)}
+    .topbar .doctitle{flex:1;font-size:0.88rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .nbtn{background:rgba(255,255,255,0.06);border:1px solid var(--bdr);color:var(--txt);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;display:flex;align-items:center;gap:6px;transition:background .2s;text-decoration:none}
+    .nbtn:hover{background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4)}
+    /* LAYOUT */
+    .layout{display:flex;flex:1;overflow:hidden}
+    /* SIDEBAR */
+    .sidebar{width:295px;flex-shrink:0;background:var(--sb);border-right:1px solid var(--bdr);overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:1rem}
+    .scard{background:var(--surface);border:1px solid var(--bdr);border-radius:13px;padding:.9rem 1rem}
+    .scard h3{font-size:.7rem;font-weight:600;color:var(--pli);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem;display:flex;align-items:center;gap:6px}
+    .mrow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:.45rem}
+    .mlabel{color:var(--mut);font-size:.77rem;flex-shrink:0}.mval{color:var(--txt);font-size:.81rem;font-weight:500;text-align:right}
+    .btag{display:inline-block;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.25);color:var(--pli);border-radius:20px;padding:2px 8px;font-size:.71rem;margin:2px}
+    /* AI */
+    .ai-out{min-height:70px;max-height:260px;overflow-y:auto;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:.7rem;font-size:.81rem;line-height:1.65;color:#cbd5e1;margin-bottom:.6rem}
+    .ai-out.ph{color:var(--mut);font-style:italic}
+    .ai-out h1,.ai-out h2,.ai-out h3{color:#a78bfa;font-size:.88rem;margin:.35rem 0 .2rem}
+    .ai-out strong{color:#c4b5fd}.ai-out ul,.ai-out ol{padding-left:1.2rem;margin:.25rem 0}.ai-out p{margin:.25rem 0}
+    .ai-out code{background:rgba(139,92,246,.15);padding:1px 5px;border-radius:3px;font-size:.79em}
+    .aibtn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:white;border:none;border-radius:9px;padding:.55rem .9rem;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .2s;width:100%}
+    .aibtn:hover{opacity:.85}.aibtn:disabled{opacity:.4;cursor:not-allowed}
+    /* PDF AREA */
+    .pdfmain{flex:1;overflow-y:auto;background:#191c2e;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem}
+    .pdfpage{width:100%;max-width:830px;margin-bottom:1.1rem;border-radius:9px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6)}
+    .pdfpage canvas{display:block;width:100%;height:auto;background:white}
+    /* AD SLOT */
+    .adslot{width:100%;max-width:830px;margin:.5rem 0 1.2rem;border-radius:11px;border:1px dashed rgba(99,102,241,.22);background:#0f1120;min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--mut);font-size:.76rem}
+    /* SPINNER */
+    .spinner{display:flex;flex-direction:column;align-items:center;padding:5rem;color:var(--mut);gap:.8rem}
+    .spin-icon{font-size:2.4rem;animation:spin 1s linear infinite;color:var(--pri)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* MOBILE */
+    @media(max-width:768px){.sidebar{display:none;position:fixed;top:56px;left:0;height:calc(100vh - 56px);z-index:300;overflow-y:auto;width:285px}.sidebar.open{display:flex}.mob-toggle{display:flex !important}}
+    .mob-toggle{display:none}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="logo"><i class="ri-graduation-cap-fill" style="color:#6366f1;font-size:1.25rem;"></i>DPG<span class="dot">Notes</span></a>
+  <button class="nbtn mob-toggle" onclick="document.getElementById('sb').classList.toggle('open')"><i class="ri-layout-left-line"></i></button>
+  <div class="doctitle" id="navTitle">Loading...</div>
+  <div style="display:flex;gap:.5rem">
+    <button class="nbtn" onclick="sharePdf()"><i class="ri-share-line"></i> Share</button>
+    <a href="index.html" class="nbtn"><i class="ri-arrow-left-line"></i> Back</a>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" id="sb">
+
+    <!-- User Info -->
+    <div class="scard">
+      <h3><i class="ri-user-3-line"></i> Viewer</h3>
+      <div id="userInfo" style="color:var(--mut);font-size:.84rem;">Loading...</div>
+    </div>
+
+    <!-- Doc Metadata -->
+    <div class="scard">
+      <h3><i class="ri-file-info-line"></i> Document Info</h3>
+      <div class="mrow"><span class="mlabel">Title</span><span class="mval" id="mTitle">—</span></div>
+      <div class="mrow"><span class="mlabel">Category</span><span class="mval" id="mCat">—</span></div>
+      <div class="mrow"><span class="mlabel">Discipline</span><span class="mval" id="mDisc">—</span></div>
+      <div class="mrow"><span class="mlabel">Uploader</span><span class="mval" id="mUp">—</span></div>
+      <div class="mrow"><span class="mlabel">Doc ID</span><span class="mval" id="mId" style="color:var(--mut);font-size:.74rem;">—</span></div>
+      <div id="mDescWrap" style="display:none;margin-top:.65rem">
+        <div style="color:var(--mut);font-size:.72rem;margin-bottom:3px">Description</div>
+        <div id="mDesc" style="font-size:.79rem;color:#94a3b8;line-height:1.5"></div>
+      </div>
+      <div id="mTagsWrap" style="display:none;margin-top:.65rem">
+        <div style="color:var(--mut);font-size:.72rem;margin-bottom:4px">Tags</div>
+        <div id="mTags"></div>
+      </div>
+    </div>
+
+    <!-- AI Analysis -->
+    <div class="scard">
+      <h3><i class="ri-robot-2-line"></i> AI Analysis</h3>
+      <div class="ai-out ph" id="aiOut">Click "Analyse" to get AI insights about this document.</div>
+      <button class="aibtn" id="aiBtn" onclick="runAI()"><i class="ri-sparkling-line"></i> Analyse with AI</button>
+    </div>
+
+    <!-- Page Stats -->
+    <div class="scard">
+      <h3><i class="ri-pages-line"></i> Pages</h3>
+      <div class="mrow"><span class="mlabel">Total</span><span class="mval" id="pgTotal">—</span></div>
+      <div class="mrow"><span class="mlabel">In View</span><span class="mval" id="pgCur">—</span></div>
+    </div>
+
+  </aside>
+
+  <main class="pdfmain" id="pdfArea">
+    <div class="spinner" id="loadSpinner">
+      <i class="ri-loader-4-line spin-icon"></i>
+      <p style="font-weight:600">Loading secure document...</p>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+const cfg = {
+  apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
+  projectId:"dpgnotes",storageBucket:"dpgnotes.firebasestorage.app",
+  messagingSenderId:"910494426039",appId:"1:910494426039:web:adeae5315caaf846c43e32"
+};
+const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgnotes");
+const auth  = getAuth(fbApp);
+
+onAuthStateChanged(auth, user => {
+  const el = document.getElementById('userInfo');
+  if (user) {
+    const av = user.photoURL
+      ? `<img src="${user.photoURL}" style="width:36px;height:36px;border-radius:50%;border:2px solid #6366f1;vertical-align:middle;margin-right:8px;">`
+      : `<span style="display:inline-flex;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.95rem;margin-right:8px;vertical-align:middle;">${(user.displayName||user.email||'?')[0].toUpperCase()}</span>`;
+    el.innerHTML = `<div style="display:flex;align-items:center;">${av}<div><div style="font-weight:600;color:#e2e8f0;font-size:.88rem;">${user.displayName||'Contributor'}</div><div style="color:#64748b;font-size:.74rem;">${user.email||''}</div></div></div>`;
+  } else {
+    el.innerHTML = `<span style="display:flex;align-items:center;gap:6px;color:var(--mut);"><i class="ri-user-line"></i>Guest Viewer</span>`;
+  }
+});
+</script>
+
+<script>
+// ─ Params ───────────────────────────────────────────────────────────────────
+const P = new URLSearchParams(location.search);
+const pdfUrl  = P.get('pdf')         || '';
+const docTitle= P.get('title')       || 'Untitled Document';
+const docCat  = P.get('category')    || '—';
+const docDisc = P.get('discipline')  || '—';
+const docUp   = P.get('uploader')    || '—';
+const docId   = P.get('docid')       || '—';
+const docDesc = P.get('description') || '';
+const docTags = P.get('tags')        || '';
+
+document.title = `${docTitle} — DPGNotes PDF Viewer`;
+document.getElementById('navTitle').textContent = docTitle;
+document.getElementById('mTitle').textContent   = docTitle;
+document.getElementById('mCat').textContent     = docCat;
+document.getElementById('mDisc').textContent    = docDisc;
+document.getElementById('mUp').textContent      = docUp;
+document.getElementById('mId').textContent      = docId;
+
+if (docDesc) {
+  document.getElementById('mDesc').textContent    = docDesc;
+  document.getElementById('mDescWrap').style.display = 'block';
+}
+if (docTags) {
+  const tEl = document.getElementById('mTags');
+  docTags.split(',').forEach(t => {
+    const s = t.trim(); if (s) tEl.innerHTML += `<span class="btag">${s}</span>`;
+  });
+  document.getElementById('mTagsWrap').style.display = 'block';
+}
+
+// ─ PDF Render ───────────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+const pdfArea  = document.getElementById('pdfArea');
+const spinner  = document.getElementById('loadSpinner');
+let pdfDoc = null, totalPages = 0;
+
+function adSlot(n) {
+  const d = document.createElement('div');
+  d.className = 'adslot';
+  d.id = `ad-${n}`;
+  d.innerHTML = `<div style="width:100%;text-align:center;padding:.5rem;">
+    <!-- GOOGLE ADSENSE SCRIPT HERE -->
+    <!-- Paste your AdSense <ins class="adsbygoogle"> tag below this comment -->
+    <span style="opacity:.35;font-size:.73rem;">Advertisement</span>
+  </div>`;
+  return d;
+}
+
+async function renderAllPages() {
+  if (!pdfUrl) {
+    spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">No PDF URL provided.</p>`;
+    return;
+  }
+  try {
+    pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+    totalPages = pdfDoc.numPages;
+    spinner.style.display = 'none';
+    document.getElementById('pgTotal').textContent = totalPages;
+    document.getElementById('pgCur').textContent   = '1';
+
+    for (let i = 1; i <= totalPages; i++) {
+      await renderPage(i);
+      // Ad after every 3rd page (not after the last)
+      if (i % 3 === 0 && i < totalPages) pdfArea.appendChild(adSlot(Math.floor(i/3)));
+    }
+
+    // Intersection observer for current page
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) document.getElementById('pgCur').textContent = e.target.dataset.pg;
+      });
+    }, { threshold: 0.4 });
+    pdfArea.querySelectorAll('.pdfpage').forEach(p => obs.observe(p));
+
+  } catch(err) {
+    console.error(err);
+    spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">Failed to load PDF.</p>`;
+    spinner.style.display = 'flex';
+  }
+}
+
+async function renderPage(n) {
+  const page     = await pdfDoc.getPage(n);
+  const scale    = Math.min(window.devicePixelRatio||1, 2) * 1.15;
+  const viewport = page.getViewport({scale});
+  const canvas   = document.createElement('canvas');
+  const ctx      = canvas.getContext('2d');
+  canvas.width   = viewport.width;
+  canvas.height  = viewport.height;
+  const wrap     = document.createElement('div');
+  wrap.className = 'pdfpage';
+  wrap.dataset.pg = n;
+  wrap.appendChild(canvas);
+  pdfArea.appendChild(wrap);
+  await page.render({canvasContext:ctx, viewport}).promise;
+}
+
+// ─ AI Analysis ──────────────────────────────────────────────────────────────
+async function runAI() {
+  const btn = document.getElementById('aiBtn');
+  const out = document.getElementById('aiOut');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite"></i> Analysing...';
+  out.classList.remove('ph');
+  out.style.color = '#a78bfa';
+  out.innerHTML = '🤖 DPGNotes Intelligence is analysing this document...';
+  try {
+    const res = await fetch(window.API_BASE_URL + '/api/ai/screen', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ type:'document', data:{ title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, description:docDesc, tags:docTags, pdfUrl } })
+    });
+    if (!res.ok) throw new Error('Server ' + res.status);
+    const j = await res.json();
+    const answer = j.report || j.analysis || j.result || j.answer || 'No analysis returned.';
+    out.style.color = '#cbd5e1';
+    out.innerHTML = renderMarkdown(answer);
+  } catch(err) {
+    out.style.color = '#ef4444';
+    out.innerHTML = 'Error: ' + err.message;
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyse';
+}
+window.runAI = runAI;
+
+// ─ Share ────────────────────────────────────────────────────────────────────
+async function sharePdf() {
+  try {
+    const res = await fetch(window.API_BASE_URL + '/api/share/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ docId, title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, pdfUrl, description:docDesc, tags:docTags, originalUrl: location.origin + '/dpgnotes-pdf-viewer.html', uploaderUid:'' })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Failed');
+    if (navigator.share) await navigator.share({title: `${docTitle} — DPGNotes`, url: data.shareUrl}).catch(()=>{});
+    else { await navigator.clipboard.writeText(data.shareUrl); alert('Share link copied:\n' + data.shareUrl); }
+  } catch(err) { alert('Share error: ' + err.message); }
+}
+window.sharePdf = sharePdf;
+
+// ─ Init ─────────────────────────────────────────────────────────────────────
+renderAllPages();
+</script>
+</body>
+</html>

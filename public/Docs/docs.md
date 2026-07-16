@@ -6,7 +6,7 @@
 https://dpgnotes.web.app
 
 📘 Smart PDF Viewer:
-https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/
+https://dpgnotes.web.app/dpgnotes-pdf-viewer.html
 
 🖼️➡️📄 Image to PDF Converter:
 https://dpgnotes.web.app/ImagetoPdfConverter.html

@@ -321,7 +321,10 @@ async function loadUsers() {
           const userRef = doc(db, "users", uid);
           const updateData = { isBlocked: true, blockedReason: reason };
           if (parseInt(days) > 0) {
-            updateData.suspendedUntil = Date.now() + parseInt(days) * 24 * 60 * 60 * 1000;
+            const durationMs = parseInt(days) * 24 * 60 * 60 * 1000;
+            updateData.suspendedUntil = Date.now() + durationMs;
+            updateData.suspendedAt = Date.now();
+            updateData.suspensionDurationMs = durationMs;
           }
           
           try {
@@ -355,6 +358,7 @@ async function loadUsers() {
             type: "alert",
             title: "Account Suspended 🚫",
             message: `Your account has been suspended by an administrator. Reason: ${reason}`,
+            isRead: false,
             createdAt: serverTimestamp()
           }).catch(console.error);
           
@@ -373,7 +377,12 @@ async function loadUsers() {
         const uid = btn.dataset.id;
         btn.innerText = "⏳";
         try {
-          await updateDoc(doc(db, "users", uid), { isBlocked: false, suspendedUntil: null });
+          await updateDoc(doc(db, "users", uid), { 
+            isBlocked: false, 
+            suspendedUntil: null,
+            suspendedAt: null,
+            suspensionDurationMs: null
+          });
           loadUsers();
           loadPermanentBlocks();
         } catch(e) {
