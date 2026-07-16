@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
+     crossorigin="anonymous"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DPGNotes PDF Viewer</title>
@@ -284,7 +286,7 @@ async function sharePdf() {
   try {
     const res = await fetch(window.API_BASE_URL + '/api/share/generate', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ docId, title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, pdfUrl, description:docDesc, tags:docTags, originalUrl: location.origin + '/dpgnotes-pdf-viewer.html', uploaderUid:'' })
+      body: JSON.stringify({ docId, title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, pdfUrl, description:docDesc, tags:docTags, originalUrl: location.origin + '/index.html', uploaderUid:'' })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Failed');
