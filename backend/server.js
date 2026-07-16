@@ -1221,7 +1221,7 @@ Provide:
     res.json({ analysis: answer });
   } catch (err) {
     console.error("Document AI analysis failed:", err);
-    res.status(500).json({ error: "AI analysis temporarily unavailable" });
+    res.status(500).json({ error: "AI analysis temporarily unavailable", details: err.message, stack: err.stack });
   }
 });
 
