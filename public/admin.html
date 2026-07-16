@@ -640,7 +640,7 @@
     async function deleteSelectedLogs() {
       const checked = document.querySelectorAll('.log-row-check:checked');
       if (checked.length === 0) return;
-      const confirmed = confirm(`Delete ${checked.length} selected log entries? This cannot be undone.`);
+      const confirmed = await window.customConfirm(`Delete ${checked.length} selected log entries? This cannot be undone.`);
       if (!confirmed) return;
       const token = localStorage.getItem('adminToken');
       const ids = Array.from(checked).map(cb => cb.dataset.id);
@@ -668,7 +668,7 @@
     }
 
     async function deleteSingleLog(id) {
-      const confirmed = confirm('Delete this log entry?');
+      const confirmed = await window.customConfirm('Delete this log entry?');
       if (!confirmed) return;
       const token = localStorage.getItem('adminToken');
       try {
