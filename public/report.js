@@ -104,18 +104,67 @@ function renderReport(data) {
   window._cachedReportData = data;
 }
 
+// Conversational Chat AI logic for report.html
+let reportChatHistory = [];
+
+function appendReportChatMessage(role, text) {
+  const chatArea = document.getElementById("reportChatArea");
+  if (!chatArea) return;
+
+  // Remove placeholder if present
+  const ph = chatArea.querySelector(".ph");
+  if (ph) ph.remove();
+
+  const msgDiv = document.createElement("div");
+  msgDiv.className = `chat-msg ${role}`;
+  
+  // Custom styles for user/ai messages
+  if (role === 'user') {
+    msgDiv.style.alignSelf = 'flex-end';
+    msgDiv.style.background = 'linear-gradient(135deg, #8b5cf6, #6366f1)';
+    msgDiv.style.color = 'white';
+    msgDiv.style.padding = '0.55rem 0.8rem';
+    msgDiv.style.borderRadius = '12px';
+    msgDiv.style.borderBottomRightRadius = '2px';
+    msgDiv.style.fontSize = '0.85rem';
+    msgDiv.style.lineHeight = '1.4';
+    msgDiv.style.maxWidth = '85%';
+    msgDiv.style.wordBreak = 'break-word';
+  } else {
+    msgDiv.style.alignSelf = 'flex-start';
+    msgDiv.style.background = 'rgba(255,255,255,0.05)';
+    msgDiv.style.border = '1px solid rgba(255,255,255,0.08)';
+    msgDiv.style.padding = '0.6rem 0.9rem';
+    msgDiv.style.borderRadius = '12px';
+    msgDiv.style.borderBottomLeftRadius = '2px';
+    msgDiv.style.fontSize = '0.88rem';
+    msgDiv.style.lineHeight = '1.45';
+    msgDiv.style.color = '#e2e8f0';
+    msgDiv.style.maxWidth = '85%';
+    msgDiv.style.wordBreak = 'break-word';
+  }
+
+  msgDiv.innerHTML = role === 'ai' && typeof renderMarkdown === 'function' 
+    ? renderMarkdown(text) 
+    : text.replace(/\n/g, '<br>');
+
+  chatArea.appendChild(msgDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  
+  // Update state array
+  reportChatHistory.push({ role, text });
+}
+
 window.runAiAnalysis = async function() {
   const btn = document.getElementById("runAiAnalysisBtn");
-  const output = document.getElementById("aiReportOutput");
   const token = localStorage.getItem("adminToken");
   
   if (!token) { alert("Admin session required."); return; }
   if (!window._cachedReportData) { alert("Report data not loaded yet."); return; }
 
   btn.disabled = true;
-  btn.innerHTML = '<i class="ri-loader-4-line"></i> Analyzing...';
-  output.style.display = "block";
-  output.innerHTML = '<span style="color:#a78bfa;">🤖 DPGNotes Intelligence is generating your compliance brief...</span>';
+  btn.innerHTML = '<i class="ri-loader-4-line"></i> Generating...';
+  appendReportChatMessage('ai', '🤖 *DPGNotes Intelligence is compiling your compliance brief...*');
 
   try {
     const res = await fetch(window.API_BASE_URL + "/api/ai/screen", {
@@ -139,18 +188,77 @@ window.runAiAnalysis = async function() {
     });
     const aiData = await res.json();
     if (aiData.report) {
-      output.innerHTML = typeof renderMarkdown === 'function'
-        ? renderMarkdown(aiData.report)
-        : aiData.report.replace(/\n/g, '<br>');
+      appendReportChatMessage('ai', aiData.report);
     } else {
-      output.innerHTML = '<span style="color:#ef4444;">No analysis returned. Please try again.</span>';
+      appendReportChatMessage('ai', '⚠️ No analysis could be returned. Please retry.');
     }
   } catch(err) {
-    output.innerHTML = '<span style="color:#ef4444;">AI Analysis failed: ' + err.message + '</span>';
+    appendReportChatMessage('ai', '❌ Failed to analyze: ' + err.message);
   }
 
   btn.disabled = false;
-  btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyze';
+  btn.innerHTML = '<i class="ri-sparkling-line"></i> Compile compliance brief';
+};
+
+window.sendReportChatQuery = async function() {
+  const input = document.getElementById("reportChatInput");
+  const btn = document.getElementById("reportChatSendBtn");
+  if (!input || !btn) return;
+  
+  const question = input.value.trim();
+  if (!question) return;
+
+  input.value = "";
+  btn.disabled = true;
+  
+  appendReportChatMessage('user', question);
+  
+  // Show thinking animation
+  const chatArea = document.getElementById("reportChatArea");
+  const thinkingDiv = document.createElement("div");
+  thinkingDiv.id = "reportThinking";
+  thinkingDiv.style.alignSelf = 'flex-start';
+  thinkingDiv.style.color = '#a78bfa';
+  thinkingDiv.style.fontSize = '0.85rem';
+  thinkingDiv.innerHTML = '🤖 <em>Thinking...</em>';
+  chatArea.appendChild(thinkingDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  try {
+    const res = await fetch(window.API_BASE_URL + "/api/ai/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        history: reportChatHistory,
+        question: question,
+        context: {
+          reportTitle: window._cachedReportData?.shareInfo?.title || "Unknown",
+          totalClicks: window._cachedReportData?.shareInfo?.clicks || 0,
+          recentEngagements: (window._cachedReportData?.engagements || []).slice(0, 15).map(e => ({
+            ip: e.ipAddress,
+            status: e.status,
+            agent: e.userAgent
+          }))
+        }
+      })
+    });
+    
+    // Remove thinking indicator
+    const thinking = document.getElementById("reportThinking");
+    if (thinking) thinking.remove();
+
+    const data = await res.json();
+    if (data.answer) {
+      appendReportChatMessage('ai', data.answer);
+    } else {
+      appendReportChatMessage('ai', '⚠️ No response received from DPGNotes AI.');
+    }
+  } catch (err) {
+    const thinking = document.getElementById("reportThinking");
+    if (thinking) thinking.remove();
+    appendReportChatMessage('ai', '❌ Error connecting to AI assistant: ' + err.message);
+  }
+  btn.disabled = false;
 };
 
 document.addEventListener("DOMContentLoaded", initReport);

@@ -130,6 +130,20 @@
           </ol>
         </nav>
 
+        <!-- Google Ad Unit -->
+        <div class="ad-banner-section" style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; text-align: center;">
+          <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; tracking-spacing: 1px;">Sponsored</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-5515547448097504"
+               data-ad-slot="2895051790"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>
+               (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </div>
+
         <!-- Document Viewer and Action Panel -->
         <div class="doc-viewer-card">
           <div class="viewer-actions">
@@ -536,11 +550,15 @@
       <h4>🤖 DPGNotes Intelligence</h4>
       <button class="ai-panel-close" onclick="toggleLegalAiPanel()" title="Close">✕</button>
     </div>
-    <div class="ai-panel-body">
-      <div id="legalAiOutput" style="color:#64748b; font-style:italic;">Ask me anything about DPGNotes legal policies, terms, privacy, or compliance...</div>
-      <div class="ai-input-row">
-        <input type="text" id="legalAiInput" placeholder="E.g. What is the data retention period?" onkeydown="if(event.key==='Enter') sendLegalAiQuery()">
-        <button id="legalAiSendBtn" onclick="sendLegalAiQuery()">➤</button>
+    <div class="ai-panel-body" style="padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem; overflow:hidden;">
+      <div id="legalAiChatArea" style="flex:1; min-height:220px; max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem;">
+        <div class="chat-msg ai" style="align-self: flex-start; background: rgba(255,255,255,0.06); padding: 0.5rem 0.75rem; border-radius: 10px; border-bottom-left-radius: 2px; font-size: 0.8rem; line-height: 1.4; color: #cbd5e1; max-width: 85%;">
+          🤖 Hello! Ask me anything about DPGNotes legal policies, terms, privacy, or compliance!
+        </div>
+      </div>
+      <div class="ai-input-row" style="display:flex; gap:0.4rem;">
+        <input type="text" id="legalAiInput" placeholder="E.g. What is the copyright policy?" style="flex:1; padding: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: inherit; font-size: 0.8rem;" onkeydown="if(event.key==='Enter') sendLegalAiQuery()">
+        <button id="legalAiSendBtn" onclick="sendLegalAiQuery()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="ri-send-plane-2-line"></i></button>
       </div>
     </div>
   </div>
@@ -554,36 +572,96 @@
       }
     }
 
+    let legalChatHistory = [];
+
+    function appendLegalChatMessage(role, text) {
+      const chatArea = document.getElementById("legalAiChatArea");
+      if (!chatArea) return;
+
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `chat-msg ${role}`;
+      
+      if (role === 'user') {
+        msgDiv.style.alignSelf = 'flex-end';
+        msgDiv.style.background = 'linear-gradient(135deg, #8b5cf6, #6366f1)';
+        msgDiv.style.color = 'white';
+        msgDiv.style.padding = '0.5rem 0.75rem';
+        msgDiv.style.borderRadius = '10px';
+        msgDiv.style.borderBottomRightRadius = '2px';
+        msgDiv.style.fontSize = '0.8rem';
+        msgDiv.style.lineHeight = '1.4';
+        msgDiv.style.maxWidth = '85%';
+        msgDiv.style.wordBreak = 'break-word';
+      } else {
+        msgDiv.style.alignSelf = 'flex-start';
+        msgDiv.style.background = 'rgba(255,255,255,0.06)';
+        msgDiv.style.padding = '0.5rem 0.75rem';
+        msgDiv.style.borderRadius = '10px';
+        msgDiv.style.borderBottomLeftRadius = '2px';
+        msgDiv.style.fontSize = '0.8rem';
+        msgDiv.style.lineHeight = '1.4';
+        msgDiv.style.color = '#cbd5e1';
+        msgDiv.style.maxWidth = '85%';
+        msgDiv.style.wordBreak = 'break-word';
+      }
+
+      msgDiv.innerHTML = role === 'ai' && typeof renderMarkdown === 'function' 
+        ? renderMarkdown(text) 
+        : text.replace(/\n/g, '<br>');
+
+      chatArea.appendChild(msgDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      legalChatHistory.push({ role, text });
+    }
+
     async function sendLegalAiQuery() {
       const input = document.getElementById('legalAiInput');
-      const output = document.getElementById('legalAiOutput');
       const btn = document.getElementById('legalAiSendBtn');
       const question = input.value.trim();
       if (!question) return;
 
       input.value = '';
       btn.disabled = true;
-      output.style.fontStyle = 'normal';
-      output.style.color = '#cbd5e1';
-      output.innerHTML = '<span style="color:#a78bfa;">🤖 Thinking...</span>';
+      appendLegalChatMessage('user', question);
+
+      // Show thinking
+      const chatArea = document.getElementById("legalAiChatArea");
+      const thinking = document.createElement("div");
+      thinking.id = "legalThinking";
+      thinking.style.alignSelf = 'flex-start';
+      thinking.style.color = '#a78bfa';
+      thinking.style.fontSize = '0.8rem';
+      thinking.innerHTML = '🤖 <em>Thinking...</em>';
+      chatArea.appendChild(thinking);
+      chatArea.scrollTop = chatArea.scrollHeight;
 
       try {
-        // Use the existing /api/ai/screen report type with legal context
-        const res = await fetch(window.API_BASE_URL + '/api/ai/legal-query', {
+        const res = await fetch(window.API_BASE_URL + '/api/ai/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question })
+          body: JSON.stringify({
+            history: legalChatHistory,
+            question: question,
+            context: {
+              pageContext: "DPGNotes Legal Documentation Center",
+              availableSections: "Overview, Privacy Policy, Cookie Policy, Consent Management, Disclaimer, Copyright Policy, DMCA Policy, Tracking & Analytics, Security, Retention, FAQ"
+            }
+          })
         });
+        
+        const thinkingEl = document.getElementById("legalThinking");
+        if (thinkingEl) thinkingEl.remove();
+
         const data = await res.json();
         if (data.answer) {
-          output.innerHTML = typeof renderMarkdown === 'function'
-            ? renderMarkdown(data.answer)
-            : data.answer.replace(/\n/g, '<br>');
+          appendLegalChatMessage('ai', data.answer);
         } else {
-          output.innerHTML = '<span style="color:#ef4444;">No response. Please try again.</span>';
+          appendLegalChatMessage('ai', '⚠️ No response received from DPGNotes AI.');
         }
       } catch(err) {
-        output.innerHTML = '<span style="color:#ef4444;">Error: ' + err.message + '</span>';
+        const thinkingEl = document.getElementById("legalThinking");
+        if (thinkingEl) thinkingEl.remove();
+        appendLegalChatMessage('ai', '❌ Error connecting to AI: ' + err.message);
       }
       btn.disabled = false;
     }

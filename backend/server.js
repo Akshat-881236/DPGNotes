@@ -1225,6 +1225,34 @@ Provide:
   }
 });
 
+// Conversational AI Chat — public (Used by PDF Viewer, Legal Center, and Report.html)
+app.post('/api/ai/chat', async (req, res) => {
+  const { history, question, context } = req.body;
+  if (!question) {
+    return res.status(400).json({ error: "question is required" });
+  }
+  try {
+    const prompt = `You are DPGNotes Intelligence, an advanced and friendly AI assistant.
+Answer the student's question clearly. Focus on accuracy, readability, and modern markdown formatting.
+
+Context Details:
+${context ? JSON.stringify(context, null, 2) : "N/A"}
+
+Conversation History:
+${(history || []).map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.text}`).join('\n')}
+
+New Question: ${question}
+
+Provide a direct and comprehensive answer.`;
+
+    const answer = await askGemini(prompt);
+    res.json({ answer });
+  } catch (err) {
+    console.error("AI chat failed:", err);
+    res.status(500).json({ error: "AI chat service temporarily unavailable", details: err.message });
+  }
+});
+
 app.post('/api/ai/screen', verifySession, async (req, res) => {
   const { type, data } = req.body;
   if (!type || !data) {

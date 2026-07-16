@@ -106,11 +106,19 @@
       </div>
     </div>
 
-    <!-- AI Analysis -->
-    <div class="scard">
-      <h3><i class="ri-robot-2-line"></i> AI Analysis</h3>
-      <div class="ai-out ph" id="aiOut">Click "Analyse" to get AI insights about this document.</div>
-      <button class="aibtn" id="aiBtn" onclick="runAI()"><i class="ri-sparkling-line"></i> Analyse with AI</button>
+    <!-- AI Analysis (Chat Mode) -->
+    <div class="scard" style="display: flex; flex-direction: column;">
+      <h3><i class="ri-robot-2-line"></i> AI Chat Assistant</h3>
+      <div id="aiChatArea" style="min-height: 150px; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.2); border-radius: 10px; padding: 0.6rem; font-size: 0.81rem; margin-bottom: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div class="chat-msg ai" style="align-self: flex-start; background: rgba(255,255,255,0.06); padding: 0.5rem 0.75rem; border-radius: 10px; line-height: 1.4; color: #cbd5e1; border-bottom-left-radius: 2px;">
+          🤖 Hello! I am DPGNotes AI. Click "Analyse" or ask me anything about this document!
+        </div>
+      </div>
+      <div class="ai-input-row" style="display: flex; gap: 0.4rem;">
+        <input type="text" id="aiChatInput" placeholder="Ask a question..." style="flex: 1; padding: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: inherit; font-size: 0.8rem;" onkeydown="if(event.key==='Enter') sendPdfAiQuery()">
+        <button id="aiChatSendBtn" onclick="sendPdfAiQuery()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;"><i class="ri-send-plane-2-line"></i></button>
+      </div>
+      <button class="aibtn" id="aiBtn" onclick="runAI()" style="margin-top: 0.6rem;"><i class="ri-sparkling-line"></i> Analyse Document</button>
     </div>
 
     <!-- Page Stats -->
@@ -207,9 +215,6 @@ function adSlot(n) {
      data-ad-slot="2895051790"
      data-ad-format="auto"
      data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
   </div>`;
   return d;
 }
@@ -229,7 +234,14 @@ async function renderAllPages() {
     for (let i = 1; i <= totalPages; i++) {
       await renderPage(i);
       // Ad after every 3rd page (not after the last)
-      if (i % 3 === 0 && i < totalPages) pdfArea.appendChild(adSlot(Math.floor(i/3)));
+      if (i % 3 === 0 && i < totalPages) {
+        pdfArea.appendChild(adSlot(Math.floor(i/3)));
+        try {
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        } catch(e) {
+          console.error("AdSense push error:", e);
+        }
+      }
     }
 
     // Intersection observer for current page
@@ -263,15 +275,55 @@ async function renderPage(n) {
   await page.render({canvasContext:ctx, viewport}).promise;
 }
 
-// ─ AI Analysis ──────────────────────────────────────────────────────────────
+// ─ AI Analysis (Chat Mode) ──────────────────────────────────────────────────
+let pdfChatHistory = [];
+
+function appendPdfChatMessage(role, text) {
+  const chatArea = document.getElementById("aiChatArea");
+  if (!chatArea) return;
+
+  const msgDiv = document.createElement("div");
+  msgDiv.className = `chat-msg ${role}`;
+  
+  if (role === 'user') {
+    msgDiv.style.alignSelf = 'flex-end';
+    msgDiv.style.background = 'linear-gradient(135deg, #8b5cf6, #6366f1)';
+    msgDiv.style.color = 'white';
+    msgDiv.style.padding = '0.5rem 0.75rem';
+    msgDiv.style.borderRadius = '10px';
+    msgDiv.style.borderBottomRightRadius = '2px';
+    msgDiv.style.fontSize = '0.8rem';
+    msgDiv.style.lineHeight = '1.4';
+    msgDiv.style.maxWidth = '85%';
+    msgDiv.style.wordBreak = 'break-word';
+  } else {
+    msgDiv.style.alignSelf = 'flex-start';
+    msgDiv.style.background = 'rgba(255,255,255,0.06)';
+    msgDiv.style.padding = '0.5rem 0.75rem';
+    msgDiv.style.borderRadius = '10px';
+    msgDiv.style.borderBottomLeftRadius = '2px';
+    msgDiv.style.fontSize = '0.8rem';
+    msgDiv.style.lineHeight = '1.4';
+    msgDiv.style.color = '#cbd5e1';
+    msgDiv.style.maxWidth = '85%';
+    msgDiv.style.wordBreak = 'break-word';
+  }
+
+  msgDiv.innerHTML = role === 'ai' && typeof renderMarkdown === 'function' 
+    ? renderMarkdown(text) 
+    : text.replace(/\n/g, '<br>');
+
+  chatArea.appendChild(msgDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  pdfChatHistory.push({ role, text });
+}
+
 async function runAI() {
   const btn = document.getElementById('aiBtn');
-  const out = document.getElementById('aiOut');
   btn.disabled = true;
   btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite"></i> Analysing...';
-  out.classList.remove('ph');
-  out.style.color = '#a78bfa';
-  out.innerHTML = '🤖 DPGNotes Intelligence is analysing this document...';
+  appendPdfChatMessage('ai', '🤖 *DPGNotes Intelligence is compiling your document analysis...*');
+  
   try {
     const res = await fetch(window.API_BASE_URL + '/api/ai/analyse-document', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -280,16 +332,83 @@ async function runAI() {
     if (!res.ok) throw new Error('Server ' + res.status);
     const j = await res.json();
     const answer = j.report || j.analysis || j.result || j.answer || 'No analysis returned.';
-    out.style.color = '#cbd5e1';
-    out.innerHTML = renderMarkdown(answer);
+    
+    // Remove last message if it was "Analyzing..." placeholder
+    const chatArea = document.getElementById("aiChatArea");
+    if (chatArea.lastChild && chatArea.lastChild.innerText.includes('compiling')) {
+      chatArea.lastChild.remove();
+      pdfChatHistory.pop();
+    }
+    
+    appendPdfChatMessage('ai', answer);
   } catch(err) {
-    out.style.color = '#ef4444';
-    out.innerHTML = 'Error: ' + err.message;
+    appendPdfChatMessage('ai', '❌ Failed to analyze document: ' + err.message);
   }
   btn.disabled = false;
   btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyse';
 }
 window.runAI = runAI;
+
+async function sendPdfAiQuery() {
+  const input = document.getElementById("aiChatInput");
+  const btn = document.getElementById("aiChatSendBtn");
+  if (!input || !btn) return;
+  
+  const question = input.value.trim();
+  if (!question) return;
+
+  input.value = "";
+  btn.disabled = true;
+  
+  appendPdfChatMessage('user', question);
+  
+  // Show thinking
+  const chatArea = document.getElementById("aiChatArea");
+  const thinking = document.createElement("div");
+  thinking.id = "pdfThinking";
+  thinking.style.alignSelf = 'flex-start';
+  thinking.style.color = '#a78bfa';
+  thinking.style.fontSize = '0.8rem';
+  thinking.innerHTML = '🤖 <em>Thinking...</em>';
+  chatArea.appendChild(thinking);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  try {
+    const res = await fetch(window.API_BASE_URL + '/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        history: pdfChatHistory,
+        question: question,
+        context: {
+          documentTitle: docTitle,
+          documentCategory: docCat,
+          documentDiscipline: docDisc,
+          documentUploader: docUp,
+          documentDescription: docDesc,
+          documentTags: docTags,
+          documentPdfUrl: pdfUrl
+        }
+      })
+    });
+    
+    const thinkingEl = document.getElementById("pdfThinking");
+    if (thinkingEl) thinkingEl.remove();
+
+    const data = await res.json();
+    if (data.answer) {
+      appendPdfChatMessage('ai', data.answer);
+    } else {
+      appendPdfChatMessage('ai', '⚠️ No response received from DPGNotes AI.');
+    }
+  } catch(err) {
+    const thinkingEl = document.getElementById("pdfThinking");
+    if (thinkingEl) thinkingEl.remove();
+    appendPdfChatMessage('ai', '❌ Connection error: ' + err.message);
+  }
+  btn.disabled = false;
+}
+window.sendPdfAiQuery = sendPdfAiQuery;
 
 // ─ Share ────────────────────────────────────────────────────────────────────
 async function sharePdf() {
