@@ -9,6 +9,18 @@
   <meta name="description" content="Official Legal Documentation and Policies for DPGNotes Academic Portal.">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
      crossorigin="anonymous"></script>
+  <style>
+    .ad-banner-section { display: none !important; }
+    .ad-banner-section.ad-active, .ad-banner-section:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      margin: 0 0 1.5rem 0;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 12px;
+      text-align: center;
+    }
+  </style>
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
@@ -665,6 +677,16 @@
       }
       btn.disabled = false;
     }
+
+    function checkAds() {
+      document.querySelectorAll('.ad-banner-section').forEach(banner => {
+        const ins = banner.querySelector('ins.adsbygoogle');
+        if (ins && (ins.getAttribute('data-ad-status') === 'filled' || ins.getElementsByTagName('iframe').length > 0)) {
+          banner.classList.add('ad-active');
+        }
+      });
+    }
+    setInterval(checkAds, 1000);
   </script>
 </body>
 </html>

@@ -3,6 +3,18 @@
 <head>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
      crossorigin="anonymous"></script>
+  <style>
+    .ad-banner-section { display: none !important; }
+    .ad-banner-section.ad-active, .ad-banner-section:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 12px;
+      text-align: center;
+    }
+  </style>
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
   <!-- Markdown Parser for AI Responses -->
@@ -248,6 +260,20 @@
       </div>
     </div>
 
+    <!-- Google Ad Unit -->
+    <div class="ad-banner-section" style="margin: 1.5rem 0; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; text-align: center;">
+      <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; tracking-spacing: 1px;">Sponsored</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-5515547448097504"
+           data-ad-slot="2895051790"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+
     <!-- AI Analysis Panel (Chat Mode) -->
     <div class="ai-panel" id="aiAnalysisPanel" style="display: flex; flex-direction: column; gap: 1rem;">
       <h2><span>🤖</span> AI Compliance Assistant — DPGNotes Intelligence</h2>
@@ -295,5 +321,16 @@
   const analytics = getAnalytics(app);
 </script>
   <script type="module" src="report.js"></script>
+  <script>
+    function checkAds() {
+      document.querySelectorAll('.ad-banner-section').forEach(banner => {
+        const ins = banner.querySelector('ins.adsbygoogle');
+        if (ins && (ins.getAttribute('data-ad-status') === 'filled' || ins.getElementsByTagName('iframe').length > 0)) {
+          banner.classList.add('ad-active');
+        }
+      });
+    }
+    setInterval(checkAds, 1000);
+  </script>
 </body>
 </html>

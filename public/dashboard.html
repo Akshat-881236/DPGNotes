@@ -8,6 +8,18 @@
   <title>DPGNotes | Contributor Dashboard</title>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
      crossorigin="anonymous"></script>
+  <style>
+    .ad-banner-section { display: none !important; }
+    .ad-banner-section.ad-active, .ad-banner-section:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      margin: 1rem 1.5rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 12px;
+      text-align: center;
+    }
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -297,6 +309,17 @@
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
+  </script>
+  <script>
+    function checkAds() {
+      document.querySelectorAll('.ad-banner-section').forEach(banner => {
+        const ins = banner.querySelector('ins.adsbygoogle');
+        if (ins && (ins.getAttribute('data-ad-status') === 'filled' || ins.getElementsByTagName('iframe').length > 0)) {
+          banner.classList.add('ad-active');
+        }
+      });
+    }
+    setInterval(checkAds, 1000);
   </script>
 </body>
 </html>
