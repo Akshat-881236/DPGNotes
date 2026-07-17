@@ -22,6 +22,14 @@ app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
 
+// Load AI training legal dataset
+let trainingData = "";
+try {
+  trainingData = fs.readFileSync(path.join(__dirname, 'training.md'), 'utf8');
+} catch (e) {
+  console.error("Failed to read training.md:", e);
+}
+
 // ==========================================
 // ROUTES: HEALTH CHECK
 // ==========================================
@@ -1065,38 +1073,46 @@ app.get('/api/legal/document/:section', secureDocsLimiter, async (req, res) => {
 });
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODELS = [
+  'gemini-3.5-flash',
+  'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite',
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-pro-latest'
+];
 
 async function askGemini(promptText) {
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: promptText
-              }
-            ]
-          }
-        ]
-      })
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Gemini API error status:", res.status, errText);
-      throw new Error(`Gemini status ${res.status}`);
+  let lastError = null;
+  for (const model of GEMINI_MODELS) {
+    try {
+      console.log(`Attempting Gemini query with model: ${model}`);
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`Model ${model} returned non-ok status: ${res.status}`, errText);
+        throw new Error(`Gemini status ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.error) {
+        console.warn(`Model ${model} returned error payload:`, data.error);
+        throw new Error(`Gemini API error: ${data.error.message}`);
+      }
+      const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (outputText) {
+        return outputText;
+      }
+      throw new Error("Empty candidate response format");
+    } catch (err) {
+      console.warn(`Model ${model} failed: ${err.message}. Retrying fallback...`);
+      lastError = err;
     }
-    const data = await res.json();
-    const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    return outputText;
-  } catch (err) {
-    console.error("askGemini failed:", err);
-    throw err;
   }
+  throw lastError || new Error("All Gemini models failed");
 }
 
 async function scanDuplicateProfiles() {
@@ -1180,6 +1196,10 @@ app.post('/api/ai/legal-query', async (req, res) => {
   }
   try {
     const prompt = `You are DPGNotes Legal Intelligence, an AI assistant for the DPGNotes Academic Portal legal center. 
+Use the following official training documentation as your source of truth to answer the question:
+
+${trainingData}
+
 Answer the following question in clear, user-friendly language about DPGNotes policies, privacy, terms, data handling, copyright, or DRASA regulations. 
 If the question is completely unrelated to legal/compliance/DPGNotes platform, politely decline and redirect.
 Format your response in proper markdown with headers, bullet points, and bold key terms where helpful.
@@ -1200,6 +1220,36 @@ app.post('/api/ai/analyse-document', async (req, res) => {
     return res.status(400).json({ error: "document data is required" });
   }
   try {
+    // 1. Compulsory AI Screening for document quality and compliance
+    const screenPrompt = `You are a compliance AI content screening manager. Review the following uploaded document metadata for compliance violations (e.g. extreme copyright infringement indicators, personal identifiable info (PII) leakage, hate speech, or non-educational content).
+    Document Info:
+    Title: ${data.title}
+    Category: ${data.category}
+    Discipline: ${data.discipline}
+    Description: ${data.description || 'N/A'}
+    Tags: ${data.tags || 'N/A'}
+    
+    Return a JSON object formatted exactly as:
+    {
+      "decision": "approve" or "reject",
+      "reason": "Clear explanation of the decision"
+    }
+    Return ONLY raw valid JSON text, no markdown backticks, no comments.`;
+    
+    const screenRes = await askGemini(screenPrompt);
+    const cleanJson = screenRes.replace(/```json/g, "").replace(/```/g, "").trim();
+    let decisionObj;
+    try {
+      decisionObj = JSON.parse(cleanJson);
+    } catch(pe) {
+      decisionObj = { decision: "approve", reason: "Parsing error" };
+    }
+    
+    if (decisionObj.decision === 'reject') {
+      return res.status(400).json({ error: `Document failed compliance screening: ${decisionObj.reason}` });
+    }
+
+    // 2. Proceed with Analysis
     const prompt = `You are DPGNotes Intelligence, an advanced AI tutor and document analyzer for students.
 Analyze the following document metadata and provide a comprehensive, structured summary and key insights that a student would find highly useful.
 Format your response in GitHub Flavored Markdown, using headers, bullet points, bold text for emphasis, and clear sections.
@@ -1232,11 +1282,25 @@ app.post('/api/ai/chat', async (req, res) => {
     return res.status(400).json({ error: "question is required" });
   }
   try {
+    // Detect if this is a legal center query or legal-related question
+    const isLegal = (context && context.pageContext && context.pageContext.includes("Legal")) || 
+                    (question.toLowerCase().includes("legal")) || 
+                    (question.toLowerCase().includes("policy")) || 
+                    (question.toLowerCase().includes("copyright")) || 
+                    (question.toLowerCase().includes("dmca")) ||
+                    (question.toLowerCase().includes("terms")) ||
+                    (question.toLowerCase().includes("privacy"));
+
+    let contextString = context ? JSON.stringify(context, null, 2) : "N/A";
+    if (isLegal) {
+      contextString += `\n\nOfficial DPGNotes Legal and Operational Training Dataset (Use this as your source of truth to answer accurately):\n${trainingData}`;
+    }
+
     const prompt = `You are DPGNotes Intelligence, an advanced and friendly AI assistant.
 Answer the student's question clearly. Focus on accuracy, readability, and modern markdown formatting.
 
 Context Details:
-${context ? JSON.stringify(context, null, 2) : "N/A"}
+${contextString}
 
 Conversation History:
 ${(history || []).map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.text}`).join('\n')}

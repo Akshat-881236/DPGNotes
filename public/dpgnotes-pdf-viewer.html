@@ -349,6 +349,24 @@ async function runAI() {
 }
 window.runAI = runAI;
 
+async function extractPdfText() {
+  if (!pdfDoc) return "";
+  let text = "";
+  // Extract up to 5 pages of text to prevent exceeding token limits
+  const maxPages = Math.min(pdfDoc.numPages, 5);
+  for (let i = 1; i <= maxPages; i++) {
+    try {
+      const page = await pdfDoc.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(" ");
+      text += `--- Page ${i} ---\n${pageText}\n\n`;
+    } catch(e) {
+      console.warn("Failed to extract page " + i, e);
+    }
+  }
+  return text;
+}
+
 async function sendPdfAiQuery() {
   const input = document.getElementById("aiChatInput");
   const btn = document.getElementById("aiChatSendBtn");
@@ -362,16 +380,24 @@ async function sendPdfAiQuery() {
   
   appendPdfChatMessage('user', question);
   
-  // Show thinking
+  // Detect if query requires PDF Screening (Web Screening)
+  const shouldScreen = /section\s+[a-z0-9]|solve|answer\s+all|explain\s+questions|exam\s+questions/i.test(question);
+  
+  // Show thinking / status
   const chatArea = document.getElementById("aiChatArea");
   const thinking = document.createElement("div");
   thinking.id = "pdfThinking";
   thinking.style.alignSelf = 'flex-start';
   thinking.style.color = '#a78bfa';
   thinking.style.fontSize = '0.8rem';
-  thinking.innerHTML = '🤖 <em>Thinking...</em>';
+  thinking.innerHTML = shouldScreen ? '🤖 <em>Screening and extracting PDF text...</em>' : '🤖 <em>Thinking...</em>';
   chatArea.appendChild(thinking);
   chatArea.scrollTop = chatArea.scrollHeight;
+
+  let extractedText = "";
+  if (shouldScreen) {
+    extractedText = await extractPdfText();
+  }
 
   try {
     const res = await fetch(window.API_BASE_URL + '/api/ai/chat', {
@@ -387,7 +413,8 @@ async function sendPdfAiQuery() {
           documentUploader: docUp,
           documentDescription: docDesc,
           documentTags: docTags,
-          documentPdfUrl: pdfUrl
+          documentPdfUrl: pdfUrl,
+          extractedPdfText: shouldScreen ? extractedText : "N/A (Screening bypassed)"
         }
       })
     });
@@ -427,6 +454,16 @@ window.sharePdf = sharePdf;
 
 // ─ Init ─────────────────────────────────────────────────────────────────────
 renderAllPages();
+
+const urlParams = new URLSearchParams(window.location.search);
+const q = urlParams.get('q');
+if (q) {
+  const input = document.getElementById("aiChatInput");
+  if (input) {
+    input.value = decodeURIComponent(q);
+    sendPdfAiQuery();
+  }
+}
 </script>
 </body>
 </html>

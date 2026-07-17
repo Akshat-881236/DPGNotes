@@ -53,6 +53,16 @@ async function initReport() {
     container.style.display = "block";
     renderReport(data);
     
+    // Auto-trigger AI Chat via url param ?q=
+    const q = urlParams.get('q');
+    if (q) {
+      const input = document.getElementById("reportChatInput");
+      if (input) {
+        input.value = decodeURIComponent(q);
+        sendReportChatQuery();
+      }
+    }
+    
   } catch (err) {
     console.error(err);
     statusTxt.innerText = "Data Retrieval Failed";

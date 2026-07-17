@@ -687,6 +687,23 @@
       });
     }
     setInterval(checkAds, 1000);
+
+    // Auto-trigger legal query via URL parameter
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get('q');
+      if (q) {
+        const panel = document.getElementById('legalAiPanel');
+        if (panel && !panel.classList.contains('open')) {
+          panel.classList.add('open');
+        }
+        const input = document.getElementById('legalAiInput');
+        if (input) {
+          input.value = decodeURIComponent(q);
+          sendLegalAiQuery();
+        }
+      }
+    });
   </script>
 </body>
 </html>
