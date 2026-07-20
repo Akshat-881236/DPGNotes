@@ -207,24 +207,14 @@
       <div class="filter-group">
         <h4 class="filter-title">Document Category</h4>
         <select class="filter-select" id="filterCategory" onchange="applyFilters()">
-          <option value="ALL">All Categories</option>
-          <option value="SE">Sessional Exam (SE)</option>
-          <option value="SP">Sample Paper (SP)</option>
-          <option value="UE">University Exam (UE)</option>
-          <option value="EV">Event Materials (EV)</option>
-          <option value="T&N">Tutorial & Notes (T&N)</option>
+          <option value="ALL">Loading Categories...</option>
         </select>
       </div>
 
       <div class="filter-group">
         <h4 class="filter-title">Discipline</h4>
         <select class="filter-select" id="filterDiscipline" onchange="applyFilters()">
-          <option value="ALL">All Disciplines</option>
-          <option value="Computer Science">Computer Science</option>
-          <option value="BCA">BCA</option>
-          <option value="BBA">BBA</option>
-          <option value="Mechanical">Mechanical</option>
-          <option value="Electrical">Electrical</option>
+          <option value="ALL">Loading Disciplines...</option>
         </select>
       </div>
 
@@ -278,6 +268,47 @@
     searchField.value = initialQuery;
     queryTextSpan.innerText = initialQuery;
 
+    function populateDynamicFilters() {
+      const catSelect = document.getElementById("filterCategory");
+      const discSelect = document.getElementById("filterDiscipline");
+      if (!catSelect || !discSelect) return;
+
+      // Extract unique categories and disciplines from document list
+      const uniqueCats = [...new Set(allDocs.map(d => d.category).filter(Boolean))].sort();
+      const uniqueDiscs = [...new Set(allDocs.map(d => d.discipline).filter(Boolean))].sort();
+
+      // Static pool of standard categories matching index.html
+      const defaultCats = {
+        "SE": "Sessional Exam (SE)",
+        "SP": "Sample Paper (SP)",
+        "UE": "University Exam (UE)",
+        "EV": "Event Materials (EV)",
+        "T&N": "Tutorial & Notes (T&N)",
+        "IQ": "Interview Questions (IQ)",
+        "A&LR": "Aptitude & Logical Reasoning (A&LR)",
+        "PQ": "Placement Questions (PQ)"
+      };
+
+      // 1. Populate Category dropdown (Union of default keys and database unique categories)
+      catSelect.innerHTML = '<option value="ALL">All Categories</option>';
+      const finalCats = new Set([...Object.keys(defaultCats), ...uniqueCats]);
+      finalCats.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.innerText = defaultCats[cat] || cat;
+        catSelect.appendChild(opt);
+      });
+
+      // 2. Populate Discipline dropdown dynamically with sorted unique entries
+      discSelect.innerHTML = '<option value="ALL">All Disciplines</option>';
+      uniqueDiscs.forEach(disc => {
+        const opt = document.createElement("option");
+        opt.value = disc;
+        opt.innerText = disc;
+        discSelect.appendChild(opt);
+      });
+    }
+
     // Load Documents & filter
     async function loadDocuments() {
       try {
@@ -286,6 +317,7 @@
         snap.forEach(doc => {
           allDocs.push({ id: doc.id, ...doc.data() });
         });
+        populateDynamicFilters();
         applyFilters();
       } catch (err) {
         console.error("Failed downloading documents:", err);
