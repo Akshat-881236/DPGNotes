@@ -382,6 +382,10 @@
 
       list.innerHTML = "";
       results.forEach(d => {
+        const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
+        const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
+        const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
+
         const card = document.createElement("article");
         card.className = "result-card";
         card.innerHTML = `
@@ -391,11 +395,11 @@
             <p class="result-desc">${d.description || "No description provided."}</p>
             <div class="result-meta">
               <span><i class="ri-book-open-line"></i> ${d.discipline}</span>
-              <span><i class="ri-user-follow-line"></i> ${d.userName || "Contributor"}</span>
-              <span><i class="ri-heart-line"></i> ${d.likes || 0} Likes</span>
+              <span><i class="ri-user-follow-line"></i> ${d.userName || d.uploader || "Contributor"}</span>
+              <span><i class="ri-heart-line"></i> ${likesCount} Likes</span>
             </div>
           </div>
-          <a href="/dpgnotes-pdf-viewer.html?id=${d.id}" class="result-visit-btn" title="Open Document">
+          <a href="${viewerUrl}" class="result-visit-btn" title="Open Document">
             <i class="ri-arrow-right-line"></i>
           </a>
         `;

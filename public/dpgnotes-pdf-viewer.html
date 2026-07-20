@@ -141,6 +141,7 @@
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const cfg = {
   apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
@@ -149,6 +150,23 @@ const cfg = {
 };
 const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgnotes");
 const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+
+// CTR telemetry check
+const P = new URLSearchParams(location.search);
+const searchToken = P.get('search-token');
+const trackingDocId = P.get('docid');
+const trackingDocTitle = P.get('title') || 'Untitled Document';
+
+if (searchToken && trackingDocId && trackingDocId !== '—') {
+  addDoc(collection(db, "search_ctr_logs"), {
+    documentId: trackingDocId,
+    documentTitle: trackingDocTitle,
+    clickedAt: serverTimestamp(),
+    token: searchToken,
+    userAgent: navigator.userAgent
+  }).catch(console.error);
+}
 
 onAuthStateChanged(auth, user => {
   const el = document.getElementById('userInfo');

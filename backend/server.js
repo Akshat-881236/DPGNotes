@@ -42,38 +42,54 @@ app.get('/', (req, res) => {
 // ==========================================
 app.get('/sitemap.xml', async (req, res) => {
   try {
-    // Using REST API since Admin SDK might not be initialized
-    const firestoreRes = await axios.get('https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/documents?pageSize=1000');
-    
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
-    
-    // Add Homepage
-    xml += `
-  <url>
-    <loc>https://dpgnotes.web.app/index.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>`;
-
-    if (firestoreRes.data && firestoreRes.data.documents) {
-      firestoreRes.data.documents.forEach(doc => {
-        // doc.name is something like "projects/dpgnotes/databases/(default)/documents/documents/DOCUMENT_ID"
-        const docId = doc.name.split('/').pop();
-        const date = doc.createTime || new Date().toISOString();
-        
-        xml += `
-  <url>
-    <loc>https://dpgnotes.web.app/index.html?view=${docId}</loc>
-    <lastmod>${date}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
+    let documents = [];
+    if (db) {
+      const snapshot = await db.collection("documents").get();
+      snapshot.forEach(doc => {
+        documents.push({ id: doc.id, ...doc.data() });
       });
+    } else {
+      // Fallback REST API
+      const firestoreRes = await axios.get('https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/documents?pageSize=1000');
+      if (firestoreRes.data && firestoreRes.data.documents) {
+        firestoreRes.data.documents.forEach(doc => {
+          const docId = doc.name.split('/').pop();
+          const fields = doc.fields || {};
+          documents.push({
+            id: docId,
+            pdfUrl: fields.pdfUrl?.stringValue || '',
+            title: fields.title?.stringValue || '',
+            category: fields.category?.stringValue || '',
+            discipline: fields.discipline?.stringValue || '',
+            userName: fields.userName?.stringValue || fields.uploader?.stringValue || 'Contributor',
+            description: fields.description?.stringValue || '',
+            tags: fields.tags?.arrayValue?.values?.map(v => v.stringValue) || (fields.tags?.stringValue ? fields.tags.stringValue.split(',') : [])
+          });
+        });
+      }
     }
 
-    xml += `\n</urlset>`;
-    
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+
+    const baseUrl = "https://dpgnotes.web.app";
+    xml += `  <url>\n    <loc>${baseUrl}/index.html</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/dpgnotes-search-engine.html</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.9</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/dpgnotes-serp.html</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/legal/index.html</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+
+    documents.forEach(d => {
+      const tagsStr = Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || '');
+      let viewerUrl = `${baseUrl}/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsStr)}&search-token=SEO_SITEMAP`;
+
+      // Escape XML characters properly
+      viewerUrl = viewerUrl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+      xml += `  <url>\n    <loc>${viewerUrl}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    });
+
+    xml += `</urlset>`;
+
     res.header('Content-Type', 'application/xml');
     res.send(xml);
   } catch (error) {
@@ -853,46 +869,6 @@ app.post('/api/admin/login', async (req, res) => {
     res.json({ message: "OTP sent to admin email" });
   } else {
     res.status(401).json({ error: "Invalid credentials" });
-  }
-});
-
-// ==========================================
-// DYNAMIC SITEMAP API (For Google Search Console)
-// ==========================================
-app.get('/sitemap.xml', async (req, res) => {
-  try {
-    const docsRef = db.collection("documents");
-    const snapshot = await docsRef.get();
-    
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-    
-    // Add main static pages
-    const baseUrl = "https://dpgnotes.web.app"; 
-    xml += `  <url>\n    <loc>${baseUrl}/index.html</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
-    xml += `  <url>\n    <loc>${baseUrl}/dashboard.html</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
-    xml += `  <url>\n    <loc>${baseUrl}/admin.html</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.5</priority>\n  </url>\n`;
-
-    // Add dynamic document pages via the PDF Viewer parameters
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const tagsStr = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
-      // Ensure the URL is properly escaped for XML
-      let viewerUrl = `https://akshat-881236.github.io/AkshatNetworkHub/PdfViewer/index.htm?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(doc.id)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(tagsStr)}`;
-      
-      // Escape ampersands for valid XML
-      viewerUrl = viewerUrl.replace(/&/g, '&amp;');
-      
-      xml += `  <url>\n    <loc>${viewerUrl}</loc>\n    <lastmod>${new Date().toISOString()}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
-    });
-    
-    xml += `</urlset>`;
-    
-    res.header('Content-Type', 'application/xml');
-    res.send(xml);
-  } catch (error) {
-    console.error("Failed to generate sitemap:", error);
-    res.status(500).send("Server Error");
   }
 });
 
