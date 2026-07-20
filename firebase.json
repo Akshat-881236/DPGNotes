@@ -13,14 +13,6 @@
     "public":
     "public",
 
-    "redirects": [
-      {
-        "source": "/sitemap.xml",
-        "destination": "https://dpgnotes.onrender.com/sitemap.xml",
-        "type": 301
-      }
-    ],
-
     "ignore": [
 
       "firebase.json",

@@ -1,43 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://dpgnotes.web.app/</loc>
+    <loc>https://dpgnotes.web.app/index.html</loc>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://dpgnotes.web.app/index.html</loc>
+    <loc>https://dpgnotes.web.app/dpgnotes-search-engine.html</loc>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://dpgnotes.web.app/dashboard.html</loc>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://dpgnotes.web.app/admin.html</loc>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://dpgnotes.web.app/report.html</loc>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://dpgnotes.web.app/PdfMetaAdder.html</loc>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://dpgnotes.web.app/PdfMetaAnalyzer.html</loc>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://dpgnotes.web.app/ImagetoPdfConverter.html</loc>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://dpgnotes.web.app/Docs/index.html</loc>
+    <loc>https://dpgnotes.web.app/dpgnotes-serp.html</loc>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://dpgnotes.web.app/legal/index.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FMICPhysicalEducationSem-4UGPGNotes.pdf&amp;title=Minor%20Physical%20Education%20Notes%20&amp;category=T%26N&amp;discipline=UG%20%2F%20PG%20Courses&amp;uploader=Akshat%20Prasad&amp;docid=0jk3kkbwF4NJtJdp3S3d&amp;description=Health%20Education%20%2C%20First%20Aid%20%26%20Safety%20Measure%20Notes%20for%20All%20UG%20%2F%20PG%20Course%20Students.&amp;tags=MIC%20%2C%20%20Physical%20Education%20%2C%20%20PE%20%2C%20%20Health%20Education%20%2C%20%20Safety%20Education%20%2C%20%20First%20Aid%20Kit&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2F97767_24BCA404DS01_20260531_122250.pdf&amp;title=COA%202026%20May%20Exam%20Question%20Paper&amp;category=UE&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=1ICAGwwrJU4nxH7wHTv7&amp;description=This%20is%20COA%20MDU%20Sem%20-%204%20May%20-%202026%20Examination%20Question%20Paper%20that%20help%20juniors%20prepare%20for%20same%20in%20advance.&amp;tags=COA%2C%20COA%20Unit%20-%201%2C%20Computer%20Architecture%20Notes%2C%20CSA%20PYQ%2C%20Previous%20Year%20COA%20Paper&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FLearningClub-Key-of-Success-Learning-Point%2FPdfLibrary%2FPdfFiles%2FPhysiographicDivisionOfIndia.pdf&amp;title=Physiographic%20Division%20of%20India&amp;category=T%26N&amp;discipline=Geography&amp;uploader=Akshat%20Prasad&amp;docid=39hpX5oLg1y06XdauflS&amp;description=In%20this%20blog%20%2C%20explore%20Physiographic%20Division%20of%20India%20.&amp;tags=Physiographic%20Division%20%2C%20%20Geo%20%2C%20%20Geography%20of%20India&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FPE-598174_25PED401MV01_20260606_162817.pdf&amp;title=Physical%20Education%20Sem%20-%204&amp;category=SP&amp;discipline=UG%20%2F%20PG%20Courses&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=5L6lRze3iESXlbcW7upi&amp;description=Sample%20Paper%20of%20Physical%20Education%20Semester%20-%204.&amp;tags=MIC%2C%20Physical%20Education%2C%20PE%2C%20Health%20Education%2C%20Safety%20Education%2C%20First%20Aid%20Kit&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fres.cloudinary.com%2Fdtnrhepxe%2Fraw%2Fupload%2Fv1783501948%2Fdpgnotes_pdfs%2Fuvfphopxy1qw23wdsiuo&amp;title=Computer%20Graphics%20&amp;category=SP&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad&amp;docid=86F8gMpLBrntqA74Q8UG&amp;description=5%20Sample%20Paper%20of%20Computer%20Graphics&amp;tags=CG%2C%20Raster%20Scan%2C%20Vector%20Scan%2C%20Sutherland%2C%20Polygons%2C%20Computer%20Graphics&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FJavaNotes-1.pdf&amp;title=Java%20Complete%20Notes&amp;category=T%26N&amp;discipline=Computer%20Science&amp;uploader=Aman%20Akshat&amp;docid=8M1xLjlxOQ0vRVvvVqQ1&amp;description=Complete%20Java%20Exam%20Solutions%20With%20Diagrams%20And%20Code%20covering%20detail%20Q%2FA.&amp;tags=Java%2C%20Java%20Notes%2C%20JDK%2C%20Swing%2C%20AWT%2C%20Array%2C%20Applet&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FLearningClub-Key-of-Success-Learning-Point%2FPdfLibrary%2FPdfFiles%2FPhysical%2520Education%2520Practical%2520File%2520Demo.pdf&amp;title=Physical%20Education%20Sem-2%20Practical%20File&amp;category=T%26N&amp;discipline=Physical%20Education&amp;uploader=Aman%20Akshat&amp;docid=Dk1YdHuYzloPlHGVZtvP&amp;description=Comprehensive%20Practical%20File%20of%20Physical%20Education%20covering%20all%20practical%20as%20per%20curriculum.&amp;tags=PE%20Practical%20File%20%2C%20%20Physical%20Education%20%2C%20%20History%20of%20Physical%20Education%20%2C%20%20Somatotypes%20&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FMFCS-1-97751.pdf&amp;title=MFCS%20Sem%20-%201&amp;category=UE&amp;discipline=Computer%20Science&amp;uploader=Aman%20Akshat&amp;docid=HH0G5ojzksXEkX7VBK4p&amp;description=PYQP%20of%20Mathematical%20Foundation%20of%20Computer%20Science%20for%20BCA%20Sem%20-%201%20Student%20.%20&amp;tags=MFCS%20%2C%20%20Maths%20%2C%20%20Sets%20%2C%20%20Trignometry%20%2C%20%20Calculus%20%2C%20%20Mathematics%20%2C%20%20Matrix%20&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FLearningClub-Key-of-Success-Learning-Point%2FPdfLibrary%2FPdfFiles%2FCG_PracticalFile_Sem-4_BCA.pdf&amp;title=Computer%20Graphic%20Practical%20File&amp;category=T%26N&amp;discipline=Computer%20Science&amp;uploader=Aman%20Akshat&amp;docid=OQwRQoCPaIARWyTj36XT&amp;description=The%20Practical%20File%20of%20Computer%20Graphics%20design%20with%20all%2015%20programs%20prescribe%20by%20MDU%2C%20Rohtak.&amp;tags=CG%20%2C%20%20CG%20Practical%20File%20%2C%20%20Lab%20Manual%20of%20CG%20%2C%20%20Computer%20Graphics%20File%20&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FComputer-Fundamentals-and-Problem-Solving-using-C-1-97752.pdf&amp;title=Computer%20Fundamental%20%26%20Problem%20Solving%20using%20C&amp;category=UE&amp;discipline=Computer%20Science&amp;uploader=Aman%20Akshat&amp;docid=OUq1v3fiVG6tLp6iwZH3&amp;description=This%20is%20the%20PYQP%20%2C%20downloaded%20from%20mystudy.com%20and%20upload%20here%20for%20quick%20access.&amp;tags=C%20Programming%20%2C%20%20Basics%20of%20Computer%20%2C%20%20Computer%20Fundamental%20Semester%20-%201&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FComputerArchitecture-42003.pdf&amp;title=Computer%20Architecture%20Sem%20-%201&amp;category=UE&amp;discipline=Computer%20Science&amp;uploader=Aman%20Akshat&amp;docid=PsSGm24PWaJqPWvW64J3&amp;description=This%20is%20the%20PYQP%20of%20Computer%20Architecture%20of%20BCA%20Sem%20-%201%20Student%20from%20mdustudy.com&amp;tags=CSA%20%2C%20%20COA%20%2C%20%20Computer%20System%20Architecture%20%2C%20%20DLD%20%2C%20%20Digital%20Electronics%20%2C%20%20CSA&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FJavaImportantQuestionAnswer.pdf&amp;title=Java%20Important%20Question%20Answer%20&amp;category=T%26N&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=UeL65AvLxNbcDXFakmCO&amp;description=Comprehensive%20list%20of%2050%2B%20Compulsory%201%20%2F%202%20Marks%20Question%20Answer%20of%20Java%20Programming.&amp;tags=Java%2C%20AWT%2C%20Java%20Exam%20Question%2C%20Array%2C%20String%20Buffer&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FLearningClub-Key-of-Success-Learning-Point%2FPdfLibrary%2FPdfFiles%2FDBMS_SQ.pdf&amp;title=DBMS%20Notes%20for%20BCA%20Students&amp;category=T%26N&amp;discipline=Computer%20Science&amp;uploader=Aman%20Akshat&amp;docid=auY7xXhwY4h1WskYjKUh&amp;description=Database%20Management%20System%20Notes%20for%20all%20BCA%20and%20Minor%20opted%20DBMS%20Students.&amp;tags=Database%2C%20DBMS%2C%20SQL%2C%20Entity%2C%20ER%20-%20Model%2C%20Atomicity&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FLearningClub-Key-of-Success-Learning-Point%2FPdfLibrary%2FPdfFiles%2FSEOChapter-1.pdf&amp;title=Search%20Engine%20Optimization%20Chapter%20-%201&amp;category=T%26N&amp;discipline=Digital%20Marketing%20%26%20SEO&amp;uploader=Akshat%20Prasad&amp;docid=eKWR3wB04ykbms6KtupQ&amp;description=Chapter%201%20of%20SEO%20Tutorial%20with%20brief%20introduction%20of%20Search%20Engine%20and%20SEO.&amp;tags=SEO%20%2C%20%20Google%20%2C%20%20Ranking%20%2C%20%20SEO%20Chapter%20-%201%20Introduction%20to%20SEO&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fres.cloudinary.com%2Fdtnrhepxe%2Fraw%2Fupload%2Fv1783504567%2Fdpgnotes_pdfs%2Fzt5nxd515tycjnnp0his&amp;title=Operating%20System%20Notes&amp;category=T%26N&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad&amp;docid=epoINVTxfT7J3JJAPMGr&amp;description=Detail%20Notes%20of%20Process%20Management%20and%20Scheduling.%20&amp;tags=OS%2C%20Operating%20System%2C%20Process%20Management%2C%20Scheduling&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2F97768_24BCA404DS02_20260531_101628.pdf&amp;title=Data%20Communication%20Previous%20Year%20Paper&amp;category=UE&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=gBRhWrXDjr3x0TM4oV83&amp;description=Data%20Communication%20Previous%20Year%20Paper%20-%202026%20May%20Examination%20BCA%204th%20Semester.&amp;tags=DCCN%2C%20DCN%20PYP%2C%20PYQ%2C%20MDU%20Exams%20Data%20Communication%20Paper&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FCOAUnit-1QA-Sem-4BCA.pdf&amp;title=COA%20Unit%20-%201%20Notes&amp;category=T%26N&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=joSgex3klBnFWpNNWfJC&amp;description=Detail%20Question%20%2F%20Answer%20generated%20by%20ChatGPT%20in%20Research%20Mode%20on%20COA%20Unit%20-%201.&amp;tags=COA%2C%20COA%20Unit%20-%201%2C%20Computer%20Architecture%20Notes%2C%20CSA&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fres.cloudinary.com%2Fdtnrhepxe%2Fraw%2Fupload%2Fv1783502954%2Fdpgnotes_pdfs%2Fnr0iaaar4che5frwhqcw&amp;title=Operating%20System%20Notes&amp;category=T%26N&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad&amp;docid=lN0IlAPGxVO8DYxIWB4t&amp;description=Detail%20Notes%20of%20Operating%20System%20Chapter%201%20Intro%20to%20OS.&amp;tags=OS%2C%20Operating%20System%2C%20Introduction%20to%20OS&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2F97769_24BCA404DS03_20260530_171353.pdf&amp;title=Java%20Previous%20Year%20Paper&amp;category=UE&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=n2AK0OI7NsipxJBdtygy&amp;description=Previous%20Year%20Paper%20of%20Java%20Programming%20BCA%204th%20Semester%2C%20May%20-%202026.&amp;tags=Java%20Notes%2C%20PYQ%20Java%2C%20Java%20MDU%20Paper%2C%20Java%20Exam&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FPE-155163_25PED401MV01_20260605_172601.pdf&amp;title=Physical%20Education%20Sem%20-%204&amp;category=SP&amp;discipline=UG%20%2F%20PG%20Courses&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=s04q6FWJnFUcU5XUWWQk&amp;description=Sample%20Paper%20of%20Physical%20Education%20Semester%20-%204.&amp;tags=MIC%2C%20Physical%20Education%2C%20PE%2C%20Health%20Education%2C%20Safety%20Education%2C%20First%20Aid%20Kit&amp;search-token=SEO_SITEMAP</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 </urlset>
