@@ -291,8 +291,14 @@ if(logoutBtn) {
 async function loadProfile() {
   document.getElementById("profileName").innerText = currentUser.displayName;
   document.getElementById("profileEmail").innerText = currentUser.email;
+  
+  const avatarEl = document.getElementById("profileAvatar");
+  avatarEl.onclick = () => {
+    window.location.href = `/profile.html?uid=${currentUser.uid}`;
+  };
+
   if (currentUser.photoURL) {
-    document.getElementById("profileAvatar").innerHTML = `<img src="${currentUser.photoURL}" alt="Profile">`;
+    avatarEl.innerHTML = `<img src="${currentUser.photoURL}" alt="Profile">`;
   }
   
   try {
