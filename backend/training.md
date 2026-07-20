@@ -162,3 +162,22 @@ A: We record anonymous telemetry (OS, browser, search terms) to improve speed an
 
 Q4: How does the PDF Viewer protect copyright?
 A: The PDF Viewer uses PDF.js to render documents on canvases, preventing direct raw file downloads. Dynamic AdSense banners are inserted after every 3 pages, and the AI screening runs automatically before the document is published.
+
+---
+
+## MODULE 5: ADVERTISING & EXTERNAL LINKS DISCLAIMER POLICIES
+This module describes platform guidelines regarding Google AdSense integrations and link redirections.
+
+---
+
+### MODULE 5.1: ADVERTISING INTEGRATIONS
+1. Monetization: DPGNotes displays advertisements via Google AdSense.
+2. Layout Integrity: Ad banners are styled to be clean and non-disruptive. If Google AdSense fails to return an ad (empty inventory or active ad blockers), the platform dynamically detects this state and collapses the container to 0px, ensuring no blank boxes appear.
+3. User Privacy: No student chat records, login credentials, or document metadata details are sent to Google's networks.
+
+---
+
+### MODULE 5.2: EXTERNAL LINKS & REDIRECT WARNINGS
+1. Safety Warnings: Whenever a user clicks an external link (non-DPGNotes hosts), a custom security warning popup is displayed.
+2. Link Policies: Users can proceed at their own risk or return. The popup links to /legal/index.html#links-policy for policy details.
+3. Referrer Protections: External URLs are opened using noopener, noreferrer headers to protect browser tab session keys from leakage.

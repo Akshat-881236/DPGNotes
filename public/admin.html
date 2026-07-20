@@ -363,6 +363,9 @@
         <a class="nav-link" onclick="switchTab('shares')">
           <i class="ri-share-forward-line"></i> Share Analysis
         </a>
+        <a class="nav-link" onclick="switchTab('engagement'); loadEngagementTelemetry();">
+          <i class="ri-heart-pulse-line"></i> Engagement Analytics
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -559,6 +562,53 @@
               </thead>
               <tbody id="sharesTableBody">
                 <tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">Loading Share Engine statistics...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: ENGAGEMENT -->
+      <section id="view-engagement" class="view-section">
+        <div class="section-card" style="margin-bottom: 2rem;">
+          <h2 class="section-title">Platform Connections & Follower Analytics</h2>
+          <div class="stats-cards" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid var(--admin-primary);">
+              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">TOTAL FOLLOWS</h4>
+              <p style="font-size: 2.2rem; font-weight: 800; color: var(--admin-primary);" id="adminTotalFollows">0</p>
+            </div>
+            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid var(--admin-accent);">
+              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">TOTAL CONNECTIONS</h4>
+              <p style="font-size: 2.2rem; font-weight: 800; color: var(--admin-accent);" id="adminTotalConnections">0</p>
+            </div>
+            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid #f59e0b;">
+              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">PENDING REQUESTS</h4>
+              <p style="font-size: 2.2rem; font-weight: 800; color: #f59e0b;" id="adminPendingConnections">0</p>
+            </div>
+            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid #ef4444;">
+              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">HARMFUL REPORTS</h4>
+              <p style="font-size: 2.2rem; font-weight: 800; color: #ef4444;" id="adminReportsCount">0</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">Community Contributor Directory</h2>
+          <div style="overflow-x:auto; margin-top: 1.5rem;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Avatar</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Discipline</th>
+                  <th>Uploads</th>
+                  <th>Likes</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="engagementDirectoryBody">
+                <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading Contributor Network...</td></tr>
               </tbody>
             </table>
           </div>

@@ -10,15 +10,23 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
      crossorigin="anonymous"></script>
   <style>
-    .ad-banner-section { display: none !important; }
+    .ad-banner-section {
+      display: block;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      text-align: center;
+    }
     .ad-banner-section.ad-active, .ad-banner-section:has(ins[data-ad-status="filled"]) {
-      display: block !important;
       margin: 0 0 1.5rem 0;
       padding: 1rem;
       background: rgba(255,255,255,0.03);
       border: 1px dashed rgba(255,255,255,0.1);
       border-radius: 12px;
-      text-align: center;
+    }
+    .ad-banner-section:has(ins[data-ad-status="unfilled"]) {
+      display: none !important;
     }
   </style>
   <!-- CSS Stylesheets -->
@@ -116,6 +124,14 @@
             <li><a href="#analytics" class="nav-link" data-section="analytics"><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="#security" class="nav-link" data-section="security"><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="#retention" class="nav-link" data-section="retention"><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-group">
+          <h3 class="group-title">Policy Disclaimers</h3>
+          <ul class="nav-list">
+            <li><a href="#ads-policy" class="nav-link" data-section="ads-policy"><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="#links-policy" class="nav-link" data-section="links-policy"><i class="ri-external-link-line"></i> External Links Disclaimer</a></li>
           </ul>
         </div>
 
@@ -376,6 +392,28 @@
                   <li><strong>Level V (Critical Security):</strong> Phishing, credential scraping, database tampering, or host infrastructure attack attempts resulting in immediate, permanent ban and account deletion.</li>
                 </ul>
               </p>
+            </article>
+
+            <!-- Section: Advertising Policy -->
+            <article id="ads-policySection" class="policy-section">
+              <h1>Advertising Policy</h1>
+              <p class="subtitle">Effective Date: July 20, 2026</p>
+              <p>DPGNotes displays third-party advertisements via Google AdSense to offset the cost of hosting and maintenance. Advertisements are placed in structured slots (e.g. index home page, dashboard panels, and after every 3 pages inside the PDF Viewer).</p>
+              <h2>1. Ad Personalization & Tracking</h2>
+              <p>AdSense scripts use cookies to serve personalized ads based on your web browsing history. We do not transmit any personal data, upload credentials, or internal chat communications to Google.</p>
+              <h2>2. Technical Content Hiding</h2>
+              <p>If the AdSense network fails to fill an ad slot (or is blocked by an ad blocker), DPGNotes implements automated CSS rules and checking loops to collapse the empty slot, ensuring no blank gaps affect your layout or scrolling capabilities.</p>
+            </article>
+
+            <!-- Section: External Links Disclaimer -->
+            <article id="links-policySection" class="policy-section">
+              <h1>External Links & Redirect Disclaimer</h1>
+              <p class="subtitle">Effective Date: July 20, 2026</p>
+              <p>To assist academic discovery, DPGNotes resources and AI assistants may contain links pointing to external websites. When you click any external link, the platform intercepts the action and displays a warning dialog to prevent phishing and unauthorized tracking.</p>
+              <h2>1. Third-Party Responsibility</h2>
+              <p>DPGNotes does not control, verify, or warrant the safety, reliability, or content of external websites. Proceeding past the warning dialog is entirely at your own risk.</p>
+              <h2>2. Secure Redirect Mode</h2>
+              <p>Any external domain navigation is opened in a new tab with modern safety headers (e.g. <code>noopener, noreferrer</code>) to protect your browser session from security compromises.</p>
             </article>
 
             <!-- Section: FAQ -->
@@ -705,5 +743,6 @@
       }
     });
   </script>
+  <script src="../redirect.js"></script>
 </body>
 </html>

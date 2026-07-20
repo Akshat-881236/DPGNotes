@@ -4,15 +4,23 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
      crossorigin="anonymous"></script>
   <style>
-    .ad-banner-section { display: none !important; }
+    .ad-banner-section {
+      display: block;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      text-align: center;
+    }
     .ad-banner-section.ad-active, .ad-banner-section:has(ins[data-ad-status="filled"]) {
-      display: block !important;
       margin: 1.5rem 0;
       padding: 1rem;
       background: rgba(255,255,255,0.03);
       border: 1px dashed rgba(255,255,255,0.1);
       border-radius: 12px;
-      text-align: center;
+    }
+    .ad-banner-section:has(ins[data-ad-status="unfilled"]) {
+      display: none !important;
     }
   </style>
   <script src="config.js"></script>
@@ -332,5 +340,6 @@
     }
     setInterval(checkAds, 1000);
   </script>
+  <script src="redirect.js"></script>
 </body>
 </html>

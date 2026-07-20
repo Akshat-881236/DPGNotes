@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     pdfWrapper.style.display = 'flex';
 
-    const noPdfSections = ['overview', 'updates', 'contact'];
+    const noPdfSections = ['overview', 'updates', 'contact', 'ads-policy', 'links-policy'];
     if (noPdfSections.includes(sectionName)) {
       pdfWrapper.innerHTML = `
         <div class="pdf-coming-soon">

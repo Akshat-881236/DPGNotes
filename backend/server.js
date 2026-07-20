@@ -1403,6 +1403,462 @@ app.post('/api/ai/screen', verifySession, async (req, res) => {
   }
 });
 
+// ==========================================
+// CONTRIBUTOR NETWORKING & SOCIAL API
+// ==========================================
+
+// Helper: Clean expired messages (TTL)
+async function cleanExpiredMessages() {
+  try {
+    const now = admin.firestore.Timestamp.now();
+    const snapshot = await db.collectionGroup("messages")
+      .where("expiresAt", "<", now)
+      .get();
+    
+    const batch = db.batch();
+    let count = 0;
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // Only delete if it wasn't saved to prevent deletion
+      if (!data.isSaved) {
+        batch.delete(doc.ref);
+        count++;
+      }
+    });
+    if (count > 0) {
+      await batch.commit();
+      console.log(`[TTL Cleanup] Purged ${count} expired messages.`);
+    }
+  } catch (err) {
+    console.error("[TTL Cleanup] Error cleaning expired messages:", err);
+  }
+}
+
+// 1. List Contributor Profiles (Public / All users search)
+app.get('/api/social/list-profiles', async (req, res) => {
+  try {
+    const snapshot = await db.collection("users").get();
+    const profiles = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      profiles.push({
+        uid: doc.id,
+        name: data.name || data.email?.split('@')[0] || "Anonymous",
+        email: data.email || "",
+        bio: data.bio || "No bio added yet.",
+        avatarUrl: data.avatarUrl || "",
+        discipline: data.discipline || "N/A",
+        uploadedCount: data.uploadedCount || 0,
+        likesCount: data.likesCount || 0
+      });
+    });
+    res.json(profiles);
+  } catch (err) {
+    console.error("List profiles failed:", err);
+    res.status(500).json({ error: "Failed to list profiles" });
+  }
+});
+
+// 2. Relationship State Check
+app.post('/api/social/connections-state', async (req, res) => {
+  const { senderId, receiverId } = req.body;
+  if (!senderId || !receiverId) {
+    return res.status(400).json({ error: "senderId and receiverId are required" });
+  }
+  try {
+    const connId1 = `${senderId}_${receiverId}`;
+    const connId2 = `${receiverId}_${senderId}`;
+    
+    let connection = null;
+    let connDoc = await db.collection("connections").doc(connId1).get();
+    if (connDoc.exists) {
+      connection = { ...connDoc.data(), initiatedByMe: true };
+    } else {
+      connDoc = await db.collection("connections").doc(connId2).get();
+      if (connDoc.exists) {
+        connection = { ...connDoc.data(), initiatedByMe: false };
+      }
+    }
+
+    // Check if following
+    const followDoc = await db.collection("follows")
+      .doc(`${senderId}_${receiverId}`).get();
+    const isFollowing = followDoc.exists;
+
+    // Get follower counts
+    const followersSnapshot = await db.collection("follows")
+      .where("followingId", "==", receiverId).get();
+    const followerCount = followersSnapshot.size;
+
+    res.json({
+      connection,
+      isFollowing,
+      followerCount
+    });
+  } catch (err) {
+    console.error("Get connection state failed:", err);
+    res.status(500).json({ error: "Server error checking relationship state" });
+  }
+});
+
+// 3. Follow / Unfollow Toggle
+app.post('/api/social/follow', async (req, res) => {
+  const { followerId, followerName, followingId, followingName } = req.body;
+  if (!followerId || !followingId) {
+    return res.status(400).json({ error: "followerId and followingId are required" });
+  }
+  try {
+    const followId = `${followerId}_${followingId}`;
+    const followRef = db.collection("follows").doc(followId);
+    const doc = await followRef.get();
+    
+    if (doc.exists) {
+      await followRef.delete();
+      return res.json({ status: "unfollowed" });
+    } else {
+      await followRef.set({
+        followerId,
+        followerName: followerName || "Contributor",
+        followingId,
+        followingName: followingName || "Contributor",
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      return res.json({ status: "followed" });
+    }
+  } catch (err) {
+    console.error("Follow toggle failed:", err);
+    res.status(500).json({ error: "Follow toggle failed" });
+  }
+});
+
+// 4. Send Connection Request
+app.post('/api/social/connect-request', async (req, res) => {
+  const { senderId, senderName, senderEmail, receiverId, receiverName, receiverEmail } = req.body;
+  if (!senderId || !receiverId) {
+    return res.status(400).json({ error: "senderId and receiverId are required" });
+  }
+  try {
+    const connId = `${senderId}_${receiverId}`;
+    await db.collection("connections").doc(connId).set({
+      senderId,
+      senderName: senderName || "Contributor",
+      senderEmail: senderEmail || "",
+      receiverId,
+      receiverName: receiverName || "Contributor",
+      receiverEmail: receiverEmail || "",
+      status: "pending",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Send email via Brevo SMTP
+    if (receiverEmail) {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto;">
+          <h2 style="color: #6366f1;">New Connection Request 🤝</h2>
+          <p>Hello ${receiverName || 'Contributor'},</p>
+          <p><strong>${senderName}</strong> wants to connect with you on DPGNotes Network.</p>
+          <div style="margin: 2rem 0; text-align: center;">
+            <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold;">View Profile & Respond</a>
+          </div>
+          <p style="color: #94a3b8; font-size: 0.85rem;">You can accept or decline this request directly in their profile panel.</p>
+        </div>
+      `;
+      await sendEmail(receiverEmail, `Connection Request from ${senderName}`, emailHtml);
+    }
+
+    // Send email digest notify to Admin
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail) {
+      await sendEmail(adminEmail, "Contributor Social Update: Connection Requested", `
+        <h3>Social Analytics Update</h3>
+        <p>Contributor <strong>${senderName}</strong> has sent a connection request to <strong>${receiverName}</strong>.</p>
+      `);
+    }
+
+    res.json({ message: "Connection request sent successfully." });
+  } catch (err) {
+    console.error("Connect request failed:", err);
+    res.status(500).json({ error: "Failed to send connection request" });
+  }
+});
+
+// 5. Respond to Connection Request (Accept / Reject)
+app.post('/api/social/connect-respond', async (req, res) => {
+  const { senderId, receiverId, status } = req.body;
+  if (!senderId || !receiverId || !status) {
+    return res.status(400).json({ error: "senderId, receiverId, and status are required" });
+  }
+  try {
+    const connId1 = `${senderId}_${receiverId}`;
+    const connId2 = `${receiverId}_${senderId}`;
+
+    let connRef = db.collection("connections").doc(connId1);
+    let doc = await connRef.get();
+    if (!doc.exists) {
+      connRef = db.collection("connections").doc(connId2);
+      doc = await connRef.get();
+    }
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Connection record not found" });
+    }
+
+    const connData = doc.data();
+    await connRef.update({
+      status: status,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Notify original sender via email
+    if (status === 'accepted' && connData.senderEmail) {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto;">
+          <h2 style="color: #10b981;">Connection Request Accepted! 🎉</h2>
+          <p>Hello ${connData.senderName},</p>
+          <p><strong>${connData.receiverName}</strong> accepted your connection request. You can now chat directly!</p>
+          <div style="margin: 2rem 0; text-align: center;">
+            <a href="https://dpgnotes.web.app/profile.html?uid=${receiverId}" style="background: #10b981; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold;">Send a Message</a>
+          </div>
+        </div>
+      `;
+      await sendEmail(connData.senderEmail, `Connection accepted by ${connData.receiverName}`, emailHtml);
+    }
+
+    res.json({ status });
+  } catch (err) {
+    console.error("Connect response failed:", err);
+    res.status(500).json({ error: "Failed to respond to connection request" });
+  }
+});
+
+// 6. Send Message (Direct Messaging with 14-day Auto-Delete TTL)
+app.post('/api/social/send-message', async (req, res) => {
+  const { senderId, senderName, receiverId, receiverName, receiverEmail, text } = req.body;
+  if (!senderId || !receiverId || !text) {
+    return res.status(400).json({ error: "senderId, receiverId, and text are required" });
+  }
+  try {
+    // Generate unique chat ID sorted alphabetically by UIDs
+    const chatId = [senderId, receiverId].sort().join("_");
+    const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days from now
+
+    const msgRef = await db.collection("chats").doc(chatId).collection("messages").add({
+      senderId,
+      senderName: senderName || "Contributor",
+      text,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+      isSaved: false, // Default is not saved (allows auto-deletion)
+      deletedFor: [] // List of user IDs who deleted this message for themselves
+    });
+
+    // Notify receiver of new message
+    if (receiverEmail) {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto;">
+          <h2 style="color: #6366f1;">New Message Received 💬</h2>
+          <p>Hello ${receiverName || 'Contributor'},</p>
+          <p><strong>${senderName}</strong> sent you a message:</p>
+          <blockquote style="background: rgba(255,255,255,0.05); padding: 1rem; border-left: 4px solid #6366f1; border-radius: 4px; color: #cbd5e1;">
+            "${text}"
+          </blockquote>
+          <div style="margin: 2rem 0; text-align: center;">
+            <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold;">Reply on DPGNotes</a>
+          </div>
+        </div>
+      `;
+      await sendEmail(receiverEmail, `New Message from ${senderName}`, emailHtml);
+    }
+
+    res.json({ messageId: msgRef.id, expiresAt });
+  } catch (err) {
+    console.error("Send message failed:", err);
+    res.status(500).json({ error: "Failed to send message" });
+  }
+});
+
+// 7. Get Messages
+app.post('/api/social/get-messages', async (req, res) => {
+  const { senderId, receiverId, viewerId } = req.body;
+  if (!senderId || !receiverId) {
+    return res.status(400).json({ error: "senderId and receiverId are required" });
+  }
+  try {
+    const chatId = [senderId, receiverId].sort().join("_");
+    
+    // Asynchronously trigger expired messages cleanup
+    cleanExpiredMessages().catch(err => console.error("Async TTL clean failed:", err));
+
+    const snapshot = await db.collection("chats")
+      .doc(chatId)
+      .collection("messages")
+      .orderBy("createdAt", "asc")
+      .get();
+
+    const messages = [];
+    const now = Date.now();
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // Double check client-side TTL filtering just in case cleanup hasn't run yet
+      const expiry = data.expiresAt ? data.expiresAt.toDate().getTime() : 0;
+      if (expiry > now || data.isSaved) {
+        // Only return messages NOT deleted for the current viewerId
+        const deletedFor = data.deletedFor || [];
+        if (!viewerId || !deletedFor.includes(viewerId)) {
+          // Format timestamp safely
+          let time = "";
+          if (data.createdAt && data.createdAt.toDate) {
+            time = data.createdAt.toDate().toISOString();
+          }
+          
+          messages.push({
+            id: doc.id,
+            senderId: data.senderId,
+            senderName: data.senderName,
+            text: data.text,
+            createdAt: time,
+            isSaved: data.isSaved || false,
+            ageInHours: data.createdAt ? (Date.now() - data.createdAt.toDate().getTime()) / 3600000 : 0
+          });
+        }
+      }
+    });
+
+    res.json(messages);
+  } catch (err) {
+    console.error("Get messages failed:", err);
+    res.status(500).json({ error: "Failed to load chat history" });
+  }
+});
+
+// 8. Message Actions (Edit, Save, Delete, Report)
+app.post('/api/social/message-action', async (req, res) => {
+  const { action, chatId, messageId, userId, newText, reporterName } = req.body;
+  if (!action || !chatId || !messageId || !userId) {
+    return res.status(400).json({ error: "action, chatId, messageId, and userId are required" });
+  }
+  try {
+    const msgRef = db.collection("chats").doc(chatId).collection("messages").doc(messageId);
+    const doc = await msgRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const data = doc.data();
+
+    // ACTION: EDIT
+    if (action === 'edit') {
+      if (data.senderId !== userId) {
+        return res.status(403).json({ error: "Unauthorized to edit this message" });
+      }
+      await msgRef.update({ text: newText });
+      return res.json({ success: true, text: newText });
+    }
+
+    // ACTION: SAVE / PREVENT TTL DELETION
+    if (action === 'save') {
+      const newSaveState = !data.isSaved;
+      await msgRef.update({ isSaved: newSaveState });
+      return res.json({ success: true, isSaved: newSaveState });
+    }
+
+    // ACTION: DELETE FOR ME
+    if (action === 'deleteForMe') {
+      const deletedFor = data.deletedFor || [];
+      if (!deletedFor.includes(userId)) {
+        deletedFor.push(userId);
+      }
+      await msgRef.update({ deletedFor });
+      return res.json({ success: true });
+    }
+
+    // ACTION: DELETE FOR EVERYONE (Limit to 1 day / 24 hours)
+    if (action === 'deleteForEveryone') {
+      if (data.senderId !== userId) {
+        return res.status(403).json({ error: "Unauthorized to delete this message" });
+      }
+      const ageInMs = Date.now() - (data.createdAt ? data.createdAt.toDate().getTime() : 0);
+      const oneDayInMs = 24 * 60 * 60 * 1000;
+      if (ageInMs > oneDayInMs) {
+        return res.status(400).json({ error: "Messages older than 1 day cannot be deleted for everyone" });
+      }
+      await msgRef.delete();
+      return res.json({ success: true });
+    }
+
+    // ACTION: REPORT TO COMMUNITY
+    if (action === 'report') {
+      await db.collection("community_reports").add({
+        chatId,
+        messageId,
+        reportedBy: userId,
+        reporterName: reporterName || "Anonymous",
+        senderId: data.senderId,
+        senderName: data.senderName,
+        messageText: data.text,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Email notification to Admin
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (adminEmail) {
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; background: #2d0f0f; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto;">
+            <h2 style="color: #ef4444;">⚠️ Malicious Content Report</h2>
+            <p>A message has been reported for security or community policy violations:</p>
+            <hr style="border: 1px solid rgba(255,255,255,0.1);" />
+            <p><strong>Sender:</strong> ${data.senderName} (${data.senderId})</p>
+            <p><strong>Reporter:</strong> ${reporterName || 'Anonymous'} (${userId})</p>
+            <p><strong>Message Content:</strong></p>
+            <blockquote style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 4px solid #ef4444;">
+              "${data.text}"
+            </blockquote>
+            <p>Inspect and act from the Admin Command Center immediately.</p>
+          </div>
+        `;
+        await sendEmail(adminEmail, "Security Alert: Harmful Message Reported", emailHtml);
+      }
+
+      return res.json({ success: true });
+    }
+
+    res.status(400).json({ error: "Unknown action" });
+  } catch (err) {
+    console.error("Message action failed:", err);
+    res.status(500).json({ error: "Failed to process message action" });
+  }
+});
+
+// 9. Admin Social & Connections Engagement Analytics
+app.get('/api/admin/engagement-analytics', async (req, res) => {
+  try {
+    const totalConnections = await db.collection("connections").get();
+    const totalFollows = await db.collection("follows").get();
+    const totalReports = await db.collection("community_reports").get();
+
+    // Map connection states
+    let pendingCount = 0;
+    let acceptedCount = 0;
+    totalConnections.forEach(doc => {
+      const s = doc.data().status;
+      if (s === 'pending') pendingCount++;
+      if (s === 'accepted') acceptedCount++;
+    });
+
+    res.json({
+      connectionsCount: totalConnections.size,
+      followsCount: totalFollows.size,
+      reportsCount: totalReports.size,
+      pendingCount,
+      acceptedCount
+    });
+  } catch (err) {
+    console.error("Engagement telemetry failed:", err);
+    res.status(500).json({ error: "Telemetry aggregation failed" });
+  }
+});
+
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
   res.status(404).json({ 

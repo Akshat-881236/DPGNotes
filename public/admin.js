@@ -796,6 +796,59 @@ if (permanentSearch) {
   });
 }
 
+async function loadEngagementTelemetry() {
+  const tableBody = document.getElementById("engagementDirectoryBody");
+  if (!tableBody) return;
+
+  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading Telemetry...</td></tr>`;
+
+  try {
+    // 1. Fetch Aggregated Connection / Follow Metrics
+    const res = await fetch(`${API_URL}/admin/engagement-analytics`);
+    const metrics = await res.json();
+
+    document.getElementById("adminTotalFollows").innerText = metrics.followsCount || 0;
+    document.getElementById("adminTotalConnections").innerText = metrics.connectionsCount || 0;
+    document.getElementById("adminPendingConnections").innerText = metrics.pendingCount || 0;
+    document.getElementById("adminReportsCount").innerText = metrics.reportsCount || 0;
+
+    // 2. Fetch Contributor List & Render Directory
+    const listRes = await fetch(`${API_URL}/social/list-profiles`);
+    const profiles = await listRes.json();
+
+    tableBody.innerHTML = "";
+    if (profiles.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">No contributors in system directory.</td></tr>`;
+      return;
+    }
+
+    profiles.forEach(p => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>
+          <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, var(--admin-primary), var(--admin-accent)); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; overflow:hidden;">
+            ${p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%; height:100%; object-fit:cover;">` : p.name.charAt(0).toUpperCase()}
+          </div>
+        </td>
+        <td style="font-weight:600; color:white;">${p.name}</td>
+        <td>${p.email}</td>
+        <td>${p.discipline}</td>
+        <td style="text-align:center;">${p.uploadedCount}</td>
+        <td style="text-align:center;">${p.likesCount}</td>
+        <td>
+          <button class="btn-action primary" style="background:var(--admin-primary); color:white; padding:4px 8px; border-radius:6px; border:none; font-size:0.8rem; cursor:pointer;" onclick="window.open('/profile.html?uid=${p.uid}', '_blank')">View Profile</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error("Failed loading engagement telemetry:", err);
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-danger);">Failed loading telemetry data.</td></tr>`;
+  }
+}
+
 window.loadShares = loadShares;
 window.loadPermanentBlocks = loadPermanentBlocks;
 window.loadAdminNotifications = loadAdminNotifications;
+window.loadEngagementTelemetry = loadEngagementTelemetry;
