@@ -911,6 +911,8 @@ if(settingsForm) {
       const github = document.getElementById("settingGithub").value.trim();
       const theme = document.getElementById("settingTheme").value;
       const photoFile = document.getElementById("settingPhoto").files[0];
+      const bannerInput = document.getElementById("settingBanner");
+      const bannerFile = bannerInput ? bannerInput.files[0] : null;
 
       // Apply theme immediately
       applyTheme(theme);
@@ -933,9 +935,28 @@ if(settingsForm) {
         }
       }
 
+      let bannerUrl = null;
+      if (bannerFile) {
+        const formData = new FormData();
+        formData.append("pdfFile", bannerFile);
+        const res = await fetch(window.API_BASE_URL + "/api/upload?type=profile", {
+          method: "POST",
+          body: formData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          bannerUrl = data.pdfUrl;
+        } else {
+          alert("Header banner photo upload failed.");
+        }
+      }
+
       const updateData = { bio, linkedin, github, theme };
       if (profileUrl) {
         updateData.profilePic = profileUrl;
+      }
+      if (bannerUrl) {
+        updateData.bannerPic = bannerUrl;
       }
 
       // Update Firestore securely by merging

@@ -1414,18 +1414,35 @@ async function cleanExpiredMessages() {
 app.get('/api/social/list-profiles', async (req, res) => {
   try {
     const snapshot = await db.collection("users").get();
+    const docsSnapshot = await db.collection("documents").get();
+    
+    // Map document counts and likes per user
+    const statsMap = {};
+    docsSnapshot.forEach(d => {
+      const data = d.data();
+      const uid = data.userId || data.uploaderUid;
+      if (uid) {
+        if (!statsMap[uid]) statsMap[uid] = { uploads: 0, likes: 0 };
+        statsMap[uid].uploads++;
+        const likesArr = Array.isArray(data.likes) ? data.likes.length : (data.likes || 0);
+        statsMap[uid].likes += likesArr;
+      }
+    });
+
     const profiles = [];
     snapshot.forEach(doc => {
       const data = doc.data();
+      const uStats = statsMap[doc.id] || { uploads: 0, likes: 0 };
       profiles.push({
         uid: doc.id,
         name: data.name || data.email?.split('@')[0] || "Anonymous",
         email: data.email || "",
         bio: data.bio || "No bio added yet.",
-        avatarUrl: data.avatarUrl || "",
+        avatarUrl: data.profilePic || data.photoURL || data.avatarUrl || "",
+        bannerUrl: data.bannerPic || data.bannerUrl || "",
         discipline: data.discipline || "N/A",
-        uploadedCount: data.uploadedCount || 0,
-        likesCount: data.likesCount || 0
+        uploadedCount: uStats.uploads,
+        likesCount: uStats.likes
       });
     });
     res.json(profiles);
@@ -1834,6 +1851,69 @@ app.get('/api/admin/engagement-analytics', async (req, res) => {
     res.status(500).json({ error: "Telemetry aggregation failed" });
   }
 });
+
+// 10. Admin Delete System Notifications (Single or Bulk)
+app.post('/api/admin/delete-notifs', async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: "ids array is required" });
+  }
+  try {
+    const batch = db.batch();
+    ids.forEach(id => {
+      batch.delete(db.collection("notifications").doc(id));
+    });
+    await batch.commit();
+    res.json({ message: "Notifications deleted successfully" });
+  } catch (err) {
+    console.error("Delete notifications failed:", err);
+    res.status(500).json({ error: "Failed to delete notifications" });
+  }
+});
+
+// 11. Toggle Keep Status (Save from 15-day auto deletion)
+app.post('/api/admin/toggle-keep-notif', async (req, res) => {
+  const { id } = req.body;
+  if (!id) return res.status(400).json({ error: "id is required" });
+  try {
+    const ref = db.collection("notifications").doc(id);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: "Notification doc not found" });
+    const currentKeep = doc.data().isKept || doc.data().keepPermanently || false;
+    await ref.update({ isKept: !currentKeep, keepPermanently: !currentKeep });
+    res.json({ isKept: !currentKeep });
+  } catch (err) {
+    console.error("Toggle keep failed:", err);
+    res.status(500).json({ error: "Failed to update keep status" });
+  }
+});
+
+// 12. Notification 15-Day Auto Delete Purge Routine
+async function purgeOldNotifications() {
+  try {
+    const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+    const snap = await db.collection("notifications")
+      .where("createdAt", "<", admin.firestore.Timestamp.fromDate(fifteenDaysAgo))
+      .get();
+    
+    let count = 0;
+    const batch = db.batch();
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (!d.isKept && !d.keepPermanently) {
+        batch.delete(doc.ref);
+        count++;
+      }
+    });
+    if (count > 0) {
+      await batch.commit();
+      console.log(`[Notification Purge] Cleaned ${count} notifications older than 15 days.`);
+    }
+  } catch (err) {
+    console.error("[Notification Purge Error]:", err);
+  }
+}
+setInterval(purgeOldNotifications, 6 * 60 * 60 * 1000); // Check every 6 hours
 
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {

@@ -307,7 +307,27 @@
         margin-bottom: 1rem;
       }
       .stat-cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+      }
+      .stat-card {
+        padding: 0.75rem 0.5rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.3rem;
+      }
+      .stat-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+      }
+      .stat-info h3 {
+        font-size: 1.2rem;
+      }
+      .stat-info p {
+        font-size: 0.65rem;
+        line-height: 1.1;
       }
     }
   </style>
@@ -522,20 +542,27 @@
         <div class="section-card" style="margin-top:2rem;">
           <div class="section-header">
             <h2 class="section-title">All System Notifications Log</h2>
-            <input type="text" id="notifSearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search email or title...">
+            <div style="display:flex; gap:0.6rem; align-items:center;">
+              <span id="selectedNotifsCount" style="display:none; font-size:0.8rem; color:var(--admin-muted);">0 selected</span>
+              <button id="deleteSelectedNotifsBtn" class="btn-action danger" style="display:none; padding:4px 8px; font-size:0.8rem;" onclick="deleteSelectedNotifs()"><i class="ri-delete-bin-line"></i> Delete Selected</button>
+              <input type="text" id="notifSearch" class="admin-input" style="width:200px; margin:0; padding:0.5rem 1rem;" placeholder="Search email/title...">
+            </div>
           </div>
           <div style="overflow-x:auto; max-height: 400px;">
             <table class="data-table">
               <thead>
                 <tr>
+                  <th style="width:40px; text-align:center;"><input type="checkbox" id="selectAllNotifs" onclick="toggleAllNotifs(this)"></th>
+                  <th style="width:50px; text-align:center;">Keep</th>
                   <th>Timestamp</th>
                   <th>Recipient Email</th>
                   <th>Title</th>
                   <th>Message</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="adminNotifsTableBody">
-                <tr><td colspan="4" style="text-align:center; color:var(--admin-muted);">Loading system notifications...</td></tr>
+                <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading system notifications...</td></tr>
               </tbody>
             </table>
           </div>
@@ -601,14 +628,13 @@
                   <th>Avatar</th>
                   <th>Name</th>
                   <th>Email</th>
-                  <th>Discipline</th>
                   <th>Uploads</th>
                   <th>Likes</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody id="engagementDirectoryBody">
-                <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading Contributor Network...</td></tr>
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading Contributor Network...</td></tr>
               </tbody>
             </table>
           </div>

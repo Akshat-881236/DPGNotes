@@ -41,6 +41,9 @@ auth.authStateReady().then(() => {
       loadUsers();
       loadActivityLogs();
       loadPermanentBlocks();
+      if (typeof loadShares === 'function') loadShares();
+      if (typeof loadAdminNotifications === 'function') loadAdminNotifications();
+      if (typeof loadEngagementTelemetry === 'function') loadEngagementTelemetry();
     } else {
       // Firebase auth missing but backend token exists. Needs re-login.
       localStorage.removeItem("adminToken");
@@ -97,6 +100,9 @@ otpForm.addEventListener("submit", async (e) => {
       dashboardLayer.style.display = "flex";
       loadUsers();
       loadActivityLogs();
+      if (typeof loadShares === 'function') loadShares();
+      if (typeof loadAdminNotifications === 'function') loadAdminNotifications();
+      if (typeof loadEngagementTelemetry === 'function') loadEngagementTelemetry();
     } else {
       alert(data.error);
     }
@@ -796,11 +802,135 @@ if (permanentSearch) {
   });
 }
 
+async function loadAdminNotifications() {
+  const tableBody = document.getElementById("adminNotifsTableBody");
+  if (!tableBody) return;
+
+  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading system notifications...</td></tr>`;
+
+  try {
+    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    tableBody.innerHTML = "";
+
+    if (snap.empty) {
+      tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">No system notifications recorded.</td></tr>`;
+      return;
+    }
+
+    snap.forEach(d => {
+      const data = d.data();
+      const time = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString() : (data.timestamp || 'N/A');
+      const isKept = data.isKept || data.keepPermanently || false;
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="text-align:center;">
+          <input type="checkbox" class="notif-row-check" data-id="${d.id}" onchange="updateNotifSelectionBar()">
+        </td>
+        <td style="text-align:center;">
+          <button style="background:none; border:none; cursor:pointer; font-size:1.1rem;" onclick="toggleKeepNotif('${d.id}')" title="${isKept ? 'Saved permanently from 15-day auto purge' : 'Click to Keep permanently'}">
+            ${isKept ? '<i class="ri-bookmark-fill" style="color:#f59e0b;"></i>' : '<i class="ri-bookmark-line" style="color:var(--admin-muted);"></i>'}
+          </button>
+        </td>
+        <td><small style="color:var(--admin-muted);">${time}</small></td>
+        <td><strong>${data.toEmail || data.email || 'System Log'}</strong></td>
+        <td>${data.title || 'Notification'}</td>
+        <td style="max-width:240px; word-break:break-word;">${data.message || data.text || ''}</td>
+        <td>
+          <button class="btn-action danger" style="padding:4px 8px; font-size:0.8rem;" onclick="deleteSingleNotif('${d.id}')">
+            <i class="ri-delete-bin-line"></i> Delete
+          </button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+    updateNotifSelectionBar();
+  } catch (err) {
+    console.error("Failed loading notifications:", err);
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-danger);">Failed loading notifications.</td></tr>`;
+  }
+}
+
+function toggleAllNotifs(masterCheck) {
+  document.querySelectorAll(".notif-row-check").forEach(cb => {
+    cb.checked = masterCheck.checked;
+  });
+  updateNotifSelectionBar();
+}
+
+function updateNotifSelectionBar() {
+  const selected = document.querySelectorAll(".notif-row-check:checked");
+  const countEl = document.getElementById("selectedNotifsCount");
+  const btnEl = document.getElementById("deleteSelectedNotifsBtn");
+  if (selected.length > 0) {
+    if (countEl) { countEl.innerText = `${selected.length} selected`; countEl.style.display = "inline"; }
+    if (btnEl) btnEl.style.display = "inline-flex";
+  } else {
+    if (countEl) countEl.style.display = "none";
+    if (btnEl) btnEl.style.display = "none";
+  }
+}
+
+async function deleteSingleNotif(id) {
+  if (!confirm("Are you sure you want to delete this notification log?")) return;
+  try {
+    const res = await fetch(`${API_URL}/admin/delete-notifs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [id] })
+    });
+    if (res.ok) {
+      loadAdminNotifications();
+    } else {
+      alert("Failed to delete notification.");
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Error deleting notification.");
+  }
+}
+
+async function deleteSelectedNotifs() {
+  const checked = Array.from(document.querySelectorAll(".notif-row-check:checked")).map(cb => cb.dataset.id);
+  if (checked.length === 0) return;
+  if (!confirm(`Are you sure you want to delete ${checked.length} selected notifications?`)) return;
+  try {
+    const res = await fetch(`${API_URL}/admin/delete-notifs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: checked })
+    });
+    if (res.ok) {
+      loadAdminNotifications();
+    } else {
+      alert("Failed to delete selected notifications.");
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Error deleting notifications.");
+  }
+}
+
+async function toggleKeepNotif(id) {
+  try {
+    const res = await fetch(`${API_URL}/admin/toggle-keep-notif`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    if (res.ok) {
+      loadAdminNotifications();
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 async function loadEngagementTelemetry() {
   const tableBody = document.getElementById("engagementDirectoryBody");
   if (!tableBody) return;
 
-  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading Telemetry...</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading Telemetry...</td></tr>`;
 
   try {
     // 1. Fetch Aggregated Connection / Follow Metrics
@@ -818,7 +948,7 @@ async function loadEngagementTelemetry() {
 
     tableBody.innerHTML = "";
     if (profiles.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">No contributors in system directory.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No contributors in system directory.</td></tr>`;
       return;
     }
 
@@ -832,7 +962,6 @@ async function loadEngagementTelemetry() {
         </td>
         <td style="font-weight:600; color:white;">${p.name}</td>
         <td>${p.email}</td>
-        <td>${p.discipline}</td>
         <td style="text-align:center;">${p.uploadedCount}</td>
         <td style="text-align:center;">${p.likesCount}</td>
         <td>
@@ -844,7 +973,7 @@ async function loadEngagementTelemetry() {
 
   } catch (err) {
     console.error("Failed loading engagement telemetry:", err);
-    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-danger);">Failed loading telemetry data.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-danger);">Failed loading telemetry data.</td></tr>`;
   }
 }
 
@@ -852,3 +981,8 @@ window.loadShares = loadShares;
 window.loadPermanentBlocks = loadPermanentBlocks;
 window.loadAdminNotifications = loadAdminNotifications;
 window.loadEngagementTelemetry = loadEngagementTelemetry;
+window.toggleAllNotifs = toggleAllNotifs;
+window.updateNotifSelectionBar = updateNotifSelectionBar;
+window.deleteSingleNotif = deleteSingleNotif;
+window.deleteSelectedNotifs = deleteSelectedNotifs;
+window.toggleKeepNotif = toggleKeepNotif;
