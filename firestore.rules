@@ -66,6 +66,21 @@ service cloud.firestore {
     match /active_sessions/{sessId} {
       allow read, write: if true;
     }
+
+    /* ---------- FOLLOWS ---------- */
+    match /follows/{followId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- CONNECTIONS ---------- */
+    match /connections/{connectionId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- GROUP MESSAGES ---------- */
+    match /group_messages/{msgId} {
+      allow read, write: if true;
+    }
     
     /* ---------- VALIDATION ---------- */
 

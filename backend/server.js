@@ -1991,6 +1991,72 @@ app.get('/api/social/get-group-messages', async (req, res) => {
   }
 });
 
+// 15. Get Network Connections & Followers Telemetry (Bypasses security rule constraints)
+app.get('/api/social/get-network', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ error: "userId query parameter is required" });
+  try {
+    // 1. Fetch Followers
+    const followsSnap = await db.collection("follows").where("followingId", "==", userId).get();
+    const followers = [];
+    followsSnap.forEach(d => {
+      const data = d.data();
+      followers.push({
+        followerId: data.followerId || "",
+        followerName: data.followerName || "Contributor"
+      });
+    });
+
+    // 2. Fetch Mutual Connections
+    const c1 = await db.collection("connections")
+      .where("senderId", "==", userId)
+      .where("status", "==", "accepted").get();
+    
+    const c2 = await db.collection("connections")
+      .where("receiverId", "==", userId)
+      .where("status", "==", "accepted").get();
+
+    const connections = [];
+    c1.forEach(d => {
+      const data = d.data();
+      connections.push({
+        userId: data.receiverId,
+        name: data.receiverName || "Contributor"
+      });
+    });
+    c2.forEach(d => {
+      const data = d.data();
+      connections.push({
+        userId: data.senderId,
+        name: data.senderName || "Contributor"
+      });
+    });
+
+    // 3. Fetch Received Pending Connections (Only for profile owner check)
+    const pendingSnap = await db.collection("connections")
+      .where("receiverId", "==", userId)
+      .where("status", "==", "pending").get();
+    
+    const pendingRequests = [];
+    pendingSnap.forEach(d => {
+      const data = d.data();
+      pendingRequests.push({
+        senderId: data.senderId,
+        senderName: data.senderName || "Contributor"
+      });
+    });
+
+    res.json({
+      followers,
+      connections,
+      pendingRequests
+    });
+  } catch (err) {
+    console.error("Get network failed:", err);
+    res.status(500).json({ error: "Failed to retrieve network telemetry" });
+  }
+});
+
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
   res.status(404).json({ 
