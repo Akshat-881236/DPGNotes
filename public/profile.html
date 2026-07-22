@@ -84,7 +84,7 @@
     /* Main Container */
     .profile-shell {
       max-width: 1150px; margin: 2rem auto; padding: 0 1.5rem 4rem;
-      display: grid; grid-template-columns: 1fr 340px; gap: 2rem;
+      display: grid; grid-template-columns: 1fr 360px; gap: 2rem;
     }
 
     /* Profile Card Layout */
@@ -126,7 +126,7 @@
 
     .profile-actions-row {
       display: flex; justify-content: flex-end; gap: 0.8rem;
-      padding-top: 1rem; min-height: 48px; margin-bottom: 1.5rem;
+      padding-top: 1rem; min-height: 48px; margin-bottom: 2rem;
     }
 
     .social-btn {
@@ -152,7 +152,7 @@
 
     .profile-name {
       font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: white;
-      margin: 0 0 0.3rem 0;
+      margin: 1rem 0 0.3rem 0;
     }
     .profile-tagline { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1rem; }
 
@@ -387,6 +387,12 @@
 
             <!-- TAB 2: NETWORK -->
             <div id="networkTab" class="prof-tab-content">
+              <!-- Pending requests received section -->
+              <div id="netPendingRequestsSection" style="display:none; background:rgba(245,158,11,0.06); border:1px dashed #f59e0b; border-radius:12px; padding:1.2rem; margin-bottom:1.5rem;">
+                <h4 style="color:#f59e0b; margin-bottom:1rem;"><i class="ri-user-shared-line"></i> Pending Connection Requests Received</h4>
+                <div id="netPendingRequestsList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+              </div>
+
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                 <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px; padding:1.2rem;">
                   <h4 style="color:white; margin-bottom:1rem;"><i class="ri-user-shared-line" style="color:var(--primary-light);"></i> Connections (<span id="netConnCount">0</span>)</h4>
@@ -399,12 +405,25 @@
               </div>
             </div>
 
-            <!-- TAB 3: MESSAGES -->
+            <!-- TAB 3: MESSAGES (NETWORK GROUP CHAT) -->
             <div id="messagesTab" class="prof-tab-content">
               <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:14px; padding:1.5rem;">
-                <h4 style="color:white; font-size:1.1rem; margin-bottom:1rem;"><i class="ri-whatsapp-line" style="color:#25D366;"></i> WhatsApp-style Messaging Center</h4>
-                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Active messaging threads with connected contributors. Messages auto-expire after 14 days unless saved.</p>
-                <div id="whatsappConversationsList" style="display:flex; flex-direction:column; gap:0.8rem;"></div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                  <h4 style="color:white; font-size:1.1rem; margin:0;"><i class="ri-whatsapp-line" style="color:#25D366;"></i> Connections Group Space</h4>
+                  <span style="font-size:0.75rem; color:var(--text-muted); background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:4px;">Mutual Connections Only</span>
+                </div>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Share updates directly with all your mutual connections simultaneously.</p>
+                
+                <!-- Group Chat Feed Area -->
+                <div id="groupChatMessagesFeed" style="height:320px; overflow-y:auto; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; padding:1rem; display:flex; flex-direction:column; gap:1rem; margin-bottom:1rem;">
+                  <p style="color:var(--text-muted); text-align:center; margin-top:2rem;">Connecting to network feed...</p>
+                </div>
+
+                <!-- Group Chat Input -->
+                <div style="display:flex; gap:0.5rem;">
+                  <input type="text" id="groupChatInputField" placeholder="Type a message to your connections..." style="flex:1; padding:0.7rem 1.2rem; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:999px; color:white; font-size:0.88rem; outline:none;" onkeydown="if(event.key==='Enter') sendGroupChatMessage()">
+                  <button onclick="sendGroupChatMessage()" style="width:42px; height:42px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.1rem;"><i class="ri-send-plane-fill"></i></button>
+                </div>
               </div>
             </div>
 
@@ -482,7 +501,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -503,15 +522,22 @@
     let targetProfile = null;
     let profilesList = [];
     let chatInterval = null;
+    let groupChatInterval = null;
 
-    // Parse URL Parameter UID
+    // Parse URL Parameters
     const urlParams = new URLSearchParams(window.location.search);
-    targetUid = urlParams.get("uid") || "";
+    targetUid = (urlParams.get("uid") || "").trim();
+    const quickAction = urlParams.get("action") || "";
 
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (targetUid) {
         await initProfileDetails();
+        
+        // Handle Quick Action accept/decline links directly on load
+        if (currentUser && quickAction) {
+          await handleUrlQuickAction(quickAction);
+        }
       } else {
         document.getElementById("profileLoadingSpinner").innerHTML = `
           <i class="ri-alert-line" style="font-size:3rem; color:#ef4444; margin-bottom:1rem;"></i>
@@ -520,6 +546,24 @@
         `;
       }
     });
+
+    async function handleUrlQuickAction(action) {
+      const status = action === "accept_connection" ? "accepted" : (action === "reject_connection" ? "rejected" : "");
+      if (!status) return;
+      try {
+        const res = await fetch(window.API_BASE_URL + '/api/social/connect-respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senderId: targetUid, receiverId: currentUser.uid, status })
+        });
+        if (res.ok) {
+          alert(`Connection request successfully ${status === 'accepted' ? 'Approved' : 'Declined'}!`);
+          window.location.href = `profile.html?uid=${targetUid}`;
+        }
+      } catch (e) {
+        console.error("Url quick action failed:", e);
+      }
+    }
 
     function formatBioContent(bioText) {
       if (!bioText) return "No bio provided yet.";
@@ -562,13 +606,6 @@
           bannerEl.style.backgroundImage = `url('${bUrl}')`;
         }
 
-        // Check if viewing own profile
-        if (currentUser && currentUser.uid === targetUid) {
-          document.getElementById("changeBannerBtn").style.display = "block";
-          document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "inline-flex");
-          loadNotificationsProf();
-        }
-
         // Render Avatar with Original Photo if present
         const avatarBig = document.getElementById("profileAvatarBig");
         const photo = targetProfile.avatarUrl || targetProfile.profilePic || targetProfile.photoURL;
@@ -577,6 +614,9 @@
         } else {
           avatarBig.innerText = targetProfile.name.charAt(0).toUpperCase();
         }
+
+        // Configure profile views based on connection/ownership status
+        configureProfileOwnerState();
 
         // Calculate Real Contributor Statistics from Firestore documents
         await loadRealContributorStats();
@@ -596,6 +636,17 @@
 
       } catch (err) {
         console.error("Init profile error:", err);
+      }
+    }
+
+    function configureProfileOwnerState() {
+      if (currentUser && currentUser.uid === targetUid) {
+        document.getElementById("changeBannerBtn").style.display = "block";
+        document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "inline-flex");
+        loadNotificationsProf();
+        loadGroupChatFeed();
+        if (groupChatInterval) clearInterval(groupChatInterval);
+        groupChatInterval = setInterval(loadGroupChatFeed, 4000);
       }
     }
 
@@ -673,7 +724,53 @@
           `;
           followListEl.appendChild(item);
         });
+
+        // Load Connection requests received (if viewing own profile)
+        if (currentUser && currentUser.uid === targetUid) {
+          const receivedQ = query(collection(db, "connections"), where("receiverId", "==", currentUser.uid), where("status", "==", "pending"));
+          const receivedSnap = await getDocs(receivedQ);
+          const reqSection = document.getElementById("netPendingRequestsSection");
+          const reqList = document.getElementById("netPendingRequestsList");
+          
+          if (!receivedSnap.empty) {
+            reqSection.style.display = "block";
+            reqList.innerHTML = "";
+            receivedSnap.forEach(d => {
+              const data = d.data();
+              const reqRow = document.createElement("div");
+              reqRow.style.cssText = "display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.3); padding:10px 14px; border-radius:8px; border:1px solid rgba(245,158,11,0.25);";
+              reqRow.innerHTML = `
+                <span style="font-size:0.88rem; color:white;">🤝 <strong>${data.senderName}</strong> wants to connect</span>
+                <div style="display:flex; gap:0.4rem;">
+                  <button onclick="respondConnectionRequestFromNet('${data.senderId}', 'rejected')" style="padding:4px 8px; border:none; background:rgba(255,255,255,0.05); color:#cbd5e1; border-radius:4px; font-size:0.8rem; cursor:pointer;">Decline</button>
+                  <button onclick="respondConnectionRequestFromNet('${data.senderId}', 'accepted')" style="padding:4px 8px; border:none; background:#10b981; color:white; border-radius:4px; font-size:0.8rem; cursor:pointer;">Accept</button>
+                </div>
+              `;
+              reqList.appendChild(reqRow);
+            });
+          } else {
+            reqSection.style.display = "none";
+          }
+        }
       } catch (e) { console.error(e); }
+    }
+
+    window.respondConnectionRequestFromNet = async function(senderId, status) {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(window.API_BASE_URL + '/api/social/connect-respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senderId, receiverId: currentUser.uid, status })
+        });
+        if (res.ok) {
+          alert(`Request ${status === 'accepted' ? 'Accepted' : 'Declined'}.`);
+          loadContributorNetwork();
+          updateSocialButtonStates();
+        }
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     async function updateSocialButtonStates() {
@@ -682,13 +779,11 @@
         return;
       }
 
+      // Re-trigger configure owner view if profile loaded before auth
+      configureProfileOwnerState();
+
       if (currentUser.uid === targetUid) {
         document.getElementById("profileActionsRow").style.display = "none";
-        document.getElementById("dmLockedMessage").innerHTML = `
-          <i class="ri-user-smile-line"></i>
-          <h4>This is your profile!</h4>
-          <p style="font-size:0.8rem;">You can view and manage your resources, connections, and settings here.</p>
-        `;
         return;
       }
 
@@ -748,10 +843,10 @@
     // Tab switcher helper
     window.switchProfTab = function(btn, tabId) {
       document.querySelectorAll(".prof-tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".prof-tab-content").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll(".prof-tab-content").forEach(c => c.style.display = "none");
       btn.classList.add("active");
       const target = document.getElementById(tabId);
-      if (target) target.classList.add("active");
+      if (target) target.style.display = "block";
     };
 
     window.uploadHeaderBanner = async function(input) {
@@ -838,6 +933,7 @@
       } catch (err) { console.error(err); }
     };
 
+    // Load DM chat history with Sender Header & Avatar bubbles
     async function loadChatHistory() {
       if (!currentUser || !targetUid) return;
       try {
@@ -854,9 +950,19 @@
           const isSender = msg.senderId === currentUser.uid;
           const wrapper = document.createElement("div");
           wrapper.className = "msg-bubble-wrapper";
+          wrapper.style.margin = "0.4rem 0";
           wrapper.innerHTML = `
-            <div class="msg-bubble ${isSender ? 'msg-bubble-sender' : 'msg-bubble-receiver'}">
-              ${msg.text}
+            <div style="display:flex; gap:8px; align-items:flex-end; justify-content:${isSender ? 'flex-end' : 'flex-start'};">
+              ${!isSender ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${targetProfile.avatarUrl || targetProfile.profilePic ? `<img src="${targetProfile.avatarUrl || targetProfile.profilePic}" style="width:100%; height:100%; object-fit:cover;">` : targetProfile.name.charAt(0).toUpperCase()}</div>` : ''}
+              
+              <div style="display:flex; flex-direction:column; max-width:70%;">
+                <span style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-bottom:2px; align-self:${isSender ? 'flex-end' : 'flex-start'};">${isSender ? 'You' : msg.senderName}</span>
+                <div class="msg-bubble ${isSender ? 'msg-bubble-sender' : 'msg-bubble-receiver'}" style="padding: 0.55rem 0.85rem; border-radius:12px;">
+                  ${msg.text}
+                </div>
+              </div>
+
+              ${isSender ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>` : ''}
             </div>
           `;
           box.appendChild(wrapper);
@@ -886,6 +992,71 @@
         });
         loadChatHistory();
       } catch (err) { console.error(err); }
+    };
+
+    // Load mutual connection group chat feed
+    async function loadGroupChatFeed() {
+      const feed = document.getElementById("groupChatMessagesFeed");
+      if (!feed || !currentUser) return;
+      try {
+        const res = await fetch(`${window.API_BASE_URL}/api/social/get-group-messages?userId=${currentUser.uid}`);
+        if (!res.ok) return;
+        const messages = await res.json();
+        
+        feed.innerHTML = "";
+        if (messages.length === 0) {
+          feed.innerHTML = `<p style="color:var(--text-muted); text-align:center; margin-top:2rem;">No network activity. Post a message to start the conversation!</p>`;
+          return;
+        }
+
+        messages.forEach(msg => {
+          const isMe = msg.senderId === currentUser.uid;
+          const wrapper = document.createElement("div");
+          wrapper.style.cssText = `display:flex; gap:8px; align-items:flex-end; justify-content:${isMe ? 'flex-end' : 'flex-start'};`;
+          
+          wrapper.innerHTML = `
+            ${!isMe ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${msg.senderPhoto ? `<img src="${msg.senderPhoto}" style="width:100%; height:100%; object-fit:cover;">` : msg.senderName.charAt(0).toUpperCase()}</div>` : ''}
+            
+            <div style="display:flex; flex-direction:column; max-width:70%;">
+              <span style="font-size:0.7rem; color:var(--primary-light); font-weight:600; margin-bottom:2px; align-self:${isMe ? 'flex-end' : 'flex-start'};">${msg.senderName}</span>
+              <div style="padding:0.6rem 0.9rem; border-radius:12px; background:${isMe ? 'linear-gradient(135deg, var(--primary), var(--primary-light))' : 'rgba(255,255,255,0.06)'}; color:white; font-size:0.85rem; line-height:1.45; word-break:break-word;">
+                ${msg.text}
+              </div>
+            </div>
+
+            ${isMe ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>` : ''}
+          `;
+          feed.appendChild(wrapper);
+        });
+        feed.scrollTop = feed.scrollHeight;
+      } catch (e) {
+        console.error("Error loading group chat:", e);
+      }
+    }
+
+    window.sendGroupChatMessage = async function() {
+      const input = document.getElementById("groupChatInputField");
+      const text = input.value.trim();
+      if (!text || !currentUser) return;
+      input.value = "";
+
+      try {
+        const res = await fetch(window.API_BASE_URL + '/api/social/send-group-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || currentUser.email.split('@')[0],
+            senderPhoto: currentUser.photoURL || "",
+            text
+          })
+        });
+        if (res.ok) {
+          loadGroupChatFeed();
+        }
+      } catch (e) {
+        console.error(e);
+      }
     };
 
     async function loadNotificationsProf() {

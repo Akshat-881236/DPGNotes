@@ -515,38 +515,6 @@ async function loadActivityLogs() {
   }
 }
 
-async function loadAdminNotifications() {
-  const table = document.getElementById("adminNotifsTableBody");
-  if (!table) return;
-
-  try {
-    const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-
-    table.innerHTML = "";
-    if (snap.empty) {
-      table.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--admin-muted);">No system notifications generated.</td></tr>`;
-      return;
-    }
-
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
-      const timeStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : "Just now";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="color:var(--admin-muted); font-size:0.85rem;">${timeStr}</td>
-        <td><strong style="color:var(--admin-primary);">${data.email || "N/A"}</strong></td>
-        <td><span style="font-weight:600;">${data.title || "N/A"}</span></td>
-        <td style="color:var(--admin-muted); max-width: 350px; font-size: 0.9rem;">${data.message || "N/A"}</td>
-      `;
-      table.appendChild(tr);
-    });
-  } catch (error) {
-    console.error("Failed to load admin notifications log", error);
-    table.innerHTML = `<tr><td colspan="4" style="color:var(--admin-danger); text-align:center;">Failed to query notifications.</td></tr>`;
-  }
-}
-
 // Add real-time text filter to notifications log
 setTimeout(() => {
   const notifSearch = document.getElementById("notifSearch");

@@ -1550,10 +1550,11 @@ app.post('/api/social/connect-request', async (req, res) => {
           <h2 style="color: #6366f1;">New Connection Request 🤝</h2>
           <p>Hello ${receiverName || 'Contributor'},</p>
           <p><strong>${senderName}</strong> wants to connect with you on DPGNotes Network.</p>
-          <div style="margin: 2rem 0; text-align: center;">
-            <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold;">View Profile & Respond</a>
+          <div style="margin: 2rem 0; text-align: center; display: flex; justify-content: center; gap: 15px;">
+            <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=accept_connection" style="background: #10b981; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Accept Request</a>
+            <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=reject_connection" style="background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Decline Request</a>
           </div>
-          <p style="color: #94a3b8; font-size: 0.85rem;">You can accept or decline this request directly in their profile panel.</p>
+          <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 1.5rem; text-align: center;">You can also respond directly from your dashboard or profile panel.</p>
         </div>
       `;
       await sendEmail(receiverEmail, `Connection Request from ${senderName}`, emailHtml);
@@ -1914,6 +1915,81 @@ async function purgeOldNotifications() {
   }
 }
 setInterval(purgeOldNotifications, 6 * 60 * 60 * 1000); // Check every 6 hours
+
+// 13. Send Network Group Message (Visible to all mutual connections)
+app.post('/api/social/send-group-message', async (req, res) => {
+  const { senderId, senderName, senderPhoto, text } = req.body;
+  if (!senderId || !text) {
+    return res.status(400).json({ error: "senderId and text are required" });
+  }
+  try {
+    // 1. Fetch all mutual connections of senderId
+    const c1 = await db.collection("connections")
+      .where("senderId", "==", senderId)
+      .where("status", "==", "accepted").get();
+    
+    const c2 = await db.collection("connections")
+      .where("receiverId", "==", senderId)
+      .where("status", "==", "accepted").get();
+
+    const recipients = new Set();
+    c1.forEach(doc => recipients.add(doc.data().receiverId));
+    c2.forEach(doc => recipients.add(doc.data().senderId));
+
+    const newMsg = {
+      senderId,
+      senderName: senderName || "Contributor",
+      senderPhoto: senderPhoto || "",
+      text,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      recipients: Array.from(recipients)
+    };
+
+    await db.collection("group_messages").add(newMsg);
+    res.json({ message: "Network group message sent successfully." });
+  } catch (err) {
+    console.error("Group message failed:", err);
+    res.status(500).json({ error: "Failed to send network group message" });
+  }
+});
+
+// 14. Get Network Group Messages
+app.get('/api/social/get-group-messages', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ error: "userId required" });
+  try {
+    // Retrieve group messages where senderId == userId OR recipients contains userId
+    const messages = [];
+    const q1 = await db.collection("group_messages").where("senderId", "==", userId).get();
+    const q2 = await db.collection("group_messages").where("recipients", "array-contains", userId).get();
+
+    const seenIds = new Set();
+    const addMsgs = (snap) => {
+      snap.forEach(doc => {
+        if (!seenIds.has(doc.id)) {
+          seenIds.add(doc.id);
+          const d = doc.data();
+          messages.push({
+            id: doc.id,
+            ...d,
+            createdAt: d.createdAt ? d.createdAt.toDate().toISOString() : new Date().toISOString()
+          });
+        }
+      });
+    };
+
+    addMsgs(q1);
+    addMsgs(q2);
+
+    // Sort chronologically
+    messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+    res.json(messages);
+  } catch (err) {
+    console.error("Get group messages failed:", err);
+    res.status(500).json({ error: "Failed to load network group messages" });
+  }
+});
 
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
