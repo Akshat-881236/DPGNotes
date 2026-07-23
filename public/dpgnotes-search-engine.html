@@ -351,8 +351,13 @@
       } else {
         panel.innerHTML = "";
         matches.forEach(d => {
-          const item = document.createElement("div");
+          const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
+          const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SEARCH_SUGGESTION`;
+
+          const item = document.createElement("a");
           item.className = "suggestion-item";
+          item.href = viewerUrl;
+          item.style.textDecoration = "none";
           item.innerHTML = `
             <div class="suggestion-info">
               <div class="suggestion-title">${d.title}</div>
@@ -363,12 +368,6 @@
             </div>
             <i class="ri-arrow-right-line suggestion-arrow"></i>
           `;
-          const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
-          const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SEARCH_SUGGESTION`;
-
-          item.addEventListener("click", () => {
-            window.location.href = viewerUrl;
-          });
           panel.appendChild(item);
         });
       }

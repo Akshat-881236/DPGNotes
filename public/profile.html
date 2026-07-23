@@ -374,6 +374,7 @@
           
           <!-- Connect / Follow actions -->
           <div class="profile-actions-row" id="profileActionsRow">
+            <button class="social-btn btn-follow" id="editProfileBtn" onclick="toggleEditProfile()" style="display:none; background:rgba(99,102,241,0.15); color:#cbd5e1; border:1px solid rgba(99,102,241,0.35);"><i class="ri-edit-line"></i> Edit Profile</button>
             <button class="social-btn btn-follow" id="followBtn" onclick="toggleFollow()">
               <i class="ri-user-add-line"></i> Follow
             </button>
@@ -558,6 +559,10 @@
 
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
+      if (!targetUid && currentUser) {
+        targetUid = currentUser.uid;
+      }
+
       if (targetUid) {
         await initProfileDetails();
         
@@ -571,9 +576,9 @@
         }
       } else {
         document.getElementById("profileLoadingSpinner").innerHTML = `
-          <i class="ri-alert-line" style="font-size:3rem; color:#ef4444; margin-bottom:1rem;"></i>
+          <i class="ri-alert-line" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
           <h3>Invalid Profile Path</h3>
-          <p>Please specify a valid contributor UID query parameter.</p>
+          <p>Please login or specify a valid contributor UID query parameter.</p>
         `;
       }
     });
@@ -698,6 +703,11 @@
     function configureProfileOwnerState() {
       if (currentUser && currentUser.uid === targetUid) {
         document.getElementById("changeBannerBtn").style.display = "block";
+        document.getElementById("editProfileBtn").style.display = "inline-flex";
+        document.getElementById("profileActionsRow").style.display = "flex";
+        document.getElementById("followBtn").style.display = "none";
+        document.getElementById("connectBtn").style.display = "none";
+
         document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "inline-flex");
         loadNotificationsProf();
         loadGroupChatFeed();
@@ -1024,7 +1034,7 @@
               <div style="display:flex; flex-direction:column; max-width:70%;">
                 <span style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-bottom:2px; align-self:${isSender ? 'flex-end' : 'flex-start'};">${isSender ? 'You' : msg.senderName}</span>
                 <div class="msg-bubble ${isSender ? 'msg-bubble-sender' : 'msg-bubble-receiver'}" style="padding: 0.55rem 0.85rem; border-radius:12px;">
-                  ${msg.text}
+                  ${formatBioContent(msg.text)}
                 </div>
               </div>
 
@@ -1086,7 +1096,7 @@
             <div style="display:flex; flex-direction:column; max-width:70%;">
               <span style="font-size:0.7rem; color:var(--primary-light); font-weight:600; margin-bottom:2px; align-self:${isMe ? 'flex-end' : 'flex-start'};">${msg.senderName}</span>
               <div style="padding:0.6rem 0.9rem; border-radius:12px; background:${isMe ? 'linear-gradient(135deg, var(--primary), var(--primary-light))' : 'rgba(255,255,255,0.06)'}; color:white; font-size:0.85rem; line-height:1.45; word-break:break-word;">
-                ${msg.text}
+                ${formatBioContent(msg.text)}
               </div>
             </div>
 
@@ -1128,42 +1138,193 @@
     async function loadNotificationsProf() {
       const box = document.getElementById("notificationsListProfBox");
       if (!box || !currentUser) return;
+      box.innerHTML = "<p>Loading notifications...</p>";
       try {
-        const q = query(collection(db, "notifications"), where("toEmail", "==", currentUser.email));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-          box.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No notifications found.</p>`;
+        const q1 = query(collection(db, "notifications"), where("email", "==", currentUser.email));
+        const q2 = query(collection(db, "notifications"), where("toEmail", "==", currentUser.email));
+        const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+        const docsMap = new Map();
+        const addDocs = (snap) => {
+          snap.forEach(d => {
+            const data = d.data();
+            if (!data.isRead) {
+              docsMap.set(d.id, { id: d.id, ...data });
+            }
+          });
+        };
+        addDocs(snap1);
+        addDocs(snap2);
+
+        const docs = Array.from(docsMap.values());
+        docs.sort((a, b) => {
+          const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds * 1000 || 0);
+          const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds * 1000 || 0);
+          return tB - tA;
+        });
+
+        if (docs.length === 0) {
+          box.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No new notifications.</p>`;
           return;
         }
+
         box.innerHTML = "";
-        snap.forEach(d => {
-          const data = d.data();
-          const item = document.createElement("div");
-          item.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:0.8rem; border-radius:8px;";
-          item.innerHTML = `
-            <strong style="color:white; font-size:0.9rem;">${data.title || 'Alert'}</strong>
-            <p style="color:#cbd5e1; font-size:0.8rem; margin:4px 0 0 0;">${data.message || ''}</p>
+        docs.forEach(data => {
+          let icon = "🔔";
+          if (data.type === "like") icon = "❤️";
+          if (data.type === "alert") icon = "⚠️";
+          if (data.type === "warning") icon = "🚨";
+          if (data.type === "success") icon = "✅";
+          if (data.type === "milestone") icon = "🎉";
+          if (data.type === "system") icon = "🤖";
+
+          let timeString = "Just now";
+          if (data.createdAt) {
+            const millis = data.createdAt.toMillis ? data.createdAt.toMillis() : (data.createdAt.seconds * 1000);
+            timeString = new Date(millis).toLocaleString();
+          }
+
+          const card = document.createElement("div");
+          card.id = `prof-notif-${data.id}`;
+          card.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:1rem; border-radius:8px; display:flex; gap:1rem; align-items:flex-start; margin-bottom:0.8rem; transition:opacity 0.3s;";
+          card.innerHTML = `
+            <div style="font-size:1.4rem;">${icon}</div>
+            <div style="flex:1;">
+              <strong style="color:white; font-size:0.9rem;">${data.title || 'Alert'}</strong>
+              <p style="color:#cbd5e1; font-size:0.8rem; margin:4px 0;">${data.message || ''}</p>
+              <small style="color:var(--primary-light); opacity:0.8; display:block;">${timeString}</small>
+            </div>
+            <button data-notifid="${data.id}" class="prof-mark-read-btn" style="flex-shrink:0; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#818cf8; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" title="Mark as read">✓ Read</button>
           `;
-          box.appendChild(item);
+          box.appendChild(card);
         });
-      } catch (e) { console.error(e); }
+
+        // Mark read callbacks
+        box.querySelectorAll(".prof-mark-read-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const notifId = btn.dataset.notifid;
+            btn.disabled = true;
+            btn.textContent = "...";
+            try {
+              await updateDoc(doc(db, "notifications", notifId), { isRead: true });
+              const card = document.getElementById(`prof-notif-${notifId}`);
+              if (card) {
+                card.style.opacity = "0";
+                setTimeout(() => card.remove(), 300);
+              }
+              setTimeout(() => {
+                if (box.querySelectorAll("[id^='prof-notif-']").length === 0) {
+                  box.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No new notifications.</p>`;
+                }
+              }, 350);
+            } catch (err) {
+              console.error(err);
+              btn.disabled = false;
+              btn.textContent = "✓ Read";
+            }
+          });
+        });
+
+      } catch (e) {
+        console.error(e);
+        box.innerHTML = `<p style="color:#ef4444; font-size:0.85rem;">Failed to load notifications.</p>`;
+      }
     }
 
     window.markAllNotificationsReadProf = function() {
       alert("All notifications marked as read.");
     };
 
-    window.sendAiConsoleQueryProf = function() {
+    window.sendAiConsoleQueryProf = async function() {
       const input = document.getElementById("aiConsoleInputProf");
       const text = input.value.trim();
-      if (!text) return;
+      if (!text || !currentUser) return;
       input.value = "";
       const out = document.getElementById("aiConsoleOutputProf");
-      out.innerHTML += `<div style="margin-top:0.5rem; text-align:right;"><span style="background:var(--primary); color:white; padding:4px 10px; border-radius:8px; display:inline-block;">${text}</span></div>`;
-      setTimeout(() => {
-        out.innerHTML += `<div style="margin-top:0.5rem; text-align:left;"><span style="background:rgba(255,255,255,0.05); color:#cbd5e1; padding:4px 10px; border-radius:8px; display:inline-block;">🤖 I have analyzed your question regarding "${text}". Keep exploring DPGNotes resources!</span></div>`;
-        out.scrollTop = out.scrollHeight;
-      }, 600);
+      
+      // Display user message
+      out.innerHTML += `<div style="margin-top:0.5rem; text-align:right; margin-bottom:0.5rem;"><span style="background:var(--primary); color:white; padding:6px 12px; border-radius:8px; display:inline-block;">${text}</span></div>`;
+      out.scrollTop = out.scrollHeight;
+
+      // Display loading state
+      const loadingId = "ai-loading-" + Date.now();
+      out.innerHTML += `<div id="${loadingId}" style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(255,255,255,0.05); color:#cbd5e1; padding:6px 12px; border-radius:8px; display:inline-block;">🤖 Thinking...</span></div>`;
+      out.scrollTop = out.scrollHeight;
+
+      try {
+        const res = await fetch(window.API_BASE_URL + "/api/ai/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            userMessage: text
+          })
+        });
+        const data = await res.json();
+        const loadEl = document.getElementById(loadingId);
+        if (loadEl) loadEl.remove();
+
+        if (res.ok) {
+          out.innerHTML += `<div style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(255,255,255,0.05); color:#cbd5e1; padding:8px 12px; border-radius:10px; display:inline-block; max-width:90%; line-height:1.5;">🤖 ${formatBioContent(data.response)}</span></div>`;
+        } else {
+          out.innerHTML += `<div style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(239,68,68,0.1); color:#ef4444; padding:6px 12px; border-radius:8px; display:inline-block;">🤖 Failed to generate response.</span></div>`;
+        }
+      } catch (e) {
+        console.error(e);
+        const loadEl = document.getElementById(loadingId);
+        if (loadEl) loadEl.remove();
+        out.innerHTML += `<div style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(239,68,68,0.1); color:#ef4444; padding:6px 12px; border-radius:8px; display:inline-block;">🤖 API Connection failed.</span></div>`;
+      }
+      out.scrollTop = out.scrollHeight;
+    };
+
+    let isEditingProfile = false;
+    window.toggleEditProfile = async function() {
+      const nameEl = document.getElementById("profileName");
+      const discEl = document.getElementById("profileDiscipline");
+      const bioEl = document.getElementById("profileBio");
+      const editBtn = document.getElementById("editProfileBtn");
+
+      if (!isEditingProfile) {
+        isEditingProfile = true;
+        editBtn.innerHTML = `<i class="ri-save-line"></i> Save Profile`;
+        
+        nameEl.innerHTML = `<input type="text" id="editNameInput" value="${targetProfile.name}" style="background:rgba(0,0,0,0.5); border:1px solid var(--border); color:white; padding:4px 8px; border-radius:6px; font-size:1.4rem; font-family:inherit; width:100%;">`;
+        discEl.innerHTML = `<input type="text" id="editDisciplineInput" value="${targetProfile.discipline || ''}" style="background:rgba(0,0,0,0.5); border:1px solid var(--border); color:white; padding:4px 8px; border-radius:6px; font-size:0.9rem; font-family:inherit; width:100%; margin-top:4px;">`;
+        bioEl.innerHTML = `<textarea id="editBioInput" style="background:rgba(0,0,0,0.5); border:1px solid var(--border); color:white; padding:8px 12px; border-radius:6px; font-size:0.95rem; font-family:inherit; width:100%; min-height:100px; resize:vertical;">${targetProfile.bio || ''}</textarea>`;
+      } else {
+        const newName = document.getElementById("editNameInput").value.trim();
+        const newDisc = document.getElementById("editDisciplineInput").value.trim();
+        const newBio = document.getElementById("editBioInput").value.trim();
+
+        if (!newName) { alert("Name cannot be empty!"); return; }
+        
+        editBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Saving...`;
+        try {
+          await setDoc(doc(db, "users", currentUser.uid), {
+            name: newName,
+            discipline: newDisc,
+            bio: newBio
+          }, { merge: true });
+
+          targetProfile.name = newName;
+          targetProfile.discipline = newDisc;
+          targetProfile.bio = newBio;
+
+          nameEl.innerText = newName;
+          discEl.innerText = newDisc + " Student";
+          bioEl.innerHTML = formatBioContent(newBio);
+
+          isEditingProfile = false;
+          editBtn.innerHTML = `<i class="ri-edit-line"></i> Edit Profile`;
+          alert("Profile updated successfully!");
+        } catch (err) {
+          console.error(err);
+          alert("Failed to save changes.");
+          editBtn.innerHTML = `<i class="ri-save-line"></i> Save Profile`;
+        }
+      }
     };
 
     // Live search lookup handler

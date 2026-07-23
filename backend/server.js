@@ -2057,6 +2057,23 @@ app.get('/api/social/get-network', async (req, res) => {
   }
 });
 
+const { handleAiQuery } = require('./ai_engine');
+
+// 16. DPGNotes AI Engine Query Endpoint
+app.post('/api/ai/query', async (req, res) => {
+  const { userId, userEmail, userMessage } = req.body;
+  if (!userId || !userMessage) {
+    return res.status(400).json({ error: "userId and userMessage are required" });
+  }
+  try {
+    const aiResponse = await handleAiQuery(db, userId, userEmail, userMessage);
+    res.json({ response: aiResponse });
+  } catch (err) {
+    console.error("AI query failed:", err);
+    res.status(500).json({ error: "Failed to generate AI response" });
+  }
+});
+
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
   res.status(404).json({ 
