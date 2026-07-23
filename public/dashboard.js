@@ -539,10 +539,10 @@ async function loadExplore() {
       <h3>${data.title}</h3>
       <div class="card-author">
         ${usersCache && usersCache[data.userId] && usersCache[data.userId].profilePic 
-          ? `<img src="${usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar">` 
-          : (usersCache && usersCache[data.userId] && usersCache[data.userId].photoURL ? `<img src="${usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar">` : `<div class="author-avatar-fallback">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
+          ? `<img src="${usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` 
+          : (usersCache && usersCache[data.userId] && usersCache[data.userId].photoURL ? `<img src="${usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` : `<div class="author-avatar-fallback" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
         }
-        <span class="author-name">By ${data.userName || "Contributor"}</span>
+        <span class="author-name" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">By ${data.userName || "Contributor"}</span>
         <div class="author-socials">
           ${usersCache[data.userId] && usersCache[data.userId].linkedin ? `<a href="${usersCache[data.userId].linkedin}" target="_blank" title="LinkedIn">🔗</a>` : ""}
           ${usersCache[data.userId] && usersCache[data.userId].github ? `<a href="${usersCache[data.userId].github}" target="_blank" title="GitHub">🐙</a>` : ""}

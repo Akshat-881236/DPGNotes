@@ -386,6 +386,9 @@
         <a class="nav-link" onclick="switchTab('engagement'); loadEngagementTelemetry();">
           <i class="ri-heart-pulse-line"></i> Engagement Analytics
         </a>
+        <a class="nav-link" onclick="switchTab('support-requests'); loadSupportRequestsAdmin();">
+          <i class="ri-customer-service-2-line"></i> Support Requests
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -635,6 +638,31 @@
               </thead>
               <tbody id="engagementDirectoryBody">
                 <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading Contributor Network...</td></tr>
+              </tbody>
+            </table>
+          </div>
+      </section>
+
+      <!-- VIEW: SUPPORT REQUESTS -->
+      <section id="view-support-requests" class="view-section">
+        <div class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">Support & Copyright Requests Portal</h2>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Requester Name</th>
+                  <th>Email</th>
+                  <th>Contact</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="supportRequestsTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading support requests...</td></tr>
               </tbody>
             </table>
           </div>

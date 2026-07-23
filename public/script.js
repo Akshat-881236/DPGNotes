@@ -302,7 +302,7 @@ let authMode = "login";
 
 /* GOOGLE */
 
-function showSuspensionModal(suspendedUntil) {
+function showSuspensionModal(suspendedUntil, supportToken) {
   const modal = document.createElement('div');
   modal.style.position = 'fixed';
   modal.style.inset = '0';
@@ -332,10 +332,11 @@ function showSuspensionModal(suspendedUntil) {
     <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;">
       Your contributor account is temporarily suspended under the DPGNotes Regulations & Suspension Act (DRASA).
     </p>
-    <div style="background: rgba(239,68,68,0.1); border-radius: 12px; padding: 15px; margin-bottom: 25px;">
+    <div style="background: rgba(239,68,68,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
       <span style="font-size: 0.8rem; color: #fca5a5; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Time Remaining</span>
       <div id="suspensionCountdown" style="font-size: 2rem; font-weight: 700; color: #ef4444; margin-top: 5px; font-family: monospace;">--:--:--</div>
     </div>
+    ${supportToken ? `<a href="suspension-support-contact-form.html?token=${supportToken}" style="display:block; width:100%; padding: 12px; background: linear-gradient(135deg, #8b5cf6, #6366f1); border-radius: 8px; color: white; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">Contact Support Appeal Form</a>` : ''}
     <button id="closeSuspensionBtn" style="width:100%; padding: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Acknowledge</button>
   `;
 
@@ -501,14 +502,28 @@ onAuthStateChanged(
               await updateDoc(userRef, { isBlocked: false, suspendedUntil: null });
             } else {
               const diff = userData.suspendedUntil ? (userData.suspendedUntil - Date.now()) : 0;
+              let supportTokenId = "";
+              try {
+                const tokenRef = await addDoc(collection(db, "support_tokens"), {
+                  uid: user.uid,
+                  name: userData.name || user.displayName || user.email.split('@')[0],
+                  email: user.email,
+                  reason: userData.blockReason || "Account Suspended by Administrator under DRASA Policy",
+                  suspendedUntil: userData.suspendedUntil || null,
+                  createdAt: serverTimestamp()
+                });
+                supportTokenId = tokenRef.id;
+              } catch(tokErr) { console.error("Failed creating support token", tokErr); }
+
               if (diff > 0 && diff <= 4 * 24 * 60 * 60 * 1000) {
-                showSuspensionModal(userData.suspendedUntil);
+                showSuspensionModal(userData.suspendedUntil, supportTokenId);
               } else {
                 const msg = (userData.suspendedUntil && userData.suspendedUntil > Date.now()) 
                   ? `Your account is suspended for ${Math.ceil(diff / 86400000)} more days.`
                   : "Your account has been permanently blocked by the Administrator.";
+                const formLink = supportTokenId ? `<br><br><a href="suspension-support-contact-form.html?token=${supportTokenId}" style="color:var(--primary-light); text-decoration:underline; font-weight:600;">Click here to Submit Support Appeal Form</a>` : "";
                 if (window.customAlert) {
-                  await window.customAlert(msg + "<br><br>Please contact support.", { title: "Access Denied" });
+                  await window.customAlert(msg + formLink, { title: "Access Denied" });
                 } else {
                   alert(msg + " Please contact support.");
                 }
@@ -755,10 +770,10 @@ function createCard(data){
     
     <div class="card-author">
       ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].profilePic 
-        ? `<img src="${window.usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar">` 
-        : (window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].photoURL ? `<img src="${window.usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar">` : `<div class="author-avatar-fallback">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
+        ? `<img src="${window.usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` 
+        : (window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].photoURL ? `<img src="${window.usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` : `<div class="author-avatar-fallback" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
       }
-      <span class="author-name">By ${data.userName || "Contributor"}</span>
+      <span class="author-name" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">By ${data.userName || "Contributor"}</span>
       <div class="author-socials">
         ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].linkedin ? `<a href="${window.usersCache[data.userId].linkedin}" target="_blank" title="LinkedIn">🔗</a>` : ""}
         ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].github ? `<a href="${window.usersCache[data.userId].github}" target="_blank" title="GitHub">🐙</a>` : ""}

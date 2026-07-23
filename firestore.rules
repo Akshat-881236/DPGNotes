@@ -81,6 +81,21 @@ service cloud.firestore {
     match /group_messages/{msgId} {
       allow read, write: if true;
     }
+
+    /* ---------- SUPPORT TOKENS ---------- */
+    match /support_tokens/{tokenId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SUPPORT REQUESTS ---------- */
+    match /support_requests/{reqId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SHORTENED URLS ---------- */
+    match /shortened_urls/{urlId} {
+      allow read, write: if true;
+    }
     
     /* ---------- VALIDATION ---------- */
 

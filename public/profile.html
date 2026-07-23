@@ -581,11 +581,7 @@
           }
         }
       } else {
-        document.getElementById("profileLoadingSpinner").innerHTML = `
-          <i class="ri-alert-line" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
-          <h3>Invalid Profile Path</h3>
-          <p>Please login or specify a valid contributor UID query parameter.</p>
-        `;
+        window.location.replace("index.html");
       }
     });
 
@@ -617,6 +613,56 @@
         html = html.replace(/\n/g, '<br>');
       }
       return html;
+    }
+
+    function updateDynamicSEOAndSchema(profile) {
+      try {
+        document.title = `${profile.name} - Contributor Profile | DPGNotes`;
+
+        let metaDesc = document.querySelector('meta[name="description"]');
+        if (!metaDesc) {
+          metaDesc = document.createElement('meta');
+          metaDesc.name = 'description';
+          document.head.appendChild(metaDesc);
+        }
+        const cleanBio = (profile.bio || `Explore ${profile.name}'s contributor profile and shared resources on DPGNotes.`).replace(/<[^>]*>/g, '').substring(0, 160);
+        metaDesc.content = cleanBio;
+
+        const photo = profile.avatarUrl || profile.profilePic || profile.photoURL;
+        if (photo) {
+          let linkIcon = document.querySelector('link[rel="icon"]') || document.querySelector('link[rel="shortcut icon"]');
+          if (!linkIcon) {
+            linkIcon = document.createElement('link');
+            linkIcon.rel = 'icon';
+            document.head.appendChild(linkIcon);
+          }
+          linkIcon.href = photo;
+        }
+
+        let schemaScript = document.getElementById("dpgPersonSchema");
+        if (!schemaScript) {
+          schemaScript = document.createElement('script');
+          schemaScript.type = 'application/ld+json';
+          schemaScript.id = 'dpgPersonSchema';
+          document.head.appendChild(schemaScript);
+        }
+        const personSchema = {
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "name": profile.name,
+          "email": profile.email,
+          "jobTitle": `${profile.discipline || 'Academic'} Student`,
+          "description": cleanBio,
+          "image": photo || "",
+          "sameAs": [
+            profile.linkedin || "",
+            profile.github || ""
+          ].filter(url => url !== "")
+        };
+        schemaScript.textContent = JSON.stringify(personSchema, null, 2);
+      } catch (err) {
+        console.error("SEO integration error:", err);
+      }
     }
 
     async function initProfileDetails() {
@@ -656,6 +702,9 @@
         } else {
           avatarBig.innerText = targetProfile.name.charAt(0).toUpperCase();
         }
+
+        // Inject Dynamic SEO, Favicon & Person Schema
+        updateDynamicSEOAndSchema(targetProfile);
 
         // Configure profile views based on connection/ownership status (Safe Load)
         try {

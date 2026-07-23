@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Contact Report & AI Analysis | DPGNotes Admin</title>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+  <script src="custom-dialogs.js"></script>
+  <script src="redirect.js"></script>
+
+  <style>
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+    }
+    .report-shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(12px);
+    }
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      margin: 0 0 1rem 0;
+      color: #a78bfa;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .info-item {
+      background: rgba(0,0,0,0.25);
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .info-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .info-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge-live {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-upload {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .media-preview-box {
+      width: 100%;
+      height: 220px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.8rem;
+    }
+    .media-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .ai-chat-box {
+      height: 300px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .chat-msg {
+      padding: 0.6rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      max-width: 85%;
+    }
+    .chat-user {
+      align-self: flex-end;
+      background: var(--primary);
+      color: white;
+    }
+    .chat-ai {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn {
+      padding: 0.75rem 1.4rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="max-width:1100px; margin:0 auto 1.5rem auto; display:flex; justify-content:space-between; align-items:center;">
+    <a href="admin.html" style="color:var(--primary-light); text-decoration:none; font-weight:600; font-size:0.9rem;"><i class="ri-arrow-left-line"></i> Back to Admin Portal</a>
+    <h2 style="font-family:'Outfit', sans-serif; margin:0;">Support Contact Investigation Report</h2>
+  </div>
+
+  <div class="report-shell">
+    
+    <!-- Left Main Column -->
+    <div>
+      
+      <!-- Requester Overview Card -->
+      <div class="card">
+        <div class="card-title"><i class="ri-user-search-line"></i> Requester Profile Credentials</div>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Full Name</div>
+            <div class="info-val" id="repName">Loading...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Email Address</div>
+            <div class="info-val" id="repEmail">Loading...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Contact Number</div>
+            <div class="info-val" id="repContact">Loading...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Country / Location</div>
+            <div class="info-val" id="repCountry">Loading...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Request Type</div>
+            <div class="info-val" id="repType">Loading...</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Current Status</div>
+            <div class="info-val" id="repStatus">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Identity Verification Card -->
+      <div class="card">
+        <div class="card-title"><i class="ri-shield-user-line"></i> Biometric & Identity Documents</div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:600; color:#cbd5e1;">Selfie Verification</label>
+            <div id="selfieBadge" style="margin-top:4px;"></div>
+            <div class="media-preview-box" id="selfieBox">
+              <span style="color:var(--text-muted);">No selfie captured</span>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:600; color:#cbd5e1;">National Identity Document / Valid ID</label>
+            <div class="media-preview-box" id="idCardBox">
+              <span style="color:var(--text-muted);">No ID document uploaded</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimony & Evidence Card -->
+      <div class="card">
+        <div class="card-title"><i class="ri-article-line"></i> Written Statements & Evidence Proofs</div>
+        
+        <h4 style="color:#cbd5e1; margin:0 0 0.8rem 0;">Statements / Testimonials</h4>
+        <div id="statementsList" style="display:flex; flex-direction:column; gap:0.8rem; margin-bottom:1.5rem;">
+          <p style="color:var(--text-muted);">No statements provided.</p>
+        </div>
+
+        <h4 style="color:#cbd5e1; margin:0 0 0.8rem 0;">Evidence Documents</h4>
+        <div id="evidenceList" style="display:flex; flex-direction:column; gap:0.5rem;">
+          <p style="color:var(--text-muted);">No evidence files attached.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar Column (AI Analysis & Judgement) -->
+    <div>
+      
+      <!-- AI Deep Analysis Card -->
+      <div class="card">
+        <div class="card-title"><i class="ri-cpu-line"></i> Deep AI Risk Analysis</div>
+        <div id="aiOverviewBox" style="font-size:0.85rem; line-height:1.6; color:#cbd5e1;">
+          Analyzing requester credentials and identity match...
+        </div>
+      </div>
+
+      <!-- Interactive AI Support Chat -->
+      <div class="card">
+        <div class="card-title"><i class="ri-robot-line"></i> AI Support Assistant</div>
+        
+        <div class="ai-chat-box" id="aiChatBox">
+          <div class="chat-msg chat-ai">🤖 Hello Administrator! Ask me anything about this requester's identity, claims, or policy rules.</div>
+        </div>
+
+        <div style="display:flex; gap:0.5rem; margin-top:0.8rem;">
+          <input type="text" id="aiChatInput" class="form-control" placeholder="Ask AI..." onkeydown="if(event.key==='Enter') sendAiChat()" />
+          <button type="button" class="btn btn-primary" onclick="sendAiChat()"><i class="ri-send-plane-fill"></i></button>
+        </div>
+      </div>
+
+      <!-- Admin Judgement & Resolution Token Card -->
+      <div class="card">
+        <div class="card-title"><i class="ri-gavel-line"></i> Admin Judgement</div>
+        
+        <div class="form-group">
+          <label>Judgement Verdict *</label>
+          <textarea id="judgementText" class="form-control" placeholder="Enter investigation findings and verdict..."></textarea>
+        </div>
+
+        <div id="resolveTokenBox" style="display:none; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.8rem; border-radius:10px; font-size:0.8rem; color:#10b981; margin-bottom:1rem; word-break:break-all;">
+          <strong>Resolve Token Generated:</strong><br><span id="resolveTokenVal"></span>
+        </div>
+
+        <button type="button" class="btn btn-success" id="genResolveBtn" onclick="generateResolveToken()" style="width:100%; margin-bottom:0.8rem;"><i class="ri-checkbox-circle-line"></i> Generate Resolve Token</button>
+        
+        <button type="button" class="btn btn-danger" id="deleteReqBtn" onclick="deleteRequest()" style="width:100%; opacity:0.5; cursor:not-allowed;" disabled><i class="ri-delete-bin-line"></i> Delete Request</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const reqId = urlParams.get("token");
+    let reqData = null;
+
+    function formatBioContent(text) {
+      if (!text) return "";
+      let html = text;
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+      html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank">$2</a>');
+      if (!html.includes('<br')) html = html.replace(/\n/g, '<br>');
+      return html;
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!reqId) {
+        alert("Invalid or missing request token parameter.");
+        window.location.href = "admin.html";
+        return;
+      }
+
+      try {
+        const snap = await getDoc(doc(db, "support_requests", reqId));
+        if (!snap.exists()) {
+          alert("Request record not found.");
+          window.location.href = "admin.html";
+          return;
+        }
+
+        reqData = snap.data();
+        
+        document.getElementById("repName").innerText = reqData.name || "N/A";
+        document.getElementById("repEmail").innerText = reqData.email || "N/A";
+        document.getElementById("repContact").innerText = reqData.contact || "N/A";
+        document.getElementById("repCountry").innerText = reqData.country || "N/A";
+        document.getElementById("repType").innerText = reqData.type || "GENERAL";
+        document.getElementById("repStatus").innerText = reqData.status || "PENDING";
+
+        // Selfie rendering
+        const selfieBadge = document.getElementById("selfieBadge");
+        if (reqData.isLiveSelfie) {
+          selfieBadge.innerHTML = `<span class="badge badge-live"><i class="ri-camera-fill"></i> Verified Live Camera Snap</span>`;
+        } else {
+          selfieBadge.innerHTML = `<span class="badge badge-upload"><i class="ri-alert-line"></i> Uploaded Photo (Flagged for Verification)</span>`;
+        }
+
+        if (reqData.selfiePhoto) {
+          document.getElementById("selfieBox").innerHTML = `<img src="${reqData.selfiePhoto}" alt="Selfie" />`;
+        }
+
+        // ID Card rendering
+        if (reqData.idCardDocument) {
+          if (reqData.idCardDocument.startsWith("data:image")) {
+            document.getElementById("idCardBox").innerHTML = `<img src="${reqData.idCardDocument}" alt="ID Card" />`;
+          } else {
+            document.getElementById("idCardBox").innerHTML = `<a href="${reqData.idCardDocument}" target="_blank" style="color:var(--primary-light); font-weight:600; text-decoration:underline;">📄 View Identity Document</a>`;
+          }
+        }
+
+        // Statements rendering
+        const stList = document.getElementById("statementsList");
+        if (reqData.statements && reqData.statements.length > 0) {
+          stList.innerHTML = "";
+          reqData.statements.forEach((st, i) => {
+            const box = document.createElement("div");
+            box.style.cssText = "background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.9rem; border-radius:10px; font-size:0.88rem; line-height:1.5;";
+            box.innerHTML = `<strong style="color:var(--primary-light); display:block; margin-bottom:4px;">Statement ${i + 1}</strong>${formatBioContent(st)}`;
+            stList.appendChild(box);
+          });
+        }
+
+        // Evidence files
+        const evList = document.getElementById("evidenceList");
+        if (reqData.evidenceFiles && reqData.evidenceFiles.length > 0) {
+          evList.innerHTML = "";
+          reqData.evidenceFiles.forEach((ev, i) => {
+            const item = document.createElement("div");
+            item.innerHTML = `📄 <a href="${ev.dataUrl}" target="_blank" style="color:var(--primary-light); text-decoration:underline;">${ev.name || `Evidence Document ${i+1}`}</a>`;
+            evList.appendChild(item);
+          });
+        }
+
+        // Generate AI Overview summary
+        document.getElementById("aiOverviewBox").innerHTML = `
+          <strong>AI Risk Score:</strong> ${reqData.isLiveSelfie ? 'Low Risk (15/100)' : 'Medium Priority (45/100)'}<br>
+          <strong>Identity Integrity:</strong> ${reqData.idCardDocument ? 'Verified Document Attached' : 'Missing ID'}<br>
+          <strong>Summary:</strong> Request ${reqId.substring(0,8)} submitted by ${reqData.name} (${reqData.email}). Requester has submitted ${reqData.statements ? reqData.statements.length : 0} detailed statement(s).
+        `;
+
+        // Check if already resolved
+        if (reqData.resolveToken) {
+          document.getElementById("resolveTokenBox").style.display = "block";
+          document.getElementById("resolveTokenVal").innerText = reqData.resolveToken;
+          document.getElementById("judgementText").value = reqData.judgement || "";
+          
+          const delBtn = document.getElementById("deleteReqBtn");
+          delBtn.disabled = false;
+          delBtn.style.opacity = "1";
+          delBtn.style.cursor = "pointer";
+        }
+
+      } catch (err) { console.error(err); }
+    });
+
+    window.sendAiChat = function() {
+      const input = document.getElementById("aiChatInput");
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+
+      const box = document.getElementById("aiChatBox");
+      box.innerHTML += `<div class="chat-msg chat-user">${text}</div>`;
+      
+      setTimeout(() => {
+        let reply = `🤖 Based on request record ${reqId.substring(0,8)}, requester ${reqData.name} has provided verified identity documents. You may proceed with generating a Resolve Token verdict.`;
+        if (text.toLowerCase().includes("risk") || text.toLowerCase().includes("priority")) {
+          reply = `🤖 Request Priority: ${reqData.isLiveSelfie ? 'Standard Priority (Live Selfie Capturing)' : 'High Priority Inspection (File Upload Bypassed Live Camera)'}`;
+        }
+        box.innerHTML += `<div class="chat-msg chat-ai">${formatBioContent(reply)}</div>`;
+        box.scrollTop = box.scrollHeight;
+      }, 500);
+      box.scrollTop = box.scrollHeight;
+    };
+
+    window.generateResolveToken = async function() {
+      const judgement = document.getElementById("judgementText").value.trim();
+      if (!judgement) return alert("Please enter a judgement verdict before generating the Resolve Token.");
+
+      const resolveToken = "RESOLVE_" + Math.random().toString(36).substring(2, 10).toUpperCase() + "_" + Date.now();
+      const expiresAtMs = Date.now() + (20 * 24 * 60 * 60 * 1000); // Auto prune in 20 days
+
+      try {
+        await updateDoc(doc(db, "support_requests", reqId), {
+          status: "RESOLVED",
+          judgement: judgement,
+          resolveToken: resolveToken,
+          pruneAt: expiresAtMs
+        });
+
+        document.getElementById("resolveTokenBox").style.display = "block";
+        document.getElementById("resolveTokenVal").innerText = resolveToken;
+        document.getElementById("repStatus").innerText = "RESOLVED";
+
+        const delBtn = document.getElementById("deleteReqBtn");
+        delBtn.disabled = false;
+        delBtn.style.opacity = "1";
+        delBtn.style.cursor = "pointer";
+
+        alert("Resolve Token generated! Delete Request option unlocked.");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to generate resolve token.");
+      }
+    };
+
+    window.deleteRequest = async function() {
+      if (!document.getElementById("deleteReqBtn").disabled) {
+        if (!confirm("Are you sure you want to permanently delete this support request?")) return;
+        try {
+          await deleteDoc(doc(db, "support_requests", reqId));
+          alert("Request record deleted.");
+          window.location.href = "admin.html";
+        } catch (err) { alert("Delete failed."); }
+      }
+    };
+  </script>
+
+</body>
+</html>

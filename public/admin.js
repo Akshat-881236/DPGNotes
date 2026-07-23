@@ -947,10 +947,52 @@ async function loadEngagementTelemetry() {
   }
 }
 
+async function loadSupportRequestsAdmin() {
+  const tableBody = document.getElementById("supportRequestsTableBody");
+  if (!tableBody) return;
+  tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading support requests...</td></tr>`;
+
+  try {
+    const { collection, getDocs, query } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
+    const q = query(collection(db, "support_requests"));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No support or copyright requests submitted yet.</td></tr>`;
+      return;
+    }
+
+    tableBody.innerHTML = "";
+    snap.forEach(d => {
+      const data = d.data();
+      const reqId = d.id;
+      const isResolved = data.status === "RESOLVED";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="badge ${data.type === 'SUSPENSION_APPEAL' ? 'warn' : 'active'}">${data.type || 'GENERAL'}</span></td>
+        <td style="font-weight:600; color:white;">${data.name || 'N/A'}</td>
+        <td>${data.email || 'N/A'}</td>
+        <td>${data.contact || 'N/A'}</td>
+        <td><span class="badge ${isResolved ? 'active' : 'suspended'}">${data.status || 'PENDING'}</span></td>
+        <td>
+          <a href="support-contact-report.html?token=${reqId}" target="_blank" class="btn-action primary" style="background:var(--admin-primary); color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; display:inline-block;">View Report</a>
+        </td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Error loading support requests admin:", err);
+    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-danger);">Failed to load requests.</td></tr>`;
+  }
+}
+
 window.loadShares = loadShares;
 window.loadPermanentBlocks = loadPermanentBlocks;
 window.loadAdminNotifications = loadAdminNotifications;
 window.loadEngagementTelemetry = loadEngagementTelemetry;
+window.loadSupportRequestsAdmin = loadSupportRequestsAdmin;
 window.toggleAllNotifs = toggleAllNotifs;
 window.updateNotifSelectionBar = updateNotifSelectionBar;
 window.deleteSingleNotif = deleteSingleNotif;

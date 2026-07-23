@@ -2074,6 +2074,66 @@ app.post('/api/ai/query', async (req, res) => {
   }
 });
 
+// 17. One-Time URL Shortener & Asset Abstraction Proxy Engine
+app.post('/api/url/shorten', async (req, res) => {
+  const { rawUrl } = req.body;
+  if (!rawUrl) return res.status(400).json({ error: "rawUrl is required" });
+
+  try {
+    const key = Math.random().toString(36).substring(2, 9);
+    await db.collection("shortened_urls").doc(key).set({
+      key,
+      rawUrl,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    const shortUrl = `${req.protocol}://${req.get('host')}/api/url/asset/${key}`;
+    res.json({ key, shortUrl });
+  } catch (err) {
+    console.error("URL shortening failed:", err);
+    res.status(500).json({ error: "Failed to shorten URL" });
+  }
+});
+
+app.get('/api/url/asset/:key', async (req, res) => {
+  const { key } = req.params;
+  try {
+    const docSnap = await db.collection("shortened_urls").doc(key).get();
+    if (!docSnap.exists) {
+      return res.status(404).send("Invalid or expired asset token.");
+    }
+
+    const { rawUrl } = docSnap.data();
+
+    // Check if opened directly in browser document navigation (independent tab)
+    const isDocumentFetch = req.headers['sec-fetch-dest'] === 'document' || !req.headers.referer;
+
+    if (isDocumentFetch && rawUrl.toLowerCase().endsWith('.pdf')) {
+      // Redirect safely to DPGNotes PDF viewer instead of exposing raw URL directly
+      const safeViewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(rawUrl)}`;
+      return res.redirect(safeViewerUrl);
+    }
+
+    // Proxy the asset buffer so raw Cloudinary/GitHub URLs are never exposed in DOM
+    const fetch = (await import('node-fetch')).default;
+    const response = await fetch(rawUrl);
+    
+    if (!response.ok) {
+      return res.status(response.status).send("Failed to retrieve asset");
+    }
+
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    
+    response.body.pipe(res);
+
+  } catch (err) {
+    console.error("Asset proxy failed:", err);
+    res.status(500).send("Asset retrieval error.");
+  }
+});
+
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
   res.status(404).json({ 
