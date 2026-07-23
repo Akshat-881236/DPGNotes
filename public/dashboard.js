@@ -188,6 +188,10 @@ if (savedTheme) applyTheme(savedTheme);
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
+    localStorage.setItem("dpgActiveUserUid", user.uid);
+    localStorage.setItem("dpgActiveUserEmail", user.email || "");
+    localStorage.setItem("dpgActiveUserName", user.displayName || "");
+    localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
     
     // Create/Update User Document on Login
     try {
@@ -281,6 +285,10 @@ onAuthStateChanged(auth, async (user) => {
 const logoutBtn = document.getElementById("logoutBtn");
 if(logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
+    localStorage.removeItem("dpgActiveUserUid");
+    localStorage.removeItem("dpgActiveUserEmail");
+    localStorage.removeItem("dpgActiveUserName");
+    localStorage.removeItem("dpgActiveUserPhoto");
     await signOut(auth);
   });
 }

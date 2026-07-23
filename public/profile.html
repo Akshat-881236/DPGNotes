@@ -12,6 +12,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+  <script src="custom-dialogs.js"></script>
 
   <style>
     :root {
@@ -552,15 +553,20 @@
     let chatInterval = null;
     let groupChatInterval = null;
 
-    // Parse URL Parameters
+    // Parse URL Parameters & LocalStorage Session Fallback
     const urlParams = new URLSearchParams(window.location.search);
-    targetUid = (urlParams.get("uid") || "").trim();
+    const activeUidFromStorage = localStorage.getItem("dpgActiveUserUid") || "";
+    targetUid = (urlParams.get("uid") || "").trim() || activeUidFromStorage;
     const quickAction = urlParams.get("action") || "";
 
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
-      if (!targetUid && currentUser) {
-        targetUid = currentUser.uid;
+      if (user) {
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUserEmail", user.email || "");
+        localStorage.setItem("dpgActiveUserName", user.displayName || "");
+        localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
+        if (!targetUid) targetUid = user.uid;
       }
 
       if (targetUid) {
@@ -701,7 +707,8 @@
     }
 
     function configureProfileOwnerState() {
-      if (currentUser && currentUser.uid === targetUid) {
+      const activeUid = (currentUser && currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
+      if (activeUid && activeUid === targetUid) {
         document.getElementById("changeBannerBtn").style.display = "block";
         document.getElementById("editProfileBtn").style.display = "inline-flex";
         document.getElementById("profileActionsRow").style.display = "flex";

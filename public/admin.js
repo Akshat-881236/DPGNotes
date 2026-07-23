@@ -840,7 +840,8 @@ function updateNotifSelectionBar() {
 }
 
 async function deleteSingleNotif(id) {
-  if (!confirm("Are you sure you want to delete this notification log?")) return;
+  const confirmed = await window.customConfirm("Are you sure you want to delete this notification log?", { title: "Delete Notification?", isDanger: true });
+  if (!confirmed) return;
   try {
     const res = await fetch(`${API_URL}/admin/delete-notifs`, {
       method: "POST",
@@ -861,7 +862,8 @@ async function deleteSingleNotif(id) {
 async function deleteSelectedNotifs() {
   const checked = Array.from(document.querySelectorAll(".notif-row-check:checked")).map(cb => cb.dataset.id);
   if (checked.length === 0) return;
-  if (!confirm(`Are you sure you want to delete ${checked.length} selected notifications?`)) return;
+  const confirmed = await window.customConfirm(`Are you sure you want to delete ${checked.length} selected notifications?`, { title: "Delete Selected Notifications?", isDanger: true });
+  if (!confirmed) return;
   try {
     const res = await fetch(`${API_URL}/admin/delete-notifs`, {
       method: "POST",

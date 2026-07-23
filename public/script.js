@@ -470,6 +470,10 @@ onAuthStateChanged(
   async (user)=>{
     if(user){
       try {
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUserEmail", user.email || "");
+        localStorage.setItem("dpgActiveUserName", user.displayName || "");
+        localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
         // 1. Check Permanent Blocks Directory
         const { query, collection, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
         const blockQ = query(collection(db, "permanent_blocks"), where("block_email", "==", user.email));
