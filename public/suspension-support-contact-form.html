@@ -589,13 +589,62 @@
 
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
-      submitBtn.innerText = "Submitting Request...";
+      submitBtn.innerText = "Uploading files & submitting...";
 
       // Gather Testimonials
       const statements = [];
       document.querySelectorAll(".testimonial-input").forEach(tx => {
         if (tx.value.trim()) statements.push(tx.value.trim());
       });
+
+      // 1. Upload Selfie Photo if Base64
+      let uploadedSelfieUrl = selfieDataUrl;
+      if (selfieDataUrl && selfieDataUrl.startsWith("data:")) {
+        try {
+          const upRes = await fetch(window.API_BASE_URL + '/api/upload?type=support', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ base64Data: selfieDataUrl })
+          });
+          const upJson = await upRes.json();
+          if (upJson.pdfUrl || upJson.url) uploadedSelfieUrl = upJson.pdfUrl || upJson.url;
+        } catch(upErr) { console.error("Selfie upload failed", upErr); }
+      }
+
+      // 2. Upload ID Card Document if Base64
+      let uploadedIdCardUrl = idCardDataUrl;
+      if (idCardDataUrl && idCardDataUrl.startsWith("data:")) {
+        try {
+          const upRes = await fetch(window.API_BASE_URL + '/api/upload?type=support', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ base64Data: idCardDataUrl })
+          });
+          const upJson = await upRes.json();
+          if (upJson.pdfUrl || upJson.url) uploadedIdCardUrl = upJson.pdfUrl || upJson.url;
+        } catch(upErr) { console.error("ID Card upload failed", upErr); }
+      }
+
+      // 3. Upload Evidence Files if Base64
+      const uploadedEvidence = [];
+      for (const ev of evidenceFilesData) {
+        if (ev && ev.dataUrl && ev.dataUrl.startsWith("data:")) {
+          try {
+            const upRes = await fetch(window.API_BASE_URL + '/api/upload?type=support', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ base64Data: ev.dataUrl })
+            });
+            const upJson = await upRes.json();
+            uploadedEvidence.push({ name: ev.name || "Evidence File", url: upJson.pdfUrl || upJson.url || "" });
+          } catch(evErr) {
+            console.error("Evidence upload error:", evErr);
+            uploadedEvidence.push({ name: ev.name || "Evidence File", url: "" });
+          }
+        } else if (ev && (ev.url || ev.dataUrl)) {
+          uploadedEvidence.push({ name: ev.name || "Evidence File", url: ev.url || ev.dataUrl });
+        }
+      }
 
       const payload = {
         type: isSuspensionMode ? "SUSPENSION_APPEAL" : "COPYRIGHT_CLAIM",
@@ -607,10 +656,10 @@
         country: isSuspensionMode ? "N/A" : document.getElementById("cCountryField").value.trim(),
         reason: isSuspensionMode ? tokenData.reason : "Copyright Ownership Infringement Claim",
         isLiveSelfie: isLiveSelfie,
-        selfiePhoto: selfieDataUrl,
-        idCardDocument: idCardDataUrl,
+        selfiePhoto: uploadedSelfieUrl || "",
+        idCardDocument: uploadedIdCardUrl || "",
         statements: statements,
-        evidenceFiles: evidenceFilesData,
+        evidenceFiles: uploadedEvidence,
         status: "PENDING",
         allowUpdates: document.getElementById("chkUpdates").checked,
         createdAt: serverTimestamp()

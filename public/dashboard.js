@@ -296,6 +296,42 @@ if(logoutBtn) {
 // =========================================
 // PROFILE DATA
 // =========================================
+function formatBioContent(bioText) {
+  if (!bioText) return "No bio provided yet.";
+  let html = bioText;
+
+  // Markdown Headers: #, ##, ###
+  html = html.replace(/^### (.*$)/gim, '<h3 style="color:var(--primary-light,#818cf8); margin:0.6rem 0 0.3rem 0; font-size:1.1rem;">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="color:var(--primary-light,#818cf8); margin:0.8rem 0 0.4rem 0; font-size:1.25rem;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="color:var(--primary-light,#818cf8); margin:1rem 0 0.5rem 0; font-size:1.4rem;">$1</h1>');
+
+  // Bold: **text** or __text__
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+  // Italics: *text* or _text_
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+  // Inline Code: `code`
+  html = html.replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em;">$1</code>');
+
+  // Markdown Links: [text](url)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--primary-light); text-decoration:underline;">$1</a>');
+
+  // Raw URLs: https://...
+  html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" style="color:var(--primary-light); text-decoration:underline;">$2</a>');
+
+  // Bullet Lists: - item
+  html = html.replace(/^\s*-\s+(.*$)/gim, '<li style="margin-left:1.2rem;">$1</li>');
+
+  // Line breaks
+  if (!html.includes('<br') && !html.includes('<p') && !html.includes('<h')) {
+    html = html.replace(/\n/g, '<br>');
+  }
+  return html;
+}
+
 async function loadProfile() {
   document.getElementById("profileName").innerText = currentUser.displayName;
   document.getElementById("profileEmail").innerText = currentUser.email;
@@ -320,14 +356,7 @@ async function loadProfile() {
       }
       
       if (userData.bio) {
-        let htmlBio = userData.bio;
-        // Basic url detection that ignores URLs inside quotes
-        htmlBio = htmlBio.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" style="color:var(--primary-light); text-decoration:underline;">$2</a>');
-        // Convert newlines to <br> if there are no existing <br> tags (basic heuristic)
-        if (!htmlBio.includes("<br")) {
-          htmlBio = htmlBio.replace(/\n/g, "<br>");
-        }
-        document.getElementById("profileBio").innerHTML = htmlBio;
+        document.getElementById("profileBio").innerHTML = formatBioContent(userData.bio);
         document.getElementById("settingBio").value = userData.bio;
       }
       

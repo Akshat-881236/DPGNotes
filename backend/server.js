@@ -175,27 +175,26 @@ async function sendEmail(toEmail, subject, htmlContent) {
 // ==========================================
 app.post('/api/upload', upload.single('pdfFile'), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file provided" });
+    let uploadPayload = "";
+    if (req.file) {
+      const b64 = Buffer.from(req.file.buffer).toString('base64');
+      uploadPayload = "data:" + req.file.mimetype + ";base64," + b64;
+    } else if (req.body && req.body.base64Data) {
+      uploadPayload = req.body.base64Data;
+    } else {
+      return res.status(400).json({ error: "No file or base64Data provided" });
     }
-    
-    // Convert buffer to base64 for fallback Cloudinary upload
-    const b64 = Buffer.from(req.file.buffer).toString('base64');
-    let uploadPayload = "data:" + req.file.mimetype + ";base64," + b64;
-    
-    // Removed auto-compression from /api/upload
-    
-    // Upload to Cloudinary
-    const isProfile = req.query.type === 'profile';
+
+    const isProfile = req.query.type === 'profile' || req.query.type === 'support' || (uploadPayload && uploadPayload.startsWith("data:image"));
     const result = await cloudinary.uploader.upload(uploadPayload, {
-      resource_type: isProfile ? "image" : "raw", // For PDFs use raw, images use image
+      resource_type: isProfile ? "image" : "auto",
       folder: isProfile ? "dpgnotes_profiles" : "dpgnotes_pdfs"
     });
     
-    res.json({ pdfUrl: result.secure_url });
+    res.json({ pdfUrl: result.secure_url, url: result.secure_url });
   } catch (error) {
     console.error("Upload Error:", error.response ? error.response.data : error.message);
-    res.status(500).json({ error: "Upload failed" });
+    res.status(500).json({ error: "Upload failed: " + error.message });
   }
 });
 

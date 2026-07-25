@@ -283,6 +283,28 @@
     .banner-btn-accept { background: #10b981; color: white; }
     .banner-btn-decline { background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid var(--border); }
 
+    .change-avatar-btn {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #a78bfa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+    .change-avatar-btn:hover {
+      background: #8b5cf6;
+      color: white;
+    }
+
     /* Loader */
     .profile-loader {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -363,7 +385,13 @@
         <!-- Banner -->
         <div class="profile-banner" id="profileBannerEl">
           <!-- Big avatar -->
-          <div class="profile-avatar-large" id="profileAvatarBig">U</div>
+          <div class="profile-avatar-large" id="profileAvatarBig" style="position:relative;">
+            <span id="avatarInitials">U</span>
+            <button class="change-avatar-btn" id="changeAvatarBtn" onclick="document.getElementById('avatarFileInput').click()" style="display:none;" title="Change Profile Photo">
+              <i class="ri-camera-fill"></i>
+            </button>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this)">
+          </div>
           <button class="change-banner-btn" id="changeBannerBtn" onclick="document.getElementById('bannerFileInput').click()">
             <i class="ri-camera-line"></i> Change Cover
           </button>
@@ -606,10 +634,34 @@
     function formatBioContent(bioText) {
       if (!bioText) return "No bio provided yet.";
       let html = bioText;
+
+      // Markdown Headers: #, ##, ###
+      html = html.replace(/^### (.*$)/gim, '<h3 style="color:#a78bfa; margin:0.6rem 0 0.3rem 0; font-size:1.1rem;">$1</h3>');
+      html = html.replace(/^## (.*$)/gim, '<h2 style="color:#a78bfa; margin:0.8rem 0 0.4rem 0; font-size:1.25rem;">$1</h2>');
+      html = html.replace(/^# (.*$)/gim, '<h1 style="color:#a78bfa; margin:1rem 0 0.5rem 0; font-size:1.4rem;">$1</h1>');
+
+      // Bold: **text** or __text__
       html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-      html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank">$2</a>');
-      if (!html.includes('<br') && !html.includes('<p')) {
+      html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+      // Italics: *text* or _text_
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+      // Inline Code: `code`
+      html = html.replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em;">$1</code>');
+
+      // Markdown Links: [text](url)
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--primary-light,#818cf8); text-decoration:underline;">$1</a>');
+
+      // Raw URLs: https://...
+      html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" style="color:var(--primary-light,#818cf8); text-decoration:underline;">$2</a>');
+
+      // Bullet Lists: - item
+      html = html.replace(/^\s*-\s+(.*$)/gim, '<li style="margin-left:1.2rem;">$1</li>');
+
+      // Line breaks
+      if (!html.includes('<br') && !html.includes('<p') && !html.includes('<h')) {
         html = html.replace(/\n/g, '<br>');
       }
       return html;
@@ -646,6 +698,12 @@
           schemaScript.id = 'dpgPersonSchema';
           document.head.appendChild(schemaScript);
         }
+
+        const likes = profile.likesCount || 0;
+        const uploads = profile.uploadedCount || 0;
+        const ratingVal = Math.min(5.0, (4.0 + (likes * 0.04) + (uploads * 0.1)).toFixed(1));
+        const ratingCount = likes + uploads + 1;
+
         const personSchema = {
           "@context": "https://schema.org",
           "@type": "Person",
@@ -657,7 +715,26 @@
           "sameAs": [
             profile.linkedin || "",
             profile.github || ""
-          ].filter(url => url !== "")
+          ].filter(url => url !== ""),
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": ratingVal.toString(),
+            "reviewCount": ratingCount.toString(),
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "interactionStatistic": [
+            {
+              "@type": "InteractionCounter",
+              "interactionType": "https://schema.org/LikeAction",
+              "userInteractionCount": likes
+            },
+            {
+              "@type": "InteractionCounter",
+              "interactionType": "https://schema.org/WriteAction",
+              "userInteractionCount": uploads
+            }
+          ]
         };
         schemaScript.textContent = JSON.stringify(personSchema, null, 2);
       } catch (err) {
@@ -757,8 +834,10 @@
 
     function configureProfileOwnerState() {
       const activeUid = (currentUser && currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
+      const changeAvatarBtn = document.getElementById("changeAvatarBtn");
       if (activeUid && activeUid === targetUid) {
         document.getElementById("changeBannerBtn").style.display = "block";
+        if (changeAvatarBtn) changeAvatarBtn.style.display = "flex";
         document.getElementById("editProfileBtn").style.display = "inline-flex";
         document.getElementById("profileActionsRow").style.display = "flex";
         document.getElementById("followBtn").style.display = "none";
@@ -769,6 +848,15 @@
         loadGroupChatFeed();
         if (groupChatInterval) clearInterval(groupChatInterval);
         groupChatInterval = setInterval(loadGroupChatFeed, 4000);
+      } else {
+        document.getElementById("changeBannerBtn").style.display = "none";
+        if (changeAvatarBtn) changeAvatarBtn.style.display = "none";
+        document.getElementById("editProfileBtn").style.display = "none";
+        document.getElementById("profileActionsRow").style.display = "flex";
+        document.getElementById("followBtn").style.display = "inline-flex";
+        document.getElementById("connectBtn").style.display = "inline-flex";
+
+        document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "none");
       }
     }
 
@@ -1381,7 +1469,100 @@
           editBtn.innerHTML = `<i class="ri-save-line"></i> Save Profile`;
         }
       }
+    window.uploadHeaderBanner = async function(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const activeUid = (currentUser && currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
+      if (!activeUid) return alert("Please log in to update cover banner.");
+
+      const btn = document.getElementById("changeBannerBtn");
+      const originalTxt = btn ? btn.innerHTML : "";
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Uploading...`;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("pdfFile", file);
+
+        const res = await fetch(window.API_BASE_URL + '/api/upload?type=profile', {
+          method: 'POST',
+          body: formData
+        });
+        const json = await res.json();
+        if (json.pdfUrl || json.url) {
+          const bannerUrl = json.pdfUrl || json.url;
+          document.getElementById("profileBannerEl").style.backgroundImage = `url('${bannerUrl}')`;
+          
+          const userRef = doc(db, "users", activeUid);
+          await setDoc(userRef, { bannerUrl: bannerUrl, bannerPic: bannerUrl }, { merge: true });
+          alert("Cover banner updated successfully!");
+        } else {
+          alert("Failed to upload cover banner: " + (json.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error("Cover banner upload error:", err);
+        alert("Failed to upload cover banner.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalTxt;
+        }
+      }
     };
+
+    window.uploadProfilePhoto = async function(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const activeUid = (currentUser && currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
+      if (!activeUid) return alert("Please log in to update profile photo.");
+
+      const btn = document.getElementById("changeAvatarBtn");
+      const originalTxt = btn ? btn.innerHTML : "";
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("pdfFile", file);
+
+        const res = await fetch(window.API_BASE_URL + '/api/upload?type=profile', {
+          method: 'POST',
+          body: formData
+        });
+        const json = await res.json();
+        if (json.pdfUrl || json.url) {
+          const photoUrl = json.pdfUrl || json.url;
+          const avatarBig = document.getElementById("profileAvatarBig");
+          avatarBig.innerHTML = `
+            <img src="${photoUrl}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+            <button class="change-avatar-btn" id="changeAvatarBtn" onclick="document.getElementById('avatarFileInput').click()" title="Change Profile Photo">
+              <i class="ri-camera-fill"></i>
+            </button>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this)">
+          `;
+          
+          const userRef = doc(db, "users", activeUid);
+          await setDoc(userRef, { profilePic: photoUrl, photoURL: photoUrl, avatarUrl: photoUrl }, { merge: true });
+          localStorage.setItem("dpgActiveUserPhoto", photoUrl);
+          alert("Profile photo updated successfully!");
+        } else {
+          alert("Failed to upload profile photo: " + (json.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error("Profile photo upload error:", err);
+        alert("Failed to upload profile photo.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalTxt;
+        }
+      }
+    };
+  };
 
     // Live search lookup handler
     const lookupField = document.getElementById("lookupField");
