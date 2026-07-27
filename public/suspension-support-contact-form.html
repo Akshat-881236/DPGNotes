@@ -439,7 +439,7 @@
       const container = document.getElementById("testimonialsContainer");
       const currentCount = container.children.length;
       if (currentCount >= 5) {
-        alert("Maximum of 5 statements allowed.");
+        showCustomAlert("Maximum of 5 statements allowed.");
         return;
       }
       const card = document.createElement("div");
@@ -461,14 +461,14 @@
         video.style.display = "block";
         document.getElementById("selfiePreview").style.display = "none";
       } catch (err) {
-        alert("Camera access denied or unequipped. You can upload a selfie photo instead.");
+        showCustomAlert("Camera access denied or unavailable. You can upload a selfie photo instead.");
       }
     };
 
     window.takeSelfieSnap = function() {
       const video = document.getElementById("videoElement");
       const canvas = document.getElementById("photoCanvas");
-      if (!video.srcObject) return alert("Please start camera first.");
+      if (!video.srcObject) return showCustomAlert("Please start camera first.");
 
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
@@ -520,7 +520,7 @@
       evidenceFilesData = [];
       
       if (input.files) {
-        Array.from(input.files).slice(0, 6).forEach((file, index) => {
+        Array.from(input.files).slice(0, 3).forEach((file, index) => {
           const reader = new FileReader();
           reader.onload = (e) => {
             evidenceFilesData.push({ name: file.name, dataUrl: e.target.result });
@@ -543,7 +543,7 @@
           const contact = document.getElementById("cContactField").value.trim();
           const country = document.getElementById("cCountryField").value.trim();
           if (!name || !email || !contact || !country) {
-            alert("Please fill in all required Step 1 fields.");
+            showCustomAlert("Please fill in all required Step 1 fields.");
             return;
           }
         }
@@ -552,11 +552,11 @@
       // Validate Step 2
       if (currentStep === 2 && delta > 0) {
         if (!selfieDataUrl) {
-          alert("Live Selfie or Photo upload is required.");
+          showCustomAlert("Live Selfie or Photo upload is required.");
           return;
         }
         if (!idCardDataUrl) {
-          alert("National Identity Card or Valid ID Card document is required.");
+          showCustomAlert("National Identity Card or Valid ID Card document is required.");
           return;
         }
       }
@@ -583,51 +583,90 @@
     window.submitSupportForm = async function() {
       const chkTerms = document.getElementById("chkTerms");
       if (!chkTerms.checked) {
-        alert("You must agree to the Terms of Use, Privacy Policy, and Data Retention Policy.");
+        showCustomAlert("You must agree to the Terms of Use, Privacy Policy, and Data Retention Policy.");
+        return;
+      }
+
+      // Validate required uploads present
+      if (!selfieDataUrl) {
+        showCustomAlert("A Live Selfie or Photo is required to submit this form.");
+        return;
+      }
+      if (!idCardDataUrl) {
+        showCustomAlert("A National Identity Card or valid Government ID document is required.");
         return;
       }
 
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
-      submitBtn.innerText = "Uploading files & submitting...";
+      submitBtn.innerText = "Uploading to cloud...";
 
-      // Gather Testimonials
+      // Gather Testimonials (max 350 chars each, max 5)
       const statements = [];
       document.querySelectorAll(".testimonial-input").forEach(tx => {
-        if (tx.value.trim()) statements.push(tx.value.trim());
+        const val = tx.value.trim().substring(0, 350);
+        if (val) statements.push(val);
       });
 
-      // 1. Upload Selfie Photo if Base64
-      let uploadedSelfieUrl = selfieDataUrl;
+      // ======================================================
+      // CRITICAL: Upload ALL images to Cloudinary FIRST
+      // Never write base64 to Firestore (Firebase free-tier has 18MB write limit)
+      // ======================================================
+
+      // 1. Upload Selfie
+      let uploadedSelfieUrl = "";
       if (selfieDataUrl && selfieDataUrl.startsWith("data:")) {
         try {
+          submitBtn.innerText = "Uploading selfie to cloud (1/3)...";
           const upRes = await fetch(window.API_BASE_URL + '/api/upload?type=support', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ base64Data: selfieDataUrl })
           });
           const upJson = await upRes.json();
-          if (upJson.pdfUrl || upJson.url) uploadedSelfieUrl = upJson.pdfUrl || upJson.url;
-        } catch(upErr) { console.error("Selfie upload failed", upErr); }
+          uploadedSelfieUrl = upJson.pdfUrl || upJson.url || "";
+          if (!uploadedSelfieUrl) throw new Error("Selfie upload returned no URL");
+        } catch(upErr) {
+          console.error("Selfie upload failed", upErr);
+          submitBtn.disabled = false;
+          submitBtn.innerText = "Submit Request";
+          showCustomAlert("Failed to upload your selfie photo. Please check your connection and try again.");
+          return; // STOP — do not write incomplete data to Firestore
+        }
+      } else if (selfieDataUrl && selfieDataUrl.startsWith("http")) {
+        uploadedSelfieUrl = selfieDataUrl; // Already a URL
       }
 
-      // 2. Upload ID Card Document if Base64
-      let uploadedIdCardUrl = idCardDataUrl;
+      // 2. Upload ID Card
+      let uploadedIdCardUrl = "";
       if (idCardDataUrl && idCardDataUrl.startsWith("data:")) {
         try {
+          submitBtn.innerText = "Uploading ID document to cloud (2/3)...";
           const upRes = await fetch(window.API_BASE_URL + '/api/upload?type=support', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ base64Data: idCardDataUrl })
           });
           const upJson = await upRes.json();
-          if (upJson.pdfUrl || upJson.url) uploadedIdCardUrl = upJson.pdfUrl || upJson.url;
-        } catch(upErr) { console.error("ID Card upload failed", upErr); }
+          uploadedIdCardUrl = upJson.pdfUrl || upJson.url || "";
+          if (!uploadedIdCardUrl) throw new Error("ID card upload returned no URL");
+        } catch(upErr) {
+          console.error("ID Card upload failed", upErr);
+          submitBtn.disabled = false;
+          submitBtn.innerText = "Submit Request";
+          showCustomAlert("Failed to upload your ID document. Please check your connection and try again.");
+          return;
+        }
+      } else if (idCardDataUrl && idCardDataUrl.startsWith("http")) {
+        uploadedIdCardUrl = idCardDataUrl;
       }
 
-      // 3. Upload Evidence Files if Base64
+      // 3. Upload Evidence Files (max 3, to keep Firestore data minimal)
       const uploadedEvidence = [];
-      for (const ev of evidenceFilesData) {
+      const maxEvidence = evidenceFilesData.slice(0, 3);
+      for (let i = 0; i < maxEvidence.length; i++) {
+        const ev = maxEvidence[i];
+        submitBtn.innerText = `Uploading evidence ${i+1}/${maxEvidence.length} to cloud (3/3)...`;
         if (ev && ev.dataUrl && ev.dataUrl.startsWith("data:")) {
           try {
             const upRes = await fetch(window.API_BASE_URL + '/api/upload?type=support', {
@@ -636,46 +675,72 @@
               body: JSON.stringify({ base64Data: ev.dataUrl })
             });
             const upJson = await upRes.json();
-            uploadedEvidence.push({ name: ev.name || "Evidence File", url: upJson.pdfUrl || upJson.url || "" });
+            const url = upJson.pdfUrl || upJson.url || "";
+            if (url) uploadedEvidence.push({ name: (ev.name || `Evidence_${i+1}`).substring(0, 80), url });
+            // Skip failed evidence silently — not blocking
           } catch(evErr) {
             console.error("Evidence upload error:", evErr);
-            uploadedEvidence.push({ name: ev.name || "Evidence File", url: "" });
           }
-        } else if (ev && (ev.url || ev.dataUrl)) {
-          uploadedEvidence.push({ name: ev.name || "Evidence File", url: ev.url || ev.dataUrl });
+        } else if (ev && ev.url && ev.url.startsWith("http")) {
+          uploadedEvidence.push({ name: (ev.name || `Evidence_${i+1}`).substring(0, 80), url: ev.url });
         }
       }
 
+      // ======================================================
+      // Build COMPACT payload — only URLs, no base64, minimal fields
+      // This keeps Firestore writes well under Firebase free-tier limits
+      // ======================================================
       const payload = {
         type: isSuspensionMode ? "SUSPENSION_APPEAL" : "COPYRIGHT_CLAIM",
-        token: tokenParam || null,
-        uid: isSuspensionMode ? tokenData.uid : null,
-        name: isSuspensionMode ? tokenData.name : document.getElementById("cNameField").value.trim(),
-        email: isSuspensionMode ? tokenData.email : document.getElementById("cEmailField").value.trim(),
-        contact: isSuspensionMode ? document.getElementById("suspensionContactNum").value.trim() : document.getElementById("cContactField").value.trim(),
-        country: isSuspensionMode ? "N/A" : document.getElementById("cCountryField").value.trim(),
-        reason: isSuspensionMode ? tokenData.reason : "Copyright Ownership Infringement Claim",
+        token: tokenParam ? tokenParam.substring(0, 64) : null,
+        uid: isSuspensionMode ? (tokenData.uid || "").substring(0, 128) : null,
+        name: (isSuspensionMode ? tokenData.name : document.getElementById("cNameField").value.trim()).substring(0, 100),
+        email: (isSuspensionMode ? tokenData.email : document.getElementById("cEmailField").value.trim()).substring(0, 100),
+        contact: ((isSuspensionMode ? document.getElementById("suspensionContactNum").value.trim() : document.getElementById("cContactField").value.trim())).substring(0, 20),
+        country: (isSuspensionMode ? "N/A" : document.getElementById("cCountryField").value.trim()).substring(0, 60),
+        reason: (isSuspensionMode ? tokenData.reason : "Copyright Ownership Infringement Claim").substring(0, 200),
         isLiveSelfie: isLiveSelfie,
-        selfiePhoto: uploadedSelfieUrl || "",
-        idCardDocument: uploadedIdCardUrl || "",
-        statements: statements,
-        evidenceFiles: uploadedEvidence,
+        // ONLY Cloudinary URLs — never base64
+        selfiePhotoUrl: uploadedSelfieUrl,
+        idCardDocumentUrl: uploadedIdCardUrl,
+        statements: statements.slice(0, 5), // max 5 statements
+        evidenceUrls: uploadedEvidence, // max 3 evidence items
         status: "PENDING",
         allowUpdates: document.getElementById("chkUpdates").checked,
-        createdAt: serverTimestamp()
+        submittedAt: new Date().toISOString() // ISO string instead of serverTimestamp to reduce Firestore overhead
       };
 
+      submitBtn.innerText = "Submitting to DPGNotes...";
+
       try {
-        await addDoc(collection(db, "support_requests"), payload);
-        alert("Your request has been submitted successfully! The DPGNotes Administration Team will review your credentials and dispatch automated status updates to your email.");
-        window.location.href = "index.html";
+        const docRef = await addDoc(collection(db, "support_requests"), payload);
+
+        // Notify admin + send confirmation to applicant via backend
+        fetch(window.API_BASE_URL + '/api/support/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: payload.type,
+            name: payload.name,
+            email: payload.email,
+            uid: payload.uid,
+            reason: payload.reason,
+            submittedAt: payload.submittedAt
+          })
+        }).catch(e => console.warn("Admin notification failed (non-blocking):", e));
+
+        submitBtn.innerText = "Submitted ✓";
+        showCustomAlert("✅ Your request has been submitted successfully!\n\nThe DPGNotes Administration Team will review your credentials and send status updates to your email address.");
+        setTimeout(() => { window.location.href = "index.html"; }, 2000);
       } catch (err) {
         console.error("Submission failed:", err);
-        alert("Failed to submit request: " + err.message);
+        showCustomAlert("❌ Failed to submit request: " + err.message + "\n\nPlease try again or contact support directly.");
         submitBtn.disabled = false;
         submitBtn.innerText = "Submit Request";
       }
+
     };
+
   </script>
 
 </body>
