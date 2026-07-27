@@ -1493,9 +1493,9 @@ app.post('/api/social/connections-state', async (req, res) => {
   }
 });
 
-// 3. Follow / Unfollow Toggle — Fix 4: notify both parties + admin on follow
+// 3. Follow / Unfollow Toggle
 app.post('/api/social/follow', async (req, res) => {
-  const { followerId, followerName, followerEmail, followingId, followingName, followingEmail } = req.body;
+  const { followerId, followerName, followingId, followingName } = req.body;
   if (!followerId || !followingId) {
     return res.status(400).json({ error: "followerId and followingId are required" });
   }
@@ -1511,30 +1511,32 @@ app.post('/api/social/follow', async (req, res) => {
       await followRef.set({
         followerId,
         followerName: followerName || "Contributor",
-        followerEmail: followerEmail || "",
         followingId,
         followingName: followingName || "Contributor",
-        followingEmail: followingEmail || "",
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      // Notify the person being followed
-      if (followingEmail) {
-        const html = createTemplate("New Follower! 🎉",
-          `<p>Hello <strong>${followingName || 'Contributor'}</strong>,</p>
-           <p><strong>${followerName || 'A contributor'}</strong> has started following you on DPGNotes!</p>
-           <p><a href="https://dpgnotes.web.app/profile.html?uid=${followerId}" style="color:#6366f1;">View their profile</a></p>`);
-        await sendEmail(followingEmail, `${followerName} started following you on DPGNotes`, html);
-        await createInAppNotification(followingEmail, `New Follower: ${followerName} 🎉`, `${followerName} has started following you on DPGNotes.`, 'success');
-      }
-
-      // Notify Admin
-      const adminEmail = process.env.ADMIN_EMAIL;
-      if (adminEmail) {
-        const adminHtml = createTemplate('New Follow Event 👥',
-          `<p><strong>${followerName}</strong> (<code>${followerEmail}</code>) started following <strong>${followingName}</strong> (<code>${followingEmail}</code>).</p>`);
-        await sendEmail(adminEmail, `[DPGNotes] ${followerName} followed ${followingName}`, adminHtml);
-      }
+      // Send Email to followed user & Admin
+      try {
+        const followingDoc = await db.collection("users").doc(followingId).get();
+        if (followingDoc.exists && followingDoc.data().email) {
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto;">
+              <h2 style="color: #8b5cf6;">New Follower Alert! 👤</h2>
+              <p>Hello ${followingName || 'Contributor'},</p>
+              <p><strong>${followerName}</strong> has started following your contributor profile on DPGNotes.</p>
+              <div style="margin: 2rem 0; text-align: center;">
+                <a href="https://dpgnotes.web.app/profile.html?uid=${followerId}" style="background: #8b5cf6; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">View Profile</a>
+              </div>
+            </div>
+          `;
+          await sendEmail(followingDoc.data().email, `${followerName} is now following you on DPGNotes`, emailHtml);
+        }
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail) {
+          await sendEmail(adminEmail, "Social Alert: New Follower", `<p><strong>${followerName}</strong> is now following <strong>${followingName}</strong>.</p>`);
+        }
+      } catch(e) { console.error("Follow email error:", e); }
 
       return res.json({ status: "followed" });
     }
@@ -1544,11 +1546,9 @@ app.post('/api/social/follow', async (req, res) => {
   }
 });
 
-// 4. Send Connection Request (Fix 3 & 4: rich email with profile data, admin + receiver notification)
+// 4. Send Connection Request
 app.post('/api/social/connect-request', async (req, res) => {
-  const { senderId, senderName, senderEmail, receiverId, receiverName, receiverEmail,
-          senderAvatarUrl, senderBannerUrl, senderLinkedin, senderGithub,
-          senderUploads, senderLikes, senderShares, senderClicks } = req.body;
+  const { senderId, senderName, senderEmail, receiverId, receiverName, receiverEmail } = req.body;
   if (!senderId || !receiverId) {
     return res.status(400).json({ error: "senderId and receiverId are required" });
   }
@@ -1565,77 +1565,102 @@ app.post('/api/social/connect-request', async (req, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // In-app notification for receiver
-    await createInAppNotification(
-      receiverEmail,
-      `New Connection Request from ${senderName} 🤝`,
-      `${senderName} (${senderEmail}) has sent you a connection request. Visit their profile to Accept or Decline.`,
-      "system",
-      `conn_req_${senderId}_${receiverId}`
-    );
+    // Fetch Sender profile details & analytics for rich email
+    let senderPhoto = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+    let senderBanner = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe";
+    let senderLinkedin = "";
+    let senderGithub = "";
+    let senderUploads = 0;
+    let senderLikes = 0;
+    let senderShares = 0;
+    let senderClicks = 0;
 
-    // Rich email to receiver with full profile data
+    try {
+      const sDoc = await db.collection("users").doc(senderId).get();
+      if (sDoc.exists) {
+        const sData = sDoc.data();
+        if (sData.profilePic || sData.photoURL) senderPhoto = sData.profilePic || sData.photoURL;
+        if (sData.bannerPic || sData.bannerUrl) senderBanner = sData.bannerPic || sData.bannerUrl;
+        senderLinkedin = sData.linkedin || "";
+        senderGithub = sData.github || "";
+        senderShares = sData.shares || 0;
+      }
+      const docsSnap = await db.collection("documents").where("userId", "==", senderId).get();
+      senderUploads = docsSnap.size;
+      docsSnap.forEach(d => {
+        const l = d.data().likes;
+        senderLikes += Array.isArray(l) ? l.length : (l || 0);
+      });
+
+      const clickSnap = await db.collection("share_engagements").get();
+      clickSnap.forEach(c => {
+        if (c.data().uploaderUid === senderId) senderClicks++;
+      });
+    } catch (e) { console.error("Error fetching sender stats:", e); }
+
+    // Send Rich email via Brevo SMTP to Recipient
     if (receiverEmail) {
-      const avatarHtml = senderAvatarUrl
-        ? `<img src="${senderAvatarUrl}" alt="${senderName}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid #6366f1;">`
-        : `<div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:2rem; color:white; font-weight:700; margin:auto;">${(senderName||'?').charAt(0).toUpperCase()}</div>`;
-      const bannerStyle = senderBannerUrl
-        ? `background-image:url('${senderBannerUrl}'); background-size:cover; background-position:center;`
-        : `background:linear-gradient(135deg,#1e293b,#0f172a);`;
-
-      const linkedinBtn = senderLinkedin ? `<a href="${senderLinkedin}" style="background:#0077b5; color:white; padding:6px 14px; border-radius:6px; text-decoration:none; font-size:0.8rem; font-weight:600; margin:4px;">🔗 LinkedIn</a>` : '';
-      const githubBtn = senderGithub ? `<a href="${senderGithub}" style="background:#24292e; color:white; padding:6px 14px; border-radius:6px; text-decoration:none; font-size:0.8rem; font-weight:600; margin:4px;">🐙 GitHub</a>` : '';
-
       const emailHtml = `
-        <div style="font-family:Arial,sans-serif; background:#0f172a; color:#f8fafc; padding:2rem; border-radius:12px; max-width:620px; margin:auto;">
-          <!-- Banner + Avatar -->
-          <div style="${bannerStyle} border-radius:10px 10px 0 0; height:120px; position:relative; margin-bottom:50px;">
-            <div style="position:absolute; bottom:-40px; left:50%; transform:translateX(-50%); text-align:center;">
-              ${avatarHtml}
-            </div>
+        <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 620px; margin: auto; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="height: 120px; background-image: url('${senderBanner}'); background-size: cover; background-position: center; border-radius: 12px 12px 0 0; position: relative;">
+            <img src="${senderPhoto}" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #0f172a; position: absolute; bottom: -30px; left: 20px; object-fit: cover;">
           </div>
-          <h2 style="color:#6366f1; text-align:center; margin-top:10px;">New Connection Request 🤝</h2>
-          <p style="text-align:center;">Hello <strong>${receiverName || 'Contributor'}</strong>,</p>
-          <p style="text-align:center;"><strong style="color:#a78bfa;">${senderName}</strong> has sent a connection request to you.</p>
+          <div style="padding-top: 40px; padding-left: 20px; padding-right: 20px;">
+            <h2 style="color: #6366f1; margin: 0 0 5px 0;">${senderName} wants to connect with you</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0 0 15px 0;">${senderEmail}</p>
 
-          <!-- Sender Profile Details -->
-          <div style="background:#1e293b; border-radius:10px; padding:1.2rem; margin:1.2rem 0; border:1px solid rgba(255,255,255,0.08);">
-            <h4 style="color:#a78bfa; margin:0 0 0.5rem 0;">About ${senderName}</h4>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:0.8rem;">${linkedinBtn}${githubBtn}</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; text-align:center;">
-              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:0.8rem;"><strong style="font-size:1.4rem; color:#60a5fa;">${senderUploads || 0}</strong><br><small style="color:#94a3b8;">Total Contributions</small></div>
-              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:0.8rem;"><strong style="font-size:1.4rem; color:#f43f5e;">${senderLikes || 0}</strong><br><small style="color:#94a3b8;">Likes Received</small></div>
-              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:0.8rem;"><strong style="font-size:1.4rem; color:#10b981;">${senderShares || 0}</strong><br><small style="color:#94a3b8;">Share Links</small></div>
-              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:0.8rem;"><strong style="font-size:1.4rem; color:#f59e0b;">${senderClicks || 0}</strong><br><small style="color:#94a3b8;">Link Clicks</small></div>
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; font-size: 0.85rem;">
+              ${senderLinkedin ? `<a href="${senderLinkedin}" target="_blank" style="color: #60a5fa; text-decoration: underline;">Connect on LinkedIn</a>` : ''}
+              ${senderGithub ? `<a href="${senderGithub}" target="_blank" style="color: #c084fc; text-decoration: underline;">View on GitHub</a>` : ''}
             </div>
-          </div>
 
-          <p style="color:#94a3b8; font-size:0.9rem;">You can accept or reject the request by clicking the buttons below:</p>
-          <div style="margin:1.5rem 0; text-align:center; display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
-            <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=accept_connection" style="background:#10b981; color:white; padding:0.8rem 1.8rem; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;">Accept ✅</a>
-            <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=reject_connection" style="background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.1); padding:0.8rem 1.8rem; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;">Decline ❌</a>
+            <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+              <h4 style="margin: 0 0 10px 0; color: #cbd5e1; font-size: 0.85rem; text-transform: uppercase;">Contributor Analytics</h4>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.85rem; color: #cbd5e1;">
+                <div>📄 Total Contributions: <strong>${senderUploads}</strong></div>
+                <div>❤️ Likes Received: <strong>${senderLikes}</strong></div>
+                <div>📣 Shares Generated: <strong>${senderShares}</strong></div>
+                <div>🔗 Link Clicks: <strong>${senderClicks}</strong></div>
+              </div>
+            </div>
+
+            <p style="line-height: 1.5; color: #e2e8f0;">
+              <strong>${senderName}</strong> has sent a connection request to you. You can accept or reject the Request by clicking the button below:
+            </p>
+
+            <div style="margin: 2rem 0; text-align: center; display: flex; justify-content: center; gap: 15px;">
+              <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=accept_connection" style="background: #10b981; color: white; padding: 0.8rem 1.8rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Accept</a>
+              <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=reject_connection" style="background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.8rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Decline</a>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 1.5rem; line-height: 1.5;">
+              If you don't know the user kindly visit his <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}" style="color: #818cf8; text-decoration: underline;">profile page</a> and review the request in notification tab on your dashboard or Click the "Accept" / "Decline" Button to perform Mark as "Read" for this special type of Notification.
+            </p>
           </div>
-          <p style="color:#64748b; font-size:0.8rem; text-align:center;">
-            If you don't know this user, kindly <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}" style="color:#6366f1;">visit their profile page</a> and review the request in the Notification tab on your Dashboard or click the buttons above.
-          </p>
-          <hr style="border:0; border-top:1px solid rgba(255,255,255,0.05); margin:1rem 0;">
-          <p style="color:#64748b; font-size:0.75rem; text-align:center;">
-            <a href="https://dpgnotes.web.app/legal/index.html#privacy" style="color:#64748b;">Privacy Policy</a> |
-            <a href="https://dpgnotes.web.app/legal/index.html#terms" style="color:#64748b;">Terms</a> |
-            <a href="https://dpgnotes.web.app/legal/index.html#drasa" style="color:#64748b;">DRASA</a>
-          </p>
         </div>
       `;
-      await sendEmail(receiverEmail, `${senderName} wants to connect with you on DPGNotes 🤝`, emailHtml);
+      await sendEmail(receiverEmail, `${senderName} wants to connect with you`, emailHtml);
     }
 
-    // Notify Admin about connection request
+    // In-app notification for recipient
+    if (receiverEmail) {
+      await db.collection("notifications").add({
+        email: receiverEmail,
+        toEmail: receiverEmail,
+        type: "alert",
+        title: "🤝 Connection Request",
+        message: `${senderName} has sent you a connection request.`,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    // Send email digest notify to Admin
     const adminEmail = process.env.ADMIN_EMAIL;
     if (adminEmail) {
-      const adminHtml = createTemplate("New Connection Request 🤝",
-        `<p>Contributor <strong>${senderName}</strong> (<code>${senderEmail}</code>) has sent a connection request to <strong>${receiverName}</strong> (<code>${receiverEmail}</code>).</p>
-         <p><a href="https://dpgnotes.web.app/profile.html?uid=${senderId}" style="color:#6366f1;">View Sender Profile</a> | <a href="https://dpgnotes.web.app/profile.html?uid=${receiverId}" style="color:#6366f1;">View Receiver Profile</a></p>`);
-      await sendEmail(adminEmail, `[DPGNotes] Connection Request: ${senderName} → ${receiverName}`, adminHtml);
+      await sendEmail(adminEmail, `Connection Request: ${senderName} to ${receiverName}`, `
+        <h3>Social Connection Request Alert</h3>
+        <p>Contributor <strong>${senderName}</strong> (${senderEmail}) sent a connection request to <strong>${receiverName}</strong> (${receiverEmail}).</p>
+      `);
     }
 
     res.json({ message: "Connection request sent successfully." });
@@ -1645,7 +1670,7 @@ app.post('/api/social/connect-request', async (req, res) => {
   }
 });
 
-// 5. Respond to Connection Request (Accept / Reject) — Fix 4: notify both parties + admin
+// 5. Respond to Connection Request (Accept / Reject)
 app.post('/api/social/connect-respond', async (req, res) => {
   const { senderId, receiverId, status } = req.body;
   if (!senderId || !receiverId || !status) {
@@ -1673,46 +1698,50 @@ app.post('/api/social/connect-respond', async (req, res) => {
     });
 
     const isAccepted = status === 'accepted';
-    const statusLabel = isAccepted ? 'Accepted ✅' : 'Declined ❌';
-    const respondedByName = connData.receiverName || 'Contributor';
-    const requestedByName = connData.senderName || 'Contributor';
+    const statusText = isAccepted ? 'Accepted' : 'Declined';
 
-    // Notify original requester (sender)
+    // 1. Notify Original Sender via email
     if (connData.senderEmail) {
-      const senderHtml = createTemplate(
-        isAccepted ? `Connection Request ${statusLabel} 🎉` : `Connection Request ${statusLabel}`,
-        `<p>Hello <strong>${requestedByName}</strong>,</p>
-         <p><strong>${respondedByName}</strong> has <strong>${isAccepted ? 'accepted' : 'declined'}</strong> your connection request on DPGNotes.</p>
-         ${isAccepted ? `<p>You can now send direct messages! <a href="https://dpgnotes.web.app/profile.html?uid=${receiverId}" style="color:#6366f1;">Start chatting</a></p>` : ''}`
-      );
-      await sendEmail(connData.senderEmail, `[DPGNotes] ${respondedByName} ${statusLabel} your connection request`, senderHtml);
-      await createInAppNotification(
-        connData.senderEmail,
-        `${respondedByName} ${statusLabel} your connection request`,
-        `${respondedByName} has ${isAccepted ? 'accepted' : 'declined'} your connection request. ${isAccepted ? 'You can now chat!' : ''}`,
-        isAccepted ? 'success' : 'alert'
-      );
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto;">
+          <h2 style="color: ${isAccepted ? '#10b981' : '#f59e0b'};">Connection Request ${statusText}!</h2>
+          <p>Hello ${connData.senderName},</p>
+          <p><strong>${connData.receiverName}</strong> has ${statusText.toLowerCase()} your connection request.</p>
+          ${isAccepted ? `<div style="margin: 2rem 0; text-align: center;"><a href="https://dpgnotes.web.app/profile.html?uid=${receiverId}" style="background: #10b981; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Send a Message</a></div>` : ''}
+        </div>
+      `;
+      await sendEmail(connData.senderEmail, `Connection Request ${statusText} by ${connData.receiverName}`, emailHtml);
+
+      // In-app notification for sender
+      await db.collection("notifications").add({
+        email: connData.senderEmail,
+        toEmail: connData.senderEmail,
+        type: isAccepted ? "success" : "alert",
+        title: `🤝 Connection ${statusText}`,
+        message: `${connData.receiverName} has ${statusText.toLowerCase()} your connection request.`,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
     }
 
-    // Notify receiver (person who responded)
+    // 2. Notify Recipient via email as well
     if (connData.receiverEmail) {
-      await createInAppNotification(
-        connData.receiverEmail,
-        `Connection request ${statusLabel}`,
-        `You have ${isAccepted ? 'accepted' : 'declined'} the connection request from ${requestedByName}.`,
-        isAccepted ? 'success' : 'system'
-      );
+      const emailHtmlRec = `
+        <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: auto;">
+          <h2 style="color: #6366f1;">Connection Request Update</h2>
+          <p>Hello ${connData.receiverName},</p>
+          <p>You have ${statusText.toLowerCase()} the connection request from <strong>${connData.senderName}</strong>.</p>
+        </div>
+      `;
+      await sendEmail(connData.receiverEmail, `Connection Request ${statusText}`, emailHtmlRec);
     }
 
-    // Notify Admin
+    // 3. Notify Admin by email
     const adminEmail = process.env.ADMIN_EMAIL;
     if (adminEmail) {
-      const adminHtml = createTemplate(
-        `Connection Request ${statusLabel}`,
-        `<p>Contributor <strong>${respondedByName}</strong> has <strong>${isAccepted ? 'accepted' : 'declined'}</strong> the connection request from <strong>${requestedByName}</strong>.</p>
-         <p><a href="https://dpgnotes.web.app/profile.html?uid=${senderId}" style="color:#6366f1;">View Requester</a> | <a href="https://dpgnotes.web.app/profile.html?uid=${receiverId}" style="color:#6366f1;">View Responder</a></p>`
-      );
-      await sendEmail(adminEmail, `[DPGNotes] Connection ${statusLabel}: ${requestedByName} ↔ ${respondedByName}`, adminHtml);
+      await sendEmail(adminEmail, `Connection ${statusText}: ${connData.senderName} & ${connData.receiverName}`, `
+        <h3>Social Connection Response Alert</h3>
+        <p>Contributor <strong>${connData.receiverName}</strong> has <strong>${statusText.toUpperCase()}</strong> the connection request from <strong>${connData.senderName}</strong>.</p>
+      `);
     }
 
     res.json({ status });
@@ -1768,34 +1797,7 @@ app.post('/api/social/send-message', async (req, res) => {
   }
 });
 
-// 7. Get Messages — Fix 5: support both GET (query params) and POST
-app.get('/api/social/get-messages', async (req, res) => {
-  const { chatId, userId } = req.query;
-  if (!chatId) return res.status(400).json({ error: "chatId is required" });
-  try {
-    cleanExpiredMessages().catch(err => console.error("Async TTL clean failed:", err));
-    const snapshot = await db.collection("chats").doc(chatId).collection("messages").orderBy("createdAt", "asc").get();
-    const messages = [];
-    const now = Date.now();
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const expiry = data.expiresAt ? data.expiresAt.toDate().getTime() : 0;
-      if (expiry > now || data.isSaved) {
-        const deletedFor = data.deletedFor || [];
-        if (!userId || !deletedFor.includes(userId)) {
-          let time = "";
-          if (data.createdAt && data.createdAt.toDate) time = data.createdAt.toDate().toISOString();
-          messages.push({ id: doc.id, senderId: data.senderId, senderName: data.senderName, text: data.text, createdAt: time, isSaved: data.isSaved || false });
-        }
-      }
-    });
-    res.json(messages);
-  } catch (err) {
-    console.error("Get messages (GET) failed:", err);
-    res.status(500).json({ error: "Failed to load chat history" });
-  }
-});
-
+// 7. Get Messages
 app.post('/api/social/get-messages', async (req, res) => {
   const { senderId, receiverId, viewerId } = req.body;
   if (!senderId || !receiverId) {
@@ -1851,23 +1853,6 @@ app.post('/api/social/get-messages', async (req, res) => {
 });
 
 // 8. Message Actions (Edit, Save, Delete, Report)
-// AI Training from Contributor Chats — Fix 6: Chat messages train the AI knowledge base
-app.post('/api/social/train-chat', async (req, res) => {
-  const { senderId, receiverId, text } = req.body;
-  if (!text) return res.status(400).json({ ok: false });
-  try {
-    // Append chat messages to runtime training data file for AI knowledge updates
-    const trainingPath = require('path').join(__dirname, 'training_chats.md');
-    const entry = `\n[${new Date().toISOString()}] User(${senderId || 'anon'}) → User(${receiverId || 'anon'}): ${text.substring(0, 500)}\n`;
-    require('fs').appendFileSync(trainingPath, entry, 'utf8');
-    res.json({ ok: true });
-  } catch (e) {
-    // Non-critical, don't fail
-    res.json({ ok: false });
-  }
-});
-
-
 app.post('/api/social/message-action', async (req, res) => {
   const { action, chatId, messageId, userId, newText, reporterName } = req.body;
   if (!action || !chatId || !messageId || !userId) {
@@ -2215,52 +2200,7 @@ app.post('/api/ai/query', async (req, res) => {
   }
 });
 
-// 17. Support Request Admin Notification
-app.post('/api/support/notify', async (req, res) => {
-  const { type, name, email, uid, reason, submittedAt } = req.body;
-  const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail) return res.json({ ok: true });
-  try {
-    const labelMap = {
-      'SUSPENSION_APPEAL': 'Account Suspension Appeal 🔓',
-      'COPYRIGHT_CLAIM': 'Copyright Infringement Claim ©️'
-    };
-    const html = createTemplate(
-      `New Support Request: ${labelMap[type] || type}`,
-      `<p>A new support request has been submitted on DPGNotes:</p>
-       <table style="width:100%; border-collapse:collapse; color:#cbd5e1;">
-         <tr><td style="padding:6px 0; color:#94a3b8;">Type</td><td><strong>${type || 'N/A'}</strong></td></tr>
-         <tr><td style="padding:6px 0; color:#94a3b8;">Name</td><td><strong>${name || 'N/A'}</strong></td></tr>
-         <tr><td style="padding:6px 0; color:#94a3b8;">Email</td><td><a href="mailto:${email}" style="color:#6366f1;">${email || 'N/A'}</a></td></tr>
-         ${uid ? `<tr><td style="padding:6px 0; color:#94a3b8;">UID</td><td><code>${uid}</code></td></tr>` : ''}
-         <tr><td style="padding:6px 0; color:#94a3b8;">Reason</td><td>${reason || 'N/A'}</td></tr>
-         <tr><td style="padding:6px 0; color:#94a3b8;">Submitted At</td><td>${submittedAt || new Date().toISOString()}</td></tr>
-       </table>
-       <p>Please review this request in the <a href="https://dpgnotes.web.app/admin.html" style="color:#6366f1;">Admin Portal</a>.</p>
-       <p>View their profile (if registered): <a href="https://dpgnotes.web.app/profile.html?uid=${uid || ''}" style="color:#6366f1;">Open Profile</a></p>`
-    );
-    await sendEmail(adminEmail, `[DPGNotes Support] ${name} submitted a ${type} request`, html);
-
-    // Also send confirmation to applicant
-    if (email) {
-      const confirmHtml = createTemplate(
-        'Support Request Received ✅',
-        `<p>Hello <strong>${name || 'Applicant'}</strong>,</p>
-         <p>We have received your <strong>${labelMap[type] || type}</strong> on DPGNotes. Our Administration Team will review your submitted credentials and identity documents within <strong>3-5 business days</strong>.</p>
-         <p>You will receive an email update as soon as there is a decision.</p>
-         <p>If you have further questions, please contact us through the <a href="https://dpgnotes.web.app/suspension-support-contact-form.html" style="color:#6366f1;">Support Portal</a>.</p>`
-      );
-      await sendEmail(email, `[DPGNotes] Your support request has been received`, confirmHtml);
-    }
-
-    res.json({ ok: true });
-  } catch (err) {
-    console.error("Support notify failed:", err);
-    res.json({ ok: false, error: err.message });
-  }
-});
-
-
+// 17. One-Time URL Shortener & Asset Abstraction Proxy Engine
 app.post('/api/url/shorten', async (req, res) => {
   const { rawUrl } = req.body;
   if (!rawUrl) return res.status(400).json({ error: "rawUrl is required" });

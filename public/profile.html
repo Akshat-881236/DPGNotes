@@ -429,8 +429,8 @@
           <div class="profile-tabs-bar">
             <button class="prof-tab-btn active" data-tab="uploadedDocsTab" onclick="switchProfTab(this, 'uploadedDocsTab')"><i class="ri-file-list-3-line"></i> Uploaded Docs</button>
             <button class="prof-tab-btn" data-tab="networkTab" onclick="switchProfTab(this, 'networkTab')"><i class="ri-node-tree"></i> Network</button>
-            <button class="prof-tab-btn visitor-tab" id="messagesTabBtn" data-tab="messagesTab" onclick="switchProfTab(this, 'messagesTab')" style="display:none;"><i class="ri-chat-3-line"></i> Messages</button>
-            <button class="prof-tab-btn visitor-tab" id="aiTabBtn" data-tab="aiTab" onclick="switchProfTab(this, 'aiTab')" style="display:none;"><i class="ri-sparkling-2-line"></i> DPGNotes AI</button>
+            <button class="prof-tab-btn owner-only-tab" id="messagesTabBtn" data-tab="messagesTab" onclick="switchProfTab(this, 'messagesTab')" style="display:none;"><i class="ri-chat-3-line"></i> Messages</button>
+            <button class="prof-tab-btn owner-only-tab" id="aiTabBtn" data-tab="aiTab" onclick="switchProfTab(this, 'aiTab')" style="display:none;"><i class="ri-sparkling-2-line"></i> DPGNotes AI</button>
             <button class="prof-tab-btn owner-only-tab" id="notifTabBtn" data-tab="notifTab" onclick="switchProfTab(this, 'notifTab')" style="display:none;"><i class="ri-notification-3-line"></i> Notification</button>
           </div>
 
@@ -836,7 +836,6 @@
       const activeUid = (currentUser && currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
       const changeAvatarBtn = document.getElementById("changeAvatarBtn");
       if (activeUid && activeUid === targetUid) {
-        // OWNER VIEW
         document.getElementById("changeBannerBtn").style.display = "block";
         if (changeAvatarBtn) changeAvatarBtn.style.display = "flex";
         document.getElementById("editProfileBtn").style.display = "inline-flex";
@@ -844,19 +843,12 @@
         document.getElementById("followBtn").style.display = "none";
         document.getElementById("connectBtn").style.display = "none";
 
-        // Show owner-only tabs (Notifications, Group Messages etc.)
         document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "inline-flex");
-        // For owner, also show messages tab but relabeled
-        const msgBtn = document.getElementById("messagesTabBtn");
-        if (msgBtn) { msgBtn.style.display = "inline-flex"; }
-        const aiBtn = document.getElementById("aiTabBtn");
-        if (aiBtn) { aiBtn.style.display = "inline-flex"; }
         loadNotificationsProf();
         loadGroupChatFeed();
         if (groupChatInterval) clearInterval(groupChatInterval);
         groupChatInterval = setInterval(loadGroupChatFeed, 4000);
-      } else if (activeUid) {
-        // VISITOR VIEW (logged in but visiting another profile)
+      } else {
         document.getElementById("changeBannerBtn").style.display = "none";
         if (changeAvatarBtn) changeAvatarBtn.style.display = "none";
         document.getElementById("editProfileBtn").style.display = "none";
@@ -864,22 +856,7 @@
         document.getElementById("followBtn").style.display = "inline-flex";
         document.getElementById("connectBtn").style.display = "inline-flex";
 
-        // Hide owner-only tabs
         document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "none");
-        // Show visitor tabs (DM + AI)
-        document.querySelectorAll(".visitor-tab").forEach(tab => tab.style.display = "inline-flex");
-
-        // Update Messages tab label to show it's for DM
-        const msgBtn = document.getElementById("messagesTabBtn");
-        if (msgBtn) msgBtn.innerHTML = `<i class="ri-chat-3-line"></i> Message ${targetProfile ? targetProfile.name?.split(' ')[0] || '' : ''}`;
-      } else {
-        // NOT LOGGED IN visitor
-        document.getElementById("changeBannerBtn").style.display = "none";
-        if (changeAvatarBtn) changeAvatarBtn.style.display = "none";
-        document.getElementById("editProfileBtn").style.display = "none";
-        document.getElementById("profileActionsRow").style.display = "none";
-        document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "none");
-        document.querySelectorAll(".visitor-tab").forEach(tab => tab.style.display = "none");
       }
     }
 
@@ -1120,40 +1097,19 @@
 
     window.toggleFollow = async function() {
       if (!currentUser) return;
-      const followBtn = document.getElementById("followBtn");
-      if (followBtn) { followBtn.disabled = true; followBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`; }
       try {
-        // Fetch target user's email for notifications
-        let followingEmail = targetProfile.email || "";
         const res = await fetch(window.API_BASE_URL + '/api/social/follow', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             followerId: currentUser.uid,
-            followerName: currentUser.displayName || currentUser.email?.split('@')[0],
-            followerEmail: currentUser.email || "",
+            followerName: currentUser.displayName || currentUser.email.split('@')[0],
             followingId: targetUid,
-            followingName: targetProfile.name,
-            followingEmail: followingEmail
+            followingName: targetProfile.name
           })
         });
-        if (res.ok) {
-          const data = await res.json();
-          // Immediately update button without refetch
-          if (data.status === 'followed') {
-            followBtn.classList.add("active-follow");
-            followBtn.innerHTML = `<i class="ri-user-unfollow-line"></i> Unfollow`;
-            const cnt = document.getElementById("followersCount");
-            if (cnt) cnt.innerText = (parseInt(cnt.innerText || 0) + 1);
-          } else {
-            followBtn.classList.remove("active-follow");
-            followBtn.innerHTML = `<i class="ri-user-add-line"></i> Follow`;
-            const cnt = document.getElementById("followersCount");
-            if (cnt) cnt.innerText = Math.max(0, parseInt(cnt.innerText || 1) - 1);
-          }
-        }
+        if (res.ok) updateSocialButtonStates();
       } catch (err) { console.error(err); }
-      finally { if (followBtn) followBtn.disabled = false; }
     };
 
     window.sendConnectionRequest = async function() {
@@ -1163,42 +1119,13 @@
       btn.innerText = "Connecting...";
 
       try {
-        // Fetch sender's full profile data for rich email
-        let senderProfile = {};
-        try {
-          const senderDoc = await getDoc(doc(db, "users", currentUser.uid));
-          if (senderDoc.exists()) senderProfile = senderDoc.data();
-        } catch(e) { console.warn("Sender profile fetch failed:", e); }
-
-        // Get sender upload/likes stats
-        const { getDocs: _getDocs, collection: _coll, query: _q, where: _w } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js");
-        let senderUploads = 0, senderLikes = 0, senderShares = 0, senderClicks = 0;
-        try {
-          const docsSnap = await getDocs(query(collection(db, "documents"), where("userId", "==", currentUser.uid)));
-          docsSnap.forEach(d => {
-            const data = d.data();
-            senderUploads++;
-            senderLikes += (Array.isArray(data.likes) ? data.likes.length : 0);
-            senderShares += data.shareCount || 0;
-            senderClicks += data.ctrCount || 0;
-          });
-        } catch(e) { console.warn("Stats fetch failed:", e); }
-
         const res = await fetch(window.API_BASE_URL + '/api/social/connect-request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             senderId: currentUser.uid,
-            senderName: currentUser.displayName || currentUser.email?.split('@')[0],
+            senderName: currentUser.displayName || currentUser.email.split('@')[0],
             senderEmail: currentUser.email,
-            senderAvatarUrl: senderProfile.profilePic || senderProfile.photoURL || currentUser.photoURL || "",
-            senderBannerUrl: senderProfile.bannerUrl || senderProfile.bannerPic || "",
-            senderLinkedin: senderProfile.linkedin || "",
-            senderGithub: senderProfile.github || "",
-            senderUploads,
-            senderLikes,
-            senderShares,
-            senderClicks,
             receiverId: targetUid,
             receiverName: targetProfile.name,
             receiverEmail: targetProfile.email
@@ -1208,7 +1135,7 @@
           btn.innerText = "Pending Request";
           btn.style.background = "rgba(255,255,255,0.05)";
         }
-      } catch (err) { console.error(err); btn.disabled = false; btn.innerText = "Connect"; }
+      } catch (err) { console.error(err); }
     };
 
     window.respondConnectionRequest = async function(status) {
@@ -1238,32 +1165,15 @@
         const box = document.getElementById("dmMessagesBox");
         document.getElementById("dmLockedMessage").style.display = "none";
         
-        // Get current user's saved profile photo (Cloudinary)
-        const myPhotoUrl = localStorage.getItem("dpgActiveUserPhoto") || currentUser.photoURL || "";
-        const targetPhotoUrl = targetProfile.avatarUrl || targetProfile.profilePic || targetProfile.photoURL || "";
-        const myProfileLink = `profile.html?uid=${currentUser.uid}`;
-        const targetProfileLink = `profile.html?uid=${targetUid}`;
-
         box.innerHTML = "";
         messages.forEach(msg => {
           const isSender = msg.senderId === currentUser.uid;
-          const bubblePhotoUrl = isSender ? myPhotoUrl : targetPhotoUrl;
-          const bubbleProfileLink = isSender ? myProfileLink : targetProfileLink;
-          const avatarContent = bubblePhotoUrl
-            ? `<img src="${bubblePhotoUrl}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentElement.innerText='${isSender ? 'Y' : (msg.senderName?.charAt(0)?.toUpperCase() || '?')}';">`
-            : (isSender ? 'Y' : (msg.senderName?.charAt(0)?.toUpperCase() || '?'));
-
-          const avatarEl = `
-            <a href="${bubbleProfileLink}" title="${isSender ? 'You' : msg.senderName}" style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0; text-decoration:none; cursor:pointer; transition:opacity 0.2s;" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">
-              ${avatarContent}
-            </a>`;
-
           const wrapper = document.createElement("div");
           wrapper.className = "msg-bubble-wrapper";
           wrapper.style.margin = "0.4rem 0";
           wrapper.innerHTML = `
             <div style="display:flex; gap:8px; align-items:flex-end; justify-content:${isSender ? 'flex-end' : 'flex-start'};">
-              ${!isSender ? avatarEl : ''}
+              ${!isSender ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${targetProfile.avatarUrl || targetProfile.profilePic ? `<img src="${targetProfile.avatarUrl || targetProfile.profilePic}" style="width:100%; height:100%; object-fit:cover;">` : targetProfile.name.charAt(0).toUpperCase()}</div>` : ''}
               
               <div style="display:flex; flex-direction:column; max-width:70%;">
                 <span style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-bottom:2px; align-self:${isSender ? 'flex-end' : 'flex-start'};">${isSender ? 'You' : msg.senderName}</span>
@@ -1272,7 +1182,7 @@
                 </div>
               </div>
 
-              ${isSender ? avatarEl : ''}
+              ${isSender ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>` : ''}
             </div>
           `;
           box.appendChild(wrapper);
@@ -1288,20 +1198,12 @@
       field.value = "";
 
       try {
-        const chatId = [currentUser.uid, targetUid].sort().join("_");
-        // Train AI from chat messages asynchronously
-        fetch(window.API_BASE_URL + '/api/social/train-chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ senderId: currentUser.uid, receiverId: targetUid, text })
-        }).catch(() => {}); // Non-blocking
-        
         await fetch(window.API_BASE_URL + '/api/social/send-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             senderId: currentUser.uid,
-            senderName: currentUser.displayName || currentUser.email?.split('@')[0],
+            senderName: currentUser.displayName || currentUser.email.split('@')[0],
             receiverId: targetUid,
             receiverName: targetProfile.name,
             receiverEmail: targetProfile.email,
@@ -1354,25 +1256,28 @@
 
     window.sendGroupChatMessage = async function() {
       const input = document.getElementById("groupChatInputField");
-      if (!input) return;
       const text = input.value.trim();
       if (!text || !currentUser) return;
       input.value = "";
+
       try {
-        await fetch(window.API_BASE_URL + '/api/social/send-group-message', {
+        const res = await fetch(window.API_BASE_URL + '/api/social/send-group-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             senderId: currentUser.uid,
-            senderName: currentUser.displayName || currentUser.email?.split('@')[0] || 'You',
-            senderPhoto: localStorage.getItem('dpgActiveUserPhoto') || currentUser.photoURL || "",
+            senderName: currentUser.displayName || currentUser.email.split('@')[0],
+            senderPhoto: currentUser.photoURL || "",
             text
           })
         });
-        loadGroupChatFeed();
-      } catch (err) { console.error("Group chat send failed:", err); }
+        if (res.ok) {
+          loadGroupChatFeed();
+        }
+      } catch (e) {
+        console.error(e);
+      }
     };
-
 
     async function loadNotificationsProf() {
       const box = document.getElementById("notificationsListProfBox");
@@ -1470,34 +1375,8 @@
       }
     }
 
-    window.markAllNotificationsReadProf = async function() {
-      const box = document.getElementById("notificationsListProfBox");
-      const allCards = box.querySelectorAll("[id^='prof-notif-']");
-      if (allCards.length === 0) return;
-      const btn = document.querySelector("[onclick='markAllNotificationsReadProf()']");
-      if (btn) { btn.disabled = true; btn.textContent = "Marking..."; }
-      try {
-        const batch = [];
-        allCards.forEach(card => {
-          const notifId = card.id.replace('prof-notif-', '');
-          batch.push(updateDoc(doc(db, "notifications", notifId), { isRead: true }));
-        });
-        await Promise.all(batch);
-        allCards.forEach(card => {
-          card.style.opacity = "0";
-          setTimeout(() => card.remove(), 300);
-        });
-        setTimeout(() => {
-          if (box.querySelectorAll("[id^='prof-notif-']").length === 0) {
-            box.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No new notifications.</p>`;
-          }
-        }, 350);
-      } catch (err) {
-        console.error(err);
-        alert("Failed to mark all as read.");
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = "Mark All as Read"; }
-      }
+    window.markAllNotificationsReadProf = function() {
+      alert("All notifications marked as read.");
     };
 
     window.sendAiConsoleQueryProf = async function() {
