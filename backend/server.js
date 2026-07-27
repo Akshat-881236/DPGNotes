@@ -1379,6 +1379,213 @@ app.post('/api/ai/screen', verifySession, async (req, res) => {
 });
 
 // ==========================================
+// REFERRER & INVITATION SYSTEM API
+// ==========================================
+
+app.post('/api/invite/send', async (req, res) => {
+  const { senderId, senderName, senderEmail, toEmail, toName, message } = req.body;
+  if (!senderId || !senderEmail || !toEmail || !toName) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+  try {
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const referrerCode = "DPG" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    const inviteRef = await db.collection("invitations").add({
+      senderId,
+      senderName,
+      senderEmail,
+      toEmail,
+      toName,
+      message: message || '',
+      token,
+      referrerCode,
+      status: "Verification Pending",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: senderName
+    });
+
+    const verifyLink = `${process.env.APP_URL || 'http://localhost:3000'}/api/invite/verify?token=${token}`;
+    const htmlContent = `
+      <div style="font-family:Arial,sans-serif; padding:20px; background:#f4f4f5; color:#1e293b;">
+        <div style="max-width:600px; margin:0 auto; background:white; padding:30px; border-radius:12px; border:1px solid #e2e8f0;">
+          <h2 style="color:#6366f1;">DPGNotes Security: Verify Invitation</h2>
+          <p>Hi ${senderName},</p>
+          <p>You requested to send an invitation to <strong>${toName}</strong> (${toEmail}) to join the DPGNotes community.</p>
+          <p>To confirm that this is you, please click the button below to dispatch the invitation:</p>
+          <div style="text-align:center; margin:30px 0;">
+            <a href="${verifyLink}" style="background:#10b981; color:white; padding:12px 24px; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;">Verify and Dispatch Invitation</a>
+          </div>
+          <p style="font-size:0.85em; color:#64748b;">If you did not request this, please ignore this email.</p>
+        </div>
+      </div>
+    `;
+
+    await sendEmail(senderEmail, `Verify Your Invitation to ${toName}`, htmlContent);
+    res.json({ success: true, message: "Verification email sent to sender." });
+  } catch (err) {
+    console.error("Invite send error:", err);
+    res.status(500).json({ error: "Failed to send invitation verification." });
+  }
+});
+
+app.get('/api/invite/verify', async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(400).send("Invalid token.");
+
+  try {
+    const snapshot = await db.collection("invitations").where("token", "==", token).limit(1).get();
+    if (snapshot.empty) return res.status(404).send("Invitation not found or expired.");
+
+    const inviteDoc = snapshot.docs[0];
+    const invite = inviteDoc.data();
+
+    if (invite.status !== "Verification Pending") {
+      return res.send("This invitation has already been verified.");
+    }
+
+    // Update status to Receive (meaning Mail Received by receiver)
+    await inviteDoc.ref.update({
+      status: "Receive",
+      sentAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Send email to the receiver
+    const inviteLink = `${process.env.APP_URL || 'http://localhost:3000'}/?referrer=${invite.referrerCode}`;
+    const receiverHtml = `
+      <div style="font-family:Arial,sans-serif; padding:20px; background:#f8fafc; color:#0f172a;">
+        <div style="max-width:600px; margin:0 auto; background:white; padding:30px; border-radius:12px; border-top:6px solid #6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+          <div style="text-align:center; margin-bottom:20px;">
+            <h1 style="color:#6366f1; margin:0;">DPGNotes</h1>
+            <p style="color:#64748b; font-size:1.1rem; margin-top:5px;">Contributor Community</p>
+          </div>
+          
+          <h2 style="font-size:1.4rem;">You're Invited!</h2>
+          <p>Hi ${invite.toName},</p>
+          <p><strong>${invite.senderName}</strong> (${invite.senderEmail}) has invited you to join the DPGNotes community as a Contributor.</p>
+          
+          ${invite.message ? `<div style="background:#f1f5f9; padding:15px; border-left:4px solid #94a3b8; font-style:italic; border-radius:0 8px 8px 0; margin:20px 0;">"${invite.message}"</div>` : ''}
+          
+          <h3>What is DPGNotes?</h3>
+          <p>DPGNotes is an advanced platform for students and educators to share, analyze, and discuss academic materials. As a contributor, you can upload PDFs, engage with the AI Assistant, network with peers, and track your global analytics.</p>
+          
+          <div style="background:#fef3c7; border:1px solid #fde68a; padding:15px; border-radius:8px; margin:25px 0;">
+            <h4 style="margin-top:0; color:#d97706;">Start Up Guide</h4>
+            <ul style="margin-bottom:0; padding-left:20px; color:#92400e;">
+              <li>Click the button below to visit DPGNotes.</li>
+              <li>Sign in using your Google Account.</li>
+              <li>Complete your profile setup to activate your dashboard.</li>
+            </ul>
+          </div>
+
+          <div style="text-align:center; margin:35px 0;">
+            <a href="${inviteLink}" style="background:linear-gradient(135deg, #6366f1, #8b5cf6); color:white; padding:14px 32px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:1.1rem; display:inline-block; box-shadow:0 4px 15px rgba(99,102,241,0.4);">Accept Invitation</a>
+          </div>
+          
+          <div style="border-top:1px solid #e2e8f0; padding-top:20px; font-size:0.8rem; color:#94a3b8;">
+            <p><strong>Legal Notes:</strong> By accepting this invitation, you agree to the <a href="${process.env.APP_URL || 'http://localhost:3000'}/legal/index.html" style="color:#6366f1;">Terms of Service and Privacy Policy</a>.</p>
+          </div>
+        </div>
+      </div>
+    `;
+    await sendEmail(invite.toEmail, `Invitation to join DPGNotes from ${invite.senderName}`, receiverHtml);
+
+    // Notify Admin
+    const adminHtml = `
+      <div style="font-family:Arial,sans-serif; padding:20px;">
+        <h2>New Invitation Dispatched</h2>
+        <p><strong>From:</strong> ${invite.senderName} (${invite.senderEmail})</p>
+        <p><strong>To:</strong> ${invite.toName} (${invite.toEmail})</p>
+        <p><strong>Referrer Code:</strong> ${invite.referrerCode}</p>
+      </div>
+    `;
+    await sendEmail(process.env.ADMIN_EMAIL || process.env.EMAIL_FROM, `[Admin Alert] Invitation Dispatched to ${invite.toName}`, adminHtml);
+
+    res.send(`
+      <div style="font-family:Arial,sans-serif; text-align:center; padding:50px; color:#10b981;">
+        <h2>✅ Invitation Successfully Dispatched!</h2>
+        <p>The invitation has been sent to ${invite.toName}. You may now close this window.</p>
+      </div>
+    `);
+  } catch (err) {
+    console.error("Invite verify error:", err);
+    res.status(500).send("An error occurred during verification.");
+  }
+});
+
+app.post('/api/invite/view', async (req, res) => {
+  const { referrerCode } = req.body;
+  if (!referrerCode) return res.status(400).json({ error: "Missing referrer code." });
+
+  try {
+    const snapshot = await db.collection("invitations").where("referrerCode", "==", referrerCode).limit(1).get();
+    if (snapshot.empty) return res.status(404).json({ error: "Invalid referrer code." });
+
+    const inviteDoc = snapshot.docs[0];
+    const invite = inviteDoc.data();
+    
+    if (invite.status === "Receive") {
+      await inviteDoc.ref.update({ status: "View" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Invite view error:", err);
+    res.status(500).json({ error: "Server error." });
+  }
+});
+
+app.post('/api/invite/accept', async (req, res) => {
+  const { referrerCode, newUserId, newUserEmail } = req.body;
+  if (!referrerCode || !newUserId) return res.status(400).json({ error: "Missing required fields." });
+
+  try {
+    const snapshot = await db.collection("invitations").where("referrerCode", "==", referrerCode).limit(1).get();
+    if (snapshot.empty) return res.status(404).json({ error: "Invalid referrer code." });
+
+    const inviteDoc = snapshot.docs[0];
+    const invite = inviteDoc.data();
+
+    // Already accepted or rejected?
+    if (invite.status === "Accept" || invite.status === "Rejected") {
+      return res.json({ success: true, message: "Code already used." });
+    }
+
+    await inviteDoc.ref.update({ 
+      status: "Accept", 
+      acceptedByUid: newUserId,
+      acceptedByEmail: newUserEmail,
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Gratitude Mail Check Logic (10 views or 3 acceptances)
+    // For simplicity, we trigger gratitude mail per 3 acceptances for a sender
+    const acceptSnapshot = await db.collection("invitations")
+      .where("senderId", "==", invite.senderId)
+      .where("status", "==", "Accept")
+      .get();
+    
+    if (acceptSnapshot.size > 0 && acceptSnapshot.size % 3 === 0) {
+      const gratitudeHtml = `
+        <div style="font-family:Arial,sans-serif; padding:20px; background:#fffbeb; color:#92400e; border:1px solid #fde68a; border-radius:12px;">
+          <h2 style="color:#d97706;">🌟 A Huge Thank You!</h2>
+          <p>Hi ${invite.senderName},</p>
+          <p>We wanted to express our deepest gratitude! Thanks to you, ${acceptSnapshot.size} new contributors have now joined the DPGNotes community through your invitations.</p>
+          <p>Your effort in growing our network is highly appreciated.</p>
+          <p>Keep up the amazing work!</p>
+          <p>Best,<br>The DPGNotes Team</p>
+        </div>
+      `;
+      await sendEmail(invite.senderEmail, `Thank you for growing the DPGNotes community!`, gratitudeHtml);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Invite accept error:", err);
+    res.status(500).json({ error: "Server error." });
+  }
+});
+
+// ==========================================
 // CONTRIBUTOR NETWORKING & SOCIAL API
 // ==========================================
 

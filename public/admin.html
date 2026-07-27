@@ -389,6 +389,9 @@
         <a class="nav-link" onclick="switchTab('support-requests'); loadSupportRequestsAdmin();">
           <i class="ri-customer-service-2-line"></i> Support Requests
         </a>
+        <a class="nav-link" onclick="switchTab('referrers'); loadReferrerAnalysis();">
+          <i class="ri-user-add-line"></i> Referrer Analysis
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -663,6 +666,32 @@
               </thead>
               <tbody id="supportRequestsTableBody">
                 <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading support requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: REFERRERS -->
+      <section id="view-referrers" class="view-section">
+        <div class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">Invitation & Referrer Analysis</h2>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Referrer Code</th>
+                  <th>Created By</th>
+                  <th>Sent To</th>
+                  <th>Sent At</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="referrerTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading referrers...</td></tr>
               </tbody>
             </table>
           </div>

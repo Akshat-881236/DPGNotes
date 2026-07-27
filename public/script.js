@@ -22,6 +22,24 @@ import {
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 // =========================================
+// REFERRER SYSTEM INJECTION
+// =========================================
+(async function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const referrer = urlParams.get('referrer');
+  if (referrer) {
+    sessionStorage.setItem('dpgReferrerCode', referrer);
+    try {
+      await fetch(window.API_BASE_URL + '/api/invite/view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referrerCode: referrer })
+      });
+    } catch(e) { console.error("Referrer view log failed", e); }
+  }
+})();
+
+// =========================================
 // THEME ENGINE (Global Load)
 // =========================================
 const savedTheme = localStorage.getItem("dpgTheme");
@@ -539,7 +557,22 @@ onAuthStateChanged(
       currentUser = user;
       if (googleLogin) googleLogin.innerHTML = "Logout";
       
-      if (isNewLogin) logActivity("LOGIN", "Logged into DPGNotes");
+      if (isNewLogin) {
+        logActivity("LOGIN", "Logged into DPGNotes");
+        
+        // Check for active referrer
+        const refCode = sessionStorage.getItem('dpgReferrerCode');
+        if (refCode) {
+          try {
+            await fetch(window.API_BASE_URL + '/api/invite/accept', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ referrerCode: refCode, newUserId: user.uid, newUserEmail: user.email })
+            });
+            sessionStorage.removeItem('dpgReferrerCode');
+          } catch(e) { console.error("Referrer accept log failed", e); }
+        }
+      }
       
       const isDashboard = window.location.pathname.endsWith("dashboard.html");
       const isAdmin = window.location.pathname.endsWith("admin.html");

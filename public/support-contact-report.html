@@ -311,6 +311,13 @@
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        alert("Access Denied: No active admin session found.");
+        window.location.href = "admin.html";
+        return;
+      }
+
       if (!reqId) {
         alert("Invalid or missing request token parameter.");
         window.location.href = "admin.html";

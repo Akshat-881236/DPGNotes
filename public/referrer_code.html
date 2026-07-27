@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="config.js"></script>
+  <script src="custom-dialogs.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DPGNotes | Referrer Analysis Report</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      --report-bg: #0f111a;
+      --report-surface: rgba(20, 24, 39, 0.7);
+      --report-border: rgba(255, 255, 255, 0.08);
+      --report-primary: #8b5cf6;
+      --report-text: #f8fafc;
+      --report-muted: #94a3b8;
+      --report-danger: #ef4444;
+      --report-success: #10b981;
+      --report-warning: #f59e0b;
+    }
+    
+    body {
+      background: var(--report-bg);
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      color: var(--report-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #authCheckOverlay {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(15,17,26,0.95);
+      z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .spinner {
+      width: 50px; height: 50px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: var(--report-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .report-container {
+      max-width: 1000px; margin: 0 auto; padding: 2rem; width: 100%;
+      box-sizing: border-box; display: none;
+    }
+    
+    .report-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 2rem; border-bottom: 1px solid var(--report-border);
+      padding-bottom: 1rem;
+    }
+    
+    .report-header h1 { margin: 0; font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
+    
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem; margin-bottom: 2rem;
+    }
+    
+    .stat-box {
+      background: var(--report-surface);
+      border: 1px solid var(--report-border);
+      border-radius: 16px; padding: 1.5rem;
+      text-align: center;
+    }
+    .stat-box h3 { color: var(--report-muted); font-size: 0.9rem; margin-top: 0; margin-bottom: 10px; text-transform: uppercase; }
+    .stat-box p { margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--report-primary); }
+
+    .data-card {
+      background: var(--report-surface);
+      border: 1px solid var(--report-border);
+      border-radius: 16px; padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .data-card h2 { margin-top: 0; border-bottom: 1px solid var(--report-border); padding-bottom: 10px; font-size: 1.3rem; display: flex; align-items: center; gap: 8px; }
+    
+    .detail-row {
+      display: flex; margin-bottom: 1rem;
+      border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 0.5rem;
+    }
+    .detail-label {
+      width: 180px; color: var(--report-muted); font-weight: 500;
+    }
+    .detail-value {
+      flex: 1; font-weight: 600;
+    }
+
+    .back-btn {
+      padding: 0.8rem 1.5rem;
+      background: rgba(20, 24, 39, 0.7); color: white;
+      border: 1px solid var(--report-border); border-radius: 12px;
+      cursor: pointer; text-decoration: none; font-family: inherit; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .back-btn:hover {
+      background: linear-gradient(135deg, var(--report-primary), #6366f1);
+      border-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="authCheckOverlay">
+    <div class="spinner"></div>
+    <h2 id="authStatusText">Verifying Secure Admin Session...</h2>
+    <p style="color: var(--report-muted);" id="authSubText">Checking credentials</p>
+  </div>
+  
+  <div class="report-container" id="reportContainer">
+    <div class="report-header">
+      <h1><i class="ri-user-add-fill"></i> Referrer Report: <span id="headerCode" style="color:var(--report-primary); margin-left:10px;"></span></h1>
+      <div style="display:flex; gap:10px;">
+        <button onclick="window.close()" class="back-btn"><i class="ri-close-line"></i> Close Report</button>
+      </div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-box">
+        <h3>Current Status</h3>
+        <p id="inviteStatus" style="font-size: 1.5rem;">Loading...</p>
+      </div>
+      <div class="stat-box">
+        <h3>Sent At</h3>
+        <p id="sentAtDisplay" style="font-size: 1.2rem; margin-top: 0.8rem;">Loading...</p>
+      </div>
+      <div class="stat-box">
+        <h3>Accepted At</h3>
+        <p id="acceptedAtDisplay" style="font-size: 1.2rem; margin-top: 0.8rem;">N/A</p>
+      </div>
+    </div>
+    
+    <div class="data-card">
+      <h2><i class="ri-information-line"></i> Invitation Details</h2>
+      
+      <div class="detail-row">
+        <div class="detail-label">Referrer Code</div>
+        <div class="detail-value" id="refCodeVal" style="font-family:monospace; color:var(--report-primary);"></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Sender UID</div>
+        <div class="detail-value" id="senderUidVal"></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Sender Name & Email</div>
+        <div class="detail-value"><span id="senderNameVal"></span> (<span id="senderEmailVal"></span>)</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Sent To</div>
+        <div class="detail-value"><span id="toNameVal"></span> (<span id="toEmailVal"></span>)</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Message Attached</div>
+        <div class="detail-value" id="messageVal" style="font-style:italic;"></div>
+      </div>
+    </div>
+
+    <div class="data-card" id="acceptanceCard" style="display:none; border-color:var(--report-success);">
+      <h2><i class="ri-check-double-line"></i> Acceptance Details</h2>
+      <div class="detail-row">
+        <div class="detail-label">New User UID</div>
+        <div class="detail-value" id="accUidVal"></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">New User Email</div>
+        <div class="detail-value" id="accEmailVal"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function init() {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        document.getElementById("authStatusText").innerText = "Access Denied";
+        document.getElementById("authStatusText").style.color = "var(--report-danger)";
+        document.getElementById("authSubText").innerText = "No active admin session found. Redirecting...";
+        setTimeout(() => { window.location.href = "admin.html"; }, 2500);
+        return;
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (!code) {
+        document.getElementById("authStatusText").innerText = "Invalid Request";
+        document.getElementById("authStatusText").style.color = "var(--report-danger)";
+        document.getElementById("authSubText").innerText = "Missing referrer code.";
+        setTimeout(() => { window.location.href = "admin.html"; }, 2500);
+        return;
+      }
+
+      try {
+        const q = query(collection(db, "invitations"), where("referrerCode", "==", code));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+          throw new Error("Referrer code not found");
+        }
+
+        const data = snap.docs[0].data();
+        
+        document.getElementById("authCheckOverlay").style.display = "none";
+        document.getElementById("reportContainer").style.display = "block";
+
+        document.getElementById("headerCode").innerText = code;
+        document.getElementById("refCodeVal").innerText = code;
+
+        let statusColor = "var(--report-muted)";
+        if (data.status === "Receive") statusColor = "var(--report-primary)";
+        if (data.status === "View") statusColor = "var(--report-warning)";
+        if (data.status === "Accept") statusColor = "var(--report-success)";
+        
+        document.getElementById("inviteStatus").innerText = data.status || 'Unknown';
+        document.getElementById("inviteStatus").style.color = statusColor;
+
+        document.getElementById("senderUidVal").innerText = data.senderId || 'N/A';
+        document.getElementById("senderNameVal").innerText = data.senderName || 'N/A';
+        document.getElementById("senderEmailVal").innerText = data.senderEmail || 'N/A';
+        document.getElementById("toNameVal").innerText = data.toName || 'N/A';
+        document.getElementById("toEmailVal").innerText = data.toEmail || 'N/A';
+        document.getElementById("messageVal").innerText = data.message || 'No custom message provided.';
+
+        let sentAt = 'Unknown';
+        if (data.sentAt) sentAt = new Date(data.sentAt.toMillis ? data.sentAt.toMillis() : data.sentAt).toLocaleString();
+        else if (data.createdAt) sentAt = new Date(data.createdAt.toMillis ? data.createdAt.toMillis() : data.createdAt).toLocaleString();
+        document.getElementById("sentAtDisplay").innerText = sentAt;
+
+        if (data.acceptedAt) {
+          document.getElementById("acceptedAtDisplay").innerText = new Date(data.acceptedAt.toMillis ? data.acceptedAt.toMillis() : data.acceptedAt).toLocaleString();
+          document.getElementById("acceptanceCard").style.display = "block";
+          document.getElementById("accUidVal").innerText = data.acceptedByUid || 'N/A';
+          document.getElementById("accEmailVal").innerText = data.acceptedByEmail || 'N/A';
+        }
+
+      } catch(err) {
+        document.getElementById("authStatusText").innerText = "Data Retrieval Failed";
+        document.getElementById("authStatusText").style.color = "var(--report-danger)";
+        document.getElementById("authSubText").innerText = err.message;
+      }
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

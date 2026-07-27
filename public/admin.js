@@ -998,3 +998,58 @@ window.updateNotifSelectionBar = updateNotifSelectionBar;
 window.deleteSingleNotif = deleteSingleNotif;
 window.deleteSelectedNotifs = deleteSelectedNotifs;
 window.toggleKeepNotif = toggleKeepNotif;
+
+// ==========================================
+// REFERRER ANALYSIS TAB
+// ==========================================
+async function loadReferrerAnalysis() {
+  const tbody = document.getElementById("referrerTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading Referrer Analysis...</td></tr>`;
+  
+  try {
+    const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
+    const q = query(collection(db, "invitations"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    
+    if (snap.empty) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No referrer data found.</td></tr>`;
+      return;
+    }
+    
+    tbody.innerHTML = "";
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const code = d.referrerCode || 'N/A';
+      const createdBy = d.senderName || d.senderEmail || 'Unknown';
+      const sentTo = d.toName || d.toEmail || 'Unknown';
+      
+      let sentAt = 'Unknown';
+      if (d.sentAt) sentAt = new Date(d.sentAt.toMillis ? d.sentAt.toMillis() : d.sentAt).toLocaleString();
+      else if (d.createdAt) sentAt = new Date(d.createdAt.toMillis ? d.createdAt.toMillis() : d.createdAt).toLocaleString();
+      
+      let statusColor = "var(--admin-muted)";
+      if (d.status === "Receive") statusColor = "var(--admin-primary)";
+      if (d.status === "View") statusColor = "#f59e0b";
+      if (d.status === "Accept") statusColor = "#10b981";
+      if (d.status === "Rejected") statusColor = "#ef4444";
+      
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-family:monospace; font-weight:600;">${code}</td>
+        <td>${createdBy}</td>
+        <td>${sentTo}</td>
+        <td>${sentAt}</td>
+        <td><span class="badge" style="background:transparent; border:1px solid ${statusColor}; color:${statusColor};">${d.status || 'Unknown'}</span></td>
+        <td>
+          <a href="referrer_code.html?code=${code}" target="_blank" class="btn-action primary" style="background:var(--admin-primary); color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; display:inline-block;">Learn More</a>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Failed loading referrer analysis:", err);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-danger);">Failed to load referrer data.</td></tr>`;
+  }
+}
+window.loadReferrerAnalysis = loadReferrerAnalysis;

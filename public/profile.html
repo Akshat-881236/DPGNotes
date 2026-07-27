@@ -474,7 +474,7 @@
                 <div id="netPendingRequestsList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
               </div>
 
-              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
                 <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px; padding:1.2rem;">
                   <h4 style="color:white; margin-bottom:1rem;"><i class="ri-user-shared-line" style="color:var(--primary-light);"></i> Connections (<span id="netConnCount">0</span>)</h4>
                   <div id="netConnList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
@@ -483,6 +483,21 @@
                   <h4 style="color:white; margin-bottom:1rem;"><i class="ri-group-line" style="color:var(--primary-light);"></i> Followers (<span id="netFollowCount">0</span>)</h4>
                   <div id="netFollowList" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
                 </div>
+              </div>
+
+              <!-- INVITE A FRIEND -->
+              <div id="inviteSection" style="display:none; background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1.5rem;">
+                <h4 style="color:#a78bfa; margin-bottom:0.4rem;"><i class="ri-mail-send-line"></i> Invite to DPGNotes Community</h4>
+                <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:1.2rem;">Grow the network — invite someone you know to become a contributor.</p>
+                <div style="display:grid; gap:0.8rem;">
+                  <input type="email" id="inviteEmail" placeholder="Enter Email *" style="padding:0.7rem 1rem; background:rgba(0,0,0,0.4); border:1px solid rgba(99,102,241,0.3); border-radius:8px; color:white; font-size:0.88rem; outline:none; width:100%; box-sizing:border-box;">
+                  <input type="text" id="inviteName" placeholder="Enter Name *" style="padding:0.7rem 1rem; background:rgba(0,0,0,0.4); border:1px solid rgba(99,102,241,0.3); border-radius:8px; color:white; font-size:0.88rem; outline:none; width:100%; box-sizing:border-box;">
+                  <textarea id="inviteMessage" placeholder="Optional personal message..." rows="3" style="padding:0.7rem 1rem; background:rgba(0,0,0,0.4); border:1px solid rgba(99,102,241,0.3); border-radius:8px; color:white; font-size:0.88rem; outline:none; width:100%; box-sizing:border-box; resize:vertical;"></textarea>
+                  <button onclick="sendInvitation()" id="inviteSendBtn" style="padding:0.75rem 2rem; background:linear-gradient(135deg,var(--primary),var(--primary-light)); border:none; border-radius:8px; color:white; font-weight:700; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:8px; width:fit-content;">
+                    <i class="ri-send-plane-fill"></i> Send Invitation
+                  </button>
+                </div>
+                <div id="inviteStatusMsg" style="margin-top:0.8rem; font-size:0.85rem; display:none;"></div>
               </div>
             </div>
 
@@ -859,14 +874,15 @@
     function configureProfileOwnerState() {
       const activeUid = (currentUser && currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
       const changeAvatarBtn = document.getElementById("changeAvatarBtn");
+      const inviteSection = document.getElementById("inviteSection");
       if (activeUid && activeUid === targetUid) {
         document.getElementById("changeBannerBtn").style.display = "block";
         if (changeAvatarBtn) changeAvatarBtn.style.display = "flex";
         document.getElementById("editProfileBtn").style.display = "inline-flex";
         document.getElementById("profileActionsRow").style.display = "flex";
-        document.getElementById("followBtn").style.display = "none";
-        document.getElementById("connectBtn").style.display = "none";
-
+        document.getElementById("followBtn").closest('[id=followBtnWrapper]').style.display = "none";
+        document.getElementById("connectBtn").closest('[id=connectBtnWrapper]').style.display = "none";
+        if (inviteSection) inviteSection.style.display = "block";
         document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "inline-flex");
         loadNotificationsProf();
         loadGroupChatFeed();
@@ -877,9 +893,11 @@
         if (changeAvatarBtn) changeAvatarBtn.style.display = "none";
         document.getElementById("editProfileBtn").style.display = "none";
         document.getElementById("profileActionsRow").style.display = "flex";
-        document.getElementById("followBtn").style.display = "inline-flex";
-        document.getElementById("connectBtn").style.display = "inline-flex";
-
+        const fw = document.getElementById('followBtnWrapper');
+        const cw = document.getElementById('connectBtnWrapper');
+        if (fw) fw.style.display = "inline-flex";
+        if (cw) cw.style.display = "inline-flex";
+        if (inviteSection) inviteSection.style.display = "none";
         document.querySelectorAll(".owner-only-tab").forEach(tab => tab.style.display = "none");
       }
     }
@@ -1008,7 +1026,7 @@
           body: JSON.stringify({ senderId, receiverId: currentUser.uid, status })
         });
         if (res.ok) {
-          alert(`Request ${status === 'accepted' ? 'Accepted' : 'Declined'}.`);
+          showToast(status === 'accepted' ? '✅ Connection accepted!' : '❌ Request declined.', status === 'accepted' ? 'success' : 'error');
           loadContributorNetwork();
           updateSocialButtonStates();
         }
@@ -1184,7 +1202,8 @@
       const file = input.files[0];
       const formData = new FormData();
       formData.append("pdfFile", file);
-
+      const changeBannerBtn = document.getElementById("changeBannerBtn");
+      if (changeBannerBtn) { changeBannerBtn.innerHTML = '<i class="ri-loader-4-line"></i> Uploading...'; changeBannerBtn.disabled = true; }
       try {
         const res = await fetch(window.API_BASE_URL + "/api/upload?type=profile", {
           method: "POST",
@@ -1195,18 +1214,23 @@
           const bannerUrl = data.pdfUrl;
           await setDoc(doc(db, "users", currentUser.uid), { bannerPic: bannerUrl, bannerUrl: bannerUrl }, { merge: true });
           document.getElementById("profileBannerEl").style.backgroundImage = `url('${bannerUrl}')`;
-          alert("Header cover photo updated successfully!");
+          showToast('Cover photo updated! ✅', 'success');
         } else {
-          alert("Header image upload failed.");
+          showToast('Cover photo upload failed.', 'error');
         }
       } catch (err) {
         console.error(err);
-        alert("Upload error.");
+        showToast('Upload error. Please try again.', 'error');
+      } finally {
+        if (changeBannerBtn) { changeBannerBtn.innerHTML = '<i class="ri-camera-line"></i> Change Cover'; changeBannerBtn.disabled = false; }
       }
     };
 
     window.toggleFollow = async function() {
       if (!currentUser) return;
+      const followBtn = document.getElementById('followBtn');
+      const followBtnText = document.getElementById('followBtnText');
+      if (followBtn) { followBtn.disabled = true; }
       try {
         const res = await fetch(window.API_BASE_URL + '/api/social/follow', {
           method: 'POST',
@@ -1218,15 +1242,17 @@
             followingName: targetProfile.name
           })
         });
-        if (res.ok) updateSocialButtonStates();
+        if (res.ok) await updateSocialButtonStates();
       } catch (err) { console.error(err); }
+      finally { if (followBtn) followBtn.disabled = false; }
     };
 
     window.sendConnectionRequest = async function() {
       if (!currentUser) return;
       const btn = document.getElementById("connectBtn");
-      btn.disabled = true;
-      btn.innerText = "Connecting...";
+      const connectBtnText = document.getElementById('connectBtnText');
+      if (btn) btn.disabled = true;
+      if (connectBtnText) connectBtnText.textContent = 'Sending...';
 
       try {
         const res = await fetch(window.API_BASE_URL + '/api/social/connect-request', {
@@ -1242,10 +1268,17 @@
           })
         });
         if (res.ok) {
-          btn.innerText = "Pending Request";
-          btn.style.background = "rgba(255,255,255,0.05)";
+          showToast('Connection request sent! 👋', 'success');
+          await updateSocialButtonStates();
+        } else {
+          if (btn) btn.disabled = false;
+          if (connectBtnText) connectBtnText.textContent = 'Connect';
         }
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error(err);
+        if (btn) btn.disabled = false;
+        if (connectBtnText) connectBtnText.textContent = 'Connect';
+      }
     };
 
     window.respondConnectionRequest = async function(status) {
@@ -1263,7 +1296,7 @@
       } catch (err) { console.error(err); }
     };
 
-    // Load DM chat history with Sender Header & Avatar bubbles
+    // Load DM chat history - simple text bubbles without profile photos
     async function loadChatHistory() {
       if (!currentUser || !targetUid) return;
       try {
@@ -1271,29 +1304,19 @@
         const res = await fetch(`${window.API_BASE_URL}/api/social/get-messages?chatId=${chatId}&userId=${currentUser.uid}`);
         if (!res.ok) return;
         const messages = await res.json();
-
         const box = document.getElementById("dmMessagesBox");
+        if (!box) return;
         document.getElementById("dmLockedMessage").style.display = "none";
-        
         box.innerHTML = "";
         messages.forEach(msg => {
           const isSender = msg.senderId === currentUser.uid;
           const wrapper = document.createElement("div");
-          wrapper.className = "msg-bubble-wrapper";
-          wrapper.style.margin = "0.4rem 0";
+          wrapper.style.cssText = `display:flex; flex-direction:column; align-items:${isSender ? 'flex-end' : 'flex-start'}; margin:0.35rem 0;`;
+          const senderLabel = isSender ? 'You' : (msg.senderName || targetProfile.name);
           wrapper.innerHTML = `
-            <div style="display:flex; gap:8px; align-items:flex-end; justify-content:${isSender ? 'flex-end' : 'flex-start'};">
-              ${!isSender ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${targetProfile.avatarUrl || targetProfile.profilePic ? `<img src="${targetProfile.avatarUrl || targetProfile.profilePic}" style="width:100%; height:100%; object-fit:cover;">` : targetProfile.name.charAt(0).toUpperCase()}</div>` : ''}
-              
-              <div style="display:flex; flex-direction:column; max-width:70%;">
-                <span style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-bottom:2px; align-self:${isSender ? 'flex-end' : 'flex-start'};">${isSender ? 'You' : msg.senderName}</span>
-                <div class="msg-bubble ${isSender ? 'msg-bubble-sender' : 'msg-bubble-receiver'}" style="padding: 0.55rem 0.85rem; border-radius:12px;">
-                  ${formatBioContent(msg.text)}
-                </div>
-              </div>
-
-              ${isSender ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>` : ''}
-            </div>
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-bottom:3px;">${senderLabel}</span>
+            <div style="max-width:78%; padding:0.55rem 0.9rem; border-radius:${isSender ? '14px 14px 4px 14px' : '14px 14px 14px 4px'}; background:${isSender ? 'linear-gradient(135deg,var(--primary),var(--primary-light))' : 'rgba(255,255,255,0.07)'}; color:${isSender ? 'white' : '#cbd5e1'}; font-size:0.87rem; line-height:1.55;">${formatBioContent(msg.text)}</div>
+            <span style="font-size:0.67rem; color:rgba(148,163,184,0.6); margin-top:2px;">${msg.createdAt ? new Date(msg.createdAt._seconds ? msg.createdAt._seconds * 1000 : msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
           `;
           box.appendChild(wrapper);
         });
@@ -1305,11 +1328,16 @@
       const field = document.getElementById("dmInputField");
       const text = field.value.trim();
       if (!text || !currentUser) return;
+      // Optimistic render first
+      const box = document.getElementById("dmMessagesBox");
+      const div = document.createElement("div");
+      div.style.cssText = "display:flex; flex-direction:column; align-items:flex-end; margin:0.35rem 0;";
+      div.innerHTML = `<span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-bottom:3px;">You</span><div style="max-width:78%; padding:0.55rem 0.9rem; border-radius:14px 14px 4px 14px; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; font-size:0.87rem; line-height:1.55;">${formatBioContent(text)}</div>`;
+      if (box) { box.appendChild(div); box.scrollTop = box.scrollHeight; }
       field.value = "";
       field.focus();
-
       try {
-        const res = await fetch(window.API_BASE_URL + '/api/social/send-message', {
+        await fetch(window.API_BASE_URL + '/api/social/send-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1321,35 +1349,12 @@
             text
           })
         });
-        if (res.ok) {
-          // Optimistic render immediately
-          const box = document.getElementById("dmMessagesBox");
-          const div = document.createElement("div");
-          div.style.cssText = "display:flex; gap:8px; align-items:flex-end; justify-content:flex-end; margin:0.4rem 0;";
-          div.innerHTML = `
-            <div style="display:flex; flex-direction:column; max-width:70%;">
-              <span style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-bottom:2px; align-self:flex-end;">You</span>
-              <div style="padding: 0.55rem 0.85rem; border-radius:12px; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white;">${formatBioContent(text)}</div>
-            </div>
-            <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>
-          `;
-          box.appendChild(div);
-          box.scrollTop = box.scrollHeight;
-        }
-        loadChatHistory();
+        setTimeout(loadChatHistory, 600);
       } catch (err) { console.error(err); }
     };
-
-    // Wire Enter key for DM input
-    const dmInputField = document.getElementById("dmInputField");
-    if (dmInputField) {
-      dmInputField.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendDirectMessage();
-        }
-      });
-    }
+    document.getElementById("dmInputField")?.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendDirectMessage(); }
+    });
 
     // Load mutual connection group chat feed
     async function loadGroupChatFeed() {
@@ -1641,7 +1646,7 @@
         const newDisc = document.getElementById("editDisciplineInput").value.trim();
         const newBio = document.getElementById("editBioInput").value.trim();
 
-        if (!newName) { alert("Name cannot be empty!"); return; }
+        if (!newName) { showToast('Name cannot be empty!', 'error'); return; }
         
         editBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Saving...`;
         try {
@@ -1661,10 +1666,10 @@
 
           isEditingProfile = false;
           editBtn.innerHTML = `<i class="ri-edit-line"></i> Edit Profile`;
-          alert("Profile updated successfully!");
+          showToast('Profile updated successfully! ✅', 'success');
         } catch (err) {
           console.error(err);
-          alert("Failed to save changes.");
+          showToast('Failed to save changes.', 'error');
           editBtn.innerHTML = `<i class="ri-save-line"></i> Save Profile`;
         }
       }
@@ -1715,14 +1720,10 @@
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
       const activeUid = (currentUser && currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
-      if (!activeUid) return alert("Please log in to update profile photo.");
+      if (!activeUid) { showToast('Please log in to update profile photo.', 'error'); return; }
 
       const btn = document.getElementById("changeAvatarBtn");
-      const originalTxt = btn ? btn.innerHTML : "";
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`;
-      }
+      if (btn) { btn.disabled = true; btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`; }
 
       try {
         const formData = new FormData();
@@ -1743,25 +1744,97 @@
             </button>
             <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this)">
           `;
-          
-          const userRef = doc(db, "users", activeUid);
-          await setDoc(userRef, { profilePic: photoUrl, photoURL: photoUrl, avatarUrl: photoUrl }, { merge: true });
+          await setDoc(doc(db, "users", activeUid), { profilePic: photoUrl, photoURL: photoUrl, avatarUrl: photoUrl }, { merge: true });
           localStorage.setItem("dpgActiveUserPhoto", photoUrl);
-          alert("Profile photo updated successfully!");
+          showToast('Profile photo updated! ✅', 'success');
         } else {
-          alert("Failed to upload profile photo: " + (json.error || "Unknown error"));
+          showToast('Failed to upload profile photo: ' + (json.error || 'Unknown error'), 'error');
         }
       } catch (err) {
         console.error("Profile photo upload error:", err);
-        alert("Failed to upload profile photo.");
+        showToast('Failed to upload profile photo.', 'error');
       } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = originalTxt;
+        const newBtn = document.getElementById("changeAvatarBtn");
+        if (newBtn) { newBtn.disabled = false; newBtn.innerHTML = `<i class="ri-camera-fill"></i>`; }
+      }
+    // =============================================
+    // TOAST NOTIFICATION SYSTEM
+    // =============================================
+    function showToast(message, type = 'success', duration = 3500) {
+      let container = document.getElementById('toastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = 'position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none;';
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement('div');
+      const colors = { success: '#10b981', error: '#ef4444', info: '#6366f1', warning: '#f59e0b' };
+      const icons = { success: 'ri-checkbox-circle-fill', error: 'ri-close-circle-fill', info: 'ri-information-fill', warning: 'ri-alert-fill' };
+      toast.style.cssText = `background:rgba(15,23,42,0.97); border:1px solid ${colors[type] || '#6366f1'}; color:white; padding:12px 18px; border-radius:12px; display:flex; align-items:center; gap:10px; font-size:0.88rem; font-family:'Inter',sans-serif; box-shadow:0 8px 24px rgba(0,0,0,0.5); animation:slideInRight 0.3s ease; pointer-events:all; max-width:320px;`;
+      toast.innerHTML = `<i class="${icons[type] || 'ri-information-fill'}" style="color:${colors[type] || '#6366f1'}; font-size:1.1rem; flex-shrink:0;"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, duration);
+    }
+    window.showToast = showToast;
+
+    // =============================================
+    // INVITATION SYSTEM
+    // =============================================
+    window.sendInvitation = async function() {
+      if (!currentUser) { showToast('Please log in to send invitations.', 'error'); return; }
+      const email = document.getElementById('inviteEmail').value.trim();
+      const name = document.getElementById('inviteName').value.trim();
+      const message = document.getElementById('inviteMessage').value.trim();
+      const statusEl = document.getElementById('inviteStatusMsg');
+      const btn = document.getElementById('inviteSendBtn');
+
+      if (!email || !email.includes('@')) { showToast('Please enter a valid email address.', 'error'); return; }
+      if (!name) { showToast('Please enter the recipient\'s name.', 'error'); return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ri-loader-4-line"></i> Sending...';
+      statusEl.style.display = 'none';
+
+      try {
+        const res = await fetch(window.API_BASE_URL + '/api/invite/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName || currentUser.email.split('@')[0],
+            senderEmail: currentUser.email,
+            toEmail: email,
+            toName: name,
+            message
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          statusEl.style.display = 'block';
+          statusEl.style.color = '#10b981';
+          statusEl.innerHTML = `<i class="ri-checkbox-circle-line"></i> Invitation sent! A verification email was sent to you first. Once confirmed, ${name} will receive the invitation.`;
+          document.getElementById('inviteEmail').value = '';
+          document.getElementById('inviteName').value = '';
+          document.getElementById('inviteMessage').value = '';
+          showToast('Invitation sent! Check your email to verify.', 'success');
+        } else {
+          statusEl.style.display = 'block';
+          statusEl.style.color = '#ef4444';
+          statusEl.textContent = data.error || 'Failed to send invitation. Please try again.';
+          showToast(data.error || 'Invitation failed.', 'error');
         }
+      } catch (e) {
+        console.error(e);
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = 'Network error. Please try again.';
+        showToast('Network error. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-send-plane-fill"></i> Send Invitation';
       }
     };
-  };
 
     // Live search lookup handler
     const lookupField = document.getElementById("lookupField");
@@ -1790,5 +1863,8 @@
       });
     }
   </script>
+  <style>
+    @keyframes slideInRight { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+  </style>
 </body>
 </html>
