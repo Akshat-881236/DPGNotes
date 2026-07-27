@@ -1967,7 +1967,7 @@ app.post('/api/social/send-message', async (req, res) => {
   try {
     // Generate unique chat ID sorted alphabetically by UIDs
     const chatId = [senderId, receiverId].sort().join("_");
-    const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days from now
+    const expiresAt = new Date(Date.now() + 90 * 60 * 60 * 1000); // 90 hours from now
 
     const msgRef = await db.collection("chats").doc(chatId).collection("messages").add({
       senderId,
@@ -2269,12 +2269,14 @@ app.post('/api/social/send-group-message', async (req, res) => {
     c1.forEach(doc => recipients.add(doc.data().receiverId));
     c2.forEach(doc => recipients.add(doc.data().senderId));
 
+    const groupExpiresAt = admin.firestore.Timestamp.fromDate(new Date(Date.now() + 90 * 60 * 60 * 1000));
     const newMsg = {
       senderId,
       senderName: senderName || "Contributor",
       senderPhoto: senderPhoto || "",
       text,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: groupExpiresAt,
       recipients: Array.from(recipients)
     };
 
@@ -2298,15 +2300,20 @@ app.get('/api/social/get-group-messages', async (req, res) => {
 
     const seenIds = new Set();
     const addMsgs = (snap) => {
+      const now = Date.now();
       snap.forEach(doc => {
         if (!seenIds.has(doc.id)) {
           seenIds.add(doc.id);
           const d = doc.data();
-          messages.push({
-            id: doc.id,
-            ...d,
-            createdAt: d.createdAt ? d.createdAt.toDate().toISOString() : new Date().toISOString()
-          });
+          // Filter out expired messages (90-hour TTL)
+          const expiry = d.expiresAt ? d.expiresAt.toDate().getTime() : (now + 1);
+          if (expiry > now) {
+            messages.push({
+              id: doc.id,
+              ...d,
+              createdAt: d.createdAt ? d.createdAt.toDate().toISOString() : new Date().toISOString()
+            });
+          }
         }
       });
     };

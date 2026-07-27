@@ -1301,7 +1301,11 @@
       if (!currentUser || !targetUid) return;
       try {
         const chatId = [currentUser.uid, targetUid].sort().join("_");
-        const res = await fetch(`${window.API_BASE_URL}/api/social/get-messages?chatId=${chatId}&userId=${currentUser.uid}`);
+        const res = await fetch(`${window.API_BASE_URL}/api/social/get-messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senderId: currentUser.uid, receiverId: targetUid, viewerId: currentUser.uid })
+        });
         if (!res.ok) return;
         const messages = await res.json();
         const box = document.getElementById("dmMessagesBox");
@@ -1572,6 +1576,9 @@
       input.focus();
       const out = document.getElementById("aiConsoleOutputProf");
 
+      // Save user message to IndexedDB
+      try { await saveAIChatMsg(currentUser.uid, 'user', text); } catch(e) {}
+
       // Render user message with markdown parsing
       out.innerHTML += `
         <div style="margin-top:0.6rem; text-align:right; margin-bottom:0.6rem;">
@@ -1599,6 +1606,9 @@
         if (loadEl) loadEl.remove();
 
         if (res.ok && data.response) {
+          // Save AI response to IndexedDB
+          try { await saveAIChatMsg(currentUser.uid, 'ai', data.response); } catch(e) {}
+
           out.innerHTML += `
             <div style="margin-top:0.6rem; text-align:left; margin-bottom:0.6rem; display:flex; align-items:flex-start; gap:8px;">
               <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">🤖</div>
@@ -1626,6 +1636,69 @@
         }
       });
     }
+
+    // =============================================
+    // INDEXEDDB AI CHAT STORAGE
+    // =============================================
+    const AI_CHAT_DB_NAME = 'dpgnotes_ai_chat';
+    const AI_CHAT_STORE = 'messages';
+    let aiChatDb = null;
+
+    async function openAIChatDB() {
+      if (aiChatDb) return aiChatDb;
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(AI_CHAT_DB_NAME, 1);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(AI_CHAT_STORE)) {
+            const store = db.createObjectStore(AI_CHAT_STORE, { keyPath: 'id', autoIncrement: true });
+            store.createIndex('userId', 'userId', { unique: false });
+            store.createIndex('ts', 'ts', { unique: false });
+          }
+        };
+        req.onsuccess = e => { aiChatDb = e.target.result; resolve(aiChatDb); };
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    async function saveAIChatMsg(userId, role, text) {
+      const db = await openAIChatDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(AI_CHAT_STORE, 'readwrite');
+        tx.objectStore(AI_CHAT_STORE).add({ userId, role, text, ts: Date.now() });
+        tx.oncomplete = resolve;
+        tx.onerror = e => reject(e.target.error);
+      });
+    }
+
+    async function loadAIChatHistory(userId) {
+      const db = await openAIChatDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(AI_CHAT_STORE, 'readonly');
+        const idx = tx.objectStore(AI_CHAT_STORE).index('userId');
+        const req = idx.getAll(userId);
+        req.onsuccess = e => resolve(e.target.result || []);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    // Restore AI chat history from IndexedDB on load
+    (async function restoreAIChat() {
+      if (!currentUser) return;
+      try {
+        const history = await loadAIChatHistory(currentUser.uid);
+        const out = document.getElementById("aiConsoleOutputProf");
+        if (!out || history.length === 0) return;
+        history.slice(-30).forEach(msg => {
+          if (msg.role === 'user') {
+            out.innerHTML += `<div style="margin-top:0.6rem; text-align:right; margin-bottom:0.6rem;"><div style="display:inline-block; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; padding:8px 14px; border-radius:14px 14px 4px 14px; max-width:85%; text-align:left; line-height:1.5; font-size:0.88rem;">${formatBioContent(msg.text)}</div></div>`;
+          } else {
+            out.innerHTML += `<div style="margin-top:0.6rem; text-align:left; margin-bottom:0.6rem; display:flex; align-items:flex-start; gap:8px;"><div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">🤖</div><div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.07); padding:10px 14px; border-radius:4px 14px 14px 14px; max-width:90%; color:#cbd5e1; font-size:0.88rem; line-height:1.6;">${formatBioContent(msg.text)}</div></div>`;
+          }
+        });
+        out.scrollTop = out.scrollHeight;
+      } catch(e) { console.error('AI chat restore failed:', e); }
+    })();
 
     let isEditingProfile = false;
     window.toggleEditProfile = async function() {
@@ -1673,6 +1746,8 @@
           editBtn.innerHTML = `<i class="ri-save-line"></i> Save Profile`;
         }
       }
+    };
+
     window.uploadHeaderBanner = async function(input) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
