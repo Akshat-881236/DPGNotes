@@ -404,12 +404,36 @@
           <!-- Connect / Follow actions -->
           <div class="profile-actions-row" id="profileActionsRow">
             <button class="social-btn btn-follow" id="editProfileBtn" onclick="toggleEditProfile()" style="display:none; background:rgba(99,102,241,0.15); color:#cbd5e1; border:1px solid rgba(99,102,241,0.35);"><i class="ri-edit-line"></i> Edit Profile</button>
-            <button class="social-btn btn-follow" id="followBtn" onclick="toggleFollow()">
-              <i class="ri-user-add-line"></i> Follow
-            </button>
-            <button class="social-btn btn-connect" id="connectBtn" onclick="sendConnectionRequest()">
-              <i class="ri-user-shared-line"></i> Connect
-            </button>
+
+            <!-- Follow button with dropdown -->
+            <div style="position:relative; display:inline-flex;" id="followBtnWrapper">
+              <button class="social-btn btn-follow" id="followBtn" onclick="toggleFollow()" style="border-radius:8px 0 0 8px; border-right:none;">
+                <i class="ri-user-add-line" id="followBtnIcon"></i> <span id="followBtnText">Follow</span>
+              </button>
+              <button id="followDropdownToggle" onclick="toggleFollowDropdown()" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); border-left:1px solid rgba(255,255,255,0.1); color:#a78bfa; padding:0.5rem 0.6rem; border-radius:0 8px 8px 0; cursor:pointer; display:none;">
+                <i class="ri-more-fill"></i>
+              </button>
+              <div id="followDropdownMenu" style="display:none; position:absolute; top:110%; left:0; min-width:130px; background:rgba(15,23,42,0.97); border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.5); z-index:200;">
+                <div onclick="doUnfollow()" style="padding:0.7rem 1rem; cursor:pointer; color:#ef4444; font-size:0.88rem; display:flex; gap:8px; align-items:center;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">
+                  <i class="ri-user-unfollow-line"></i> Unfollow
+                </div>
+              </div>
+            </div>
+
+            <!-- Connect button with states -->
+            <div style="position:relative; display:inline-flex;" id="connectBtnWrapper">
+              <button class="social-btn btn-connect" id="connectBtn" onclick="handleConnectClick()" style="border-radius:8px;">
+                <i class="ri-user-shared-line" id="connectBtnIcon"></i> <span id="connectBtnText">Connect</span>
+              </button>
+              <button id="connectDropdownToggle" onclick="toggleConnectDropdown()" style="display:none; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); border-left:1px solid rgba(255,255,255,0.1); color:#10b981; padding:0.5rem 0.6rem; border-radius:0 8px 8px 0; cursor:pointer;">
+                <i class="ri-more-fill"></i>
+              </button>
+              <div id="connectDropdownMenu" style="display:none; position:absolute; top:110%; left:0; min-width:150px; background:rgba(15,23,42,0.97); border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.5); z-index:200;">
+                <div onclick="doDisconnect()" style="padding:0.7rem 1rem; cursor:pointer; color:#ef4444; font-size:0.88rem; display:flex; gap:8px; align-items:center;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">
+                  <i class="ri-user-unfollow-line"></i> Disconnect
+                </div>
+              </div>
+            </div>
           </div>
 
           <h2 class="profile-name" id="profileName">Loading Profile...</h2>
@@ -1015,50 +1039,136 @@
         });
         const state = await res.json();
 
-        // Follow state
-        const followBtn = document.getElementById("followBtn");
+        // --- Follow Button State ---
         document.getElementById("followersCount").innerText = state.followerCount || 0;
+        const followBtnText = document.getElementById("followBtnText");
+        const followBtnIcon = document.getElementById("followBtnIcon");
+        const followDropdownToggle = document.getElementById("followDropdownToggle");
+        const followBtn = document.getElementById("followBtn");
+
         if (state.isFollowing) {
-          followBtn.classList.add("active-follow");
-          followBtn.innerHTML = `<i class="ri-user-unfollow-line"></i> Unfollow`;
+          followBtnText.textContent = "Following";
+          followBtnIcon.className = "ri-user-follow-line";
+          followBtn.style.background = "rgba(99,102,241,0.25)";
+          followBtn.style.borderColor = "rgba(99,102,241,0.5)";
+          followBtn.style.borderRadius = "8px 0 0 8px";
+          followBtn.style.borderRight = "none";
+          followBtn.onclick = null; // handled via dropdown
+          if (followDropdownToggle) followDropdownToggle.style.display = "inline-flex";
         } else {
-          followBtn.classList.remove("active-follow");
-          followBtn.innerHTML = `<i class="ri-user-add-line"></i> Follow`;
+          followBtnText.textContent = "Follow";
+          followBtnIcon.className = "ri-user-add-line";
+          followBtn.style.background = "";
+          followBtn.style.borderRadius = "8px";
+          followBtn.style.borderRight = "";
+          followBtn.onclick = toggleFollow;
+          if (followDropdownToggle) followDropdownToggle.style.display = "none";
         }
 
-        // Connection state
+        // --- Connect Button State ---
         const connectBtn = document.getElementById("connectBtn");
+        const connectBtnText = document.getElementById("connectBtnText");
+        const connectBtnIcon = document.getElementById("connectBtnIcon");
+        const connectDropdownToggle = document.getElementById("connectDropdownToggle");
         const banner = document.getElementById("connectApprovalBanner");
-        
+
         if (state.connection) {
           if (state.connection.status === 'accepted') {
-            connectBtn.innerText = "Connected";
-            connectBtn.disabled = true;
-            connectBtn.style.background = "#10b981";
-            
+            connectBtnText.textContent = "Connected";
+            connectBtnIcon.className = "ri-user-follow-line";
+            connectBtn.style.background = "rgba(16,185,129,0.2)";
+            connectBtn.style.borderColor = "rgba(16,185,129,0.5)";
+            connectBtn.style.borderRadius = "8px 0 0 8px";
+            connectBtn.style.borderRight = "none";
+            connectBtn.onclick = null;
+            connectBtn.disabled = false;
+            if (connectDropdownToggle) connectDropdownToggle.style.display = "inline-flex";
+
             document.getElementById("dmLockedMessage").style.display = "none";
             document.getElementById("dmInputArea").style.display = "flex";
-            
             loadChatHistory();
             if (chatInterval) clearInterval(chatInterval);
             chatInterval = setInterval(loadChatHistory, 3000);
 
           } else if (state.connection.status === 'pending') {
             if (state.connection.initiatedByMe) {
-              connectBtn.innerText = "Pending Request";
+              connectBtnText.textContent = "Pending";
+              connectBtnIcon.className = "ri-time-line";
+              connectBtn.style.background = "rgba(245,158,11,0.15)";
+              connectBtn.style.borderColor = "rgba(245,158,11,0.4)";
+              connectBtn.style.borderRadius = "8px";
+              connectBtn.style.borderRight = "";
               connectBtn.disabled = true;
-              connectBtn.style.background = "rgba(255,255,255,0.05)";
+              if (connectDropdownToggle) connectDropdownToggle.style.display = "none";
             } else {
               connectBtn.style.display = "none";
               document.getElementById("bannerRequesterName").innerText = targetProfile.name;
               banner.style.display = "flex";
             }
           }
+        } else {
+          // No connection record at all — reset to default Connect state
+          connectBtnText.textContent = "Connect";
+          connectBtnIcon.className = "ri-user-shared-line";
+          connectBtn.style.background = "";
+          connectBtn.style.borderRadius = "8px";
+          connectBtn.style.borderRight = "";
+          connectBtn.disabled = false;
+          connectBtn.onclick = handleConnectClick;
+          if (connectDropdownToggle) connectDropdownToggle.style.display = "none";
         }
       } catch (err) {
         console.error("Failed loading relationship state:", err);
       }
     }
+
+    // ---- Follow Dropdown Helpers ----
+    window.toggleFollowDropdown = function() {
+      const menu = document.getElementById("followDropdownMenu");
+      if (!menu) return;
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    };
+
+    window.doUnfollow = async function() {
+      const menu = document.getElementById("followDropdownMenu");
+      if (menu) menu.style.display = "none";
+      await toggleFollow();
+    };
+
+    // ---- Connect Dropdown Helpers ----
+    window.toggleConnectDropdown = function() {
+      const menu = document.getElementById("connectDropdownMenu");
+      if (!menu) return;
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    };
+
+    window.handleConnectClick = async function() {
+      await sendConnectionRequest();
+    };
+
+    window.doDisconnect = async function() {
+      if (!currentUser) return;
+      const menu = document.getElementById("connectDropdownMenu");
+      if (menu) menu.style.display = "none";
+      try {
+        await fetch(window.API_BASE_URL + '/api/social/connect-respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senderId: targetUid, receiverId: currentUser.uid, status: 'rejected' })
+        });
+        await updateSocialButtonStates();
+      } catch (e) { console.error(e); }
+    };
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', function(e) {
+      const fw = document.getElementById('followBtnWrapper');
+      const cw = document.getElementById('connectBtnWrapper');
+      const fm = document.getElementById('followDropdownMenu');
+      const cm = document.getElementById('connectDropdownMenu');
+      if (fm && fw && !fw.contains(e.target)) fm.style.display = 'none';
+      if (cm && cw && !cw.contains(e.target)) cm.style.display = 'none';
+    });
 
     // Tab switcher helper
     window.switchProfTab = function(btn, tabId) {
@@ -1196,9 +1306,10 @@
       const text = field.value.trim();
       if (!text || !currentUser) return;
       field.value = "";
+      field.focus();
 
       try {
-        await fetch(window.API_BASE_URL + '/api/social/send-message', {
+        const res = await fetch(window.API_BASE_URL + '/api/social/send-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1210,9 +1321,35 @@
             text
           })
         });
+        if (res.ok) {
+          // Optimistic render immediately
+          const box = document.getElementById("dmMessagesBox");
+          const div = document.createElement("div");
+          div.style.cssText = "display:flex; gap:8px; align-items:flex-end; justify-content:flex-end; margin:0.4rem 0;";
+          div.innerHTML = `
+            <div style="display:flex; flex-direction:column; max-width:70%;">
+              <span style="font-size:0.68rem; color:var(--text-muted); font-weight:600; margin-bottom:2px; align-self:flex-end;">You</span>
+              <div style="padding: 0.55rem 0.85rem; border-radius:12px; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white;">${formatBioContent(text)}</div>
+            </div>
+            <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>
+          `;
+          box.appendChild(div);
+          box.scrollTop = box.scrollHeight;
+        }
         loadChatHistory();
       } catch (err) { console.error(err); }
     };
+
+    // Wire Enter key for DM input
+    const dmInputField = document.getElementById("dmInputField");
+    if (dmInputField) {
+      dmInputField.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendDirectMessage();
+        }
+      });
+    }
 
     // Load mutual connection group chat feed
     async function loadGroupChatFeed() {
@@ -1259,9 +1396,26 @@
       const text = input.value.trim();
       if (!text || !currentUser) return;
       input.value = "";
+      input.focus();
+
+      // Optimistic render
+      const feed = document.getElementById("groupChatMessagesFeed");
+      if (feed) {
+        const wrapper = document.createElement("div");
+        wrapper.style.cssText = "display:flex; gap:8px; align-items:flex-end; justify-content:flex-end;";
+        wrapper.innerHTML = `
+          <div style="display:flex; flex-direction:column; max-width:70%;">
+            <span style="font-size:0.7rem; color:var(--primary-light); font-weight:600; margin-bottom:2px; align-self:flex-end;">${currentUser.displayName || 'You'}</span>
+            <div style="padding:0.6rem 0.9rem; border-radius:12px; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; font-size:0.85rem; line-height:1.45;">${formatBioContent(text)}</div>
+          </div>
+          <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>
+        `;
+        feed.appendChild(wrapper);
+        feed.scrollTop = feed.scrollHeight;
+      }
 
       try {
-        const res = await fetch(window.API_BASE_URL + '/api/social/send-group-message', {
+        await fetch(window.API_BASE_URL + '/api/social/send-group-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1271,13 +1425,22 @@
             text
           })
         });
-        if (res.ok) {
-          loadGroupChatFeed();
-        }
+        setTimeout(loadGroupChatFeed, 500);
       } catch (e) {
         console.error(e);
       }
     };
+
+    // Wire Enter key for group chat input (already in HTML, but ensure JS also binds)
+    const groupInputEl = document.getElementById("groupChatInputField");
+    if (groupInputEl) {
+      groupInputEl.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendGroupChatMessage();
+        }
+      });
+    }
 
     async function loadNotificationsProf() {
       const box = document.getElementById("notificationsListProfBox");
@@ -1375,8 +1538,25 @@
       }
     }
 
-    window.markAllNotificationsReadProf = function() {
-      alert("All notifications marked as read.");
+    window.markAllNotificationsReadProf = async function() {
+      const box = document.getElementById("notificationsListProfBox");
+      if (!currentUser) return;
+      try {
+        const q1 = query(collection(db, "notifications"), where("email", "==", currentUser.email), where("isRead", "!=", true));
+        const q2 = query(collection(db, "notifications"), where("toEmail", "==", currentUser.email), where("isRead", "!=", true));
+        const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+        const allDocs = new Map();
+        s1.forEach(d => allDocs.set(d.id, d.ref));
+        s2.forEach(d => allDocs.set(d.id, d.ref));
+
+        const updates = [];
+        allDocs.forEach((ref) => updates.push(updateDoc(ref, { isRead: true })));
+        await Promise.all(updates);
+
+        box.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">All notifications marked as read.</p>`;
+      } catch (err) {
+        console.error("Mark all read failed:", err);
+      }
     };
 
     window.sendAiConsoleQueryProf = async function() {
@@ -1384,15 +1564,19 @@
       const text = input.value.trim();
       if (!text || !currentUser) return;
       input.value = "";
+      input.focus();
       const out = document.getElementById("aiConsoleOutputProf");
-      
-      // Display user message
-      out.innerHTML += `<div style="margin-top:0.5rem; text-align:right; margin-bottom:0.5rem;"><span style="background:var(--primary); color:white; padding:6px 12px; border-radius:8px; display:inline-block;">${text}</span></div>`;
+
+      // Render user message with markdown parsing
+      out.innerHTML += `
+        <div style="margin-top:0.6rem; text-align:right; margin-bottom:0.6rem;">
+          <div style="display:inline-block; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; padding:8px 14px; border-radius:14px 14px 4px 14px; max-width:85%; text-align:left; line-height:1.5; font-size:0.88rem;">${formatBioContent(text)}</div>
+        </div>`;
       out.scrollTop = out.scrollHeight;
 
-      // Display loading state
+      // Typing indicator
       const loadingId = "ai-loading-" + Date.now();
-      out.innerHTML += `<div id="${loadingId}" style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(255,255,255,0.05); color:#cbd5e1; padding:6px 12px; border-radius:8px; display:inline-block;">🤖 Thinking...</span></div>`;
+      out.innerHTML += `<div id="${loadingId}" style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;"><div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">🤖</div><div style="background:rgba(255,255,255,0.06); padding:8px 14px; border-radius:4px 14px 14px 14px; color:#94a3b8; font-size:0.85rem;">Thinking<span class="ai-dots">...</span></div></div>`;
       out.scrollTop = out.scrollHeight;
 
       try {
@@ -1409,19 +1593,34 @@
         const loadEl = document.getElementById(loadingId);
         if (loadEl) loadEl.remove();
 
-        if (res.ok) {
-          out.innerHTML += `<div style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(255,255,255,0.05); color:#cbd5e1; padding:8px 12px; border-radius:10px; display:inline-block; max-width:90%; line-height:1.5;">🤖 ${formatBioContent(data.response)}</span></div>`;
+        if (res.ok && data.response) {
+          out.innerHTML += `
+            <div style="margin-top:0.6rem; text-align:left; margin-bottom:0.6rem; display:flex; align-items:flex-start; gap:8px;">
+              <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">🤖</div>
+              <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.07); padding:10px 14px; border-radius:4px 14px 14px 14px; max-width:90%; color:#cbd5e1; font-size:0.88rem; line-height:1.6;">${formatBioContent(data.response)}</div>
+            </div>`;
         } else {
-          out.innerHTML += `<div style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(239,68,68,0.1); color:#ef4444; padding:6px 12px; border-radius:8px; display:inline-block;">🤖 Failed to generate response.</span></div>`;
+          out.innerHTML += `<div style="margin-top:0.5rem; text-align:left;"><span style="background:rgba(239,68,68,0.1); color:#ef4444; padding:8px 14px; border-radius:8px; display:inline-block; font-size:0.88rem;">🤖 ${data.error || 'Failed to generate response.'}</span></div>`;
         }
       } catch (e) {
         console.error(e);
         const loadEl = document.getElementById(loadingId);
         if (loadEl) loadEl.remove();
-        out.innerHTML += `<div style="margin-top:0.5rem; text-align:left; margin-bottom:0.5rem;"><span style="background:rgba(239,68,68,0.1); color:#ef4444; padding:6px 12px; border-radius:8px; display:inline-block;">🤖 API Connection failed.</span></div>`;
+        out.innerHTML += `<div style="margin-top:0.5rem; text-align:left;"><span style="background:rgba(239,68,68,0.1); color:#ef4444; padding:8px 14px; border-radius:8px; display:inline-block; font-size:0.88rem;">🤖 API connection failed. Please check your network.</span></div>`;
       }
       out.scrollTop = out.scrollHeight;
     };
+
+    // Wire Enter key for AI console
+    const aiInputEl = document.getElementById("aiConsoleInputProf");
+    if (aiInputEl) {
+      aiInputEl.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendAiConsoleQueryProf();
+        }
+      });
+    }
 
     let isEditingProfile = false;
     window.toggleEditProfile = async function() {
