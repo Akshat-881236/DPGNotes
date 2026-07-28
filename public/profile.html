@@ -761,7 +761,6 @@
           "mainEntity": {
             "@type": "Person",
             "name": profile.name,
-            "email": profile.email || "",
             "jobTitle": `${profile.discipline || "Academic"} Student`,
             "description": cleanBio,
             "image": photo,
@@ -770,51 +769,15 @@
             "interactionStatistic": [
               {
                 "@type": "InteractionCounter",
-                "interactionType": { "@type": "LikeAction" },
+                "interactionType": "https://schema.org/LikeAction",
                 "userInteractionCount": likes
               },
               {
                 "@type": "InteractionCounter",
-                "interactionType": { "@type": "WriteAction" },
+                "interactionType": "https://schema.org/WriteAction",
                 "userInteractionCount": uploads
-              },
-              {
-                "@type": "InteractionCounter",
-                "interactionType": { "@type": "ShareAction" },
-                "userInteractionCount": shares
               }
-            ],
-            "knowsAbout": [
-              profile.discipline || "Academic Studies",
-              "PDF Notes",
-              "Study Resources",
-              "DPGNotes Platform"
             ]
-          },
-          "review": {
-            "@type": "Review",
-            "itemReviewed": {
-              "@type": "Person",
-              "name": profile.name,
-              "image": photo,
-              "url": profileUrl,
-              "description": cleanBio
-            },
-            "reviewRating": {
-              "@type": "Rating",
-              "ratingValue": ratingValue,
-              "bestRating": 5,
-              "worstRating": 1
-            },
-            "author": {
-              "@type": "Organization",
-              "name": "DPGNotes"
-            },
-            "publisher": {
-              "@type": "Organization",
-              "name": "DPGNotes",
-              "url": "https://dpgnotes.web.app"
-            }
           }
         };
         schemaScript.textContent = JSON.stringify(personSchema, null, 2);
