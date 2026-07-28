@@ -1317,8 +1317,21 @@ app.post('/api/ai/query', async (req, res) => {
     return res.status(400).json({ error: "A valid userMessage parameter is required" });
   }
   try {
-    const prompt = `You are DPGNotes Intelligence, an advanced AI tutor and study assistant.
-Help the student with their query. Focus on accuracy, readability, and modern markdown formatting.
+    const docsSnapshot = await db.collection("documents").get();
+    const docSummary = [];
+    docsSnapshot.forEach(d => {
+      const data = d.data();
+      docSummary.push(`- "${data.title}" (${data.category} / ${data.discipline}) shared by ${data.userName || 'Contributor'}`);
+    });
+    const docContext = docSummary.length > 0 ? docSummary.slice(0, 30).join("\n") : "No documents uploaded yet.";
+
+    const prompt = `You are DPGNotes Intelligence, an advanced AI tutor, study assistant, and DPGNotes platform expert.
+You have access to the actual resources and documents shared by contributors on DPGNotes. 
+
+Here is the current catalog of shared study resources/notes on the platform:
+${docContext}
+
+Answer the student's question. If their question is about finding notes, study material, or recommendations, suggest the relevant DPGNotes resources from the catalog above. Focus on accuracy, readability, and modern markdown formatting.
 
 Question: ${userMessage.trim()}`;
 
@@ -1443,7 +1456,10 @@ app.post('/api/invite/send', async (req, res) => {
       createdBy: senderName
     });
 
-    const verifyLink = `${process.env.APP_URL || 'http://localhost:3000'}/api/invite/verify?token=${token}`;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    const backendBaseUrl = `${protocol}://${host}`;
+    const verifyLink = `${backendBaseUrl}/api/invite/verify?token=${token}`;
     const htmlContent = `
       <div style="font-family:Arial,sans-serif; padding:20px; background:#f4f4f5; color:#1e293b;">
         <div style="max-width:600px; margin:0 auto; background:white; padding:30px; border-radius:12px; border:1px solid #e2e8f0;">
@@ -1489,7 +1505,8 @@ app.get('/api/invite/verify', async (req, res) => {
     });
 
     // Send email to the receiver
-    const inviteLink = `${process.env.APP_URL || 'http://localhost:3000'}/?referrer=${invite.referrerCode}`;
+    const frontendBaseUrl = process.env.APP_URL || 'https://dpgnotes.web.app';
+    const inviteLink = `${frontendBaseUrl}/?referrer=${invite.referrerCode}`;
     const receiverHtml = `
       <div style="font-family:Arial,sans-serif; padding:20px; background:#f8fafc; color:#0f172a;">
         <div style="max-width:600px; margin:0 auto; background:white; padding:30px; border-radius:12px; border-top:6px solid #6366f1; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
@@ -1521,7 +1538,7 @@ app.get('/api/invite/verify', async (req, res) => {
           </div>
           
           <div style="border-top:1px solid #e2e8f0; padding-top:20px; font-size:0.8rem; color:#94a3b8;">
-            <p><strong>Legal Notes:</strong> By accepting this invitation, you agree to the <a href="${process.env.APP_URL || 'http://localhost:3000'}/legal/index.html" style="color:#6366f1;">Terms of Service and Privacy Policy</a>.</p>
+            <p><strong>Legal Notes:</strong> By accepting this invitation, you agree to the <a href="${frontendBaseUrl}/legal/index.html" style="color:#6366f1;">Terms of Service and Privacy Policy</a>.</p>
           </div>
         </div>
       </div>
@@ -1847,35 +1864,51 @@ app.post('/api/social/connect-request', async (req, res) => {
     if (receiverEmail) {
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 16px; max-width: 620px; margin: auto; border: 1px solid rgba(255,255,255,0.1);">
-          <div style="height: 120px; background-image: url('${senderBanner}'); background-size: cover; background-position: center; border-radius: 12px 12px 0 0; position: relative;">
-            <img src="${senderPhoto}" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #0f172a; position: absolute; bottom: -30px; left: 20px; object-fit: cover;">
-          </div>
-          <div style="padding-top: 40px; padding-left: 20px; padding-right: 20px;">
-            <h2 style="color: #6366f1; margin: 0 0 5px 0;">${senderName} wants to connect with you</h2>
-            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0 0 15px 0;">${senderEmail}</p>
+          <!-- Cover Banner -->
+          ${senderBanner ? `<div style="text-align: center; border-radius: 12px 12px 0 0; overflow: hidden;"><img src="${senderBanner}" style="width: 100%; max-width: 620px; height: auto; max-height: 160px; object-fit: cover; display: block;" alt="Cover Banner"></div>` : ''}
+          
+          <div style="padding: 20px;">
+            <!-- Profile Info Row -->
+            <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin-bottom: 20px;">
+              <tr>
+                ${senderPhoto ? `
+                <td style="width: 70px; vertical-align: middle; padding-right: 15px;">
+                  <img src="${senderPhoto}" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #6366f1; display: block;" alt="Profile Photo">
+                </td>
+                ` : ''}
+                <td style="vertical-align: middle; text-align: left;">
+                  <h2 style="color: #6366f1; margin: 0; font-size: 1.35rem; font-weight: bold;">${senderName} wants to connect with you</h2>
+                  <p style="color: #94a3b8; font-size: 0.9rem; margin: 4px 0 0 0;">${senderEmail}</p>
+                </td>
+              </tr>
+            </table>
 
-            <div style="display: flex; gap: 15px; margin-bottom: 20px; font-size: 0.85rem;">
-              ${senderLinkedin ? `<a href="${senderLinkedin}" target="_blank" style="color: #60a5fa; text-decoration: underline;">Connect on LinkedIn</a>` : ''}
-              ${senderGithub ? `<a href="${senderGithub}" target="_blank" style="color: #c084fc; text-decoration: underline;">View on GitHub</a>` : ''}
+            <div style="margin-bottom: 20px; font-size: 0.85rem;">
+              ${senderLinkedin ? `<a href="${senderLinkedin}" target="_blank" style="color: #60a5fa; text-decoration: underline; margin-right: 15px; display: inline-block;">Connect on LinkedIn</a>` : ''}
+              ${senderGithub ? `<a href="${senderGithub}" target="_blank" style="color: #c084fc; text-decoration: underline; display: inline-block;">View on GitHub</a>` : ''}
             </div>
 
-            <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-              <h4 style="margin: 0 0 10px 0; color: #cbd5e1; font-size: 0.85rem; text-transform: uppercase;">Contributor Analytics</h4>
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.85rem; color: #cbd5e1;">
-                <div>📄 Total Contributions: <strong>${senderUploads}</strong></div>
-                <div>❤️ Likes Received: <strong>${senderLikes}</strong></div>
-                <div>📣 Shares Generated: <strong>${senderShares}</strong></div>
-                <div>🔗 Link Clicks: <strong>${senderClicks}</strong></div>
-              </div>
+            <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
+              <h4 style="margin: 0 0 12px 0; color: #cbd5e1; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Contributor Analytics</h4>
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; font-size: 0.85rem; color: #cbd5e1;">
+                <tr>
+                  <td style="width: 50%; padding-bottom: 8px;">📄 Total Contributions: <strong>${senderUploads}</strong></td>
+                  <td style="width: 50%; padding-bottom: 8px;">❤️ Likes Received: <strong>${senderLikes}</strong></td>
+                </tr>
+                <tr>
+                  <td>📣 Shares Generated: <strong>${senderShares}</strong></td>
+                  <td>🔗 Link Clicks: <strong>${senderClicks}</strong></td>
+                </tr>
+              </table>
             </div>
 
-            <p style="line-height: 1.5; color: #e2e8f0;">
+            <p style="line-height: 1.5; color: #e2e8f0; font-size: 0.95rem;">
               <strong>${senderName}</strong> has sent a connection request to you. You can accept or reject the Request by clicking the button below:
             </p>
 
-            <div style="margin: 2rem 0; text-align: center; display: flex; justify-content: center; gap: 15px;">
-              <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=accept_connection" style="background: #10b981; color: white; padding: 0.8rem 1.8rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Accept</a>
-              <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=reject_connection" style="background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.8rem; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Decline</a>
+            <div style="margin: 2rem 0; text-align: center;">
+              <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=accept_connection" style="background: #10b981; color: white; padding: 10px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin: 0 8px;">Accept</a>
+              <a href="https://dpgnotes.web.app/profile.html?uid=${senderId}&action=reject_connection" style="background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); padding: 10px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin: 0 8px;">Decline</a>
             </div>
 
             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 1.5rem; line-height: 1.5;">

@@ -623,8 +623,8 @@ if(uploadForm) {
           throw new Error("File size exceeds 250MB limit. Please provide a direct link instead.");
         }
         
-        // INTERCEPT > 9.5MB
-        if (pdfFile.size > 9.5 * 1024 * 1024) {
+        // INTERCEPT > 10MB (Cloudinary Free Tier Raw Limit)
+        if (pdfFile.size > 10 * 1024 * 1024) {
           document.getElementById("compressionModal").style.display = "flex";
           submitBtn.innerText = "Upload Document";
           submitBtn.disabled = false;
