@@ -281,7 +281,7 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -293,7 +293,7 @@
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
     const db = getFirestore(app);
 
     const urlParams = new URLSearchParams(window.location.search);

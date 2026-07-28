@@ -186,8 +186,10 @@ app.post('/api/upload', upload.single('pdfFile'), async (req, res) => {
     }
 
     const isProfile = req.query.type === 'profile' || req.query.type === 'support' || (uploadPayload && uploadPayload.startsWith("data:image"));
+    const isPdf = (req.file && (req.file.mimetype === 'application/pdf' || req.file.originalname?.toLowerCase().endsWith('.pdf'))) ||
+                  (uploadPayload && uploadPayload.startsWith("data:application/pdf"));
     const result = await cloudinary.uploader.upload(uploadPayload, {
-      resource_type: isProfile ? "image" : "auto",
+      resource_type: isProfile ? "image" : (isPdf ? "image" : "auto"),
       folder: isProfile ? "dpgnotes_profiles" : "dpgnotes_pdfs"
     });
     
@@ -1289,6 +1291,26 @@ Provide a direct and comprehensive answer.`;
   } catch (err) {
     console.error("AI chat failed:", err);
     res.status(500).json({ error: "AI chat service temporarily unavailable", details: err.message });
+  }
+});
+
+// Profile AI Assistant conversational query route
+app.post('/api/ai/query', async (req, res) => {
+  const { userId, userEmail, userMessage } = req.body;
+  if (!userMessage || typeof userMessage !== 'string' || userMessage.trim().length === 0) {
+    return res.status(400).json({ error: "A valid userMessage parameter is required" });
+  }
+  try {
+    const prompt = `You are DPGNotes Intelligence, an advanced AI tutor and study assistant.
+Help the student with their query. Focus on accuracy, readability, and modern markdown formatting.
+
+Question: ${userMessage.trim()}`;
+
+    const response = await askGemini(prompt);
+    res.json({ response });
+  } catch (err) {
+    console.error("Profile AI query failed:", err);
+    res.status(500).json({ error: "AI service temporarily unavailable", details: err.message });
   }
 });
 
