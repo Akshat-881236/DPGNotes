@@ -29,6 +29,7 @@ from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
   const referrer = urlParams.get('referrer');
   if (referrer) {
     sessionStorage.setItem('dpgReferrerCode', referrer);
+    localStorage.setItem('dpgReferrerCode', referrer);
     try {
       await fetch(window.API_BASE_URL + '/api/invite/view', {
         method: 'POST',
@@ -561,7 +562,7 @@ onAuthStateChanged(
         logActivity("LOGIN", "Logged into DPGNotes");
         
         // Check for active referrer
-        const refCode = sessionStorage.getItem('dpgReferrerCode');
+        const refCode = sessionStorage.getItem('dpgReferrerCode') || localStorage.getItem('dpgReferrerCode');
         if (refCode) {
           try {
             await fetch(window.API_BASE_URL + '/api/invite/accept', {
@@ -570,6 +571,7 @@ onAuthStateChanged(
               body: JSON.stringify({ referrerCode: refCode, newUserId: user.uid, newUserEmail: user.email })
             });
             sessionStorage.removeItem('dpgReferrerCode');
+            localStorage.removeItem('dpgReferrerCode');
           } catch(e) { console.error("Referrer accept log failed", e); }
         }
       }

@@ -96,6 +96,12 @@ service cloud.firestore {
     match /shortened_urls/{urlId} {
       allow read, write: if true;
     }
+
+    /* ---------- INVITATIONS ---------- */
+    match /invitations/{invitationId} {
+      allow read, write: if true;
+    }
+    
     
     /* ---------- VALIDATION ---------- */
 

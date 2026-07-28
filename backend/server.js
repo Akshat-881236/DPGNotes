@@ -196,9 +196,10 @@ app.post('/api/upload', upload.single('pdfFile'), async (req, res) => {
         folder: "dpgnotes_profiles"
       };
     } else if (isPdf) {
+      const uniqueId = Math.random().toString(36).substring(2, 10) + "_" + Date.now();
       options = {
         resource_type: "raw",
-        folder: "dpgnotes_pdfs"
+        public_id: `dpgnotes_pdfs/${uniqueId}`
       };
     } else {
       options = {

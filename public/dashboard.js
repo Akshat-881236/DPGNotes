@@ -193,6 +193,20 @@ onAuthStateChanged(auth, async (user) => {
     localStorage.setItem("dpgActiveUserName", user.displayName || "");
     localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
     
+    // Check for active referrer code
+    const refCode = sessionStorage.getItem('dpgReferrerCode') || localStorage.getItem('dpgReferrerCode');
+    if (refCode) {
+      try {
+        await fetch(window.API_BASE_URL + '/api/invite/accept', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referrerCode: refCode, newUserId: user.uid, newUserEmail: user.email })
+        });
+        sessionStorage.removeItem('dpgReferrerCode');
+        localStorage.removeItem('dpgReferrerCode');
+      } catch(e) { console.error("Referrer accept log failed", e); }
+    }
+
     // Create/Update User Document on Login
     try {
       const userDocRef = doc(db, "users", user.uid);
