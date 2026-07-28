@@ -188,10 +188,27 @@ app.post('/api/upload', upload.single('pdfFile'), async (req, res) => {
     const isProfile = req.query.type === 'profile' || req.query.type === 'support' || (uploadPayload && uploadPayload.startsWith("data:image"));
     const isPdf = (req.file && (req.file.mimetype === 'application/pdf' || req.file.originalname?.toLowerCase().endsWith('.pdf'))) ||
                   (uploadPayload && uploadPayload.startsWith("data:application/pdf"));
-    const result = await cloudinary.uploader.upload(uploadPayload, {
-      resource_type: isProfile ? "image" : (isPdf ? "image" : "auto"),
-      folder: isProfile ? "dpgnotes_profiles" : "dpgnotes_pdfs"
-    });
+
+    let options = {};
+    if (isProfile) {
+      options = {
+        resource_type: "image",
+        folder: "dpgnotes_profiles"
+      };
+    } else if (isPdf) {
+      const uniqueId = Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+      options = {
+        resource_type: "raw",
+        public_id: `dpgnotes_pdfs/${uniqueId}.pdf`
+      };
+    } else {
+      options = {
+        resource_type: "auto",
+        folder: "dpgnotes_pdfs"
+      };
+    }
+
+    const result = await cloudinary.uploader.upload(uploadPayload, options);
     
     res.json({ pdfUrl: result.secure_url, url: result.secure_url });
   } catch (error) {
