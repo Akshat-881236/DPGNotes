@@ -719,7 +719,10 @@
         const cleanBio = (profile.bio || `Explore ${profile.name}'s contributor profile and shared resources on DPGNotes.`).replace(/<[^>]*>/g, '').substring(0, 160);
         metaDesc.content = cleanBio;
 
-        const photo = profile.avatarUrl || profile.profilePic || profile.photoURL;
+        const photo = profile.avatarUrl || profile.profilePic || profile.photoURL || "";
+        const profileUrl = `https://dpgnotes.web.app/profile.html?uid=${profile.uid || targetUid}`;
+
+        // Update favicon dynamically to profile photo
         if (photo) {
           let linkIcon = document.querySelector('link[rel="icon"]') || document.querySelector('link[rel="shortcut icon"]');
           if (!linkIcon) {
@@ -730,6 +733,7 @@
           linkIcon.href = photo;
         }
 
+        // Inject or update the JSON-LD schema tag
         let schemaScript = document.getElementById("dpgPersonSchema");
         if (!schemaScript) {
           schemaScript = document.createElement('script');
@@ -740,40 +744,78 @@
 
         const likes = profile.likesCount || 0;
         const uploads = profile.uploadedCount || 0;
-        const ratingVal = Math.min(5.0, (4.0 + (likes * 0.04) + (uploads * 0.1)).toFixed(1));
-        const ratingCount = likes + uploads + 1;
+        const shares = profile.shareCount || 0;
+        const ratingValue = Math.min(5, parseFloat((4.0 + (likes * 0.04) + (uploads * 0.1)).toFixed(1)));
+        const reviewCount = Math.max(1, likes + uploads);
+
+        const sameAs = [
+          profile.linkedin || "",
+          profile.github || ""
+        ].filter(u => u !== "");
 
         const personSchema = {
           "@context": "https://schema.org",
-          "@type": "Person",
-          "name": profile.name,
-          "email": profile.email,
-          "jobTitle": `${profile.discipline || 'Academic'} Student`,
-          "description": cleanBio,
-          "image": photo || "",
-          "sameAs": [
-            profile.linkedin || "",
-            profile.github || ""
-          ].filter(url => url !== ""),
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": ratingVal.toString(),
-            "reviewCount": ratingCount.toString(),
-            "bestRating": "5",
-            "worstRating": "1"
+          "@type": "ProfilePage",
+          "name": `${profile.name} – DPGNotes Contributor Profile`,
+          "url": profileUrl,
+          "mainEntity": {
+            "@type": "Person",
+            "name": profile.name,
+            "email": profile.email || "",
+            "jobTitle": `${profile.discipline || "Academic"} Student`,
+            "description": cleanBio,
+            "image": photo,
+            "url": profileUrl,
+            ...(sameAs.length > 0 && { "sameAs": sameAs }),
+            "interactionStatistic": [
+              {
+                "@type": "InteractionCounter",
+                "interactionType": { "@type": "LikeAction" },
+                "userInteractionCount": likes
+              },
+              {
+                "@type": "InteractionCounter",
+                "interactionType": { "@type": "WriteAction" },
+                "userInteractionCount": uploads
+              },
+              {
+                "@type": "InteractionCounter",
+                "interactionType": { "@type": "ShareAction" },
+                "userInteractionCount": shares
+              }
+            ],
+            "knowsAbout": [
+              profile.discipline || "Academic Studies",
+              "PDF Notes",
+              "Study Resources",
+              "DPGNotes Platform"
+            ]
           },
-          "interactionStatistic": [
-            {
-              "@type": "InteractionCounter",
-              "interactionType": "https://schema.org/LikeAction",
-              "userInteractionCount": likes
+          "review": {
+            "@type": "Review",
+            "itemReviewed": {
+              "@type": "Person",
+              "name": profile.name,
+              "image": photo,
+              "url": profileUrl,
+              "description": cleanBio
             },
-            {
-              "@type": "InteractionCounter",
-              "interactionType": "https://schema.org/WriteAction",
-              "userInteractionCount": uploads
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": ratingValue,
+              "bestRating": 5,
+              "worstRating": 1
+            },
+            "author": {
+              "@type": "Organization",
+              "name": "DPGNotes"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "DPGNotes",
+              "url": "https://dpgnotes.web.app"
             }
-          ]
+          }
         };
         schemaScript.textContent = JSON.stringify(personSchema, null, 2);
       } catch (err) {
