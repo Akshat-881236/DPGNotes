@@ -1588,12 +1588,17 @@
       const box = document.getElementById("notificationsListProfBox");
       if (!currentUser) return;
       try {
-        const q1 = query(collection(db, "notifications"), where("email", "==", currentUser.email), where("isRead", "!=", true));
-        const q2 = query(collection(db, "notifications"), where("toEmail", "==", currentUser.email), where("isRead", "!=", true));
+        const q1 = query(collection(db, "notifications"), where("email", "==", currentUser.email));
+        const q2 = query(collection(db, "notifications"), where("toEmail", "==", currentUser.email));
         const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
         const allDocs = new Map();
-        s1.forEach(d => allDocs.set(d.id, d.ref));
-        s2.forEach(d => allDocs.set(d.id, d.ref));
+        
+        s1.forEach(d => {
+          if (!d.data().isRead) allDocs.set(d.id, d.ref);
+        });
+        s2.forEach(d => {
+          if (!d.data().isRead) allDocs.set(d.id, d.ref);
+        });
 
         const updates = [];
         allDocs.forEach((ref) => updates.push(updateDoc(ref, { isRead: true })));
