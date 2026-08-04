@@ -1391,3 +1391,143 @@ if (exploreSortSelect) {
     loadExplore();
   });
 }
+
+// ==========================================
+// MANAGE RESOURCES TAB & EDIT MODAL
+// ==========================================
+let contributorDocsCache = {};
+
+async function loadContributorManageResources() {
+  const tbody = document.getElementById("manageResourcesTableBody");
+  if (!tbody || !currentUser) return;
+
+  tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:var(--text-muted);">Loading resources...</td></tr>`;
+
+  try {
+    const qDocs = query(collection(db, "documents"), where("userId", "==", currentUser.uid));
+    const snap = await getDocs(qDocs);
+
+    if (snap.empty) {
+      tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:var(--text-muted);">No resource documents uploaded yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    contributorDocsCache = {};
+    let rowIdx = 1;
+
+    snap.forEach(d => {
+      const idx = rowIdx++;
+      const data = { id: d.id, ...d.data() };
+      contributorDocsCache[d.id] = data;
+
+      const tr = document.createElement("tr");
+      tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
+      tr.onmouseover = () => tr.style.background = "rgba(255,255,255,0.03)";
+      tr.onmouseout = () => tr.style.background = "transparent";
+
+      tr.innerHTML = `
+        <td style="padding:0.75rem 1rem; color:var(--text-muted);">${idx}</td>
+        <td style="padding:0.75rem 1rem;">
+          <a href="dpgnotes-pdf-viewer.html?resourceID=${data.id}" target="_blank" style="color:white; font-weight:600; text-decoration:none;">${data.title || 'Untitled Document'}</a>
+        </td>
+        <td style="padding:0.75rem 1rem; color:#cbd5e1;">${data.discipline || 'N/A'}</td>
+        <td style="padding:0.75rem 1rem; text-align:center;">
+          <div style="display:inline-flex; gap:8px; align-items:center;">
+            <button onclick="openEditResourceModal('${data.id}')" style="background:rgba(99,102,241,0.2); color:#818cf8; border:1px solid rgba(99,102,241,0.4); padding:6px 12px; border-radius:6px; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:5px;" title="Edit Resource Details">
+              <i class="ri-edit-box-line"></i> Edit
+            </button>
+            <a href="train_model.html?id=${data.id}" style="background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.4); padding:6px 12px; border-radius:6px; font-size:0.85rem; text-decoration:none; display:flex; align-items:center; gap:5px;" title="Train AI Model for this Resource">
+              <i class="ri-cpu-line"></i> Train Model
+            </a>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Failed loading contributor resources:", err);
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:#ef4444;">Failed to load resources.</td></tr>`;
+  }
+}
+
+window.loadContributorManageResources = loadContributorManageResources;
+
+window.openEditResourceModal = function(docId) {
+  const data = contributorDocsCache[docId];
+  if (!data) return;
+
+  document.getElementById("modalResDocId").value = docId;
+  document.getElementById("modalCategory").value = data.category || "T&N";
+  document.getElementById("modalDiscipline").value = data.discipline || "";
+  document.getElementById("modalTitle").value = data.title || "";
+  document.getElementById("modalDescription").value = data.description || "";
+  document.getElementById("modalTags").value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || "");
+  document.getElementById("modalPdfUrl").value = data.pdfUrl || "";
+
+  const modal = document.getElementById("editResourceModal");
+  if (modal) modal.style.display = "flex";
+};
+
+window.closeEditResourceModal = function() {
+  const modal = document.getElementById("editResourceModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.handleEditResourceSubmit = async function(e) {
+  e.preventDefault();
+  const docId = document.getElementById("modalResDocId").value;
+  if (!docId) return;
+
+  const category = document.getElementById("modalCategory").value;
+  const discipline = document.getElementById("modalDiscipline").value.trim();
+  const title = document.getElementById("modalTitle").value.trim();
+  const description = document.getElementById("modalDescription").value.trim();
+  const tagsStr = document.getElementById("modalTags").value.trim();
+  const pdfUrl = document.getElementById("modalPdfUrl").value.trim();
+
+  const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
+
+  const saveBtn = document.getElementById("saveResourceModalBtn");
+  saveBtn.disabled = true;
+  saveBtn.innerText = "Saving...";
+
+  try {
+    const docRef = doc(db, "documents", docId);
+    await updateDoc(docRef, {
+      category,
+      discipline,
+      title,
+      description,
+      tags,
+      pdfUrl,
+      updatedAt: serverTimestamp()
+    });
+
+    if (window.customAlert) {
+      await window.customAlert("Resource updated successfully!", { title: "Success" });
+    } else {
+      alert("Resource updated successfully!");
+    }
+
+    closeEditResourceModal();
+    loadContributorManageResources();
+  } catch(err) {
+    console.error("Error updating resource:", err);
+    if (window.customAlert) {
+      await window.customAlert("Failed to update resource: " + err.message, { title: "Error", isDanger: true });
+    } else {
+      alert("Failed to update resource: " + err.message);
+    }
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerText = "Save Changes";
+  }
+};
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loadContributorManageResources();
+  }
+});

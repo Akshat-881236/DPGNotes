@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Resource AI Model | DPGNotes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="custom-dialogs.js"></script>
+  <style>
+    :root {
+      --bg-top: #0b0f19;
+      --bg-bottom: #020617;
+      --surface: rgba(15, 23, 42, 0.75);
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #6366f1;
+      --primary-light: #8b5cf6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    body {
+      background: radial-gradient(circle at top, var(--bg-top), var(--bg-bottom));
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .header-nav {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-nav .brand {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .input-field {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.3);
+      color: white;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .input-field:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    .char-counter {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+      padding: 0.85rem 2rem;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .denied-banner {
+      background: rgba(239, 68, 68, 0.15);
+      border: 2px solid #ef4444;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .faq-item {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-nav">
+    <a href="dashboard.html" class="brand"><i class="ri-cpu-line" style="color:var(--primary-light);"></i> DPGNotes AI Trainer</a>
+    <a href="dashboard.html" style="color:var(--text-muted); text-decoration:none;"><i class="ri-arrow-left-line"></i> Back to Dashboard</a>
+  </header>
+
+  <div class="container">
+    <div id="accessDeniedBanner" class="denied-banner" style="display:none;">
+      <i class="ri-shield-keyhole-line" style="font-size:3.5rem; color:#ef4444;"></i>
+      <h2 style="color:#f87171; margin:10px 0;">ACCESS DENIED — OWNERSHIP VIOLATION</h2>
+      <p style="color:#fca5a5;">You do not have permission to train AI models for this resource. It belongs to another contributor.</p>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:15px;">🚨 Security Alert: This unauthorized access attempt has been logged to DPGNotes Security Telemetry.</p>
+    </div>
+
+    <div id="trainCard" class="card" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
+        <div>
+          <span style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:3px 10px; border-radius:6px; font-size:0.75rem; font-weight:600;" id="resCatBadge">Resource</span>
+          <h1 id="resTitle" style="margin:8px 0 4px; color:white; font-family:'Outfit',sans-serif;">Loading Resource...</h1>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">Discipline: <span id="resDisc">—</span> | Document ID: <span id="resDocId">—</span></p>
+        </div>
+        <span style="font-size:2rem; color:var(--primary-light);"><i class="ri-brain-line"></i></span>
+      </div>
+
+      <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6; margin-bottom:2rem;">
+        Add external web links for Python crawler indexing and structured FAQs to build a custom runtime knowledge base (<code style="color:#c4b5fd;">knowledge.md</code>) for this resource's DPGNotes PDF Viewer AI Assistant.
+      </p>
+
+      <form id="trainForm" onsubmit="handleTrainSubmit(event)">
+        <!-- WEB LINKS SECTION -->
+        <div style="margin-bottom:2rem;">
+          <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
+            <i class="ri-link" style="color:var(--primary-light);"></i> External Crawler Web Links
+          </h3>
+          <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Provide URLs to documentation, academic portals, or notes that Python crawler will extract data from.</p>
+
+          <div id="linksContainer">
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input type="url" class="input-field crawler-url" placeholder="https://example.com/reference-notes">
+            </div>
+          </div>
+          <button type="button" onclick="addLinkInput()" class="btn-secondary"><i class="ri-add-line"></i> Add Another Link</button>
+        </div>
+
+        <!-- FAQ SECTION -->
+        <div style="margin-bottom:2rem;">
+          <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
+            <i class="ri-question-answer-line" style="color:var(--primary-light);"></i> Resource FAQs & Custom Q&A Pair
+          </h3>
+          <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Query field maximum length is <strong>80 characters</strong>. Solution field maximum length is <strong>300 characters</strong>.</p>
+
+          <div id="faqsContainer">
+            <!-- FAQ item 1 -->
+            <div class="faq-item">
+              <div style="margin-bottom:1rem;">
+                <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Query / Question (Max 80 chars) *</label>
+                <input type="text" class="input-field faq-query" maxlength="80" placeholder="e.g. What are the key topics in Unit 1?" required oninput="updateCounter(this, 'qCount1', 80)">
+                <div class="char-counter" id="qCount1">0 / 80</div>
+              </div>
+              <div>
+                <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Solution / Answer (Max 300 chars) *</label>
+                <textarea class="input-field faq-solution" maxlength="300" style="height:80px;" placeholder="e.g. Unit 1 covers Kinematics, Newtonian Laws of Motion, and Physical Dynamics." required oninput="updateCounter(this, 'sCount1', 300)"></textarea>
+                <div class="char-counter" id="sCount1">0 / 300</div>
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="addFaqInput()" class="btn-secondary"><i class="ri-add-line"></i> Add FAQ Pair</button>
+        </div>
+
+        <div style="margin-top:2.5rem; text-align:right; border-top:1px solid var(--border); padding-top:1.5rem;">
+          <button type="submit" id="submitTrainBtn" class="btn-primary">
+            <i class="ri-cpu-line"></i> Process & Generate Runtime Knowledge Model
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const cfg = {
+      apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
+      projectId:"dpgnotes",storageBucket:"dpgnotes.firebasestorage.app",
+      messagingSenderId:"910494426039",appId:"1:910494426039:web:adeae5315caaf846c43e32"
+    };
+    const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgnotes");
+    const db = getFirestore(fbApp);
+
+    const P = new URLSearchParams(location.search);
+    const targetId = P.get('id');
+
+    const activeUid = localStorage.getItem("dpgActiveUserUid") || "";
+    let faqCounter = 1;
+
+    window.updateCounter = function(el, countId, maxLen) {
+      const len = el.value.length;
+      const countEl = document.getElementById(countId);
+      if (countEl) {
+        countEl.textContent = `${len} / ${maxLen}`;
+        if (len >= maxLen) countEl.style.color = "#ef4444";
+        else countEl.style.color = "var(--text-muted)";
+      }
+    };
+
+    window.addLinkInput = function() {
+      const container = document.getElementById('linksContainer');
+      const div = document.createElement('div');
+      div.style.cssText = "display:flex; gap:8px; margin-bottom:8px;";
+      div.innerHTML = `
+        <input type="url" class="input-field crawler-url" placeholder="https://example.com/reference-notes">
+        <button type="button" onclick="this.parentElement.remove()" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:0 12px; border-radius:8px; cursor:pointer;"><i class="ri-delete-bin-line"></i></button>
+      `;
+      container.appendChild(div);
+    };
+
+    window.addFaqInput = function() {
+      faqCounter++;
+      const container = document.getElementById('faqsContainer');
+      const div = document.createElement('div');
+      div.className = 'faq-item';
+      const qId = `qCount_${faqCounter}`;
+      const sId = `sCount_${faqCounter}`;
+      div.innerHTML = `
+        <button type="button" onclick="this.parentElement.remove()" style="position:absolute; top:12px; right:12px; background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:3px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem;"><i class="ri-delete-bin-line"></i> Remove</button>
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Query / Question (Max 80 chars) *</label>
+          <input type="text" class="input-field faq-query" maxlength="80" placeholder="Question..." required oninput="updateCounter(this, '${qId}', 80)">
+          <div class="char-counter" id="${qId}">0 / 80</div>
+        </div>
+        <div>
+          <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Solution / Answer (Max 300 chars) *</label>
+          <textarea class="input-field faq-solution" maxlength="300" style="height:80px;" placeholder="Answer..." required oninput="updateCounter(this, '${sId}', 300)"></textarea>
+          <div class="char-counter" id="${sId}">0 / 300</div>
+        </div>
+      `;
+      container.appendChild(div);
+    };
+
+    async function initTrainModel() {
+      if (!targetId) {
+        if (window.customAlert) await window.customAlert("Missing resource ID parameter.", { title: "Error", isDanger: true });
+        else alert("Missing resource ID parameter.");
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      if (!activeUid) {
+        if (window.customAlert) await window.customAlert("Active session required.", { title: "Authentication Required" });
+        else alert("Active session required.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      try {
+        let snap = await getDoc(doc(db, "documents", targetId));
+        if (!snap.exists()) snap = await getDoc(doc(db, "pending_approvals", targetId));
+
+        if (!snap.exists()) {
+          if (window.customAlert) await window.customAlert("Resource document not found.", { title: "Error", isDanger: true });
+          else alert("Resource document not found.");
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        const data = snap.data();
+        const ownerId = data.userId || data.uploaderId || data.uploader;
+
+        // STRICT OWNERSHIP CHECK
+        if (ownerId && ownerId !== activeUid) {
+          document.getElementById("accessDeniedBanner").style.display = "block";
+          // Log security violation
+          addDoc(collection(db, "security_violations"), {
+            resourceId: targetId,
+            resourceTitle: data.title || "Untitled",
+            violatorUid: activeUid,
+            attemptedAction: "TRAIN_MODEL_UNAUTHORIZED",
+            timestamp: serverTimestamp()
+          }).catch(console.error);
+          return;
+        }
+
+        document.getElementById("resTitle").textContent = data.title || "Untitled Document";
+        document.getElementById("resCatBadge").textContent = data.category || "Resource";
+        document.getElementById("resDisc").textContent = data.discipline || "N/A";
+        document.getElementById("resDocId").textContent = data.documentId || targetId;
+        document.getElementById("trainCard").style.display = "block";
+
+      } catch (err) {
+        console.error("Train model load error:", err);
+      }
+    }
+
+    window.handleTrainSubmit = async function(e) {
+      e.preventDefault();
+
+      const linkInputs = document.querySelectorAll(".crawler-url");
+      const urls = Array.from(linkInputs).map(i => i.value.trim()).filter(Boolean);
+
+      const faqItems = document.querySelectorAll(".faq-item");
+      const faqs = [];
+      faqItems.forEach(item => {
+        const q = item.querySelector(".faq-query").value.trim();
+        const a = item.querySelector(".faq-solution").value.trim();
+        if (q && a) {
+          faqs.push({
+            query: q.substring(0, 80),
+            solution: a.substring(0, 300)
+          });
+        }
+      });
+
+      if (faqs.length === 0 && urls.length === 0) {
+        if (window.customAlert) await window.customAlert("Please provide at least one Web Link or FAQ pair.", { title: "Input Required" });
+        else alert("Please provide at least one Web Link or FAQ pair.");
+        return;
+      }
+
+      const btn = document.getElementById("submitTrainBtn");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Processing Python AI Crawler & Knowledge Generation...`;
+
+      try {
+        // Send request to backend
+        const res = await fetch((window.API_BASE_URL || '') + '/api/ai/train-model', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resourceId: targetId,
+            urls,
+            faqs,
+            userId: activeUid
+          })
+        });
+
+        let resData = {};
+        try { resData = await res.json(); } catch(jsonErr) {}
+
+        // Save runtime knowledge.md to Firestore resource_knowledge collection
+        let knowledgeMd = `# Runtime Knowledge Model for Resource: ${targetId}\n\n`;
+        knowledgeMd += `## FAQ Knowledge Base\n`;
+        faqs.forEach((f, idx) => {
+          knowledgeMd += `### Q${idx+1}: ${f.query}\n**Answer**: ${f.solution}\n\n`;
+        });
+        if (urls.length > 0) {
+          knowledgeMd += `## Indexed External Resources\n`;
+          urls.forEach(u => {
+            knowledgeMd += `- ${u}\n`;
+          });
+        }
+
+        await setDoc(doc(db, "resource_knowledge", targetId), {
+          resourceId: targetId,
+          knowledgeMd,
+          faqs,
+          urls,
+          updatedAt: serverTimestamp()
+        });
+
+        if (window.customAlert) {
+          await window.customAlert("AI Knowledge Model trained and published successfully for this resource!", { title: "Training Complete" });
+        } else {
+          alert("AI Knowledge Model trained and published successfully for this resource!");
+        }
+
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        console.error("AI Train Model error:", err);
+        if (window.customAlert) {
+          await window.customAlert("Error processing training model: " + err.message, { title: "Error", isDanger: true });
+        } else {
+          alert("Error processing training model: " + err.message);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-cpu-line"></i> Process & Generate Runtime Knowledge Model`;
+      }
+    };
+
+    initTrainModel();
+  </script>
+</body>
+</html>

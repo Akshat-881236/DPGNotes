@@ -432,7 +432,8 @@ async function sendPdfAiQuery() {
           documentDescription: docDesc,
           documentTags: docTags,
           documentPdfUrl: pdfUrl,
-          extractedPdfText: shouldScreen ? extractedText : "N/A (Screening bypassed)"
+          extractedPdfText: shouldScreen ? extractedText : "N/A (Screening bypassed)",
+          knowledgeBase: window.resourceKnowledgeMd || ""
         }
       })
     });

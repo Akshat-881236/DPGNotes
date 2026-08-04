@@ -276,8 +276,124 @@ app.post('/api/compress', upload.single('pdfFile'), async (req, res) => {
 
 
 // ==========================================
-// ROUTES: ADMIN AUTH
+// ROUTES: AI TRAIN MODEL
 // ==========================================
+app.post('/api/ai/train-model', async (req, res) => {
+  try {
+    const { resourceId, urls = [], faqs = [], userId } = req.body;
+    if (!resourceId) {
+      return res.status(400).json({ error: "Missing resourceId" });
+    }
+
+    let crawledData = "";
+    // Web Link Crawling (Fetch title/text snippet for external links)
+    for (const linkUrl of urls) {
+      try {
+        const linkRes = await axios.get(linkUrl, { timeout: 4000, headers: { 'User-Agent': 'DPGNotes-AI-Crawler/1.0' } });
+        if (typeof linkRes.data === 'string') {
+          const titleMatch = linkRes.data.match(/<title>([^<]*)<\/title>/i);
+          const pageTitle = titleMatch ? titleMatch[1].trim() : linkUrl;
+          crawledData += `\n[Crawled Link: ${linkUrl}] - Title: ${pageTitle}\n`;
+        }
+      } catch (linkErr) {
+        console.warn(`Link crawl skipped for ${linkUrl}:`, linkErr.message);
+      }
+    }
+
+    let knowledgeMd = `# Runtime Knowledge Model for Resource: ${resourceId}\n\n`;
+    knowledgeMd += `## FAQ Knowledge Base\n`;
+    faqs.forEach((f, idx) => {
+      const q = (f.query || '').substring(0, 80);
+      const a = (f.solution || '').substring(0, 300);
+      knowledgeMd += `### Q${idx + 1}: ${q}\n**Answer**: ${a}\n\n`;
+    });
+    if (crawledData) {
+      knowledgeMd += `## Crawled External Web Context\n${crawledData}\n`;
+    }
+
+    // Save to Firestore if admin DB exists
+    if (db) {
+      await db.collection("resource_knowledge").doc(resourceId).set({
+        resourceId,
+        knowledgeMd,
+        faqs,
+        urls,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
+    res.json({ success: true, resourceId, knowledgeMd });
+  } catch (err) {
+    console.error("Train model route error:", err);
+    res.status(500).json({ error: "Failed to train AI model: " + err.message });
+  }
+});
+// ==========================================
+// ROUTES: GUEST QUOTA TRACKING
+// ==========================================
+app.post('/api/guest-quota', async (req, res) => {
+  try {
+    const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1').split(',')[0].trim();
+    const { guestId = 'guest_anon', action = 'page_visit' } = req.body;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const safeIp = clientIp.replace(/[^a-zA-Z0-9]/g, '_');
+    const key = `quota_${safeIp}_${guestId}`;
+
+    let pageVisits = 0;
+    let pdfViews = 0;
+
+    if (db) {
+      const qRef = db.collection("guest_quotas").doc(key);
+      const qDoc = await qRef.get();
+
+      if (qDoc.exists) {
+        const data = qDoc.data();
+        if (data.lastResetDate === todayStr) {
+          pageVisits = data.pageVisits || 0;
+          pdfViews = data.pdfViews || 0;
+        }
+      }
+
+      if (action === 'pdf_view') {
+        pdfViews += 1;
+      } else {
+        pageVisits += 1;
+      }
+
+      await qRef.set({
+        clientIp,
+        guestId,
+        pageVisits,
+        pdfViews,
+        lastResetDate: todayStr,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } else {
+      // In-memory fallback
+      if (action === 'pdf_view') pdfViews += 1;
+      else pageVisits += 1;
+    }
+
+    const MAX_PAGE_VISITS = 6;
+    const MAX_PDF_VIEWS = 3;
+    const allowed = pageVisits <= MAX_PAGE_VISITS && pdfViews <= MAX_PDF_VIEWS;
+
+    res.json({
+      allowed,
+      clientIp,
+      guestId,
+      pageVisits,
+      pdfViews,
+      maxPageVisits: MAX_PAGE_VISITS,
+      maxPdfViews: MAX_PDF_VIEWS
+    });
+  } catch (err) {
+    console.error("Guest quota route error:", err);
+    res.json({ allowed: true, error: err.message });
+  }
+});
+
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
 

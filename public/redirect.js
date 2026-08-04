@@ -157,5 +157,95 @@
         // Safe fallback for unparseable href strings
       }
     }, true);
+
+    // ============================================================================
+    // DPGNOTES GUEST ACCESS QUOTA ENFORCEMENT (6 Visits / 3 PDFs per day)
+    // ============================================================================
+    (function checkGuestQuota() {
+      // 1. Authenticated Users have Unlimited Access
+      const activeUid = localStorage.getItem("dpgActiveUserUid");
+      if (activeUid) return;
+
+      // 2. Legal Policy Pages are strictly Exempt
+      if (window.location.pathname.includes('/legal') || window.location.href.includes('legal/index.html')) return;
+
+      // 3. Retrieve or initialize Anonymous Guest ID
+      let guestId = localStorage.getItem("dpg_guest_id");
+      if (!guestId) {
+        guestId = "guest_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+        localStorage.setItem("dpg_guest_id", guestId);
+      }
+
+      // Action: PDF view vs Page visit
+      const isPdfViewer = window.location.pathname.includes('dpgnotes-pdf-viewer.html');
+      const action = isPdfViewer ? 'pdf_view' : 'page_visit';
+
+      // Local storage offline tracking fallback
+      const todayStr = new Date().toISOString().split('T')[0];
+      const savedDate = localStorage.getItem("dpg_quota_date");
+      let pageVisits = parseInt(localStorage.getItem("dpg_quota_visits") || "0", 10);
+      let pdfViews = parseInt(localStorage.getItem("dpg_quota_pdfs") || "0", 10);
+
+      if (savedDate !== todayStr) {
+        pageVisits = 0;
+        pdfViews = 0;
+        localStorage.setItem("dpg_quota_date", todayStr);
+      }
+
+      if (isPdfViewer) pdfViews += 1;
+      else pageVisits += 1;
+
+      localStorage.setItem("dpg_quota_visits", pageVisits);
+      localStorage.setItem("dpg_quota_pdfs", pdfViews);
+
+      function triggerQuotaReachedPhase() {
+        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && !window.location.pathname.endsWith('/DPGNotes/public/')) {
+          window.location.href = "index.html?quotaReached=true";
+          return;
+        }
+
+        // Inject un-dismissable Quota Reached Overlay on index.html
+        let qOverlay = document.getElementById('guestQuotaOverlay');
+        if (!qOverlay) {
+          qOverlay = document.createElement('div');
+          qOverlay.id = 'guestQuotaOverlay';
+          qOverlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,6,23,0.95); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); z-index:9999999; display:flex; align-items:center; justify-content:center; padding:1.5rem; color:#f8fafc; font-family:"Inter",sans-serif; text-align:center;';
+          qOverlay.innerHTML = `
+            <div style="background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.98)); border:1px solid rgba(239,68,68,0.4); border-radius:24px; padding:2.5rem 2rem; max-width:500px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.8);">
+              <i class="ri-alarm-warning-line" style="font-size:3.8rem; color:#ef4444; margin-bottom:1rem; display:inline-block;"></i>
+              <h2 style="font-size:1.6rem; font-weight:800; color:white; margin-bottom:0.8rem; font-family:'Outfit',sans-serif;">Daily Guest Limit Reached</h2>
+              <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.6; margin-bottom:1.8rem;">
+                You have reached the daily guest quota of <strong>6 page visits</strong> and <strong>3 PDF reads</strong>.<br>
+                Sign up with your Google account to unlock <strong>unlimited free access</strong> to all academic notes, question papers, and AI assistants!
+              </p>
+              <button onclick="if(window.signInWithGoogle){window.signInWithGoogle();}else{window.location.href='index.html';}" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:0.9rem 2rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 6px 20px rgba(99,102,241,0.5); display:inline-flex; align-items:center; gap:10px; width:100%; justify-content:center;">
+                <i class="ri-google-fill" style="font-size:1.2rem;"></i> Sign In / Sign Up with Google
+              </button>
+              <p style="margin-top:1.5rem; font-size:0.78rem; color:#94a3b8;">
+                Need help or view policies? Visit our <a href="legal/index.html" style="color:#a78bfa; text-decoration:underline;">Legal & Policy Center</a>.
+              </p>
+            </div>
+          `;
+          document.body.appendChild(qOverlay);
+        }
+      }
+
+      // Check local limit first
+      if (pageVisits > 6 || pdfViews > 3 || new URLSearchParams(location.search).get('quotaReached') === 'true') {
+        triggerQuotaReachedPhase();
+        return;
+      }
+
+      // Server IP + Guest ID verification
+      fetch((window.API_BASE_URL || '') + '/api/guest-quota', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guestId, action })
+      }).then(res => res.json()).then(data => {
+        if (data && data.allowed === false) {
+          triggerQuotaReachedPhase();
+        }
+      }).catch(err => console.warn('Server guest quota tracking error:', err));
+    })();
   });
 })();
