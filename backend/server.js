@@ -328,6 +328,84 @@ app.post('/api/ai/train-model', async (req, res) => {
     res.status(500).json({ error: "Failed to train AI model: " + err.message });
   }
 });
+
+// ==========================================
+// ROUTES: AI ANALYSIS & CHAT (PYTHON INTERCONNECTION)
+// ==========================================
+app.post('/api/ai/analyse-document', async (req, res) => {
+  try {
+    const { data } = req.body;
+    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
+
+    // 1. Try forwarding to Python AI Service first for enhanced RAG analysis
+    try {
+      const pyRes = await axios.post(`${pythonServiceUrl}/api/py/db-ai-analyze`, {
+        prompt: `Provide a comprehensive academic analysis and summary for document: ${data?.title || ''}. Category: ${data?.category || ''}, Discipline: ${data?.discipline || ''}. Description: ${data?.description || ''}`,
+        resourceId: data?.docid || data?.id
+      }, { timeout: 5000 });
+
+      if (pyRes.data && pyRes.data.answer) {
+        return res.json({ report: pyRes.data.answer, source: 'Python-AI-Engine' });
+      }
+    } catch (pyErr) {
+      console.warn("Python AI Engine endpoint offline/unreachable, falling back to Node.js Gemini:", pyErr.message);
+    }
+
+    // 2. Fallback to direct Gemini API call in Node.js
+    const prompt = `Analyze this academic document for DPGNotes students:\nTitle: ${data?.title || 'Untitled'}\nCategory: ${data?.category || ''}\nDiscipline: ${data?.discipline || ''}\nDescription: ${data?.description || ''}\nProvide key topics, study tips, and summary.`;
+    
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      return res.json({ report: `**Document Summary**:\n- **Title**: ${data?.title}\n- **Category**: ${data?.category}\n- **Discipline**: ${data?.discipline}\n\n*Note: Configure GEMINI_API_KEY for real-time generative responses.*` });
+    }
+
+    const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      contents: [{ parts: [{ text: prompt }] }]
+    });
+
+    const report = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text || "Analysis generated successfully.";
+    res.json({ report, source: 'Node-Gemini-Fallback' });
+  } catch (err) {
+    console.error("Analyse document route error:", err);
+    res.status(500).json({ error: "Failed to analyze document: " + err.message });
+  }
+});
+
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const { prompt, resourceId, systemContext } = req.body;
+    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
+
+    try {
+      const pyRes = await axios.post(`${pythonServiceUrl}/api/py/db-ai-analyze`, {
+        prompt,
+        resourceId
+      }, { timeout: 5000 });
+
+      if (pyRes.data && pyRes.data.answer) {
+        return res.json({ answer: pyRes.data.answer, source: 'Python-AI-Engine' });
+      }
+    } catch (pyErr) {
+      console.warn("Python AI Chat fallback triggered:", pyErr.message);
+    }
+
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      return res.json({ answer: "Gemini API key is not configured on server." });
+    }
+
+    const fullPrompt = `${systemContext || ''}\n\nUser Question: ${prompt}`;
+    const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      contents: [{ parts: [{ text: fullPrompt }] }]
+    });
+
+    const answer = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text || "Answer generated successfully.";
+    res.json({ answer, source: 'Node-Gemini-Fallback' });
+  } catch (err) {
+    console.error("AI chat route error:", err);
+    res.status(500).json({ error: "Failed to generate AI response: " + err.message });
+  }
+});
 // ==========================================
 // ROUTES: GUEST QUOTA TRACKING
 // ==========================================

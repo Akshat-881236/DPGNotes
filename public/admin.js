@@ -1053,3 +1053,131 @@ async function loadReferrerAnalysis() {
   }
 }
 window.loadReferrerAnalysis = loadReferrerAnalysis;
+
+// ==========================================
+// DEVICE LOGS TAB & MANAGEMENT
+// ==========================================
+let adminDeviceLogsCache = [];
+
+async function loadDeviceLogsAdmin() {
+  const tbody = document.getElementById("deviceLogsTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading Device Logs...</td></tr>`;
+
+  try {
+    const logsSnap = await getDocs(query(collection(db, "device_login_history"), orderBy("timestamp", "desc")));
+    const quotaSnap = await getDocs(query(collection(db, "guest_quotas"), orderBy("updatedAt", "desc")));
+
+    adminDeviceLogsCache = [];
+
+    // Parse Device History logs
+    logsSnap.forEach(dSnap => {
+      const data = dSnap.data();
+      adminDeviceLogsCache.push({
+        id: dSnap.id,
+        rawId: data.userId || data.email || 'ADM',
+        userType: data.userType || 'Contributor',
+        ipAddress: data.ipAddress || '127.0.0.1',
+        country: `${data.country || 'Unknown'} (${data.city || 'N/A'})`,
+        screenTime: data.screenTime || '15 mins',
+        timestamp: data.timestamp
+      });
+    });
+
+    // Parse Anonymous Guest Quota logs
+    quotaSnap.forEach(qSnap => {
+      const qData = qSnap.data();
+      adminDeviceLogsCache.push({
+        id: qSnap.id,
+        rawId: qData.guestId || qSnap.id,
+        userType: 'Anonymous',
+        ipAddress: qData.clientIp || '127.0.0.1',
+        country: 'Guest Client',
+        screenTime: `${qData.pageVisits || 1} Visits / ${qData.pdfViews || 0} PDFs`,
+        timestamp: qData.updatedAt
+      });
+    });
+
+    if (adminDeviceLogsCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">No device logs found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    adminDeviceLogsCache.forEach(log => {
+      let typeBadge = `<span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc; border:1px solid rgba(99,102,241,0.4);">Contributor</span>`;
+      if (log.userType === 'Admin') {
+        typeBadge = `<span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.4);">Admin</span>`;
+      } else if (log.userType === 'Anonymous') {
+        typeBadge = `<span class="badge" style="background:rgba(245,158,11,0.2); color:#fcd34d; border:1px solid rgba(245,158,11,0.4);">Anonymous</span>`;
+      }
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="text-align:center;">
+          <input type="checkbox" class="device-log-cb" value="${log.id}">
+        </td>
+        <td style="font-family:monospace; font-size:0.85rem; color:#cbd5e1;">${log.rawId}</td>
+        <td>${typeBadge}</td>
+        <td style="font-family:monospace;">${log.ipAddress}</td>
+        <td>${log.country}</td>
+        <td style="color:#a78bfa; font-size:0.85rem;">${log.screenTime}</td>
+        <td>
+          <button class="btn-action danger" onclick="deleteDeviceLog('${log.id}', '${log.userType}')" title="Delete Device Log">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Failed to load device logs:", err);
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-danger);">Failed to load device logs.</td></tr>`;
+  }
+}
+
+window.loadDeviceLogsAdmin = loadDeviceLogsAdmin;
+
+window.toggleAllDeviceLogs = function(masterCb) {
+  document.querySelectorAll(".device-log-cb").forEach(cb => cb.checked = masterCb.checked);
+};
+
+window.deleteDeviceLog = async function(logId, userType) {
+  const confirmed = window.customConfirm ? await window.customConfirm("Are you sure you want to delete this device log?", { title: "Confirm Deletion", isDanger: true }) : confirm("Delete log?");
+  if (!confirmed) return;
+
+  try {
+    const collName = userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
+    await deleteDoc(doc(db, collName, logId));
+    if (window.customAlert) await window.customAlert("Device log deleted successfully.", { title: "Deleted" });
+    loadDeviceLogsAdmin();
+  } catch (err) {
+    console.error("Failed to delete log:", err);
+    if (window.customAlert) await window.customAlert("Delete error: " + err.message, { title: "Error", isDanger: true });
+  }
+};
+
+window.deleteSelectedDeviceLogs = async function() {
+  const selectedCbs = Array.from(document.querySelectorAll(".device-log-cb:checked"));
+  if (selectedCbs.length === 0) {
+    if (window.customAlert) await window.customAlert("Please select at least one log to delete.", { title: "Selection Required" });
+    return;
+  }
+
+  const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected device log(s)?`, { title: "Multi-Delete Confirmation", isDanger: true }) : confirm("Delete selected?");
+  if (!confirmed) return;
+
+  try {
+    for (const cb of selectedCbs) {
+      const logId = cb.value;
+      const logObj = adminDeviceLogsCache.find(l => l.id === logId);
+      const collName = (logObj && logObj.userType === 'Anonymous') ? 'guest_quotas' : 'device_login_history';
+      await deleteDoc(doc(db, collName, logId)).catch(e => console.warn(e));
+    }
+    if (window.customAlert) await window.customAlert("Selected device logs deleted successfully.", { title: "Deleted" });
+    loadDeviceLogsAdmin();
+  } catch (err) {
+    console.error("Batch delete error:", err);
+  }
+};

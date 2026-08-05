@@ -13,6 +13,7 @@ from screen_scanner import ScreenScanner
 from ip_device_tracker import IPDeviceTracker
 from ai_processor import AIProcessor
 from knowledge_md_resource_id import KnowledgeMdBuilder
+from firestore_db_analyzer_ai_response_parser import FirestoreDbAnalyzerAIResponseParser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("DPGNotesPythonServer")
@@ -41,6 +42,7 @@ screen_scanner = ScreenScanner()
 device_tracker = IPDeviceTracker(db_client=db)
 ai_processor = AIProcessor()
 knowledge_builder = KnowledgeMdBuilder(db_client=db)
+db_analyzer = FirestoreDbAnalyzerAIResponseParser(db_client=db)
 
 # ==========================================
 # FASTAPI APP SETUP
@@ -187,3 +189,23 @@ def ai_chat_assistant(req: AIChatRequest):
 
     answer = ai_processor.generate_ai_response(prompt=req.prompt, system_context=context)
     return {"success": True, "answer": answer}
+
+class DbAnalyzeRequest(BaseModel):
+    prompt: str
+    resourceId: Optional[str] = None
+    legalPdfUrls: Optional[List[str]] = []
+
+@app.post("/api/py/db-ai-analyze")
+def db_ai_analyze(req: DbAnalyzeRequest):
+    """Parses Firestore resource DB, knowledge.md, and Legal PDFs to generate context-rich Gemini AI responses."""
+    if req.legalPdfUrls:
+        db_analyzer.read_legal_notes_pdf_in_advance(req.legalPdfUrls)
+
+    context = db_analyzer.build_comprehensive_ai_context(user_query=req.prompt, resource_id=req.resourceId)
+    answer = ai_processor.generate_ai_response(prompt=req.prompt, system_context=context)
+
+    return {
+        "success": True,
+        "answer": answer,
+        "contextSnippet": context[:500] if context else ""
+    }

@@ -392,6 +392,9 @@
         <a class="nav-link" onclick="switchTab('referrers'); loadReferrerAnalysis();">
           <i class="ri-user-add-line"></i> Referrer Analysis
         </a>
+        <a class="nav-link" onclick="switchTab('device-logs'); loadDeviceLogsAdmin();">
+          <i class="ri-device-line"></i> Device Logs
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -692,6 +695,40 @@
               </thead>
               <tbody id="referrerTableBody">
                 <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading referrers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: DEVICE LOGS -->
+      <section id="view-device-logs" class="view-section">
+        <div class="section-card">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <h2 class="section-title"><i class="ri-device-line" style="color:var(--admin-primary);"></i> User Type Device & Session Logs</h2>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="admin-btn" style="background:#ef4444; border-color:transparent; font-size:0.85rem;" onclick="deleteSelectedDeviceLogs()">
+                <i class="ri-delete-bin-line"></i> Delete Selected Logs
+              </button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:40px; text-align:center;">
+                    <input type="checkbox" id="selectAllDeviceLogs" onchange="toggleAllDeviceLogs(this)">
+                  </th>
+                  <th>ID</th>
+                  <th>Type</th>
+                  <th>IP Address</th>
+                  <th>Country</th>
+                  <th>Screen Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="deviceLogsTableBody">
+                <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading device logs...</td></tr>
               </tbody>
             </table>
           </div>
