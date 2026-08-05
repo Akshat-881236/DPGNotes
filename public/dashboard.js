@@ -1083,18 +1083,20 @@ if (deleteAccountBtn) {
 }
 
 // =========================================
-// ENGAGEMENT (Like & Share)
-// =========================================
-function attachEngagementListeners() {
+// ENGAGEMENT function attachEngagementListeners() {
   document.querySelectorAll(".like-action").forEach(btn => {
     btn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
       const docId = btn.dataset.id;
       const title = btn.dataset.title;
-      // Optimistic UI update could go here, but for simplicity we rely on backend response
+      const originalHtml = btn.innerHTML;
       btn.innerText = "⏳...";
       let newlyUseful = false;
       let newLikesCount = 0;
       let shareCount = 0;
+      let userHasLiked = false;
       
       try {
         const docRef = doc(db, "documents", docId);
@@ -1111,9 +1113,11 @@ function attachEngagementListeners() {
             // Unlike
             currentLikes = currentLikes.filter(id => id !== currentUser.uid);
             t.update(docRef, { likes: currentLikes });
+            userHasLiked = false;
           } else {
             // Like
             currentLikes.push(currentUser.uid);
+            userHasLiked = true;
             
             const updates = { likes: currentLikes };
             if ((currentLikes.length >= 15 || shareCount >= 5) && !usefulResourceEmailed) {
@@ -1125,22 +1129,23 @@ function attachEngagementListeners() {
           newLikesCount = currentLikes.length;
         });
         
+        // Update current button state in-place without re-rendering grid or scrolling page
+        btn.innerHTML = `${userHasLiked ? '❤️ Liked' : '🤍 Like'} (${newLikesCount})`;
+        btn.classList.toggle('liked', userHasLiked);
+
         // Notify Owner via Backend if it was a Like (not unlike)
-        if (btn.innerText.includes("🤍")) {
-           // We need to fetch owner info to send emails
+        if (userHasLiked) {
            const ownerDoc = await getDoc(doc(db, "users", btn.dataset.owner));
            if (ownerDoc.exists() && ownerDoc.data().email) {
              const ownerEmail = ownerDoc.data().email;
              const ownerName = ownerDoc.data().name;
              
-             // 1. Basic Like Email
              fetch(window.API_BASE_URL + "/api/email/like-notification", {
                method: "POST",
                headers: { "Content-Type": "application/json" },
                body: JSON.stringify({ email: ownerEmail, resourceTitle: title, likerName: currentUser.displayName })
              }).catch(e => console.error("Email API failed:", e));
              
-             // Create in-app notification
              addDoc(collection(db, "notifications"), {
                email: ownerEmail,
                type: "like",
@@ -1149,7 +1154,6 @@ function attachEngagementListeners() {
                createdAt: serverTimestamp()
              }).catch(e => console.error(e));
              
-             // 2. 30+ / 70+ Likes Milestone Check
              const qOwner = query(collection(db, "documents"));
              const snapOwner = await getDocs(qOwner);
              let totalLikes = 0;
@@ -1191,7 +1195,6 @@ function attachEngagementListeners() {
                  }).catch(e => console.error(e));
              }
 
-             // 3. Useful Resource Upload Honour Check
              if (newlyUseful) {
                  fetch(window.API_BASE_URL + "/api/email/useful-resource-honour", {
                    method: "POST",
@@ -1216,10 +1219,18 @@ function attachEngagementListeners() {
            }
         }
 
-        loadExplore(); // Reload grid to show updated likes
-        loadProfile(); // Update total likes
+        if (typeof loadProfile === 'function') loadProfile();
       } catch (err) {
-        alert("Failed to like resource");
+        btn.innerHTML = originalHtml;
+        if (window.customAlert) {
+          await window.customAlert("Failed to update like status: " + (err.message || err), { title: "Error" });
+        } else {
+          alert("Failed to update like status");
+        }
+      }
+    });
+  });
+}t("Failed to like resource");
         loadExplore();
       }
     });

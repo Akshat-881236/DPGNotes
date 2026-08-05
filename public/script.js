@@ -842,7 +842,7 @@ function createCard(data){
     )}" target="_blank" class="open-btn" onclick="if(window.logActivity) window.logActivity('VIEW', 'Viewed document: ${data.title}')">Open PDF</a>
   
     <div class="card-actions">
-      <button class="action-btn like-action" onclick="alert('Please login via Dashboard to like this resource.')">🤍 Like</button>
+      <button class="action-btn like-action" onclick="event.preventDefault(); event.stopPropagation(); if(window.customAlert){window.customAlert('Please login via Dashboard to like this resource.', {title:'Authentication Required'});}else{alert('Please login via Dashboard to like this resource.');}">🤍 Like</button>
       <button class="action-btn share-action" onclick="handleShare('${data.id}', '${data.title}', '${data.category}', '${data.discipline}', '${data.userName}', '${data.pdfUrl}', '${data.description}', '${Array.isArray(data.tags) ? data.tags.join(", ") : ""}')">🔗 Share</button>
     </div>
   </article>
