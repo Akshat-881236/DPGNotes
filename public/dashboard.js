@@ -1232,11 +1232,7 @@ if (deleteAccountBtn) {
       }
     });
   });
-}t("Failed to like resource");
-        loadExplore();
-      }
-    });
-  });
+}
 
   window.handleDashboardShare = async function(event, docId, title, category, discipline, uploader, pdfUrl, description, tags) {
     const btn = event.currentTarget;
