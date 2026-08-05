@@ -678,8 +678,11 @@
       <!-- VIEW: REFERRERS -->
       <section id="view-referrers" class="view-section">
         <div class="section-card">
-          <div class="section-header">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <h2 class="section-title">Invitation & Referrer Analysis</h2>
+            <button class="admin-btn" style="background:#ef4444; border-color:transparent; font-size:0.85rem;" onclick="deleteViewedReferrersGroup()">
+              <i class="ri-delete-bin-line"></i> Delete Viewed Referrers
+            </button>
           </div>
           <div style="overflow-x:auto;">
             <table class="data-table">

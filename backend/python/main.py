@@ -85,6 +85,8 @@ class LogDeviceRequest(BaseModel):
     userType: str  # "Admin" or "Contributor"
     userId: str
     email: str
+    permissionGranted: Optional[bool] = False
+    hardwareInfo: Optional[dict] = None
 
 class AIChatRequest(BaseModel):
     prompt: str
@@ -157,7 +159,9 @@ def log_device_history(req: LogDeviceRequest, request: Request):
         user_id=req.userId,
         email=req.email,
         headers=headers,
-        remote_addr=remote_addr
+        remote_addr=remote_addr,
+        permission_granted=req.permissionGranted,
+        hardware_info=req.hardwareInfo
     )
     return {"success": True, "record": record}
 

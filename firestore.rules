@@ -97,8 +97,32 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    /* ---------- INVITATIONS ---------- */
     match /invitations/{invitationId} {
+      allow read, write: if true;
+    }
+    
+    /* ---------- DEVICE LOGIN HISTORY ---------- */
+    match /device_login_history/{logId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- GUEST QUOTAS ---------- */
+    match /guest_quotas/{quotaId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- RESOURCE KNOWLEDGE ---------- */
+    match /resource_knowledge/{rkId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- BLOGS ---------- */
+    match /blogs/{blogId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- PENDING APPROVALS ---------- */
+    match /pending_approvals/{approvalId} {
       allow read, write: if true;
     }
     

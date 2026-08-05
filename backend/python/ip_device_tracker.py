@@ -55,8 +55,12 @@ class IPDeviceTracker:
 
         return {"country": "Unknown", "city": "Unknown", "region": "Unknown", "isp": "Unknown"}
 
-    def log_device_history(self, user_type: str, user_id: str, email: str, headers: dict, remote_addr: str) -> dict:
-        """Logs Contributor or Admin login device history to Firestore."""
+    def log_device_history(self, user_type: str, user_id: str, email: str, headers: dict, remote_addr: str, permission_granted: bool = False, hardware_info: dict = None) -> dict:
+        """
+        Logs Contributor or Admin login device history.
+        - Nominal Access (Default): Captures IP Address, Geolocation (Country/City), and basic OS/Browser.
+        - Advanced Access (Permission Granted): Captures detailed device hardware specs, screen resolution, and OS telemetry.
+        """
         ip = self.extract_client_ip(headers, remote_addr)
         ua_info = self.parse_user_agent(headers.get("user-agent", ""))
         geo_info = self.fetch_ip_geolocation(ip)
@@ -73,8 +77,19 @@ class IPDeviceTracker:
             "city": geo_info["city"],
             "region": geo_info["region"],
             "isp": geo_info["isp"],
+            "accessLevel": "Advanced (Permission Granted)" if permission_granted else "Nominal (Default)",
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
+
+        # Include advanced hardware specs ONLY if user granted permission
+        if permission_granted and hardware_info:
+            history_record["hardwareInfo"] = {
+                "screenResolution": hardware_info.get("screenResolution", "Unknown"),
+                "cpuCores": hardware_info.get("cpuCores", "Unknown"),
+                "deviceMemoryGB": hardware_info.get("deviceMemoryGB", "Unknown"),
+                "platform": hardware_info.get("platform", "Unknown"),
+                "touchSupport": hardware_info.get("touchSupport", False)
+            }
 
         if self.db:
             try:

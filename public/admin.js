@@ -1002,57 +1002,124 @@ window.toggleKeepNotif = toggleKeepNotif;
 // ==========================================
 // REFERRER ANALYSIS TAB
 // ==========================================
+let adminInvitationsCache = [];
+
 async function loadReferrerAnalysis() {
   const tbody = document.getElementById("referrerTableBody");
   if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading Referrer Analysis...</td></tr>`;
-  
+
   try {
-    const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
     const q = query(collection(db, "invitations"), orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
-    
+
     if (snap.empty) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No referrer data found.</td></tr>`;
       return;
     }
-    
+
     tbody.innerHTML = "";
+    adminInvitationsCache = [];
+    const now = Date.now();
+    const TWENTY_DAYS_MS = 20 * 24 * 60 * 60 * 1000;
+
     snap.forEach(docSnap => {
       const d = docSnap.data();
+      const docId = docSnap.id;
+
+      let rawTime = d.sentAt || d.createdAt;
+      let ms = 0;
+      if (rawTime) ms = rawTime.toMillis ? rawTime.toMillis() : new Date(rawTime).getTime();
+
+      // AUTO DELETE records older than 20 days
+      if (ms > 0 && (now - ms > TWENTY_DAYS_MS)) {
+        deleteDoc(doc(db, "invitations", docId)).catch(console.error);
+        return;
+      }
+
+      adminInvitationsCache.push({ id: docId, ...d });
+
       const code = d.referrerCode || 'N/A';
       const createdBy = d.senderName || d.senderEmail || 'Unknown';
       const sentTo = d.toName || d.toEmail || 'Unknown';
-      
-      let sentAt = 'Unknown';
-      if (d.sentAt) sentAt = new Date(d.sentAt.toMillis ? d.sentAt.toMillis() : d.sentAt).toLocaleString();
-      else if (d.createdAt) sentAt = new Date(d.createdAt.toMillis ? d.createdAt.toMillis() : d.createdAt).toLocaleString();
-      
+
+      let sentAt = ms > 0 ? new Date(ms).toLocaleString() : 'Unknown';
+
+      const status = d.status || 'Sent';
       let statusColor = "var(--admin-muted)";
-      if (d.status === "Receive") statusColor = "var(--admin-primary)";
-      if (d.status === "View") statusColor = "#f59e0b";
-      if (d.status === "Accept") statusColor = "#10b981";
-      if (d.status === "Rejected") statusColor = "#ef4444";
-      
+      if (status === "Sent") statusColor = "var(--admin-primary)";
+      if (status === "View") statusColor = "#f59e0b";
+      if (status === "Accept") statusColor = "#10b981";
+      if (status === "Rejected") statusColor = "#ef4444";
+
+      // Delete icon visible ONLY once status is "View" or "Accept"
+      const isEligibleForDelete = status === "View" || status === "Accept";
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="font-family:monospace; font-weight:600;">${code}</td>
         <td>${createdBy}</td>
         <td>${sentTo}</td>
         <td>${sentAt}</td>
-        <td><span class="badge" style="background:transparent; border:1px solid ${statusColor}; color:${statusColor};">${d.status || 'Unknown'}</span></td>
+        <td><span class="badge" style="background:transparent; border:1px solid ${statusColor}; color:${statusColor};">${status}</span></td>
         <td>
-          <a href="referrer_code.html?code=${code}" target="_blank" class="btn-action primary" style="background:var(--admin-primary); color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; display:inline-block;">Learn More</a>
+          <div style="display:inline-flex; gap:6px; align-items:center;">
+            <a href="referrer_code.html?code=${code}" target="_blank" class="btn-action primary" style="background:var(--admin-primary); color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.8rem; display:inline-block;">Learn More</a>
+            ${isEligibleForDelete ? `
+              <button class="btn-action danger" onclick="deleteReferrer('${docId}')" title="Delete Viewed/Accepted Referrer">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            ` : ''}
+          </div>
         </td>
       `;
       tbody.appendChild(tr);
     });
+
+    if (tbody.children.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No active referrer data found.</td></tr>`;
+    }
+
   } catch (err) {
     console.error("Failed loading referrer analysis:", err);
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-danger);">Failed to load referrer data.</td></tr>`;
   }
 }
 window.loadReferrerAnalysis = loadReferrerAnalysis;
+
+window.deleteReferrer = async function(invId) {
+  const confirmed = window.customConfirm ? await window.customConfirm("Delete this viewed/accepted invitation record?", { title: "Confirm Delete", isDanger: true }) : confirm("Delete invitation?");
+  if (!confirmed) return;
+
+  try {
+    await deleteDoc(doc(db, "invitations", invId));
+    if (window.customAlert) await window.customAlert("Referrer record deleted.", { title: "Deleted" });
+    loadReferrerAnalysis();
+  } catch (err) {
+    console.error("Failed to delete referrer:", err);
+  }
+};
+
+window.deleteViewedReferrersGroup = async function() {
+  const viewedItems = adminInvitationsCache.filter(item => item.status === "View" || item.status === "Accept");
+  if (viewedItems.length === 0) {
+    if (window.customAlert) await window.customAlert("No viewed or accepted referrer records found for group deletion.", { title: "Notice" });
+    return;
+  }
+
+  const confirmed = window.customConfirm ? await window.customConfirm(`Delete all ${viewedItems.length} viewed/accepted referrer records?`, { title: "Group Delete Confirmation", isDanger: true }) : confirm("Delete all viewed?");
+  if (!confirmed) return;
+
+  try {
+    for (const item of viewedItems) {
+      await deleteDoc(doc(db, "invitations", item.id)).catch(console.error);
+    }
+    if (window.customAlert) await window.customAlert(`${viewedItems.length} referrer records deleted successfully.`, { title: "Group Deletion Complete" });
+    loadReferrerAnalysis();
+  } catch (err) {
+    console.error("Group delete referrer error:", err);
+  }
+};
 
 // ==========================================
 // DEVICE LOGS TAB & MANAGEMENT

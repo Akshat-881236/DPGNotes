@@ -729,6 +729,22 @@
     }
     setInterval(checkAds, 1000);
 
+    // Auto-scroll to section based on URL hash fragment (#privacy, #terms, #copyright, etc.)
+    function scrollToHashSection() {
+      const hash = window.location.hash;
+      if (hash && hash.length > 1) {
+        const targetId = hash.substring(1);
+        const targetEl = document.getElementById(targetId) || document.querySelector(`[data-policy="${targetId}"]`) || document.querySelector(`a[name="${targetId}"]`);
+        if (targetEl) {
+          setTimeout(() => {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 300);
+        }
+      }
+    }
+    window.addEventListener('DOMContentLoaded', scrollToHashSection);
+    window.addEventListener('hashchange', scrollToHashSection);
+
     // Auto-trigger legal query via URL parameter
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);

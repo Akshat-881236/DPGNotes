@@ -406,6 +406,169 @@ app.post('/api/ai/chat', async (req, res) => {
     res.status(500).json({ error: "Failed to generate AI response: " + err.message });
   }
 });
+
+// ==========================================
+// ROUTES: INVITATIONS & REFERRAL SYSTEM
+// ==========================================
+app.post('/api/invite/send', async (req, res) => {
+  try {
+    const { senderUid, senderEmail, senderName, toEmail, toName } = req.body;
+    if (!toEmail) {
+      return res.status(400).json({ error: "Target email is required." });
+    }
+
+    const cleanToEmail = toEmail.trim().toLowerCase();
+
+    // 1. Check if user email already exists in Firestore users
+    if (db) {
+      const uSnap = await db.collection("users").where("email", "==", cleanToEmail).get();
+      if (!uSnap.empty) {
+        return res.status(400).json({ error: "Referrals are for new users only. This email is already registered on DPGNotes." });
+      }
+    }
+
+    // 2. Generate referral code
+    const code = "DPG" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const inviteUrl = `https://dpgnotes.web.app/index.html?code=${code}`;
+
+    const inviteData = {
+      referrerCode: code,
+      senderUid: senderUid || "anon",
+      senderEmail: senderEmail || "contributor@dpgnotes.app",
+      senderName: senderName || "DPGNotes Contributor",
+      toEmail: cleanToEmail,
+      toName: toName || cleanToEmail.split('@')[0],
+      status: "Sent",
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (db) {
+      await db.collection("invitations").add(inviteData);
+    }
+
+    // Send email with correct URL format https://dpgnotes.web.app/index.html?code=...
+    await sendEmail(
+      cleanToEmail,
+      `${senderName || 'A friend'} invited you to join DPGNotes!`,
+      `<div style="font-family:sans-serif; padding:20px; color:#1e293b;">
+        <h2>Join DPGNotes for Free Academic Resources!</h2>
+        <p>Your friend <strong>${senderName || senderEmail}</strong> invited you to join DPGNotes.</p>
+        <p>Use your personal referral link to register and access all notes, sample papers, and AI tools:</p>
+        <a href="${inviteUrl}" style="background:#6366f1; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:bold; display:inline-block; margin:15px 0;">Accept Invitation</a>
+        <p style="font-size:0.85rem; color:#64748b;">Or copy this link: <br>${inviteUrl}</p>
+      </div>`
+    );
+
+    res.json({ success: true, referrerCode: code, inviteUrl });
+  } catch (err) {
+    console.error("Error sending referral invitation:", err);
+    res.status(500).json({ error: "Failed to send invitation: " + err.message });
+  }
+});
+
+app.post('/api/invite/view', async (req, res) => {
+  try {
+    const { referrerCode } = req.body;
+    if (!referrerCode || !db) return res.json({ success: false });
+
+    const qSnap = await db.collection("invitations").where("referrerCode", "==", referrerCode).get();
+    if (!qSnap.empty) {
+      const docSnap = qSnap.docs[0];
+      const data = docSnap.data();
+      // Upgrade status Sent -> View
+      if (data.status === "Sent") {
+        await docSnap.ref.update({
+          status: "View",
+          viewedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Referral view update error:", err);
+    res.json({ success: false });
+  }
+});
+
+app.post('/api/invite/accept', async (req, res) => {
+  try {
+    const { referrerCode, newUserId, newUserEmail } = req.body;
+    if (!referrerCode || !newUserEmail || !db) {
+      return res.status(400).json({ error: "Missing referral code or user email." });
+    }
+
+    const cleanUserEmail = newUserEmail.trim().toLowerCase();
+    const qSnap = await db.collection("invitations").where("referrerCode", "==", referrerCode).get();
+
+    if (qSnap.empty) {
+      return res.status(404).json({ error: "Referral code not found." });
+    }
+
+    const docSnap = qSnap.docs[0];
+    const invData = docSnap.data();
+    const senderUid = invData.senderUid;
+    const expectedEmail = (invData.toEmail || '').trim().toLowerCase();
+
+    // 1. Verify Google Email Matches Referral Target Email
+    if (expectedEmail && cleanUserEmail !== expectedEmail) {
+      // FRAUD DETECTED: Target email mismatch! Reject invitation & log violation against Sender
+      await docSnap.ref.update({ status: "Rejected", rejectedAt: admin.firestore.FieldValue.serverTimestamp(), rejectionReason: "Target email mismatch on login" });
+
+      if (senderUid && senderUid !== "anon") {
+        const senderRef = db.collection("users").doc(senderUid);
+        const senderDoc = await senderRef.get();
+        let prevCount = 0;
+        if (senderDoc.exists) prevCount = senderDoc.data().suspensionCount || 0;
+
+        const newCount = prevCount + 1;
+        let penaltyDays = 5;
+        let isPermanent = false;
+
+        if (newCount === 2) penaltyDays = 12;
+        else if (newCount >= 3) isPermanent = true;
+
+        const suspendedUntil = isPermanent ? null : Date.now() + (penaltyDays * 86400000);
+
+        await senderRef.set({
+          isSuspended: true,
+          isPermanentlySuspended: isPermanent,
+          suspendedUntil: suspendedUntil,
+          suspensionCount: newCount,
+          lastSuspensionReason: `Referral fraud violation: Inviter sent code to ${expectedEmail} but user registered with ${cleanUserEmail}`
+        }, { merge: true });
+
+        // Log security violation
+        await db.collection("security_violations").add({
+          violatorUid: senderUid,
+          action: "REFERRAL_FRAUD_VIOLATION",
+          expectedEmail,
+          actualEmail: cleanUserEmail,
+          suspensionCount: newCount,
+          penaltyDays: isPermanent ? "PERMANENT" : penaltyDays,
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
+      return res.status(403).json({
+        error: "Referral code mismatch! The code was issued to a different email address.",
+        fraudDetected: true
+      });
+    }
+
+    // 2. Success: Upgrade status to Accept
+    await docSnap.ref.update({
+      status: "Accept",
+      acceptedByUid: newUserId,
+      acceptedByEmail: cleanUserEmail,
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({ success: true, message: "Referral accepted successfully!" });
+  } catch (err) {
+    console.error("Referral accept error:", err);
+    res.status(500).json({ error: "Failed to accept referral: " + err.message });
+  }
+});
 // ==========================================
 // ROUTES: GUEST QUOTA TRACKING
 // ==========================================
