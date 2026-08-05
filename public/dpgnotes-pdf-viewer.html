@@ -354,7 +354,7 @@ async function runAI() {
   try {
     const res = await fetch(window.API_BASE_URL + '/api/ai/analyse-document', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ data:{ title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, description:docDesc, tags:docTags, pdfUrl } })
+      body: JSON.stringify({ data:{ docid: docId, title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, description:docDesc, tags:docTags, pdfUrl } })
     });
     if (!res.ok) throw new Error('Server ' + res.status);
     const j = await res.json();
