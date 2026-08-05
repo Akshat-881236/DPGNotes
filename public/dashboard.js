@@ -1085,7 +1085,9 @@ if (deleteAccountBtn) {
 }
 
 // =========================================
-// ENGAGEMENT function attachEngagementListeners() {
+// ENGAGEMENT
+// =========================================
+function attachEngagementListeners() {
   document.querySelectorAll(".like-action").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       e.preventDefault();
