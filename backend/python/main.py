@@ -96,7 +96,8 @@ class AIChatRequest(BaseModel):
 # ==========================================
 # API ENDPOINTS
 # ==========================================
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD", "POST", "OPTIONS"])
+@app.api_route("/health", methods=["GET", "HEAD", "POST", "OPTIONS"])
 def root_health_check():
     return {
         "status": "online",
