@@ -1386,7 +1386,6 @@ function attachEngagementListeners() {
     }
     setTimeout(() => btn.innerText = originalText, 3000);
   };
-}
 
 // Live Search for Explore Tab
 const exploreSearchInput = document.getElementById('exploreSearch');
