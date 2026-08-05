@@ -72,6 +72,8 @@ tabBtns.forEach(btn => {
     // Load specific tab data
     if (btn.dataset.target === "notificationTab") {
       loadNotifications();
+    } else if (btn.dataset.target === "manageResourcesTab") {
+      loadContributorManageResources();
     }
   });
 });

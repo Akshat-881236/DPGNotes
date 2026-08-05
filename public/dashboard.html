@@ -53,6 +53,7 @@
       <nav class="sidebar-nav">
         <button class="tab-btn active" data-target="profileTab">Profile</button>
         <button class="tab-btn" data-target="contributionTab">Contribution</button>
+        <button class="tab-btn" data-target="manageResourcesTab">Manage Resources</button>
         <button class="tab-btn" data-target="exploreTab">Explore</button>
         <button class="tab-btn" data-target="settingsTab">Settings</button>
         <a href="legal/index.html?from=contributor" class="tab-btn" style="text-decoration:none; display:block; text-align:left; line-height:36px; padding-left:1.5rem; color:inherit;">Legal Center</a>
@@ -214,25 +215,6 @@
           <!-- END COMPRESSION MODAL -->
           
           <div style="margin-top: 3rem;">
-            <h2>Manage your Resource Documents</h2>
-            <div style="overflow-x:auto; background:rgba(15,23,42,0.6); border:1px solid var(--border); border-radius:14px; padding:1.2rem; margin-top:1rem;">
-              <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.88rem;">
-                <thead>
-                  <tr style="border-bottom:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--primary-light);">
-                    <th style="padding:0.75rem 1rem;">SR No.</th>
-                    <th style="padding:0.75rem 1rem;">Title</th>
-                    <th style="padding:0.75rem 1rem;">Discipline</th>
-                    <th style="padding:0.75rem 1rem; text-align:center;">Action Panel</th>
-                  </tr>
-                </thead>
-                <tbody id="manageResourcesTableBody">
-                  <tr><td colspan="4" style="padding:1rem; text-align:center; color:var(--text-muted);">Loading resources...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div style="margin-top: 3rem;">
             <h2>Delete Uploaded Document</h2>
             <form id="contributorDeleteForm" class="upload-form">
               <div class="form-grid">
@@ -248,6 +230,26 @@
                 <button type="submit" class="upload-btn" style="background:#ef4444;">Delete & Notify</button>
               </div>
             </form>
+          </div>
+        </section>
+
+        <!-- MANAGE RESOURCES TAB -->
+        <section id="manageResourcesTab" class="dashboard-tab">
+          <h2>Manage Resources</h2>
+          <div style="overflow-x:auto; background:rgba(15,23,42,0.6); border:1px solid var(--border); border-radius:14px; padding:1.2rem; margin-top:1rem;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.88rem;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--primary-light);">
+                  <th style="padding:0.75rem 1rem;">SR No.</th>
+                  <th style="padding:0.75rem 1rem;">Title</th>
+                  <th style="padding:0.75rem 1rem;">Discipline</th>
+                  <th style="padding:0.75rem 1rem; text-align:center;">Action Panel</th>
+                </tr>
+              </thead>
+              <tbody id="manageResourcesTableBody">
+                <tr><td colspan="4" style="padding:1rem; text-align:center; color:var(--text-muted);">Loading resources...</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
