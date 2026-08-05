@@ -152,10 +152,14 @@ const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgno
 const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
 
+window.dpgDb = db;
+window.doc = doc;
+window.getDoc = getDoc;
+
 // CTR telemetry check
 const P = new URLSearchParams(location.search);
 const searchToken = P.get('search-token');
-const trackingDocId = P.get('docid');
+const trackingDocId = P.get('docid') || P.get('resourceID') || P.get('resourceId') || P.get('id');
 const trackingDocTitle = P.get('title') || 'Untitled Document';
 
 if (searchToken && trackingDocId && trackingDocId !== '—') {
@@ -182,35 +186,40 @@ onAuthStateChanged(auth, user => {
 </script>
 
 <script>
-// ─ Params ───────────────────────────────────────────────────────────────────
+// ─ Params & Dual-Mode Resolver ─────────────────────────────────────────────
 const P = new URLSearchParams(location.search);
-const pdfUrl  = P.get('pdf')         || '';
-const docTitle= P.get('title')       || 'Untitled Document';
-const docCat  = P.get('category')    || '—';
-const docDisc = P.get('discipline')  || '—';
-const docUp   = P.get('uploader')    || '—';
-const docId   = P.get('docid')       || '—';
-const docDesc = P.get('description') || '';
-const docTags = P.get('tags')        || '';
+let resourceId = P.get('resourceID') || P.get('resourceId') || P.get('id') || P.get('docid') || '';
+let pdfUrl  = P.get('pdf')         || '';
+let docTitle= P.get('title')       || 'Untitled Document';
+let docCat  = P.get('category')    || '—';
+let docDisc = P.get('discipline')  || '—';
+let docUp   = P.get('uploader')    || '—';
+let docId   = resourceId           || P.get('docid') || '—';
+let docDesc = P.get('description') || '';
+let docTags = P.get('tags')        || '';
 
-document.title = `${docTitle} — DPGNotes PDF Viewer`;
-document.getElementById('navTitle').textContent = docTitle;
-document.getElementById('mTitle').textContent   = docTitle;
-document.getElementById('mCat').textContent     = docCat;
-document.getElementById('mDisc').textContent    = docDisc;
-document.getElementById('mUp').textContent      = docUp;
-document.getElementById('mId').textContent      = docId;
+function updateDocMetadataUI() {
+  document.title = `${docTitle} — DPGNotes PDF Viewer`;
+  document.getElementById('navTitle').textContent = docTitle;
+  document.getElementById('mTitle').textContent   = docTitle;
+  document.getElementById('mCat').textContent     = docCat;
+  document.getElementById('mDisc').textContent    = docDisc;
+  document.getElementById('mUp').textContent      = docUp;
+  document.getElementById('mId').textContent      = docId;
 
-if (docDesc) {
-  document.getElementById('mDesc').textContent    = docDesc;
-  document.getElementById('mDescWrap').style.display = 'block';
-}
-if (docTags) {
-  const tEl = document.getElementById('mTags');
-  docTags.split(',').forEach(t => {
-    const s = t.trim(); if (s) tEl.innerHTML += `<span class="btag">${s}</span>`;
-  });
-  document.getElementById('mTagsWrap').style.display = 'block';
+  if (docDesc) {
+    document.getElementById('mDesc').textContent    = docDesc;
+    document.getElementById('mDescWrap').style.display = 'block';
+  }
+  if (docTags) {
+    const tEl = document.getElementById('mTags');
+    tEl.innerHTML = '';
+    const tagsArr = typeof docTags === 'string' ? docTags.split(',') : (Array.isArray(docTags) ? docTags : []);
+    tagsArr.forEach(t => {
+      const s = String(t).trim(); if (s) tEl.innerHTML += `<span class="btag">${s}</span>`;
+    });
+    document.getElementById('mTagsWrap').style.display = 'block';
+  }
 }
 
 // ─ PDF Render ───────────────────────────────────────────────────────────────
@@ -471,8 +480,37 @@ async function sharePdf() {
 }
 window.sharePdf = sharePdf;
 
+async function resolveAndRender() {
+  // If resourceID is provided in URL, fetch complete real-time document data from Firestore
+  if (resourceId && resourceId !== '—') {
+    try {
+      const db = window.dpgDb;
+      if (db && window.doc && window.getDoc) {
+        const docRef = window.doc(db, "documents", resourceId);
+        const snap = await window.getDoc(docRef);
+        if (snap && snap.exists()) {
+          const d = snap.data();
+          if (d.pdfUrl) pdfUrl = d.pdfUrl;
+          if (d.title) docTitle = d.title;
+          if (d.category) docCat = d.category;
+          if (d.discipline) docDisc = d.discipline;
+          if (d.userName || d.uploader) docUp = d.userName || d.uploader;
+          if (d.description) docDesc = d.description;
+          if (d.tags) docTags = Array.isArray(d.tags) ? d.tags.join(', ') : d.tags;
+          docId = snap.id;
+        }
+      }
+    } catch(err) {
+      console.warn("Firestore resourceID fetch error, using URL params fallback:", err);
+    }
+  }
+
+  updateDocMetadataUI();
+  await renderAllPages();
+}
+
 // ─ Init ─────────────────────────────────────────────────────────────────────
-renderAllPages();
+resolveAndRender();
 
 const urlParams = new URLSearchParams(window.location.search);
 const q = urlParams.get('q');
