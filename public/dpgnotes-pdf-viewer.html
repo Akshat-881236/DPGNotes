@@ -172,16 +172,50 @@ if (searchToken && trackingDocId && trackingDocId !== '—') {
   }).catch(console.error);
 }
 
-onAuthStateChanged(auth, user => {
+function updateViewerUserInfo(user) {
   const el = document.getElementById('userInfo');
+  if (!el) return;
+
   if (user) {
+    const isAdmin = user.email === 'its.akshatnetworkhub23@gmail.com';
+    const profileLink = isAdmin ? 'admin.html' : `profile.html?uid=${user.uid}`;
     const av = user.photoURL
-      ? `<img src="${user.photoURL}" style="width:36px;height:36px;border-radius:50%;border:2px solid #6366f1;vertical-align:middle;margin-right:8px;">`
-      : `<span style="display:inline-flex;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.95rem;margin-right:8px;vertical-align:middle;">${(user.displayName||user.email||'?')[0].toUpperCase()}</span>`;
-    el.innerHTML = `<div style="display:flex;align-items:center;">${av}<div><div style="font-weight:600;color:#e2e8f0;font-size:.88rem;">${user.displayName||'Contributor'}</div><div style="color:#64748b;font-size:.74rem;">${user.email||''}</div></div></div>`;
+      ? `<img src="${user.photoURL}" style="width:36px;height:36px;border-radius:50%;border:2px solid #6366f1;vertical-align:middle;margin-right:8px;cursor:pointer;" title="View Profile">`
+      : `<span style="display:inline-flex;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.95rem;margin-right:8px;vertical-align:middle;cursor:pointer;" title="View Profile">${(user.displayName||user.email||'?')[0].toUpperCase()}</span>`;
+
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;">
+        <a href="${profileLink}" target="_blank" style="text-decoration:none;">${av}</a>
+        <div>
+          <div style="font-weight:600;color:#e2e8f0;font-size:.88rem;display:flex;align-items:center;gap:6px;">
+            <a href="${profileLink}" target="_blank" style="color:#e2e8f0;text-decoration:none;">${user.displayName||'Contributor'}</a>
+            ${isAdmin ? '<span style="background:#ef4444;color:white;font-size:0.68rem;padding:1px 6px;border-radius:4px;font-weight:700;">ADMIN</span>' : '<span style="background:rgba(99,102,241,0.2);color:#a5b4fc;font-size:0.68rem;padding:1px 6px;border-radius:4px;">CONTRIBUTOR</span>'}
+          </div>
+          <div style="color:#64748b;font-size:.74rem;">${user.email||''}</div>
+        </div>
+      </div>
+    `;
   } else {
-    el.innerHTML = `<span style="display:flex;align-items:center;gap:6px;color:var(--mut);"><i class="ri-user-line"></i>Guest Viewer</span>`;
+    const pdfViews = parseInt(localStorage.getItem("dpg_quota_pdfs") || "0", 10);
+    const remaining = Math.max(0, 3 - pdfViews);
+    el.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;align-items:center;gap:6px;color:var(--txt);font-weight:600;font-size:0.85rem;">
+          <i class="ri-user-line" style="color:var(--pri);"></i> Anonymous Guest
+        </div>
+        <div style="font-size:0.75rem;color:var(--mut);">${remaining} PDF reads remaining today</div>
+      </div>
+    `;
   }
+}
+window.updateViewerUserInfo = updateViewerUserInfo;
+
+onAuthStateChanged(auth, user => {
+  window.dpgCurrentUser = user;
+  updateViewerUserInfo(user);
+});
+document.addEventListener('DOMContentLoaded', () => {
+  updateViewerUserInfo(auth.currentUser);
 });
 </script>
 
@@ -345,42 +379,41 @@ function appendPdfChatMessage(role, text) {
   pdfChatHistory.push({ role, text });
 }
 
-async function runAI() {
-  const btn = document.getElementById('aiBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite"></i> Analysing...';
-  appendPdfChatMessage('ai', '🤖 *DPGNotes Intelligence is compiling your document analysis...*');
-  
-  try {
-    const res = await fetch(window.API_BASE_URL + '/api/ai/analyse-document', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ data:{ docid: docId, title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, description:docDesc, tags:docTags, pdfUrl } })
-    });
-    if (!res.ok) throw new Error('Server ' + res.status);
-    const j = await res.json();
-    const answer = j.report || j.analysis || j.result || j.answer || 'No analysis returned.';
-    
-    // Remove last message if it was "Analyzing..." placeholder
-    const chatArea = document.getElementById("aiChatArea");
-    if (chatArea.lastChild && chatArea.lastChild.innerText.includes('compiling')) {
-      chatArea.lastChild.remove();
-      pdfChatHistory.pop();
+// Background Pre-fetch PDF Text & Knowledge Base
+window.preloadedPdfText = "";
+window.resourceKnowledgeMd = "";
+
+async function backgroundPreFetchDocumentKnowledge() {
+  // 1. Pre-extract PDF text in background
+  if (pdfDoc && !window.preloadedPdfText) {
+    try {
+      window.preloadedPdfText = await extractPdfText();
+    } catch (e) {
+      console.warn("Background PDF text pre-fetch warning:", e);
     }
-    
-    appendPdfChatMessage('ai', answer);
-  } catch(err) {
-    appendPdfChatMessage('ai', '❌ Failed to analyze document: ' + err.message);
   }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyse';
+
+  // 2. Pre-fetch resource knowledge from Firestore if docId exists
+  if (docId && docId !== '—' && !window.resourceKnowledgeMd) {
+    try {
+      const db = window.dpgDb;
+      if (db && window.doc && window.getDoc) {
+        const snap = await window.getDoc(window.doc(db, "resource_knowledge", docId));
+        if (snap && snap.exists()) {
+          const kData = snap.data();
+          window.resourceKnowledgeMd = kData.knowledgeMd || "";
+        }
+      }
+    } catch (e) {
+      console.warn("Background resource_knowledge pre-fetch warning:", e);
+    }
+  }
 }
-window.runAI = runAI;
 
 async function extractPdfText() {
   if (!pdfDoc) return "";
   let text = "";
-  // Extract up to 5 pages of text to prevent exceeding token limits
-  const maxPages = Math.min(pdfDoc.numPages, 5);
+  const maxPages = Math.min(pdfDoc.numPages, 10);
   for (let i = 1; i <= maxPages; i++) {
     try {
       const page = await pdfDoc.getPage(i);
@@ -393,6 +426,78 @@ async function extractPdfText() {
   }
   return text;
 }
+
+async function animateProgressSteps(statusElement, steps) {
+  for (const step of steps) {
+    if (statusElement) {
+      statusElement.innerHTML = `🤖 <em>${step}</em>`;
+    }
+    await new Promise(r => setTimeout(r, 220));
+  }
+}
+
+async function runAI() {
+  const btn = document.getElementById('aiBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite"></i> Analysing...';
+  
+  const chatArea = document.getElementById("aiChatArea");
+  const thinking = document.createElement("div");
+  thinking.id = "pdfThinking";
+  thinking.style.alignSelf = 'flex-start';
+  thinking.style.color = '#a78bfa';
+  thinking.style.fontSize = '0.8rem';
+  chatArea.appendChild(thinking);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  const steps = [
+    "[ 1/7. Receive Query ]",
+    "[ 2/7. Analyzing Document Metadata ]",
+    "[ 3/7. Background DOM & PDF Screening ]",
+    "[ 4/7. URL Mapping & Resource Indexing ]",
+    "[ 5/7. Fetching content from runtime knowledge.md ]",
+    "[ 6/7. Generating Response ]",
+    "[ 7/7. Formatting Response ]"
+  ];
+
+  await backgroundPreFetchDocumentKnowledge();
+  await animateProgressSteps(thinking, steps);
+
+  try {
+    const res = await fetch(window.API_BASE_URL + '/api/ai/analyse-document', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ 
+        data: { 
+          docid: docId, 
+          title: docTitle, 
+          category: docCat, 
+          discipline: docDisc, 
+          uploader: docUp, 
+          description: docDesc, 
+          tags: docTags, 
+          pdfUrl: pdfUrl,
+          extractedPdfText: window.preloadedPdfText,
+          knowledgeMd: window.resourceKnowledgeMd
+        } 
+      })
+    });
+
+    if (thinking) thinking.remove();
+
+    if (!res.ok) throw new Error('Server ' + res.status);
+    const j = await res.json();
+    const answer = j.report || j.analysis || j.result || j.answer || 'No analysis returned.';
+    
+    appendPdfChatMessage('ai', answer);
+  } catch(err) {
+    if (thinking) thinking.remove();
+    appendPdfChatMessage('ai', '❌ Failed to analyze document: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyse';
+}
+window.runAI = runAI;
 
 async function sendPdfAiQuery() {
   const input = document.getElementById("aiChatInput");
@@ -407,24 +512,27 @@ async function sendPdfAiQuery() {
   
   appendPdfChatMessage('user', question);
   
-  // Detect if query requires PDF Screening (Web Screening)
-  const shouldScreen = /section\s+[a-z0-9]|solve|answer\s+all|explain\s+questions|exam\s+questions/i.test(question);
-  
-  // Show thinking / status
   const chatArea = document.getElementById("aiChatArea");
   const thinking = document.createElement("div");
   thinking.id = "pdfThinking";
   thinking.style.alignSelf = 'flex-start';
   thinking.style.color = '#a78bfa';
   thinking.style.fontSize = '0.8rem';
-  thinking.innerHTML = shouldScreen ? '🤖 <em>Screening and extracting PDF text...</em>' : '🤖 <em>Thinking...</em>';
   chatArea.appendChild(thinking);
   chatArea.scrollTop = chatArea.scrollHeight;
 
-  let extractedText = "";
-  if (shouldScreen) {
-    extractedText = await extractPdfText();
-  }
+  const steps = [
+    "[ 1/7. Receive Query ]",
+    "[ 2/7. Analyzing User Question ]",
+    "[ 3/7. Background DOM & PDF Screening ]",
+    "[ 4/7. URL Mapping & Resource Indexing ]",
+    "[ 5/7. Fetching content from runtime knowledge.md ]",
+    "[ 6/7. Generating Response ]",
+    "[ 7/7. Formatting Response ]"
+  ];
+
+  await backgroundPreFetchDocumentKnowledge();
+  await animateProgressSteps(thinking, steps);
 
   try {
     const res = await fetch(window.API_BASE_URL + '/api/ai/chat', {
@@ -433,7 +541,10 @@ async function sendPdfAiQuery() {
       body: JSON.stringify({
         history: pdfChatHistory,
         question: question,
+        prompt: question,
+        resourceId: docId,
         context: {
+          documentId: docId,
           documentTitle: docTitle,
           documentCategory: docCat,
           documentDiscipline: docDisc,
@@ -441,24 +552,22 @@ async function sendPdfAiQuery() {
           documentDescription: docDesc,
           documentTags: docTags,
           documentPdfUrl: pdfUrl,
-          extractedPdfText: shouldScreen ? extractedText : "N/A (Screening bypassed)",
+          extractedPdfText: window.preloadedPdfText || "N/A",
           knowledgeBase: window.resourceKnowledgeMd || ""
         }
       })
     });
     
-    const thinkingEl = document.getElementById("pdfThinking");
-    if (thinkingEl) thinkingEl.remove();
+    if (thinking) thinking.remove();
 
     const data = await res.json();
     if (data.answer) {
       appendPdfChatMessage('ai', data.answer);
     } else {
-      appendPdfChatMessage('ai', '⚠️ No response received from DPGNotes AI.');
+      appendPdfChatMessage('ai', '⚠️ No response received.');
     }
   } catch(err) {
-    const thinkingEl = document.getElementById("pdfThinking");
-    if (thinkingEl) thinkingEl.remove();
+    if (thinking) thinking.remove();
     appendPdfChatMessage('ai', '❌ Connection error: ' + err.message);
   }
   btn.disabled = false;

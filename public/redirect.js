@@ -199,35 +199,97 @@
       localStorage.setItem("dpg_quota_pdfs", pdfViews);
 
       function triggerQuotaReachedPhase() {
-        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && !window.location.pathname.endsWith('/DPGNotes/public/')) {
+        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && !window.location.pathname.endsWith('/public/')) {
           window.location.href = "index.html?quotaReached=true";
           return;
         }
 
-        // Inject un-dismissable Quota Reached Overlay on index.html
-        let qOverlay = document.getElementById('guestQuotaOverlay');
-        if (!qOverlay) {
-          qOverlay = document.createElement('div');
-          qOverlay.id = 'guestQuotaOverlay';
-          qOverlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,6,23,0.95); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); z-index:9999999; display:flex; align-items:center; justify-content:center; padding:1.5rem; color:#f8fafc; font-family:"Inter",sans-serif; text-align:center;';
-          qOverlay.innerHTML = `
-            <div style="background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.98)); border:1px solid rgba(239,68,68,0.4); border-radius:24px; padding:2.5rem 2rem; max-width:500px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.8);">
-              <i class="ri-alarm-warning-line" style="font-size:3.8rem; color:#ef4444; margin-bottom:1rem; display:inline-block;"></i>
-              <h2 style="font-size:1.6rem; font-weight:800; color:white; margin-bottom:0.8rem; font-family:'Outfit',sans-serif;">Daily Guest Limit Reached</h2>
-              <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.6; margin-bottom:1.8rem;">
-                You have reached the daily guest quota of <strong>6 page visits</strong> and <strong>3 PDF reads</strong>.<br>
-                Sign up with your Google account to unlock <strong>unlimited free access</strong> to all academic notes, question papers, and AI assistants!
-              </p>
-              <button onclick="if(window.signInWithGoogle){window.signInWithGoogle();}else{window.location.href='index.html';}" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:0.9rem 2rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 6px 20px rgba(99,102,241,0.5); display:inline-flex; align-items:center; gap:10px; width:100%; justify-content:center;">
-                <i class="ri-google-fill" style="font-size:1.2rem;"></i> Sign In / Sign Up with Google
-              </button>
-              <p style="margin-top:1.5rem; font-size:0.78rem; color:#94a3b8;">
-                Need help or view policies? Visit our <a href="legal/index.html" style="color:#a78bfa; text-decoration:underline;">Legal & Policy Center</a>.
-              </p>
+        // Completely replace overall DOM of index.html with un-negotiable locked interface
+        document.body.innerHTML = '';
+        document.body.style.cssText = 'margin:0; padding:0; overflow:hidden; background:#020617; font-family:"Inter",sans-serif; color:#f8fafc; height:100vh; width:100vw; display:flex; align-items:center; justify-content:center;';
+
+        const lockedContainer = document.createElement('div');
+        lockedContainer.id = 'unnegotiableLockedQuotaScreen';
+        lockedContainer.style.cssText = 'width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; background:radial-gradient(circle at center, rgba(30,41,59,0.9), #020617 80%); box-sizing:border-box; text-align:center; overflow-y:auto;';
+
+        lockedContainer.innerHTML = `
+          <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(239,68,68,0.35); border-radius:24px; padding:2.5rem 2rem; max-width:540px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);">
+            <div style="display:inline-flex; align-items:center; gap:10px; margin-bottom:1.2rem; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); padding:6px 16px; border-radius:999px; color:#fca5a5; font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
+              <i class="ri-alarm-warning-fill" style="color:#ef4444; font-size:1.1rem;"></i> Daily Access Limit Reached
             </div>
-          `;
-          document.body.appendChild(qOverlay);
+
+            <h1 style="font-family:'Outfit',sans-serif; font-size:2rem; font-weight:800; color:white; margin-bottom:0.8rem; line-height:1.2;">
+              Daily Guest Quota Exceeded
+            </h1>
+
+            <p style="color:#94a3b8; font-size:0.95rem; line-height:1.65; margin-bottom:1.5rem;">
+              You have used all <strong style="color:white;">6 page visits</strong> and <strong style="color:white;">3 PDF reads</strong> allocated for guest viewers today.<br>
+              Sign in with your Google account to enjoy <strong style="color:#a78bfa;">unlimited free access</strong> to all notes, papers, and AI assistants.
+            </p>
+
+            <!-- LIVE RESET COUNTDOWN TIMER -->
+            <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1rem; margin-bottom:1.8rem; display:flex; flex-direction:column; align-items:center; gap:6px;">
+              <span style="font-size:0.75rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Quota Resets In</span>
+              <div id="quotaCountdownTimer" style="font-family:monospace; font-size:2rem; font-weight:800; color:#818cf8; letter-spacing:2px;">00:00:00</div>
+              <span style="font-size:0.72rem; color:#94a3b8;">(HH : MM : SS until midnight UTC)</span>
+            </div>
+
+            <!-- SINGLE GOOGLE SIGN IN BUTTON -->
+            <button id="lockedGoogleSignInBtn" onclick="if(window.signInWithGoogle){window.signInWithGoogle();}else{window.location.href='index.html';}" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:1.1rem 2rem; border-radius:14px; font-weight:800; font-size:1.05rem; cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.5); display:inline-flex; align-items:center; gap:12px; width:100%; justify-content:center; transition:all 0.3s ease;">
+              <i class="ri-google-fill" style="font-size:1.4rem;"></i> Sign In / Sign Up with Google
+            </button>
+
+            <!-- LEGAL NOTES DEEP LINKS -->
+            <div style="margin-top:2rem; padding-top:1.2rem; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
+              <div style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:0.8rem;">DPGNotes Legal Center Policies:</div>
+              <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px 14px; font-size:0.82rem;">
+                <a href="legal/index.html#privacy" target="_blank" style="color:#a78bfa; text-decoration:none;">Privacy Policy</a>
+                <span style="color:#334155;">•</span>
+                <a href="legal/index.html#terms" target="_blank" style="color:#a78bfa; text-decoration:none;">Terms of Use</a>
+                <span style="color:#334155;">•</span>
+                <a href="legal/index.html#drasa" target="_blank" style="color:#a78bfa; text-decoration:none;">DRASA Regulations</a>
+                <span style="color:#334155;">•</span>
+                <a href="legal/index.html#copyright" target="_blank" style="color:#a78bfa; text-decoration:none;">Copyright Policy</a>
+                <span style="color:#334155;">•</span>
+                <a href="legal/index.html#disclaimer" target="_blank" style="color:#a78bfa; text-decoration:none;">Disclaimer</a>
+                <span style="color:#334155;">•</span>
+                <a href="legal/index.html#faq" target="_blank" style="color:#a78bfa; text-decoration:none;">Legal FAQ</a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(lockedContainer);
+
+        // Start live countdown timer to midnight
+        function updateTimer() {
+          const now = new Date();
+          const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+          const diffMs = midnight - now;
+
+          if (diffMs <= 0) {
+            localStorage.removeItem("dpg_quota_visits");
+            localStorage.removeItem("dpg_quota_pdfs");
+            window.location.href = "index.html";
+            return;
+          }
+
+          const hours = Math.floor(diffMs / 3600000);
+          const mins = Math.floor((diffMs % 3600000) / 60000);
+          const secs = Math.floor((diffMs % 60000) / 1000);
+
+          const hStr = String(hours).padStart(2, '0');
+          const mStr = String(mins).padStart(2, '0');
+          const sStr = String(secs).padStart(2, '0');
+
+          const timerEl = document.getElementById('quotaCountdownTimer');
+          if (timerEl) {
+            timerEl.textContent = `${hStr}:${mStr}:${sStr}`;
+          }
         }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
       }
 
       // Check local limit first
@@ -246,6 +308,35 @@
           triggerQuotaReachedPhase();
         }
       }).catch(err => console.warn('Server guest quota tracking error:', err));
+    })();
+
+    // Automatically trigger Device Logging for page load (logs once per user per IP per day)
+    (function logDeviceTelemetry() {
+      const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
+      const userType = activeUser.role === 'admin' || activeUser.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : (activeUser.uid ? 'Contributor' : 'Anonymous');
+      const userId = activeUser.uid || localStorage.getItem("dpg_guest_id") || "guest_anon";
+      const email = activeUser.email || "guest@dpgnotes.app";
+
+      const perm = localStorage.getItem("dpg_device_perm_granted") === "true";
+      const hwInfo = perm ? {
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        cpuCores: navigator.hardwareConcurrency || 4,
+        deviceMemoryGB: navigator.deviceMemory || 4,
+        platform: navigator.platform,
+        touchSupport: ('ontouchstart' in window)
+      } : null;
+
+      fetch((window.API_BASE_URL || '') + '/api/device-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userType,
+          userId,
+          email,
+          permissionGranted: perm,
+          hardwareInfo: hwInfo
+        })
+      }).catch(err => console.warn('Device log tracking error:', err));
     })();
   });
 })();
