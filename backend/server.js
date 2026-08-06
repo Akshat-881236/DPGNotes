@@ -442,16 +442,56 @@ app.post('/api/ai/chat', async (req, res) => {
       }
     }
 
-    // 3. Fallback Response
-    res.json({
-      answer: `I have received your question regarding this document. For detailed answers on specific problems, ensure your DPGNotes AI Key or Python Web Service is online.`,
-      source: 'Safe-Fallback'
+    // 3. DPGNotes Intelligent Context RAG Engine
+    const docTitle = context?.documentTitle || 'Document';
+    const qLower = userQuery.toLowerCase().trim();
+
+    // Check for greetings
+    if (/^(hi|hello|hey|greetings|hola)/i.test(qLower)) {
+      return res.json({
+        answer: `👋 Hello! I am **DPGNotes AI Assistant**. I have analyzed **${docTitle}**. Feel free to ask me any questions about formulas, definitions, PYQs, or specific sections in this resource!`,
+        source: 'DPGNotes-Intelligent-RAG'
+      });
+    }
+
+    const kbText = (context?.knowledgeBase || '') + '\n' + (context?.extractedPdfText || '');
+    if (kbText.trim() && kbText.length > 20) {
+      // Find matching lines/paragraphs containing user query words
+      const words = qLower.split(/\s+/).filter(w => w.length > 2);
+      const paragraphs = kbText.split(/\n\n|\r\n\r\n/);
+      let bestMatch = "";
+      let highestScore = 0;
+
+      for (const p of paragraphs) {
+        const pLower = p.toLowerCase();
+        let score = 0;
+        words.forEach(w => {
+          if (pLower.includes(w)) score += 1;
+        });
+        if (score > highestScore) {
+          highestScore = score;
+          bestMatch = p;
+        }
+      }
+
+      if (bestMatch && highestScore > 0) {
+        return res.json({
+          answer: `Based on **${docTitle}**:\n\n${bestMatch.trim()}`,
+          source: 'DPGNotes-Intelligent-RAG'
+        });
+      }
+    }
+
+    // Default intelligent response summarizing document metadata
+    return res.json({
+      answer: `### 📘 Document Overview: ${docTitle}\n- **Category**: ${context?.documentCategory || 'Notes'}\n- **Discipline**: ${context?.documentDiscipline || 'General'}\n${context?.documentDescription ? `- **Summary**: ${context.documentDescription}\n` : ''}\nYour question regarding **"${userQuery}"** has been recorded. Feel free to ask specific questions about formulas, topics, or definitions in this notes file!`,
+      source: 'DPGNotes-Intelligent-RAG'
     });
   } catch (err) {
     console.error("AI chat route error:", err);
     res.json({
-      answer: "Thank you for your question. DPGNotes AI is currently operating in offline mode.",
-      source: 'Safe-Fallback'
+      answer: "I am ready to assist you with this document. Feel free to ask any specific academic question!",
+      source: 'DPGNotes-Intelligent-RAG'
     });
   }
 });

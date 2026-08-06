@@ -597,7 +597,7 @@ async function loadExplore() {
       <div class="tags">
         ${(data.tags || []).map(t => `<span>#${t}</span>`).join("")}
       </div>
-      <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}" target="_blank" class="open-btn">Open PDF</a>
+      <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${data.id}&pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description || '')}&tags=${encodeURIComponent((data.tags || []).join(', '))}" target="_blank" class="open-btn">Open PDF</a>
       
       <div class="card-actions">
         <button class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${docId}" data-owner="${data.userId}" data-title="${data.title}">

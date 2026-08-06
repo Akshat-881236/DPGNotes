@@ -837,9 +837,7 @@ function createCard(data){
       <span title="Link Clicks (CTR)">👀 ${data.ctrCount || 0}</span>
     </div>
 
-    <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(
-    Array.isArray(data.tags) ? data.tags.join(", ") : ""
-    )}" target="_blank" class="open-btn" onclick="if(window.logActivity) window.logActivity('VIEW', 'Viewed document: ${data.title}')">Open PDF</a>
+    <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${data.id}&pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(Array.isArray(data.tags) ? data.tags.join(", ") : "")}" target="_blank" class="open-btn" onclick="if(window.logActivity) window.logActivity('VIEW', 'Viewed document: ${data.title}')">Open PDF</a>
   
     <div class="card-actions">
       <button class="action-btn like-action" onclick="event.preventDefault(); event.stopPropagation(); if(window.customAlert){window.customAlert('Please login via Dashboard to like this resource.', {title:'Authentication Required'});}else{alert('Please login via Dashboard to like this resource.');}">🤍 Like</button>
