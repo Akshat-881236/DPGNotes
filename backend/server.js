@@ -341,7 +341,7 @@ app.post('/api/ai/analyse-document', async (req, res) => {
     const description = data.description || '';
     const resourceId = data.docid || data.id || data.resourceId || '';
 
-    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
+    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'https://dpgnotes-python-service.onrender.com';
 
     // 1. Try forwarding to Python AI Service first for RAG analysis
     try {
@@ -401,7 +401,7 @@ app.post('/api/ai/chat', async (req, res) => {
   try {
     const { prompt, question, resourceId, systemContext, context, history } = req.body;
     const userQuery = prompt || question || (history && history.length > 0 ? history[history.length - 1].text : "Summarize document");
-    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
+    const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'https://dpgnotes-python-service.onrender.com';
     const targetResourceId = resourceId || (context && context.documentId) || '';
 
     // 1. Try Python Service

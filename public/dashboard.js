@@ -1478,11 +1478,102 @@ window.openEditResourceModal = function(docId) {
 
   const modal = document.getElementById("editResourceModal");
   if (modal) modal.style.display = "flex";
+
+  // Reset modal file upload elements
+  const fileInput = document.getElementById("modalPdfFileInput");
+  if (fileInput) fileInput.value = "";
+  const fileText = document.getElementById("modalFileNameText");
+  if (fileText) fileText.textContent = "No new file selected";
+  const progressDiv = document.getElementById("modalUploadProgressContainer");
+  if (progressDiv) progressDiv.style.display = "none";
 };
 
 window.closeEditResourceModal = function() {
   const modal = document.getElementById("editResourceModal");
   if (modal) modal.style.display = "none";
+};
+
+window.handleModalPdfFileSelect = async function(e) {
+  const file = e.target.files[0];
+  const textSpan = document.getElementById("modalFileNameText");
+  const progressContainer = document.getElementById("modalUploadProgressContainer");
+  const statusText = document.getElementById("modalUploadStatusText");
+  const percentText = document.getElementById("modalUploadPercentText");
+  const progressBar = document.getElementById("modalUploadProgressBar");
+  const pdfUrlInput = document.getElementById("modalPdfUrl");
+  const saveBtn = document.getElementById("saveResourceModalBtn");
+
+  if (!file) {
+    if (textSpan) textSpan.textContent = "No new file selected";
+    return;
+  }
+
+  if (textSpan) textSpan.textContent = file.name + ` (${(file.size / (1024*1024)).toFixed(1)}MB)`;
+
+  if (file.size > 262144000) {
+    alert("File size exceeds 250MB limit. Please enter a direct URL link.");
+    return;
+  }
+
+  // Intercept > 10MB for Compression Modal or upload directly
+  if (file.size > 10 * 1024 * 1024) {
+    alert("File exceeds 10MB Cloudinary raw limit. Triggering ILovePDF compression...");
+    const compModal = document.getElementById("compressionModal");
+    if (compModal) compModal.style.display = "flex";
+    return;
+  }
+
+  // Direct Cloudinary Upload via Backend
+  if (progressContainer) progressContainer.style.display = "block";
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append("pdfFile", file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", window.API_BASE_URL + "/api/upload");
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        const pct = Math.round((event.loaded / event.total) * 100);
+        if (progressBar) progressBar.style.width = pct + "%";
+        if (percentText) percentText.textContent = pct + "%";
+        if (statusText) statusText.textContent = `Uploading fresh PDF to Cloudinary... (${(event.loaded / (1024*1024)).toFixed(1)}MB / ${(event.total / (1024*1024)).toFixed(1)}MB)`;
+      }
+    });
+
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const resp = JSON.parse(xhr.responseText);
+          if (resp.pdfUrl) {
+            pdfUrlInput.value = resp.pdfUrl;
+            if (statusText) statusText.textContent = "✅ Fresh PDF uploaded successfully to Cloudinary!";
+            if (progressBar) progressBar.style.width = "100%";
+            if (percentText) percentText.textContent = "100%";
+          } else {
+            throw new Error(resp.error || "No Cloudinary URL returned");
+          }
+        } catch(err) {
+          alert("Cloudinary upload parse error: " + err.message);
+        }
+      } else {
+        alert("Upload failed with status " + xhr.status);
+      }
+      if (saveBtn) saveBtn.disabled = false;
+    };
+
+    xhr.onerror = function() {
+      alert("Network error during Cloudinary PDF upload.");
+      if (saveBtn) saveBtn.disabled = false;
+    };
+
+    xhr.send(formData);
+  } catch(err) {
+    alert("Upload error: " + err.message);
+    if (saveBtn) saveBtn.disabled = false;
+  }
 };
 
 window.handleEditResourceSubmit = async function(e) {

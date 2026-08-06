@@ -382,6 +382,7 @@ function appendPdfChatMessage(role, text) {
 // Background Pre-fetch PDF Text & Knowledge Base
 window.preloadedPdfText = "";
 window.resourceKnowledgeMd = "";
+window.firestoreDocId = "";
 
 async function backgroundPreFetchDocumentKnowledge() {
   // 1. Pre-extract PDF text in background
@@ -393,15 +394,25 @@ async function backgroundPreFetchDocumentKnowledge() {
     }
   }
 
-  // 2. Pre-fetch resource knowledge from Firestore if docId exists
-  if (docId && docId !== '—' && !window.resourceKnowledgeMd) {
+  // 2. Pre-fetch resource knowledge from Firestore if docId or firestoreDocId exists
+  const targetId = window.firestoreDocId || docId || resourceId;
+  if (targetId && targetId !== '—' && !window.resourceKnowledgeMd) {
     try {
       const db = window.dpgDb;
       if (db && window.doc && window.getDoc) {
-        const snap = await window.getDoc(window.doc(db, "resource_knowledge", docId));
+        // Try direct doc fetch by firestoreDocId or targetId
+        let snap = await window.getDoc(window.doc(db, "resource_knowledge", targetId));
+        if ((!snap || !snap.exists()) && docId && docId !== targetId) {
+          snap = await window.getDoc(window.doc(db, "resource_knowledge", docId));
+        }
+
         if (snap && snap.exists()) {
           const kData = snap.data();
-          window.resourceKnowledgeMd = kData.knowledgeMd || "";
+          let combined = kData.knowledgeMd || "";
+          if (kData.faqs && Array.isArray(kData.faqs)) {
+            combined += "\n\n### Resource FAQs:\n" + kData.faqs.map(f => `Q: ${f.query}\nA: ${f.solution}`).join('\n\n');
+          }
+          window.resourceKnowledgeMd = combined;
         }
       }
     } catch (e) {
@@ -590,15 +601,40 @@ async function sharePdf() {
 window.sharePdf = sharePdf;
 
 async function resolveAndRender() {
-  // If resourceID is provided in URL, fetch complete real-time document data from Firestore
-  if (resourceId && resourceId !== '—') {
+  // 1. Wait up to 3 seconds for async Firebase module to expose window.dpgDb and getDoc
+  let attempts = 0;
+  while ((!window.dpgDb || !window.getDoc || !window.doc) && attempts < 15) {
+    await new Promise(r => setTimeout(r, 200));
+    attempts++;
+  }
+
+  const targetSearchId = resourceId || P.get('docid') || P.get('id') || '';
+
+  // 2. If targetSearchId is provided, query Firestore
+  if (targetSearchId && targetSearchId !== '—') {
     try {
       const db = window.dpgDb;
       if (db && window.doc && window.getDoc) {
-        const docRef = window.doc(db, "documents", resourceId);
-        const snap = await window.getDoc(docRef);
+        // A. Direct Document lookup by Firestore ID
+        const docRef = window.doc(db, "documents", targetSearchId);
+        let snap = await window.getDoc(docRef);
+
+        let d = null;
         if (snap && snap.exists()) {
-          const d = snap.data();
+          d = snap.data();
+          window.firestoreDocId = snap.id;
+        } else if (window.query && window.collection && window.where && window.getDocs) {
+          // B. Query documents collection where documentId == targetSearchId
+          const qDoc = window.query(window.collection(db, "documents"), window.where("documentId", "==", targetSearchId));
+          const qSnap = await window.getDocs(qDoc);
+          if (!qSnap.empty) {
+            const firstDoc = qSnap.docs[0];
+            d = firstDoc.data();
+            window.firestoreDocId = firstDoc.id;
+          }
+        }
+
+        if (d) {
           if (d.pdfUrl) pdfUrl = d.pdfUrl;
           if (d.title) docTitle = d.title;
           if (d.category) docCat = d.category;
@@ -606,7 +642,7 @@ async function resolveAndRender() {
           if (d.userName || d.uploader) docUp = d.userName || d.uploader;
           if (d.description) docDesc = d.description;
           if (d.tags) docTags = Array.isArray(d.tags) ? d.tags.join(', ') : d.tags;
-          docId = snap.id;
+          docId = d.documentId || window.firestoreDocId || targetSearchId;
         }
       }
     } catch(err) {
@@ -616,6 +652,9 @@ async function resolveAndRender() {
 
   updateDocMetadataUI();
   await renderAllPages();
+
+  // Trigger background pre-fetch of PDF text & resource knowledge
+  backgroundPreFetchDocumentKnowledge();
 }
 
 // ─ Init ─────────────────────────────────────────────────────────────────────

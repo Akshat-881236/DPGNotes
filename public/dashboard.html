@@ -298,8 +298,29 @@
                 <input type="text" id="modalTags" required style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.4); color:white; box-sizing:border-box;">
               </div>
 
+              <div style="margin-bottom:1rem; background:rgba(255,255,255,0.03); border:1px dashed var(--border); border-radius:12px; padding:1rem;">
+                <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--primary-light); font-weight:600;">Fresh PDF Upload (Cloudinary & ILovePDF Engine)</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <input type="file" id="modalPdfFileInput" accept="application/pdf" style="display:none;" onchange="handleModalPdfFileSelect(event)">
+                  <button type="button" onclick="document.getElementById('modalPdfFileInput').click()" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <i class="ri-upload-cloud-2-line" style="font-size:1.1rem;"></i> Choose Fresh PDF File
+                  </button>
+                  <span id="modalFileNameText" style="font-size:0.8rem; color:var(--text-muted); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; max-width:220px;">No new file selected</span>
+                </div>
+                
+                <div id="modalUploadProgressContainer" style="display:none; margin-top:10px; background:rgba(0,0,0,0.4); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+                  <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:4px; color:#c4b5fd;">
+                    <span id="modalUploadStatusText">Uploading fresh PDF to Cloudinary...</span>
+                    <span id="modalUploadPercentText">0%</span>
+                  </div>
+                  <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                    <div id="modalUploadProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #6366f1, #8b5cf6); transition:width 0.2s;"></div>
+                  </div>
+                </div>
+              </div>
+
               <div style="margin-bottom:1.5rem;">
-                <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted);">PDF File URL *</label>
+                <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted);">PDF File URL * (Auto-filled on upload or edit manually)</label>
                 <input type="url" id="modalPdfUrl" required style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.4); color:white; box-sizing:border-box;">
               </div>
 
