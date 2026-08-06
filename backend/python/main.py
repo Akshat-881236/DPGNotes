@@ -21,18 +21,63 @@ logger = logging.getLogger("DPGNotesPythonServer")
 # ==========================================
 # FIREBASE ADMIN SDK INIT
 # ==========================================
+import json
+import base64
+
 db = None
 try:
     if not firebase_admin._apps:
-        cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "../serviceAccountKey.json")
-        if os.path.exists(cred_path):
-            cred = credentials.Certificate(cred_path)
-            firebase_admin.initialize_app(cred)
-            db = firestore.client()
-            logger.info("Firebase Admin initialized successfully in Python Server.")
+        service_account_dict = None
+
+        # 1. Check FIREBASE_SERVICE_ACCOUNT env var
+        fb_env = os.getenv("FIREBASE_SERVICE_ACCOUNT")
+        if fb_env:
+            fb_env = fb_env.strip()
+            if not fb_env.startswith("{"):
+                try:
+                    fb_env = base64.b64decode(fb_env).decode("utf-8")
+                except Exception:
+                    pass
+            try:
+                service_account_dict = json.loads(fb_env)
+            except Exception as pe:
+                logger.warning(f"Failed parsing FIREBASE_SERVICE_ACCOUNT env var: {pe}")
+
+        # 2. Fallback to serviceAccountKey.json file paths
+        if not service_account_dict:
+            possible_paths = [
+                os.getenv("GOOGLE_APPLICATION_CREDENTIALS", ""),
+                "serviceAccountKey.json",
+                "../serviceAccountKey.json",
+                "../../serviceAccountKey.json"
+            ]
+            for p in possible_paths:
+                if p and os.path.exists(p):
+                    try:
+                        with open(p, "r", encoding="utf-8") as f:
+                            service_account_dict = json.load(f)
+                            break
+                    except Exception:
+                        pass
+
+        # 3. Validate private_key before passing to Certificate
+        if service_account_dict and isinstance(service_account_dict, dict):
+            pk = service_account_dict.get("private_key", "")
+            if pk and pk != "REPLACE_ME":
+                # Fix escaped newlines in private key string
+                service_account_dict["private_key"] = pk.replace("\\n", "\n")
+                cred = credentials.Certificate(service_account_dict)
+                firebase_admin.initialize_app(cred)
+                db = firestore.client()
+                logger.info("Firebase Admin initialized successfully in Python Server via Service Account.")
+            else:
+                logger.warning("Service Account JSON contains 'REPLACE_ME' placeholder key. Initializing default app.")
+                firebase_admin.initialize_app()
+                db = firestore.client()
         else:
             firebase_admin.initialize_app()
             db = firestore.client()
+            logger.info("Firebase Admin initialized via default application credentials.")
 except Exception as e:
     logger.warning(f"Firebase Admin initialization skipped: {e}")
 
