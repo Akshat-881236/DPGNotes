@@ -135,6 +135,35 @@
       <i class="ri-loader-4-line spin-icon"></i>
       <p style="font-weight:600">Loading secure document...</p>
     </div>
+
+    <!-- END OF PDF RECOMMENDATIONS -->
+    <div id="endPdfRecommendations" style="display:none; margin-top:3rem; padding:2rem 1.5rem; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:20px; backdrop-filter:blur(20px);">
+      <h2 style="font-family:'Outfit',sans-serif; font-size:1.5rem; margin-bottom:1.5rem; color:white; display:flex; align-items:center; gap:10px;"><i class="ri-compass-3-line" style="color:var(--pri);"></i> Continue Exploring Resources</h2>
+      
+      <!-- 1. RELEVANT RESOURCES -->
+      <div style="margin-bottom:2rem;">
+        <h3 style="font-size:1.1rem; color:#a78bfa; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-bookmark-3-line"></i> Relevant Resources</h3>
+        <div id="relevantResourcesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
+          <div style="color:var(--mut); font-size:0.85rem;">Loading relevant resources...</div>
+        </div>
+      </div>
+
+      <!-- 2. MORE FROM CONTRIBUTOR -->
+      <div style="margin-bottom:2rem;">
+        <h3 style="font-size:1.1rem; color:#818cf8; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line"></i> More from <span id="uploaderNameSpan">Contributor</span></h3>
+        <div id="moreFromContributorGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
+          <div style="color:var(--mut); font-size:0.85rem;">Loading contributor resources...</div>
+        </div>
+      </div>
+
+      <!-- 3. HIGH RATED RESOURCES -->
+      <div>
+        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-fire-line"></i> High Rated Resources</h3>
+        <div id="highRatedResourcesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
+          <div style="color:var(--mut); font-size:0.85rem;">Loading top rated resources...</div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -317,10 +346,73 @@ async function renderAllPages() {
     }, { threshold: 0.4 });
     pdfArea.querySelectorAll('.pdfpage').forEach(p => obs.observe(p));
 
+    // Show End-of-PDF Recommendations & load grids
+    const endRecs = document.getElementById("endPdfRecommendations");
+    if (endRecs) {
+      endRecs.style.display = "block";
+      loadEndPdfRecommendations();
+    }
+
   } catch(err) {
     console.error(err);
     spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">Failed to load PDF.</p>`;
     spinner.style.display = 'flex';
+  }
+}
+
+async function loadEndPdfRecommendations() {
+  const relGrid = document.getElementById("relevantResourcesGrid");
+  const moreGrid = document.getElementById("moreFromContributorGrid");
+  const topGrid = document.getElementById("highRatedResourcesGrid");
+  const upSpan = document.getElementById("uploaderNameSpan");
+
+  if (upSpan && docUp) upSpan.textContent = docUp;
+
+  const db = window.dpgDb;
+  if (!db || !window.collection || !window.getDocs) return;
+
+  try {
+    const snap = await window.getDocs(window.collection(db, "documents"));
+    if (snap.empty) return;
+
+    const allDocs = [];
+    snap.forEach(dSnap => {
+      const d = dSnap.data();
+      allDocs.push({ id: dSnap.id, ...d });
+    });
+
+    // 1. Relevant Resources (matching category or discipline)
+    const relevant = allDocs.filter(d => (d.id !== docId && (d.category === docCat || d.discipline === docDisc))).slice(0, 3);
+    // 2. More from Contributor
+    const fromContributor = allDocs.filter(d => (d.id !== docId && (d.userName === docUp || d.uploader === docUp))).slice(0, 3);
+    // 3. High Rated (sorted by likes count)
+    const highRated = [...allDocs].sort((a,b) => ((b.likes?.length || 0) - (a.likes?.length || 0))).slice(0, 3);
+
+    function renderMiniCards(container, docs) {
+      if (!container) return;
+      if (docs.length === 0) {
+        container.innerHTML = `<div style="color:var(--mut); font-size:0.82rem;">No additional resources found.</div>`;
+        return;
+      }
+      container.innerHTML = docs.map(d => {
+        const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
+        return `
+          <div style="background:rgba(30,41,59,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:0.7rem; font-weight:700; color:#a5b4fc; text-transform:uppercase;">${d.category || 'Notes'}</div>
+            <div style="font-weight:700; color:white; font-size:0.92rem; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${d.title || 'Untitled'}</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Uploaded by ${d.userName || d.uploader || 'Contributor'}</div>
+            <a href="${vUrl}" target="_blank" style="margin-top:auto; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700; text-align:center;">Open Resource</a>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderMiniCards(relGrid, relevant);
+    renderMiniCards(moreGrid, fromContributor);
+    renderMiniCards(topGrid, highRated);
+
+  } catch(e) {
+    console.warn("Failed loading end PDF recommendations:", e);
   }
 }
 
@@ -374,9 +466,28 @@ function appendPdfChatMessage(role, text) {
     msgDiv.style.wordBreak = 'break-word';
   }
 
-  msgDiv.innerHTML = role === 'ai' && typeof renderMarkdown === 'function' 
+  let formattedHtml = role === 'ai' && typeof renderMarkdown === 'function' 
     ? renderMarkdown(text) 
     : text.replace(/\n/g, '<br>');
+
+  // Auto-detect YouTube URLs and replace with responsive playable iframe embeds
+  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/gi;
+  formattedHtml = formattedHtml.replace(ytRegex, (match, vidId) => {
+    return `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; margin:0.8rem 0; border:1px solid rgba(255,255,255,0.1);"><iframe src="https://www.youtube.com/embed/${vidId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe></div>`;
+  });
+
+  msgDiv.innerHTML = formattedHtml;
+
+  // Single-open accordion listeners
+  msgDiv.querySelectorAll("details").forEach(det => {
+    det.ontoggle = function() {
+      if (this.open) {
+        document.querySelectorAll("#aiChatArea details").forEach(other => {
+          if (other !== this) other.open = false;
+        });
+      }
+    };
+  });
 
   chatArea.appendChild(msgDiv);
   chatArea.scrollTop = chatArea.scrollHeight;

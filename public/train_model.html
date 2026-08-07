@@ -295,17 +295,31 @@
         const data = snap.data();
         const ownerId = data.userId || data.uploaderId || data.uploader;
 
-        // STRICT OWNERSHIP CHECK
-        if (ownerId && ownerId !== activeUid) {
+        // STRICT OWNERSHIP & SECURITY CHECK
+        const isAdmin = auth.currentUser && auth.currentUser.email === 'its.akshatnetworkhub23@gmail.com';
+        if (ownerId && ownerId !== activeUid && !isAdmin) {
           document.getElementById("accessDeniedBanner").style.display = "block";
-          // Log security violation
-          addDoc(collection(db, "security_violations"), {
+          
+          const caseId = `CASE-AAV-${targetId.slice(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
+          addDoc(collection(db, "authorized_access_violations"), {
+            caseId,
             resourceId: targetId,
-            resourceTitle: data.title || "Untitled",
-            violatorUid: activeUid,
-            attemptedAction: "TRAIN_MODEL_UNAUTHORIZED",
+            resourceTitle: data.title || "Untitled Document",
+            userId: activeUid,
+            userEmail: auth.currentUser?.email || "unknown",
+            attemptedAction: "UNAUTHORIZED_TRAIN_MODEL",
+            deviceIp: "Recorded",
+            geolocation: "Recorded",
+            country: "Recorded",
             timestamp: serverTimestamp()
           }).catch(console.error);
+
+          if (window.customAlert) {
+            await window.customAlert("Security Alert: You do not have authorization to train AI models for resources uploaded by other contributors. This incident has been logged in Security Violations.", { title: "Access Denied", isDanger: true });
+          } else {
+            alert("Security Alert: You do not have authorization to train AI models for resources uploaded by other contributors. This incident has been logged in Security Violations.");
+          }
+          window.location.href = "dashboard.html";
           return;
         }
 

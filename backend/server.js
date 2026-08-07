@@ -724,6 +724,194 @@ app.post('/api/guest-quota', async (req, res) => {
   }
 });
 
+// ==========================================
+// ROUTES: DEVICE TELEMETRY & LOGGING
+// ==========================================
+app.post('/api/device-log', async (req, res) => {
+  try {
+    const rawIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1').split(',')[0].trim();
+    const clientIp = rawIp.startsWith('10.') ? '127.0.0.1' : rawIp;
+
+    const { userType = 'Anonymous', userId = 'anon_guest', email = '', displayName = 'Guest', photoURL = '', permissionGranted = false, hardwareInfo = null } = req.body;
+    const userAgentStr = req.headers['user-agent'] || '';
+
+    let isSpoofedUa = false;
+    const chromeVerMatch = userAgentStr.match(/Chrome\/(\d+)/i);
+    if (chromeVerMatch) {
+      const verNum = parseInt(chromeVerMatch[1], 10);
+      if (verNum > 135) {
+        isSpoofedUa = true;
+      }
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const safeIp = clientIp.replace(/[^a-zA-Z0-9]/g, '_');
+    const safeUser = userId.replace(/[^a-zA-Z0-9]/g, '_');
+    const docId = `devlog_${todayStr}_${safeUser}_${safeIp}`;
+
+    if (db) {
+      // 1. Fetch IP Geolocation
+      let country = "Unknown", city = "Unknown", isp = "Unknown", lat = null, lon = null;
+      try {
+        const geoRes = await axios.get(`http://ip-api.com/json/${clientIp}?fields=status,country,city,isp,lat,lon`, { timeout: 2500 });
+        if (geoRes.data && geoRes.data.status === "success") {
+          country = geoRes.data.country || "Unknown";
+          city = geoRes.data.city || "Unknown";
+          isp = geoRes.data.isp || "Unknown";
+          lat = geoRes.data.lat;
+          lon = geoRes.data.lon;
+        }
+      } catch (gErr) {}
+
+      const googleMapsUrl = lat && lon 
+        ? `https://www.google.com/maps?q=${lat},${lon}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city + ', ' + country)}`;
+
+      // 2. Log Device Login History
+      const logRef = db.collection("device_login_history").doc(docId);
+      const logSnap = await logRef.get();
+
+      if (!logSnap.exists) {
+        const logData = {
+          userType: userType,
+          userId: userId,
+          email: email || "anonymous@dpgnotes.app",
+          displayName: displayName || "Guest",
+          photoURL: photoURL || "",
+          ipAddress: clientIp,
+          googleMapsUrl: googleMapsUrl,
+          country: country,
+          city: city,
+          isp: isp,
+          userAgent: userAgentStr,
+          isSpoofedUa: isSpoofedUa,
+          accessLevel: permissionGranted ? "Advanced (Permission Granted)" : "Nominal (Default)",
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          loginDate: todayStr
+        };
+
+        if (permissionGranted && hardwareInfo) {
+          logData.hardwareInfo = hardwareInfo;
+        }
+
+        await logRef.set(logData);
+      }
+
+      // 3. Multi-User Device Violation Tracker: Track distinct users per IP
+      if (userId && userId !== 'anon_guest' && !userId.startsWith('guest_')) {
+        const devTrackerRef = db.collection("device_user_trackers").doc(safeIp);
+        const trackerSnap = await devTrackerRef.get();
+        let usersMap = {};
+
+        if (trackerSnap.exists) {
+          usersMap = trackerSnap.data().usersMap || {};
+        }
+
+        usersMap[userId] = {
+          userId,
+          email: email || "user@dpgnotes.app",
+          displayName: displayName || "Contributor",
+          photoURL: photoURL || "",
+          lastLogin: new Date().toISOString()
+        };
+
+        await devTrackerRef.set({
+          ipAddress: clientIp,
+          usersMap,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        const userList = Object.values(usersMap);
+
+        // THRESHOLD: More than 2 distinct users on the same device/IP -> Trigger User Violation
+        if (userList.length > 2) {
+          const caseId = `CASE-UV-${safeIp.slice(0, 8)}-${userList.length}`;
+          const uvRef = db.collection("user_violations").doc(caseId);
+          await uvRef.set({
+            caseId,
+            deviceIp: clientIp,
+            googleMapsUrl: googleMapsUrl,
+            geolocation: `${city}, ${country}`,
+            country: country,
+            city: city,
+            isp: isp,
+            userCount: userList.length,
+            users: userList,
+            status: "Flagged",
+            timestamp: admin.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+      }
+
+      res.json({ success: true, isSpoofedUa, googleMapsUrl });
+    } else {
+      res.json({ success: true });
+    }
+  } catch (err) {
+    console.error("Device log endpoint error:", err);
+    res.json({ success: false });
+  }
+});
+
+// ==========================================
+// ROUTES: AI VIOLATION & PUNISHMENT SUGGESTIONS
+// ==========================================
+app.post('/api/ai/violation-punishment', async (req, res) => {
+  try {
+    const { violationType, caseId, deviceIp, userCount, users, userId, offenseCount = 1 } = req.body;
+    
+    let prompt = "";
+    if (violationType === "user_violation") {
+      prompt = `Analyze security violation Case ID ${caseId}. Device IP ${deviceIp} has ${userCount} multi-account logins associated with it. Offense count: ${offenseCount}. Users involved: ${JSON.stringify(users)}.
+Provide:
+1. Risk Assessment & Severity
+2. Recommended Account Suspension Duration (e.g. 1st Offense: 5 Days, 2nd Offense: 12 Days, 3rd Offense: 30 Days, 4th Offense: Permanent Ban)
+3. Actionable Security Compliance Instructions for Admin.`;
+    } else {
+      prompt = `Analyze unauthorized access violation Case ID ${caseId}. User ${userId} on device IP ${deviceIp} attempted unauthorized Train Model operation. Offense count: ${offenseCount}.
+Provide:
+1. Violation Impact Summary
+2. Recommended Penalty / Account Suspension Duration
+3. Security Mitigation Steps for Admin.`;
+    }
+
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey) {
+      try {
+        const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+          contents: [{ parts: [{ text: prompt }] }]
+        }, { timeout: 8000 });
+
+        const answer = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (answer) {
+          return res.json({ success: true, suggestion: answer });
+        }
+      } catch (gErr) {}
+    }
+
+    // Default Rule-Based Punishment Calculation
+    let duration = "5 Days Account Suspension";
+    if (offenseCount === 2) duration = "12 Days Account Suspension";
+    else if (offenseCount === 3) duration = "30 Days Account Suspension";
+    else if (offenseCount >= 4) duration = "Permanent Account Termination";
+
+    const defaultSuggestion = `### 🚨 DPGNotes AI Compliance & Security Assessment
+
+- **Case ID**: ${caseId || 'N/A'}
+- **Target IP**: ${deviceIp || 'Unknown'}
+- **Offense Record**: Offense #${offenseCount}
+- **Recommended Penalty**: **${duration}**
+
+#### 🛡️ Compliance Analysis:
+1. Multi-account multi-tenancy or unauthorized Train Model execution breaches DPGNotes DRASA Security Regulations.
+2. Admins should review user logs and apply temporary suspension or mandatory re-authentication.`;
+
+    res.json({ success: true, suggestion: defaultSuggestion });
+  } catch (err) {
+    res.json({ success: false, suggestion: "Failed to generate AI punishment recommendation." });
+  }
+});
+
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
 

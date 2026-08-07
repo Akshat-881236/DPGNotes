@@ -125,6 +125,20 @@ service cloud.firestore {
     match /pending_approvals/{approvalId} {
       allow read, write: if true;
     }
+
+    /* ---------- VIOLATIONS ---------- */
+    match /violations/{violId} {
+      allow read, write: if true;
+      match /{allSubcollections=**} {
+        allow read, write: if true;
+      }
+    }
+    match /user_violations/{uvId} {
+      allow read, write: if true;
+    }
+    match /authorized_access_violations/{aavId} {
+      allow read, write: if true;
+    }
     
     
     /* ---------- VALIDATION ---------- */

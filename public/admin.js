@@ -1248,3 +1248,281 @@ window.deleteSelectedDeviceLogs = async function() {
     console.error("Batch delete error:", err);
   }
 };
+
+// ==========================================
+// VIOLATION LOGS TAB & AI PUNISHMENT ENGINE
+// ==========================================
+let userViolationsCache = [];
+let unauthorizedActionsCache = [];
+
+window.switchViolationSubtab = function(tabName) {
+  const btnUser = document.getElementById("subtabUserViolationsBtn");
+  const btnUnauth = document.getElementById("subtabUnauthorizedActionsBtn");
+  const contentUser = document.getElementById("subtabContentUserViolations");
+  const contentUnauth = document.getElementById("subtabContentUnauthorizedActions");
+
+  if (tabName === 'user_violations') {
+    if (btnUser) btnUser.classList.add("active-subtab");
+    if (btnUnauth) btnUnauth.classList.remove("active-subtab");
+    if (contentUser) contentUser.style.display = "block";
+    if (contentUnauth) contentUnauth.style.display = "none";
+  } else {
+    if (btnUnauth) btnUnauth.classList.add("active-subtab");
+    if (btnUser) btnUser.classList.remove("active-subtab");
+    if (contentUnauth) contentUnauth.style.display = "block";
+    if (contentUser) contentUser.style.display = "none";
+  }
+};
+
+async function loadViolationLogsAdmin() {
+  const tbodyUser = document.getElementById("userViolationsTableBody");
+  const tbodyUnauth = document.getElementById("unauthorizedActionsTableBody");
+
+  if (tbodyUser) tbodyUser.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading user multi-account violations...</td></tr>`;
+  if (tbodyUnauth) tbodyUnauth.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading unauthorized action violations...</td></tr>`;
+
+  // 1. Fetch User Violations (multi-account per device)
+  try {
+    const qUser = query(collection(db, "user_violations"), orderBy("timestamp", "desc"));
+    const snapUser = await getDocs(qUser);
+    userViolationsCache = [];
+
+    if (snapUser.empty) {
+      if (tbodyUser) tbodyUser.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No multi-account violations recorded.</td></tr>`;
+    } else {
+      if (tbodyUser) tbodyUser.innerHTML = "";
+      snapUser.forEach(dSnap => {
+        const d = { id: dSnap.id, ...dSnap.data() };
+        userViolationsCache.push(d);
+
+        const mapsUrl = d.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.geolocation || d.country || '')}`;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="text-align:center;">
+            <input type="checkbox" class="user-viol-cb" value="${d.id}">
+          </td>
+          <td style="font-family:monospace; color:#fca5a5; font-weight:700;">${d.caseId || d.id}</td>
+          <td style="font-family:monospace;">
+            <a href="${mapsUrl}" target="_blank" style="color:#818cf8; text-decoration:underline;">${d.deviceIp || '127.0.0.1'}</a>
+          </td>
+          <td>${d.geolocation || 'Unknown'}</td>
+          <td>${d.country || 'Unknown'}</td>
+          <td>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="btn-action" onclick="showUserViolationDetailsModal('${d.id}')" title="View Associated User Accounts" style="background:rgba(99,102,241,0.2); color:#a5b4fc;">
+                <i class="ri-information-line"></i>
+              </button>
+              <button class="btn-action" onclick="suggestViolationPunishmentAI('user_violation', '${d.id}')" title="Generate AI Suspension Suggestion" style="background:rgba(168,85,247,0.2); color:#c084fc;">
+                <i class="ri-robot-2-line"></i> AI
+              </button>
+              <button class="btn-action danger" onclick="deleteUserViolation('${d.id}')" title="Delete Log">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbodyUser.appendChild(tr);
+      });
+    }
+  } catch (err) {
+    console.error("Error loading user violations:", err);
+    if (tbodyUser) tbodyUser.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-danger);">Failed to load violations.</td></tr>`;
+  }
+
+  // 2. Fetch Unauthorized Action Violations (Train Model unauthorized attempts)
+  try {
+    const qUnauth = query(collection(db, "authorized_access_violations"), orderBy("timestamp", "desc"));
+    const snapUnauth = await getDocs(qUnauth);
+    unauthorizedActionsCache = [];
+
+    if (snapUnauth.empty) {
+      if (tbodyUnauth) tbodyUnauth.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">No unauthorized action violations recorded.</td></tr>`;
+    } else {
+      if (tbodyUnauth) tbodyUnauth.innerHTML = "";
+      snapUnauth.forEach(dSnap => {
+        const d = { id: dSnap.id, ...dSnap.data() };
+        unauthorizedActionsCache.push(d);
+
+        const mapsUrl = d.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.geolocation || d.country || '')}`;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="text-align:center;">
+            <input type="checkbox" class="unauth-action-cb" value="${d.id}">
+          </td>
+          <td style="font-family:monospace; color:#fca5a5; font-weight:700;">${d.caseId || d.id}</td>
+          <td style="font-family:monospace;">
+            <a href="${mapsUrl}" target="_blank" style="color:#818cf8; text-decoration:underline;">${d.deviceIp || '127.0.0.1'}</a>
+          </td>
+          <td>${d.geolocation || 'Unknown'}</td>
+          <td>${d.country || 'Unknown'}</td>
+          <td style="font-family:monospace; font-size:0.82rem; color:#cbd5e1;">${d.userId || 'Guest'}</td>
+          <td>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="btn-action" onclick="suggestViolationPunishmentAI('unauthorized_action', '${d.id}')" title="Generate AI Summary & Penalty" style="background:rgba(168,85,247,0.2); color:#c084fc;">
+                <i class="ri-information-line"></i>
+              </button>
+              <button class="btn-action danger" onclick="deleteUnauthorizedAction('${d.id}')" title="Delete Log">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbodyUnauth.appendChild(tr);
+      });
+    }
+  } catch (err) {
+    console.error("Error loading unauthorized actions:", err);
+    if (tbodyUnauth) tbodyUnauth.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-danger);">Failed to load logs.</td></tr>`;
+  }
+}
+
+window.loadViolationLogsAdmin = loadViolationLogsAdmin;
+
+window.showUserViolationDetailsModal = function(caseDocId) {
+  const d = userViolationsCache.find(v => v.id === caseDocId);
+  if (!d) return;
+
+  const usersList = d.users || [];
+  let userRowsHtml = usersList.map(u => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+      <td style="padding:8px; font-family:monospace; font-size:0.8rem; color:#a5b4fc;">${u.userId || 'N/A'}</td>
+      <td style="padding:8px; font-weight:600; color:white;">${u.displayName || 'Contributor'}</td>
+      <td style="padding:8px; color:#cbd5e1;">${u.email || ''}</td>
+    </tr>
+  `).join('');
+
+  let overlay = document.getElementById("violationDetailsModalOverlay");
+  if (overlay) overlay.remove();
+
+  overlay = document.createElement("div");
+  overlay.id = "violationDetailsModalOverlay";
+  overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:1rem;";
+
+  overlay.innerHTML = `
+    <div style="background:#0f172a; border:1px solid var(--admin-border); border-radius:18px; padding:2rem; width:100%; max-width:650px; box-shadow:0 20px 50px rgba(0,0,0,0.9); position:relative;">
+      <button onclick="document.getElementById('violationDetailsModalOverlay').remove()" style="position:absolute; top:1rem; right:1rem; background:transparent; border:none; color:var(--admin-muted); font-size:1.5rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+      <h3 style="color:#ef4444; font-family:'Outfit',sans-serif; margin-top:0; font-size:1.4rem; display:flex; align-items:center; gap:8px;"><i class="ri-alarm-warning-line"></i> Case Details: ${d.caseId}</h3>
+      <p style="color:var(--admin-muted); font-size:0.85rem; margin-bottom:1rem;">Associated multi-account user profiles logged in from Device IP <strong>${d.deviceIp}</strong>:</p>
+      
+      <div style="max-height:300px; overflow-y:auto; margin-bottom:1.5rem; border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.85rem;">
+          <thead>
+            <tr style="background:rgba(255,255,255,0.05); color:var(--admin-muted);">
+              <th style="padding:8px;">UID</th>
+              <th style="padding:8px;">Name</th>
+              <th style="padding:8px;">Email</th>
+            </tr>
+          </thead>
+          <tbody>${userRowsHtml}</tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button onclick="document.getElementById('violationDetailsModalOverlay').remove()" style="padding:0.6rem 1.4rem; background:linear-gradient(135deg, #6366f1, #8b5cf6); border:none; color:white; font-weight:700; border-radius:8px; cursor:pointer;">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+};
+
+window.suggestViolationPunishmentAI = async function(type, caseDocId) {
+  const d = (type === 'user_violation' ? userViolationsCache : unauthorizedActionsCache).find(v => v.id === caseDocId);
+  if (!d) return;
+
+  let overlay = document.getElementById("aiPunishmentModalOverlay");
+  if (overlay) overlay.remove();
+
+  overlay = document.createElement("div");
+  overlay.id = "aiPunishmentModalOverlay";
+  overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:1.5rem;";
+
+  overlay.innerHTML = `
+    <div style="background:#0f172a; border:1px solid rgba(168,85,247,0.4); border-radius:20px; padding:2rem; width:100%; max-width:600px; box-shadow:0 20px 50px rgba(0,0,0,0.9); position:relative; color:white;">
+      <button onclick="document.getElementById('aiPunishmentModalOverlay').remove()" style="position:absolute; top:1rem; right:1rem; background:transparent; border:none; color:var(--admin-muted); font-size:1.5rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+      <h3 style="color:#c084fc; font-family:'Outfit',sans-serif; margin-top:0; font-size:1.3rem; display:flex; align-items:center; gap:8px;"><i class="ri-robot-2-line"></i> AI Violation Assessment & Penalty Suggestion</h3>
+      
+      <div id="aiPunishmentBody" style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.2rem; margin:1rem 0; font-size:0.88rem; line-height:1.6; color:#cbd5e1; max-height:350px; overflow-y:auto;">
+        <i class="ri-loader-4-line spin-icon" style="color:#c084fc;"></i> DPGNotes AI Compliance Engine is evaluating security risk and offense history...
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button onclick="document.getElementById('aiPunishmentModalOverlay').remove()" style="padding:0.6rem 1.4rem; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-weight:700; border-radius:8px; cursor:pointer;">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  try {
+    const res = await fetch(window.API_BASE_URL + "/api/ai/violation-punishment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        violationType: type,
+        caseId: d.caseId,
+        deviceIp: d.deviceIp,
+        userCount: d.userCount || 1,
+        users: d.users || [],
+        userId: d.userId || 'Guest',
+        offenseCount: 1
+      })
+    });
+    const data = await res.json();
+    const bodyEl = document.getElementById("aiPunishmentBody");
+    if (bodyEl) {
+      bodyEl.innerHTML = typeof renderMarkdown === 'function' ? renderMarkdown(data.suggestion) : data.suggestion.replace(/\n/g, '<br>');
+    }
+  } catch (err) {
+    const bodyEl = document.getElementById("aiPunishmentBody");
+    if (bodyEl) bodyEl.innerHTML = "<p style='color:#ef4444;'>Failed to generate AI suggestion: " + err.message + "</p>";
+  }
+};
+
+window.deleteUserViolation = async function(docId) {
+  if (!confirm("Delete this user violation log?")) return;
+  try {
+    await deleteDoc(doc(db, "user_violations", docId));
+    loadViolationLogsAdmin();
+  } catch(e) { alert("Delete failed: " + e.message); }
+};
+
+window.deleteUnauthorizedAction = async function(docId) {
+  if (!confirm("Delete this unauthorized action log?")) return;
+  try {
+    await deleteDoc(doc(db, "authorized_access_violations", docId));
+    loadViolationLogsAdmin();
+  } catch(e) { alert("Delete failed: " + e.message); }
+};
+
+window.toggleAllUserViolations = function(masterCb) {
+  document.querySelectorAll(".user-viol-cb").forEach(cb => cb.checked = masterCb.checked);
+};
+
+window.deleteSelectedUserViolations = async function() {
+  const selectedCbs = Array.from(document.querySelectorAll(".user-viol-cb:checked"));
+  if (selectedCbs.length === 0) return alert("Select at least one log.");
+  if (!confirm(`Delete ${selectedCbs.length} selected violation case(s)?`)) return;
+
+  try {
+    for (const cb of selectedCbs) {
+      await deleteDoc(doc(db, "user_violations", cb.value)).catch(console.warn);
+    }
+    loadViolationLogsAdmin();
+  } catch(e) { alert("Batch delete error: " + e.message); }
+};
+
+window.toggleAllUnauthorizedActions = function(masterCb) {
+  document.querySelectorAll(".unauth-action-cb").forEach(cb => cb.checked = masterCb.checked);
+};
+
+window.deleteSelectedUnauthorizedActions = async function() {
+  const selectedCbs = Array.from(document.querySelectorAll(".unauth-action-cb:checked"));
+  if (selectedCbs.length === 0) return alert("Select at least one log.");
+  if (!confirm(`Delete ${selectedCbs.length} selected action log(s)?`)) return;
+
+  try {
+    for (const cb of selectedCbs) {
+      await deleteDoc(doc(db, "authorized_access_violations", cb.value)).catch(console.warn);
+    }
+    loadViolationLogsAdmin();
+  } catch(e) { alert("Batch delete error: " + e.message); }
+};

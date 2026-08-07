@@ -395,6 +395,9 @@
         <a class="nav-link" onclick="switchTab('device-logs'); loadDeviceLogsAdmin();">
           <i class="ri-device-line"></i> Device Logs
         </a>
+        <a class="nav-link" onclick="switchTab('violation-logs'); loadViolationLogsAdmin();">
+          <i class="ri-shield-keyhole-line" style="color:#ef4444;"></i> Violation Logs
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -732,6 +735,78 @@
               </thead>
               <tbody id="deviceLogsTableBody">
                 <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading device logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: VIOLATION LOGS -->
+      <section id="view-violation-logs" class="view-section">
+        <div class="section-card">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <h2 class="section-title"><i class="ri-shield-flash-line" style="color:#ef4444;"></i> Security Violation Telemetry Logs</h2>
+            
+            <!-- SPA SUB-TABS -->
+            <div style="display:flex; gap:8px; background:rgba(15,23,42,0.6); padding:4px; border-radius:10px; border:1px solid var(--admin-border);">
+              <button class="admin-btn active-subtab" id="subtabUserViolationsBtn" onclick="switchViolationSubtab('user_violations')" style="padding:6px 14px; font-size:0.85rem; border-radius:8px;">
+                <i class="ri-group-line"></i> User Violations
+              </button>
+              <button class="admin-btn" id="subtabUnauthorizedActionsBtn" onclick="switchViolationSubtab('unauthorized_actions')" style="padding:6px 14px; font-size:0.85rem; border-radius:8px;">
+                <i class="ri-lock-unlock-line"></i> Unauthorized Action
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 1: USER VIOLATIONS -->
+          <div id="subtabContentUserViolations" style="margin-top:1.5rem; overflow-x:auto;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+              <button class="admin-btn" style="background:#ef4444; border-color:transparent; font-size:0.82rem;" onclick="deleteSelectedUserViolations()">
+                <i class="ri-delete-bin-line"></i> Delete Selected Case Logs
+              </button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:40px; text-align:center;">
+                    <input type="checkbox" id="selectAllUserViolations" onchange="toggleAllUserViolations(this)">
+                  </th>
+                  <th>Case ID</th>
+                  <th>Device IP</th>
+                  <th>Geolocation</th>
+                  <th>Country</th>
+                  <th>Action Tabs</th>
+                </tr>
+              </thead>
+              <tbody id="userViolationsTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading user multi-account violations...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SUB-TAB 2: UNAUTHORIZED ACTIONS -->
+          <div id="subtabContentUnauthorizedActions" style="display:none; margin-top:1.5rem; overflow-x:auto;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+              <button class="admin-btn" style="background:#ef4444; border-color:transparent; font-size:0.82rem;" onclick="deleteSelectedUnauthorizedActions()">
+                <i class="ri-delete-bin-line"></i> Delete Selected Action Logs
+              </button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:40px; text-align:center;">
+                    <input type="checkbox" id="selectAllUnauthorizedActions" onchange="toggleAllUnauthorizedActions(this)">
+                  </th>
+                  <th>Case ID</th>
+                  <th>Device IP</th>
+                  <th>Geolocation</th>
+                  <th>Country</th>
+                  <th>User ID</th>
+                  <th>Action Tabs</th>
+                </tr>
+              </thead>
+              <tbody id="unauthorizedActionsTableBody">
+                <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading unauthorized access violations...</td></tr>
               </tbody>
             </table>
           </div>
