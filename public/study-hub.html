@@ -43,18 +43,28 @@
   </script>
 
   <style>
-    .hub-container { max-width: 1050px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+    .hub-container { max-width: 1050px; margin: 2rem auto; padding: 0 1.5rem 4rem; width: 100%; box-sizing: border-box; }
     .hub-header { text-align: center; margin-bottom: 3rem; }
-    .hub-header h1 { font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hub-header p { color: var(--text-muted); font-size: 1.1rem; max-width: 650px; margin: 0.8rem auto 0; line-height: 1.6; }
-    .article-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 2rem; margin-bottom: 2rem; backdrop-filter: blur(16px); }
-    .article-box h2 { font-size: 1.6rem; margin-bottom: 1rem; color: #a78bfa; display: flex; align-items: center; gap: 10px; }
+    .hub-header h1 { font-family: 'Outfit', sans-serif; font-size: clamp(1.75rem, 5vw, 2.8rem); font-weight: 800; background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.25; word-wrap: break-word; }
+    .hub-header p { color: var(--text-muted); font-size: clamp(0.95rem, 2.5vw, 1.1rem); max-width: 650px; margin: 0.8rem auto 0; line-height: 1.6; }
+    .article-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.8rem; margin-bottom: 2rem; backdrop-filter: blur(16px); width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; }
+    .article-box h2 { font-size: clamp(1.2rem, 3.5vw, 1.6rem); margin-bottom: 1rem; color: #a78bfa; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .article-box p { color: #cbd5e1; line-height: 1.7; font-size: 0.98rem; margin-bottom: 1.2rem; }
-    .article-box ul { padding-left: 1.5rem; color: #94a3b8; line-height: 1.7; margin-bottom: 1rem; }
+    .article-box ul { padding-left: 1.2rem; color: #94a3b8; line-height: 1.7; margin-bottom: 1rem; }
     .article-box li { margin-bottom: 0.4rem; }
     .article-box strong { color: white; }
     .btn-back { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #a5b4fc; padding: 8px 16px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
     .btn-back:hover { background: var(--primary); color: white; }
+
+    @media (max-width: 640px) {
+      .hub-container { padding: 0 1rem 3rem; margin: 1rem auto; }
+      .article-box { padding: 1.2rem; border-radius: 14px; }
+      .hub-header { margin-bottom: 1.8rem; }
+      .top-header { flex-direction: column; align-items: stretch; gap: 0.75rem; padding: 0.8rem 1rem; }
+      .brand-area { justify-content: space-between; width: 100%; }
+      .auth-area { width: 100%; }
+      .btn-back { width: 100%; justify-content: center; box-sizing: border-box; padding: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -91,8 +101,8 @@
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
-    <!-- Native Ads Container -->
-    <div class="native-ads" id="native-ads-hub" style="margin:2rem 0;"></div>
+    <!-- Native Ads Container (Shows 3 distinct random ads) -->
+    <div class="native-ads" id="native-ads-hub" data-ad-variant="feed" data-ad-count="3" style="margin:2rem 0;"></div>
 
     <article class="article-box">
       <h2><i class="ri-code-s-slash-line"></i> Computer Science & Software Engineering Core Modules</h2>
@@ -136,6 +146,8 @@
       </p>
     </article>
 
+    <!-- Footer Native Sponsored Banner -->
+    <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="margin:2rem 0;"></div>
   </main>
 
   <footer style="text-align:center; padding:2rem; border-top:1px solid var(--border); color:var(--text-muted); font-size:0.85rem;">

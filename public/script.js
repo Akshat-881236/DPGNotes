@@ -110,6 +110,10 @@ const auth =
 const db =
   getFirestore(app);
 
+window.dpgDb = db;
+window.collection = collection;
+window.getDocs = getDocs;
+
 const PDF_VIEWER =
 "https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=";
 

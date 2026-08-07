@@ -173,23 +173,8 @@
       </div>
     </div>
 
-    <!-- Approved User Ad Card Section -->
-    <div class="scard" id="sbUserAdCardWrap" style="display:none; border-color:rgba(245,158,11,0.3);">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div style="display:flex; align-items:center; gap:6px;">
-          <img id="sbAdAvatar" src="ANH.png" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
-          <span id="sbAdName" style="font-size:0.75rem; font-weight:700; color:white;">Advertiser</span>
-        </div>
-        <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.6rem; font-weight:800; padding:2px 6px; border-radius:8px;">SPONSORED</span>
-      </div>
-      <div id="sbAdMediaWrap" style="position:relative; width:100%; height:130px; border-radius:8px; overflow:hidden; margin-bottom:8px; background:#000; cursor:pointer;">
-        <img id="sbAdThumb" src="" style="width:100%; height:100%; object-fit:cover;">
-        <div id="sbAdPlayer" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
-      </div>
-      <h4 id="sbAdTitle" style="font-size:0.85rem; color:white; margin-bottom:4px;">Ad Title</h4>
-      <p id="sbAdDesc" style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;"></p>
-      <a id="sbAdLink" href="#" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px; border-radius:6px; text-decoration:none; font-size:0.75rem; font-weight:700;">Explore Now</a>
-    </div>
+    <!-- Native Sponsored Ads Section (Multiple Sidebar Ads) -->
+    <div class="native-ads sidebar" id="sbUserAdCardWrap" data-ad-variant="sidebar" data-ad-count="3" style="margin:1rem 0;"></div>
 
     <!-- Page Stats -->
     <div class="scard">
@@ -223,18 +208,25 @@
 
       <!-- 2. MORE FROM CONTRIBUTOR -->
       <div style="margin-bottom:2rem;">
-        <h3 style="font-size:1.1rem; color:#818cf8; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line"></i> More from <span id="uploaderNameSpan">Contributor</span></h3>
+        <h3 style="font-size:1.1rem; color:#818cf8; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line"></i> More From <span id="uploaderNameSpan">Contributor</span></h3>
         <div id="moreFromContributorGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
-          <div style="color:var(--mut); font-size:0.85rem;">Loading contributor resources...</div>
+          <div style="color:var(--mut); font-size:0.85rem;">Loading contributor uploads...</div>
         </div>
       </div>
 
-      <!-- 3. HIGH RATED RESOURCES -->
+      <!-- 3. TOP RATED / MOST POPULAR -->
       <div>
-        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-fire-line"></i> High Rated Resources</h3>
+        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-fire-line"></i> Top Rated Academic Materials</h3>
         <div id="highRatedResourcesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
-          <div style="color:var(--mut); font-size:0.85rem;">Loading top rated resources...</div>
+          <div style="color:var(--mut); font-size:0.85rem;">Loading top rated notes...</div>
         </div>
+      </div>
+
+      <!-- 4. END OF DOCUMENT SPONSORED ADS -->
+      <div style="margin-top:2rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1.5rem;">
+        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-sparkles-line"></i> Sponsored Materials</h3>
+        <div class="native-ads" data-ad-variant="feed" data-ad-count="2" style="margin:1rem 0;"></div>
+        <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="margin:1rem 0;"></div>
       </div>
     </div>
   </main>
@@ -268,14 +260,15 @@ const searchToken = P.get('search-token');
 const trackingDocId = P.get('docid') || P.get('resourceID') || P.get('resourceId') || P.get('id');
 const trackingDocTitle = P.get('title') || 'Untitled Document';
 
-if (searchToken && trackingDocId && trackingDocId !== '—') {
-  addDoc(collection(db, "search_ctr_logs"), {
+if (searchToken && trackingDocId) {
+  addDoc(collection(db, "search_ctr_telemetry"), {
+    searchToken,
     documentId: trackingDocId,
-    documentTitle: trackingDocTitle,
+    title: trackingDocTitle,
     clickedAt: serverTimestamp(),
-    token: searchToken,
+    pageUrl: location.href,
     userAgent: navigator.userAgent
-  }).catch(console.error);
+  }).catch(err => console.warn("CTR telemetry log failed:", err));
 }
 
 function updateViewerUserInfo(user) {
@@ -372,17 +365,21 @@ function adSlot(n) {
   const d = document.createElement('div');
   d.className = 'adslot';
   d.id = `ad-${n}`;
-  d.innerHTML = `<div style="width:100%;text-align:center;padding:.5rem;">
-    <!-- GOOGLE ADSENSE SCRIPT HERE -->
-    <!-- Paste your AdSense <ins class="adsbygoogle"> tag below this comment -->
-<!-- Google Ads -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-5515547448097504"
-     data-ad-slot="2895051790"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-  </div>`;
+  d.style.cssText = "width:100%; max-width:100%; overflow:hidden; margin:1.5rem 0;";
+
+  // Alternate pattern: Odd gap (1,3,5) -> Google AdSense, Even gap (2,4,6) -> Native DPGNotes Ad Card
+  if (n % 2 !== 0) {
+    d.innerHTML = `<div style="width:100%;text-align:center;padding:.5rem;">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-5515547448097504"
+           data-ad-slot="2895051790"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>`;
+  } else {
+    d.innerHTML = `<div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>`;
+  }
   return d;
 }
 
@@ -398,17 +395,34 @@ async function renderAllPages() {
     document.getElementById('pgTotal').textContent = totalPages;
     document.getElementById('pgCur').textContent   = '1';
 
+    // Mathematical Sidebar Ad Capacity: 10 pages -> 1 ad, 20 pages -> 3 ads, 30 pages -> 5 ads...
+    const sidebarAdCount = Math.max(1, 1 + Math.floor(Math.max(0, totalPages - 10) / 10) * 2);
+    const sbAdWrap = document.getElementById("sbUserAdCardWrap");
+    if (sbAdWrap) {
+      sbAdWrap.dataset.adCount = sidebarAdCount;
+      delete sbAdWrap.dataset.adInjected;
+      sbAdWrap.innerHTML = "";
+    }
+
     for (let i = 1; i <= totalPages; i++) {
       await renderPage(i);
-      // Ad after every 3rd page (not after the last)
+      // Alternating Ad after every 3rd page (not after the last)
       if (i % 3 === 0 && i < totalPages) {
-        pdfArea.appendChild(adSlot(Math.floor(i/3)));
-        try {
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        } catch(e) {
-          console.error("AdSense push error:", e);
+        const slotN = Math.floor(i/3);
+        pdfArea.appendChild(adSlot(slotN));
+        if (slotN % 2 !== 0) {
+          try {
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          } catch(e) {
+            console.error("AdSense push error:", e);
+          }
         }
       }
+    }
+
+    // Trigger native ad rendering for page gaps and sidebar
+    if (typeof window.renderNativeDPGAds === "function") {
+      window.renderNativeDPGAds();
     }
 
     // Intersection observer for current page
