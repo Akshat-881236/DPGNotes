@@ -398,6 +398,9 @@
         <a class="nav-link" onclick="switchTab('violation-logs'); loadViolationLogsAdmin();">
           <i class="ri-shield-keyhole-line" style="color:#ef4444;"></i> Violation Logs
         </a>
+        <a class="nav-link" onclick="switchTab('ads'); loadAdsAdmin();">
+          <i class="ri-advertisement-line" style="color:#f59e0b;"></i> Ads Management
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -807,6 +810,65 @@
               </thead>
               <tbody id="unauthorizedActionsTableBody">
                 <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading unauthorized access violations...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <!-- VIEW ADS MANAGEMENT -->
+      <section class="view-section" id="view-ads">
+        <div class="card-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h2><i class="ri-advertisement-line" style="color:#f59e0b;"></i> Ads Management Center</h2>
+            <div style="display:flex; gap:10px;">
+              <button id="adsSubtabReqBtn" class="admin-btn" style="background:var(--admin-primary); font-size:0.82rem;" onclick="switchAdsSubtab('requests')">Ads Requests</button>
+              <button id="adsSubtabManageBtn" class="admin-btn" style="background:rgba(255,255,255,0.1); font-size:0.82rem;" onclick="switchAdsSubtab('manage')">Manage Published Ads</button>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 1: ADS REQUESTS -->
+          <div id="subtabContentAdsRequests" style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Firebase User ID</th>
+                  <th>Email</th>
+                  <th>Name</th>
+                  <th>Ads Title</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adsRequestsTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading pending ad requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SUB-TAB 2: MANAGE PUBLISHED ADS -->
+          <div id="subtabContentAdsManage" style="display:none; overflow-x:auto;">
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:1rem;">
+              <button class="admin-btn" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); font-size:0.82rem;" onclick="deleteSelectedAdsGroup()">
+                <i class="ri-delete-bin-line"></i> Group Delete Selected
+              </button>
+              <button class="admin-btn" style="background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4); font-size:0.82rem;" onclick="blockSelectedAdsGroup()">
+                <i class="ri-forbid-line"></i> Group Block Selected
+              </button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:40px; text-align:center;">
+                    <input type="checkbox" id="selectAllManageAds" onchange="toggleAllManageAds(this)">
+                  </th>
+                  <th>Profile Avatar</th>
+                  <th>Firebase ID</th>
+                  <th>Title</th>
+                  <th>Status / Published On</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="manageAdsTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading published & blocked ads...</td></tr>
               </tbody>
             </table>
           </div>

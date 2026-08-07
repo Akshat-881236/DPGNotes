@@ -64,8 +64,12 @@
     .spinner{display:flex;flex-direction:column;align-items:center;padding:5rem;color:var(--mut);gap:.8rem}
     .spin-icon{font-size:2.4rem;animation:spin 1s linear infinite;color:var(--pri)}
     @keyframes spin{to{transform:rotate(360deg)}}
+    /* RESIZER */
+    .resizer{width:6px;background:rgba(255,255,255,0.06);cursor:col-resize;transition:background 0.2s;flex-shrink:0;user-select:none;z-index:100;display:flex;align-items:center;justify-content:center}
+    .resizer:hover,.resizer.dragging{background:var(--pri)}
+    .resizer::after{content:'┊';color:rgba(255,255,255,0.4);font-size:14px}
     /* MOBILE */
-    @media(max-width:768px){.sidebar{display:none;position:fixed;top:56px;left:0;height:calc(100vh - 56px);z-index:300;overflow-y:auto;width:285px}.sidebar.open{display:flex}.mob-toggle{display:flex !important}}
+    @media(max-width:768px){.sidebar{display:none;position:fixed;top:56px;left:0;height:calc(100vh - 56px);z-index:300;overflow-y:auto;width:285px}.sidebar.open{display:flex}.mob-toggle{display:flex !important}.resizer{display:none!important}}
     .mob-toggle{display:none}
   </style>
 </head>
@@ -108,6 +112,13 @@
       </div>
     </div>
 
+    <!-- Mini Search Engine -->
+    <div class="scard">
+      <h3><i class="ri-search-2-line"></i> Mini Search Engine</h3>
+      <input type="text" id="sidebarSearchInput" placeholder="Search resources..." style="width:100%; padding:0.5rem 0.75rem; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:white; font-size:0.8rem; font-family:inherit;" oninput="handleSidebarMiniSearch(this.value)">
+      <div id="sidebarSearchResults" style="display:none; max-height:220px; overflow-y:auto; margin-top:8px; display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+
     <!-- AI Analysis (Chat Mode) -->
     <div class="scard" style="display: flex; flex-direction: column;">
       <h3><i class="ri-robot-2-line"></i> AI Chat Assistant</h3>
@@ -123,6 +134,55 @@
       <button class="aibtn" id="aiBtn" onclick="runAI()" style="margin-top: 0.6rem;"><i class="ri-sparkling-line"></i> Analyse Document</button>
     </div>
 
+    <!-- Sidebar Recommendation Sections -->
+    <div class="scard">
+      <h3><i class="ri-compass-3-line"></i> Discover Resources</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <details open style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#a78bfa; cursor:pointer;"><i class="ri-bookmark-3-line"></i> Related Resources</summary>
+          <div id="sbRelGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#818cf8; cursor:pointer;"><i class="ri-user-star-line"></i> Same Contributor</summary>
+          <div id="sbSameGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#f59e0b; cursor:pointer;"><i class="ri-fire-line"></i> Most Liked</summary>
+          <div id="sbTopLikedGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#34d399; cursor:pointer;"><i class="ri-share-forward-line"></i> Most Shared</summary>
+          <div id="sbTopSharedGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#c084fc; cursor:pointer;"><i class="ri-global-line"></i> Domain Specific</summary>
+          <div id="sbDomainGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Approved User Ad Card Section -->
+    <div class="scard" id="sbUserAdCardWrap" style="display:none; border-color:rgba(245,158,11,0.3);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <img id="sbAdAvatar" src="ANH.png" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
+          <span id="sbAdName" style="font-size:0.75rem; font-weight:700; color:white;">Advertiser</span>
+        </div>
+        <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.6rem; font-weight:800; padding:2px 6px; border-radius:8px;">SPONSORED</span>
+      </div>
+      <div id="sbAdMediaWrap" style="position:relative; width:100%; height:130px; border-radius:8px; overflow:hidden; margin-bottom:8px; background:#000; cursor:pointer;">
+        <img id="sbAdThumb" src="" style="width:100%; height:100%; object-fit:cover;">
+        <div id="sbAdPlayer" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      </div>
+      <h4 id="sbAdTitle" style="font-size:0.85rem; color:white; margin-bottom:4px;">Ad Title</h4>
+      <p id="sbAdDesc" style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;"></p>
+      <a id="sbAdLink" href="#" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px; border-radius:6px; text-decoration:none; font-size:0.75rem; font-weight:700;">Explore Now</a>
+    </div>
+
     <!-- Page Stats -->
     <div class="scard">
       <h3><i class="ri-pages-line"></i> Pages</h3>
@@ -131,6 +191,9 @@
     </div>
 
   </aside>
+
+  <!-- DRAGGABLE RESIZER HANDLE -->
+  <div class="resizer" id="sidebarResizer" title="Click & Drag to Resize Sidebar Width"></div>
 
   <main class="pdfmain" id="pdfArea">
     <div class="spinner" id="loadSpinner">
@@ -363,6 +426,75 @@ async function renderAllPages() {
   }
 }
 
+window.allDocsCache = [];
+
+window.handleSidebarMiniSearch = function(val) {
+  const container = document.getElementById("sidebarSearchResults");
+  if (!container) return;
+  const q = val.trim().toLowerCase();
+
+  if (!q) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
+  }
+
+  container.style.display = "flex";
+  const matches = window.allDocsCache.filter(d => {
+    const title = (d.title || "").toLowerCase();
+    const desc = (d.description || "").toLowerCase();
+    const tags = Array.isArray(d.tags) ? d.tags.join(" ").toLowerCase() : (d.tags || "").toLowerCase();
+    return title.includes(q) || desc.includes(q) || tags.includes(q);
+  }).slice(0, 5);
+
+  if (matches.length === 0) {
+    container.innerHTML = `<div style="color:var(--mut); font-size:0.75rem; padding:4px;">No matching resources found.</div>`;
+    return;
+  }
+
+  container.innerHTML = matches.map(d => {
+    const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
+    return `
+      <a href="${vUrl}" target="_blank" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:6px 8px; text-decoration:none; display:flex; flex-direction:column; gap:2px;">
+        <span style="font-size:0.75rem; font-weight:700; color:white; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.title || 'Untitled'}</span>
+        <span style="font-size:0.68rem; color:#94a3b8;">${d.category || 'Notes'} • ${d.userName || d.uploader || 'Contributor'}</span>
+      </a>
+    `;
+  }).join('');
+};
+
+// CURSOR DRAGGABLE RESIZER HANDLE
+document.addEventListener("DOMContentLoaded", () => {
+  const resizer = document.getElementById("sidebarResizer");
+  const sidebar = document.getElementById("sb");
+
+  if (resizer && sidebar) {
+    let isDragging = false;
+
+    resizer.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      resizer.classList.add("dragging");
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const newWidth = Math.max(280, Math.min(680, e.clientX));
+      sidebar.style.width = newWidth + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        resizer.classList.remove("dragging");
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      }
+    });
+  }
+});
+
 async function loadEndPdfRecommendations() {
   const relGrid = document.getElementById("relevantResourcesGrid");
   const moreGrid = document.getElementById("moreFromContributorGrid");
@@ -383,6 +515,7 @@ async function loadEndPdfRecommendations() {
       const d = dSnap.data();
       allDocs.push({ id: dSnap.id, ...d });
     });
+    window.allDocsCache = allDocs;
 
     // 1. Relevant Resources (matching category or discipline)
     const relevant = allDocs.filter(d => (d.id !== docId && (d.category === docCat || d.discipline === docDisc))).slice(0, 3);
@@ -390,6 +523,8 @@ async function loadEndPdfRecommendations() {
     const fromContributor = allDocs.filter(d => (d.id !== docId && (d.userName === docUp || d.uploader === docUp))).slice(0, 3);
     // 3. High Rated (sorted by likes count)
     const highRated = [...allDocs].sort((a,b) => ((b.likes?.length || 0) - (a.likes?.length || 0))).slice(0, 3);
+    // 4. Most Shared
+    const mostShared = [...allDocs].sort((a,b) => ((b.sharesCount || 0) - (a.sharesCount || 0))).slice(0, 3);
 
     function renderMiniCards(container, docs) {
       if (!container) return;
@@ -410,12 +545,80 @@ async function loadEndPdfRecommendations() {
       }).join('');
     }
 
+    function renderSidebarMiniLinks(containerId, docs) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      if (docs.length === 0) {
+        container.innerHTML = `<div style="color:var(--mut); font-size:0.72rem;">No items found.</div>`;
+        return;
+      }
+      container.innerHTML = docs.map(d => {
+        const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}`;
+        return `
+          <a href="${vUrl}" target="_blank" style="color:#cbd5e1; text-decoration:none; display:flex; justify-content:space-between; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:82%; font-weight:500;">${d.title || 'Untitled'}</span>
+            <i class="ri-arrow-right-s-line" style="color:#6366f1;"></i>
+          </a>
+        `;
+      }).join('');
+    }
+
     renderMiniCards(relGrid, relevant);
     renderMiniCards(moreGrid, fromContributor);
     renderMiniCards(topGrid, highRated);
 
+    renderSidebarMiniLinks("sbRelGrid", relevant);
+    renderSidebarMiniLinks("sbSameGrid", fromContributor);
+    renderSidebarMiniLinks("sbTopLikedGrid", highRated);
+    renderSidebarMiniLinks("sbTopSharedGrid", mostShared);
+    renderSidebarMiniLinks("sbDomainGrid", relevant);
+
+    // Fetch approved User Ads for sidebar display
+    const adSnap = await window.getDocs(window.collection(db, "user_ads"));
+    if (!adSnap.empty) {
+      const approvedAds = [];
+      adSnap.forEach(aDoc => {
+        const aData = aDoc.data();
+        if (aData.status === "Approved") approvedAds.push({ id: aDoc.id, ...aData });
+      });
+
+      if (approvedAds.length > 0) {
+        const randomAd = approvedAds[Math.floor(Math.random() * approvedAds.length)];
+        const adWrap = document.getElementById("sbUserAdCardWrap");
+        if (adWrap) {
+          adWrap.style.display = "block";
+          document.getElementById("sbAdAvatar").src = randomAd.userAvatar || "ANH.png";
+          document.getElementById("sbAdName").textContent = randomAd.userName || "Advertiser";
+          document.getElementById("sbAdTitle").textContent = randomAd.title || "Promoted Resource";
+          document.getElementById("sbAdDesc").textContent = randomAd.description || "";
+          document.getElementById("sbAdThumb").src = randomAd.thumbnailUrl || "";
+          document.getElementById("sbAdLink").href = randomAd.targetLink || "#";
+
+          // Video hover auto-play feature
+          if (randomAd.videoUrl) {
+            const mediaWrap = document.getElementById("sbAdMediaWrap");
+            const playerDiv = document.getElementById("sbAdPlayer");
+            let ytVidId = "";
+            const match = randomAd.videoUrl.match(/(?:watch\?v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (match) ytVidId = match[1];
+
+            if (ytVidId && mediaWrap && playerDiv) {
+              mediaWrap.onmouseenter = function() {
+                playerDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytVidId}?autoplay=1&mute=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+                playerDiv.style.display = "block";
+              };
+              mediaWrap.onmouseleave = function() {
+                playerDiv.style.display = "none";
+                playerDiv.innerHTML = "";
+              };
+            }
+          }
+        }
+      }
+    }
+
   } catch(e) {
-    console.warn("Failed loading end PDF recommendations:", e);
+    console.warn("Failed loading end PDF recommendations & sidebar ads:", e);
   }
 }
 

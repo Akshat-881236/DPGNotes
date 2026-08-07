@@ -55,6 +55,7 @@
         <button class="tab-btn active" data-target="profileTab">Profile</button>
         <button class="tab-btn" data-target="contributionTab">Contribution</button>
         <button class="tab-btn" data-target="manageResourcesTab">Manage Resources</button>
+        <button class="tab-btn" data-target="uploadAdsTab"><i class="ri-rocket-line"></i> Promote & Upload Ads</button>
         <button class="tab-btn" data-target="exploreTab">Explore</button>
         <button class="tab-btn" data-target="settingsTab">Settings</button>
         <a href="legal/index.html?from=contributor" class="tab-btn" style="text-decoration:none; display:block; text-align:left; line-height:36px; padding-left:1.5rem; color:inherit;">Legal Center</a>
@@ -332,6 +333,65 @@
             </form>
           </div>
         </div>
+
+        <!-- UPLOAD ADS TAB -->
+        <section id="uploadAdsTab" class="dashboard-tab">
+          <h2>Promote & Upload Ads <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Boost your resources or promote your content across DPGNotes network."></i></h2>
+          
+          <form id="uploadAdForm" class="upload-form" style="max-width:750px;">
+            <div style="margin-bottom:1.2rem;">
+              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Select Resource to Boost OR Enter Custom Ad Title *</label>
+              <input type="text" id="adTitle" class="search-bar" list="contributorResourceTitles" placeholder="Type or select uploaded resource..." required style="width:100%; margin-bottom:0;">
+              <datalist id="contributorResourceTitles"></datalist>
+            </div>
+
+            <div style="margin-bottom:1.2rem;">
+              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Ad Description / Brief Summary *</label>
+              <textarea id="adDesc" style="width:100%; height:95px; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.4); color:white; box-sizing:border-box;" placeholder="Provide an engaging description..." required></textarea>
+            </div>
+
+            <div style="margin-bottom:1.2rem;">
+              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Category & Tags (Comma separated) *</label>
+              <input type="text" id="adTags" class="search-bar" placeholder="Computer Science, Exam Notes, COA, PYQ" required style="width:100%; margin-bottom:0;">
+            </div>
+
+            <div style="margin-bottom:1.2rem; background:rgba(255,255,255,0.03); border:1px dashed var(--border); border-radius:12px; padding:1.2rem;">
+              <label style="color:var(--primary-light); font-size:0.88rem; font-weight:600; display:block; margin-bottom:6px;">Ad Banner Thumbnail Image (Cloudinary Upload) *</label>
+              <input type="file" id="adThumbnailFile" accept="image/*" style="display:none;" onchange="handleAdThumbnailSelect(event)">
+              <div style="display:flex; gap:12px; align-items:center;">
+                <button type="button" onclick="document.getElementById('adThumbnailFile').click()" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                  <i class="ri-image-add-line"></i> Select Image File
+                </button>
+                <span id="adThumbnailFileName" style="font-size:0.82rem; color:var(--text-muted);">No image selected</span>
+              </div>
+              
+              <div id="adUploadProgressContainer" style="display:none; margin-top:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:#c4b5fd; margin-bottom:4px;">
+                  <span id="adUploadStatus">Uploading banner image to Cloudinary...</span>
+                  <span id="adUploadPercent">0%</span>
+                </div>
+                <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                  <div id="adUploadProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #6366f1, #8b5cf6); transition:width 0.2s;"></div>
+                </div>
+              </div>
+              <input type="hidden" id="adThumbnailUrl">
+            </div>
+
+            <div style="margin-bottom:1.2rem;">
+              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Target Destination Link URL *</label>
+              <input type="url" id="adTargetLink" class="search-bar" placeholder="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?..." required style="width:100%; margin-bottom:0;">
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Optional YouTube Video URL (Hovering thumbnail auto-plays video preview)</label>
+              <input type="url" id="adVideoUrl" class="search-bar" placeholder="https://www.youtube.com/watch?v=..." style="width:100%; margin-bottom:0;">
+            </div>
+
+            <button type="submit" id="submitAdBtn" class="upload-btn" style="width:100%; padding:0.9rem; border-radius:10px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; cursor:pointer;">
+              <i class="ri-rocket-line"></i> Submit Ad Campaign for Admin Approval
+            </button>
+          </form>
+        </section>
 
         <!-- EXPLORE TAB -->
         <section id="exploreTab" class="dashboard-tab">

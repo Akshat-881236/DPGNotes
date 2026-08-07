@@ -1629,6 +1629,160 @@ window.handleEditResourceSubmit = async function(e) {
 
 onAuthStateChanged(auth, user => {
   if (user) {
+    currentUser = user;
     loadContributorManageResources();
+    populateAdResourceSuggestions();
   }
 });
+
+// =========================================
+// AD CAMPAIGN UPLOAD LOGIC
+// =========================================
+window.handleAdThumbnailSelect = async function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const fileNameSpan = document.getElementById("adThumbnailFileName");
+  if (fileNameSpan) fileNameSpan.textContent = file.name;
+
+  const progressContainer = document.getElementById("adUploadProgressContainer");
+  const progressBar = document.getElementById("adUploadProgressBar");
+  const percentText = document.getElementById("adUploadPercent");
+  const statusText = document.getElementById("adUploadStatus");
+  const urlInput = document.getElementById("adThumbnailUrl");
+
+  if (progressContainer) progressContainer.style.display = "block";
+  if (statusText) statusText.textContent = "Uploading image to Cloudinary...";
+  if (progressBar) progressBar.style.width = "10%";
+  if (percentText) percentText.textContent = "10%";
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch(window.API_BASE_URL + "/api/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) throw new Error("Server response " + res.status);
+    const data = await res.json();
+
+    if (data.secure_url || data.url) {
+      const finalUrl = data.secure_url || data.url;
+      if (urlInput) urlInput.value = finalUrl;
+      if (progressBar) progressBar.style.width = "100%";
+      if (percentText) percentText.textContent = "100%";
+      if (statusText) statusText.textContent = "Thumbnail uploaded successfully!";
+    } else {
+      throw new Error(data.error || "Cloudinary upload failed");
+    }
+  } catch(err) {
+    console.error("Ad thumbnail upload error:", err);
+    if (statusText) statusText.textContent = "Upload failed: " + err.message;
+    if (window.customAlert) {
+      await window.customAlert("Thumbnail upload failed: " + err.message, { title: "Upload Error", isDanger: true });
+    }
+  }
+};
+
+async function populateAdResourceSuggestions() {
+  const datalist = document.getElementById("contributorResourceTitles");
+  if (!datalist || !currentUser) return;
+
+  try {
+    const q = query(collection(db, "documents"), where("userId", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    datalist.innerHTML = "";
+    snap.forEach(dSnap => {
+      const d = dSnap.data();
+      const opt = document.createElement("option");
+      opt.value = d.title || "Untitled";
+      opt.dataset.id = dSnap.id;
+      opt.dataset.desc = d.description || "";
+      opt.dataset.tags = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
+      opt.dataset.pdfurl = d.pdfUrl || "";
+      datalist.appendChild(opt);
+    });
+  } catch(e) {
+    console.warn("Failed fetching ad resource suggestions:", e);
+  }
+}
+
+const adForm = document.getElementById("uploadAdForm");
+if (adForm) {
+  const titleInput = document.getElementById("adTitle");
+  if (titleInput) {
+    titleInput.addEventListener("input", function() {
+      const datalist = document.getElementById("contributorResourceTitles");
+      if (!datalist) return;
+      const matchingOpt = Array.from(datalist.options).find(o => o.value === this.value);
+      if (matchingOpt) {
+        if (matchingOpt.dataset.desc) document.getElementById("adDesc").value = matchingOpt.dataset.desc;
+        if (matchingOpt.dataset.tags) document.getElementById("adTags").value = matchingOpt.dataset.tags;
+        if (matchingOpt.dataset.id) {
+          const vUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${matchingOpt.dataset.id}&pdf=${encodeURIComponent(matchingOpt.dataset.pdfurl || '')}&title=${encodeURIComponent(matchingOpt.value)}`;
+          document.getElementById("adTargetLink").value = vUrl;
+        }
+      }
+    });
+  }
+
+  adForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById("submitAdBtn");
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Submitting Ad...`;
+
+    try {
+      const title = document.getElementById("adTitle").value.trim();
+      const description = document.getElementById("adDesc").value.trim();
+      const tagsStr = document.getElementById("adTags").value.trim();
+      const thumbnailUrl = document.getElementById("adThumbnailUrl").value.trim();
+      const targetLink = document.getElementById("adTargetLink").value.trim();
+      const videoUrl = document.getElementById("adVideoUrl").value.trim();
+
+      if (!thumbnailUrl) {
+        throw new Error("Please wait for thumbnail upload to complete before submitting.");
+      }
+
+      const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
+
+      await addDoc(collection(db, "user_ads"), {
+        title,
+        description,
+        tags,
+        thumbnailUrl,
+        targetLink,
+        videoUrl,
+        userId: currentUser ? currentUser.uid : "anonymous",
+        userEmail: currentUser ? currentUser.email : "anonymous",
+        userName: currentUser ? (currentUser.displayName || "Contributor") : "Contributor",
+        userAvatar: currentUser ? (currentUser.photoURL || "") : "",
+        status: "Pending Approval",
+        createdAt: serverTimestamp()
+      });
+
+      if (window.customAlert) {
+        await window.customAlert("Ad campaign submitted successfully! It is now pending Admin review.", { title: "Success" });
+      } else {
+        alert("Ad campaign submitted successfully! It is now pending Admin review.");
+      }
+      adForm.reset();
+      const fileNameSpan = document.getElementById("adThumbnailFileName");
+      if (fileNameSpan) fileNameSpan.textContent = "No image selected";
+      const progressContainer = document.getElementById("adUploadProgressContainer");
+      if (progressContainer) progressContainer.style.display = "none";
+    } catch(err) {
+      console.error("Submit Ad error:", err);
+      if (window.customAlert) {
+        await window.customAlert("Failed submitting ad: " + err.message, { title: "Submission Error", isDanger: true });
+      } else {
+        alert("Failed submitting ad: " + err.message);
+      }
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-rocket-line"></i> Submit Ad Campaign for Admin Approval`;
+    }
+  });
+}

@@ -1526,3 +1526,254 @@ window.deleteSelectedUnauthorizedActions = async function() {
     loadViolationLogsAdmin();
   } catch(e) { alert("Batch delete error: " + e.message); }
 };
+
+// ==========================================
+// ADMIN ADS MANAGEMENT TAB LOGIC
+// ==========================================
+let pendingAdsCache = [];
+let manageAdsCache = [];
+
+window.switchAdsSubtab = function(tabName) {
+  const btnReq = document.getElementById("adsSubtabReqBtn");
+  const btnManage = document.getElementById("adsSubtabManageBtn");
+  const secReq = document.getElementById("subtabContentAdsRequests");
+  const secManage = document.getElementById("subtabContentAdsManage");
+
+  if (!btnReq || !btnManage || !secReq || !secManage) return;
+
+  if (tabName === 'requests') {
+    btnReq.style.background = "var(--admin-primary)";
+    btnManage.style.background = "rgba(255,255,255,0.1)";
+    secReq.style.display = "block";
+    secManage.style.display = "none";
+  } else {
+    btnManage.style.background = "var(--admin-primary)";
+    btnReq.style.background = "rgba(255,255,255,0.1)";
+    secManage.style.display = "block";
+    secReq.style.display = "none";
+  }
+};
+
+window.loadAdsAdmin = async function() {
+  const reqBody = document.getElementById("adsRequestsTableBody");
+  const manageBody = document.getElementById("manageAdsTableBody");
+
+  if (reqBody) reqBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading pending ad requests...</td></tr>`;
+  if (manageBody) manageBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading published ads...</td></tr>`;
+
+  try {
+    const q = query(collection(db, "user_ads"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+
+    pendingAdsCache = [];
+    manageAdsCache = [];
+
+    snap.forEach(dSnap => {
+      const ad = { id: dSnap.id, ...dSnap.data() };
+      if (ad.status === "Pending Approval") {
+        pendingAdsCache.push(ad);
+      } else {
+        manageAdsCache.push(ad);
+      }
+    });
+
+    renderAdsRequestsTable();
+    renderManageAdsTable();
+
+    // Check for auto-deleting blocked ads (>45 days)
+    const now = Date.now();
+    for (const ad of manageAdsCache) {
+      if (ad.status === "Blocked" && ad.blockedAt) {
+        const blockedTime = ad.blockedAt.toMillis ? ad.blockedAt.toMillis() : new Date(ad.blockedAt).getTime();
+        const daysDiff = (now - blockedTime) / (1000 * 60 * 60 * 24);
+        if (daysDiff >= 45) {
+          console.log(`Auto-deleting blocked ad ${ad.id} (blocked for ${Math.floor(daysDiff)} days)`);
+          await deleteDoc(doc(db, "user_ads", ad.id)).catch(console.warn);
+        }
+      }
+    }
+
+  } catch(err) {
+    console.error("Error loading ads in admin:", err);
+    if (reqBody) reqBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">Error: ${err.message}</td></tr>`;
+  }
+};
+
+function renderAdsRequestsTable() {
+  const tbody = document.getElementById("adsRequestsTableBody");
+  if (!tbody) return;
+
+  if (pendingAdsCache.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No pending ad requests found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = pendingAdsCache.map(ad => {
+    const dt = ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleString() : 'N/A';
+    return `
+      <tr>
+        <td style="font-family:monospace; font-size:0.8rem; color:#a5b4fc;">${ad.userId || 'N/A'}</td>
+        <td>${ad.userEmail || 'N/A'}</td>
+        <td>${ad.userName || 'Contributor'}</td>
+        <td style="font-weight:700; color:white;">${ad.title || 'Untitled'}</td>
+        <td style="font-size:0.8rem; color:var(--admin-muted);">${dt}</td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <button class="admin-btn" style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:4px 8px; font-size:0.75rem;" title="Preview Ad Card" onclick="toggleAdPreviewRow('${ad.id}')">
+              <i class="ri-eye-line"></i> Preview
+            </button>
+            <button class="admin-btn" style="background:rgba(34,197,94,0.2); color:#4ade80; padding:4px 8px; font-size:0.75rem;" title="Approve Ad" onclick="approveAdAdmin('${ad.id}')">
+              <i class="ri-check-line"></i> Approve
+            </button>
+            <button class="admin-btn" style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 8px; font-size:0.75rem;" title="Reject Ad" onclick="rejectAdAdmin('${ad.id}')">
+              <i class="ri-close-line"></i> Reject
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr id="adPreviewRow_${ad.id}" style="display:none; background:rgba(0,0,0,0.3);">
+        <td colspan="6" style="padding:1.2rem;">
+          <div style="max-width:400px; background:rgba(15,23,42,0.9); border:1px solid rgba(99,102,241,0.3); border-radius:14px; padding:1rem; box-shadow:0 8px 30px rgba(0,0,0,0.5);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <img src="${ad.userAvatar || 'ANH.png'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
+                <span style="font-size:0.8rem; font-weight:700; color:white;">${ad.userName || 'Contributor'}</span>
+              </div>
+              <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:10px;">SPONSORED</span>
+            </div>
+            ${ad.thumbnailUrl ? `<img src="${ad.thumbnailUrl}" style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:10px;">` : ''}
+            <h4 style="font-size:0.95rem; color:white; margin-bottom:4px;">${ad.title}</h4>
+            <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px; line-height:1.4;">${ad.description}</p>
+            ${ad.videoUrl ? `<div style="font-size:0.75rem; color:#a78bfa; margin-bottom:8px;"><i class="ri-youtube-line"></i> Contains Video Preview</div>` : ''}
+            <a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700;">Explore Now</a>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderManageAdsTable() {
+  const tbody = document.getElementById("manageAdsTableBody");
+  if (!tbody) return;
+
+  if (manageAdsCache.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No active or blocked ads found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = manageAdsCache.map(ad => {
+    const dt = ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleDateString() : 'N/A';
+    const isBlocked = ad.status === "Blocked";
+    const statusBadge = isBlocked 
+      ? `<span style="background:rgba(239,68,68,0.2); color:#ef4444; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">Blocked</span>` 
+      : `<span style="background:rgba(34,197,94,0.2); color:#4ade80; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">Approved</span>`;
+
+    return `
+      <tr>
+        <td style="text-align:center;">
+          <input type="checkbox" class="manage-ad-cb" value="${ad.id}">
+        </td>
+        <td>
+          <img src="${ad.userAvatar || 'ANH.png'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+        </td>
+        <td style="font-family:monospace; font-size:0.8rem; color:#a5b4fc;">${ad.userId || 'N/A'}</td>
+        <td style="font-weight:700; color:white;">${ad.title || 'Untitled'}</td>
+        <td>${statusBadge} <span style="font-size:0.75rem; color:var(--admin-muted); margin-left:6px;">(${dt})</span></td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <button class="admin-btn" style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 8px; font-size:0.75rem;" title="Delete Ad" onclick="deleteAdAdmin('${ad.id}')">
+              <i class="ri-delete-bin-line"></i> Delete
+            </button>
+            <button class="admin-btn" style="background:${isBlocked ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.2)'}; color:${isBlocked ? '#4ade80' : '#f59e0b'}; padding:4px 8px; font-size:0.75rem;" title="${isBlocked ? 'Unblock Ad' : 'Block Ad'}" onclick="toggleBlockAdAdmin('${ad.id}', ${!isBlocked})">
+              <i class="${isBlocked ? 'ri-lock-unlock-line' : 'ri-forbid-line'}"></i> ${isBlocked ? 'Unblock' : 'Block'}
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.toggleAdPreviewRow = function(adId) {
+  const row = document.getElementById(`adPreviewRow_${adId}`);
+  if (row) {
+    row.style.display = row.style.display === "none" ? "table-row" : "none";
+  }
+};
+
+window.approveAdAdmin = async function(adId) {
+  try {
+    await updateDoc(doc(db, "user_ads", adId), {
+      status: "Approved",
+      publishedAt: serverTimestamp()
+    });
+    if (window.customAlert) await window.customAlert("Ad campaign approved and published live!", { title: "Success" });
+    loadAdsAdmin();
+  } catch(e) { alert("Approve failed: " + e.message); }
+};
+
+window.rejectAdAdmin = async function(adId) {
+  if (!confirm("Reject this ad request?")) return;
+  try {
+    await updateDoc(doc(db, "user_ads", adId), {
+      status: "Rejected",
+      rejectedAt: serverTimestamp()
+    });
+    loadAdsAdmin();
+  } catch(e) { alert("Reject failed: " + e.message); }
+};
+
+window.deleteAdAdmin = async function(adId) {
+  if (!confirm("Delete this ad permanently?")) return;
+  try {
+    await deleteDoc(doc(db, "user_ads", adId));
+    loadAdsAdmin();
+  } catch(e) { alert("Delete failed: " + e.message); }
+};
+
+window.toggleBlockAdAdmin = async function(adId, shouldBlock) {
+  const msg = shouldBlock ? "Block this ad? (Blocked ads auto-delete after 45 days)" : "Unblock this ad?";
+  if (!confirm(msg)) return;
+
+  try {
+    await updateDoc(doc(db, "user_ads", adId), {
+      status: shouldBlock ? "Blocked" : "Approved",
+      blockedAt: shouldBlock ? serverTimestamp() : null
+    });
+    loadAdsAdmin();
+  } catch(e) { alert("Action failed: " + e.message); }
+};
+
+window.toggleAllManageAds = function(masterCb) {
+  document.querySelectorAll(".manage-ad-cb").forEach(cb => cb.checked = masterCb.checked);
+};
+
+window.deleteSelectedAdsGroup = async function() {
+  const selectedCbs = Array.from(document.querySelectorAll(".manage-ad-cb:checked"));
+  if (selectedCbs.length === 0) return alert("Select at least one ad to delete.");
+  if (!confirm(`Delete ${selectedCbs.length} selected ad(s)?`)) return;
+
+  try {
+    for (const cb of selectedCbs) {
+      await deleteDoc(doc(db, "user_ads", cb.value)).catch(console.warn);
+    }
+    loadAdsAdmin();
+  } catch(e) { alert("Batch delete error: " + e.message); }
+};
+
+window.blockSelectedAdsGroup = async function() {
+  const selectedCbs = Array.from(document.querySelectorAll(".manage-ad-cb:checked"));
+  if (selectedCbs.length === 0) return alert("Select at least one ad to block.");
+  if (!confirm(`Block ${selectedCbs.length} selected ad(s)? Blocked ads auto-delete after 45 days.`)) return;
+
+  try {
+    for (const cb of selectedCbs) {
+      await updateDoc(doc(db, "user_ads", cb.value), {
+        status: "Blocked",
+        blockedAt: serverTimestamp()
+      }).catch(console.warn);
+    }
+    loadAdsAdmin();
+  } catch(e) { alert("Batch block error: " + e.message); }
+};

@@ -139,6 +139,11 @@ service cloud.firestore {
     match /authorized_access_violations/{aavId} {
       allow read, write: if true;
     }
+
+    /* ---------- USER ADS ---------- */
+    match /user_ads/{adId} {
+      allow read, write: if true;
+    }
     
     
     /* ---------- VALIDATION ---------- */
