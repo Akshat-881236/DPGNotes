@@ -22,7 +22,14 @@
     function renderMarkdown(md) {
       if (!md) return '';
       if (typeof marked === 'undefined') return md.replace(/\n/g,'<br>');
-      return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(md)) : marked.parse(md);
+      const parsed = marked.parse(md);
+      if (typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(parsed, {
+          ADD_TAGS: ['iframe', 'details', 'summary'],
+          ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'style', 'class', 'target', 'open', 'type']
+        });
+      }
+      return parsed;
     }
   </script>
   <style>
@@ -683,6 +690,16 @@ function appendPdfChatMessage(role, text) {
   });
 
   msgDiv.innerHTML = formattedHtml;
+
+  // Make all embedded iframes responsive inside chat bubbles
+  msgDiv.querySelectorAll("iframe").forEach(ifrm => {
+    ifrm.style.maxWidth = "100%";
+    ifrm.style.borderRadius = "8px";
+    if (!ifrm.parentElement || !ifrm.parentElement.style.paddingBottom) {
+      ifrm.style.height = "200px";
+      ifrm.style.width = "100%";
+    }
+  });
 
   // Single-open accordion listeners
   msgDiv.querySelectorAll("details").forEach(det => {

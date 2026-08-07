@@ -9,7 +9,14 @@
     function renderMarkdown(md) {
       if (!md) return '';
       if (typeof marked === 'undefined') return md.replace(/\n/g,'<br>');
-      return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(md)) : marked.parse(md);
+      const parsed = marked.parse(md);
+      if (typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(parsed, {
+          ADD_TAGS: ['iframe', 'details', 'summary'],
+          ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'style', 'class', 'target', 'open', 'type']
+        });
+      }
+      return parsed;
     }
     window.renderMarkdown = renderMarkdown;
   </script>
