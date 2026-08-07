@@ -408,7 +408,7 @@
         <a class="nav-link" onclick="switchTab('violation-logs'); loadViolationLogsAdmin();">
           <i class="ri-shield-keyhole-line" style="color:#ef4444;"></i> Violation Logs
         </a>
-        <a class="nav-link" onclick="switchTab('ads'); loadAdsAdmin();">
+        <a class="nav-link" onclick="switchTab('ads'); if(window.loadAdsAdmin) window.loadAdsAdmin();">
           <i class="ri-advertisement-line" style="color:#f59e0b;"></i> Ads Management
         </a>
 
@@ -930,8 +930,13 @@
     function switchTab(tabId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-      document.getElementById('view-' + tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
+      const targetView = document.getElementById('view-' + tabId);
+      if (targetView) targetView.classList.add('active');
+      if (event && event.currentTarget && event.currentTarget.classList) event.currentTarget.classList.add('active');
+
+      if (tabId === 'ads' && typeof window.loadAdsAdmin === 'function') {
+        window.loadAdsAdmin();
+      }
     }
     function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
 
@@ -1009,6 +1014,6 @@
       }
     }
   </script>
-  <script type="module" src="admin.js"></script>
+  <script type="module" src="admin.js?v=2.0.4"></script>
 </body>
 </html>
