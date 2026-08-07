@@ -1657,6 +1657,7 @@ window.handleAdThumbnailSelect = async function(event) {
   if (percentText) percentText.textContent = "10%";
 
   const formData = new FormData();
+  formData.append("pdfFile", file);
   formData.append("file", file);
 
   try {
@@ -1668,8 +1669,8 @@ window.handleAdThumbnailSelect = async function(event) {
     if (!res.ok) throw new Error("Server response " + res.status);
     const data = await res.json();
 
-    if (data.secure_url || data.url) {
-      const finalUrl = data.secure_url || data.url;
+    const finalUrl = data.pdfUrl || data.secure_url || data.url;
+    if (finalUrl) {
       if (urlInput) urlInput.value = finalUrl;
       if (progressBar) progressBar.style.width = "100%";
       if (percentText) percentText.textContent = "100%";

@@ -173,12 +173,17 @@ async function sendEmail(toEmail, subject, htmlContent) {
 // ==========================================
 // ROUTES: CLOUDINARY UPLOAD
 // ==========================================
-app.post('/api/upload', upload.single('pdfFile'), async (req, res) => {
+app.post('/api/upload', upload.fields([
+  { name: 'pdfFile', maxCount: 1 },
+  { name: 'file', maxCount: 1 },
+  { name: 'image', maxCount: 1 }
+]), async (req, res) => {
   try {
+    const uploadedFile = req.file || (req.files && (req.files.pdfFile?.[0] || req.files.file?.[0] || req.files.image?.[0]));
     let uploadPayload = "";
-    if (req.file) {
-      const b64 = Buffer.from(req.file.buffer).toString('base64');
-      uploadPayload = "data:" + req.file.mimetype + ";base64," + b64;
+    if (uploadedFile) {
+      const b64 = Buffer.from(uploadedFile.buffer).toString('base64');
+      uploadPayload = "data:" + uploadedFile.mimetype + ";base64," + b64;
     } else if (req.body && req.body.base64Data) {
       uploadPayload = req.body.base64Data;
     } else {
@@ -186,7 +191,7 @@ app.post('/api/upload', upload.single('pdfFile'), async (req, res) => {
     }
 
     const isProfile = req.query.type === 'profile' || req.query.type === 'support' || (uploadPayload && uploadPayload.startsWith("data:image"));
-    const isPdf = (req.file && (req.file.mimetype === 'application/pdf' || req.file.originalname?.toLowerCase().endsWith('.pdf'))) ||
+    const isPdf = (uploadedFile && (uploadedFile.mimetype === 'application/pdf' || uploadedFile.originalname?.toLowerCase().endsWith('.pdf'))) ||
                   (uploadPayload && uploadPayload.startsWith("data:application/pdf"));
 
     let options = {};
@@ -210,7 +215,7 @@ app.post('/api/upload', upload.single('pdfFile'), async (req, res) => {
 
     const result = await cloudinary.uploader.upload(uploadPayload, options);
     
-    res.json({ pdfUrl: result.secure_url, url: result.secure_url });
+    res.json({ pdfUrl: result.secure_url, url: result.secure_url, secure_url: result.secure_url });
   } catch (error) {
     console.error("Upload Error:", error.response ? error.response.data : error.message);
     res.status(500).json({ error: "Upload failed: " + error.message });
