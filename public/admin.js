@@ -1599,6 +1599,31 @@ window.loadAdsAdmin = async function() {
   }
 };
 
+function buildAdPreviewCardHtml(ad) {
+  return `
+    <div style="max-width:380px; width:100%; background:rgba(15,23,42,0.95); border:1px solid rgba(99,102,241,0.4); border-radius:14px; padding:1rem; box-shadow:0 12px 35px rgba(0,0,0,0.8); margin:0.4rem 0;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="${ad.userAvatar || 'ANH.png'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
+          <div>
+            <div style="font-size:0.8rem; font-weight:700; color:white;">${ad.userName || 'Contributor'}</div>
+            <div style="font-size:0.68rem; color:#94a3b8;">${ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleDateString() : 'Published'}</div>
+          </div>
+        </div>
+        <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.62rem; font-weight:800; padding:2px 8px; border-radius:10px; letter-spacing:0.5px;">SPONSORED</span>
+      </div>
+      <div id="adMediaWrap_${ad.id}" style="position:relative; width:100%; height:160px; border-radius:10px; overflow:hidden; margin-bottom:10px; background:#000; cursor:pointer;">
+        <img id="adThumb_${ad.id}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover;">
+        ${ad.videoUrl ? `<div id="adPlayBtn_${ad.id}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; pointer-events:none;"><i class="ri-play-fill"></i></div>` : ''}
+        <div id="adPlayer_${ad.id}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+      </div>
+      <h4 style="font-size:0.92rem; color:white; margin-bottom:4px; font-weight:700; line-height:1.3;">${ad.title || 'Untitled'}</h4>
+      <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${ad.description || ''}</p>
+      ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
+    </div>
+  `;
+}
+
 function renderAdsRequestsTable() {
   const tbody = document.getElementById("adsRequestsTableBody");
   if (!tbody) return;
@@ -1633,20 +1658,7 @@ function renderAdsRequestsTable() {
       </tr>
       <tr id="adPreviewRow_${ad.id}" style="display:none; background:rgba(0,0,0,0.3);">
         <td colspan="6" style="padding:1.2rem;">
-          <div style="max-width:400px; background:rgba(15,23,42,0.9); border:1px solid rgba(99,102,241,0.3); border-radius:14px; padding:1rem; box-shadow:0 8px 30px rgba(0,0,0,0.5);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <img src="${ad.userAvatar || 'ANH.png'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
-                <span style="font-size:0.8rem; font-weight:700; color:white;">${ad.userName || 'Contributor'}</span>
-              </div>
-              <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:10px;">SPONSORED</span>
-            </div>
-            ${ad.thumbnailUrl ? `<img src="${ad.thumbnailUrl}" style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:10px;">` : ''}
-            <h4 style="font-size:0.95rem; color:white; margin-bottom:4px;">${ad.title}</h4>
-            <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px; line-height:1.4;">${ad.description}</p>
-            ${ad.videoUrl ? `<div style="font-size:0.75rem; color:#a78bfa; margin-bottom:8px;"><i class="ri-youtube-line"></i> Contains Video Preview</div>` : ''}
-            <a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:0.82rem; font-weight:700;">Explore Now</a>
-          </div>
+          ${buildAdPreviewCardHtml(ad)}
         </td>
       </tr>
     `;
@@ -1675,13 +1687,16 @@ function renderManageAdsTable() {
           <input type="checkbox" class="manage-ad-cb" value="${ad.id}">
         </td>
         <td>
-          <img src="${ad.userAvatar || 'ANH.png'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+          <img src="${ad.userAvatar || 'ANH.png'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
         </td>
         <td style="font-family:monospace; font-size:0.8rem; color:#a5b4fc;">${ad.userId || 'N/A'}</td>
         <td style="font-weight:700; color:white;">${ad.title || 'Untitled'}</td>
         <td>${statusBadge} <span style="font-size:0.75rem; color:var(--admin-muted); margin-left:6px;">(${dt})</span></td>
         <td>
           <div style="display:flex; gap:6px;">
+            <button class="admin-btn" style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:4px 8px; font-size:0.75rem;" title="Preview Ad Card" onclick="toggleAdPreviewRow('${ad.id}')">
+              <i class="ri-eye-line"></i>
+            </button>
             <button class="admin-btn" style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 8px; font-size:0.75rem;" title="Delete Ad" onclick="deleteAdAdmin('${ad.id}')">
               <i class="ri-delete-bin-line"></i> Delete
             </button>
@@ -1691,14 +1706,46 @@ function renderManageAdsTable() {
           </div>
         </td>
       </tr>
+      <tr id="adPreviewRow_${ad.id}" style="display:none; background:rgba(0,0,0,0.3);">
+        <td colspan="6" style="padding:1.2rem;">
+          ${buildAdPreviewCardHtml(ad)}
+        </td>
+      </tr>
     `;
   }).join('');
 }
 
 window.toggleAdPreviewRow = function(adId) {
   const row = document.getElementById(`adPreviewRow_${adId}`);
-  if (row) {
-    row.style.display = row.style.display === "none" ? "table-row" : "none";
+  if (!row) return;
+  const isOpening = row.style.display === "none";
+  row.style.display = isOpening ? "table-row" : "none";
+
+  if (isOpening) {
+    const ad = [...pendingAdsCache, ...manageAdsCache].find(a => a.id === adId);
+    if (ad && ad.videoUrl) {
+      const mediaWrap = document.getElementById(`adMediaWrap_${adId}`);
+      const playerDiv = document.getElementById(`adPlayer_${adId}`);
+      let ytVidId = "";
+      const match = ad.videoUrl.match(/(?:watch\?v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (match) ytVidId = match[1];
+
+      if (ytVidId && mediaWrap && playerDiv) {
+        mediaWrap.onmouseenter = function() {
+          playerDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytVidId}?autoplay=1&mute=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+          playerDiv.style.display = "block";
+        };
+        mediaWrap.onmouseleave = function() {
+          playerDiv.style.display = "none";
+          playerDiv.innerHTML = "";
+        };
+        mediaWrap.onclick = function(e) {
+          e.stopPropagation();
+          playerDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytVidId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+          playerDiv.style.display = "block";
+        };
+      }
+    }
   }
 };
 
