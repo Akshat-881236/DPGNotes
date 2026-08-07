@@ -207,6 +207,7 @@
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const cfg = {
       apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
@@ -215,6 +216,7 @@
     };
     const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgnotes");
     const db = getFirestore(fbApp);
+    const auth = getAuth(fbApp);
 
     const P = new URLSearchParams(location.search);
     const targetId = P.get('id');
@@ -296,7 +298,10 @@
         const ownerId = data.userId || data.uploaderId || data.uploader;
 
         // STRICT OWNERSHIP & SECURITY CHECK
-        const isAdmin = auth.currentUser && auth.currentUser.email === 'its.akshatnetworkhub23@gmail.com';
+        const currentAuthUser = auth.currentUser;
+        const userEmail = currentAuthUser ? currentAuthUser.email : (localStorage.getItem("dpgUserEmail") || "");
+        const isAdmin = userEmail === 'its.akshatnetworkhub23@gmail.com';
+
         if (ownerId && ownerId !== activeUid && !isAdmin) {
           document.getElementById("accessDeniedBanner").style.display = "block";
           
@@ -306,7 +311,7 @@
             resourceId: targetId,
             resourceTitle: data.title || "Untitled Document",
             userId: activeUid,
-            userEmail: auth.currentUser?.email || "unknown",
+            userEmail: userEmail || "unknown",
             attemptedAction: "UNAUTHORIZED_TRAIN_MODEL",
             deviceIp: "Recorded",
             geolocation: "Recorded",
