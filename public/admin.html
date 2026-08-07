@@ -3,6 +3,16 @@
 <head>
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+  <script>
+    function renderMarkdown(md) {
+      if (!md) return '';
+      if (typeof marked === 'undefined') return md.replace(/\n/g,'<br>');
+      return typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(md)) : marked.parse(md);
+    }
+    window.renderMarkdown = renderMarkdown;
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" href="ANH.png" type="image/png" />

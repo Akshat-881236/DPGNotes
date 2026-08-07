@@ -340,10 +340,44 @@ app.post('/api/ai/analyse-document', async (req, res) => {
     const discipline = data.discipline || 'General';
     const description = data.description || '';
     const resourceId = data.docid || data.id || data.resourceId || '';
+    const extractedPdfText = data.extractedPdfText || '';
+    const knowledgeMd = data.knowledgeMd || '';
 
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+    // 1. Priority 1: Gemini API Engine for Lengthy, Independent, Rich Analysis
+    if (geminiKey) {
+      try {
+        const prompt = `You are DPGNotes AI Intelligence Engine. Perform an in-depth, comprehensive academic analysis of the following study resource for university students.
+Provide a lengthy, structured response using rich Markdown syntax with:
+- Executive Summary & Overview (### 📘 Executive Summary)
+- Core Concepts & Syllabus Topics Covered (#### 📌 Key Academic Concepts)
+- Important Definitions, Formulas & Exam Insights
+- Single-Open Collapsible Q&A Accordions (<details><summary><b>Q: Frequently Asked Exam Question</b></summary>A: Detailed Answer</details>)
+- Relevant Educational YouTube Video Links / Study Resources
+
+Document Title: ${title}
+Category: ${category}
+Discipline: ${discipline}
+Description: ${description}
+Extracted PDF Text: ${extractedPdfText.slice(0, 3000)}
+Runtime Knowledge Base: ${knowledgeMd.slice(0, 3000)}`;
+
+        const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+          contents: [{ parts: [{ text: prompt }] }]
+        }, { timeout: 10000 });
+
+        const report = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (report && report.length > 50) {
+          return res.json({ report, source: 'Gemini-API-Intelligence' });
+        }
+      } catch (gErr) {
+        console.warn("Gemini API call warning in analyse-document, falling back:", gErr.message);
+      }
+    }
+
+    // 2. Priority 2: Python AI Service
     const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'https://dpgnotes-python-service.onrender.com';
-
-    // 1. Try forwarding to Python AI Service first for RAG analysis
     try {
       const pyRes = await axios.post(`${pythonServiceUrl}/api/py/db-ai-analyze`, {
         prompt: `Provide a comprehensive academic analysis and summary for document: ${title}. Category: ${category}, Discipline: ${discipline}. Description: ${description}`,
@@ -354,29 +388,10 @@ app.post('/api/ai/analyse-document', async (req, res) => {
         return res.json({ report: pyRes.data.answer || pyRes.data.report, source: 'Python-AI-Engine' });
       }
     } catch (pyErr) {
-      console.warn("Python AI Engine endpoint offline/unreachable, falling back to Node.js Gemini:", pyErr.message);
+      console.warn("Python AI Engine endpoint offline/unreachable:", pyErr.message);
     }
 
-    // 2. Fallback to direct Gemini API call in Node.js
-    const prompt = `Analyze this academic document for DPGNotes students:\nTitle: ${title}\nCategory: ${category}\nDiscipline: ${discipline}\nDescription: ${description}\nProvide key topics, study tips, and summary.`;
-    const geminiKey = process.env.GEMINI_API_KEY;
-
-    if (geminiKey) {
-      try {
-        const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-          contents: [{ parts: [{ text: prompt }] }]
-        }, { timeout: 8000 });
-
-        const report = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (report) {
-          return res.json({ report, source: 'Node-Gemini-Fallback' });
-        }
-      } catch (gErr) {
-        console.warn("Gemini API call error, using local fallback summary:", gErr.message);
-      }
-    }
-
-    // 3. Guaranteed Fallback Academic Summary
+    // 3. Fallback Academic Summary
     const fallbackReport = `### 📘 Academic Summary: ${title}
 
 - **Category**: ${category}
@@ -401,10 +416,48 @@ app.post('/api/ai/chat', async (req, res) => {
   try {
     const { prompt, question, resourceId, systemContext, context, history } = req.body;
     const userQuery = prompt || question || (history && history.length > 0 ? history[history.length - 1].text : "Summarize document");
+    const docTitle = context?.documentTitle || 'Academic Resource';
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+    // 1. Priority 1: Gemini API Engine for Lengthy, Independent, High-Quality Answers
+    if (geminiKey) {
+      try {
+        const fullPrompt = `You are DPGNotes AI Assistant, an expert academic tutor. Provide an in-depth, highly comprehensive, lengthy, and detailed answer to the student's question.
+Format your response using rich Markdown syntax:
+- Clear headers (###, ####)
+- Bold key terms & definitions
+- Bullet points and numbered steps
+- Code snippets / mathematical formulas where applicable
+- Single-Open Collapsible Q&A Accordions (<details><summary><b>Q: Practice Question</b></summary>A: Explanation</details>)
+- Relevant Educational YouTube Video Links (e.g., https://www.youtube.com/watch?v=...) if helpful
+
+Context:
+- Document Title: ${docTitle}
+- Category: ${context?.documentCategory || 'Notes'}
+- Discipline: ${context?.documentDiscipline || 'General'}
+- Description: ${context?.documentDescription || 'N/A'}
+- Extracted PDF Text: ${context?.extractedPdfText ? context.extractedPdfText.slice(0, 3500) : 'N/A'}
+- Knowledge Base: ${context?.knowledgeBase ? context.knowledgeBase.slice(0, 3500) : 'N/A'}
+
+Student Question: ${userQuery}`;
+
+        const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+          contents: [{ parts: [{ text: fullPrompt }] }]
+        }, { timeout: 10000 });
+
+        const answer = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (answer && answer.length > 30) {
+          return res.json({ answer, source: 'Gemini-API-Intelligence' });
+        }
+      } catch (gErr) {
+        console.warn("Gemini Chat API error, falling back to Python/RAG:", gErr.message);
+      }
+    }
+
+    // 2. Priority 2: Python Service
     const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'https://dpgnotes-python-service.onrender.com';
     const targetResourceId = resourceId || (context && context.documentId) || '';
 
-    // 1. Try Python Service
     try {
       const pyRes = await axios.post(`${pythonServiceUrl}/api/py/db-ai-analyze`, {
         prompt: userQuery,
@@ -418,35 +471,9 @@ app.post('/api/ai/chat', async (req, res) => {
       console.warn("Python AI Chat fallback triggered:", pyErr.message);
     }
 
-    // 2. Try Gemini API
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (geminiKey) {
-      try {
-        let fullPrompt = userQuery;
-        if (context) {
-          fullPrompt = `Document: ${context.documentTitle || ''} (${context.documentCategory || ''} - ${context.documentDiscipline || ''})\nDescription: ${context.documentDescription || ''}\nExtracted Text: ${context.extractedPdfText || 'N/A'}\n\nQuestion: ${userQuery}`;
-        } else if (systemContext) {
-          fullPrompt = `${systemContext}\n\nQuestion: ${userQuery}`;
-        }
-
-        const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-          contents: [{ parts: [{ text: fullPrompt }] }]
-        }, { timeout: 8000 });
-
-        const answer = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (answer) {
-          return res.json({ answer, source: 'Node-Gemini-Fallback' });
-        }
-      } catch (gErr) {
-        console.warn("Gemini Chat API error, using safe fallback:", gErr.message);
-      }
-    }
-
-    // 3. DPGNotes Intelligent Context RAG Engine
-    const docTitle = context?.documentTitle || 'Document';
+    // 3. Priority 3: DPGNotes Intelligent Context RAG Engine
     const qLower = userQuery.toLowerCase().trim();
 
-    // Check for greetings
     if (/^(hi|hello|hey|greetings|hola)/i.test(qLower)) {
       return res.json({
         answer: `👋 Hello! I am **DPGNotes AI Assistant**. I have analyzed **${docTitle}**. Feel free to ask me any questions about formulas, definitions, PYQs, or specific sections in this resource!`,
@@ -456,7 +483,6 @@ app.post('/api/ai/chat', async (req, res) => {
 
     const kbText = (context?.knowledgeBase || '') + '\n' + (context?.extractedPdfText || '');
     if (kbText.trim() && kbText.length > 20) {
-      // Find matching lines/paragraphs containing user query words
       const words = qLower.split(/\s+/).filter(w => w.length > 2);
       const paragraphs = kbText.split(/\n\n|\r\n\r\n/);
       let bestMatch = "";
@@ -476,13 +502,12 @@ app.post('/api/ai/chat', async (req, res) => {
 
       if (bestMatch && highestScore > 0) {
         return res.json({
-          answer: `Based on **${docTitle}**:\n\n${bestMatch.trim()}`,
+          answer: `### 📖 Answer from ${docTitle}:\n\n${bestMatch.trim()}`,
           source: 'DPGNotes-Intelligent-RAG'
         });
       }
     }
 
-    // Default intelligent response summarizing document metadata
     return res.json({
       answer: `### 📘 Document Overview: ${docTitle}\n- **Category**: ${context?.documentCategory || 'Notes'}\n- **Discipline**: ${context?.documentDiscipline || 'General'}\n${context?.documentDescription ? `- **Summary**: ${context.documentDescription}\n` : ''}\nYour question regarding **"${userQuery}"** has been recorded. Feel free to ask specific questions about formulas, topics, or definitions in this notes file!`,
       source: 'DPGNotes-Intelligent-RAG'
