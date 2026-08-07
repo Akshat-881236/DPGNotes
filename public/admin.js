@@ -1601,25 +1601,27 @@ window.loadAdsAdmin = async function() {
 
 function buildAdPreviewCardHtml(ad) {
   return `
-    <div style="max-width:380px; width:100%; background:rgba(15,23,42,0.95); border:1px solid rgba(99,102,241,0.4); border-radius:14px; padding:1rem; box-shadow:0 12px 35px rgba(0,0,0,0.8); margin:0.4rem 0;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <img src="${ad.userAvatar || 'ANH.png'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
-          <div>
-            <div style="font-size:0.8rem; font-weight:700; color:white;">${ad.userName || 'Contributor'}</div>
-            <div style="font-size:0.68rem; color:#94a3b8;">${ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleDateString() : 'Published'}</div>
-          </div>
-        </div>
-        <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.62rem; font-weight:800; padding:2px 8px; border-radius:10px; letter-spacing:0.5px;">SPONSORED</span>
-      </div>
-      <div id="adMediaWrap_${ad.id}" style="position:relative; width:100%; height:160px; border-radius:10px; overflow:hidden; margin-bottom:10px; background:#000; cursor:pointer;">
+    <div class="admin-ad-preview-card">
+      <div class="admin-ad-preview-media" id="adMediaWrap_${ad.id}" style="position:relative; width:100%; height:160px; border-radius:10px; overflow:hidden; margin-bottom:10px; background:#000; cursor:pointer;">
         <img id="adThumb_${ad.id}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover;">
-        ${ad.videoUrl ? `<div id="adPlayBtn_${ad.id}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; pointer-events:none;"><i class="ri-play-fill"></i></div>` : ''}
-        <div id="adPlayer_${ad.id}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+        ${ad.videoUrl ? `<div id="adPlayBtn_${ad.id}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:46px; height:46px; background:rgba(0,0,0,0.75); border:1px solid rgba(255,255,255,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem; cursor:pointer; z-index:2;"><i class="ri-play-fill"></i></div>` : ''}
+        <div id="adPlayer_${ad.id}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
       </div>
-      <h4 style="font-size:0.92rem; color:white; margin-bottom:4px; font-weight:700; line-height:1.3;">${ad.title || 'Untitled'}</h4>
-      <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${ad.description || ''}</p>
-      ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
+      <div class="admin-ad-preview-body" style="flex:1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <img src="${ad.userAvatar || 'ANH.png'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
+            <div>
+              <div style="font-size:0.8rem; font-weight:700; color:white;">${ad.userName || 'Contributor'}</div>
+              <div style="font-size:0.68rem; color:#94a3b8;">${ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleDateString() : 'Published'}</div>
+            </div>
+          </div>
+          <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.62rem; font-weight:800; padding:2px 8px; border-radius:10px; letter-spacing:0.5px;">SPONSORED</span>
+        </div>
+        <h4 style="font-size:0.92rem; color:white; margin-bottom:4px; font-weight:700; line-height:1.3;">${ad.title || 'Untitled'}</h4>
+        <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.description || ''}</p>
+        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
+      </div>
     </div>
   `;
 }

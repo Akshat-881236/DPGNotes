@@ -51,6 +51,39 @@
       overflow-x: hidden;
     }
 
+    /* RESPONSIVE RECTANGULAR AD CARD PREVIEW */
+    .admin-ad-preview-card {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
+      margin: 0.4rem 0;
+      box-sizing: border-box;
+    }
+    @media (min-width: 768px) {
+      .admin-ad-preview-card {
+        max-width: 680px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 16px !important;
+        align-items: center !important;
+      }
+      .admin-ad-preview-media {
+        width: 250px !important;
+        height: 150px !important;
+        flex-shrink: 0 !important;
+        margin-bottom: 0 !important;
+      }
+      .admin-ad-preview-body {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+    }
+
     /* LOGIN & OTP SCREENS */
     .auth-overlay {
       position: fixed;
