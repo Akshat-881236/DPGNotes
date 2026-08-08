@@ -1478,7 +1478,8 @@ window.suggestViolationPunishmentAI = async function(type, caseDocId) {
 };
 
 window.deleteUserViolation = async function(docId) {
-  if (!confirm("Delete this user violation log?")) return;
+  const confirmed = window.customConfirm ? await window.customConfirm("Delete this user violation log?", { title: "Delete Log", isDanger: true }) : confirm("Delete this user violation log?");
+  if (!confirmed) return;
   try {
     await deleteDoc(doc(db, "user_violations", docId));
     loadViolationLogsAdmin();
@@ -1486,7 +1487,8 @@ window.deleteUserViolation = async function(docId) {
 };
 
 window.deleteUnauthorizedAction = async function(docId) {
-  if (!confirm("Delete this unauthorized action log?")) return;
+  const confirmed = window.customConfirm ? await window.customConfirm("Delete this unauthorized action log?", { title: "Delete Log", isDanger: true }) : confirm("Delete this unauthorized action log?");
+  if (!confirmed) return;
   try {
     await deleteDoc(doc(db, "authorized_access_violations", docId));
     loadViolationLogsAdmin();
@@ -1500,7 +1502,8 @@ window.toggleAllUserViolations = function(masterCb) {
 window.deleteSelectedUserViolations = async function() {
   const selectedCbs = Array.from(document.querySelectorAll(".user-viol-cb:checked"));
   if (selectedCbs.length === 0) return alert("Select at least one log.");
-  if (!confirm(`Delete ${selectedCbs.length} selected violation case(s)?`)) return;
+  const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected violation case(s)?`, { title: "Batch Delete", isDanger: true }) : confirm(`Delete ${selectedCbs.length} selected violation case(s)?`);
+  if (!confirmed) return;
 
   try {
     for (const cb of selectedCbs) {
@@ -1517,7 +1520,8 @@ window.toggleAllUnauthorizedActions = function(masterCb) {
 window.deleteSelectedUnauthorizedActions = async function() {
   const selectedCbs = Array.from(document.querySelectorAll(".unauth-action-cb:checked"));
   if (selectedCbs.length === 0) return alert("Select at least one log.");
-  if (!confirm(`Delete ${selectedCbs.length} selected action log(s)?`)) return;
+  const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected action log(s)?`, { title: "Batch Delete", isDanger: true }) : confirm(`Delete ${selectedCbs.length} selected action log(s)?`);
+  if (!confirmed) return;
 
   try {
     for (const cb of selectedCbs) {
@@ -1763,7 +1767,8 @@ window.approveAdAdmin = async function(adId) {
 };
 
 window.rejectAdAdmin = async function(adId) {
-  if (!confirm("Reject this ad request?")) return;
+  const confirmed = window.customConfirm ? await window.customConfirm("Reject this ad request?", { title: "Reject Ad Request", isDanger: true, confirmText: "Reject Ad" }) : confirm("Reject this ad request?");
+  if (!confirmed) return;
   try {
     await updateDoc(doc(db, "user_ads", adId), {
       status: "Rejected",
@@ -1774,7 +1779,8 @@ window.rejectAdAdmin = async function(adId) {
 };
 
 window.deleteAdAdmin = async function(adId) {
-  if (!confirm("Delete this ad permanently?")) return;
+  const confirmed = window.customConfirm ? await window.customConfirm("Delete this ad permanently? This action cannot be undone.", { title: "Delete Ad Permanently", isDanger: true, confirmText: "Delete Ad" }) : confirm("Delete this ad permanently?");
+  if (!confirmed) return;
   try {
     await deleteDoc(doc(db, "user_ads", adId));
     loadAdsAdmin();
@@ -1783,7 +1789,8 @@ window.deleteAdAdmin = async function(adId) {
 
 window.toggleBlockAdAdmin = async function(adId, shouldBlock) {
   const msg = shouldBlock ? "Block this ad? (Blocked ads auto-delete after 45 days)" : "Unblock this ad?";
-  if (!confirm(msg)) return;
+  const confirmed = window.customConfirm ? await window.customConfirm(msg, { title: shouldBlock ? "Block Ad" : "Unblock Ad", isDanger: shouldBlock }) : confirm(msg);
+  if (!confirmed) return;
 
   try {
     await updateDoc(doc(db, "user_ads", adId), {
@@ -1801,7 +1808,8 @@ window.toggleAllManageAds = function(masterCb) {
 window.deleteSelectedAdsGroup = async function() {
   const selectedCbs = Array.from(document.querySelectorAll(".manage-ad-cb:checked"));
   if (selectedCbs.length === 0) return alert("Select at least one ad to delete.");
-  if (!confirm(`Delete ${selectedCbs.length} selected ad(s)?`)) return;
+  const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected ad(s)?`, { title: "Batch Delete Ads", isDanger: true, confirmText: "Delete Selected" }) : confirm(`Delete ${selectedCbs.length} selected ad(s)?`);
+  if (!confirmed) return;
 
   try {
     for (const cb of selectedCbs) {
@@ -1814,7 +1822,8 @@ window.deleteSelectedAdsGroup = async function() {
 window.blockSelectedAdsGroup = async function() {
   const selectedCbs = Array.from(document.querySelectorAll(".manage-ad-cb:checked"));
   if (selectedCbs.length === 0) return alert("Select at least one ad to block.");
-  if (!confirm(`Block ${selectedCbs.length} selected ad(s)? Blocked ads auto-delete after 45 days.`)) return;
+  const confirmed = window.customConfirm ? await window.customConfirm(`Block ${selectedCbs.length} selected ad(s)? Blocked ads auto-delete after 45 days.`, { title: "Batch Block Ads", isDanger: true, confirmText: "Block Selected" }) : confirm(`Block ${selectedCbs.length} selected ad(s)?`);
+  if (!confirmed) return;
 
   try {
     for (const cb of selectedCbs) {

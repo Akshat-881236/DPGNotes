@@ -195,11 +195,6 @@
     });
   };
 
-  // Global override for window.confirm
-  window.confirm = function(message, options) {
-    return window.customConfirm(message, options);
-  };
-
   // Helper for prompt dialogs (Promise-based)
   window.customPrompt = function(message, defaultValue = "") {
     return new Promise((resolve) => {
