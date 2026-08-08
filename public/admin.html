@@ -465,22 +465,32 @@
 
     <main class="admin-main">
       <!-- MOBILE HEADER -->
-      <div class="admin-mobile-header">
+      <div class="admin-mobile-header" style="justify-content:space-between; align-items:center;">
         <div class="admin-brand" style="color:var(--admin-primary);">
           <i class="ri-triangle-fill"></i> DPGNotes
         </div>
-        <button class="hamburger-btn" onclick="openAdminSidebar()">
-          <i class="ri-menu-line"></i>
-        </button>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="btn-action" style="border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.12); color:#f87171; padding:5px 10px; border-radius:8px; font-size:0.78rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="localStorage.removeItem('adminToken'); location.reload();" title="Log Out">
+            <i class="ri-logout-box-r-line"></i> Log Out
+          </button>
+          <button class="hamburger-btn" onclick="openAdminSidebar()">
+            <i class="ri-menu-line"></i>
+          </button>
+        </div>
       </div>
       <div class="admin-header">
         <h1>Command Center</h1>
-        <div style="display:flex; align-items:center; gap:12px;">
+        <div style="display:flex; align-items:center; gap:16px;">
           <div style="text-align:right;">
             <div style="font-weight:600;">System Administrator</div>
             <div style="font-size:0.8rem; color:var(--admin-muted);" id="adminStatusTxt">Session Active</div>
           </div>
           <div style="width:40px; height:40px; border-radius:50%; background:var(--admin-primary); display:flex; align-items:center; justify-content:center; font-weight:bold;">A</div>
+          
+          <!-- Top Header Log Out Button -->
+          <button class="btn-action" style="border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.12); color:#f87171; padding:7px 14px; border-radius:10px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;" onclick="localStorage.removeItem('adminToken'); location.reload();" title="Log Out of Admin Session">
+            <i class="ri-logout-box-r-line"></i> Log Out
+          </button>
         </div>
       </div>
 
