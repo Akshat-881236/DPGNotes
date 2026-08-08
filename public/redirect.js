@@ -178,18 +178,44 @@
 
       // Action: PDF view vs Page visit
       const isPdfViewer = window.location.pathname.includes('dpgnotes-pdf-viewer.html');
-      const action = isPdfViewer ? 'pdf_view' : 'page_visit';
 
-      // Local storage offline tracking fallback
+      // Cookie helper functions for multi-layer tamper protection
+      function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? match[2] : null;
+      }
+      function setCookie(name, val) {
+        document.cookie = name + '=' + val + ';path=/;max-age=86400;SameSite=Strict';
+      }
+      function clearCookie(name) {
+        document.cookie = name + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
+
+      // Local storage & multi-layer offline tracking fallback
       const todayStr = new Date().toISOString().split('T')[0];
       const savedDate = localStorage.getItem("dpg_quota_date");
       let pageVisits = parseInt(localStorage.getItem("dpg_quota_visits") || "0", 10);
       let pdfViews = parseInt(localStorage.getItem("dpg_quota_pdfs") || "0", 10);
 
+      // Check tamper lock across localStorage, sessionStorage, and cookies
+      const isLockedLocal = localStorage.getItem("dpg_quota_locked") === "true";
+      const isLockedSession = sessionStorage.getItem("dpg_quota_locked") === "true";
+      const isLockedCookie = getCookie("dpg_quota_locked") === "true";
+
       if (savedDate !== todayStr) {
         pageVisits = 0;
         pdfViews = 0;
         localStorage.setItem("dpg_quota_date", todayStr);
+        localStorage.removeItem("dpg_quota_locked");
+        sessionStorage.removeItem("dpg_quota_locked");
+        clearCookie("dpg_quota_locked");
+      } else if (isLockedLocal || isLockedSession || isLockedCookie) {
+        // Tamper detected or lock previously set: enforce lock across all 3 layers!
+        localStorage.setItem("dpg_quota_locked", "true");
+        sessionStorage.setItem("dpg_quota_locked", "true");
+        setCookie("dpg_quota_locked", "true");
+        pageVisits = 99;
+        pdfViews = 99;
       }
 
       if (isPdfViewer) pdfViews += 1;
@@ -199,9 +225,19 @@
       localStorage.setItem("dpg_quota_pdfs", pdfViews);
 
       function triggerQuotaReachedPhase() {
+        // Enforce lock across all 3 storage layers
+        localStorage.setItem("dpg_quota_locked", "true");
+        sessionStorage.setItem("dpg_quota_locked", "true");
+        setCookie("dpg_quota_locked", "true");
+
         if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && !window.location.pathname.endsWith('/public/')) {
           window.location.href = "index.html?quotaReached=true";
           return;
+        }
+
+        // Lock URL parameter silently if missing
+        if (!window.location.search.includes('quotaReached=true')) {
+          try { history.replaceState(null, '', 'index.html?quotaReached=true'); } catch(e){}
         }
 
         // 1. Immediately inject hard CSS override into head so no other DOM elements can ever render
@@ -295,6 +331,16 @@
               if (typeof window.renderNativeDPGAds === "function") {
                 setTimeout(window.renderNativeDPGAds, 300);
               }
+
+              // MutationObserver protection: Prevent users from deleting or altering the lock screen via DevTools
+              if (!window.dpgDomObserver) {
+                window.dpgDomObserver = new MutationObserver(() => {
+                  if (!document.getElementById('unnegotiableLockedQuotaScreen')) {
+                    buildQuotaScreen();
+                  }
+                });
+                window.dpgDomObserver.observe(document.body, { childList: true, subtree: false });
+              }
             }
           }
         }
@@ -314,6 +360,9 @@
           if (diffMs <= 0) {
             localStorage.removeItem("dpg_quota_visits");
             localStorage.removeItem("dpg_quota_pdfs");
+            localStorage.removeItem("dpg_quota_locked");
+            sessionStorage.removeItem("dpg_quota_locked");
+            clearCookie("dpg_quota_locked");
             window.location.href = "index.html";
             return;
           }
