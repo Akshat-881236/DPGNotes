@@ -3,6 +3,7 @@
 <head>
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
   <script>
@@ -450,6 +451,9 @@
         </a>
         <a class="nav-link" onclick="switchTab('ads'); if(window.loadAdsAdmin) window.loadAdsAdmin();">
           <i class="ri-advertisement-line" style="color:#f59e0b;"></i> Ads Management
+        </a>
+        <a class="nav-link" onclick="switchTab('ads-analytics'); if(window.loadAdsAnalyticsAdmin) window.loadAdsAnalyticsAdmin();">
+          <i class="ri-line-chart-line" style="color:#10b981;"></i> Ads Analytics
         </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
@@ -934,6 +938,95 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <!-- ADS ANALYTICS TAB -->
+      <section id="view-ads-analytics" class="view-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-size:1.5rem; color:white; font-weight:700; display:flex; align-items:center; gap:10px;">
+              <i class="ri-line-chart-line" style="color:#10b981;"></i> Real-Time Ad Performance & CTR Analytics
+            </h2>
+            <p style="color:var(--admin-text-muted); font-size:0.85rem; margin-top:2px;">Mathematical calculation engine using Node.js & Python Data Analytics for per-ad impressions, clicks & CTR trend tracking.</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <select id="adAnalyticsFilterSelect" onchange="loadAdsAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer;">
+              <option value="ALL">All Approved Ad Campaigns</option>
+            </select>
+            <button onclick="loadAdsAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Stats</button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Summary Cards -->
+        <div class="stat-cards" style="margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(245,158,11,0.15); color:#f59e0b;"><i class="ri-eye-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statAdAppearances" style="color:#f59e0b;">0</h3>
+              <p>Total Ads Appear (Impressions)</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(239,68,68,0.15); color:#ef4444;"><i class="ri-cursor-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statAdClicks" style="color:#ef4444;">0</h3>
+              <p>Total Link Clicks</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(16,185,129,0.15); color:#10b981;"><i class="ri-percent-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statAdCTR" style="color:#10b981;">0.00%</h3>
+              <p>Average CTR (Click-Through Rate)</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(99,102,241,0.15); color:#a5b4fc;"><i class="ri-time-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statAdScreentime" style="color:#a5b4fc;">0s</h3>
+              <p>Total User Destination Screentime</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Per-Ad Graph Container -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+            <h3 style="font-size:1.1rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+              <i class="ri-stock-line" style="color:#f59e0b;"></i> Ad Analytics Trend Chart
+            </h3>
+            <div style="display:flex; gap:15px; font-size:0.8rem; font-weight:600; flex-wrap:wrap;">
+              <span style="color:#10b981; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:3px; background:#10b981; display:inline-block; border-radius:2px;"></span> CTR % (Green Line)</span>
+              <span style="color:#f59e0b; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:3px; background:#f59e0b; display:inline-block; border-radius:2px;"></span> Ads Appear (Yellow Line)</span>
+              <span style="color:#ef4444; display:flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:#ef4444; border-radius:50%; display:inline-block;"></span> Link Clicks (Red Dots - Click to open User Profile)</span>
+            </div>
+          </div>
+
+          <div style="position:relative; width:100%; height:340px;">
+            <canvas id="adAnalyticsChart"></canvas>
+          </div>
+          <p style="font-size:0.78rem; color:var(--admin-text-muted); margin-top:8px; text-align:center;"><i class="ri-information-line"></i> Tip: Click on any red dot on the graph to immediately view the corresponding user's profile!</p>
+        </div>
+
+        <!-- Detailed Ad Telemetry Table -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-list-check-2" style="color:#a5b4fc;"></i> Per-TrackID User Click & Screentime Log</h3>
+          <table class="data-table">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                <th style="padding:0.75rem;">Track ID</th>
+                <th style="padding:0.75rem;">Ad Campaign</th>
+                <th style="padding:0.75rem;">Visitor</th>
+                <th style="padding:0.75rem;">Destination Page</th>
+                <th style="padding:0.75rem;">Screentime</th>
+                <th style="padding:0.75rem;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adAnalyticsTableBody">
+              <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading telemetry analytics...</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>

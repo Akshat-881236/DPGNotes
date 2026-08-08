@@ -1247,6 +1247,115 @@ app.post('/api/ad-track-telemetry', async (req, res) => {
   }
 });
 
+// ============================================================================
+// ADMIN ADS ANALYTICS ROUTE (Node.js & Python Collaboration)
+// ============================================================================
+app.get('/api/admin/ads-analytics', async (req, res) => {
+  try {
+    const selectedAdId = req.query.adId || "ALL";
+
+    let ads = [];
+    let trackings = [];
+
+    if (db) {
+      const adsSnap = await db.collection("user_ads").get();
+      adsSnap.forEach(d => {
+        const data = d.data();
+        ads.push({
+          id: d.id,
+          title: data.title,
+          status: data.status,
+          views: data.views || 0,
+          impressionsCount: data.impressionsCount || data.views || 1,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt
+        });
+      });
+
+      const trackSnap = await db.collection("ad_trackings").get();
+      trackSnap.forEach(d => {
+        const data = d.data();
+        trackings.push({
+          trackId: data.trackId || d.id,
+          adId: data.adId || "",
+          visitorUid: data.visitorUid || "",
+          visitorEmail: data.visitorEmail || "",
+          pageUrl: data.pageUrl || "",
+          pageTitle: data.pageTitle || "",
+          screentimeSeconds: data.screentimeSeconds || 0,
+          timestamp: data.timestamp || data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : ""
+        });
+      });
+    }
+
+    const payload = JSON.stringify({ ads, trackings, selectedAdId });
+
+    // Spawn Python Data Analytics script
+    const { spawn } = require('child_process');
+    const path = require('path');
+    const pyScript = path.join(__dirname, '../scripts/ad_analytics.py');
+
+    let pythonProcess;
+    try {
+      pythonProcess = spawn('python3', [pyScript]);
+    } catch(err) {
+      pythonProcess = spawn('python', [pyScript]);
+    }
+
+    let outputData = "";
+    let errorData = "";
+
+    pythonProcess.stdout.on('data', (data) => {
+      outputData += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      errorData += data.toString();
+    });
+
+    pythonProcess.on('close', (code) => {
+      try {
+        if (outputData && outputData.trim()) {
+          const parsed = JSON.parse(outputData.trim());
+          parsed.rawAds = ads;
+          parsed.rawTrackings = trackings;
+          return res.json(parsed);
+        }
+      } catch(parseErr) {
+        console.warn("Python stdout JSON parse error, using JS math fallback:", parseErr);
+      }
+
+      // JS Fallback calculation
+      const totalImp = ads.reduce((acc, a) => acc + (a.impressionsCount || 1), 0) || Math.max(trackings.length, 1);
+      const totalClk = trackings.length;
+      const avgCtr = totalImp > 0 ? parseFloat(((totalClk / totalImp) * 100).toFixed(2)) : 0;
+      const totalScreentime = trackings.reduce((acc, t) => acc + (t.screentimeSeconds || 0), 0);
+
+      res.json({
+        success: true,
+        labels: [new Date().toISOString().substring(0, 10)],
+        impressions: [totalImp],
+        clicks: [totalClk],
+        ctr: [avgCtr],
+        clickMetadata: [trackings],
+        totalImpressions: totalImp,
+        totalClicks: totalClk,
+        totalScreentime,
+        averageCtr: avgCtr,
+        rawAds: ads,
+        rawTrackings: trackings
+      });
+    });
+
+    pythonProcess.stdin.write(payload);
+    pythonProcess.stdin.end();
+
+  } catch(err) {
+    console.error("Ads analytics API error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/share/click', async (req, res) => {
   const { token, openedBy } = req.query;
   if (!token) return res.status(400).json({ error: "Token required" });

@@ -1835,3 +1835,182 @@ window.blockSelectedAdsGroup = async function() {
     loadAdsAdmin();
   } catch(e) { alert("Batch block error: " + e.message); }
 };
+
+// =========================================
+// ADS ANALYTICS & CTR GRAPHICAL ENGINE
+// =========================================
+let adAnalyticsChartInstance = null;
+
+async function loadAdsAnalyticsAdmin() {
+  const filterSelect = document.getElementById("adAnalyticsFilterSelect");
+  const selectedAdId = filterSelect ? filterSelect.value : "ALL";
+
+  try {
+    const res = await fetch(`${window.API_BASE_URL}/api/admin/ads-analytics?adId=${encodeURIComponent(selectedAdId)}`);
+    const data = await res.json();
+
+    if (!data || !data.success) {
+      console.warn("Analytics fetch failed:", data?.error);
+      return;
+    }
+
+    if (filterSelect && filterSelect.options.length <= 1 && data.rawAds) {
+      filterSelect.innerHTML = `<option value="ALL">All Approved Ad Campaigns</option>`;
+      data.rawAds.forEach(a => {
+        const opt = document.createElement("option");
+        opt.value = a.id;
+        opt.textContent = `${a.title || 'Ad'} (${a.id})`;
+        if (a.id === selectedAdId) opt.selected = true;
+        filterSelect.appendChild(opt);
+      });
+    }
+
+    document.getElementById("statAdAppearances").textContent = (data.totalImpressions || 0).toLocaleString();
+    document.getElementById("statAdClicks").textContent = (data.totalClicks || 0).toLocaleString();
+    document.getElementById("statAdCTR").textContent = `${data.averageCtr || 0.00}%`;
+    document.getElementById("statAdScreentime").textContent = `${data.totalScreentime || 0}s`;
+
+    const ctx = document.getElementById("adAnalyticsChart")?.getContext("2d");
+    if (ctx && typeof Chart !== "undefined") {
+      if (adAnalyticsChartInstance) {
+        adAnalyticsChartInstance.destroy();
+      }
+
+      adAnalyticsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels || [],
+          datasets: [
+            {
+              label: 'CTR % (Green Line)',
+              data: data.ctr || [],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderWidth: 2.5,
+              tension: 0.3,
+              yAxisID: 'yCTR'
+            },
+            {
+              label: 'Ads Appear / Impressions (Yellow Line)',
+              data: data.impressions || [],
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              borderWidth: 2.5,
+              tension: 0.3,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'Link Clicks (Red Line with Dots)',
+              data: data.clicks || [],
+              borderColor: '#ef4444',
+              backgroundColor: '#ef4444',
+              pointBackgroundColor: '#ef4444',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 7,
+              pointHoverRadius: 11,
+              borderWidth: 2,
+              showLine: true,
+              yAxisID: 'yCount'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'nearest',
+            intersect: true
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                afterBody: function(context) {
+                  const dataIndex = context[0].dataIndex;
+                  const meta = data.clickMetadata ? data.clickMetadata[dataIndex] : [];
+                  if (meta && meta.length > 0) {
+                    return meta.map(m => `• User: ${m.userEmail || m.userUid || 'Anon'} (${m.screentime || 0}s)`).join('\n');
+                  }
+                  return '';
+                }
+              }
+            }
+          },
+          onClick: (evt, activeElements) => {
+            if (activeElements && activeElements.length > 0) {
+              const datasetIdx = activeElements[0].datasetIndex;
+              const index = activeElements[0].index;
+              const meta = data.clickMetadata ? data.clickMetadata[index] : [];
+
+              if (datasetIdx === 2 && meta && meta.length > 0) {
+                const clickedUser = meta[0];
+                const uid = clickedUser.userUid;
+                if (uid && uid !== 'guest_anon' && !uid.startsWith('visitor_')) {
+                  window.open(`profile.html?uid=${encodeURIComponent(uid)}`, '_blank');
+                } else {
+                  alert(`Visitor Click: ${clickedUser.userEmail || 'Anonymous Guest'}\nTrack ID: ${clickedUser.trackId || 'N/A'}`);
+                }
+              }
+            }
+          },
+          scales: {
+            yCount: {
+              type: 'linear',
+              position: 'left',
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            yCTR: {
+              type: 'linear',
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#10b981', callback: (v) => v + '%' }
+            },
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8' }
+            }
+          }
+        }
+      });
+    }
+
+    const tbody = document.getElementById("adAnalyticsTableBody");
+    if (tbody) {
+      const rawTrackings = data.rawTrackings || [];
+      if (rawTrackings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No ad click telemetry logged yet. Click an ad to generate track_id data!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      rawTrackings.forEach(t => {
+        const tr = document.createElement("tr");
+        const uid = t.visitorUid || "";
+        const hasProfile = uid && uid !== "guest_anon" && !uid.startsWith("visitor_");
+
+        tr.innerHTML = `
+          <td style="padding:0.75rem; font-family:monospace; color:#a5b4fc; font-weight:700;">${t.trackId || 'N/A'}</td>
+          <td style="padding:0.75rem; color:white;">${t.adId || 'Global Banner'}</td>
+          <td style="padding:0.75rem;">
+            <div style="font-weight:600; color:white;">${t.visitorEmail || 'Anonymous Guest'}</div>
+            <div style="font-size:0.75rem; color:var(--admin-text-muted); font-family:monospace;">UID: ${uid || 'guest_anon'}</div>
+          </td>
+          <td style="padding:0.75rem;">
+            <a href="${t.pageUrl || '#'}" target="_blank" style="color:#38bdf8; text-decoration:none; font-weight:600;">${t.pageTitle || 'Viewed Resource'} <i class="ri-external-link-line"></i></a>
+          </td>
+          <td style="padding:0.75rem; font-weight:700; color:#f59e0b;">${t.screentimeSeconds || 0}s</td>
+          <td style="padding:0.75rem;">
+            ${hasProfile ? `<a href="profile.html?uid=${encodeURIComponent(uid)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-search-line"></i> View Profile</a>` : `<span style="font-size:0.75rem; color:var(--admin-text-muted);">Guest Visitor</span>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+  } catch(err) {
+    console.error("loadAdsAnalyticsAdmin error:", err);
+  }
+}
+
+window.loadAdsAnalyticsAdmin = loadAdsAnalyticsAdmin;
