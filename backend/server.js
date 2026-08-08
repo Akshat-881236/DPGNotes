@@ -1252,6 +1252,17 @@ app.post('/api/ad-track-telemetry', async (req, res) => {
 // ============================================================================
 const adsAnalyticsCache = new Map();
 
+function generateAdTrackId(adId) {
+  if (!adId) return "74920184";
+  let hash = 0;
+  for (let i = 0; i < adId.length; i++) {
+    hash = (hash << 5) - hash + adId.charCodeAt(i);
+    hash |= 0;
+  }
+  const positiveHash = Math.abs(hash);
+  return (positiveHash % 90000000 + 10000000).toString();
+}
+
 app.get('/api/admin/ads-analytics', async (req, res) => {
   try {
     const selectedAdId = req.query.adId || "ALL";
@@ -1268,18 +1279,26 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
 
     if (db) {
       const adsSnap = await db.collection("user_ads").get();
-      adsSnap.forEach(d => {
+      for (const d of adsSnap.docs) {
         const data = d.data();
+        let trackId = data.trackId;
+        if (!trackId) {
+          trackId = generateAdTrackId(d.id);
+          db.collection("user_ads").doc(d.id).set({ trackId }, { merge: true }).catch(() => {});
+        }
         ads.push({
           id: d.id,
+          trackId: trackId,
           title: data.title,
           status: data.status,
+          targetLink: data.targetLink || "",
+          userId: data.userId || data.uid || data.userUid || "",
           views: data.views || 0,
           impressionsCount: data.impressionsCount || data.views || 1,
           createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
           updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt
         });
-      });
+      }
 
       const trackSnap = await db.collection("ad_trackings").get();
       trackSnap.forEach(d => {

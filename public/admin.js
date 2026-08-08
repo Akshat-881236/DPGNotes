@@ -1882,19 +1882,29 @@ export async function loadAdsAnalyticsAdmin() {
           labels: data.labels || [],
           datasets: [
             {
-              label: 'CTR % (Green Line)',
+              label: 'CTR % (Green Line with Dots)',
               data: data.ctr || [],
               borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              backgroundColor: '#10b981',
+              pointBackgroundColor: '#10b981',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 6,
+              pointHoverRadius: 10,
               borderWidth: 2.5,
               tension: 0.3,
               yAxisID: 'yCTR'
             },
             {
-              label: 'Ads Appear / Impressions (Yellow Line)',
+              label: 'Ads Appear / Impressions (Yellow Line with Dots)',
               data: data.impressions || [],
               borderColor: '#f59e0b',
-              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              backgroundColor: '#f59e0b',
+              pointBackgroundColor: '#f59e0b',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 6,
+              pointHoverRadius: 10,
               borderWidth: 2.5,
               tension: 0.3,
               yAxisID: 'yCount'
@@ -1924,14 +1934,31 @@ export async function loadAdsAnalyticsAdmin() {
           },
           plugins: {
             tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
+              titleColor: '#ffffff',
+              bodyColor: '#e2e8f0',
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: true,
               callbacks: {
+                title: function(items) {
+                  return items && items.length > 0 ? items[0].label : '';
+                },
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const val = context.parsed.y;
+                  if (label.includes('CTR')) return `🟩 ${label}: ${val}%`;
+                  if (label.includes('Appear')) return `🟨 ${label}: ${val}`;
+                  return `🟥 ${label}: ${val}`;
+                },
                 afterBody: function(context) {
                   const dataIndex = context[0].dataIndex;
                   const meta = data.clickMetadata ? data.clickMetadata[dataIndex] : [];
                   if (meta && meta.length > 0) {
-                    return meta.map(m => `• User: ${m.userEmail || m.userUid || 'Anon'} (${m.screentime || 0}s)`).join('\n');
+                    return meta.map(m => `• User: ${m.visitorEmail || m.visitorUid || 'guest@dpgnotes.app'} (${m.screentimeSeconds || 0}s)`).join('\n');
                   }
-                  return '';
+                  return '• No recorded visitor clicks on this date';
                 }
               }
             }
@@ -1941,14 +1968,36 @@ export async function loadAdsAnalyticsAdmin() {
               const datasetIdx = activeElements[0].datasetIndex;
               const index = activeElements[0].index;
               const meta = data.clickMetadata ? data.clickMetadata[index] : [];
+              const rawAds = data.rawAds || [];
 
-              if (datasetIdx === 2 && meta && meta.length > 0) {
-                const clickedUser = meta[0];
-                const uid = clickedUser.userUid;
-                if (uid && uid !== 'guest_anon' && !uid.startsWith('visitor_')) {
+              if (datasetIdx === 0) {
+                // Green Line - Advertiser Profile
+                const ad = rawAds[0] || {};
+                const uid = ad.userId || ad.uid || ad.userUid || "";
+                if (uid) {
                   window.open(`profile.html?uid=${encodeURIComponent(uid)}`, '_blank');
                 } else {
-                  alert(`Visitor Click: ${clickedUser.userEmail || 'Anonymous Guest'}\nTrack ID: ${clickedUser.trackId || 'N/A'}`);
+                  window.open('profile.html', '_blank');
+                }
+              } else if (datasetIdx === 1) {
+                // Yellow Line - Ad Target Link
+                const ad = rawAds[0] || {};
+                const targetLink = ad.targetLink || "index.html";
+                const trackId = ad.trackId || (ad.id ? generateAdTrackId(ad.id) : "74920184");
+                const sep = targetLink.includes("?") ? "&" : "?";
+                window.open(`${targetLink}${sep}track_id=${trackId}`, '_blank');
+              } else if (datasetIdx === 2) {
+                // Red Line - Visitor Profile or Ad Link
+                if (meta && meta.length > 0) {
+                  const clickedUser = meta[0];
+                  const uid = clickedUser.visitorUid || clickedUser.userUid;
+                  if (uid && uid !== 'guest_anon' && !uid.startsWith('visitor_')) {
+                    window.open(`profile.html?uid=${encodeURIComponent(uid)}`, '_blank');
+                  } else if (clickedUser.pageUrl) {
+                    window.open(clickedUser.pageUrl, '_blank');
+                  } else {
+                    alert(`Visitor Telemetry: ${clickedUser.visitorEmail || 'guest@dpgnotes.app'}\nTrack ID: ${clickedUser.trackId || 'N/A'}\nScreentime: ${clickedUser.screentimeSeconds || 0}s`);
+                  }
                 }
               }
             }

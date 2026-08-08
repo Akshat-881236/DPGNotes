@@ -124,8 +124,8 @@
     return eightDigit;
   }
 
-  function buildTrackedAdTargetLink(targetUrl, adId) {
-    const trackId = generateAdTrackId(adId);
+  function buildTrackedAdTargetLink(targetUrl, adId, customTrackId) {
+    const trackId = customTrackId || generateAdTrackId(adId);
     let base = (targetUrl && typeof targetUrl === "string" && targetUrl.trim() !== "" && targetUrl.trim() !== "#") 
       ? targetUrl.trim() 
       : "index.html";
@@ -153,8 +153,8 @@
     const vidId = extractYouTubeId(ad.videoUrl);
     const profileUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
     const profileUrl = profileUid ? `profile.html?uid=${encodeURIComponent(profileUid)}` : "profile.html";
-    const finalTargetLink = buildTrackedAdTargetLink(ad.targetLink, ad.id);
-    const trackId = generateAdTrackId(ad.id);
+    const trackId = ad.trackId || generateAdTrackId(ad.id);
+    const finalTargetLink = buildTrackedAdTargetLink(ad.targetLink, ad.id, trackId);
     card.dataset.trackId = trackId;
 
     let rotationTimeout = null;
