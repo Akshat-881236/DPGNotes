@@ -252,7 +252,7 @@
 
   <script src="config.js"></script>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -264,7 +264,7 @@
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     let allDocs = [];
@@ -274,9 +274,9 @@
     const searchField = document.getElementById("serpSearchField");
     const queryTextSpan = document.getElementById("queryText");
 
-    const initialQuery = urlParams.get("q") || "";
-    searchField.value = initialQuery;
-    queryTextSpan.innerText = initialQuery;
+    const initialQuery = urlParams.get("q") || urlParams.get("query") || "";
+    if (searchField) searchField.value = initialQuery;
+    if (queryTextSpan) queryTextSpan.innerText = initialQuery;
 
     function populateDynamicFilters() {
       const catSelect = document.getElementById("filterCategory");
