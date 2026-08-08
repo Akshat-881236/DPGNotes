@@ -307,16 +307,27 @@
     card.appendChild(closeBtn);
 
     // Smart Rotation & Video Lifecycle Engine
-    if (vidId) {
+    const isVideoMediaVariant = (variant === "feed" || variant === "sidebar" || variant === "main") && !!vidId;
+
+    if (isVideoMediaVariant) {
       const mediaBox = card.querySelector(`#adMediaBox_${containerId}`);
       const playerDiv = card.querySelector(`#adPlayerDiv_${containerId}`);
       const playBtn = card.querySelector(`#adPlayBtn_${containerId}`);
       const waitOverlay = card.querySelector(`#adWaitOverlay_${containerId}`);
       const waitText = card.querySelector(`#adWaitText_${containerId}`);
 
+      // Fallback 30s timer in case video is never started
+      rotationTimeout = setTimeout(() => {
+        if (!videoLifecycleActive) {
+          swapToNextAd();
+        }
+      }, 30000);
+
       function startVideo(muted = true) {
         if (!playerDiv || videoLifecycleActive) return;
         videoLifecycleActive = true;
+        if (rotationTimeout) clearTimeout(rotationTimeout);
+
         playerDiv.innerHTML = `<iframe id="ytFrame_${containerId}" src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=${muted ? 1 : 0}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
         playerDiv.style.display = "block";
         if (playBtn) playBtn.style.display = "none";
@@ -343,7 +354,7 @@
       }
 
       let autoPlayTimer = setTimeout(() => {
-        startVideo(true);
+        if (!videoLifecycleActive) startVideo(true);
       }, 5000);
 
       if (mediaBox) {
@@ -362,7 +373,7 @@
         };
       }
     } else {
-      // 30-Second Automatic Rotation for Non-Video (Image/Text) Ads
+      // Non-Video Ads OR Header/Footer Variant Ads -> 30-Second Automatic Rotation
       rotationTimeout = setTimeout(() => {
         swapToNextAd();
       }, 30000);
