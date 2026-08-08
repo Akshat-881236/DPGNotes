@@ -239,8 +239,11 @@
               <i class="ri-google-fill" style="font-size:1.4rem;"></i> Sign In / Sign Up with Google
             </button>
 
+            <!-- SPONSORED NATIVE AD ON QUOTA LOCK SCREEN -->
+            <div class="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.5rem; text-align:left; width:100%;"></div>
+
             <!-- LEGAL NOTES DEEP LINKS -->
-            <div style="margin-top:2rem; padding-top:1.2rem; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
+            <div style="margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
               <div style="font-size:0.8rem; color:#64748b; font-weight:600; margin-bottom:0.8rem;">DPGNotes Legal Center Policies:</div>
               <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px 14px; font-size:0.82rem;">
                 <a href="legal/index.html#privacy" target="_blank" style="color:#a78bfa; text-decoration:none;">Privacy Policy</a>
@@ -260,6 +263,10 @@
         `;
 
         document.body.appendChild(lockedContainer);
+
+        if (typeof window.renderNativeDPGAds === "function") {
+          setTimeout(window.renderNativeDPGAds, 300);
+        }
 
         // Start live countdown timer to midnight
         function updateTimer() {
