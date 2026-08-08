@@ -1823,7 +1823,7 @@ async function loadContributorManageResources() {
       tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
       tr.innerHTML = `
         <td style="padding:0.75rem 1rem; font-weight:600; color:var(--primary-light);" data-label="SR No.">${idx + 1}</td>
-        <td style="padding:0.75rem 1rem;" data-label="Title">
+        <td class="title-col" style="padding:0.75rem 1rem;" data-label="Title">
           <div style="font-weight:600; color:white;">${docData.title || 'Untitled'}</div>
           <div style="font-size:0.75rem; color:var(--text-muted);">${docData.category || 'General'} • ID: ${docData.id}</div>
         </td>
