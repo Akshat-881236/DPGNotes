@@ -18,12 +18,25 @@ class AIProcessor:
     def generate_ai_response(self, prompt: str, system_context: str = "", max_retries: int = 3) -> str:
         """
         Generates Gemini AI response with exponential backoff retry algorithm
-        and mathematical exception handling for rate limits.
+        and persona isolation to prevent cross-assistant conflicts on Hi/Hello/greetings.
         """
         if not self.model:
             return "Gemini API key is not configured on server."
 
-        full_prompt = f"{system_context}\n\nUser Question: {prompt}" if system_context else prompt
+        clean_p = (prompt or "").strip().lower()
+        greetings = ["hi", "hello", "hey", "hola", "namaste", "good morning", "good afternoon", "good evening", "greetings", "who are you", "who are you?"]
+
+        # Prevent cross-assistant persona conflicts on simple greetings
+        if clean_p in greetings or any(clean_p.startswith(g + " ") for g in ["hi", "hello", "hey"]):
+            ctx_lower = (system_context or "").lower()
+            if "legal" in ctx_lower:
+                return "Hello! I am **DPGNotes Legal & Compliance AI Assistant**. How can I help you regarding our Privacy Policy, Terms of Use, DRASA Regulations, Copyright, or Disclaimer policies today?"
+            elif "admin" in ctx_lower or "report" in ctx_lower:
+                return "Hello! I am **DPGNotes Admin Operations AI Assistant**. How can I assist you with system analytics, support ticket resolutions, or platform activity reports today?"
+            else:
+                return "Hello! I am **DPGNotes Academic AI Assistant**. How can I help you analyze, summarize, or answer questions about this academic document today?"
+
+        full_prompt = f"System Persona & Guidelines:\n{system_context}\n\nUser Question: {prompt}" if system_context else prompt
 
         for attempt in range(max_retries):
             try:

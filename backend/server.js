@@ -420,38 +420,77 @@ ${description ? `- **Overview**: ${description}\n` : ''}
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const { prompt, question, resourceId, systemContext, context, history } = req.body;
-    const userQuery = prompt || question || (history && history.length > 0 ? history[history.length - 1].text : "Summarize document");
-    const docTitle = context?.documentTitle || 'Academic Resource';
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const userQuery = (prompt || question || (history && history.length > 0 ? history[history.length - 1].text : "") || "").trim();
 
-    // 1. Priority 1: Gemini API Engine for Lengthy, Independent, High-Quality Answers
-    if (geminiKey) {
-      try {
-        const fullPrompt = `You are DPGNotes AI Assistant, an expert academic tutor. Provide an in-depth, highly comprehensive, lengthy, and detailed answer to the student's question.
-Format your response using rich Markdown syntax:
-- Clear headers (###, ####)
-- Bold key terms & definitions
-- Bullet points and numbered steps
-- Code snippets / mathematical formulas where applicable
-- Single-Open Collapsible Q&A Accordions (<details><summary><b>Q: Practice Question</b></summary>A: Explanation</details>)
-- Relevant Educational YouTube Video Links (e.g., https://www.youtube.com/watch?v=...) if helpful
+    if (!userQuery) {
+      return res.status(400).json({ error: "question or prompt is required" });
+    }
 
-Context:
-- Document Title: ${docTitle}
+    const cleanQ = userQuery.toLowerCase();
+    const greetings = ["hi", "hello", "hey", "hola", "namaste", "good morning", "good afternoon", "good evening", "greetings", "who are you", "who are you?"];
+
+    const pageCtx = (context && context.pageContext) || systemContext || "";
+    const isLegal = pageCtx.toLowerCase().includes("legal") || cleanQ.includes("privacy policy") || cleanQ.includes("terms of use") || cleanQ.includes("drasa") || cleanQ.includes("dmca");
+    const isAdmin = pageCtx.toLowerCase().includes("admin") || pageCtx.toLowerCase().includes("report");
+
+    // Persona & Greeting Isolation
+    if (greetings.includes(cleanQ) || greetings.some(g => cleanQ.startsWith(g + " ") || cleanQ.startsWith(g + "!"))) {
+      if (isLegal) {
+        return res.json({
+          answer: "Hello! I am **DPGNotes Legal & Compliance AI Assistant**. How can I help you regarding our Privacy Policy, Terms of Use, DRASA Regulations, Copyright, or Disclaimer policies today?",
+          source: "Persona-Isolated-Greeting"
+        });
+      } else if (isAdmin) {
+        return res.json({
+          answer: "Hello! I am **DPGNotes Admin Operations AI Assistant**. How can I assist you with system analytics, support ticket resolutions, or platform activity reports today?",
+          source: "Persona-Isolated-Greeting"
+        });
+      } else {
+        const docTitle = context?.documentTitle ? `for **"${context.documentTitle}"**` : "";
+        return res.json({
+          answer: `Hello! I am **DPGNotes Academic AI Assistant**. How can I help you analyze, summarize, or answer questions about this academic document ${docTitle} today?`,
+          source: "Persona-Isolated-Greeting"
+        });
+      }
+    }
+
+    // Determine System Persona & Context
+    let systemPersona = "";
+    let contextBlock = "";
+
+    if (isLegal) {
+      systemPersona = "You are DPGNotes Legal & Compliance AI Assistant. Answer questions accurately regarding Terms of Use, Privacy Policy, DRASA Regulations, Copyright, and Disclaimer policies.";
+      contextBlock = `Legal Training Dataset:\n${typeof trainingData !== 'undefined' ? trainingData.slice(0, 4000) : ''}`;
+    } else if (isAdmin) {
+      systemPersona = "You are DPGNotes Admin Operations AI Assistant. Help administrators inspect system reports, user quotas, and activity metrics.";
+      contextBlock = `Admin Report Context:\n${JSON.stringify(context || {}, null, 2)}`;
+    } else {
+      systemPersona = "You are DPGNotes Academic AI Assistant, an expert academic tutor. Help students understand, summarize, and answer questions about the specific note/paper PDF being viewed.";
+      contextBlock = `Academic Document Context:
+- Title: ${context?.documentTitle || 'Academic Resource'}
 - Category: ${context?.documentCategory || 'Notes'}
 - Discipline: ${context?.documentDiscipline || 'General'}
 - Description: ${context?.documentDescription || 'N/A'}
 - Extracted PDF Text: ${context?.extractedPdfText ? context.extractedPdfText.slice(0, 3500) : 'N/A'}
-- Knowledge Base: ${context?.knowledgeBase ? context.knowledgeBase.slice(0, 3500) : 'N/A'}
+- Knowledge Base: ${context?.knowledgeBase ? context.knowledgeBase.slice(0, 3500) : 'N/A'}`;
+    }
 
-Student Question: ${userQuery}`;
+    const fullPrompt = `${systemPersona}
 
+Context:
+${contextBlock}
+
+User Question: ${userQuery}`;
+
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (geminiKey) {
+      try {
         const gRes = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
           contents: [{ parts: [{ text: fullPrompt }] }]
         }, { timeout: 10000 });
 
         const answer = gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (answer && answer.length > 30) {
+        if (answer && answer.length > 5) {
           return res.json({ answer, source: 'Gemini-API-Intelligence' });
         }
       } catch (gErr) {
@@ -459,7 +498,7 @@ Student Question: ${userQuery}`;
       }
     }
 
-    // 2. Priority 2: Python Service
+    // Fallback to Python service
     const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'https://dpgnotes-python-service.onrender.com';
     const targetResourceId = resourceId || (context && context.documentId) || '';
 
@@ -468,6 +507,23 @@ Student Question: ${userQuery}`;
         prompt: userQuery,
         resourceId: targetResourceId
       }, { timeout: 5000 });
+
+      if (pyRes.data && pyRes.data.answer) {
+        return res.json({ answer: pyRes.data.answer, source: 'Python-RAG-Service' });
+      }
+    } catch (pyErr) {
+      console.warn("Python service RAG fallback failed:", pyErr.message);
+    }
+
+    return res.json({
+      answer: "I am currently unable to fetch a complete response from AI services. Please retry your question in a moment.",
+      source: "Fallback"
+    });
+  } catch (err) {
+    console.error("AI chat failed:", err);
+    res.status(500).json({ error: "AI chat service temporarily unavailable", details: err.message });
+  }
+});
 
       if (pyRes.data && (pyRes.data.answer || pyRes.data.report)) {
         return res.json({ answer: pyRes.data.answer || pyRes.data.report, source: 'Python-AI-Engine' });
@@ -1930,48 +1986,6 @@ Provide:
   } catch (err) {
     console.error("Document AI analysis failed:", err);
     res.status(500).json({ error: "AI analysis temporarily unavailable", details: err.message, stack: err.stack });
-  }
-});
-
-// Conversational AI Chat — public (Used by PDF Viewer, Legal Center, and Report.html)
-app.post('/api/ai/chat', async (req, res) => {
-  const { history, question, context } = req.body;
-  if (!question) {
-    return res.status(400).json({ error: "question is required" });
-  }
-  try {
-    // Detect if this is a legal center query or legal-related question
-    const isLegal = (context && context.pageContext && context.pageContext.includes("Legal")) || 
-                    (question.toLowerCase().includes("legal")) || 
-                    (question.toLowerCase().includes("policy")) || 
-                    (question.toLowerCase().includes("copyright")) || 
-                    (question.toLowerCase().includes("dmca")) ||
-                    (question.toLowerCase().includes("terms")) ||
-                    (question.toLowerCase().includes("privacy"));
-
-    let contextString = context ? JSON.stringify(context, null, 2) : "N/A";
-    if (isLegal) {
-      contextString += `\n\nOfficial DPGNotes Legal and Operational Training Dataset (Use this as your source of truth to answer accurately):\n${trainingData}`;
-    }
-
-    const prompt = `You are DPGNotes Intelligence, an advanced and friendly AI assistant.
-Answer the student's question clearly. Focus on accuracy, readability, and modern markdown formatting.
-
-Context Details:
-${contextString}
-
-Conversation History:
-${(history || []).map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.text}`).join('\n')}
-
-New Question: ${question}
-
-Provide a direct and comprehensive answer.`;
-
-    const answer = await askGemini(prompt);
-    res.json({ answer });
-  } catch (err) {
-    console.error("AI chat failed:", err);
-    res.status(500).json({ error: "AI chat service temporarily unavailable", details: err.message });
   }
 });
 
