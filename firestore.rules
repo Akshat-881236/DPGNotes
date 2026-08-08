@@ -140,7 +140,7 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    /* ---------- USER ADS ---------- */
+    /* ---------- USER ADS (Multi-Platform: DPGNotes, LinkedIn, Medium, GitHub) ---------- */
     match /user_ads/{adId} {
       allow read, write: if true;
     }

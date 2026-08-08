@@ -1634,10 +1634,115 @@ onAuthStateChanged(auth, user => {
     populateAdResourceSuggestions();
   }
 });
+// MULTI-PLATFORM AD UPLOAD & AI TAGS ENGINE
+// =========================================
+window.updateAdFormFields = function() {
+  const platformSel = document.getElementById("adPlatformSelect");
+  if (!platformSel) return;
 
-// =========================================
-// AD CAMPAIGN UPLOAD LOGIC
-// =========================================
+  const val = platformSel.value;
+  const resourceBox = document.getElementById("adResourceSelectorBox");
+  const videoBox = document.getElementById("adVideoUrlBox");
+  const thumbLabel = document.getElementById("adThumbnailLabel");
+  const titleInput = document.getElementById("adTitle");
+  const targetLinkInput = document.getElementById("adTargetLink");
+
+  if (val === "dpgnotes_resource") {
+    if (resourceBox) resourceBox.style.display = "block";
+    if (videoBox) videoBox.style.display = "block";
+    if (thumbLabel) thumbLabel.textContent = "Ad Banner Thumbnail Image (Cloudinary Upload - Optional for Header/Footer Ads)";
+    if (titleInput) titleInput.placeholder = "Type or select uploaded resource...";
+    if (targetLinkInput) targetLinkInput.placeholder = "https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?...";
+  } else if (val.startsWith("linkedin_")) {
+    if (resourceBox) resourceBox.style.display = "block";
+    if (videoBox) videoBox.style.display = "none";
+    if (thumbLabel) thumbLabel.textContent = "LinkedIn Post / Blog Cover Image (Optional)";
+    if (titleInput) titleInput.placeholder = val.includes("post") ? "Enter LinkedIn Post Title..." : "Enter LinkedIn Blog/Article Title...";
+    if (targetLinkInput) targetLinkInput.placeholder = val.includes("post") ? "https://www.linkedin.com/posts/..." : "https://www.linkedin.com/pulse/...";
+  } else if (val === "medium_story") {
+    if (resourceBox) resourceBox.style.display = "block";
+    if (videoBox) videoBox.style.display = "none";
+    if (thumbLabel) thumbLabel.textContent = "Medium Story Banner Image (Cloudinary Upload - Optional; if provided, enables Main/Sidebar placement)";
+    if (titleInput) titleInput.placeholder = "Enter Medium Story Title...";
+    if (targetLinkInput) targetLinkInput.placeholder = "https://medium.com/@username/story-title-...";
+  } else if (val === "github_repo") {
+    if (resourceBox) resourceBox.style.display = "block";
+    if (videoBox) videoBox.style.display = "none";
+    if (thumbLabel) thumbLabel.textContent = "GitHub Repository Header Banner (Optional)";
+    if (titleInput) titleInput.placeholder = "Enter GitHub Repository Name / Title...";
+    if (targetLinkInput) targetLinkInput.placeholder = "https://github.com/username/repository-name";
+  }
+};
+
+window.generateAiAdTags = async function() {
+  const title = document.getElementById("adTitle")?.value.trim() || "";
+  const desc = document.getElementById("adDesc")?.value.trim() || "";
+  const url = document.getElementById("adTargetLink")?.value.trim() || "";
+  const platformVal = document.getElementById("adPlatformSelect")?.value || "dpgnotes_resource";
+  const tagsInput = document.getElementById("adTags");
+  const btn = document.getElementById("aiSuggestTagsBtn");
+
+  if (!title && !desc && !url) {
+    alert("Please enter a Title, Description, or Destination Link first so AI can analyze and suggest relevant tags!");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> AI Analyzing...`;
+  }
+
+  try {
+    const rawText = `${title} ${desc} ${url} ${platformVal}`.toLowerCase();
+    const commonTagsMap = [
+      { key: "react", tag: "React.js" },
+      { key: "javascript", tag: "JavaScript" },
+      { key: "python", tag: "Python" },
+      { key: "node", tag: "Node.js" },
+      { key: "express", tag: "Express.js" },
+      { key: "firebase", tag: "Firebase" },
+      { key: "github", tag: "OpenSource" },
+      { key: "repo", tag: "GitHub Project" },
+      { key: "linkedin", tag: "Professional Post" },
+      { key: "medium", tag: "Blog Article" },
+      { key: "exam", tag: "Exam Notes" },
+      { key: "computer", tag: "Computer Science" },
+      { key: "data", tag: "Data Science" },
+      { key: "ai", tag: "Artificial Intelligence" },
+      { key: "ml", tag: "Machine Learning" },
+      { key: "web", tag: "Web Development" },
+      { key: "pdf", tag: "Study Notes" },
+      { key: "interview", tag: "Interview Prep" }
+    ];
+
+    const suggested = new Set();
+    if (platformVal.includes("linkedin")) suggested.add("LinkedIn");
+    if (platformVal.includes("medium")) suggested.add("Medium");
+    if (platformVal.includes("github")) suggested.add("GitHub");
+
+    commonTagsMap.forEach(item => {
+      if (rawText.includes(item.key)) suggested.add(item.tag);
+    });
+
+    if (suggested.size < 3) {
+      if (title.length > 3) suggested.add(title.split(" ")[0]);
+      suggested.add("Education");
+      suggested.add("Notes");
+    }
+
+    const resultStr = Array.from(suggested).slice(0, 6).join(", ");
+    if (tagsInput) tagsInput.value = resultStr;
+
+  } catch(err) {
+    console.error("AI tag generation error:", err);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-sparkles-line" style="color:#f59e0b;"></i> AI Auto-Suggest Tags`;
+    }
+  }
+};
+
 window.handleAdThumbnailSelect = async function(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1710,6 +1815,17 @@ async function populateAdResourceSuggestions() {
   }
 }
 
+function generateAdTrackIdLocal(seedStr) {
+  if (!seedStr) return "74920184";
+  let hash = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = (hash << 5) - hash + seedStr.charCodeAt(i);
+    hash |= 0;
+  }
+  const positiveHash = Math.abs(hash);
+  return (positiveHash % 90000000 + 10000000).toString();
+}
+
 const adForm = document.getElementById("uploadAdForm");
 if (adForm) {
   const titleInput = document.getElementById("adTitle");
@@ -1736,24 +1852,40 @@ if (adForm) {
     btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Submitting Ad...`;
 
     try {
+      const platformSelectVal = document.getElementById("adPlatformSelect")?.value || "dpgnotes_resource";
+      let platform = "dpgnotes";
+      let adCategory = "resource";
+
+      if (platformSelectVal === "linkedin_post") { platform = "linkedin"; adCategory = "post"; }
+      else if (platformSelectVal === "linkedin_blog") { platform = "linkedin"; adCategory = "blog"; }
+      else if (platformSelectVal === "medium_story") { platform = "medium"; adCategory = "story"; }
+      else if (platformSelectVal === "github_repo") { platform = "github"; adCategory = "repo"; }
+
       const title = document.getElementById("adTitle").value.trim();
       const description = document.getElementById("adDesc").value.trim();
       const tagsStr = document.getElementById("adTags").value.trim();
       const thumbnailUrl = document.getElementById("adThumbnailUrl").value.trim();
       const targetLink = document.getElementById("adTargetLink").value.trim();
-      const videoUrl = document.getElementById("adVideoUrl").value.trim();
+      const videoUrl = document.getElementById("adVideoUrl")?.value.trim() || "";
 
-      // Calculate target placement priority based on uploaded media assets
+      // Calculate target placement priority based on platform and uploaded media assets
       let targetPlacement = ["header", "footer"];
-      if (thumbnailUrl && videoUrl) {
+      if (platform === "medium" && thumbnailUrl) {
+        targetPlacement = ["sidebar", "feed", "main", "header", "footer"];
+      } else if (thumbnailUrl && videoUrl) {
         targetPlacement = ["feed", "main", "sidebar", "header", "footer"];
       } else if (thumbnailUrl) {
         targetPlacement = ["sidebar", "header", "footer", "feed"];
       }
 
       const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
+      const tempId = "ad_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+      const trackId = generateAdTrackIdLocal(tempId);
 
       await addDoc(collection(db, "user_ads"), {
+        platform,
+        adCategory,
+        trackId,
         title,
         description,
         tags,
@@ -1772,11 +1904,13 @@ if (adForm) {
       });
 
       if (window.customAlert) {
-        await window.customAlert("Ad campaign submitted successfully! It is now pending Admin review.", { title: "Success" });
+        await window.customAlert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted successfully! It is now pending Admin review.`, { title: "Success" });
       } else {
-        alert("Ad campaign submitted successfully! It is now pending Admin review.");
+        alert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted successfully! It is now pending Admin review.`);
       }
       adForm.reset();
+      updateAdFormFields();
+
       const fileNameSpan = document.getElementById("adThumbnailFileName");
       if (fileNameSpan) fileNameSpan.textContent = "No image selected";
       const progressContainer = document.getElementById("adUploadProgressContainer");

@@ -423,11 +423,22 @@
 
         <!-- UPLOAD ADS TAB -->
         <section id="uploadAdsTab" class="dashboard-tab">
-          <h2>Promote & Upload Ads <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Boost your resources or promote your content across DPGNotes network."></i></h2>
+          <h2>Promote & Upload Ads <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Boost your resources or promote your LinkedIn, Medium, GitHub & custom content across DPGNotes network."></i></h2>
           
           <form id="uploadAdForm" class="upload-form" style="max-width:750px;">
             <div style="margin-bottom:1.2rem;">
-              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Select Resource to Boost OR Enter Custom Ad Title *</label>
+              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Select Ad Platform & Category *</label>
+              <select id="adPlatformSelect" onchange="updateAdFormFields()" required style="width:100%; padding:0.85rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.95rem;">
+                <option value="dpgnotes_resource">📘 DPGNotes Resource Boost (Document / Notes)</option>
+                <option value="linkedin_post">💼 LinkedIn Post Promotion</option>
+                <option value="linkedin_blog">✍️ LinkedIn Article / Blog Promotion</option>
+                <option value="medium_story">📝 Medium Story Promotion</option>
+                <option value="github_repo">🐙 GitHub Repository Promotion</option>
+              </select>
+            </div>
+
+            <div id="adResourceSelectorBox" style="margin-bottom:1.2rem;">
+              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Select Resource to Boost OR Enter Custom Title *</label>
               <input type="text" id="adTitle" class="search-bar" list="contributorResourceTitles" placeholder="Type or select uploaded resource..." required style="width:100%; margin-bottom:0;">
               <datalist id="contributorResourceTitles"></datalist>
             </div>
@@ -438,12 +449,17 @@
             </div>
 
             <div style="margin-bottom:1.2rem;">
-              <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Category & Tags (Comma separated) *</label>
-              <input type="text" id="adTags" class="search-bar" placeholder="Computer Science, Exam Notes, COA, PYQ" required style="width:100%; margin-bottom:0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label style="color:var(--text-muted); font-size:0.88rem;">Category & Tags (Comma separated) *</label>
+                <button type="button" id="aiSuggestTagsBtn" onclick="generateAiAdTags()" style="background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.25)); border:1px solid rgba(139,92,246,0.5); color:#c4b5fd; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;" title="Analyze Title, Description & URL to auto-generate smart tags">
+                  <i class="ri-sparkles-line" style="color:#f59e0b;"></i> AI Auto-Suggest Tags
+                </button>
+              </div>
+              <input type="text" id="adTags" class="search-bar" placeholder="Computer Science, Exam Notes, OpenSource, React" required style="width:100%; margin-bottom:0;">
             </div>
 
-            <div style="margin-bottom:1.2rem; background:rgba(255,255,255,0.03); border:1px dashed var(--border); border-radius:12px; padding:1.2rem;">
-              <label style="color:var(--primary-light); font-size:0.88rem; font-weight:600; display:block; margin-bottom:6px;">Ad Banner Thumbnail Image (Cloudinary Upload - Optional for Header/Footer Ads)</label>
+            <div id="adThumbnailBox" style="margin-bottom:1.2rem; background:rgba(255,255,255,0.03); border:1px dashed var(--border); border-radius:12px; padding:1.2rem;">
+              <label id="adThumbnailLabel" style="color:var(--primary-light); font-size:0.88rem; font-weight:600; display:block; margin-bottom:6px;">Ad Banner Thumbnail Image (Cloudinary Upload - Optional for Medium/Header/Footer Ads)</label>
               <input type="file" id="adThumbnailFile" accept="image/*" style="display:none;" onchange="handleAdThumbnailSelect(event)">
               <div style="display:flex; gap:12px; align-items:center;">
                 <button type="button" onclick="document.getElementById('adThumbnailFile').click()" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
@@ -469,7 +485,7 @@
               <input type="url" id="adTargetLink" class="search-bar" placeholder="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?..." required style="width:100%; margin-bottom:0;">
             </div>
 
-            <div style="margin-bottom:1.5rem;">
+            <div id="adVideoUrlBox" style="margin-bottom:1.5rem;">
               <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Optional YouTube Video URL (Hovering thumbnail auto-plays video preview)</label>
               <input type="url" id="adVideoUrl" class="search-bar" placeholder="https://www.youtube.com/watch?v=..." style="width:100%; margin-bottom:0;">
             </div>

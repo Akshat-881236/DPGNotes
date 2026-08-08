@@ -1291,6 +1291,8 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
           trackId: trackId,
           title: data.title,
           status: data.status,
+          platform: data.platform || "dpgnotes",
+          adCategory: data.adCategory || "resource",
           targetLink: data.targetLink || "",
           userId: data.userId || data.uid || data.userUid || "",
           views: data.views || 0,
@@ -1323,6 +1325,14 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
     const filteredAds = (selectedAdId && selectedAdId !== "ALL")
       ? ads.filter(a => a.id === selectedAdId)
       : ads;
+
+    // Platform Breakdown Statistics
+    const platformBreakdown = {
+      dpgnotes: filteredAds.filter(a => (a.platform || "dpgnotes") === "dpgnotes").length,
+      linkedin: filteredAds.filter(a => a.platform === "linkedin").length,
+      medium: filteredAds.filter(a => a.platform === "medium").length,
+      github: filteredAds.filter(a => a.platform === "github").length
+    };
 
     // Fast Node.js Daily Aggregation Math Engine
     const datesMap = {};
@@ -1368,6 +1378,7 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
       totalClicks,
       totalScreentime,
       averageCtr,
+      platformBreakdown,
       rawAds: ads,
       rawTrackings: filteredTrackings
     };

@@ -1671,16 +1671,105 @@ function renderAdsRequestsTable() {
   }).join('');
 }
 
+let activeAdminAdPlatformFilter = "ALL";
+
+window.filterAdminAdsByPlatform = function(platform, btn) {
+  activeAdminAdPlatformFilter = platform;
+  document.querySelectorAll(".ad-platform-filter-btn").forEach(b => {
+    b.classList.remove("active");
+    b.style.background = "rgba(255,255,255,0.05)";
+    b.style.color = "#94a3b8";
+    b.style.borderColor = "rgba(255,255,255,0.15)";
+  });
+
+  if (btn) {
+    btn.classList.add("active");
+    btn.style.background = "rgba(59,130,246,0.25)";
+    btn.style.color = "#60a5fa";
+    btn.style.borderColor = "rgba(59,130,246,0.5)";
+  }
+
+  renderPendingAdsTable();
+  renderManageAdsTable();
+};
+
+function getAdminPlatformBadge(ad) {
+  const p = ad.platform || "dpgnotes";
+  const cat = ad.adCategory || "resource";
+  if (p === "linkedin") {
+    return `<span style="background:linear-gradient(135deg,#0a66c2,#004182); color:white; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-linkedin-box-fill"></i> ${cat === 'blog' ? 'LinkedIn Blog' : 'LinkedIn Post'}</span>`;
+  }
+  if (p === "github") {
+    return `<span style="background:linear-gradient(135deg,#1f2937,#111827); border:1px solid rgba(255,255,255,0.2); color:white; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-github-fill"></i> GitHub Repo</span>`;
+  }
+  if (p === "medium") {
+    return `<span style="background:linear-gradient(135deg,#12100e,#2b2927); border:1px solid rgba(255,255,255,0.2); color:white; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-medium-fill"></i> Medium Story</span>`;
+  }
+  return `<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-file-pdf-fill"></i> DPGNotes Resource</span>`;
+}
+
+function renderPendingAdsTable() {
+  const tbody = document.getElementById("adsRequestsTableBody");
+  if (!tbody) return;
+
+  const filtered = activeAdminAdPlatformFilter === "ALL" 
+    ? pendingAdsCache 
+    : pendingAdsCache.filter(a => (a.platform || "dpgnotes") === activeAdminAdPlatformFilter);
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No pending ad requests for ${activeAdminAdPlatformFilter.toUpperCase()}.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(ad => {
+    const dt = ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleDateString() : 'N/A';
+    return `
+      <tr>
+        <td style="font-family:monospace; font-size:0.8rem; color:#a5b4fc;">${ad.userId || 'N/A'}</td>
+        <td style="font-size:0.82rem; color:var(--admin-muted);">${ad.userEmail || 'N/A'}</td>
+        <td style="font-weight:600; color:white;">${ad.userName || 'Contributor'}</td>
+        <td>
+          <div style="font-weight:700; color:white; margin-bottom:2px;">${ad.title || 'Untitled'}</div>
+          ${getAdminPlatformBadge(ad)}
+        </td>
+        <td style="font-size:0.75rem; color:var(--admin-muted);">${dt}</td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <button class="admin-btn" style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:4px 8px; font-size:0.75rem;" title="Preview Ad Card" onclick="toggleAdPreviewRow('${ad.id}')">
+              <i class="ri-eye-line"></i> Preview
+            </button>
+            <button class="btn-action success" style="padding:4px 8px; font-size:0.75rem;" onclick="approveAdAdmin('${ad.id}')">
+              <i class="ri-check-line"></i> Approve
+            </button>
+            <button class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" onclick="rejectAdAdmin('${ad.id}')">
+              <i class="ri-close-line"></i> Reject
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr id="adPreviewRow_${ad.id}" style="display:none; background:rgba(0,0,0,0.3);">
+        <td colspan="6" style="padding:1.2rem;">
+          ${buildAdPreviewCardHtml(ad)}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
 function renderManageAdsTable() {
   const tbody = document.getElementById("manageAdsTableBody");
   if (!tbody) return;
 
-  if (manageAdsCache.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No active or blocked ads found.</td></tr>`;
+  const filtered = activeAdminAdPlatformFilter === "ALL" 
+    ? manageAdsCache 
+    : manageAdsCache.filter(a => (a.platform || "dpgnotes") === activeAdminAdPlatformFilter);
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">No active or blocked ads found for ${activeAdminAdPlatformFilter.toUpperCase()}.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = manageAdsCache.map(ad => {
+  tbody.innerHTML = filtered.map(ad => {
     const dt = ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleDateString() : 'N/A';
     const isBlocked = ad.status === "Blocked";
     const statusBadge = isBlocked 
@@ -1696,7 +1785,10 @@ function renderManageAdsTable() {
           <img src="${ad.userAvatar || 'ANH.png'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
         </td>
         <td style="font-family:monospace; font-size:0.8rem; color:#a5b4fc;">${ad.userId || 'N/A'}</td>
-        <td style="font-weight:700; color:white;">${ad.title || 'Untitled'}</td>
+        <td>
+          <div style="font-weight:700; color:white; margin-bottom:2px;">${ad.title || 'Untitled'}</div>
+          ${getAdminPlatformBadge(ad)}
+        </td>
         <td>${statusBadge} <span style="font-size:0.75rem; color:var(--admin-muted); margin-left:6px;">(${dt})</span></td>
         <td>
           <div style="display:flex; gap:6px;">

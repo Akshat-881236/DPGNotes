@@ -895,12 +895,21 @@
       <!-- VIEW ADS MANAGEMENT -->
       <section class="view-section" id="view-ads">
         <div class="card-panel">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:10px;">
             <h2><i class="ri-advertisement-line" style="color:#f59e0b;"></i> Ads Management Center</h2>
             <div style="display:flex; gap:10px;">
               <button id="adsSubtabReqBtn" class="admin-btn" style="background:var(--admin-primary); font-size:0.82rem;" onclick="switchAdsSubtab('requests')">Ads Requests</button>
               <button id="adsSubtabManageBtn" class="admin-btn" style="background:rgba(255,255,255,0.1); font-size:0.82rem;" onclick="switchAdsSubtab('manage')">Manage Published Ads</button>
             </div>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:1rem; flex-wrap:wrap; background:rgba(15,23,42,0.6); padding:8px 12px; border-radius:10px; border:1px solid var(--admin-border);">
+            <span style="font-size:0.82rem; color:var(--admin-muted); font-weight:600;"><i class="ri-filter-3-line"></i> Platform Filter:</span>
+            <button class="ad-platform-filter-btn active" onclick="filterAdminAdsByPlatform('ALL', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(59,130,246,0.5); background:rgba(59,130,246,0.25); color:#60a5fa; font-size:0.78rem; font-weight:700; cursor:pointer;">ALL</button>
+            <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('dpgnotes', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.78rem; font-weight:600; cursor:pointer;">📘 DPGNotes</button>
+            <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('linkedin', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.78rem; font-weight:600; cursor:pointer;">💼 LinkedIn</button>
+            <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('medium', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.78rem; font-weight:600; cursor:pointer;">📝 Medium</button>
+            <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('github', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.78rem; font-weight:600; cursor:pointer;">🐙 GitHub</button>
           </div>
 
           <!-- SUB-TAB 1: ADS REQUESTS -->
