@@ -260,6 +260,47 @@
           (document.head || document.documentElement).appendChild(st);
         }
 
+        window.signInWithGoogleQuota = async function() {
+          const btn = document.getElementById("lockedGoogleSignInBtn");
+          if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Opening Google Sign In...';
+          try {
+            const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
+            const { getAuth, signInWithPopup, GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
+
+            const cfg = {
+              apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+              authDomain: "dpgnotes.firebaseapp.com",
+              projectId: "dpgnotes",
+              storageBucket: "dpgnotes.firebasestorage.app",
+              messagingSenderId: "910494426039",
+              appId: "1:910494426039:web:adeae5315caaf846c43e32"
+            };
+
+            const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(cfg, "dpgnotes");
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
+
+            const res = await signInWithPopup(auth, provider);
+            if (res && res.user) {
+              localStorage.setItem("dpgActiveUserUid", res.user.uid);
+              localStorage.removeItem("dpg_quota_visits");
+              localStorage.removeItem("dpg_quota_pdfs");
+              localStorage.removeItem("dpg_quota_locked");
+              sessionStorage.removeItem("dpg_quota_locked");
+              document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+              if (btn) btn.innerHTML = '<i class="ri-checkbox-circle-fill" style="color:#4ade80;"></i> Success! Redirecting...';
+              setTimeout(() => {
+                window.location.href = "index.html";
+              }, 400);
+            }
+          } catch (err) {
+            console.error("Quota lock Google Sign In error:", err);
+            if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In / Sign Up with Google';
+            alert("Sign in failed: " + (err.message || err));
+          }
+        };
+
         function buildQuotaScreen() {
           if (document.body) {
             document.body.style.cssText = 'margin:0; padding:0; overflow:hidden; background:#020617; font-family:"Inter",sans-serif; color:#f8fafc; height:100vh; width:100vw; display:flex; align-items:center; justify-content:center;';
@@ -274,10 +315,10 @@
             if (!document.getElementById('unnegotiableLockedQuotaScreen')) {
               const lockedContainer = document.createElement('div');
               lockedContainer.id = 'unnegotiableLockedQuotaScreen';
-              lockedContainer.style.cssText = 'width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; background:radial-gradient(circle at center, rgba(30,41,59,0.9), #020617 80%); box-sizing:border-box; text-align:center; overflow-y:auto; position:fixed; inset:0; z-index:999999;';
+              lockedContainer.style.cssText = 'width:100vw; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:2rem 1rem 3rem 1rem; background:radial-gradient(circle at center, rgba(30,41,59,0.95), #020617 85%); box-sizing:border-box; text-align:center; overflow-y:auto; -webkit-overflow-scrolling:touch; position:fixed; inset:0; z-index:999999;';
 
               lockedContainer.innerHTML = `
-                <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(239,68,68,0.35); border-radius:24px; padding:2rem 1.5rem; max-width:540px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin:auto; box-sizing:border-box;">
+                <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(239,68,68,0.35); border-radius:24px; padding:2rem 1.5rem; max-width:540px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin:auto 0; box-sizing:border-box;">
                   <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:1rem; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); padding:5px 14px; border-radius:999px; color:#fca5a5; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
                     <i class="ri-alarm-warning-fill" style="color:#ef4444; font-size:1rem;"></i> Daily Access Limit Reached
                   </div>
@@ -299,12 +340,12 @@
                   </div>
 
                   <!-- SINGLE GOOGLE SIGN IN BUTTON -->
-                  <button id="lockedGoogleSignInBtn" onclick="if(window.signInWithGoogle){window.signInWithGoogle();}else{window.location.href='index.html';}" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:1rem 1.5rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.5); display:inline-flex; align-items:center; gap:10px; width:100%; justify-content:center; transition:all 0.3s ease;">
+                  <button id="lockedGoogleSignInBtn" onclick="window.signInWithGoogleQuota()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:1rem 1.5rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.5); display:inline-flex; align-items:center; gap:10px; width:100%; justify-content:center; transition:all 0.3s ease;">
                     <i class="ri-google-fill" style="font-size:1.3rem;"></i> Sign In / Sign Up with Google
                   </button>
 
                   <!-- SPONSORED NATIVE AD ON QUOTA LOCK SCREEN -->
-                  <div class="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.2rem; text-align:left; width:100%;"></div>
+                  <div class="native-ads" id="quotaLockAdBox" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.2rem; text-align:left; width:100%;"></div>
 
                   <!-- LEGAL NOTES DEEP LINKS -->
                   <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
@@ -328,9 +369,25 @@
 
               document.body.appendChild(lockedContainer);
 
-              if (typeof window.renderNativeDPGAds === "function") {
-                setTimeout(window.renderNativeDPGAds, 300);
-              }
+              setTimeout(async () => {
+                if (typeof window.renderNativeDPGAds === "function") {
+                  await window.renderNativeDPGAds();
+                }
+                const adBox = document.getElementById("quotaLockAdBox");
+                if (adBox && (!adBox.children || adBox.children.length === 0) && typeof window.createDPGAdCard === "function") {
+                  const fallbackQuotaAd = {
+                    id: "fallback_quota_screen",
+                    userName: "DPGNotes Academic",
+                    userAvatar: "ANH.png",
+                    title: "Become a Verified DPGNotes Contributor",
+                    description: "Upload academic notes, question papers, and lab manuals to support peer learning and gain unlimited platform privileges.",
+                    thumbnailUrl: "ANH.png",
+                    targetLink: "https://dpgnotes.web.app/study-hub.html"
+                  };
+                  const card = window.createDPGAdCard(fallbackQuotaAd, "quota_card_" + Date.now(), "feed");
+                  adBox.appendChild(card);
+                }
+              }, 350);
 
               // MutationObserver protection: Prevent users from deleting or altering the lock screen via DevTools
               if (!window.dpgDomObserver) {
