@@ -1,14 +1,15 @@
 /**
- * DPGNotes Native Sponsored Ads Injector & Management Engine (v2.0)
+ * DPGNotes Native Sponsored Ads Injector & Management Engine (v2.5)
  * Features:
- * - Truly randomized non-sequential ad sampling
- * - Close button (✕) with instant replacement by another random approved ad
- * - Multiple Ads Rendering per container (data-ad-count="1|2|3...")
+ * - Smart Unique Ad Sampling per page (no duplicate ads across containers)
+ * - 30-Second Automatic Ad Cycling for image & text ads
+ * - Video Ads Lifecycle: Video completion -> Wait badge (2s) -> Thumbnail wait (3s) -> Auto-swap next ad
+ * - Manual Close button (✕) with instant unique ad swap
  * - Area-specific UI Layout Variants: "feed", "sidebar", "header", "footer"
- * - Auto-plays YouTube preview after 5s hover
  */
 (function() {
   window.DPG_APPROVED_ADS = window.DPG_APPROVED_ADS || [];
+  window.DPG_USED_AD_IDS = window.DPG_USED_AD_IDS || new Set();
   let isFetching = false;
 
   async function getOrInitFirestore() {
@@ -119,6 +120,47 @@
     const profileUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
     const profileUrl = profileUid ? `profile.html?uid=${encodeURIComponent(profileUid)}` : "profile.html";
 
+    let rotationTimeout = null;
+    let videoPlaybackTimeout = null;
+    let videoLifecycleActive = false;
+
+    function cleanupTimers() {
+      if (rotationTimeout) clearTimeout(rotationTimeout);
+      if (videoPlaybackTimeout) clearTimeout(videoPlaybackTimeout);
+    }
+
+    async function swapToNextAd() {
+      cleanupTimers();
+      card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+      card.style.opacity = "0";
+      card.style.transform = "scale(0.95)";
+
+      setTimeout(async () => {
+        const approvedAds = await fetchApprovedAds();
+        if (!approvedAds || approvedAds.length === 0) {
+          card.remove();
+          return;
+        }
+
+        const nextAd = selectAdForVariant(approvedAds, variant, new Set([ad.id])) || approvedAds[Math.floor(Math.random() * approvedAds.length)];
+        if (!nextAd) {
+          card.remove();
+          return;
+        }
+
+        const newCard = createAdCardElement(nextAd, "elem_" + Date.now(), variant);
+        newCard.style.opacity = "0";
+        newCard.style.transform = "scale(0.95)";
+        card.replaceWith(newCard);
+
+        requestAnimationFrame(() => {
+          newCard.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+          newCard.style.opacity = "1";
+          newCard.style.transform = "scale(1)";
+        });
+      }, 350);
+    }
+
     function getProfileLinkHtml(imgSize = "26px", fontSize = "0.78rem") {
       return `
         <a href="${profileUrl}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:inherit; cursor:pointer;" title="View ${ad.userName || 'Advertiser'}'s Profile">
@@ -216,6 +258,7 @@
         <div class="ad-media-box" id="adMediaBox_${containerId}" style="position:relative; width:100%; height:110px; border-radius:8px; overflow:hidden; margin-bottom:6px; background:#000; cursor:pointer;">
           <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover;">
           ${vidId ? `<div id="adPlayBtn_${containerId}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:36px; height:36px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; z-index:2; cursor:pointer;"><i class="ri-play-fill"></i></div>` : ''}
+          <div id="adWaitOverlay_${containerId}" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.85); color:#f59e0b; font-size:0.75rem; font-weight:700; align-items:center; justify-content:center; gap:6px; z-index:3;"><i class="ri-loader-4-line spin-icon"></i> <span id="adWaitText_${containerId}">Please wait...</span></div>
           <div id="adPlayerDiv_${containerId}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
         </div>
 
@@ -223,7 +266,7 @@
         ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
       `;
     } else {
-      // Default / Feed / Div Variant
+      // Default / Feed Variant
       card.style.cssText = `
         position: relative;
         width: 100%;
@@ -247,6 +290,7 @@
         <div class="ad-media-box" id="adMediaBox_${containerId}" style="position:relative; width:100%; height:150px; border-radius:10px; overflow:hidden; margin-bottom:8px; background:#000; cursor:pointer;">
           <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;">
           ${vidId ? `<div id="adPlayBtn_${containerId}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:42px; height:42px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.3rem; z-index:2; cursor:pointer;"><i class="ri-play-fill"></i></div>` : ''}
+          <div id="adWaitOverlay_${containerId}" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.85); color:#f59e0b; font-size:0.78rem; font-weight:700; align-items:center; justify-content:center; gap:6px; z-index:3;"><i class="ri-loader-4-line spin-icon"></i> <span id="adWaitText_${containerId}">Please wait...</span></div>
           <div id="adPlayerDiv_${containerId}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
         </div>
 
@@ -256,50 +300,46 @@
       `;
     }
 
-    // Attach Close Button (✕) with instant random ad replacement
-    const closeBtn = createCloseButton(async () => {
-      card.style.transition = "opacity 0.25s ease, transform 0.25s ease";
-      card.style.opacity = "0";
-      card.style.transform = "scale(0.95)";
-
-      setTimeout(async () => {
-        const approvedAds = await fetchApprovedAds();
-        if (!approvedAds || approvedAds.length === 0) {
-          card.remove();
-          return;
-        }
-
-        const nextAd = selectAdForVariant(approvedAds, variant, new Set([ad.id])) || approvedAds[Math.floor(Math.random() * approvedAds.length)];
-        if (!nextAd) {
-          card.remove();
-          return;
-        }
-
-        const newCard = createAdCardElement(nextAd, "elem_" + Date.now(), variant);
-        newCard.style.opacity = "0";
-        newCard.style.transform = "scale(0.95)";
-        card.replaceWith(newCard);
-
-        requestAnimationFrame(() => {
-          newCard.style.transition = "opacity 0.25s ease, transform 0.25s ease";
-          newCard.style.opacity = "1";
-          newCard.style.transform = "scale(1)";
-        });
-      }, 250);
+    // Attach Close Button (✕) with instant ad swap
+    const closeBtn = createCloseButton(() => {
+      swapToNextAd();
     });
     card.appendChild(closeBtn);
 
-    // 5-Second Video Auto-Play Logic & Touch Play Listener
+    // Smart Rotation & Video Lifecycle Engine
     if (vidId) {
       const mediaBox = card.querySelector(`#adMediaBox_${containerId}`);
       const playerDiv = card.querySelector(`#adPlayerDiv_${containerId}`);
       const playBtn = card.querySelector(`#adPlayBtn_${containerId}`);
+      const waitOverlay = card.querySelector(`#adWaitOverlay_${containerId}`);
+      const waitText = card.querySelector(`#adWaitText_${containerId}`);
 
       function startVideo(muted = true) {
-        if (!playerDiv) return;
-        playerDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=${muted ? 1 : 0}" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+        if (!playerDiv || videoLifecycleActive) return;
+        videoLifecycleActive = true;
+        playerDiv.innerHTML = `<iframe id="ytFrame_${containerId}" src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=${muted ? 1 : 0}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
         playerDiv.style.display = "block";
         if (playBtn) playBtn.style.display = "none";
+
+        // Video playback sequence (20 seconds duration timer)
+        videoPlaybackTimeout = setTimeout(() => {
+          // 1. Video completed -> show Wait overlay on video container (2 seconds)
+          if (waitOverlay) {
+            waitOverlay.style.display = "flex";
+            if (waitText) waitText.innerText = "Video Completed. Please wait...";
+          }
+
+          setTimeout(() => {
+            // 2. Hide video, restore thumbnail, show thumbnail wait (3 seconds)
+            if (playerDiv) playerDiv.style.display = "none";
+            if (waitText) waitText.innerText = "Loading next sponsored ad...";
+
+            setTimeout(() => {
+              // 3. Auto-swap to next unique approved ad
+              swapToNextAd();
+            }, 3000);
+          }, 2000);
+        }, 20000);
       }
 
       let autoPlayTimer = setTimeout(() => {
@@ -308,56 +348,52 @@
 
       if (mediaBox) {
         mediaBox.onmouseenter = function() {
-          clearTimeout(autoPlayTimer);
-          startVideo(true);
-        };
-        mediaBox.onmouseleave = function() {
-          if (playerDiv) {
-            playerDiv.style.display = "none";
-            playerDiv.innerHTML = "";
+          if (!videoLifecycleActive) {
+            clearTimeout(autoPlayTimer);
+            startVideo(true);
           }
-          if (playBtn) playBtn.style.display = "flex";
         };
         mediaBox.onclick = function(e) {
           e.stopPropagation();
-          clearTimeout(autoPlayTimer);
-          startVideo(false);
+          if (!videoLifecycleActive) {
+            clearTimeout(autoPlayTimer);
+            startVideo(false);
+          }
         };
       }
+    } else {
+      // 30-Second Automatic Rotation for Non-Video (Image/Text) Ads
+      rotationTimeout = setTimeout(() => {
+        swapToNextAd();
+      }, 30000);
     }
 
     return card;
   }
 
   /**
-   * Selects an ad according to asset composition & area placement rules:
-   * 1. Absence of thumbnail -> target header and footer ads only (primary).
-   * 2. Thumbnail uploaded but NO video -> heavily preferred for Sidebar. Fallback includes video.
-   * 3. Main content area -> prefer BOTH video and thumbnail ads.
+   * Selects an ad according to asset composition & placement rules, prioritizing unique unused ads:
    */
   function selectAdForVariant(ads, variant = "feed", usedAdIds = new Set()) {
     if (!ads || ads.length === 0) return null;
 
-    let candidates = ads.filter(a => !usedAdIds.has(a.id));
-    if (candidates.length === 0) candidates = ads;
+    // Filter candidate ads not used globally on page nor in current container
+    let candidates = ads.filter(a => !usedAdIds.has(a.id) && !window.DPG_USED_AD_IDS.has(a.id));
+    if (candidates.length === 0) {
+      // If unique pool exhausted, fallback to unused in container
+      candidates = ads.filter(a => !usedAdIds.has(a.id));
+    }
+    if (candidates.length === 0) candidates = ads; // Allow repetition if required
 
     let priorityPool = [];
 
     if (variant === "header" || variant === "footer" || variant === "top" || variant === "bottom") {
-      // 1. Absence of thumbnail -> target header and footer ads
       const noThumbnailAds = candidates.filter(a => !a.thumbnailUrl || (a.targetPlacement && a.targetPlacement.includes("header")));
       priorityPool = noThumbnailAds.length > 0 ? noThumbnailAds : candidates;
     } else if (variant === "sidebar") {
-      // 2. Thumbnail uploaded but NO video -> heavily preferred for Sidebar
       const sidebarImageAds = candidates.filter(a => a.thumbnailUrl && !a.videoUrl);
-      if (sidebarImageAds.length > 0) {
-        priorityPool = sidebarImageAds;
-      } else {
-        // Fallback: In lack of image-only ads, include video ads as well
-        priorityPool = candidates;
-      }
+      priorityPool = sidebarImageAds.length > 0 ? sidebarImageAds : candidates;
     } else if (variant === "feed" || variant === "main") {
-      // 3. Main content area -> prefer BOTH video and thumbnail ads
       const richVideoThumbAds = candidates.filter(a => a.thumbnailUrl && a.videoUrl);
       if (richVideoThumbAds.length > 0) {
         priorityPool = richVideoThumbAds;
@@ -370,7 +406,10 @@
     }
 
     const selected = priorityPool[Math.floor(Math.random() * priorityPool.length)];
-    if (selected && selected.id) usedAdIds.add(selected.id);
+    if (selected && selected.id) {
+      usedAdIds.add(selected.id);
+      window.DPG_USED_AD_IDS.add(selected.id);
+    }
     return selected;
   }
 
@@ -404,11 +443,11 @@
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
-      setTimeout(renderAllNativeAds, 500);
-      setTimeout(renderAllNativeAds, 2500);
+      setTimeout(renderAllNativeAds, 400);
+      setTimeout(renderAllNativeAds, 2000);
     });
   } else {
-    setTimeout(renderAllNativeAds, 500);
-    setTimeout(renderAllNativeAds, 2500);
+    setTimeout(renderAllNativeAds, 400);
+    setTimeout(renderAllNativeAds, 2000);
   }
 })();
