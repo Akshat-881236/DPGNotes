@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
+  <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
   <script src="redirect.js"></script>
 
   <style>
@@ -470,7 +471,13 @@
         } catch (err) { alert("Delete failed."); }
       }
     };
+
+    if (typeof window.renderNativeDPGAds === "function") {
+      setTimeout(window.renderNativeDPGAds, 300);
+    }
   </script>
 
+  <!-- Footer Native Sponsored Banner -->
+  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1100px; margin:2rem auto 1rem auto; padding:0 1rem; box-sizing:border-box;"></div>
 </body>
 </html>

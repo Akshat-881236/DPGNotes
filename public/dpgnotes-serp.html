@@ -204,6 +204,9 @@
     </div>
   </header>
 
+  <!-- Top Header Native Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="max-width:1200px; margin:0.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
+
   <!-- Body -->
   <div class="serp-body">
     <!-- Left Filters Panel -->
@@ -388,7 +391,7 @@
       }
 
       list.innerHTML = "";
-      results.forEach(d => {
+      results.forEach((d, idx) => {
         const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
         const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
         const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
@@ -411,7 +414,30 @@
           </a>
         `;
         list.appendChild(card);
+
+        // Inject Native Ad / AdSense unit after every 2 search results
+        if (idx > 0 && idx % 2 === 1) {
+          const adContainer = document.createElement("div");
+          adContainer.className = "serp-ad-slot";
+          adContainer.style.cssText = "margin: 0.8rem 0; width: 100%;";
+          adContainer.innerHTML = `
+            <div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>
+            <div class="ad-banner-section" style="margin-top:0.5rem;">
+              <ins class="adsbygoogle"
+                   style="display:block"
+                   data-ad-client="ca-pub-5515547448097504"
+                   data-ad-slot="1234567890"
+                   data-ad-format="auto"
+                   data-full-width-responsive="true"></ins>
+            </div>
+          `;
+          list.appendChild(adContainer);
+        }
       });
+
+      if (typeof window.renderNativeDPGAds === "function") {
+        setTimeout(window.renderNativeDPGAds, 300);
+      }
     }
 
     // Input Trigger Listener
@@ -423,8 +449,9 @@
       applyFilters();
     });
 
-    loadDocuments();
-  </script>
+  <!-- Bottom Footer Native Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1200px; margin:2rem auto 1rem auto; padding:0 1rem; box-sizing:border-box;"></div>
+
   <script src="redirect.js"></script>
 </body>
 </html>

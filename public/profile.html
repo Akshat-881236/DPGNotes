@@ -944,16 +944,22 @@
         snap.forEach(d => {
           const docData = d.id ? { id: d.id, ...d.data() } : d.data();
           const card = document.createElement("div");
-          card.style.cssText = "background:rgba(15,23,42,0.6); border:1px solid var(--border); border-radius:12px; padding:1rem; display:flex; flex-direction:column; justify-space-between;";
+          card.style.cssText = "background:rgba(15,23,42,0.6); border:1px solid var(--border); border-radius:12px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between;";
+          
+          const tagsStr = Array.isArray(docData.tags) ? docData.tags.join(', ') : (docData.tags || '');
+          const uploaderName = docData.userName || docData.uploader || 'Contributor';
+          const docId = docData.documentId || docData.id || d.id || '';
+          const viewerUrl = `dpgnotes-pdf-viewer.html?resourceID=${docData.id || ''}&pdf=${encodeURIComponent(docData.pdfUrl || '')}&title=${encodeURIComponent(docData.title || '')}&category=${encodeURIComponent(docData.category || '')}&discipline=${encodeURIComponent(docData.discipline || '')}&uploader=${encodeURIComponent(uploaderName)}&docid=${encodeURIComponent(docId)}&description=${encodeURIComponent(docData.description || '')}&tags=${encodeURIComponent(tagsStr)}&uid=${encodeURIComponent(targetUid || '')}`;
+
           card.innerHTML = `
             <div>
               <span style="font-size:0.7rem; padding:2px 6px; background:rgba(99,102,241,0.2); color:#a5b4fc; border-radius:4px;">${docData.category || 'Notes'}</span>
-              <h5 style="color:white; font-size:0.95rem; margin:0.5rem 0;">${docData.title}</h5>
+              <h5 style="color:white; font-size:0.95rem; margin:0.5rem 0;">${docData.title || 'Untitled Document'}</h5>
               <p style="color:var(--text-muted); font-size:0.8rem; height:36px; overflow:hidden;">${docData.description || ''}</p>
             </div>
             <div style="margin-top:0.8rem; display:flex; justify-content:space-between; align-items:center;">
               <small style="color:var(--text-muted);">❤️ ${Array.isArray(docData.likes) ? docData.likes.length : 0}</small>
-              <a href="dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(docData.pdfUrl)}&title=${encodeURIComponent(docData.title)}" target="_blank" style="padding:4px 10px; background:var(--primary); color:white; border-radius:6px; text-decoration:none; font-size:0.8rem; font-weight:700;">View PDF</a>
+              <a href="${viewerUrl}" target="_blank" style="padding:4px 10px; background:var(--primary); color:white; border-radius:6px; text-decoration:none; font-size:0.8rem; font-weight:700;">View PDF</a>
             </div>
           `;
           container.appendChild(card);

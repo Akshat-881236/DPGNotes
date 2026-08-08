@@ -155,11 +155,11 @@
       top: 105%;
       left: 0;
       width: 100%;
-      background: rgba(17, 24, 39, 0.95);
+      background: rgba(17, 24, 39, 0.98);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       box-shadow: var(--shadow);
-      z-index: 100;
+      z-index: 99999 !important;
       max-height: 320px;
       overflow-y: auto;
       text-align: left;
@@ -168,6 +168,12 @@
       transform: translateY(10px);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       backdrop-filter: blur(24px);
+    }
+    
+    .suggestions-panel.active {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transform: translateY(0) !important;
     }
 
     .search-box-wrapper:focus-within .suggestions-panel.active {
@@ -280,6 +286,9 @@
   <div class="bg-light-1"></div>
   <div class="bg-light-2"></div>
 
+  <!-- Top Header Native Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="width:100%; max-width:900px; margin:0.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
+
   <div class="search-container">
     <div class="brand-logo">
       <i class="ri-search-eye-line"></i>
@@ -299,9 +308,22 @@
       </div>
     </div>
 
-    <!-- Native Ads Container -->
-    <div class="native-ads" id="native-ads" style="margin-top:2rem; width:100%; max-width:600px;"></div>
+    <!-- Feed Native Ad Container -->
+    <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:2.5rem; width:100%; max-width:600px; position:relative; z-index:1;"></div>
+
+    <!-- Google AdSense Placeholder -->
+    <div class="ad-banner-section" style="margin-top:1.5rem; width:100%; max-width:600px;">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-5515547448097504"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
   </div>
+
+  <!-- Bottom Footer Native Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="width:100%; max-width:900px; margin:2rem auto 1rem auto; padding:0 1rem; box-sizing:border-box;"></div>
 
   <script src="config.js"></script>
   <script type="module">

@@ -26,6 +26,10 @@
     <link rel="canonical" href="https://dpgnotes.web.app/ImagetoPdfConverter.html">
     <link rel="icon" href="https://dpgnotes.web.app/ANH.png" type="image/png">
     <title>ANH Advanced Image To PDF Converter - Offline Exam Paper Archive</title>
+    <script src="config.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
+    <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -737,12 +741,16 @@
         </div>
         <div class="header-status">
             <a href="legal/index.html" style="color:var(--accent-primary); text-decoration:none; margin-right:15px; font-size:0.9rem;">Legal Policies</a>
+            <div id="userHeaderPillConverter" style="display:inline-flex; align-items:center; margin-right:10px;"></div>
             <div class="status-indicator">
                 <div class="status-dot"></div>
                 <span>Offline Mode</span>
             </div>
         </div>
     </div>
+
+    <!-- Top Header Native Ad Banner -->
+    <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="max-width:1100px; margin:0.6rem auto; padding:0 10px; box-sizing:border-box;"></div>
 
     <!-- Main Container -->
     <div class="container">
@@ -1736,6 +1744,21 @@
 
 
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const pill = document.getElementById("userHeaderPillConverter");
+            if (pill) {
+                const uid = localStorage.getItem("dpgActiveUserUid");
+                if (uid) {
+                    pill.innerHTML = `<a href="profile.html?uid=${uid}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:700;"><i class="ri-user-star-fill" style="color:#f59e0b;"></i> Contributor Profile</a>`;
+                } else {
+                    pill.innerHTML = `<span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">Guest Viewer</span>`;
+                }
+            }
+            if (typeof window.renderNativeDPGAds === "function") {
+                setTimeout(window.renderNativeDPGAds, 350);
+            }
+        });
+
         // Prevent accidental navigation
         window.addEventListener('beforeunload', (e) => {
             if (state.generatedPDF) {
@@ -1744,5 +1767,9 @@
             }
         });
     </script>
+
+    <!-- Bottom Footer Native Sponsored Ad Banner -->
+    <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1100px; margin:2rem auto 1rem auto; padding:0 10px; box-sizing:border-box;"></div>
+    <script src="redirect.js"></script>
 </body>
 </html>
