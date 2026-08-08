@@ -11,36 +11,6 @@
   window.DPG_APPROVED_ADS = window.DPG_APPROVED_ADS || [];
   let isFetching = false;
 
-  const DEFAULT_FALLBACK_ADS = [
-    {
-      id: "fallback_1",
-      userName: "DPGNotes Academic",
-      userAvatar: "ANH.png",
-      title: "Explore Verified Computer Science & Engineering Notes",
-      description: "Access curated previous year question papers, DBMS, Java, Operating Systems, and COA comprehensive guides.",
-      thumbnailUrl: "ANH.png",
-      targetLink: "https://dpgnotes.web.app/study-hub.html"
-    },
-    {
-      id: "fallback_2",
-      userName: "Akshat Network Hub",
-      userAvatar: "ANH.png",
-      title: "AI Powered Search Engine & Knowledge Generator",
-      description: "Search academic topics, generate instant summaries, and extract insights directly from study materials.",
-      thumbnailUrl: "ANH.png",
-      targetLink: "https://dpgnotes.web.app/dpgnotes-search-engine.html"
-    },
-    {
-      id: "fallback_3",
-      userName: "DPGNotes Tools Suite",
-      userAvatar: "ANH.png",
-      title: "Free Online Image & PDF Metadata Utility",
-      description: "Convert images to PDF, analyze PDF properties, and add metadata directly in your browser.",
-      thumbnailUrl: "ANH.png",
-      targetLink: "https://dpgnotes.web.app/ImagetoPdfConverter.html"
-    }
-  ];
-
   async function getOrInitFirestore() {
     if (window.dpgDb && window.collection && window.getDocs) {
       return { db: window.dpgDb, collection: window.collection, getDocs: window.getDocs };
@@ -74,7 +44,7 @@
 
   async function fetchApprovedAds() {
     if (window.DPG_APPROVED_ADS.length > 0) return window.DPG_APPROVED_ADS;
-    if (isFetching) return DEFAULT_FALLBACK_ADS;
+    if (isFetching) return [];
     isFetching = true;
 
     try {
@@ -88,18 +58,15 @@
             ads.push({ id: docSnap.id, ...data });
           }
         });
-        if (ads.length > 0) {
-          window.DPG_APPROVED_ADS = ads;
-          return ads;
-        }
+        window.DPG_APPROVED_ADS = ads;
+        return ads;
       }
     } catch(e) {
       console.warn("Native ads Firestore fetch error:", e);
     } finally {
       isFetching = false;
     }
-    window.DPG_APPROVED_ADS = DEFAULT_FALLBACK_ADS;
-    return DEFAULT_FALLBACK_ADS;
+    return window.DPG_APPROVED_ADS || [];
   }
 
   function extractYouTubeId(url) {
@@ -296,7 +263,17 @@
       card.style.transform = "scale(0.95)";
 
       setTimeout(async () => {
-        const nextAd = selectAdForVariant(allAds, variant, new Set([ad.id])) || allAds[0];
+        const approvedAds = await fetchApprovedAds();
+        if (!approvedAds || approvedAds.length === 0) {
+          card.remove();
+          return;
+        }
+
+        const nextAd = selectAdForVariant(approvedAds, variant, new Set([ad.id])) || approvedAds[Math.floor(Math.random() * approvedAds.length)];
+        if (!nextAd) {
+          card.remove();
+          return;
+        }
 
         const newCard = createAdCardElement(nextAd, "elem_" + Date.now(), variant);
         newCard.style.opacity = "0";
