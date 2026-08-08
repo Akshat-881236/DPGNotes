@@ -1630,6 +1630,16 @@ window.handleEditResourceSubmit = async function(e) {
 onAuthStateChanged(auth, user => {
   if (user) {
     currentUser = user;
+    localStorage.setItem("dpgActiveUserUid", user.uid);
+    localStorage.setItem("dpgActiveUserEmail", user.email || "");
+    localStorage.setItem("dpgActiveUserName", user.displayName || "");
+    localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
+    localStorage.setItem("dpgActiveUser", JSON.stringify({
+      uid: user.uid,
+      email: user.email || "",
+      name: user.displayName || "",
+      photoURL: user.photoURL || ""
+    }));
     loadContributorManageResources();
     populateAdResourceSuggestions();
   }

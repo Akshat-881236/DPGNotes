@@ -533,8 +533,8 @@
       async function syncAdTrackSession(screentimeSec = 0) {
         try {
           const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
-          const visitorUid = activeUser.uid || localStorage.getItem("dpg_guest_id") || "guest_anon";
-          const visitorEmail = activeUser.email || "guest@dpgnotes.app";
+          const visitorUid = activeUser.uid || localStorage.getItem("dpgActiveUserUid") || localStorage.getItem("dpg_guest_id") || "guest_anon";
+          const visitorEmail = activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "guest@dpgnotes.app";
 
           const trackingData = {
             trackId,

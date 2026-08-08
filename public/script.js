@@ -566,6 +566,12 @@ onAuthStateChanged(
         localStorage.setItem("dpgActiveUserEmail", user.email || "");
         localStorage.setItem("dpgActiveUserName", user.displayName || "");
         localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
+        localStorage.setItem("dpgActiveUser", JSON.stringify({
+          uid: user.uid,
+          email: user.email || "",
+          name: user.displayName || "",
+          photoURL: user.photoURL || ""
+        }));
         // 1. Check Permanent Blocks Directory
         const { query, collection, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
         const blockQ = query(collection(db, "permanent_blocks"), where("block_email", "==", user.email));
@@ -656,6 +662,11 @@ onAuthStateChanged(
     }else{
       if (currentUser) logActivity("LOGOUT", "User logged out");
       currentUser = null;
+      localStorage.removeItem("dpgActiveUser");
+      localStorage.removeItem("dpgActiveUserUid");
+      localStorage.removeItem("dpgActiveUserEmail");
+      localStorage.removeItem("dpgActiveUserName");
+      localStorage.removeItem("dpgActiveUserPhoto");
       if (googleLogin) googleLogin.innerHTML = "Google";
       
       const isDashboard = window.location.pathname.endsWith("dashboard.html");
