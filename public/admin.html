@@ -124,13 +124,19 @@
       width: 280px;
       background: var(--admin-surface);
       border-right: 1px solid var(--admin-border);
-      padding: 2rem;
+      padding: 1.5rem 1.2rem;
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      gap: 1.2rem;
       position: fixed;
+      top: 0;
+      bottom: 0;
       height: 100vh;
+      max-height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       backdrop-filter: blur(20px);
+      z-index: 1000;
     }
     .admin-brand {
       display: flex;
@@ -139,6 +145,7 @@
       font-size: 1.5rem;
       font-weight: 700;
       color: white;
+      flex-shrink: 0;
     }
     .admin-brand i {
       color: var(--admin-primary);
@@ -148,6 +155,11 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+      padding-right: 4px;
     }
     .nav-link {
       padding: 1rem;
@@ -1077,12 +1089,17 @@
       document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
       const targetView = document.getElementById('view-' + tabId);
       if (targetView) targetView.classList.add('active');
-      if (event && event.currentTarget && event.currentTarget.classList) event.currentTarget.classList.add('active');
+      if (window.event && window.event.currentTarget && window.event.currentTarget.classList) {
+        window.event.currentTarget.classList.add('active');
+      }
 
       if (tabId === 'ads' && typeof window.loadAdsAdmin === 'function') {
         window.loadAdsAdmin();
+      } else if (tabId === 'ads-analytics' && typeof window.loadAdsAnalyticsAdmin === 'function') {
+        window.loadAdsAnalyticsAdmin();
       }
     }
+    window.switchTab = switchTab;
     function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
 
     function toggleAllLogs(masterCb) {

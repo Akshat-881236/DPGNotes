@@ -1841,7 +1841,7 @@ window.blockSelectedAdsGroup = async function() {
 // =========================================
 let adAnalyticsChartInstance = null;
 
-async function loadAdsAnalyticsAdmin() {
+export async function loadAdsAnalyticsAdmin() {
   const filterSelect = document.getElementById("adAnalyticsFilterSelect");
   const selectedAdId = filterSelect ? filterSelect.value : "ALL";
 
