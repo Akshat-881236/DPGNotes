@@ -1,3 +1,4 @@
+import re
 import logging
 from datetime import datetime, timezone
 import requests
@@ -81,7 +82,6 @@ class IPDeviceTracker:
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
-        # Include advanced hardware specs ONLY if user granted permission
         if permission_granted and hardware_info:
             history_record["hardwareInfo"] = {
                 "screenResolution": hardware_info.get("screenResolution", "Unknown"),
@@ -102,12 +102,12 @@ class IPDeviceTracker:
     def process_guest_quota(self, headers: dict, remote_addr: str, guest_id: str, action: str = "page_visit") -> dict:
         """
         Processes Anonymous Guest Access Quota rules (Max 6 Visits / 3 PDFs per day).
-        Returns quota enforcement status.
+        Server-side IP + Guest ID tracking backed by Firestore.
         """
         ip = self.extract_client_ip(headers, remote_addr)
         today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         safe_ip = re.sub(r"[^a-zA-Z0-9]", "_", ip)
-        quota_key = f"quota_{safe_ip}_{guest_id}"
+        quota_key = f"quota_{today_str}_{safe_ip}"
 
         page_visits = 0
         pdf_views = 0
@@ -125,7 +125,7 @@ class IPDeviceTracker:
 
                 if action == "pdf_view":
                     pdf_views += 1
-                else:
+                elif action == "page_visit":
                     page_visits += 1
 
                 doc_ref.set({
@@ -138,15 +138,11 @@ class IPDeviceTracker:
                 }, merge=True)
             except Exception as e:
                 logger.error(f"Firestore guest quota error: {e}")
-                if action == "pdf_view":
-                    pdf_views += 1
-                else:
-                    page_visits += 1
+                if action == "pdf_view": pdf_views += 1
+                elif action == "page_visit": page_visits += 1
         else:
-            if action == "pdf_view":
-                pdf_views += 1
-            else:
-                page_visits += 1
+            if action == "pdf_view": pdf_views += 1
+            elif action == "page_visit": page_visits += 1
 
         max_visits = 6
         max_pdfs = 3

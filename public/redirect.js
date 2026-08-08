@@ -224,6 +224,25 @@
       localStorage.setItem("dpg_quota_visits", pageVisits);
       localStorage.setItem("dpg_quota_pdfs", pdfViews);
 
+      // Server-side Python Service Quota Verification (Backed by IP + Firestore)
+      const PYTHON_SERVICE = "https://dpgnotes-python-service.onrender.com";
+      const currentAction = isPdfViewer ? "pdf_view" : "page_visit";
+
+      fetch(PYTHON_SERVICE + "/api/guest-quota", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestId: guestId, action: currentAction })
+      }).then(r => r.json()).then(data => {
+        if (data && data.allowed === false) {
+          localStorage.setItem("dpg_quota_locked", "true");
+          sessionStorage.setItem("dpg_quota_locked", "true");
+          setCookie("dpg_quota_locked", "true");
+          triggerQuotaReachedPhase();
+        }
+      }).catch(err => {
+        console.warn("Python Server quota check error:", err);
+      });
+
       function triggerQuotaReachedPhase() {
         // Enforce lock across all 3 storage layers
         localStorage.setItem("dpg_quota_locked", "true");

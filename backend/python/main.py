@@ -180,17 +180,21 @@ def scan_screen_layout(req: ScanScreenRequest):
     """Scans document text structure for questions, sections, and unit breakdown."""
     return screen_scanner.scan_layout_and_structure(raw_text=req.rawText)
 
-@app.post("/api/py/guest-quota")
-def track_guest_quota(req: GuestQuotaRequest, request: Request):
+@app.api_route("/api/guest-quota", methods=["GET", "POST"])
+@app.api_route("/api/py/guest-quota", methods=["GET", "POST"])
+def track_guest_quota(req: Optional[GuestQuotaRequest] = None, request: Request = None, guestId: Optional[str] = "guest_anon", action: Optional[str] = "page_visit"):
     """Tracks Device IP and Guest ID for daily quota (6 Visits / 3 PDFs per day)."""
-    headers = dict(request.headers)
-    remote_addr = request.client.host if request.client else "127.0.0.1"
+    headers = dict(request.headers) if request else {}
+    remote_addr = request.client.host if (request and request.client) else "127.0.0.1"
+
+    g_id = req.guestId if req else guestId
+    act = req.action if req else action
 
     result = device_tracker.process_guest_quota(
         headers=headers,
         remote_addr=remote_addr,
-        guest_id=req.guestId,
-        action=req.action
+        guest_id=g_id,
+        action=act
     )
     return result
 
