@@ -525,63 +525,6 @@ User Question: ${userQuery}`;
   }
 });
 
-      if (pyRes.data && (pyRes.data.answer || pyRes.data.report)) {
-        return res.json({ answer: pyRes.data.answer || pyRes.data.report, source: 'Python-AI-Engine' });
-      }
-    } catch (pyErr) {
-      console.warn("Python AI Chat fallback triggered:", pyErr.message);
-    }
-
-    // 3. Priority 3: DPGNotes Intelligent Context RAG Engine
-    const qLower = userQuery.toLowerCase().trim();
-
-    if (/^(hi|hello|hey|greetings|hola)/i.test(qLower)) {
-      return res.json({
-        answer: `👋 Hello! I am **DPGNotes AI Assistant**. I have analyzed **${docTitle}**. Feel free to ask me any questions about formulas, definitions, PYQs, or specific sections in this resource!`,
-        source: 'DPGNotes-Intelligent-RAG'
-      });
-    }
-
-    const kbText = (context?.knowledgeBase || '') + '\n' + (context?.extractedPdfText || '');
-    if (kbText.trim() && kbText.length > 20) {
-      const words = qLower.split(/\s+/).filter(w => w.length > 2);
-      const paragraphs = kbText.split(/\n\n|\r\n\r\n/);
-      let bestMatch = "";
-      let highestScore = 0;
-
-      for (const p of paragraphs) {
-        const pLower = p.toLowerCase();
-        let score = 0;
-        words.forEach(w => {
-          if (pLower.includes(w)) score += 1;
-        });
-        if (score > highestScore) {
-          highestScore = score;
-          bestMatch = p;
-        }
-      }
-
-      if (bestMatch && highestScore > 0) {
-        return res.json({
-          answer: `### 📖 Answer from ${docTitle}:\n\n${bestMatch.trim()}`,
-          source: 'DPGNotes-Intelligent-RAG'
-        });
-      }
-    }
-
-    return res.json({
-      answer: `### 📘 Document Overview: ${docTitle}\n- **Category**: ${context?.documentCategory || 'Notes'}\n- **Discipline**: ${context?.documentDiscipline || 'General'}\n${context?.documentDescription ? `- **Summary**: ${context.documentDescription}\n` : ''}\nYour question regarding **"${userQuery}"** has been recorded. Feel free to ask specific questions about formulas, topics, or definitions in this notes file!`,
-      source: 'DPGNotes-Intelligent-RAG'
-    });
-  } catch (err) {
-    console.error("AI chat route error:", err);
-    res.json({
-      answer: "I am ready to assist you with this document. Feel free to ask any specific academic question!",
-      source: 'DPGNotes-Intelligent-RAG'
-    });
-  }
-});
-
 // ==========================================
 // ROUTES: INVITATIONS & REFERRAL SYSTEM
 // ==========================================

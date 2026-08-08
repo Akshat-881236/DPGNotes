@@ -342,14 +342,21 @@
       const discFilter = document.getElementById("filterDiscipline").value;
       const sortBy = document.getElementById("sortOrder").value;
 
-      // 1. Text Search filtering
+      // 1. Multi-field Text Search filtering with keyword tokens
       let results = allDocs;
       if (q) {
-        results = results.filter(d => 
-          (d.title && d.title.toLowerCase().includes(q)) ||
-          (d.description && d.description.toLowerCase().includes(q)) ||
-          (d.discipline && d.discipline.toLowerCase().includes(q))
-        );
+        const tokens = q.split(/\s+/).filter(Boolean);
+        results = results.filter(d => {
+          const title = (d.title || "").toLowerCase();
+          const desc = (d.description || "").toLowerCase();
+          const disc = (d.discipline || "").toLowerCase();
+          const cat = (d.category || "").toLowerCase();
+          const uploader = (d.userName || d.uploader || "").toLowerCase();
+          const tags = Array.isArray(d.tags) ? d.tags.join(" ").toLowerCase() : (d.tags || "").toLowerCase();
+
+          const combined = `${title} ${desc} ${disc} ${cat} ${uploader} ${tags}`;
+          return tokens.every(token => combined.includes(token));
+        });
       }
 
       // 2. Category Dropdown Filter
@@ -448,6 +455,9 @@
       window.history.pushState(null, null, newUrl);
       applyFilters();
     });
+
+    // Load initial documents from Firestore
+    loadDocuments();
   </script>
 
   <!-- Bottom Footer Native Sponsored Ad Banner -->
