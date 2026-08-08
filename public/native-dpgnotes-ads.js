@@ -169,28 +169,29 @@
         background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
         border: 1px solid rgba(245, 158, 11, 0.35);
         border-radius: 12px;
-        padding: 0.65rem 2.5rem 0.65rem 0.8rem;
+        padding: 0.5rem 2.2rem 0.5rem 0.6rem;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-        margin: 0.6rem 0;
+        margin: 0.5rem 0;
         box-sizing: border-box;
         color: white;
         font-family: inherit;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
+        flex-wrap: nowrap;
       `;
       card.innerHTML = `
-        <a href="${profileUrl}" target="_blank" title="View ${ad.userName || 'Advertiser'}'s Profile" style="flex-shrink:0;">
-          <img src="${ad.userAvatar || ad.thumbnailUrl || 'ANH.png'}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid rgba(245,158,11,0.5); transition:transform 0.2s;" onmouseenter="this.style.transform='scale(1.1)'" onmouseleave="this.style.transform='scale(1)'">
+        <a href="${profileUrl}" target="_blank" title="View ${ad.userName || 'Advertiser'}'s Profile" style="flex-shrink:0; text-decoration:none;">
+          <img src="${ad.userAvatar || ad.thumbnailUrl || 'ANH.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid rgba(245,158,11,0.6); flex-shrink:0;">
         </a>
-        <div style="flex:1; min-width:0;">
-          <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-            <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.58rem; font-weight:800; padding:1px 6px; border-radius:6px;">SPONSORED</span>
-            ${getProfileLinkHtml('18px', '0.72rem')}
+        <div style="flex:1; min-width:0; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:5px; margin-bottom:1px; flex-wrap:nowrap; overflow:hidden;">
+            <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.55rem; font-weight:800; padding:1px 5px; border-radius:4px; flex-shrink:0;">SPONSORED</span>
+            <a href="${profileUrl}" target="_blank" style="font-size:0.72rem; font-weight:700; color:#a5b4fc; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="View Profile">${ad.userName || 'Promoted'}</a>
           </div>
-          <h4 style="font-size:0.85rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
+          <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px 12px; border-radius:8px; text-decoration:none; font-size:0.75rem; font-weight:700; flex-shrink:0;">View <i class="ri-arrow-right-s-line"></i></a>` : ''}
+        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">View <i class="ri-arrow-right-s-line"></i></a>` : ''}
       `;
     } else if (variant === "footer" || variant === "bottom") {
       card.style.cssText = `
@@ -199,28 +200,30 @@
         background: linear-gradient(90deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
         border-top: 2px solid #f59e0b;
         border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding: 0.75rem 2.8rem 0.75rem 1rem;
+        padding: 0.5rem 2.2rem 0.5rem 0.6rem;
         box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.6);
-        margin: 0.8rem 0;
+        margin: 0.5rem 0;
         box-sizing: border-box;
         color: white;
         font-family: inherit;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
+        gap: 8px;
+        flex-wrap: nowrap;
       `;
       card.innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:200px;">
-          <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.62rem; font-weight:800; padding:2px 8px; border-radius:8px; flex-shrink:0;">SPONSORED</span>
-          ${getProfileLinkHtml('24px', '0.75rem')}
-          <div style="overflow:hidden; margin-left:6px;">
-            <h4 style="font-size:0.88rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
-            <p style="font-size:0.75rem; color:#94a3b8; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.description || ''}</p>
+        <a href="${profileUrl}" target="_blank" title="View ${ad.userName || 'Advertiser'}'s Profile" style="flex-shrink:0; text-decoration:none;">
+          <img src="${ad.userAvatar || ad.thumbnailUrl || 'ANH.png'}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1.5px solid rgba(245,158,11,0.6); flex-shrink:0;">
+        </a>
+        <div style="flex:1; min-width:0; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:5px; margin-bottom:1px; flex-wrap:nowrap; overflow:hidden;">
+            <span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.55rem; font-weight:800; padding:1px 5px; border-radius:4px; flex-shrink:0;">SPONSORED</span>
+            <a href="${profileUrl}" target="_blank" style="font-size:0.72rem; font-weight:700; color:#a5b4fc; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="View Profile">${ad.userName || 'Advertiser'}</a>
           </div>
+          <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px 14px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700; flex-shrink:0;">Learn More <i class="ri-external-link-line"></i></a>` : ''}
+        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>` : ''}
       `;
     } else if (variant === "sidebar") {
       card.style.cssText = `
