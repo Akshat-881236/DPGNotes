@@ -910,6 +910,7 @@
             <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('linkedin', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.78rem; font-weight:600; cursor:pointer;">💼 LinkedIn</button>
             <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('medium', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.78rem; font-weight:600; cursor:pointer;">📝 Medium</button>
             <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('github', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#94a3b8; font-size:0.78rem; font-weight:600; cursor:pointer;">🐙 GitHub</button>
+            <button class="ad-platform-filter-btn" onclick="filterAdminAdsByPlatform('youtube', this)" style="padding:4px 12px; border-radius:6px; border:1px solid rgba(239,68,68,0.4); background:rgba(239,68,68,0.15); color:#fca5a5; font-size:0.78rem; font-weight:600; cursor:pointer;">🔴 YouTube</button>
           </div>
 
           <!-- SUB-TAB 1: ADS REQUESTS -->
@@ -971,8 +972,13 @@
             </h2>
             <p style="color:var(--admin-text-muted); font-size:0.85rem; margin-top:2px;">Mathematical calculation engine using Node.js & Python Data Analytics for per-ad impressions, clicks & CTR trend tracking.</p>
           </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <select id="adAnalyticsFilterSelect" onchange="loadAdsAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer;">
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select id="adAnalyticsTimeGranularity" onchange="loadAdsAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:#a5b4fc; font-family:inherit; font-size:0.85rem; cursor:pointer; font-weight:600;">
+              <option value="daily" selected>📅 Daily Trend (Date-wise)</option>
+              <option value="hourly">🕒 Daily (Hourly: 00:00 - 23:00)</option>
+              <option value="weekly">📆 Monthly (Week-wise)</option>
+            </select>
+            <select id="adAnalyticsFilterSelect" onchange="loadAdsAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer; max-width:280px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
               <option value="ALL">All Approved Ad Campaigns</option>
             </select>
             <button onclick="loadAdsAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Stats</button>

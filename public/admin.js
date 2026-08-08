@@ -1705,6 +1705,9 @@ function getAdminPlatformBadge(ad) {
   if (p === "medium") {
     return `<span style="background:linear-gradient(135deg,#12100e,#2b2927); border:1px solid rgba(255,255,255,0.2); color:white; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-medium-fill"></i> Medium Story</span>`;
   }
+  if (p === "youtube") {
+    return `<span style="background:linear-gradient(135deg,#991b1b,#7f1d1d); border:1px solid rgba(239,68,68,0.4); color:white; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-youtube-fill" style="color:#ef4444;"></i> YouTube Video</span>`;
+  }
   return `<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-file-pdf-fill"></i> DPGNotes Resource</span>`;
 }
 
@@ -1935,10 +1938,12 @@ let adAnalyticsChartInstance = null;
 
 export async function loadAdsAnalyticsAdmin() {
   const filterSelect = document.getElementById("adAnalyticsFilterSelect");
+  const granularitySelect = document.getElementById("adAnalyticsTimeGranularity");
   const selectedAdId = filterSelect ? filterSelect.value : "ALL";
+  const selectedGranularity = granularitySelect ? granularitySelect.value : "daily";
 
   try {
-    const res = await fetch(`${window.API_BASE_URL}/api/admin/ads-analytics?adId=${encodeURIComponent(selectedAdId)}`);
+    const res = await fetch(`${window.API_BASE_URL}/api/admin/ads-analytics?adId=${encodeURIComponent(selectedAdId)}&granularity=${encodeURIComponent(selectedGranularity)}`);
     const data = await res.json();
 
     if (!data || !data.success) {
@@ -1946,12 +1951,16 @@ export async function loadAdsAnalyticsAdmin() {
       return;
     }
 
-    if (filterSelect && filterSelect.options.length <= 1 && data.rawAds) {
-      filterSelect.innerHTML = `<option value="ALL">All Approved Ad Campaigns</option>`;
+    if (filterSelect && data.rawAds) {
+      filterSelect.innerHTML = `<option value="ALL">All Approved Ad Campaigns (${data.rawAds.length})</option>`;
       data.rawAds.forEach(a => {
+        const pTag = (a.platform || "dpgnotes") === "linkedin" ? "[LinkedIn]" :
+                     (a.platform === "github") ? "[GitHub]" :
+                     (a.platform === "medium") ? "[Medium]" :
+                     (a.platform === "youtube") ? "[YouTube]" : "[Resource]";
         const opt = document.createElement("option");
         opt.value = a.id;
-        opt.textContent = `${a.title || 'Ad'} (${a.id})`;
+        opt.textContent = `${pTag} ${a.title || 'Ad'} (${a.id})`;
         if (a.id === selectedAdId) opt.selected = true;
         filterSelect.appendChild(opt);
       });
@@ -1968,13 +1977,15 @@ export async function loadAdsAnalyticsAdmin() {
         adAnalyticsChartInstance.destroy();
       }
 
+      const pData = data.platformBreakdowns || {};
+
       adAnalyticsChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
           labels: data.labels || [],
           datasets: [
             {
-              label: 'CTR % (Green Line with Dots)',
+              label: 'CTR % (Green Line)',
               data: data.ctr || [],
               borderColor: '#10b981',
               backgroundColor: '#10b981',
@@ -1988,7 +1999,7 @@ export async function loadAdsAnalyticsAdmin() {
               yAxisID: 'yCTR'
             },
             {
-              label: 'Ads Appear / Impressions (Yellow Line with Dots)',
+              label: 'Ads Appear / Impressions (Yellow Line)',
               data: data.impressions || [],
               borderColor: '#f59e0b',
               backgroundColor: '#f59e0b',
@@ -2002,7 +2013,7 @@ export async function loadAdsAnalyticsAdmin() {
               yAxisID: 'yCount'
             },
             {
-              label: 'Link Clicks (Red Line with Dots)',
+              label: 'Link Clicks (Red Dots)',
               data: data.clicks || [],
               borderColor: '#ef4444',
               backgroundColor: '#ef4444',
@@ -2013,6 +2024,59 @@ export async function loadAdsAnalyticsAdmin() {
               pointHoverRadius: 11,
               borderWidth: 2,
               showLine: true,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'LinkedIn Ads (Blue Line)',
+              data: pData.linkedin || [],
+              borderColor: '#0a66c2',
+              backgroundColor: '#0a66c2',
+              pointBackgroundColor: '#0a66c2',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0.3,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'Medium Ads (Purple Line)',
+              data: pData.medium || [],
+              borderColor: '#c084fc',
+              backgroundColor: '#c084fc',
+              pointBackgroundColor: '#c084fc',
+              borderWidth: 2,
+              borderDash: [4, 4],
+              tension: 0.3,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'GitHub Ads (Gray Line)',
+              data: pData.github || [],
+              borderColor: '#e2e8f0',
+              backgroundColor: '#e2e8f0',
+              pointBackgroundColor: '#e2e8f0',
+              borderWidth: 2,
+              borderDash: [3, 3],
+              tension: 0.3,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'YouTube Ads (YouTube Red Line)',
+              data: pData.youtube || [],
+              borderColor: '#ff0000',
+              backgroundColor: '#ff0000',
+              pointBackgroundColor: '#ff0000',
+              borderWidth: 2.5,
+              tension: 0.3,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'DPGNotes Resource Ads (Orange Line)',
+              data: pData.dpgnotes || [],
+              borderColor: '#f97316',
+              backgroundColor: '#f97316',
+              pointBackgroundColor: '#f97316',
+              borderWidth: 2,
+              tension: 0.3,
               yAxisID: 'yCount'
             }
           ]

@@ -1266,7 +1266,8 @@ function generateAdTrackId(adId) {
 app.get('/api/admin/ads-analytics', async (req, res) => {
   try {
     const selectedAdId = req.query.adId || "ALL";
-    const cacheKey = `analytics_${selectedAdId}`;
+    const granularity = req.query.granularity || "daily";
+    const cacheKey = `analytics_${selectedAdId}_${granularity}`;
     const cached = adsAnalyticsCache.get(cacheKey);
 
     // 15-second TTL cache for blazing fast response (<10ms)
@@ -1326,41 +1327,85 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
       ? ads.filter(a => a.id === selectedAdId)
       : ads;
 
-    // Platform Breakdown Statistics
+    // Platform Summary Counts
     const platformBreakdown = {
       dpgnotes: filteredAds.filter(a => (a.platform || "dpgnotes") === "dpgnotes").length,
       linkedin: filteredAds.filter(a => a.platform === "linkedin").length,
       medium: filteredAds.filter(a => a.platform === "medium").length,
-      github: filteredAds.filter(a => a.platform === "github").length
+      github: filteredAds.filter(a => a.platform === "github").length,
+      youtube: filteredAds.filter(a => a.platform === "youtube").length
     };
 
-    // Fast Node.js Daily Aggregation Math Engine
-    const datesMap = {};
+    // Fast Node.js Time Aggregation Engine (Hourly / Daily / Weekly)
+    function getTimeBucket(isoStr) {
+      if (!isoStr) return new Date().toISOString().substring(0, 10);
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return isoStr.substring(0, 10);
+
+      if (granularity === "hourly") {
+        return `${d.toISOString().substring(0, 10)} ${String(d.getHours()).padStart(2, '0')}:00`;
+      } else if (granularity === "weekly") {
+        const firstDayOfYear = new Date(d.getFullYear(), 0, 1);
+        const pastDaysOfYear = (d - firstDayOfYear) / 86400000;
+        const weekNum = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+      }
+      return d.toISOString().substring(0, 10);
+    }
+
+    const timeMap = {};
     filteredAds.forEach(a => {
-      const dateStr = (a.createdAt || new Date().toISOString()).substring(0, 10);
-      if (!datesMap[dateStr]) datesMap[dateStr] = { date: dateStr, impressions: 0, clicks: 0, meta: [] };
-      datesMap[dateStr].impressions += (a.impressionsCount || 1);
+      const bKey = getTimeBucket(a.createdAt);
+      if (!timeMap[bKey]) {
+        timeMap[bKey] = {
+          label: bKey,
+          impressions: 0,
+          clicks: 0,
+          platforms: { dpgnotes: 0, linkedin: 0, medium: 0, github: 0, youtube: 0 },
+          meta: []
+        };
+      }
+      const imp = a.impressionsCount || 1;
+      timeMap[bKey].impressions += imp;
+      const pKey = a.platform || "dpgnotes";
+      timeMap[bKey].platforms[pKey] = (timeMap[bKey].platforms[pKey] || 0) + imp;
     });
 
     filteredTrackings.forEach(t => {
-      const dateStr = (t.timestamp || new Date().toISOString()).substring(0, 10);
-      if (!datesMap[dateStr]) datesMap[dateStr] = { date: dateStr, impressions: 1, clicks: 0, meta: [] };
-      datesMap[dateStr].clicks += 1;
-      datesMap[dateStr].meta.push(t);
+      const bKey = getTimeBucket(t.timestamp);
+      if (!timeMap[bKey]) {
+        timeMap[bKey] = {
+          label: bKey,
+          impressions: 1,
+          clicks: 0,
+          platforms: { dpgnotes: 0, linkedin: 0, medium: 0, github: 0, youtube: 0 },
+          meta: []
+        };
+      }
+      timeMap[bKey].clicks += 1;
+      timeMap[bKey].meta.push(t);
     });
 
-    const sortedDates = Object.keys(datesMap).sort();
-    if (sortedDates.length === 0) sortedDates.push(new Date().toISOString().substring(0, 10));
+    const sortedLabels = Object.keys(timeMap).sort();
+    if (sortedLabels.length === 0) sortedLabels.push(getTimeBucket(new Date().toISOString()));
 
-    const labels = sortedDates;
-    const impressions = sortedDates.map(d => datesMap[d]?.impressions || 0);
-    const clicks = sortedDates.map(d => datesMap[d]?.clicks || 0);
-    const ctr = sortedDates.map(d => {
-      const imp = datesMap[d]?.impressions || 0;
-      const clk = datesMap[d]?.clicks || 0;
+    const labels = sortedLabels;
+    const impressions = sortedLabels.map(k => timeMap[k]?.impressions || 0);
+    const clicks = sortedLabels.map(k => timeMap[k]?.clicks || 0);
+    const ctr = sortedLabels.map(k => {
+      const imp = timeMap[k]?.impressions || 0;
+      const clk = timeMap[k]?.clicks || 0;
       return imp > 0 ? parseFloat(((clk / imp) * 100).toFixed(2)) : 0;
     });
-    const clickMetadata = sortedDates.map(d => datesMap[d]?.meta || []);
+    const clickMetadata = sortedLabels.map(k => timeMap[k]?.meta || []);
+
+    const platformBreakdowns = {
+      dpgnotes: sortedLabels.map(k => timeMap[k]?.platforms?.dpgnotes || 0),
+      linkedin: sortedLabels.map(k => timeMap[k]?.platforms?.linkedin || 0),
+      medium: sortedLabels.map(k => timeMap[k]?.platforms?.medium || 0),
+      github: sortedLabels.map(k => timeMap[k]?.platforms?.github || 0),
+      youtube: sortedLabels.map(k => timeMap[k]?.platforms?.youtube || 0)
+    };
 
     const totalImpressions = impressions.reduce((a, b) => a + b, 0);
     const totalClicks = clicks.reduce((a, b) => a + b, 0);
@@ -1379,6 +1424,7 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
       totalScreentime,
       averageCtr,
       platformBreakdown,
+      platformBreakdowns,
       rawAds: ads,
       rawTrackings: filteredTrackings
     };

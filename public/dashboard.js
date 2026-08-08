@@ -1656,6 +1656,7 @@ window.updateAdFormFields = function() {
   const thumbLabel = document.getElementById("adThumbnailLabel");
   const titleInput = document.getElementById("adTitle");
   const targetLinkInput = document.getElementById("adTargetLink");
+  const videoUrlInput = document.getElementById("adVideoUrl");
 
   if (val === "dpgnotes_resource") {
     if (resourceBox) resourceBox.style.display = "block";
@@ -1681,6 +1682,13 @@ window.updateAdFormFields = function() {
     if (thumbLabel) thumbLabel.textContent = "GitHub Repository Header Banner (Optional)";
     if (titleInput) titleInput.placeholder = "Enter GitHub Repository Name / Title...";
     if (targetLinkInput) targetLinkInput.placeholder = "https://github.com/username/repository-name";
+  } else if (val === "youtube_video") {
+    if (resourceBox) resourceBox.style.display = "block";
+    if (videoBox) videoBox.style.display = "block";
+    if (thumbLabel) thumbLabel.textContent = "YouTube Video / Channel Banner Thumbnail Image (Optional)";
+    if (titleInput) titleInput.placeholder = "Enter YouTube Video or Channel Title...";
+    if (targetLinkInput) targetLinkInput.placeholder = "https://www.youtube.com/watch?v=... or https://youtube.com/@channel";
+    if (videoUrlInput) videoUrlInput.placeholder = "https://www.youtube.com/watch?v=... (Required for hover autoplay preview)";
   }
 };
 
@@ -1715,6 +1723,9 @@ window.generateAiAdTags = async function() {
       { key: "repo", tag: "GitHub Project" },
       { key: "linkedin", tag: "Professional Post" },
       { key: "medium", tag: "Blog Article" },
+      { key: "youtube", tag: "YouTube Video" },
+      { key: "video", tag: "Tutorial Video" },
+      { key: "vlog", tag: "Tech Vlog" },
       { key: "exam", tag: "Exam Notes" },
       { key: "computer", tag: "Computer Science" },
       { key: "data", tag: "Data Science" },
@@ -1729,6 +1740,7 @@ window.generateAiAdTags = async function() {
     if (platformVal.includes("linkedin")) suggested.add("LinkedIn");
     if (platformVal.includes("medium")) suggested.add("Medium");
     if (platformVal.includes("github")) suggested.add("GitHub");
+    if (platformVal.includes("youtube")) { suggested.add("YouTube"); suggested.add("Video Tutorial"); }
 
     commonTagsMap.forEach(item => {
       if (rawText.includes(item.key)) suggested.add(item.tag);
@@ -1870,6 +1882,7 @@ if (adForm) {
       else if (platformSelectVal === "linkedin_blog") { platform = "linkedin"; adCategory = "blog"; }
       else if (platformSelectVal === "medium_story") { platform = "medium"; adCategory = "story"; }
       else if (platformSelectVal === "github_repo") { platform = "github"; adCategory = "repo"; }
+      else if (platformSelectVal === "youtube_video") { platform = "youtube"; adCategory = "video"; }
 
       const title = document.getElementById("adTitle").value.trim();
       const description = document.getElementById("adDesc").value.trim();
