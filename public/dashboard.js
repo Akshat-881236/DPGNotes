@@ -1743,8 +1743,12 @@ if (adForm) {
       const targetLink = document.getElementById("adTargetLink").value.trim();
       const videoUrl = document.getElementById("adVideoUrl").value.trim();
 
-      if (!thumbnailUrl) {
-        throw new Error("Please wait for thumbnail upload to complete before submitting.");
+      // Calculate target placement priority based on uploaded media assets
+      let targetPlacement = ["header", "footer"];
+      if (thumbnailUrl && videoUrl) {
+        targetPlacement = ["feed", "main", "sidebar", "header", "footer"];
+      } else if (thumbnailUrl) {
+        targetPlacement = ["sidebar", "header", "footer", "feed"];
       }
 
       const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
@@ -1756,6 +1760,9 @@ if (adForm) {
         thumbnailUrl,
         targetLink,
         videoUrl,
+        targetPlacement,
+        hasThumbnail: !!thumbnailUrl,
+        hasVideo: !!videoUrl,
         userId: currentUser ? currentUser.uid : "anonymous",
         userEmail: currentUser ? currentUser.email : "anonymous",
         userName: currentUser ? (currentUser.displayName || "Contributor") : "Contributor",

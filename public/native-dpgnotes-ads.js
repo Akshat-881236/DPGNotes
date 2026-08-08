@@ -296,10 +296,7 @@
       card.style.transform = "scale(0.95)";
 
       setTimeout(async () => {
-        const allAds = await fetchApprovedAds();
-        const otherAds = allAds.filter(a => a.id !== ad.id);
-        const pool = otherAds.length > 0 ? otherAds : allAds;
-        const nextAd = pool[Math.floor(Math.random() * pool.length)];
+        const nextAd = selectAdForVariant(allAds, variant, new Set([ad.id])) || allAds[0];
 
         const newCard = createAdCardElement(nextAd, "elem_" + Date.now(), variant);
         newCard.style.opacity = "0";
@@ -355,6 +352,51 @@
     return card;
   }
 
+  /**
+   * Selects an ad according to asset composition & area placement rules:
+   * 1. Absence of thumbnail -> target header and footer ads only (primary).
+   * 2. Thumbnail uploaded but NO video -> heavily preferred for Sidebar. Fallback includes video.
+   * 3. Main content area -> prefer BOTH video and thumbnail ads.
+   */
+  function selectAdForVariant(ads, variant = "feed", usedAdIds = new Set()) {
+    if (!ads || ads.length === 0) return null;
+
+    let candidates = ads.filter(a => !usedAdIds.has(a.id));
+    if (candidates.length === 0) candidates = ads;
+
+    let priorityPool = [];
+
+    if (variant === "header" || variant === "footer" || variant === "top" || variant === "bottom") {
+      // 1. Absence of thumbnail -> target header and footer ads
+      const noThumbnailAds = candidates.filter(a => !a.thumbnailUrl || (a.targetPlacement && a.targetPlacement.includes("header")));
+      priorityPool = noThumbnailAds.length > 0 ? noThumbnailAds : candidates;
+    } else if (variant === "sidebar") {
+      // 2. Thumbnail uploaded but NO video -> heavily preferred for Sidebar
+      const sidebarImageAds = candidates.filter(a => a.thumbnailUrl && !a.videoUrl);
+      if (sidebarImageAds.length > 0) {
+        priorityPool = sidebarImageAds;
+      } else {
+        // Fallback: In lack of image-only ads, include video ads as well
+        priorityPool = candidates;
+      }
+    } else if (variant === "feed" || variant === "main") {
+      // 3. Main content area -> prefer BOTH video and thumbnail ads
+      const richVideoThumbAds = candidates.filter(a => a.thumbnailUrl && a.videoUrl);
+      if (richVideoThumbAds.length > 0) {
+        priorityPool = richVideoThumbAds;
+      } else {
+        const thumbAds = candidates.filter(a => a.thumbnailUrl);
+        priorityPool = thumbAds.length > 0 ? thumbAds : candidates;
+      }
+    } else {
+      priorityPool = candidates;
+    }
+
+    const selected = priorityPool[Math.floor(Math.random() * priorityPool.length)];
+    if (selected && selected.id) usedAdIds.add(selected.id);
+    return selected;
+  }
+
   async function renderAllNativeAds() {
     const containers = document.querySelectorAll(".native-ads, #native-ads");
     if (containers.length === 0) return;
@@ -369,22 +411,13 @@
       const count = parseInt(box.dataset.adCount || "1", 10);
       const variant = box.dataset.adVariant || (box.id.includes("header") ? "header" : box.id.includes("footer") ? "footer" : box.id.includes("sidebar") || box.classList.contains("sidebar") ? "sidebar" : "feed");
 
-      // Random non-duplicate selection per container
-      const usedIndexes = new Set();
+      const usedAdIds = new Set();
       for (let i = 0; i < count; i++) {
-        let adIndex;
-        if (usedIndexes.size < ads.length) {
-          do {
-            adIndex = Math.floor(Math.random() * ads.length);
-          } while (usedIndexes.has(adIndex));
-          usedIndexes.add(adIndex);
-        } else {
-          adIndex = Math.floor(Math.random() * ads.length);
+        const selectedAd = selectAdForVariant(ads, variant, usedAdIds);
+        if (selectedAd) {
+          const cardEl = createAdCardElement(selectedAd, "elem_" + boxIdx + "_" + i + "_" + Date.now(), variant);
+          box.appendChild(cardEl);
         }
-
-        const randomAd = ads[adIndex];
-        const cardEl = createAdCardElement(randomAd, "elem_" + boxIdx + "_" + i + "_" + Date.now(), variant);
-        box.appendChild(cardEl);
       }
     });
   }
