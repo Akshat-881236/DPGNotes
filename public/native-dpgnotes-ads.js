@@ -112,6 +112,38 @@
     return btn;
   }
 
+  function generateAdTrackId(adId) {
+    if (!adId) return Math.floor(10000000 + Math.random() * 90000000).toString();
+    let hash = 0;
+    for (let i = 0; i < adId.length; i++) {
+      hash = (hash << 5) - hash + adId.charCodeAt(i);
+      hash |= 0;
+    }
+    const positiveHash = Math.abs(hash);
+    const eightDigit = (positiveHash % 90000000 + 10000000).toString();
+    return eightDigit;
+  }
+
+  function buildTrackedAdTargetLink(targetUrl, adId) {
+    if (!targetUrl) return "#";
+    const trackId = generateAdTrackId(adId);
+    
+    try {
+      const map = JSON.parse(localStorage.getItem('dpg_ad_track_map') || '{}');
+      map[trackId] = { adId: adId, timestamp: Date.now() };
+      localStorage.setItem('dpg_ad_track_map', JSON.stringify(map));
+    } catch(e) {}
+
+    try {
+      const urlObj = new URL(targetUrl, window.location.href);
+      urlObj.searchParams.set("track_id", trackId);
+      return urlObj.toString();
+    } catch(e) {
+      const sep = targetUrl.includes("?") ? "&" : "?";
+      return `${targetUrl}${sep}track_id=${trackId}`;
+    }
+  }
+
   function createAdCardElement(ad, containerId, variant = "feed") {
     const card = document.createElement("div");
     card.className = `dpg-native-ad-card dpg-ad-variant-${variant}`;
@@ -119,6 +151,7 @@
     const vidId = extractYouTubeId(ad.videoUrl);
     const profileUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
     const profileUrl = profileUid ? `profile.html?uid=${encodeURIComponent(profileUid)}` : "profile.html";
+    const finalTargetLink = buildTrackedAdTargetLink(ad.targetLink, ad.id);
 
     let rotationTimeout = null;
     let videoPlaybackTimeout = null;
@@ -200,7 +233,7 @@
           </div>
           <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">View <i class="ri-arrow-right-s-line"></i></a>` : ''}
+        ${ad.targetLink ? `<a href="${finalTargetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">View <i class="ri-arrow-right-s-line"></i></a>` : ''}
       `;
     } else if (variant === "footer" || variant === "bottom") {
       card.style.cssText = `
@@ -232,7 +265,7 @@
           </div>
           <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>` : ''}
+        ${ad.targetLink ? `<a href="${finalTargetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>` : ''}
       `;
     } else if (variant === "sidebar") {
       card.style.cssText = `
@@ -263,7 +296,7 @@
         </div>
 
         <h4 style="font-size:0.84rem; font-weight:700; color:white; margin-bottom:4px; line-height:1.2; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.title || 'Promoted Content'}</h4>
-        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
+        ${ad.targetLink ? `<a href="${finalTargetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
       `;
     } else {
       // Default / Feed Variant
@@ -296,7 +329,7 @@
 
         <h4 style="font-size:0.9rem; font-weight:700; color:white; margin-bottom:4px; line-height:1.3;">${ad.title || 'Promoted Content'}</h4>
         <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.description || ''}</p>
-        ${ad.targetLink ? `<a href="${ad.targetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
+        ${ad.targetLink ? `<a href="${finalTargetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>` : ''}
       `;
     }
 

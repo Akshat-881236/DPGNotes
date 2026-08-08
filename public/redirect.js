@@ -507,5 +507,80 @@
         })
       }).catch(err => console.warn('Device log tracking error:', err));
     })();
+
+    // Automatically trigger Ad Track-ID Attribution & Screentime Telemetry
+    (function initAdTrackTelemetry() {
+      const params = new URLSearchParams(window.location.search);
+      const trackId = params.get('track_id') || params.get('trackId');
+      if (!trackId) return;
+
+      // Set cookie for track_id
+      const d = new Date();
+      d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000));
+      document.cookie = `dpg_ad_click_track_id=${encodeURIComponent(trackId)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+
+      const pageUrl = window.location.href;
+      const pageTitle = document.title || "DPGNotes Resource Page";
+      const pageDesc = document.querySelector('meta[name="description"]')?.content || "";
+      const startTime = Date.now();
+
+      let adId = "";
+      try {
+        const map = JSON.parse(localStorage.getItem('dpg_ad_track_map') || '{}');
+        if (map[trackId]) adId = map[trackId].adId;
+      } catch(e) {}
+
+      async function syncAdTrackSession(screentimeSec = 0) {
+        try {
+          const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
+          const visitorUid = activeUser.uid || localStorage.getItem("dpg_guest_id") || "guest_anon";
+          const visitorEmail = activeUser.email || "guest@dpgnotes.app";
+
+          const trackingData = {
+            trackId,
+            adId,
+            pageUrl,
+            pageTitle,
+            pageDescription: pageDesc,
+            visitorUid,
+            visitorEmail,
+            screentimeSeconds: screentimeSec,
+            referrerUrl: document.referrer || "",
+            timestamp: new Date().toISOString(),
+            lastActiveAt: new Date().toISOString()
+          };
+
+          if (window.dpgDb && window.doc && window.setDoc) {
+            await window.setDoc(window.doc(window.dpgDb, "ad_trackings", `${trackId}_${visitorUid}`), trackingData, { merge: true }).catch(console.warn);
+          } else {
+            fetch((window.API_BASE_URL || '') + '/api/ad-track-telemetry', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(trackingData)
+            }).catch(console.warn);
+          }
+        } catch(e) {
+          console.warn("Sync ad track session error:", e);
+        }
+      }
+
+      syncAdTrackSession(0);
+
+      setInterval(() => {
+        const elapsedSec = Math.round((Date.now() - startTime) / 1000);
+        syncAdTrackSession(elapsedSec);
+      }, 5000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          const elapsedSec = Math.round((Date.now() - startTime) / 1000);
+          syncAdTrackSession(elapsedSec);
+        }
+      });
+      window.addEventListener('beforeunload', () => {
+        const elapsedSec = Math.round((Date.now() - startTime) / 1000);
+        syncAdTrackSession(elapsedSec);
+      });
+    })();
   });
 })();

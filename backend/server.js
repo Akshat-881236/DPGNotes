@@ -1217,6 +1217,36 @@ app.post('/api/share/generate', async (req, res) => {
   }
 });
 
+// ============================================================================
+// AD TRACK-ID TELEMETRY & SCREENTIME TRACKING ROUTE
+// ============================================================================
+app.post('/api/ad-track-telemetry', async (req, res) => {
+  try {
+    const { trackId, adId, pageUrl, pageTitle, pageDescription, visitorUid, visitorEmail, screentimeSeconds, referrerUrl } = req.body;
+    if (!trackId) return res.status(400).json({ error: "trackId required" });
+
+    if (db) {
+      const docRef = db.collection("ad_trackings").doc(`${trackId}_${visitorUid || 'anon'}`);
+      await docRef.set({
+        trackId,
+        adId: adId || "",
+        pageUrl: pageUrl || "",
+        pageTitle: pageTitle || "",
+        pageDescription: pageDescription || "",
+        visitorUid: visitorUid || "anon",
+        visitorEmail: visitorEmail || "anon",
+        screentimeSeconds: screentimeSeconds || 0,
+        referrerUrl: referrerUrl || "",
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+    res.json({ success: true });
+  } catch(e) {
+    console.error("Ad track telemetry API error:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/share/click', async (req, res) => {
   const { token, openedBy } = req.query;
   if (!token) return res.status(400).json({ error: "Token required" });
