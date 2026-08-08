@@ -1449,6 +1449,7 @@ async function loadContributorManageResources() {
           <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
             <button onclick="openEditResourceModal('${docData.id}')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:5px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-edit-line"></i> Edit</button>
             <a href="dpgnotes-pdf-viewer.html?resourceID=${docData.id}" target="_blank" style="background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:#34d399; padding:5px 12px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-eye-line"></i> View</a>
+            <a href="train_model.html?id=${docData.id}" style="background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4); color:#c4b5fd; padding:5px 12px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-cpu-line"></i> Train Model</a>
           </div>
         </td>
       `;

@@ -60,6 +60,61 @@
       min-width: 180px;
       max-width: 280px;
     }
+    
+    /* MOBILE & TABLET MEDIA OPTIMIZATION (Card Stack Transformation) */
+    @media (max-width: 768px) {
+      .tabs-container {
+        padding: 1rem 0.6rem !important;
+      }
+      .manage-res-table-wrapper {
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      .manage-res-table, 
+      .manage-res-table thead, 
+      .manage-res-table tbody, 
+      .manage-res-table th, 
+      .manage-res-table td, 
+      .manage-res-table tr {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+      }
+      .manage-res-table thead {
+        display: none !important;
+      }
+      .manage-res-table tr.manage-res-row {
+        background: rgba(15, 23, 42, 0.85) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 14px !important;
+        margin-bottom: 0.85rem !important;
+        padding: 1rem !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+      }
+      .manage-res-table td {
+        padding: 0.35rem 0 !important;
+        white-space: normal !important;
+        border: none !important;
+      }
+      .manage-res-table td.title-col {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        margin-bottom: 0.4rem !important;
+      }
+      .manage-res-table td[data-label="Action Panel"] {
+        margin-top: 0.6rem !important;
+        padding-top: 0.6rem !important;
+        border-top: 1px dashed rgba(255,255,255,0.1) !important;
+      }
+      .manage-res-table td[data-label="Action Panel"] > div {
+        justify-content: flex-start !important;
+        gap: 8px !important;
+      }
+    }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
