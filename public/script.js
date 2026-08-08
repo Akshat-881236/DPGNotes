@@ -68,8 +68,8 @@ import {
 
   getDoc,
 
-  doc
-
+  doc,
+  setDoc
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
@@ -113,6 +113,74 @@ const db =
 window.dpgDb = db;
 window.collection = collection;
 window.getDocs = getDocs;
+
+// =========================================
+// COOKIE TRACKING & AI INTEREST SUMMARY ENGINE
+// =========================================
+function setCookie(name, val, days = 365) {
+  const d = new Date();
+  d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+  document.cookie = `${name}=${encodeURIComponent(val)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+}
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? decodeURIComponent(v[2]) : null;
+}
+
+window.getDPGUserInterests = function() {
+  const raw = getCookie('dpg_user_interests');
+  try {
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) {
+    return [];
+  }
+};
+
+window.trackUserBehaviorInterest = async function(interestKeyword, category = "General") {
+  if (!interestKeyword) return;
+  let interests = window.getDPGUserInterests();
+  if (!Array.isArray(interests)) interests = [];
+
+  const clean = String(interestKeyword).trim().toLowerCase();
+  if (clean && !interests.includes(clean)) {
+    interests.unshift(clean);
+    if (interests.length > 20) interests.pop();
+    setCookie('dpg_user_interests', JSON.stringify(interests));
+  }
+
+  try {
+    let visitorId = getCookie('dpg_visitor_id');
+    if (!visitorId) {
+      visitorId = 'visitor_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      setCookie('dpg_visitor_id', visitorId, 365);
+    }
+
+    const activeUser = auth.currentUser;
+    const userUid = activeUser ? activeUser.uid : visitorId;
+    const userEmail = activeUser ? activeUser.email : "anonymous";
+
+    const summaryMd = `# 📊 DPGNotes User Behavioral & Interest AI Analysis Summary\n\n` +
+      `- **Visitor ID / UID**: \`${userUid}\`\n` +
+      `- **User Email**: \`${userEmail}\`\n` +
+      `- **Last Active Interest**: \`${clean}\`\n` +
+      `- **Active Academic Category**: \`${category}\`\n` +
+      `- **Tracked Interest Keywords**: ${interests.map(i => `\`${i}\``).join(', ')}\n` +
+      `- **Ad Monetization Personalization**: Enabled (Native & AdSense Targeted)\n` +
+      `- **Timestamp**: ${new Date().toISOString()}`;
+
+    await setDoc(doc(db, "user_cookies", userUid), {
+      visitorId,
+      userEmail,
+      interests,
+      category,
+      summaryMd,
+      updatedAt: serverTimestamp()
+    }, { merge: true }).catch(console.warn);
+  } catch(e) {
+    console.warn("Cookie tracking sync failed:", e);
+  }
+};
 
 const PDF_VIEWER =
 "https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=";

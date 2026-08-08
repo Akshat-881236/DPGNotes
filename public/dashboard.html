@@ -28,6 +28,33 @@
     .ad-banner-section:has(ins[data-ad-status="unfilled"]) {
       display: none !important;
     }
+    @media (max-width: 768px) {
+      #manageResourcesTab table, #manageResourcesTab thead, #manageResourcesTab tbody, #manageResourcesTab th, #manageResourcesTab td, #manageResourcesTab tr {
+        display: block;
+      }
+      #manageResourcesTab thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      #manageResourcesTab tr.manage-res-row {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 0.8rem;
+        padding: 0.8rem;
+      }
+      #manageResourcesTab td {
+        border: none;
+        padding: 0.4rem 0 !important;
+        text-align: left !important;
+      }
+      #manageResourcesTab td[data-label="Action Panel"] {
+        margin-top: 0.5rem;
+        border-top: 1px dashed rgba(255,255,255,0.1);
+        padding-top: 0.6rem !important;
+      }
+    }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

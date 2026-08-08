@@ -115,6 +115,38 @@
             color: var(--text-secondary);
         }
 
+        /* Mobile & Tablet Header Media Optimization */
+        @media (max-width: 768px) {
+            .header {
+                height: auto;
+                min-height: 56px;
+                padding: 6px 12px;
+                gap: 6px;
+            }
+            .header-title {
+                font-size: 0.95rem;
+                gap: 6px;
+            }
+            .header-info {
+                gap: 6px;
+            }
+            .header-info a {
+                font-size: 0.75rem !important;
+                margin-right: 4px !important;
+            }
+            .native-ads[data-ad-variant="header"] {
+                margin-top: 72px !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .header-title span {
+                font-size: 0.85rem;
+            }
+            #userHeaderPillAnalyzer {
+                margin-right: 2px !important;
+            }
+        }
+
         .status-dot {
             width: 10px;
             height: 10px;

@@ -396,6 +396,20 @@
     }
     if (candidates.length === 0) candidates = ads; // Allow repetition if required
 
+    // Cookie Interest Matching Personalization
+    const userInterests = typeof window.getDPGUserInterests === "function" ? window.getDPGUserInterests().map(i => String(i).toLowerCase()) : [];
+    if (userInterests.length > 0) {
+      const cookieMatched = candidates.filter(a => {
+        const title = (a.title || "").toLowerCase();
+        const desc = (a.description || "").toLowerCase();
+        const tags = Array.isArray(a.tags) ? a.tags.map(t => String(t).toLowerCase()) : [];
+        return userInterests.some(kw => title.includes(kw) || desc.includes(kw) || tags.some(t => t.includes(kw)));
+      });
+      if (cookieMatched.length > 0) {
+        candidates = cookieMatched;
+      }
+    }
+
     let priorityPool = [];
 
     if (variant === "header" || variant === "footer" || variant === "top" || variant === "bottom") {

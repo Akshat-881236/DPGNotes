@@ -1794,3 +1794,53 @@ if (adForm) {
     }
   });
 }
+
+// =========================================
+// CONTRIBUTOR MANAGE RESOURCES ENGINE
+// =========================================
+async function loadContributorManageResources() {
+  const tbody = document.getElementById("manageResourcesTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:var(--text-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading resources...</td></tr>`;
+
+  if (!currentUser) return;
+
+  try {
+    const qDocs = query(collection(db, "documents"), where("uploaderEmail", "==", currentUser.email));
+    const snap = await getDocs(qDocs);
+    const docs = [];
+    snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+
+    if (docs.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="padding:1.5rem; text-align:center; color:var(--text-muted);">No uploaded resources found. Upload notes using the Upload tab!</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    docs.forEach((docData, idx) => {
+      const tr = document.createElement("tr");
+      tr.className = "manage-res-row";
+      tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
+      tr.innerHTML = `
+        <td style="padding:0.75rem 1rem; font-weight:600; color:var(--primary-light);" data-label="SR No.">${idx + 1}</td>
+        <td style="padding:0.75rem 1rem;" data-label="Title">
+          <div style="font-weight:600; color:white;">${docData.title || 'Untitled'}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">${docData.category || 'General'} • ID: ${docData.id}</div>
+        </td>
+        <td style="padding:0.75rem 1rem; color:var(--text-muted);" data-label="Discipline">${docData.discipline || 'General'}</td>
+        <td style="padding:0.75rem 1rem; text-align:center;" data-label="Action Panel">
+          <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+            <button onclick="openEditResourceModal('${docData.id}', '${encodeURIComponent(docData.title || '')}', '${docData.category || ''}', '${docData.discipline || ''}', '${encodeURIComponent(docData.description || '')}')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:5px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-edit-line"></i> Edit</button>
+            <a href="dpgnotes-pdf-viewer.html?resourceID=${docData.id}" target="_blank" style="background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:#34d399; padding:5px 12px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-eye-line"></i> View</a>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Load manage resources failed:", err);
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:#ef4444;">Failed loading resources: ${err.message}</td></tr>`;
+  }
+}
+
+window.loadContributorManageResources = loadContributorManageResources;
