@@ -1951,9 +1951,10 @@ export async function loadAdsAnalyticsAdmin() {
       return;
     }
 
-    if (filterSelect && data.rawAds) {
-      filterSelect.innerHTML = `<option value="ALL">All Approved Ad Campaigns (${data.rawAds.length})</option>`;
-      data.rawAds.forEach(a => {
+    const poolAds = data.allAds || data.rawAds || [];
+    if (filterSelect && poolAds.length > 0) {
+      filterSelect.innerHTML = `<option value="ALL">All Approved Ad Campaigns (${poolAds.length})</option>`;
+      poolAds.forEach(a => {
         const pTag = (a.platform || "dpgnotes") === "linkedin" ? "[LinkedIn]" :
                      (a.platform === "github") ? "[GitHub]" :
                      (a.platform === "medium") ? "[Medium]" :

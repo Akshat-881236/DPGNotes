@@ -1376,7 +1376,7 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
       if (!timeMap[bKey]) {
         timeMap[bKey] = {
           label: bKey,
-          impressions: 1,
+          impressions: 0,
           clicks: 0,
           platforms: { dpgnotes: 0, linkedin: 0, medium: 0, github: 0, youtube: 0 },
           meta: []
@@ -1384,6 +1384,10 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
       }
       timeMap[bKey].clicks += 1;
       timeMap[bKey].meta.push(t);
+
+      const matchedAd = ads.find(a => a.id === t.adId || a.trackId === t.trackId);
+      const pKey = matchedAd ? (matchedAd.platform || "dpgnotes") : "dpgnotes";
+      timeMap[bKey].platforms[pKey] = (timeMap[bKey].platforms[pKey] || 0) + 1;
     });
 
     const sortedLabels = Object.keys(timeMap).sort();
@@ -1425,7 +1429,8 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
       averageCtr,
       platformBreakdown,
       platformBreakdowns,
-      rawAds: ads,
+      allAds: ads,
+      rawAds: filteredAds,
       rawTrackings: filteredTrackings
     };
 
