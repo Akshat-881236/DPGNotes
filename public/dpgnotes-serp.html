@@ -388,16 +388,46 @@
 
       if (results.length === 0) {
         list.innerHTML = `
-          <div class="no-results-panel">
-            <i class="ri-search-line"></i>
-            <h3>No results matched your search</h3>
-            <p>Try broadening your query terms, selecting another academic category, or checking spelling.</p>
+          <div class="no-results-panel" style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:2.5rem; text-align:center;">
+            <i class="ri-search-eye-line" style="font-size:3rem; color:var(--primary-light); margin-bottom:1rem; display:block;"></i>
+            <h3 style="font-size:1.3rem; margin-bottom:0.5rem; color:white;">No results matched your query</h3>
+            <p style="color:var(--text-muted); font-size:0.92rem; max-width:480px; margin:0 auto 1.5rem;">Try broadening your terms, selecting another academic category, or checking spelling.</p>
+            <div style="display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap;">
+              <span class="btag" style="cursor:pointer;" onclick="document.getElementById('serpSearchInput').value='Computer Science'; window.applyFilters();">Computer Science</span>
+              <span class="btag" style="cursor:pointer;" onclick="document.getElementById('serpSearchInput').value='Physics'; window.applyFilters();">Physics</span>
+              <span class="btag" style="cursor:pointer;" onclick="document.getElementById('serpSearchInput').value='Mathematics'; window.applyFilters();">Mathematics</span>
+            </div>
           </div>
         `;
         return;
       }
 
-      list.innerHTML = "";
+      let html = '';
+
+      // Google-Style AI Overview Card at top of search results
+      if (results.length > 0) {
+        const topResult = results[0];
+        html += `
+          <div class="google-ai-overview" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 18px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; position: relative;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem; color: #a78bfa;">
+                <i class="ri-sparkling-fill" style="color: #c084fc; font-size: 1.1rem;"></i> DPGNotes AI Overview
+              </div>
+              <span style="font-size: 0.72rem; background: rgba(139, 92, 246, 0.2); color: #c4b5fd; padding: 2px 8px; border-radius: 12px; font-weight: 600;">Academic AI</span>
+            </div>
+            <p style="font-size: 0.9rem; color: #e2e8f0; line-height: 1.6; margin-bottom: 0.75rem;">
+              Found <strong>${results.length} relevant academic notes</strong> for "<em>${searchField.value || 'all files'}</em>". Top recommended file: <strong>"${topResult.title}"</strong> (${topResult.category} / ${topResult.discipline}).
+            </p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 0.75rem; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 20px; color: #cbd5e1;"><i class="ri-check-double-line" style="color:#10b981;"></i> Sessional Verified</span>
+              <span style="font-size: 0.75rem; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 20px; color: #cbd5e1;"><i class="ri-shield-check-line" style="color:#60a5fa;"></i> Content Approved</span>
+            </div>
+          </div>
+        `;
+      }
+
+      list.innerHTML = html;
+
       results.forEach((d, idx) => {
         const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
         const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
@@ -405,28 +435,41 @@
 
         const card = document.createElement("article");
         card.className = "result-card";
+        card.style.cssText = "background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.25rem 1.5rem; margin-bottom:1rem; transition:all 0.2s;";
         card.innerHTML = `
           <div class="result-content">
-            <span class="result-category">${d.category}</span>
-            <h2 class="result-title">${d.title}</h2>
-            <p class="result-desc">${d.description || "No description provided."}</p>
-            <div class="result-meta">
+            <!-- Google Breadcrumb Link Line -->
+            <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.35rem;">
+              <span style="width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.65rem; font-weight:800;">D</span>
+              <span>dpgnotes.web.app › ${d.category || 'notes'} › ${d.discipline || 'academic'}</span>
+            </div>
+
+            <!-- Google Blue Clickable Title Link -->
+            <h2 class="result-title" style="margin-bottom:0.4rem;">
+              <a href="${viewerUrl}" style="color:#818cf8; text-decoration:none; font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700; transition:color 0.2s;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                ${d.title}
+              </a>
+            </h2>
+
+            <p class="result-desc" style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">
+              ${d.description || "No detailed summary provided for this sessional document."}
+            </p>
+
+            <div class="result-meta" style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
+              <span style="background:rgba(99, 102, 241, 0.15); color:#a78bfa; padding:2px 8px; border-radius:12px; font-weight:600;"><i class="ri-folder-3-line"></i> ${d.category}</span>
               <span><i class="ri-book-open-line"></i> ${d.discipline}</span>
-              <span><i class="ri-user-follow-line"></i> ${d.userName || d.uploader || "Contributor"}</span>
-              <span><i class="ri-heart-line"></i> ${likesCount} Likes</span>
+              <span><i class="ri-user-line"></i> ${d.userName || d.uploader || "Contributor"}</span>
+              <span><i class="ri-heart-3-line" style="color:#ef4444;"></i> ${likesCount} Likes</span>
             </div>
           </div>
-          <a href="${viewerUrl}" class="result-visit-btn" title="Open Document">
-            <i class="ri-arrow-right-line"></i>
-          </a>
         `;
         list.appendChild(card);
 
-        // Inject Native Ad / AdSense unit after every 2 search results
-        if (idx > 0 && idx % 2 === 1) {
+        // Inject Native Ad / AdSense unit after every 5 search results (Reduced Ad Count)
+        if (idx > 0 && (idx + 1) % 5 === 0) {
           const adContainer = document.createElement("div");
           adContainer.className = "serp-ad-slot";
-          adContainer.style.cssText = "margin: 0.8rem 0; width: 100%;";
+          adContainer.style.cssText = "margin: 1rem 0 1.5rem 0; width: 100%;";
           adContainer.innerHTML = `
             <div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>
             <div class="ad-banner-section" style="margin-top:0.5rem;">

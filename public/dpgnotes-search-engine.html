@@ -288,22 +288,41 @@
     <div class="brand-logo">
       <i class="ri-search-eye-line"></i>
     </div>
-    <h1 class="brand-title">DPGNotes Search</h1>
-    <p class="brand-subtitle">Fast, secure academic search engine covering DPG College sessional files.</p>
+    <h1 class="brand-title">DPG<span style="color:var(--primary-light);">Notes</span> Search</h1>
+    <p class="brand-subtitle">Academic Intelligence & Sessional Search Portal for DPG College</p>
 
-    <!-- Interactive Search Box -->
-    <div class="search-box-wrapper">
-      <i class="ri-search-line search-icon"></i>
-      <input type="text" class="search-input" id="engineSearchInput" placeholder="Type document title or subject keywords..." autocomplete="off">
-      <button class="search-btn" onclick="triggerSearchRedirect()">Search</button>
+    <!-- Mini Google Style Search Box -->
+    <div class="search-box-wrapper" style="box-shadow: 0 12px 35px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); padding: 0.35rem 0.6rem;">
+      <i class="ri-search-line search-icon" style="font-size:1.3rem; color:var(--primary-light);"></i>
+      <input type="text" class="search-input" id="engineSearchInput" placeholder="Search sessional notes, PYQs, subjects, or keywords..." autocomplete="off">
+      
+      <div style="display:flex; align-items:center; gap:8px; margin-right:6px;">
+        <button type="button" title="Voice Search" onclick="startVoiceSearch()" style="background:none; border:none; color:#a78bfa; font-size:1.25rem; cursor:pointer; padding:4px 6px; border-radius:50%; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><i class="ri-mic-line"></i></button>
+        <button type="button" title="DPG Lens Search" onclick="document.getElementById('engineSearchInput').focus()" style="background:none; border:none; color:#38bdf8; font-size:1.25rem; cursor:pointer; padding:4px 6px; border-radius:50%; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><i class="ri-camera-lens-line"></i></button>
+      </div>
+
+      <button class="search-btn" onclick="triggerSearchRedirect()"><i class="ri-search-line"></i> Search</button>
     </div>
 
-    <!-- Live Auto-suggestions Container (Block flow pushes down ads dynamically) -->
+    <!-- Quick Action Buttons & Category Chips (Google Style) -->
+    <div style="display:flex; justify-content:center; gap:10px; margin-top:1rem; flex-wrap:wrap;">
+      <button onclick="triggerSearchRedirect()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--text); padding:0.5rem 1.1rem; border-radius:12px; font-size:0.85rem; font-family:inherit; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(99,102,241,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.06)'">DPGNotes Search</button>
+      <button onclick="luckyRedirect()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--text); padding:0.5rem 1.1rem; border-radius:12px; font-size:0.85rem; font-family:inherit; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#f59e0b'; this.style.background='rgba(245,158,11,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.06)'">I'm Feeling Lucky ⚡</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:8px; margin-top:1rem; flex-wrap:wrap; font-size:0.8rem;">
+      <span class="btag" style="cursor:pointer; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a78bfa; padding:4px 12px; border-radius:20px;" onclick="document.getElementById('engineSearchInput').value='Sessional Notes'; triggerSearchRedirect();"><i class="ri-file-text-line"></i> Sessional Notes</span>
+      <span class="btag" style="cursor:pointer; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#60a5fa; padding:4px 12px; border-radius:20px;" onclick="document.getElementById('engineSearchInput').value='PYQ'; triggerSearchRedirect();"><i class="ri-question-line"></i> PYQs</span>
+      <span class="btag" style="cursor:pointer; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; padding:4px 12px; border-radius:20px;" onclick="document.getElementById('engineSearchInput').value='Computer Science'; triggerSearchRedirect();"><i class="ri-code-s-slash-line"></i> Computer Science</span>
+      <span class="btag" style="cursor:pointer; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; padding:4px 12px; border-radius:20px;" onclick="document.getElementById('engineSearchInput').value='Syllabus'; triggerSearchRedirect();"><i class="ri-book-line"></i> Syllabus</span>
+    </div>
+
+    <!-- Live Auto-suggestions Container -->
     <div class="suggestions-panel" id="suggestionsPanel">
       <div class="no-results-item">Start typing to scan documents...</div>
     </div>
 
-    <!-- Feed Native Ad Container (Auto-adjusts and pushes down as suggestions grow) -->
+    <!-- Feed Native Ad Container -->
     <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.5rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
 
     <!-- Google AdSense Placeholder -->
@@ -409,7 +428,40 @@
       const q = input.value.trim();
       if (q) {
         window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(q)}`;
+      } else {
+        window.location.href = `/dpgnotes-serp.html`;
       }
+    };
+
+    window.luckyRedirect = function() {
+      if (allDocs.length > 0) {
+        const randomDoc = allDocs[Math.floor(Math.random() * allDocs.length)];
+        const tagsString = Array.isArray(randomDoc.tags) ? randomDoc.tags.join(", ") : (randomDoc.tags || "");
+        window.location.href = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(randomDoc.pdfUrl || '')}&title=${encodeURIComponent(randomDoc.title || '')}&category=${encodeURIComponent(randomDoc.category || '')}&discipline=${encodeURIComponent(randomDoc.discipline || '')}&uploader=${encodeURIComponent(randomDoc.userName || randomDoc.uploader || 'Contributor')}&docid=${encodeURIComponent(randomDoc.id)}&description=${encodeURIComponent(randomDoc.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=LUCKY`;
+      } else {
+        window.location.href = `/dpgnotes-serp.html`;
+      }
+    };
+
+    window.startVoiceSearch = function() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Voice recognition is not supported in this browser environment. Please type your query.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.start();
+      input.placeholder = "🎙️ Listening... Speak your search query now";
+      
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        window.triggerSearchRedirect();
+      };
+      recognition.onerror = () => {
+        input.placeholder = "Search sessional notes, PYQs, subjects, or keywords...";
+      };
     };
 
     // Load Cache on start
