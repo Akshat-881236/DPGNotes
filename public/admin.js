@@ -1972,6 +1972,13 @@ export async function loadAdsAnalyticsAdmin() {
     document.getElementById("statAdCTR").textContent = `${data.averageCtr || 0.00}%`;
     document.getElementById("statAdScreentime").textContent = `${data.totalScreentime || 0}s`;
 
+    if (document.getElementById("statMeanImpressions")) {
+      document.getElementById("statMeanImpressions").textContent = (data.meanImpressions || 0.0).toLocaleString();
+    }
+    if (document.getElementById("statClickProbability")) {
+      document.getElementById("statClickProbability").textContent = (data.clickProbability || 0.0000).toFixed(4);
+    }
+
     const ctx = document.getElementById("adAnalyticsChart")?.getContext("2d");
     if (ctx && typeof Chart !== "undefined") {
       if (adAnalyticsChartInstance) {
@@ -2122,40 +2129,51 @@ export async function loadAdsAnalyticsAdmin() {
           },
           onClick: (evt, activeElements) => {
             if (activeElements && activeElements.length > 0) {
-              const datasetIdx = activeElements[0].datasetIndex;
               const index = activeElements[0].index;
+              const dateStr = data.labels ? data.labels[index] : 'Date Inspector';
               const meta = data.clickMetadata ? data.clickMetadata[index] : [];
-              const rawAds = data.rawAds || [];
+              const rawAds = data.allAds || data.rawAds || [];
 
-              if (datasetIdx === 0) {
-                // Green Line - Advertiser Profile
-                const ad = rawAds[0] || {};
-                const uid = ad.userId || ad.uid || ad.userUid || "";
-                if (uid) {
-                  window.open(`profile.html?uid=${encodeURIComponent(uid)}`, '_blank');
-                } else {
-                  window.open('profile.html', '_blank');
-                }
-              } else if (datasetIdx === 1) {
-                // Yellow Line - Ad Target Link
-                const ad = rawAds[0] || {};
-                const targetLink = ad.targetLink || "index.html";
-                const trackId = ad.trackId || (ad.id ? generateAdTrackId(ad.id) : "74920184");
-                const sep = targetLink.includes("?") ? "&" : "?";
-                window.open(`${targetLink}${sep}track_id=${trackId}`, '_blank');
-              } else if (datasetIdx === 2) {
-                // Red Line - Visitor Profile or Ad Link
+              const modal = document.getElementById("chartClickableUserModal");
+              const popoverTitle = document.getElementById("popoverDate");
+              const popoverContent = document.getElementById("popoverContent");
+
+              if (modal && popoverContent) {
+                popoverTitle.textContent = `${dateStr} Inspector`;
+                let html = `<div style="font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">Recorded Visitor Interactions & Profile Links:</div>`;
+
                 if (meta && meta.length > 0) {
-                  const clickedUser = meta[0];
-                  const uid = clickedUser.visitorUid || clickedUser.userUid;
-                  if (uid && uid !== 'guest_anon' && !uid.startsWith('visitor_')) {
-                    window.open(`profile.html?uid=${encodeURIComponent(uid)}`, '_blank');
-                  } else if (clickedUser.pageUrl) {
-                    window.open(clickedUser.pageUrl, '_blank');
-                  } else {
-                    alert(`Visitor Telemetry: ${clickedUser.visitorEmail || 'guest@dpgnotes.app'}\nTrack ID: ${clickedUser.trackId || 'N/A'}\nScreentime: ${clickedUser.screentimeSeconds || 0}s`);
-                  }
+                  meta.forEach(m => {
+                    const uEmail = m.visitorEmail || 'guest@dpgnotes.app';
+                    const uUid = m.visitorUid || '';
+                    const linkUrl = uUid && uUid !== 'guest_anon' && !uUid.startsWith('visitor_')
+                      ? `profile.html?uid=${encodeURIComponent(uUid)}`
+                      : `profile.html?email=${encodeURIComponent(uEmail)}`;
+                    
+                    html += `
+                      <div style="background:rgba(255,255,255,0.05); padding:6px 8px; border-radius:6px; font-size:0.78rem; display:flex; justify-content:space-between; align-items:center;">
+                        <a href="${linkUrl}" target="_blank" style="color:#a78bfa; font-weight:700; text-decoration:underline;" title="Click to view User Profile">${uEmail}</a>
+                        <span style="color:#f59e0b; font-weight:600;">${m.screentimeSeconds || 0}s</span>
+                      </div>
+                    `;
+                  });
+                } else {
+                  html += `<div style="color:#64748b; font-style:italic;">No recorded user clicks for this period.</div>`;
                 }
+
+                if (rawAds.length > 0) {
+                  const ad = rawAds[0];
+                  const profileUrl = (ad.userId || ad.uid) ? `profile.html?uid=${encodeURIComponent(ad.userId || ad.uid)}` : 'profile.html';
+                  html += `
+                    <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:6px; padding-top:6px; display:flex; flex-direction:column; gap:4px;">
+                      <a href="${profileUrl}" target="_blank" style="color:#60a5fa; font-size:0.75rem; text-decoration:none; font-weight:600;"><i class="ri-user-star-line"></i> View Advertiser (${ad.userName || 'Contributor'}) Profile</a>
+                      <a href="${ad.targetLink || 'index.html'}" target="_blank" style="color:#38bdf8; font-size:0.75rem; text-decoration:none; font-weight:600;"><i class="ri-external-link-line"></i> Visit Ad Target Destination</a>
+                    </div>
+                  `;
+                }
+
+                popoverContent.innerHTML = html;
+                modal.style.display = "block";
               }
             }
           },
@@ -2181,6 +2199,64 @@ export async function loadAdsAnalyticsAdmin() {
       });
     }
 
+    // Render User-Wise Visitor Table
+    const userTbody = document.getElementById("userVisitorTableBody");
+    if (userTbody) {
+      const userMetrics = data.userVisitorMetrics || [];
+      if (userMetrics.length === 0) {
+        userTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No visitor telemetry recorded yet.</td></tr>`;
+      } else {
+        userTbody.innerHTML = "";
+        userMetrics.forEach(u => {
+          const tr = document.createElement("tr");
+          const hasProfile = u.userUid && u.userUid !== "guest_anon" && !u.userUid.startsWith("visitor_");
+          const pLink = hasProfile ? `profile.html?uid=${encodeURIComponent(u.userUid)}` : `profile.html?email=${encodeURIComponent(u.userEmail)}`;
+          tr.innerHTML = `
+            <td style="padding:0.75rem;">
+              <div style="font-weight:700; color:white;">${u.userEmail}</div>
+              <div style="font-size:0.75rem; color:var(--admin-text-muted); font-family:monospace;">UID: ${u.userUid}</div>
+            </td>
+            <td style="padding:0.75rem; color:#a5b4fc; font-weight:700;">${u.visitedAdsCount} Ads</td>
+            <td style="padding:0.75rem; color:#f59e0b; font-weight:700;">${u.totalScreentime}s</td>
+            <td style="padding:0.75rem; color:#38bdf8; font-weight:600;">${u.avgScreentime}s</td>
+            <td style="padding:0.75rem; color:#10b981; font-weight:700;">${u.clickProbabilityPct}%</td>
+            <td style="padding:0.75rem;">
+              <a href="${pLink}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-search-line"></i> Profile</a>
+            </td>
+          `;
+          userTbody.appendChild(tr);
+        });
+      }
+    }
+
+    // Render Contributor Uploaded Ads Table
+    const contribTbody = document.getElementById("contributorAdTableBody");
+    if (contribTbody) {
+      const contribMetrics = data.contributorAdMetrics || [];
+      if (contribMetrics.length === 0) {
+        contribTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No contributor ad campaigns uploaded yet.</td></tr>`;
+      } else {
+        contribTbody.innerHTML = "";
+        contribMetrics.forEach(c => {
+          const tr = document.createElement("tr");
+          const pLink = c.userId && c.userId !== "anonymous" ? `profile.html?uid=${encodeURIComponent(c.userId)}` : 'profile.html';
+          tr.innerHTML = `
+            <td style="padding:0.75rem; font-weight:700; color:white;">${c.userName}</td>
+            <td style="padding:0.75rem; color:#60a5fa; font-weight:700;">${c.totalAdsCount} Ads</td>
+            <td style="padding:0.75rem; color:#f59e0b; font-weight:700;">${c.totalImpressions.toLocaleString()}</td>
+            <td style="padding:0.75rem; color:#ef4444; font-weight:700;">${c.totalClicks}</td>
+            <td style="padding:0.75rem; color:#10b981; font-weight:700;">${c.averageCtr}%</td>
+            <td style="padding:0.75rem; color:#c084fc; font-weight:800;">⭐ ${c.rankScore}</td>
+            <td style="padding:0.75rem;">
+              <a href="${pLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-line"></i> Profile</a>
+            </td>
+          `;
+          contribTbody.appendChild(tr);
+        });
+      }
+    }
+
+    // Render Detailed Per-TrackID Telemetry Table
     const tbody = document.getElementById("adAnalyticsTableBody");
     if (tbody) {
       const rawTrackings = data.rawTrackings || [];
@@ -2207,7 +2283,7 @@ export async function loadAdsAnalyticsAdmin() {
           </td>
           <td style="padding:0.75rem; font-weight:700; color:#f59e0b;">${t.screentimeSeconds || 0}s</td>
           <td style="padding:0.75rem;">
-            ${hasProfile ? `<a href="profile.html?uid=${encodeURIComponent(uid)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-search-line"></i> View Profile</a>` : `<span style="font-size:0.75rem; color:var(--admin-text-muted);">Guest Visitor</span>`}
+            ${hasProfile ? `<a href="profile.html?uid=${encodeURIComponent(uid)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-search-line"></i> View Profile</a>` : `<a href="profile.html?email=${encodeURIComponent(t.visitorEmail || '')}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-line"></i> View Profile</a>`}
           </td>
         `;
         tbody.appendChild(tr);

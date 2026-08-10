@@ -1416,6 +1416,66 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
     const totalScreentime = filteredTrackings.reduce((acc, t) => acc + (t.screentimeSeconds || 0), 0);
     const averageCtr = totalImpressions > 0 ? parseFloat(((totalClicks / totalImpressions) * 100).toFixed(2)) : 0;
 
+    // Advanced Arithmetic & Probability Math Metrics
+    const meanImpressions = labels.length > 0 ? parseFloat((totalImpressions / labels.length).toFixed(2)) : 0;
+    const meanClicks = labels.length > 0 ? parseFloat((totalClicks / labels.length).toFixed(2)) : 0;
+    const meanScreentime = filteredTrackings.length > 0 ? parseFloat((totalScreentime / filteredTrackings.length).toFixed(2)) : 0;
+    const clickProbability = totalImpressions > 0 ? parseFloat((totalClicks / totalImpressions).toFixed(4)) : 0;
+
+    // User-Wise Visitor Telemetry Analytics
+    const userVisitorMap = {};
+    filteredTrackings.forEach(t => {
+      const uKey = t.visitorEmail || t.visitorUid || "guest_anonymous";
+      if (!userVisitorMap[uKey]) {
+        userVisitorMap[uKey] = {
+          userEmail: t.visitorEmail || "Guest Anonymous",
+          userUid: t.visitorUid || "guest_anon",
+          visitedAdsCount: 0,
+          totalScreentime: 0,
+          clicksCount: 0
+        };
+      }
+      userVisitorMap[uKey].visitedAdsCount += 1;
+      userVisitorMap[uKey].totalScreentime += (t.screentimeSeconds || 0);
+      userVisitorMap[uKey].clicksCount += 1;
+    });
+
+    const userVisitorMetrics = Object.values(userVisitorMap).map(u => ({
+      ...u,
+      avgScreentime: u.visitedAdsCount > 0 ? Math.round(u.totalScreentime / u.visitedAdsCount) : 0,
+      clickProbabilityPct: totalImpressions > 0 ? parseFloat(((u.clicksCount / totalImpressions) * 100).toFixed(2)) : 0
+    })).sort((a, b) => b.totalScreentime - a.totalScreentime);
+
+    // Contributor Uploaded Ads Metrics
+    const contributorAdMap = {};
+    filteredAds.forEach(a => {
+      const cKey = a.userId || "anonymous";
+      if (!contributorAdMap[cKey]) {
+        contributorAdMap[cKey] = {
+          userId: cKey,
+          userName: a.userName || "Contributor",
+          totalAdsCount: 0,
+          totalImpressions: 0,
+          totalClicks: 0
+        };
+      }
+      contributorAdMap[cKey].totalAdsCount += 1;
+      const adImp = a.impressionsCount || a.views || 1;
+      contributorAdMap[cKey].totalImpressions += adImp;
+      
+      const adClicksCount = filteredTrackings.filter(t => t.adId === a.id || t.trackId.includes(a.trackId || "")).length;
+      contributorAdMap[cKey].totalClicks += adClicksCount;
+    });
+
+    const contributorAdMetrics = Object.values(contributorAdMap).map(c => {
+      const ctr = c.totalImpressions > 0 ? parseFloat(((c.totalClicks / c.totalImpressions) * 100).toFixed(2)) : 0;
+      return {
+        ...c,
+        averageCtr: ctr,
+        rankScore: Math.round(c.totalClicks * 10 + c.totalImpressions * 0.5 + ctr * 2)
+      };
+    }).sort((a, b) => b.rankScore - a.rankScore);
+
     const result = {
       success: true,
       labels,
@@ -1427,8 +1487,14 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
       totalClicks,
       totalScreentime,
       averageCtr,
+      meanImpressions,
+      meanClicks,
+      meanScreentime,
+      clickProbability,
       platformBreakdown,
       platformBreakdowns,
+      userVisitorMetrics,
+      contributorAdMetrics,
       allAds: ads,
       rawAds: filteredAds,
       rawTrackings: filteredTrackings
@@ -1965,15 +2031,21 @@ const GEMINI_MODELS = [
   'gemini-pro-latest'
 ];
 
-async function askGemini(promptText) {
+async function askGemini(promptText, maxTokens = 14000) {
   let lastError = null;
   for (const model of GEMINI_MODELS) {
     try {
-      console.log(`Attempting Gemini query with model: ${model}`);
+      console.log(`Attempting Gemini query with model: ${model} (maxTokens: ${maxTokens})`);
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            maxOutputTokens: maxTokens,
+            temperature: 0.7
+          }
+        })
       });
       if (!res.ok) {
         const errText = await res.text();
@@ -2134,8 +2206,8 @@ app.post('/api/ai/analyse-document', async (req, res) => {
 
     // 2. Proceed with Analysis
     const prompt = `You are DPGNotes Intelligence, an advanced AI tutor and document analyzer for students.
-Analyze the following document metadata and provide a comprehensive, structured summary and key insights that a student would find highly useful.
-Format your response in GitHub Flavored Markdown, using headers, bullet points, bold text for emphasis, and clear sections.
+Analyze the following document metadata and extracted text to provide a comprehensive, highly detailed analysis (up to 14,000 max token output).
+Format your response in GitHub Flavored Markdown, using headers, bullet points, bold text for emphasis, tables, code blocks, and LaTeX math notation where applicable.
 
 Document Info:
 Title: ${data.title}
@@ -2144,13 +2216,20 @@ Discipline: ${data.discipline}
 Description: ${data.description || 'N/A'}
 Tags: ${data.tags || 'N/A'}
 
-Provide:
-1. A brief overview of what this document likely covers based on its metadata.
-2. The target audience (e.g., which semester or course).
-3. 3-4 key learning objectives or topics expected to be found inside.
-4. A concluding encouraging remark for the student.`;
+Extracted Document Content & Notes:
+${data.extractedPdfText ? data.extractedPdfText.substring(0, 12000) : 'No raw text extracted.'}
 
-    const answer = await askGemini(prompt);
+Resource Knowledge Base & FAQs:
+${data.knowledgeMd || 'N/A'}
+
+Provide a multi-stage comprehensive analysis:
+1. Executive Summary & Document Overview.
+2. Key Academic Concepts & Formulae Breakdown.
+3. Detailed Topic-by-Topic Explanations with Code / Proofs if applicable.
+4. Practice Questions & Study Checklist for Exams.
+5. Concluding Takeaways and Next Steps.`;
+
+    const answer = await askGemini(prompt, 14000);
     res.json({ analysis: answer });
   } catch (err) {
     console.error("Document AI analysis failed:", err);

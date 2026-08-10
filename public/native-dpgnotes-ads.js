@@ -77,14 +77,47 @@
   }
 
   function createCloseButton(onCloseCallback) {
-    const btn = document.createElement("button");
-    btn.className = "dpg-ad-close-btn";
-    btn.innerHTML = '<i class="ri-close-line"></i>';
-    btn.title = "Close ad (load new ad)";
-    btn.style.cssText = `
+  function createAdHeaderControls(onCloseCallback) {
+    const box = document.createElement("div");
+    box.className = "dpg-ad-header-controls";
+    box.style.cssText = `
       position: absolute;
       top: 6px;
       right: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      z-index: 15;
+    `;
+
+    const infoBtn = document.createElement("a");
+    infoBtn.href = "legal/index.html#ads-policy";
+    infoBtn.target = "_blank";
+    infoBtn.title = "View DPGNotes Advertising Policy & Safety Guidelines";
+    infoBtn.innerHTML = '<i class="ri-information-line"></i>';
+    infoBtn.style.cssText = `
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #94a3b8;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    `;
+    infoBtn.onmouseenter = () => { infoBtn.style.color = "#60a5fa"; infoBtn.style.borderColor = "#60a5fa"; };
+    infoBtn.onmouseleave = () => { infoBtn.style.color = "#94a3b8"; infoBtn.style.borderColor = "rgba(255, 255, 255, 0.25)"; };
+    infoBtn.onclick = (e) => e.stopPropagation();
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "dpg-ad-close-btn";
+    closeBtn.innerHTML = '<i class="ri-close-line"></i>';
+    closeBtn.title = "Dismiss Ad for 2 Minutes";
+    closeBtn.style.cssText = `
       background: rgba(0, 0, 0, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #94a3b8;
@@ -96,20 +129,21 @@
       align-items: center;
       justify-content: center;
       font-size: 0.85rem;
-      z-index: 10;
       transition: all 0.2s ease;
       padding: 0;
       outline: none;
     `;
 
-    btn.onmouseenter = () => { btn.style.color = "#fff"; btn.style.background = "#ef4444"; btn.style.borderColor = "#ef4444"; };
-    btn.onmouseleave = () => { btn.style.color = "#94a3b8"; btn.style.background = "rgba(0, 0, 0, 0.65)"; btn.style.borderColor = "rgba(255, 255, 255, 0.25)"; };
-    btn.onclick = (e) => {
+    closeBtn.onmouseenter = () => { closeBtn.style.color = "#fff"; closeBtn.style.background = "#ef4444"; closeBtn.style.borderColor = "#ef4444"; };
+    closeBtn.onmouseleave = () => { closeBtn.style.color = "#94a3b8"; closeBtn.style.background = "rgba(0, 0, 0, 0.65)"; closeBtn.style.borderColor = "rgba(255, 255, 255, 0.25)"; };
+    closeBtn.onclick = (e) => {
       e.stopPropagation();
       onCloseCallback();
     };
 
-    return btn;
+    box.appendChild(infoBtn);
+    box.appendChild(closeBtn);
+    return box;
   }
 
   const PLATFORM_ICONS = {
@@ -190,37 +224,84 @@
       if (videoPlaybackTimeout) clearTimeout(videoPlaybackTimeout);
     }
 
+    function dismissAdCard() {
+      cleanupTimers();
+      const parentBox = card.parentElement;
+      const placementKey = variant || "global";
+      try {
+        sessionStorage.setItem("dpg_ad_muted_" + placementKey, (Date.now() + 120000).toString());
+      } catch(e) {}
+
+      card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+      card.style.opacity = "0";
+      card.style.transform = "scale(0.95)";
+
+      setTimeout(() => {
+        card.style.display = "none";
+        if (parentBox) {
+          const visibleChildren = Array.from(parentBox.children).filter(c => c.style.display !== "none");
+          if (visibleChildren.length === 0) {
+            parentBox.style.display = "none";
+          }
+        }
+      }, 350);
+
+      // Re-enable ad placement after 2 minutes (120,000 ms)
+      setTimeout(async () => {
+        if (parentBox) parentBox.style.display = "";
+        swapToNextAd();
+      }, 120000);
+    }
+
     async function swapToNextAd() {
       cleanupTimers();
+      const parentBox = card.parentElement;
       card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
       card.style.opacity = "0";
       card.style.transform = "scale(0.95)";
 
       setTimeout(async () => {
-        const approvedAds = await fetchApprovedAds();
-        if (!approvedAds || approvedAds.length === 0) {
-          card.remove();
-          return;
+        card.style.display = "none";
+        if (parentBox) {
+          const visibleChildren = Array.from(parentBox.children).filter(c => c.style.display !== "none");
+          if (visibleChildren.length === 0) parentBox.style.display = "none";
         }
 
-        const nextAd = selectAdForVariant(approvedAds, variant, new Set([ad.id])) || approvedAds[Math.floor(Math.random() * approvedAds.length)];
-        if (!nextAd) {
-          card.remove();
-          return;
-        }
+        // 2-Minute Gap Engine between ad rotations (120,000 ms)
+        setTimeout(async () => {
+          if (parentBox) parentBox.style.display = "";
+          const approvedAds = await fetchApprovedAds();
+          if (!approvedAds || approvedAds.length === 0) {
+            card.remove();
+            return;
+          }
 
-        const newCard = createAdCardElement(nextAd, "elem_" + Date.now(), variant);
-        newCard.style.opacity = "0";
-        newCard.style.transform = "scale(0.95)";
-        card.replaceWith(newCard);
+          const nextAd = selectAdForVariant(approvedAds, variant, new Set([ad.id])) || approvedAds[Math.floor(Math.random() * approvedAds.length)];
+          if (!nextAd) {
+            card.remove();
+            return;
+          }
 
-        requestAnimationFrame(() => {
-          newCard.style.transition = "opacity 0.35s ease, transform 0.35s ease";
-          newCard.style.opacity = "1";
-          newCard.style.transform = "scale(1)";
-        });
+          const newCard = createAdCardElement(nextAd, "elem_" + Date.now(), variant);
+          newCard.style.opacity = "0";
+          newCard.style.transform = "scale(0.95)";
+          if (card.parentElement) {
+            card.replaceWith(newCard);
+          } else if (parentBox) {
+            parentBox.appendChild(newCard);
+          }
+
+          requestAnimationFrame(() => {
+            newCard.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+            newCard.style.opacity = "1";
+            newCard.style.transform = "scale(1)";
+          });
+        }, 120000);
       }, 350);
     }
+
+    const headerControls = createAdHeaderControls(dismissAdCard);
+    card.appendChild(headerControls);
 
     function getProfileLinkHtml(imgSize = "26px", fontSize = "0.78rem") {
       return `
@@ -519,7 +600,29 @@
     return selected;
   }
 
+  function collapseUnfilledAdSenseSlots() {
+    document.querySelectorAll('.ad-banner-section, ins.adsbygoogle').forEach(unit => {
+      const ins = unit.tagName.toLowerCase() === 'ins' ? unit : unit.querySelector('ins.adsbygoogle');
+      if (ins) {
+        const status = ins.getAttribute('data-ad-status');
+        const hasIframe = ins.getElementsByTagName('iframe').length > 0;
+        if (status === 'unfilled' || (!hasIframe && status !== 'filled')) {
+          if (unit.tagName.toLowerCase() === 'ins') {
+            unit.style.display = 'none';
+            if (unit.parentElement && unit.parentElement.classList.contains('ad-banner-section')) {
+              unit.parentElement.style.display = 'none';
+            }
+          } else {
+            unit.style.display = 'none';
+          }
+        }
+      }
+    });
+  }
+
   async function renderAllNativeAds() {
+    collapseUnfilledAdSenseSlots();
+
     const containers = document.querySelectorAll(".native-ads, #native-ads");
     if (containers.length === 0) return;
 
@@ -528,10 +631,29 @@
 
     containers.forEach((box, boxIdx) => {
       if (box.dataset.adInjected) return;
+
+      const variant = box.dataset.adVariant || (box.id.includes("header") ? "header" : box.id.includes("footer") ? "footer" : box.id.includes("sidebar") || box.classList.contains("sidebar") ? "sidebar" : "feed");
+
+      // Check 2-Minute Dismissal Mute state
+      try {
+        const mutedUntil = parseInt(sessionStorage.getItem("dpg_ad_muted_" + variant) || "0", 10);
+        if (Date.now() < mutedUntil) {
+          box.style.display = "none";
+          return;
+        }
+      } catch(e) {}
+
+      // Separation Rule: Avoid rendering consecutive Native Ads
+      const prevSib = box.previousElementSibling;
+      if (prevSib && (prevSib.classList.contains("native-ads") || prevSib.classList.contains("dpg-native-ad-card") || prevSib.classList.contains("ad-banner-section"))) {
+        box.style.marginTop = "1.5rem";
+      }
+
       box.dataset.adInjected = "true";
 
-      const count = parseInt(box.dataset.adCount || "1", 10);
-      const variant = box.dataset.adVariant || (box.id.includes("header") ? "header" : box.id.includes("footer") ? "footer" : box.id.includes("sidebar") || box.classList.contains("sidebar") ? "sidebar" : "feed");
+      // PDF Viewer Sidebar restriction: Always show exactly 1 Ad
+      const isPdfViewerSidebar = window.location.pathname.includes("pdf-viewer") && (variant === "sidebar" || box.id.includes("sidebar"));
+      const count = isPdfViewerSidebar ? 1 : parseInt(box.dataset.adCount || "1", 10);
 
       const usedAdIds = new Set();
       for (let i = 0; i < count; i++) {
@@ -551,9 +673,11 @@
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(renderAllNativeAds, 400);
       setTimeout(renderAllNativeAds, 2000);
+      setInterval(collapseUnfilledAdSenseSlots, 1500);
     });
   } else {
     setTimeout(renderAllNativeAds, 400);
     setTimeout(renderAllNativeAds, 2000);
+    setInterval(collapseUnfilledAdSenseSlots, 1500);
   }
 })();

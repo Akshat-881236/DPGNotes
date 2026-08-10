@@ -1015,10 +1015,24 @@
               <p>Total User Destination Screentime</p>
             </div>
           </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(168,85,247,0.15); color:#c084fc;"><i class="ri-calculator-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statMeanImpressions" style="color:#c084fc;">0.0</h3>
+              <p>Arithmetic Mean Impressions / Period</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(14,165,233,0.15); color:#38bdf8;"><i class="ri-functions"></i></div>
+            <div class="stat-info">
+              <h3 id="statClickProbability" style="color:#38bdf8;">0.0000</h3>
+              <p>Statistical Conversion Probability Score</p>
+            </div>
+          </div>
         </div>
 
         <!-- Interactive Per-Ad Graph Container -->
-        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
             <h3 style="font-size:1.1rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
               <i class="ri-stock-line" style="color:#f59e0b;"></i> Ad Analytics Trend Chart
@@ -1026,14 +1040,66 @@
             <div style="display:flex; gap:15px; font-size:0.8rem; font-weight:600; flex-wrap:wrap;">
               <span style="color:#10b981; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:3px; background:#10b981; display:inline-block; border-radius:2px;"></span> CTR % (Green Line)</span>
               <span style="color:#f59e0b; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:3px; background:#f59e0b; display:inline-block; border-radius:2px;"></span> Ads Appear (Yellow Line)</span>
-              <span style="color:#ef4444; display:flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:#ef4444; border-radius:50%; display:inline-block;"></span> Link Clicks (Red Dots - Click to open User Profile)</span>
+              <span style="color:#ef4444; display:flex; align-items:center; gap:4px;"><span style="width:8px; height:8px; background:#ef4444; border-radius:50%; display:inline-block;"></span> Link Clicks (Red Dots - Click to inspect User Links)</span>
             </div>
           </div>
 
           <div style="position:relative; width:100%; height:340px;">
             <canvas id="adAnalyticsChart"></canvas>
+            
+            <!-- Interactive Floating Clickable User Popover Card -->
+            <div id="chartClickableUserModal" style="display:none; position:absolute; top:20px; right:20px; z-index:100; background:rgba(15,23,42,0.96); border:1px solid rgba(139,92,246,0.4); border-radius:14px; padding:12px 16px; max-width:320px; box-shadow:0 12px 35px rgba(0,0,0,0.7); font-size:0.82rem; backdrop-filter:blur(10px);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
+                <span id="popoverDate" style="font-weight:700; color:#a78bfa;">Date Inspector</span>
+                <button onclick="document.getElementById('chartClickableUserModal').style.display='none'" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1rem;"><i class="ri-close-line"></i></button>
+              </div>
+              <div id="popoverContent" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
           </div>
-          <p style="font-size:0.78rem; color:var(--admin-text-muted); margin-top:8px; text-align:center;"><i class="ri-information-line"></i> Tip: Click on any red dot on the graph to immediately view the corresponding user's profile!</p>
+          <p style="font-size:0.78rem; color:var(--admin-text-muted); margin-top:8px; text-align:center;"><i class="ri-information-line"></i> Tip: Click on any dot on the graph to open an interactive popover with clickable profile and destination links!</p>
+        </div>
+
+        <!-- User-Wise Visitor Analytics Section -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto;">
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-search-line" style="color:#60a5fa;"></i> User-Wise Visitor Telemetry Analytics</h3>
+          <table class="data-table">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                <th style="padding:0.75rem;">Visitor Identity</th>
+                <th style="padding:0.75rem;">Visited Ads</th>
+                <th style="padding:0.75rem;">Total Screentime</th>
+                <th style="padding:0.75rem;">Avg Screentime</th>
+                <th style="padding:0.75rem;">Conversion Prob %</th>
+                <th style="padding:0.75rem;">Profile Link</th>
+              </tr>
+            </thead>
+            <tbody id="userVisitorTableBody">
+              <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading user visitor telemetry...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Contributor Uploaded Ads Metrics Section -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto;">
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line" style="color:#f59e0b;"></i> Contributor Uploaded Ads Performance Metrics</h3>
+          <table class="data-table">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                <th style="padding:0.75rem;">Contributor</th>
+                <th style="padding:0.75rem;">Uploaded Ads</th>
+                <th style="padding:0.75rem;">Total Impressions</th>
+                <th style="padding:0.75rem;">Total Clicks</th>
+                <th style="padding:0.75rem;">Average CTR %</th>
+                <th style="padding:0.75rem;">Rank Score</th>
+                <th style="padding:0.75rem;">Profile</th>
+              </tr>
+            </thead>
+            <tbody id="contributorAdTableBody">
+              <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading contributor ad metrics...</td></tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Detailed Ad Telemetry Table -->
