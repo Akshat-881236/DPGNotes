@@ -1215,18 +1215,27 @@ window.deleteDeviceLog = async function(logId, userType) {
   if (!confirmed) return;
 
   const token = localStorage.getItem("adminToken");
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
 
   try {
-    const res = await fetch(window.API_BASE_URL + '/api/admin/delete-device-logs', {
+    const res = await fetch(baseUrl + '/api/admin/delete-device-logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ items: [{ id: logId, userType }] })
     });
-    if (!res.ok) {
-      const collName = userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
-      await deleteDoc(doc(db, collName, logId));
+    
+    if (res.ok) {
+      if (window.customAlert) await window.customAlert("Device log deleted successfully.", { title: "Deleted" });
+      else alert("Device log deleted successfully.");
+      loadDeviceLogsAdmin();
+      return;
     }
+
+    // Client fallback
+    const collName = userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
+    await deleteDoc(doc(db, collName, logId));
     if (window.customAlert) await window.customAlert("Device log deleted successfully.", { title: "Deleted" });
+    else alert("Device log deleted successfully.");
     loadDeviceLogsAdmin();
   } catch (err) {
     console.error("Failed to delete log via API, trying client fallback:", err);
@@ -1234,9 +1243,10 @@ window.deleteDeviceLog = async function(logId, userType) {
       const collName = userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
       await deleteDoc(doc(db, collName, logId));
       if (window.customAlert) await window.customAlert("Device log deleted successfully.", { title: "Deleted" });
+      else alert("Device log deleted successfully.");
       loadDeviceLogsAdmin();
     } catch (e2) {
-      if (window.customAlert) await window.customAlert("Delete error: " + e2.message, { title: "Error", isDanger: true });
+      alert("Delete error: " + (e2.message || err.message));
     }
   }
 };
@@ -1245,13 +1255,16 @@ window.deleteSelectedDeviceLogs = async function() {
   const selectedCbs = Array.from(document.querySelectorAll(".device-log-cb:checked"));
   if (selectedCbs.length === 0) {
     if (window.customAlert) await window.customAlert("Please select at least one log to delete.", { title: "Selection Required" });
+    else alert("Please select at least one log to delete.");
     return;
   }
 
-  const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected device log(s)?`, { title: "Multi-Delete Confirmation", isDanger: true }) : confirm("Delete selected?");
+  const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected device log(s)?`, { title: "Multi-Delete Confirmation", isDanger: true }) : confirm(`Delete ${selectedCbs.length} selected device log(s)?`);
   if (!confirmed) return;
 
   const token = localStorage.getItem("adminToken");
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+  
   const itemsToDelete = selectedCbs.map(cb => {
     const logId = cb.value;
     const logObj = (window.adminDeviceLogsCache || []).find(l => l.id === logId);
@@ -1259,20 +1272,28 @@ window.deleteSelectedDeviceLogs = async function() {
   });
 
   try {
-    const res = await fetch(window.API_BASE_URL + '/api/admin/delete-device-logs', {
+    const res = await fetch(baseUrl + '/api/admin/delete-device-logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ items: itemsToDelete })
     });
 
-    if (!res.ok) {
-      for (const item of itemsToDelete) {
-        const collName = item.userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
-        await deleteDoc(doc(db, collName, item.id)).catch(e => console.warn(e));
-      }
+    if (res.ok) {
+      if (window.customAlert) await window.customAlert("Selected device logs deleted successfully.", { title: "Deleted" });
+      else alert("Selected device logs deleted successfully.");
+      const masterCb = document.getElementById("selectAllDeviceLogs");
+      if (masterCb) masterCb.checked = false;
+      loadDeviceLogsAdmin();
+      return;
     }
 
+    // Client fallback loop
+    for (const item of itemsToDelete) {
+      const collName = item.userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
+      await deleteDoc(doc(db, collName, item.id)).catch(e => console.warn(e));
+    }
     if (window.customAlert) await window.customAlert("Selected device logs deleted successfully.", { title: "Deleted" });
+    else alert("Selected device logs deleted successfully.");
     const masterCb = document.getElementById("selectAllDeviceLogs");
     if (masterCb) masterCb.checked = false;
     loadDeviceLogsAdmin();

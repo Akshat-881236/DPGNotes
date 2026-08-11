@@ -346,18 +346,12 @@
 
         // Selfie rendering
         const selfieBadge = document.getElementById("selfieBadge");
-        if (reqData.isLiveSelfie) {
-          selfieBadge.innerHTML = `<span class="badge badge-live"><i class="ri-camera-fill"></i> Verified Live Camera Snap</span>`;
-        } else {
-          selfieBadge.innerHTML = `<span class="badge badge-upload"><i class="ri-alert-line"></i> Uploaded Photo (Flagged for Verification)</span>`;
-        }
-
-        // Selfie rendering
-        const selfieBadge = document.getElementById("selfieBadge");
-        if (reqData.isLiveSelfie) {
-          selfieBadge.innerHTML = `<span class="badge badge-live"><i class="ri-camera-fill"></i> Verified Live Camera Snap</span>`;
-        } else {
-          selfieBadge.innerHTML = `<span class="badge badge-upload"><i class="ri-alert-line"></i> Uploaded Photo (Flagged for Verification)</span>`;
+        if (selfieBadge) {
+          if (reqData.isLiveSelfie) {
+            selfieBadge.innerHTML = `<span class="badge badge-live"><i class="ri-camera-fill"></i> Verified Live Camera Snap</span>`;
+          } else {
+            selfieBadge.innerHTML = `<span class="badge badge-upload"><i class="ri-alert-line"></i> Uploaded Photo (Flagged for Verification)</span>`;
+          }
         }
 
         if (reqData.selfiePhoto) {
