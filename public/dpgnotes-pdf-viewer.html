@@ -609,12 +609,23 @@ async function loadEndPdfRecommendations() {
         const adWrap = document.getElementById("sbUserAdCardWrap");
         if (adWrap) {
           adWrap.style.display = "block";
-          document.getElementById("sbAdAvatar").src = randomAd.userAvatar || "ANH.png";
-          document.getElementById("sbAdName").textContent = randomAd.userName || "Advertiser";
-          document.getElementById("sbAdTitle").textContent = randomAd.title || "Promoted Resource";
-          document.getElementById("sbAdDesc").textContent = randomAd.description || "";
-          document.getElementById("sbAdThumb").src = randomAd.thumbnailUrl || "";
-          document.getElementById("sbAdLink").href = randomAd.targetLink || "#";
+          const elAv = document.getElementById("sbAdAvatar");
+          if (elAv) elAv.src = randomAd.userAvatar || "ANH.png";
+          
+          const elNm = document.getElementById("sbAdName");
+          if (elNm) elNm.textContent = randomAd.userName || "Advertiser";
+          
+          const elTt = document.getElementById("sbAdTitle");
+          if (elTt) elTt.textContent = randomAd.title || "Promoted Resource";
+          
+          const elDc = document.getElementById("sbAdDesc");
+          if (elDc) elDc.textContent = randomAd.description || "";
+          
+          const elTh = document.getElementById("sbAdThumb");
+          if (elTh) elTh.src = randomAd.thumbnailUrl || "";
+          
+          const elLk = document.getElementById("sbAdLink");
+          if (elLk) elLk.href = randomAd.targetLink || "#";
 
           // Video hover auto-play feature
           if (randomAd.videoUrl) {
