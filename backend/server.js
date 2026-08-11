@@ -1509,6 +1509,44 @@ app.get('/api/admin/ads-analytics', async (req, res) => {
   }
 });
 
+// Endpoint to delete individual or group device logs
+app.post('/api/admin/delete-device-logs', async (req, res) => {
+  const { ids, items } = req.body;
+  const targetItems = items || (ids ? ids.map(id => ({ id })) : []);
+  if (!targetItems || targetItems.length === 0) {
+    return res.status(400).json({ error: "No log IDs specified for deletion" });
+  }
+
+  try {
+    let deletedCount = 0;
+    for (const item of targetItems) {
+      const id = typeof item === 'string' ? item : item.id;
+      const uType = typeof item === 'object' ? item.userType : null;
+
+      if (!id) continue;
+
+      if (uType === 'Anonymous') {
+        await db.collection("guest_quotas").doc(id).delete().catch(() => {});
+        deletedCount++;
+      } else if (uType === 'Contributor' || uType === 'Admin') {
+        await db.collection("device_login_history").doc(id).delete().catch(() => {});
+        deletedCount++;
+      } else {
+        // Try deleting from both collections if userType not explicitly provided
+        await Promise.all([
+          db.collection("device_login_history").doc(id).delete().catch(() => {}),
+          db.collection("guest_quotas").doc(id).delete().catch(() => {})
+        ]);
+        deletedCount++;
+      }
+    }
+    res.json({ success: true, deletedCount });
+  } catch (err) {
+    console.error("Delete device logs error:", err);
+    res.status(500).json({ error: "Failed to delete device logs: " + err.message });
+  }
+});
+
 app.get('/api/share/click', async (req, res) => {
   const { token, openedBy } = req.query;
   if (!token) return res.status(400).json({ error: "Token required" });

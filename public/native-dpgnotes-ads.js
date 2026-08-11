@@ -43,9 +43,56 @@
     }
   }
 
+  const DEFAULT_APPROVED_ADS = [
+    {
+      id: "def_ad_search_01",
+      title: "DPGNotes Academic Search Engine",
+      description: "Search sessional notes, PYQs, and syllabus files across all DPG College disciplines with instant AI recommendations.",
+      targetLink: "dpgnotes-search-engine.html",
+      platform: "dpgnotes",
+      category: "Academic",
+      tags: ["notes", "search", "pyq", "dpgnotes", "sessional"],
+      status: "Approved",
+      thumbnailUrl: ""
+    },
+    {
+      id: "def_ad_legal_02",
+      title: "DRASA Legal & Copyright Portal",
+      description: "Learn about DPGNotes Copyright Policies, Terms of Service, and DRASA Compliance guidelines.",
+      targetLink: "legal/index.html",
+      platform: "dpgnotes",
+      category: "Legal",
+      tags: ["legal", "policy", "drasa", "terms", "copyright"],
+      status: "Approved",
+      thumbnailUrl: ""
+    },
+    {
+      id: "def_ad_ai_03",
+      title: "DPGNotes AI Assistant & Document Analyzer",
+      description: "Ask questions, generate exam summaries, and solve complex problems with DPGNotes 14k-Token Gemini AI Engine.",
+      targetLink: "index.html",
+      platform: "dpgnotes",
+      category: "AI",
+      tags: ["ai", "gemini", "analysis", "tutor", "study"],
+      status: "Approved",
+      thumbnailUrl: ""
+    },
+    {
+      id: "def_ad_youtube_04",
+      title: "Promote Your Notes & Channels on DPGNotes",
+      description: "Upload your custom YouTube videos, GitHub repositories, or Medium blogs to reach thousands of DPG College students daily.",
+      targetLink: "dashboard.html",
+      platform: "youtube",
+      category: "Promotion",
+      tags: ["youtube", "github", "medium", "promote", "contributor"],
+      status: "Approved",
+      thumbnailUrl: ""
+    }
+  ];
+
   async function fetchApprovedAds() {
-    if (window.DPG_APPROVED_ADS.length > 0) return window.DPG_APPROVED_ADS;
-    if (isFetching) return [];
+    if (window.DPG_APPROVED_ADS && window.DPG_APPROVED_ADS.length > 0) return window.DPG_APPROVED_ADS;
+    if (isFetching) return DEFAULT_APPROVED_ADS;
     isFetching = true;
 
     try {
@@ -59,15 +106,20 @@
             ads.push({ id: docSnap.id, ...data });
           }
         });
-        window.DPG_APPROVED_ADS = ads;
-        return ads;
+        
+        if (ads.length > 0) {
+          window.DPG_APPROVED_ADS = ads;
+          return ads;
+        }
       }
     } catch(e) {
       console.warn("Native ads Firestore fetch error:", e);
     } finally {
       isFetching = false;
     }
-    return window.DPG_APPROVED_ADS || [];
+    
+    window.DPG_APPROVED_ADS = DEFAULT_APPROVED_ADS;
+    return DEFAULT_APPROVED_ADS;
   }
 
   function extractYouTubeId(url) {
@@ -633,15 +685,6 @@
       if (box.dataset.adInjected) return;
 
       const variant = box.dataset.adVariant || (box.id.includes("header") ? "header" : box.id.includes("footer") ? "footer" : box.id.includes("sidebar") || box.classList.contains("sidebar") ? "sidebar" : "feed");
-
-      // Check 2-Minute Dismissal Mute state
-      try {
-        const mutedUntil = parseInt(sessionStorage.getItem("dpg_ad_muted_" + variant) || "0", 10);
-        if (Date.now() < mutedUntil) {
-          box.style.display = "none";
-          return;
-        }
-      } catch(e) {}
 
       // Separation Rule: Avoid rendering consecutive Native Ads
       const prevSib = box.previousElementSibling;

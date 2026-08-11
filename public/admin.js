@@ -1214,14 +1214,30 @@ window.deleteDeviceLog = async function(logId, userType) {
   const confirmed = window.customConfirm ? await window.customConfirm("Are you sure you want to delete this device log?", { title: "Confirm Deletion", isDanger: true }) : confirm("Delete log?");
   if (!confirmed) return;
 
+  const token = localStorage.getItem("adminToken");
+
   try {
-    const collName = userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
-    await deleteDoc(doc(db, collName, logId));
+    const res = await fetch(window.API_BASE_URL + '/api/admin/delete-device-logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ items: [{ id: logId, userType }] })
+    });
+    if (!res.ok) {
+      const collName = userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
+      await deleteDoc(doc(db, collName, logId));
+    }
     if (window.customAlert) await window.customAlert("Device log deleted successfully.", { title: "Deleted" });
     loadDeviceLogsAdmin();
   } catch (err) {
-    console.error("Failed to delete log:", err);
-    if (window.customAlert) await window.customAlert("Delete error: " + err.message, { title: "Error", isDanger: true });
+    console.error("Failed to delete log via API, trying client fallback:", err);
+    try {
+      const collName = userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
+      await deleteDoc(doc(db, collName, logId));
+      if (window.customAlert) await window.customAlert("Device log deleted successfully.", { title: "Deleted" });
+      loadDeviceLogsAdmin();
+    } catch (e2) {
+      if (window.customAlert) await window.customAlert("Delete error: " + e2.message, { title: "Error", isDanger: true });
+    }
   }
 };
 
@@ -1235,17 +1251,38 @@ window.deleteSelectedDeviceLogs = async function() {
   const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected device log(s)?`, { title: "Multi-Delete Confirmation", isDanger: true }) : confirm("Delete selected?");
   if (!confirmed) return;
 
+  const token = localStorage.getItem("adminToken");
+  const itemsToDelete = selectedCbs.map(cb => {
+    const logId = cb.value;
+    const logObj = (window.adminDeviceLogsCache || []).find(l => l.id === logId);
+    return { id: logId, userType: logObj ? logObj.userType : null };
+  });
+
   try {
-    for (const cb of selectedCbs) {
-      const logId = cb.value;
-      const logObj = adminDeviceLogsCache.find(l => l.id === logId);
-      const collName = (logObj && logObj.userType === 'Anonymous') ? 'guest_quotas' : 'device_login_history';
-      await deleteDoc(doc(db, collName, logId)).catch(e => console.warn(e));
+    const res = await fetch(window.API_BASE_URL + '/api/admin/delete-device-logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ items: itemsToDelete })
+    });
+
+    if (!res.ok) {
+      for (const item of itemsToDelete) {
+        const collName = item.userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
+        await deleteDoc(doc(db, collName, item.id)).catch(e => console.warn(e));
+      }
     }
+
     if (window.customAlert) await window.customAlert("Selected device logs deleted successfully.", { title: "Deleted" });
+    const masterCb = document.getElementById("selectAllDeviceLogs");
+    if (masterCb) masterCb.checked = false;
     loadDeviceLogsAdmin();
   } catch (err) {
     console.error("Batch delete error:", err);
+    for (const item of itemsToDelete) {
+      const collName = item.userType === 'Anonymous' ? 'guest_quotas' : 'device_login_history';
+      await deleteDoc(doc(db, collName, item.id)).catch(e => console.warn(e));
+    }
+    loadDeviceLogsAdmin();
   }
 };
 
