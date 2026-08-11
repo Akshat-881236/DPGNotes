@@ -170,10 +170,20 @@ This module describes platform guidelines regarding Google AdSense integrations 
 
 ---
 
-### MODULE 5.1: ADVERTISING INTEGRATIONS
-1. Monetization: DPGNotes displays advertisements via Google AdSense.
-2. Layout Integrity: Ad banners are styled to be clean and non-disruptive. If Google AdSense fails to return an ad (empty inventory or active ad blockers), the platform dynamically detects this state and collapses the container to 0px, ensuring no blank boxes appear.
-3. User Privacy: No student chat records, login credentials, or document metadata details are sent to Google's networks.
+### MODULE 5.1: ADVERTISING & SPONSORED ADS CONTENT SAFETY POLICY (Effective Date: August 10, 2026)
+1. Scope & 5 Sponsored Ad Categories:
+   - DPGNotes Resource Boost: PDF notes, PYQs, and study guides.
+   - LinkedIn Post / Article Promotion: Engineering posts and tech articles.
+   - Medium Story Promotion: Technical tutorials and project blogs.
+   - GitHub Repository Promotion: Open-source repos, developer tools, and code bases.
+   - YouTube Video / Channel Promotion: Video lectures, channel trailers, and software demos.
+2. Contributor Submission Workflow: Category selection, title & description with AI Auto-Suggest Tags, media assets (Cloudinary/YouTube), operational destination link, and automated/admin verification.
+3. Content Safety & Prohibited Content: No malware, phishing, hate speech, explicit media, academic dishonesty scams, or deceptive clickbait.
+4. Violation Enforcement Matrix:
+   - Minor (Level 1): Incorrect tags or broken links -> Ad rejection & revision notice.
+   - Moderate (Level 2): Misleading title or domain spoofing -> Campaign deletion & 14-day ad upload block.
+   - Severe (Level 3): Malware, piracy, or phishing -> Immediate permanent account suspension under DRASA policy.
+5. AdSense Integration & Hiding: Google AdSense runs alongside Native Approved Ads. If AdSense fails to return an ad, empty slots collapse automatically. User chat records and credentials are never shared with ad networks.
 
 ---
 

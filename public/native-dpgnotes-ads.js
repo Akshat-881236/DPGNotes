@@ -441,11 +441,11 @@
       `;
     }
 
-    // Attach Close Button (✕) with instant ad swap
-    const closeBtn = createCloseButton(() => {
+    // Attach Ad Controls (i info icon & ✕ close button) with instant ad swap
+    const controls = createAdHeaderControls(() => {
       swapToNextAd();
     });
-    card.appendChild(closeBtn);
+    card.appendChild(controls);
 
     // Smart Rotation & Video Lifecycle Engine
     const isVideoMediaVariant = (variant === "feed" || variant === "sidebar" || variant === "main") && !!vidId;

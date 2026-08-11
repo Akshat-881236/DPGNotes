@@ -406,17 +406,6 @@
               <p>To preserve infrastructure stability and prevent scraping, unauthenticated guest users are granted a daily quota of <strong>6 page visits</strong> and <strong>3 PDF reads</strong> per 24 hours. Exceeding this quota requires signing up with a valid Google account to continue accessing academic materials. Legal Policy pages remain unconditionally accessible.</p>
             </article>
 
-            <!-- Section: Advertising Policy -->
-            <article id="ads-policySection" class="policy-section">
-              <h1>Advertising Policy</h1>
-              <p class="subtitle">Effective Date: July 20, 2026</p>
-              <p>DPGNotes displays third-party advertisements via Google AdSense to offset the cost of hosting and maintenance. Advertisements are placed in structured slots (e.g. index home page, dashboard panels, and after every 3 pages inside the PDF Viewer).</p>
-              <h2>1. Ad Personalization & Tracking</h2>
-              <p>AdSense scripts use cookies to serve personalized ads based on your web browsing history. We do not transmit any personal data, upload credentials, or internal chat communications to Google.</p>
-              <h2>2. Technical Content Hiding</h2>
-              <p>If the AdSense network fails to fill an ad slot (or is blocked by an ad blocker), DPGNotes implements automated CSS rules and checking loops to collapse the empty slot, ensuring no blank gaps affect your layout or scrolling capabilities.</p>
-            </article>
-
             <!-- Section: Ads Policy and Guidelines -->
             <article id="ads-policySection" class="policy-section">
               <h1>Ads Policy & Content Safety Guidelines</h1>
@@ -801,16 +790,24 @@
     }
     setInterval(checkAds, 1000);
 
-    // Auto-scroll to section based on URL hash fragment (#privacy, #terms, #copyright, etc.)
+    // Auto-scroll to section based on URL hash fragment (#privacy, #terms, #copyright, #ads-policy, etc.)
     function scrollToHashSection() {
-      const hash = window.location.hash;
+      let hash = window.location.hash;
       if (hash && hash.length > 1) {
-        const targetId = hash.substring(1);
+        let targetId = hash.substring(1);
+        if (targetId === "ads-policy" || targetId === "advertising" || targetId === "ads") {
+          targetId = "ads-policySection";
+        } else if (!targetId.endsWith("Section") && document.getElementById(targetId + "Section")) {
+          targetId = targetId + "Section";
+        }
+        
         const targetEl = document.getElementById(targetId) || document.querySelector(`[data-policy="${targetId}"]`) || document.querySelector(`a[name="${targetId}"]`);
         if (targetEl) {
+          document.querySelectorAll('.policy-section').forEach(sec => sec.classList.remove('active-section'));
+          targetEl.classList.add('active-section');
           setTimeout(() => {
             targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 300);
+          }, 200);
         }
       }
     }
