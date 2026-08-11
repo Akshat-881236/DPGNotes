@@ -700,9 +700,26 @@
       };
 
       try {
-        await addDoc(collection(db, "support_requests"), payload);
+        const docRef = await addDoc(collection(db, "support_requests"), payload);
+        
+        // Dispatch system emails to requester and admin
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        fetch(apiBase + '/api/support/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: payload.name,
+            email: payload.email,
+            type: payload.type,
+            token: docRef.id,
+            isLiveSelfie: payload.isLiveSelfie,
+            statements: payload.statements,
+            evidenceFiles: payload.evidenceFiles
+          })
+        }).catch(e => console.warn("Support email dispatch error:", e));
+
         alert("Your request has been submitted successfully! The DPGNotes Administration Team will review your credentials and dispatch automated status updates to your email.");
-        window.location.href = "index.html";
+        window.location.href = `support-contact-report.html?token=${docRef.id}`;
       } catch (err) {
         console.error("Submission failed:", err);
         alert("Failed to submit request: " + err.message);

@@ -2354,3 +2354,163 @@ export async function loadAdsAnalyticsAdmin() {
 }
 
 window.loadAdsAnalyticsAdmin = loadAdsAnalyticsAdmin;
+
+async function loadResourceAnalyticsAdmin() {
+  try {
+    const timeframeSelect = document.getElementById("resourceTimeframeSelect");
+    const timeframe = timeframeSelect ? timeframeSelect.value : 'weekly';
+    const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+    const res = await fetch(`${baseUrl}/api/admin/resource-analytics?timeframe=${timeframe}`);
+    if (!res.ok) throw new Error("Failed to fetch resource analytics");
+    const data = await res.json();
+
+    // 1. Metric Stat Cards
+    const viewsEl = document.getElementById("statResourceViews");
+    if (viewsEl) viewsEl.textContent = (data.totalViews || 0).toLocaleString();
+    const stEl = document.getElementById("statResourceScreentime");
+    if (stEl) stEl.textContent = (data.totalScreentimeMins || 0) + "m";
+    const sharesEl = document.getElementById("statResourceShares");
+    if (sharesEl) sharesEl.textContent = (data.totalShares || 0).toLocaleString();
+    const likesEl = document.getElementById("statResourceLikes");
+    if (likesEl) likesEl.textContent = (data.totalLikes || 0).toLocaleString();
+    const meanEl = document.getElementById("statMeanResourceScreentime");
+    if (meanEl) meanEl.textContent = (data.meanScreentimeMins || "0.0") + "m";
+    const prioEl = document.getElementById("statHighPriorityIndex");
+    if (prioEl) prioEl.textContent = "⭐ " + (data.highPriorityIndex || 0);
+
+    // 2. Draw Multi-Line Chart on Canvas
+    const canvas = document.getElementById("resourceAnalyticsChart");
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const width = rect.width;
+      const height = rect.height;
+      const padding = 40;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const labels = data.labels || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      const vData = data.viewsData || [10,20,30,40,50,60,70];
+      const sData = data.screentimeData || [5,15,25,35,45,55,65];
+      const shData = data.sharesData || [2,4,6,8,10,12,14];
+      const lData = data.likesData || [3,6,9,12,15,18,21];
+
+      const maxVal = Math.max(1, ...vData, ...sData, ...shData, ...lData);
+      const stepX = (width - padding * 2) / Math.max(1, labels.length - 1);
+
+      // Grid Lines
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padding + (height - padding * 2) * (i / 4);
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
+
+      // Helper for drawing lines
+      const drawLine = (dataset, color) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        dataset.forEach((val, idx) => {
+          const x = padding + idx * stepX;
+          const y = height - padding - (val / maxVal) * (height - padding * 2);
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Draw Dots
+        dataset.forEach((val, idx) => {
+          const x = padding + idx * stepX;
+          const y = height - padding - (val / maxVal) * (height - padding * 2);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      };
+
+      drawLine(vData, "#818cf8");   // Views (Indigo)
+      drawLine(sData, "#c084fc");   // Screentime (Purple)
+      drawLine(shData, "#38bdf8");  // Shares (Sky Blue)
+      drawLine(lData, "#f43f5e");   // Likes (Rose)
+
+      // Draw X-axis labels
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "11px Inter, sans-serif";
+      ctx.textAlign = "center";
+      labels.forEach((lbl, idx) => {
+        const x = padding + idx * stepX;
+        ctx.fillText(lbl, x, height - 12);
+      });
+    }
+
+    // 3. Render User-Wise Telemetry Table
+    const userTbody = document.getElementById("resourceUsersTableBody");
+    if (userTbody) {
+      const uList = data.userList || [];
+      if (uList.length === 0) {
+        userTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No visitor telemetry recorded yet.</td></tr>`;
+      } else {
+        userTbody.innerHTML = "";
+        uList.forEach(u => {
+          const tr = document.createElement("tr");
+          const pLink = u.userId && u.userId !== "Guest" && !u.userId.startsWith("127.") ? `profile.html?uid=${encodeURIComponent(u.userId)}` : `profile.html`;
+          tr.innerHTML = `
+            <td style="padding:0.75rem; font-family:monospace; color:#a5b4fc; font-weight:600;">${u.userId}</td>
+            <td style="padding:0.75rem;"><span class="badge ${u.userType === 'Contributor' ? 'active' : 'suspended'}">${u.userType}</span></td>
+            <td style="padding:0.75rem; font-weight:700; color:white;">${u.visits} Visits</td>
+            <td style="padding:0.75rem; font-weight:700; color:#c084fc;">${Math.round(u.screentime / 60)} mins</td>
+            <td style="padding:0.75rem;">
+              <a href="${pLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-line"></i> Profile</a>
+            </td>
+          `;
+          userTbody.appendChild(tr);
+        });
+      }
+    }
+
+    // 4. Render Resource-Wise Telemetry & SERP Priority Table
+    const resTbody = document.getElementById("resourceAnalyticsTableBody");
+    if (resTbody) {
+      const rList = data.resourceList || [];
+      if (rList.length === 0) {
+        resTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No resource performance data available.</td></tr>`;
+      } else {
+        resTbody.innerHTML = "";
+        rList.forEach(r => {
+          const tr = document.createElement("tr");
+          const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${r.id}&title=${encodeURIComponent(r.title)}`;
+          tr.innerHTML = `
+            <td style="padding:0.75rem;">
+              <a href="${vUrl}" target="_blank" style="color:#60a5fa; font-weight:700; text-decoration:none;">${r.title} <i class="ri-external-link-line"></i></a>
+            </td>
+            <td style="padding:0.75rem; color:#cbd5e1;">${r.category} (${r.discipline})</td>
+            <td style="padding:0.75rem; color:white;">${r.uploader}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#818cf8;">${r.views.toLocaleString()}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#c084fc;">${Math.round(r.screentime / 60)}m</td>
+            <td style="padding:0.75rem;">
+              <span style="color:#f43f5e; font-weight:700;">❤️ ${r.likes}</span> / <span style="color:#38bdf8; font-weight:700;">🔗 ${r.shares}</span>
+            </td>
+            <td style="padding:0.75rem; font-weight:800; color:#f59e0b;">⭐ ${r.priorityScore}</td>
+          `;
+          resTbody.appendChild(tr);
+        });
+      }
+    }
+
+  } catch(err) {
+    console.error("loadResourceAnalyticsAdmin error:", err);
+  }
+}
+
+window.loadResourceAnalyticsAdmin = loadResourceAnalyticsAdmin;

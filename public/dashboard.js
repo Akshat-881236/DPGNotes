@@ -1902,34 +1902,33 @@ if (adForm) {
       }
 
       const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
-      const tempId = "ad_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-      const trackId = generateAdTrackIdLocal(tempId);
 
-      await addDoc(collection(db, "user_ads"), {
-        platform,
-        adCategory,
-        trackId,
-        title,
-        description,
-        tags,
-        thumbnailUrl,
-        targetLink,
-        videoUrl,
-        targetPlacement,
-        hasThumbnail: !!thumbnailUrl,
-        hasVideo: !!videoUrl,
-        userId: currentUser ? currentUser.uid : "anonymous",
-        userEmail: currentUser ? currentUser.email : "anonymous",
-        userName: currentUser ? (currentUser.displayName || "Contributor") : "Contributor",
-        userAvatar: currentUser ? (currentUser.photoURL || "") : "",
-        status: "Pending Approval",
-        createdAt: serverTimestamp()
+      const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+      const res = await fetch(apiBase + '/api/ads/submit-with-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          targetLink,
+          platform,
+          category: adCategory,
+          tags,
+          thumbnailUrl,
+          videoUrl,
+          userEmail: currentUser ? currentUser.email : "contributor@dpgnotes.app",
+          userName: currentUser ? (currentUser.displayName || "Contributor") : "Contributor",
+          userId: currentUser ? currentUser.uid : "anonymous"
+        })
       });
 
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.error || "Submission failed");
+
       if (window.customAlert) {
-        await window.customAlert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted successfully! It is now pending Admin review.`, { title: "Success" });
+        await window.customAlert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted! Check your email to verify ownership authority within 10 minutes. Unverified campaigns auto-expire.`, { title: "Verification Email Dispatched ✉️" });
       } else {
-        alert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted successfully! It is now pending Admin review.`);
+        alert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted! Check your email to verify ownership authority within 10 minutes. Unverified campaigns auto-expire.`);
       }
       adForm.reset();
       updateAdFormFields();

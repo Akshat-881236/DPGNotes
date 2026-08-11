@@ -369,13 +369,24 @@
         results = results.filter(d => d.discipline === discFilter);
       }
 
-      // 4. Sorting
+      // 4. Advanced High Priority SERP Ranking Algorithm
+      results.forEach(d => {
+        const lCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
+        const sCount = d.sharesCount || 0;
+        const vCount = d.views || 1;
+        const stMins = Math.round((d.screentime || 60) / 60);
+        const relScore = query ? ((d.title || "").toLowerCase().includes(query.toLowerCase()) ? 5 : 2) : 1;
+        d.priorityScore = (lCount * 5) + (sCount * 4) + (stMins * 3) + (vCount * 2) + (relScore * 10);
+      });
+
       if (sortBy === "newest") {
         results.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
       } else if (sortBy === "likes") {
         results.sort((a, b) => (b.likes || 0) - (a.likes || 0));
       } else if (sortBy === "title") {
         results.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+      } else {
+        results.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
       }
 
       renderResults(results);

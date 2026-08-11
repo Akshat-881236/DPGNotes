@@ -298,9 +298,10 @@
       
       <div style="display:flex; align-items:center; gap:8px; margin-right:6px;">
         <button type="button" title="Voice Search" onclick="startVoiceSearch()" style="background:none; border:none; color:#a78bfa; font-size:1.25rem; cursor:pointer; padding:4px 6px; border-radius:50%; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><i class="ri-mic-line"></i></button>
-        <button type="button" title="DPG Lens Search" onclick="document.getElementById('engineSearchInput').focus()" style="background:none; border:none; color:#38bdf8; font-size:1.25rem; cursor:pointer; padding:4px 6px; border-radius:50%; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><i class="ri-camera-lens-line"></i></button>
+        <button type="button" title="DPG Lens Search" onclick="triggerDpgLensUpload()" style="background:none; border:none; color:#38bdf8; font-size:1.25rem; cursor:pointer; padding:4px 6px; border-radius:50%; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><i class="ri-camera-lens-line"></i></button>
       </div>
 
+      <input type="file" id="dpgLensFileInput" accept="image/*,.pdf" style="display:none;" onchange="handleDpgLensFileSelected(this)">
       <button class="search-btn" onclick="triggerSearchRedirect()"><i class="ri-search-line"></i> Search</button>
     </div>
 
@@ -462,6 +463,45 @@
       recognition.onerror = () => {
         input.placeholder = "Search sessional notes, PYQs, subjects, or keywords...";
       };
+    };
+
+    window.triggerDpgLensUpload = function() {
+      const fileInput = document.getElementById("dpgLensFileInput");
+      if (fileInput) fileInput.click();
+    };
+
+    window.handleDpgLensFileSelected = async function(inputEl) {
+      if (!inputEl.files || inputEl.files.length === 0) return;
+      const file = inputEl.files[0];
+      const searchBox = document.getElementById("engineSearchInput");
+      if (searchBox) searchBox.value = `📷 DPG Lens Scanning: ${file.name}...`;
+
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Data = e.target.result;
+          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+          
+          const res = await fetch(apiBase + '/api/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: `DPG Lens Visual Analysis: Analyze file "${file.name}" and extract academic subject keywords, topic, and notes classification for DPGNotes search engine.`,
+              systemContext: 'DPG Lens Visual Recognition Engine'
+            })
+          });
+          const resJson = await res.json();
+          const keyword = (resJson.answer || file.name.replace(/\.[^/.]+$/, "")).substring(0, 40);
+          if (searchBox) searchBox.value = keyword;
+          window.triggerSearchRedirect();
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        console.error("DPG Lens Error:", err);
+        const fallbackQuery = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        if (searchBox) searchBox.value = fallbackQuery;
+        window.triggerSearchRedirect();
+      }
     };
 
     // Load Cache on start

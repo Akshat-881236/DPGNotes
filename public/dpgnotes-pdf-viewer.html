@@ -515,6 +515,35 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Universal Telemetry & Screentime Tracking
+  const startTime = Date.now();
+  const trackId = "tr_" + Math.random().toString(36).substring(2, 10);
+  const targetResId = resourceID || docid || "doc_" + Math.random().toString(36).substring(2, 6);
+  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  function sendTelemetry(actionType) {
+    const elapsedSecs = Math.max(1, Math.round((Date.now() - startTime) / 1000));
+    fetch(apiBase + '/api/telemetry/track-resource-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        resourceId: targetResId,
+        title: docTitle,
+        category: docCat,
+        discipline: docDisc,
+        authorName: docUp,
+        userType: 'Guest',
+        userId: 'guest_' + Math.random().toString(36).substring(2, 8),
+        trackId: trackId,
+        screentime: elapsedSecs,
+        action: actionType || 'view'
+      })
+    }).catch(e => console.warn("Telemetry ping failed:", e));
+  }
+
+  sendTelemetry('view');
+  window.addEventListener('beforeunload', () => sendTelemetry('leave'));
 });
 
 async function loadEndPdfRecommendations() {
