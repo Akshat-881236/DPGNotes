@@ -2355,6 +2355,8 @@ export async function loadAdsAnalyticsAdmin() {
 
 window.loadAdsAnalyticsAdmin = loadAdsAnalyticsAdmin;
 
+window.currentResourceCacheMap = new Map();
+
 async function loadResourceAnalyticsAdmin() {
   try {
     const timeframeSelect = document.getElementById("resourceTimeframeSelect");
@@ -2365,7 +2367,11 @@ async function loadResourceAnalyticsAdmin() {
     if (!res.ok) throw new Error("Failed to fetch resource analytics");
     const data = await res.json();
 
-    // 1. Metric Stat Cards
+    // Store in global cache map for modals
+    window.currentResourceCacheMap = new Map();
+    (data.resourceList || []).forEach(r => window.currentResourceCacheMap.set(r.id, r));
+
+    // 1. Metric Stat Cards with Mathematical Legacy Formulas
     const viewsEl = document.getElementById("statResourceViews");
     if (viewsEl) viewsEl.textContent = (data.totalViews || 0).toLocaleString();
     const stEl = document.getElementById("statResourceScreentime");
@@ -2374,84 +2380,206 @@ async function loadResourceAnalyticsAdmin() {
     if (sharesEl) sharesEl.textContent = (data.totalShares || 0).toLocaleString();
     const likesEl = document.getElementById("statResourceLikes");
     if (likesEl) likesEl.textContent = (data.totalLikes || 0).toLocaleString();
+    
     const meanEl = document.getElementById("statMeanResourceScreentime");
-    if (meanEl) meanEl.textContent = (data.meanScreentimeMins || "0.0") + "m";
+    if (meanEl) {
+      meanEl.innerHTML = `${data.meanScreentimeMins || "0.0"}m <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;">(σ: ${data.stdDevScreentimeMins || '0.0'}m)</span>`;
+      meanEl.title = `Mathematical Legacy Formulas:\n• Arithmetic Mean (μ): ${data.meanScreentimeMins} mins\n• Standard Deviation (σ): ${data.stdDevScreentimeMins} mins\n• Variance (σ²): ${data.varianceScreentimeSecs} s²\n• Skewness Index: ${data.skewnessIndex}`;
+    }
+
     const prioEl = document.getElementById("statHighPriorityIndex");
     if (prioEl) prioEl.textContent = "⭐ " + (data.highPriorityIndex || 0);
 
-    // 2. Draw Multi-Line Chart on Canvas
+    // 2. Multi-Line Chart with Chart.js (Zero Distortion & Matches Ads Analytics)
     const canvas = document.getElementById("resourceAnalyticsChart");
     if (canvas) {
-      const ctx = canvas.getContext("2d");
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
+      if (window.Chart) {
+        if (window.myResourceAnalyticsChart) {
+          window.myResourceAnalyticsChart.destroy();
+        }
 
-      const width = rect.width;
-      const height = rect.height;
-      const padding = 40;
+        const ctx = canvas.getContext("2d");
+        window.myResourceAnalyticsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: data.labels || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+            datasets: [
+              {
+                label: 'Views (Indigo Line)',
+                data: data.viewsData || [],
+                borderColor: '#818cf8',
+                backgroundColor: '#818cf8',
+                pointBackgroundColor: '#818cf8',
+                borderWidth: 3,
+                tension: 0.35,
+                yAxisID: 'yCount'
+              },
+              {
+                label: 'Screentime Mins (Purple Line)',
+                data: data.screentimeData || [],
+                borderColor: '#c084fc',
+                backgroundColor: '#c084fc',
+                pointBackgroundColor: '#c084fc',
+                borderWidth: 3,
+                tension: 0.35,
+                yAxisID: 'yMins'
+              },
+              {
+                label: 'Shares (Sky Blue Line)',
+                data: data.sharesData || [],
+                borderColor: '#38bdf8',
+                backgroundColor: '#38bdf8',
+                pointBackgroundColor: '#38bdf8',
+                borderWidth: 2.5,
+                tension: 0.35,
+                yAxisID: 'yCount'
+              },
+              {
+                label: 'Likes (Rose Line)',
+                data: data.likesData || [],
+                borderColor: '#f43f5e',
+                backgroundColor: '#f43f5e',
+                pointBackgroundColor: '#f43f5e',
+                borderWidth: 2.5,
+                tension: 0.35,
+                yAxisID: 'yCount'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'nearest', intersect: true },
+            plugins: {
+              tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                titleColor: '#ffffff',
+                bodyColor: '#e2e8f0',
+                borderColor: 'rgba(99, 102, 241, 0.3)',
+                borderWidth: 1,
+                padding: 10,
+                displayColors: true
+              }
+            },
+            onClick: (evt, activeElements) => {
+              if (activeElements && activeElements.length > 0) {
+                const index = activeElements[0].index;
+                const label = data.labels ? data.labels[index] : 'Date Inspector';
+                const modal = document.getElementById("chartClickableResourceUserModal");
+                const pTitle = document.getElementById("resourcePopoverTitle");
+                const pContent = document.getElementById("resourcePopoverContent");
 
-      ctx.clearRect(0, 0, width, height);
+                if (modal && pContent) {
+                  pTitle.textContent = `${label} Resource Inspector`;
+                  const v = data.viewsData ? data.viewsData[index] : 0;
+                  const s = data.screentimeData ? data.screentimeData[index] : 0;
+                  const sh = data.sharesData ? data.sharesData[index] : 0;
+                  const l = data.likesData ? data.likesData[index] : 0;
 
-      const labels = data.labels || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-      const vData = data.viewsData || [10,20,30,40,50,60,70];
-      const sData = data.screentimeData || [5,15,25,35,45,55,65];
-      const shData = data.sharesData || [2,4,6,8,10,12,14];
-      const lData = data.likesData || [3,6,9,12,15,18,21];
-
-      const maxVal = Math.max(1, ...vData, ...sData, ...shData, ...lData);
-      const stepX = (width - padding * 2) / Math.max(1, labels.length - 1);
-
-      // Grid Lines
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= 4; i++) {
-        const y = padding + (height - padding * 2) * (i / 4);
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(width - padding, y);
-        ctx.stroke();
-      }
-
-      // Helper for drawing lines
-      const drawLine = (dataset, color) => {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        dataset.forEach((val, idx) => {
-          const x = padding + idx * stepX;
-          const y = height - padding - (val / maxVal) * (height - padding * 2);
-          if (idx === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+                  pContent.innerHTML = `
+                    <div style="font-size:0.78rem; color:#cbd5e1;">Period Telemetry Metrics:</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
+                      <span style="color:#818cf8; font-weight:700;">👁️ Views: ${v}</span>
+                      <span style="color:#c084fc; font-weight:700;">⏱️ Screentime: ${s}m</span>
+                      <span style="color:#38bdf8; font-weight:700;">🔗 Shares: ${sh}</span>
+                      <span style="color:#f43f5e; font-weight:700;">❤️ Likes: ${l}</span>
+                    </div>
+                  `;
+                  modal.style.display = "block";
+                }
+              }
+            },
+            scales: {
+              yCount: {
+                type: 'linear',
+                position: 'left',
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { color: '#818cf8' }
+              },
+              yMins: {
+                type: 'linear',
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                ticks: { color: '#c084fc', callback: (v) => v + 'm' }
+              },
+              x: {
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { color: '#94a3b8' }
+              }
+            }
+          }
         });
-        ctx.stroke();
+      } else {
+        // Fallback Manual Canvas Renderer (Transform Reset to fix expansion bug)
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // RESET TRANSFORM
+        
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
 
-        // Draw Dots
-        dataset.forEach((val, idx) => {
-          const x = padding + idx * stepX;
-          const y = height - padding - (val / maxVal) * (height - padding * 2);
-          ctx.fillStyle = color;
+        const width = rect.width;
+        const height = rect.height;
+        const padding = 40;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const labels = data.labels || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        const vData = data.viewsData || [10,20,30,40,50,60,70];
+        const sData = data.screentimeData || [5,15,25,35,45,55,65];
+        const shData = data.sharesData || [2,4,6,8,10,12,14];
+        const lData = data.likesData || [3,6,9,12,15,18,21];
+
+        const maxVal = Math.max(1, ...vData, ...sData, ...shData, ...lData);
+        const stepX = (width - padding * 2) / Math.max(1, labels.length - 1);
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = padding + (height - padding * 2) * (i / 4);
           ctx.beginPath();
-          ctx.arc(x, y, 4, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.moveTo(padding, y);
+          ctx.lineTo(width - padding, y);
+          ctx.stroke();
+        }
+
+        const drawLine = (dataset, color) => {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          dataset.forEach((val, idx) => {
+            const x = padding + idx * stepX;
+            const y = height - padding - (val / maxVal) * (height - padding * 2);
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.stroke();
+
+          dataset.forEach((val, idx) => {
+            const x = padding + idx * stepX;
+            const y = height - padding - (val / maxVal) * (height - padding * 2);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        };
+
+        drawLine(vData, "#818cf8");
+        drawLine(sData, "#c084fc");
+        drawLine(shData, "#38bdf8");
+        drawLine(lData, "#f43f5e");
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px Inter, sans-serif";
+        ctx.textAlign = "center";
+        labels.forEach((lbl, idx) => {
+          const x = padding + idx * stepX;
+          ctx.fillText(lbl, x, height - 12);
         });
-      };
-
-      drawLine(vData, "#818cf8");   // Views (Indigo)
-      drawLine(sData, "#c084fc");   // Screentime (Purple)
-      drawLine(shData, "#38bdf8");  // Shares (Sky Blue)
-      drawLine(lData, "#f43f5e");   // Likes (Rose)
-
-      // Draw X-axis labels
-      ctx.fillStyle = "#94a3b8";
-      ctx.font = "11px Inter, sans-serif";
-      ctx.textAlign = "center";
-      labels.forEach((lbl, idx) => {
-        const x = padding + idx * stepX;
-        ctx.fillText(lbl, x, height - 12);
-      });
+      }
     }
 
     // 3. Render User-Wise Telemetry Table
@@ -2479,7 +2607,7 @@ async function loadResourceAnalyticsAdmin() {
       }
     }
 
-    // 4. Render Resource-Wise Telemetry & SERP Priority Table
+    // 4. Render Resource-Wise Telemetry & Interactive Likes/Shares Modals
     const resTbody = document.getElementById("resourceAnalyticsTableBody");
     if (resTbody) {
       const rList = data.resourceList || [];
@@ -2499,7 +2627,8 @@ async function loadResourceAnalyticsAdmin() {
             <td style="padding:0.75rem; font-weight:700; color:#818cf8;">${r.views.toLocaleString()}</td>
             <td style="padding:0.75rem; font-weight:700; color:#c084fc;">${Math.round(r.screentime / 60)}m</td>
             <td style="padding:0.75rem;">
-              <span style="color:#f43f5e; font-weight:700;">❤️ ${r.likes}</span> / <span style="color:#38bdf8; font-weight:700;">🔗 ${r.shares}</span>
+              <button onclick="window.showResourceLikesModal('${r.id}')" onmouseover="window.showResourceLikesModal('${r.id}')" style="background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.3); color:#f43f5e; padding:3px 8px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem; margin-right:4px;">❤️ ${r.likes}</button>
+              <button onclick="window.showResourceSharesModal('${r.id}')" onmouseover="window.showResourceSharesModal('${r.id}')" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; padding:3px 8px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem;">🔗 ${r.shares}</button>
             </td>
             <td style="padding:0.75rem; font-weight:800; color:#f59e0b;">⭐ ${r.priorityScore}</td>
           `;
@@ -2513,4 +2642,66 @@ async function loadResourceAnalyticsAdmin() {
   }
 }
 
-window.loadResourceAnalyticsAdmin = loadResourceAnalyticsAdmin;
+window.showResourceLikesModal = function(resId) {
+  const item = window.currentResourceCacheMap.get(resId);
+  const modal = document.getElementById("resourceLikesSharesModal");
+  const titleEl = document.getElementById("lsModalTitle");
+  const contentEl = document.getElementById("lsModalContent");
+
+  if (!modal || !item) return;
+
+  titleEl.innerHTML = `<i class="ri-user-heart-line" style="color:#f43f5e;"></i> Contributors Who Liked "${item.title}" (${item.likes})`;
+
+  const likes = item.likesList || [];
+  if (likes.length === 0) {
+    contentEl.innerHTML = `<div style="color:#94a3b8; padding:10px; font-style:italic;">No likes recorded for this resource yet.</div>`;
+  } else {
+    let html = "";
+    likes.forEach(l => {
+      const pUrl = l.uid ? `profile.html?uid=${encodeURIComponent(l.uid)}` : 'profile.html';
+      html += `
+        <div style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="color:white; font-weight:700;">${l.name || 'Contributor'}</div>
+            <div style="font-size:0.75rem; color:#94a3b8; font-family:monospace;">UID: ${l.uid || 'anon'}</div>
+          </div>
+          <a href="${pUrl}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;"><i class="ri-user-line"></i> Profile</a>
+        </div>
+      `;
+    });
+    contentEl.innerHTML = html;
+  }
+  modal.style.display = "flex";
+};
+
+window.showResourceSharesModal = function(resId) {
+  const item = window.currentResourceCacheMap.get(resId);
+  const modal = document.getElementById("resourceLikesSharesModal");
+  const titleEl = document.getElementById("lsModalTitle");
+  const contentEl = document.getElementById("lsModalContent");
+
+  if (!modal || !item) return;
+
+  titleEl.innerHTML = `<i class="ri-share-forward-line" style="color:#38bdf8;"></i> Contributors & Guests Who Shared "${item.title}" (${item.shares})`;
+
+  const shares = item.sharesList || [];
+  if (shares.length === 0) {
+    contentEl.innerHTML = `<div style="color:#94a3b8; padding:10px; font-style:italic;">No share links generated yet.</div>`;
+  } else {
+    let html = "";
+    shares.forEach(s => {
+      const pUrl = s.uploaderUid ? `profile.html?uid=${encodeURIComponent(s.uploaderUid)}` : 'profile.html';
+      html += `
+        <div style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="color:white; font-weight:700;">${s.uploader || 'Contributor'}</div>
+            <div style="font-size:0.75rem; color:#38bdf8; font-family:monospace;">Token: ${s.token} | Clicks: ${s.clicks || 0}</div>
+          </div>
+          <a href="${pUrl}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;"><i class="ri-user-search-line"></i> Profile</a>
+        </div>
+      `;
+    });
+    contentEl.innerHTML = html;
+  }
+  modal.style.display = "flex";
+};
