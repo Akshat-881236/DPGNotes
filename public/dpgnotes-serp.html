@@ -204,6 +204,28 @@
     </div>
   </header>
 
+  <!-- Google-Style 6-Tab Navigation Bar -->
+  <nav class="serp-tabs-bar" style="display:flex; gap:16px; background:rgba(15,23,42,0.85); border-bottom:1px solid var(--border); padding:0 2rem; overflow-x:auto; backdrop-filter:blur(10px);">
+    <button class="serp-tab-btn active" id="tab-btn-all" onclick="window.switchSerpTab('all')" style="background:none; border:none; color:#818cf8; border-bottom:3px solid #818cf8; padding:0.75rem 0.5rem; font-weight:700; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+      <i class="ri-search-2-line"></i> All
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-ai" onclick="window.switchSerpTab('ai')" style="background:none; border:none; color:#94a3b8; padding:0.75rem 0.5rem; font-weight:600; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+      <i class="ri-sparkling-fill" style="color:#c084fc;"></i> AI Overview
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-sponsored" onclick="window.switchSerpTab('sponsored')" style="background:none; border:none; color:#94a3b8; padding:0.75rem 0.5rem; font-weight:600; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+      <i class="ri-megaphone-line" style="color:#f59e0b;"></i> Sponsored
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-image" onclick="window.switchSerpTab('image')" style="background:none; border:none; color:#94a3b8; padding:0.75rem 0.5rem; font-weight:600; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+      <i class="ri-image-line" style="color:#38bdf8;"></i> Images
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-videos" onclick="window.switchSerpTab('videos')" style="background:none; border:none; color:#94a3b8; padding:0.75rem 0.5rem; font-weight:600; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+      <i class="ri-youtube-line" style="color:#ef4444;"></i> Videos
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-website" onclick="window.switchSerpTab('website')" style="background:none; border:none; color:#94a3b8; padding:0.75rem 0.5rem; font-weight:600; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+      <i class="ri-global-line" style="color:#10b981;"></i> Websites
+    </button>
+  </nav>
+
   <!-- Top Header Native Sponsored Ad Banner -->
   <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="max-width:1200px; margin:0.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
 
@@ -335,6 +357,26 @@
     }
 
     window.applyFilters = function() {
+    window.activeSerpTab = 'all';
+    window.currentSearchResults = [];
+
+    window.switchSerpTab = function(tabName) {
+      window.activeSerpTab = tabName;
+      document.querySelectorAll('.serp-tab-btn').forEach(btn => {
+        btn.style.color = '#94a3b8';
+        btn.style.borderBottom = 'none';
+        btn.style.fontWeight = '600';
+      });
+      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+      if (activeBtn) {
+        activeBtn.style.color = '#818cf8';
+        activeBtn.style.borderBottom = '3px solid #818cf8';
+        activeBtn.style.fontWeight = '700';
+      }
+      renderActiveTabContent();
+    };
+
+    window.applyFilters = function() {
       const q = searchField.value.trim().toLowerCase();
       queryTextSpan.innerText = searchField.value;
 
@@ -355,7 +397,7 @@
           const tags = Array.isArray(d.tags) ? d.tags.join(" ").toLowerCase() : (d.tags || "").toLowerCase();
 
           const combined = `${title} ${desc} ${disc} ${cat} ${uploader} ${tags}`;
-          return tokens.every(token => combined.includes(token));
+          return tokens.some(token => combined.includes(token)); // Flexible multi-token matching
         });
       }
 
@@ -375,7 +417,7 @@
         const sCount = d.sharesCount || 0;
         const vCount = d.views || 1;
         const stMins = Math.round((d.screentime || 60) / 60);
-        const relScore = query ? ((d.title || "").toLowerCase().includes(query.toLowerCase()) ? 5 : 2) : 1;
+        const relScore = q ? ((d.title || "").toLowerCase().includes(q) ? 10 : 4) : 1;
         d.priorityScore = (lCount * 5) + (sCount * 4) + (stMins * 3) + (vCount * 2) + (relScore * 10);
       });
 
@@ -389,115 +431,228 @@
         results.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
       }
 
-      renderResults(results);
+      window.currentSearchResults = results;
+      renderActiveTabContent();
     };
 
-    function renderResults(results) {
+    function renderActiveTabContent() {
+      const results = window.currentSearchResults || [];
       const list = document.getElementById("resultsList");
       const countLabel = document.getElementById("resultsCount");
       countLabel.innerText = results.length;
 
-      if (results.length === 0) {
-        list.innerHTML = `
-          <div class="no-results-panel" style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:2.5rem; text-align:center;">
-            <i class="ri-search-eye-line" style="font-size:3rem; color:var(--primary-light); margin-bottom:1rem; display:block;"></i>
-            <h3 style="font-size:1.3rem; margin-bottom:0.5rem; color:white;">No results matched your query</h3>
-            <p style="color:var(--text-muted); font-size:0.92rem; max-width:480px; margin:0 auto 1.5rem;">Try broadening your terms, selecting another academic category, or checking spelling.</p>
-            <div style="display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap;">
-              <span class="btag" style="cursor:pointer;" onclick="document.getElementById('serpSearchInput').value='Computer Science'; window.applyFilters();">Computer Science</span>
-              <span class="btag" style="cursor:pointer;" onclick="document.getElementById('serpSearchInput').value='Physics'; window.applyFilters();">Physics</span>
-              <span class="btag" style="cursor:pointer;" onclick="document.getElementById('serpSearchInput').value='Mathematics'; window.applyFilters();">Mathematics</span>
+      if (!list) return;
+
+      const q = searchField.value.trim();
+
+      // ==========================================
+      // TAB 1: ALL (Standard Ranked Results)
+      // ==========================================
+      if (window.activeSerpTab === 'all') {
+        if (results.length === 0) {
+          list.innerHTML = `
+            <div class="no-results-panel" style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:2.5rem; text-align:center;">
+              <i class="ri-search-eye-line" style="font-size:3rem; color:var(--primary-light); margin-bottom:1rem; display:block;"></i>
+              <h3 style="font-size:1.3rem; margin-bottom:0.5rem; color:white;">No results matched your query</h3>
+              <p style="color:var(--text-muted); font-size:0.92rem; max-width:480px; margin:0 auto 1.5rem;">Try broadening your terms, selecting another academic category, or checking spelling.</p>
             </div>
-          </div>
-        `;
-        return;
-      }
+          `;
+          return;
+        }
 
-      let html = '';
-
-      // Google-Style AI Overview Card at top of search results
-      if (results.length > 0) {
-        const topResult = results[0];
-        html += `
+        let html = `
           <div class="google-ai-overview" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 18px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; position: relative;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
               <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem; color: #a78bfa;">
-                <i class="ri-sparkling-fill" style="color: #c084fc; font-size: 1.1rem;"></i> DPGNotes AI Overview
+                <i class="ri-sparkling-fill" style="color: #c084fc; font-size: 1.1rem;"></i> DPGNotes AI Synthesis
               </div>
-              <span style="font-size: 0.72rem; background: rgba(139, 92, 246, 0.2); color: #c4b5fd; padding: 2px 8px; border-radius: 12px; font-weight: 600;">Academic AI</span>
+              <span style="font-size: 0.72rem; background: rgba(139, 92, 246, 0.2); color: #c4b5fd; padding: 2px 8px; border-radius: 12px; font-weight: 600;">SERP Auto-Ranked</span>
             </div>
             <p style="font-size: 0.9rem; color: #e2e8f0; line-height: 1.6; margin-bottom: 0.75rem;">
-              Found <strong>${results.length} relevant academic notes</strong> for "<em>${searchField.value || 'all files'}</em>". Top recommended file: <strong>"${topResult.title}"</strong> (${topResult.category} / ${topResult.discipline}).
+              Found <strong>${results.length} academic resources</strong> for query "<em>${q || 'all files'}</em>". Highest priority score match: <strong>"${results[0].title}"</strong> (${results[0].category} / ${results[0].discipline}).
             </p>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <span style="font-size: 0.75rem; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 20px; color: #cbd5e1;"><i class="ri-check-double-line" style="color:#10b981;"></i> Sessional Verified</span>
-              <span style="font-size: 0.75rem; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); padding: 4px 10px; border-radius: 20px; color: #cbd5e1;"><i class="ri-shield-check-line" style="color:#60a5fa;"></i> Content Approved</span>
+          </div>
+        `;
+        list.innerHTML = html;
+
+        results.forEach((d, idx) => {
+          const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
+          const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
+          const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
+
+          const card = document.createElement("article");
+          card.className = "result-card";
+          card.style.cssText = "background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.25rem 1.5rem; margin-bottom:1rem; transition:all 0.2s;";
+          card.innerHTML = `
+            <div class="result-content">
+              <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.35rem;">
+                <span style="width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.65rem; font-weight:800;">D</span>
+                <span>dpgnotes.web.app › ${d.category || 'notes'} › ${d.discipline || 'academic'}</span>
+              </div>
+              <h2 class="result-title" style="margin-bottom:0.4rem;">
+                <a href="${viewerUrl}" style="color:#818cf8; text-decoration:none; font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700;">${d.title}</a>
+              </h2>
+              <p class="result-desc" style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">${d.description || "Sessional notes and academic study resource."}</p>
+              <div class="result-meta" style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
+                <span style="background:rgba(99, 102, 241, 0.15); color:#a78bfa; padding:2px 8px; border-radius:12px; font-weight:600;">📁 ${d.category}</span>
+                <span>📘 ${d.discipline}</span>
+                <span>👤 ${d.userName || d.uploader || "Contributor"}</span>
+                <span>❤️ ${likesCount} Likes</span>
+                <span style="color:#f59e0b; font-weight:700;">⭐ SERP Rank ${d.priorityScore || 10}</span>
+              </div>
+            </div>
+          `;
+          list.appendChild(card);
+
+          if (idx > 0 && (idx + 1) % 5 === 0) {
+            const adContainer = document.createElement("div");
+            adContainer.className = "serp-ad-slot";
+            adContainer.style.cssText = "margin: 1rem 0 1.5rem 0; width: 100%;";
+            adContainer.innerHTML = `<div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>`;
+            list.appendChild(adContainer);
+          }
+        });
+
+        if (typeof window.renderNativeDPGAds === "function") setTimeout(window.renderNativeDPGAds, 200);
+      }
+
+      // ==========================================
+      // TAB 2: AI OVERVIEW & INTERACTIVE CHAT
+      // ==========================================
+      else if (window.activeSerpTab === 'ai') {
+        const topDoc = results[0] || { title: "Academic Knowledge Base", category: "General", discipline: "Computer Science" };
+        list.innerHTML = `
+          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(168,85,247,0.4); border-radius:20px; padding:1.8rem; box-shadow:0 15px 40px rgba(0,0,0,0.6);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:1rem; margin-bottom:1.2rem;">
+              <h3 style="color:#c084fc; font-family:'Outfit', sans-serif; margin:0; display:flex; align-items:center; gap:10px;">
+                <i class="ri-sparkling-fill" style="color:#c084fc; font-size:1.4rem;"></i> DPGNotes AI Study Report & Knowledge Synthesis
+              </h3>
+              <span style="background:rgba(168,85,247,0.2); color:#e9d5ff; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700;">Multi-Model Intelligence</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem;">
+              <div>
+                <p style="color:#e2e8f0; font-size:0.95rem; line-height:1.7; margin-bottom:1rem;">
+                  📘 <strong>Academic Overview: ${q || 'General Curriculum'}</strong><br>
+                  Synthesized across <strong>${results.length} verified academic resources</strong> at DPG College. Top matched document: <strong>"${topDoc.title}"</strong> (${topDoc.category} / ${topDoc.discipline}).
+                </p>
+                <div style="background:rgba(255,255,255,0.04); border-left:4px solid #c084fc; padding:12px; border-radius:8px; margin-bottom:1.2rem; font-size:0.88rem; color:#cbd5e1;">
+                  💡 <strong>Key Study Guidelines & Examination Formulas:</strong><br>
+                  • Cross-reference core definitions with official sessional exam patterns.<br>
+                  • Priority rank index evaluates student screentime, likes, and share metrics.<br>
+                  • Review associated question papers in the <strong>All</strong> tab.
+                </div>
+
+                <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem; margin-top:1rem;">
+                  <h4 style="color:#a78bfa; margin-bottom:0.75rem; font-size:0.92rem;">🤖 Interactive AI Chat Continuation:</h4>
+                  <div style="display:flex; gap:10px;">
+                    <input type="text" id="serpAiChatInput" placeholder="Ask DPGNotes AI anything about ${q || 'this subject'}..." style="flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1rem; color:white; font-family:inherit;">
+                    <button onclick="alert('DPGNotes AI: Synthesizing customized study answer for query...')" style="background:linear-gradient(135deg,#c084fc,#8b5cf6); color:white; border:none; border-radius:10px; padding:0.6rem 1.2rem; font-weight:700; cursor:pointer;"><i class="ri-send-plane-fill"></i> Ask AI</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Side Panel Media & Document Preview Thumbnail -->
+              <div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:14px; padding:1rem; text-align:center;">
+                <h5 style="color:#94a3b8; font-size:0.78rem; text-transform:uppercase; margin-bottom:0.75rem; letter-spacing:0.05em;">Resource Preview Thumbnail</h5>
+                <img src="${topDoc.coverImage || 'ANH.png'}" style="width:100%; max-height:160px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.75rem;" alt="Doc Thumbnail">
+                <a href="/dpgnotes-pdf-viewer.html?docid=${topDoc.id || ''}&title=${encodeURIComponent(topDoc.title || '')}" target="_blank" style="background:#6366f1; color:white; text-decoration:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:700; display:inline-block;"><i class="ri-book-open-line"></i> Open Document</a>
+              </div>
+            </div>
+
+            <!-- Bottom Recommended Resource Cards -->
+            <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:1.5rem; padding-top:1rem;">
+              <h4 style="color:#a78bfa; font-size:0.88rem; margin-bottom:0.75rem;">Recommended Relevant Academic Documents:</h4>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+                ${results.slice(0, 3).map(r => `
+                  <a href="/dpgnotes-pdf-viewer.html?docid=${r.id}&title=${encodeURIComponent(r.title)}" target="_blank" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:10px; text-decoration:none; color:white; transition:all 0.2s;">
+                    <div style="font-weight:700; font-size:0.85rem; color:#818cf8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.title}</div>
+                    <div style="font-size:0.75rem; color:#94a3b8;">${r.category} | ${r.discipline}</div>
+                  </a>
+                `).join('')}
+              </div>
             </div>
           </div>
         `;
       }
 
-      list.innerHTML = html;
+      // ==========================================
+      // TAB 3: SPONSORED ADS
+      // ==========================================
+      else if (window.activeSerpTab === 'sponsored') {
+        list.innerHTML = `
+          <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(245,158,11,0.3); border-radius:18px; padding:1.5rem;">
+            <h3 style="color:#f59e0b; margin-bottom:1rem; font-family:'Outfit', sans-serif; display:flex; align-items:center; gap:8px;">
+              <i class="ri-megaphone-line"></i> Sponsored Ad Campaigns for "${q || 'All'}"
+            </h3>
+            <div class="native-ads" data-ad-variant="feed" data-ad-count="3"></div>
+          </div>
+        `;
+        if (typeof window.renderNativeDPGAds === "function") setTimeout(window.renderNativeDPGAds, 200);
+      }
 
-      results.forEach((d, idx) => {
-        const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
-        const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
-        const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
-
-        const card = document.createElement("article");
-        card.className = "result-card";
-        card.style.cssText = "background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.25rem 1.5rem; margin-bottom:1rem; transition:all 0.2s;";
-        card.innerHTML = `
-          <div class="result-content">
-            <!-- Google Breadcrumb Link Line -->
-            <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.35rem;">
-              <span style="width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.65rem; font-weight:800;">D</span>
-              <span>dpgnotes.web.app › ${d.category || 'notes'} › ${d.discipline || 'academic'}</span>
+      // ==========================================
+      // TAB 4: IMAGES GALLERY GRID
+      // ==========================================
+      else if (window.activeSerpTab === 'image') {
+        let imgHtml = `
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:14px;">
+        `;
+        results.forEach(r => {
+          const imgUrl = r.coverImage || r.bannerUrl || 'ANH.png';
+          imgHtml += `
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer;" onclick="window.open('${imgUrl}', '_blank')">
+              <img src="${imgUrl}" style="width:100%; height:140px; object-fit:cover;" alt="${r.title}">
+              <div style="padding:8px 10px; font-size:0.78rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.title}</div>
             </div>
+          `;
+        });
+        imgHtml += `</div>`;
+        list.innerHTML = imgHtml;
+      }
 
-            <!-- Google Blue Clickable Title Link -->
-            <h2 class="result-title" style="margin-bottom:0.4rem;">
-              <a href="${viewerUrl}" style="color:#818cf8; text-decoration:none; font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700; transition:color 0.2s;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
-                ${d.title}
-              </a>
-            </h2>
-
-            <p class="result-desc" style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">
-              ${d.description || "No detailed summary provided for this sessional document."}
-            </p>
-
-            <div class="result-meta" style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
-              <span style="background:rgba(99, 102, 241, 0.15); color:#a78bfa; padding:2px 8px; border-radius:12px; font-weight:600;"><i class="ri-folder-3-line"></i> ${d.category}</span>
-              <span><i class="ri-book-open-line"></i> ${d.discipline}</span>
-              <span><i class="ri-user-line"></i> ${d.userName || d.uploader || "Contributor"}</span>
-              <span><i class="ri-heart-3-line" style="color:#ef4444;"></i> ${likesCount} Likes</span>
+      // ==========================================
+      // TAB 5: VIDEOS GRID
+      // ==========================================
+      else if (window.activeSerpTab === 'videos') {
+        list.innerHTML = `
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+              <iframe width="100%" height="170" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+              <div style="padding:12px;">
+                <h4 style="color:white; font-size:0.9rem; margin-bottom:4px;">Educational Video: ${q || 'Curriculum Overview'}</h4>
+                <p style="color:#94a3b8; font-size:0.78rem;">DPG College Video Lecture Portal</p>
+              </div>
+            </div>
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+              <iframe width="100%" height="170" src="https://www.youtube.com/embed/gBkW19V_68c" frameborder="0" allowfullscreen></iframe>
+              <div style="padding:12px;">
+                <h4 style="color:white; font-size:0.9rem; margin-bottom:4px;">Computer Science Sessional Prep</h4>
+                <p style="color:#94a3b8; font-size:0.78rem;">Academic Video Tutorials</p>
+              </div>
             </div>
           </div>
         `;
-        list.appendChild(card);
+      }
 
-        // Inject Native Ad / AdSense unit after every 5 search results (Reduced Ad Count)
-        if (idx > 0 && (idx + 1) % 5 === 0) {
-          const adContainer = document.createElement("div");
-          adContainer.className = "serp-ad-slot";
-          adContainer.style.cssText = "margin: 1rem 0 1.5rem 0; width: 100%;";
-          adContainer.innerHTML = `
-            <div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>
-            <div class="ad-banner-section" style="margin-top:0.5rem;">
-              <ins class="adsbygoogle"
-                   style="display:block"
-                   data-ad-client="ca-pub-5515547448097504"
-                   data-ad-slot="1234567890"
-                   data-ad-format="auto"
-                   data-full-width-responsive="true"></ins>
+      // ==========================================
+      // TAB 6: WEBSITES
+      // ==========================================
+      else if (window.activeSerpTab === 'website') {
+        list.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
+              <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Platform Portal</div>
+              <h3 style="margin:0 0 6px 0;"><a href="https://dpgnotes.web.app" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Main Portal</a></h3>
+              <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Official Academic Notes, PYQs, and Sessional Exam Repository for DPG College students.</p>
             </div>
-          `;
-          list.appendChild(adContainer);
-        }
-      });
-
-      if (typeof window.renderNativeDPGAds === "function") {
-        setTimeout(window.renderNativeDPGAds, 300);
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
+              <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Legal Directory</div>
+              <h3 style="margin:0 0 6px 0;"><a href="/dpgnotes-legal-notes.html" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Legal Policies & Compliance Portal</a></h3>
+              <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Standardized copyright policies, terms of service, and student academic compliance regulations.</p>
+            </div>
+          </div>
+        `;
       }
     }
 

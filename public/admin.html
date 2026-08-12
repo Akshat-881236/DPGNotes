@@ -1137,12 +1137,16 @@
           </div>
           
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <select id="resourceTimeframeSelect" onchange="loadResourceAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer;">
+            <select id="resourceTimeframeSelect" onchange="if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer;">
               <option value="daily">Daily (Hourly Analytics)</option>
               <option value="weekly" selected>Weekly (Day-wise Analytics)</option>
               <option value="monthly">Monthly (Week-wise Analytics)</option>
             </select>
-            <button onclick="loadResourceAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Analytics</button>
+            <select id="resourceAnalyticsFilterSelect" onchange="if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer; max-width:280px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+              <option value="ALL">All Academic Resources</option>
+            </select>
+            <button onclick="if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Analytics</button>
+            <button onclick="window.triggerWeeklyAnalyticsEmailReport()" class="btn-action primary" style="padding:0.6rem 1rem;"><i class="ri-mail-send-line"></i> Dispatch Weekly Report Email</button>
           </div>
         </div>
 

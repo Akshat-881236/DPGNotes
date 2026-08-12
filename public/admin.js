@@ -2357,19 +2357,35 @@ window.loadAdsAnalyticsAdmin = loadAdsAnalyticsAdmin;
 
 window.currentResourceCacheMap = new Map();
 
-async function loadResourceAnalyticsAdmin() {
-  try {
-    const timeframeSelect = document.getElementById("resourceTimeframeSelect");
-    const timeframe = timeframeSelect ? timeframeSelect.value : 'weekly';
-    const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+export async function loadResourceAnalyticsAdmin() {
+  const timeframeSelect = document.getElementById("resourceTimeframeSelect");
+  const filterSelect = document.getElementById("resourceAnalyticsFilterSelect");
+  const timeframe = timeframeSelect ? timeframeSelect.value : 'weekly';
+  const selectedResourceId = filterSelect ? filterSelect.value : 'ALL';
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
 
-    const res = await fetch(`${baseUrl}/api/admin/resource-analytics?timeframe=${timeframe}`);
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/resource-analytics?timeframe=${timeframe}&resourceId=${encodeURIComponent(selectedResourceId)}`);
     if (!res.ok) throw new Error("Failed to fetch resource analytics");
     const data = await res.json();
 
     // Store in global cache map for modals
     window.currentResourceCacheMap = new Map();
-    (data.resourceList || []).forEach(r => window.currentResourceCacheMap.set(r.id, r));
+    const poolResources = data.resourceList || [];
+    poolResources.forEach(r => window.currentResourceCacheMap.set(r.id, r));
+
+    // Populate Resource Filter Select Dropdown
+    if (filterSelect && poolResources.length > 0) {
+      const currentOptVal = filterSelect.value;
+      filterSelect.innerHTML = `<option value="ALL">All Academic Resources (${poolResources.length})</option>`;
+      poolResources.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = `[${r.category}] ${r.title}`;
+        if (r.id === currentOptVal) opt.selected = true;
+        filterSelect.appendChild(opt);
+      });
+    }
 
     // 1. Metric Stat Cards with Mathematical Legacy Formulas
     const viewsEl = document.getElementById("statResourceViews");
@@ -2410,7 +2426,11 @@ async function loadResourceAnalyticsAdmin() {
                 borderColor: '#818cf8',
                 backgroundColor: '#818cf8',
                 pointBackgroundColor: '#818cf8',
-                borderWidth: 3,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 10,
+                borderWidth: 2.5,
                 tension: 0.35,
                 yAxisID: 'yCount'
               },
@@ -2420,7 +2440,11 @@ async function loadResourceAnalyticsAdmin() {
                 borderColor: '#c084fc',
                 backgroundColor: '#c084fc',
                 pointBackgroundColor: '#c084fc',
-                borderWidth: 3,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 10,
+                borderWidth: 2.5,
                 tension: 0.35,
                 yAxisID: 'yMins'
               },
@@ -2430,6 +2454,10 @@ async function loadResourceAnalyticsAdmin() {
                 borderColor: '#38bdf8',
                 backgroundColor: '#38bdf8',
                 pointBackgroundColor: '#38bdf8',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 10,
                 borderWidth: 2.5,
                 tension: 0.35,
                 yAxisID: 'yCount'
@@ -2440,6 +2468,10 @@ async function loadResourceAnalyticsAdmin() {
                 borderColor: '#f43f5e',
                 backgroundColor: '#f43f5e',
                 pointBackgroundColor: '#f43f5e',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 10,
                 borderWidth: 2.5,
                 tension: 0.35,
                 yAxisID: 'yCount'
@@ -2638,9 +2670,127 @@ async function loadResourceAnalyticsAdmin() {
     }
 
   } catch(err) {
-    console.error("loadResourceAnalyticsAdmin error:", err);
+    console.error("loadResourceAnalyticsAdmin API fetch error:", err);
+    
+    // Query actual client-side Firestore documents when API backend is offline
+    try {
+      let docsList = [];
+      if (typeof getDocs !== 'undefined' && typeof collection !== 'undefined' && window.db) {
+        const dSnap = await getDocs(collection(window.db, "documents")).catch(() => null);
+        if (dSnap && !dSnap.empty) {
+          dSnap.forEach(docSnap => {
+            const d = docSnap.data();
+            const likesArr = Array.isArray(d.likes) ? d.likes : [];
+            docsList.push({
+              id: docSnap.id,
+              title: d.title || 'Untitled Resource',
+              category: d.category || 'General',
+              discipline: d.discipline || 'General',
+              uploader: d.userName || d.uploader || 'Contributor',
+              views: Number(d.viewsCount || d.views || 0),
+              screentime: Number(d.screentime || 0),
+              shares: Array.isArray(d.shares) ? d.shares.length : Number(d.shareCount || 0),
+              likes: likesArr.length || Number(d.likesCount || 0),
+              likesList: likesArr.map(l => ({ uid: String(l), name: String(l).substring(0, 10) })),
+              sharesList: [],
+              priorityScore: (likesArr.length * 5) + (Number(d.shareCount || 0) * 4) + (Number(d.viewsCount || 0) * 2)
+            });
+          });
+        }
+      }
+
+      window.currentResourceCacheMap = new Map();
+      docsList.forEach(r => window.currentResourceCacheMap.set(r.id, r));
+
+      const totalViews = docsList.reduce((acc, r) => acc + r.views, 0);
+      const totalScreentimeSecs = docsList.reduce((acc, r) => acc + r.screentime, 0);
+      const totalShares = docsList.reduce((acc, r) => acc + r.shares, 0);
+      const totalLikes = docsList.reduce((acc, r) => acc + r.likes, 0);
+      const totalScreentimeMins = Math.round(totalScreentimeSecs / 60);
+      const meanMins = docsList.length > 0 ? (totalScreentimeMins / docsList.length).toFixed(1) : "0.0";
+      const topPrio = docsList.length > 0 ? Math.max(0, ...docsList.map(r => r.priorityScore)) : 0;
+
+      const viewsEl = document.getElementById("statResourceViews");
+      if (viewsEl) viewsEl.textContent = totalViews.toLocaleString();
+      const stEl = document.getElementById("statResourceScreentime");
+      if (stEl) stEl.textContent = totalScreentimeMins + "m";
+      const sharesEl = document.getElementById("statResourceShares");
+      if (sharesEl) sharesEl.textContent = totalShares.toLocaleString();
+      const likesEl = document.getElementById("statResourceLikes");
+      if (likesEl) likesEl.textContent = totalLikes.toLocaleString();
+      const meanEl = document.getElementById("statMeanResourceScreentime");
+      if (meanEl) meanEl.textContent = meanMins + "m";
+      const prioEl = document.getElementById("statHighPriorityIndex");
+      if (prioEl) prioEl.textContent = "⭐ " + topPrio;
+
+      // Render Telemetry Table from actual data
+      const userTbody = document.getElementById("resourceUsersTableBody");
+      if (userTbody) {
+        userTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No visitor telemetry recorded.</td></tr>`;
+      }
+
+      const resTbody = document.getElementById("resourceAnalyticsTableBody");
+      if (resTbody) {
+        if (docsList.length === 0) {
+          resTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No resource performance data available in Firestore.</td></tr>`;
+        } else {
+          resTbody.innerHTML = "";
+          docsList.forEach(r => {
+            const tr = document.createElement("tr");
+            const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${r.id}&title=${encodeURIComponent(r.title)}`;
+            tr.innerHTML = `
+              <td style="padding:0.75rem;">
+                <a href="${vUrl}" target="_blank" style="color:#60a5fa; font-weight:700; text-decoration:none;">${r.title} <i class="ri-external-link-line"></i></a>
+              </td>
+              <td style="padding:0.75rem; color:#cbd5e1;">${r.category} (${r.discipline})</td>
+              <td style="padding:0.75rem; color:white;">${r.uploader}</td>
+              <td style="padding:0.75rem; font-weight:700; color:#818cf8;">${r.views.toLocaleString()}</td>
+              <td style="padding:0.75rem; font-weight:700; color:#c084fc;">${Math.round(r.screentime / 60)}m</td>
+              <td style="padding:0.75rem;">
+                <button onclick="window.showResourceLikesModal('${r.id}')" onmouseover="window.showResourceLikesModal('${r.id}')" style="background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.3); color:#f43f5e; padding:3px 8px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem; margin-right:4px;">❤️ ${r.likes}</button>
+                <button onclick="window.showResourceSharesModal('${r.id}')" onmouseover="window.showResourceSharesModal('${r.id}')" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; padding:3px 8px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem;">🔗 ${r.shares}</button>
+              </td>
+              <td style="padding:0.75rem; font-weight:800; color:#f59e0b;">⭐ ${r.priorityScore}</td>
+            `;
+            resTbody.appendChild(tr);
+          });
+        }
+      }
+
+      // Draw Chart.js with actual metrics
+      const canvas = document.getElementById("resourceAnalyticsChart");
+      if (canvas && window.Chart) {
+        if (window.myResourceAnalyticsChart) window.myResourceAnalyticsChart.destroy();
+        const ctx = canvas.getContext("2d");
+        window.myResourceAnalyticsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [
+              { label: 'Views (Indigo Line)', data: [0, 0, 0, 0, 0, 0, totalViews], borderColor: '#818cf8', backgroundColor: '#818cf8', pointBackgroundColor: '#818cf8', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 6, borderWidth: 2.5, tension: 0.35, yAxisID: 'yCount' },
+              { label: 'Screentime Mins (Purple Line)', data: [0, 0, 0, 0, 0, 0, totalScreentimeMins], borderColor: '#c084fc', backgroundColor: '#c084fc', pointBackgroundColor: '#c084fc', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 6, borderWidth: 2.5, tension: 0.35, yAxisID: 'yMins' },
+              { label: 'Shares (Sky Blue Line)', data: [0, 0, 0, 0, 0, 0, totalShares], borderColor: '#38bdf8', backgroundColor: '#38bdf8', pointBackgroundColor: '#38bdf8', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 6, borderWidth: 2.5, tension: 0.35, yAxisID: 'yCount' },
+              { label: 'Likes (Rose Line)', data: [0, 0, 0, 0, 0, 0, totalLikes], borderColor: '#f43f5e', backgroundColor: '#f43f5e', pointBackgroundColor: '#f43f5e', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 6, borderWidth: 2.5, tension: 0.35, yAxisID: 'yCount' }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              yCount: { type: 'linear', position: 'left', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#818cf8' } },
+              yMins: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#c084fc', callback: (v) => v + 'm' } },
+              x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+            }
+          }
+        });
+      }
+    } catch (fallbackErr) {
+      console.error("Firestore fallback error:", fallbackErr);
+    }
   }
 }
+
+window.loadResourceAnalyticsAdmin = loadResourceAnalyticsAdmin;
 
 window.showResourceLikesModal = function(resId) {
   const item = window.currentResourceCacheMap.get(resId);
@@ -2704,4 +2854,26 @@ window.showResourceSharesModal = function(resId) {
     contentEl.innerHTML = html;
   }
   modal.style.display = "flex";
+};
+
+window.triggerWeeklyAnalyticsEmailReport = async function() {
+  const emailPrompt = prompt("Enter Administrator / Contributor Email for Weekly Report Dispatch:", "admin@dpgnotes.app");
+  if (!emailPrompt) return;
+
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/send-weekly-analytics-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: emailPrompt })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert(`✅ Weekly Analytics & Performance Report email sent to ${emailPrompt}!`);
+    } else {
+      alert(`⚠️ Email dispatch notice: ${data.error || 'Check server mail logs.'}`);
+    }
+  } catch(err) {
+    alert("Network error dispatching report email: " + err.message);
+  }
 };
