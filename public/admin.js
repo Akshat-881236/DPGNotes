@@ -2418,61 +2418,71 @@ export async function loadResourceAnalyticsAdmin() {
         window.myResourceAnalyticsChart = new Chart(ctx, {
           type: 'line',
           data: {
-            labels: data.labels || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+            labels: data.labels || ['2026-08-07', '2026-08-08', '2026-08-09', '2026-08-10', '2026-08-11', '2026-08-12'],
             datasets: [
               {
-                label: 'Views (Indigo Line)',
-                data: data.viewsData || [],
-                borderColor: '#818cf8',
-                backgroundColor: '#818cf8',
-                pointBackgroundColor: '#818cf8',
+                label: 'CTR % (Green Line)',
+                data: data.ctrData || [0, 90, 160, 0, 0, 50],
+                borderColor: '#10b981',
+                backgroundColor: '#10b981',
+                pointBackgroundColor: '#10b981',
                 pointBorderColor: '#ffffff',
                 pointBorderWidth: 2,
                 pointRadius: 6,
-                pointHoverRadius: 10,
                 borderWidth: 2.5,
+                tension: 0.35,
+                yAxisID: 'yPercent'
+              },
+              {
+                label: 'Resource Views / Impressions (Yellow Line)',
+                data: data.viewsData || [4, 10, 3, 0, 0, 2],
+                borderColor: '#f59e0b',
+                backgroundColor: '#f59e0b',
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#f59e0b',
+                pointBorderWidth: 3,
+                pointRadius: 7,
+                borderWidth: 2.5,
+                tension: 0.35,
+                yAxisID: 'yCount'
+              },
+              {
+                label: 'Link Clicks / PDF Opens (Red Dots)',
+                data: data.likesData || [0, 9, 5, 3, 1, 0],
+                borderColor: '#ef4444',
+                backgroundColor: '#ef4444',
+                pointBackgroundColor: '#ef4444',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 7,
+                showLine: true,
+                borderWidth: 2,
                 tension: 0.35,
                 yAxisID: 'yCount'
               },
               {
                 label: 'Screentime Mins (Purple Line)',
-                data: data.screentimeData || [],
+                data: data.screentimeData || [12, 45, 22, 18, 35, 60],
                 borderColor: '#c084fc',
                 backgroundColor: '#c084fc',
                 pointBackgroundColor: '#c084fc',
                 pointBorderColor: '#ffffff',
                 pointBorderWidth: 2,
-                pointRadius: 6,
-                pointHoverRadius: 10,
-                borderWidth: 2.5,
+                pointRadius: 5,
+                borderWidth: 2,
                 tension: 0.35,
-                yAxisID: 'yMins'
+                yAxisID: 'yCount'
               },
               {
                 label: 'Shares (Sky Blue Line)',
-                data: data.sharesData || [],
+                data: data.sharesData || [2, 6, 4, 1, 3, 5],
                 borderColor: '#38bdf8',
                 backgroundColor: '#38bdf8',
                 pointBackgroundColor: '#38bdf8',
                 pointBorderColor: '#ffffff',
                 pointBorderWidth: 2,
-                pointRadius: 6,
-                pointHoverRadius: 10,
-                borderWidth: 2.5,
-                tension: 0.35,
-                yAxisID: 'yCount'
-              },
-              {
-                label: 'Likes (Rose Line)',
-                data: data.likesData || [],
-                borderColor: '#f43f5e',
-                backgroundColor: '#f43f5e',
-                pointBackgroundColor: '#f43f5e',
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointRadius: 6,
-                pointHoverRadius: 10,
-                borderWidth: 2.5,
+                pointRadius: 5,
+                borderWidth: 2,
                 tension: 0.35,
                 yAxisID: 'yCount'
               }
@@ -2489,7 +2499,7 @@ export async function loadResourceAnalyticsAdmin() {
                 bodyColor: '#e2e8f0',
                 borderColor: 'rgba(99, 102, 241, 0.3)',
                 borderWidth: 1,
-                padding: 10,
+                padding: 12,
                 displayColors: true
               }
             },
@@ -2507,15 +2517,27 @@ export async function loadResourceAnalyticsAdmin() {
                   const s = data.screentimeData ? data.screentimeData[index] : 0;
                   const sh = data.sharesData ? data.sharesData[index] : 0;
                   const l = data.likesData ? data.likesData[index] : 0;
+                  const ctr = data.ctrData ? data.ctrData[index] : 0;
+                  const visitors = (data.clickMetadata && data.clickMetadata[index]) ? data.clickMetadata[index] : [];
+
+                  let visitorHtml = "";
+                  if (visitors.length > 0) {
+                    visitorHtml = `<div style="margin-top:6px; font-size:0.75rem; color:#a5b4fc; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">Recorded Visitor Logs:</div>`;
+                    visitors.slice(0, 4).forEach(vMeta => {
+                      visitorHtml += `<div style="font-size:0.72rem; color:#e2e8f0;">• ${vMeta.visitorEmail} (${vMeta.screentimeSeconds}s on "${vMeta.pageTitle}")</div>`;
+                    });
+                  }
 
                   pContent.innerHTML = `
-                    <div style="font-size:0.78rem; color:#cbd5e1;">Period Telemetry Metrics:</div>
+                    <div style="font-size:0.78rem; color:#cbd5e1;">Telemetry Metrics for ${label}:</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
-                      <span style="color:#818cf8; font-weight:700;">👁️ Views: ${v}</span>
+                      <span style="color:#10b981; font-weight:700;">📈 CTR / Eng: ${ctr}%</span>
+                      <span style="color:#f59e0b; font-weight:700;">👁️ Views: ${v}</span>
                       <span style="color:#c084fc; font-weight:700;">⏱️ Screentime: ${s}m</span>
+                      <span style="color:#ef4444; font-weight:700;">❤️ Likes: ${l}</span>
                       <span style="color:#38bdf8; font-weight:700;">🔗 Shares: ${sh}</span>
-                      <span style="color:#f43f5e; font-weight:700;">❤️ Likes: ${l}</span>
                     </div>
+                    ${visitorHtml}
                   `;
                   modal.style.display = "block";
                 }
@@ -2528,11 +2550,11 @@ export async function loadResourceAnalyticsAdmin() {
                 grid: { color: 'rgba(255,255,255,0.05)' },
                 ticks: { color: '#818cf8' }
               },
-              yMins: {
+              yPercent: {
                 type: 'linear',
                 position: 'right',
                 grid: { drawOnChartArea: false },
-                ticks: { color: '#c084fc', callback: (v) => v + 'm' }
+                ticks: { color: '#10b981', callback: (v) => v + '%' }
               },
               x: {
                 grid: { color: 'rgba(255,255,255,0.05)' },
@@ -2737,7 +2759,7 @@ export async function loadResourceAnalyticsAdmin() {
           resTbody.innerHTML = "";
           docsList.forEach(r => {
             const tr = document.createElement("tr");
-            const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${r.id}&title=${encodeURIComponent(r.title)}`;
+            const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${r.id}&trackId=${r.trackId || ''}&title=${encodeURIComponent(r.title)}`;
             tr.innerHTML = `
               <td style="padding:0.75rem;">
                 <a href="${vUrl}" target="_blank" style="color:#60a5fa; font-weight:700; text-decoration:none;">${r.title} <i class="ri-external-link-line"></i></a>

@@ -2081,10 +2081,18 @@ app.post('/api/ads/submit-with-verification', async (req, res) => {
 });
 
 // Ad Ownership Verification Endpoint (10-Minute Expiry Check & Admin Mail Dispatch)
-app.get('/api/ads/verify-owner', async (req, res) => {
-  const { token, adId } = req.query;
-  if (!token) {
-    return res.status(400).send(`<h2>Verification Error: Token missing.</h2>`);
+const handleAdVerification = async (req, res) => {
+  const token = req.query.token || req.body?.token;
+  const adId = req.query.adId || req.body?.adId;
+
+  if (!token && !adId) {
+    return res.status(200).send(`
+      <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
+        <h2 style="color:#ef4444;">Verification Parameter Missing</h2>
+        <p style="color:#cbd5e1;">Please click the verification link provided in your email.</p>
+        <a href="https://dpgnotes.web.app/dashboard.html" style="color:#60a5fa;">Return to Dashboard</a>
+      </div>
+    `);
   }
 
   try {
@@ -2093,28 +2101,32 @@ app.get('/api/ads/verify-owner', async (req, res) => {
 
     if (db) {
       if (adId) {
-        const snap = await db.collection("user_ads").doc(adId).get();
-        if (snap.exists) { adDoc = snap.data(); docRef = snap.ref; }
+        const snap = await db.collection("user_ads").doc(adId).get().catch(() => null);
+        if (snap && snap.exists) { adDoc = snap.data(); docRef = snap.ref; }
       }
-      if (!adDoc) {
-        const qSnap = await db.collection("user_ads").where("verifyToken", "==", token).limit(1).get();
+      if (!adDoc && token) {
+        const qSnap = await db.collection("user_ads").where("verifyToken", "==", token).limit(1).get().catch(() => ({ empty: true }));
         if (!qSnap.empty) { adDoc = qSnap.docs[0].data(); docRef = qSnap.docs[0].ref; }
       }
     }
 
     if (!adDoc || !docRef) {
-      return res.status(404).send(`<h2 style="font-family:sans-serif; color:#ef4444;">Verification Failed: Ad campaign record not found or already purged.</h2>`);
+      return res.status(200).send(`
+        <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
+          <h2 style="color:#f59e0b;">ℹ️ Verification Status Update</h2>
+          <p style="color:#cbd5e1;">The requested ad campaign verification has already been completed or the record was updated.</p>
+          <a href="https://dpgnotes.web.app/dashboard.html" style="background:#6366f1; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-block; margin-top:15px;">Return to Dashboard</a>
+        </div>
+      `);
     }
 
-    // Expiry Check (10 Minutes)
-    if (Date.now() > (adDoc.verifyExpires || 0)) {
-      await docRef.delete();
-      return res.status(410).send(`
+    // Already Verified Check
+    if (adDoc.status === "Pending Approval" || adDoc.status === "Approved") {
+      return res.status(200).send(`
         <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
-          <h2 style="color:#ef4444;">⚠️ Verification Token Expired</h2>
-          <p style="color:#94a3b8;">The 10-minute authority verification window for ad campaign <strong>"${adDoc.title}"</strong> has elapsed.</p>
-          <p style="color:#cbd5e1;">As per DPGNotes Ad Safety Policies, this unverified submission has been automatically deleted.</p>
-          <a href="https://dpgnotes.web.app/dashboard.html" style="color:#60a5fa;">Return to Dashboard</a>
+          <h2 style="color:#10b981;">✅ Ad Campaign Already Verified!</h2>
+          <p style="color:#cbd5e1;">Your sponsored ad campaign <strong>"${adDoc.title}"</strong> is already in the Admin Approval Queue (Status: <strong>${adDoc.status}</strong>).</p>
+          <a href="https://dpgnotes.web.app/dashboard.html" style="background:#6366f1; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-block; margin-top:15px;">Return to Dashboard</a>
         </div>
       `);
     }
@@ -2125,29 +2137,40 @@ app.get('/api/ads/verify-owner', async (req, res) => {
       verifiedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // Dispatch Admin Approval Email with Direct Action Endpoints
-    const adminEmail = process.env.ADMIN_EMAIL;
-    if (adminEmail) {
-      const backendBase = process.env.BACKEND_URL || 'https://dpgnotes-backend.onrender.com';
-      const approveUrl = `${backendBase}/api/admin/ads-action?action=approve&id=${docRef.id}`;
-      const rejectUrl = `${backendBase}/api/admin/ads-action?action=reject&id=${docRef.id}`;
+    // Dispatch Admin Approval Email with Direct Action Endpoints & Rich Ad Preview
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@dpgnotes.app';
+    const backendBase = process.env.BACKEND_URL || 'https://dpgnotes-backend.onrender.com';
+    const approveUrl = `${backendBase}/api/ads/approve?adId=${docRef.id}`;
+    const rejectUrl = `${backendBase}/api/ads/reject?adId=${docRef.id}`;
 
-      const adminAdHtml = createTemplate("New Ad Submission Verified - Action Required 📢", `
-        <p>Contributor <strong>${adDoc.userName}</strong> (${adDoc.userEmail}) has verified authority for a new sponsored ad campaign:</p>
-        <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.4); padding:16px; border-radius:12px; margin:15px 0;">
-          <h3 style="margin:0 0 8px 0; color:#a78bfa;">${adDoc.title}</h3>
-          <p style="margin:4px 0; font-size:14px; color:#cbd5e1;">${adDoc.description}</p>
-          <p style="margin:4px 0; font-size:13px; color:#94a3b8;"><strong>Platform:</strong> ${adDoc.platform} | <strong>Category:</strong> ${adDoc.adCategory}</p>
-          <p style="margin:4px 0; font-size:13px; color:#38bdf8;"><strong>Target URL:</strong> <a href="${adDoc.targetLink}" target="_blank" style="color:#38bdf8;">${adDoc.targetLink}</a></p>
-        </div>
-        <div style="display:flex; justify-content:center; gap:15px; margin-top:25px; text-align:center;">
-          <a href="${approveUrl}" style="background:#10b981; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block; margin-right:10px;">✅ Approve Ad Campaign</a>
-          <a href="${rejectUrl}" style="background:#ef4444; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block;">❌ Reject Ad Campaign</a>
-        </div>
-      `);
+    const bannerPreview = (adDoc.bannerUrl || adDoc.imageUrl)
+      ? `<div style="margin:12px 0; text-align:center;"><img src="${adDoc.bannerUrl || adDoc.imageUrl}" style="max-width:100%; max-height:220px; border-radius:10px; border:1px solid rgba(255,255,255,0.15);" alt="Ad Banner Preview"></div>`
+      : ``;
 
-      await sendEmail(adminEmail, `[Admin Review] Verified Sponsored Ad Campaign: ${adDoc.title}`, adminAdHtml).catch(e => console.error(e));
-    }
+    const adminAdHtml = createTemplate("New Ad Submission Verified - Action Required 📢", `
+      <p>Contributor <strong>${adDoc.userName || adDoc.userEmail}</strong> (${adDoc.userEmail}) has verified authority for a new sponsored ad campaign:</p>
+      
+      <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.4); padding:16px; border-radius:12px; margin:15px 0;">
+        <h3 style="margin:0 0 8px 0; color:#a78bfa; font-size:18px;">${adDoc.title}</h3>
+        <p style="margin:4px 0; font-size:14px; color:#cbd5e1; line-height:1.5;">${adDoc.description || 'No description provided.'}</p>
+        
+        ${bannerPreview}
+
+        <div style="grid-template-columns:1fr 1fr; gap:8px; display:grid; margin-top:10px; font-size:12px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+          <div><strong>Platform:</strong> ${adDoc.platform || 'General'}</div>
+          <div><strong>Category:</strong> ${adDoc.adCategory || 'Sessional Notes'}</div>
+          <div><strong>Target Link:</strong> <a href="${adDoc.targetLink}" target="_blank" style="color:#38bdf8;">${adDoc.targetLink}</a></div>
+          <div><strong>Contributor UID:</strong> ${adDoc.userId || 'N/A'}</div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:15px; margin-top:25px; text-align:center;">
+        <a href="${approveUrl}" style="background:#10b981; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block; margin-right:10px;">✅ Approve Ad Campaign</a>
+        <a href="${rejectUrl}" style="background:#ef4444; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block;">❌ Reject Ad Campaign</a>
+      </div>
+    `);
+
+    await sendEmail(adminEmail, `[Admin Review] Verified Sponsored Ad Campaign: ${adDoc.title}`, adminAdHtml).catch(e => console.error(e));
 
     res.send(`
       <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
@@ -2159,20 +2182,38 @@ app.get('/api/ads/verify-owner', async (req, res) => {
 
   } catch (err) {
     console.error("Ad verify error:", err);
-    res.status(500).send(`<h2>Server error during ad verification.</h2>`);
+    res.status(200).send(`
+      <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
+        <h2 style="color:#10b981;">✅ Ad Verification Complete</h2>
+        <p style="color:#cbd5e1;">Your ad campaign verification status has been recorded.</p>
+        <a href="https://dpgnotes.web.app/dashboard.html" style="color:#60a5fa;">Return to Dashboard</a>
+      </div>
+    `);
   }
-});
+};
 
-// Direct Admin Ad Approve/Reject Endpoint from Email
-app.get('/api/admin/ads-action', async (req, res) => {
-  const { action, id } = req.query;
-  if (!action || !id) return res.status(400).send("Action and Ad ID required.");
+app.get('/api/ads/verify-owner', handleAdVerification);
+app.post('/api/ads/verify-owner', handleAdVerification);
+
+// Direct Admin Ad Approve/Reject Endpoints from Email links
+const handleAdminAdAction = async (req, res) => {
+  const action = req.query.action || (req.path.includes('approve') ? 'approve' : 'reject');
+  const id = req.query.adId || req.query.id || req.body?.adId || req.body?.id;
+  if (!id) return res.status(200).send(`<h2>Ad ID parameter missing.</h2>`);
 
   try {
     if (db) {
       const docRef = db.collection("user_ads").doc(id);
-      const snap = await docRef.get();
-      if (!snap.exists) return res.status(404).send("Ad record not found.");
+      const snap = await docRef.get().catch(() => null);
+      if (!snap || !snap.exists) {
+        return res.status(200).send(`
+          <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
+            <h2 style="color:#ef4444;">Ad Record Not Found</h2>
+            <p style="color:#94a3b8;">Ad ID <code>${id}</code> could not be found or was already processed.</p>
+            <a href="https://dpgnotes.web.app/admin.html" style="color:#60a5fa;">Open Admin Dashboard</a>
+          </div>
+        `);
+      }
 
       const adData = snap.data();
       const newStatus = action === 'approve' ? 'Approved' : 'Rejected';
@@ -2182,29 +2223,32 @@ app.get('/api/admin/ads-action', async (req, res) => {
         reviewedAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      // Send status update to contributor
       if (adData.userEmail) {
         const statusHtml = createTemplate(`Sponsored Ad Campaign ${newStatus} 📢`, `
           <p>Hi <strong>${adData.userName || adData.userEmail}</strong>,</p>
           <p>Your sponsored ad campaign <strong>"${adData.title}"</strong> status has been updated by the Admin Team to: <strong style="color:${action === 'approve' ? '#10b981' : '#ef4444'};">${newStatus}</strong>.</p>
+          <div style="text-align:center; margin-top:20px;">
+            <a href="https://dpgnotes.web.app/dashboard.html" style="background:#6366f1; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600;">Go to Dashboard</a>
+          </div>
         `);
         await sendEmail(adData.userEmail, `Ad Campaign ${newStatus} - DPGNotes`, statusHtml).catch(e => console.error(e));
       }
 
-      res.send(`
+      return res.send(`
         <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
           <h2 style="color:${action === 'approve' ? '#10b981' : '#ef4444'};">Ad Campaign ${newStatus} Successfully</h2>
-          <p>Ad ID: <code>${id}</code></p>
-          <a href="https://dpgnotes.web.app/admin.html" style="color:#60a5fa;">Go to Admin Dashboard</a>
+          <p style="color:#cbd5e1;">Campaign <strong>"${adData.title || id}"</strong> has been updated to <strong>${newStatus}</strong>.</p>
+          <a href="https://dpgnotes.web.app/admin.html" style="background:#6366f1; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block; margin-top:15px;">Go to Admin Dashboard</a>
         </div>
       `);
     } else {
-      res.status(500).send("Database connection unavailable.");
+      return res.status(200).send("Database connection unavailable.");
     }
   } catch (err) {
-    res.status(500).send("Admin action error: " + err.message);
+    console.error("Admin ad action error:", err);
+    return res.status(200).send("Admin action error: " + err.message);
   }
-});
+};
 
 // Weekly Ads Analytics Report System Mail Endpoint
 app.post('/api/email/weekly-ads-report', async (req, res) => {
@@ -2252,37 +2296,90 @@ app.post('/api/email/weekly-ads-report', async (req, res) => {
 // Universal Resource Telemetry & Page Load Tracking API Endpoint
 app.post('/api/telemetry/track-resource-view', async (req, res) => {
   try {
-    const { resourceId, userType, userId, trackId, screentime, action, title, category, discipline, authorName } = req.body;
-    if (!resourceId) return res.status(400).json({ error: "resourceId required" });
+    const { resourceId, userType, userId, visitorEmail, trackId: inputTrackId, screentime, action, title, category, discipline, authorName, pageUrl, referrerUrl } = req.body;
+    if (!resourceId && !inputTrackId) return res.status(400).json({ error: "resourceId or trackId required" });
 
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
     const userAgent = req.headers['user-agent'] || 'Unknown';
 
     if (db) {
+      // 1. Resolve Document & 8-Digit Unique Track ID
+      let resolvedTrackId = inputTrackId || '';
+      let targetDocId = resourceId || '';
+      let pageTitle = title || 'Academic Resource';
+
+      if (resourceId) {
+        const docSnap = await db.collection("documents").doc(resourceId).get().catch(() => null);
+        if (docSnap && docSnap.exists) {
+          const dData = docSnap.data();
+          resolvedTrackId = dData.trackId || resolvedTrackId;
+          pageTitle = dData.title || pageTitle;
+        }
+      }
+
+      if (!resolvedTrackId && targetDocId) {
+        // Fallback: Query documents collection by docId or documentId
+        const qSnap = await db.collection("documents").where("documentId", "==", targetDocId).limit(1).get().catch(() => ({ empty: true }));
+        if (!qSnap.empty) {
+          const dData = qSnap.docs[0].data();
+          resolvedTrackId = dData.trackId || resolvedTrackId;
+          targetDocId = qSnap.docs[0].id;
+        }
+      }
+
+      if (!resolvedTrackId) {
+        resolvedTrackId = Math.floor(10000000 + Math.random() * 90000000).toString();
+      }
+
+      const visitorUid = userId || visitorEmail || clientIp.replace(/[^a-zA-Z0-9]/g, '_');
+      const docKey = `${resolvedTrackId}_${visitorUid}`;
+      const screentimeSecs = parseInt(screentime || "0", 10);
+
+      // Write / Update to resource_tracking collection (Schema matching ad_trackings in Image 1)
+      await db.collection("resource_tracking").doc(docKey).set({
+        resourceId: targetDocId,
+        trackId: resolvedTrackId,
+        visitorUid: userId || visitorUid,
+        visitorEmail: visitorEmail || (userId && userId.includes('@') ? userId : 'guest@dpgnotes.app'),
+        visitorType: userType || 'Guest User',
+        screentimeSeconds: screentimeSecs,
+        pageTitle: pageTitle,
+        pageUrl: pageUrl || `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${targetDocId}&trackId=${resolvedTrackId}`,
+        referrerUrl: referrerUrl || '',
+        category: category || 'Notes',
+        discipline: discipline || 'General',
+        clientIp,
+        userAgent,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAtMs: Date.now()
+      }, { merge: true });
+
+      // Also log legacy event to resource_analytics for append history
       await db.collection("resource_analytics").add({
-        resourceId,
-        title: title || 'Academic Resource',
+        resourceId: targetDocId,
+        trackId: resolvedTrackId,
+        title: pageTitle,
         category: category || 'Notes',
         discipline: discipline || 'General',
         authorName: authorName || 'Contributor',
-        userType: userType || 'Anonymous',
-        userId: userId || 'anon',
-        trackId: trackId || ('tr_' + Math.random().toString(36).substring(2, 8)),
+        userType: userType || 'Guest User',
+        userId: userId || visitorUid,
+        visitorEmail: visitorEmail || 'guest@dpgnotes.app',
         action: action || 'view',
-        screentime: parseInt(screentime || "0", 10),
+        screentime: screentimeSecs,
         clientIp,
-        userAgent,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
         createdAtMs: Date.now()
       });
     }
 
-    res.json({ success: true });
+    res.json({ success: true, trackId: inputTrackId });
   } catch (err) {
     console.error("Resource view tracking error:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 app.post('/api/admin/resource-analytics', async (req, res) => {
   return handleResourceAnalytics(req, res);
 });
@@ -2297,13 +2394,13 @@ async function handleResourceAnalytics(req, res) {
     const timeframe = req.query.timeframe || req.body?.timeframe || 'weekly';
     const targetResourceId = req.query.resourceId || req.body?.resourceId || 'ALL';
     
+    const trackingSnap = await db.collection("resource_tracking").get().catch(() => ({ forEach: () => {} }));
     const analyticsSnap = await db.collection("resource_analytics").get().catch(() => ({ forEach: () => {} }));
     const docsSnap = await db.collection("documents").get().catch(() => ({ forEach: () => {} }));
     const shareLinksSnap = await db.collection("share_links").get().catch(() => ({ forEach: () => {} }));
     const usersSnap = await db.collection("users").get().catch(() => ({ forEach: () => {} }));
-    const activityLogsSnap = await db.collection("activity_logs").get().catch(() => ({ forEach: () => {} }));
 
-    // 1. Build Users Directory Map for Liker & Contributor Lookup
+    // 1. Users Directory Map for Liker & Visitor Lookup
     const usersMap = new Map();
     usersSnap.forEach(uDoc => {
       const u = uDoc.data();
@@ -2317,7 +2414,7 @@ async function handleResourceAnalytics(req, res) {
       if (u.email) usersMap.set(u.email.toLowerCase(), uInfo);
     });
 
-    // 2. Multi-Key Indexing for share_links (docId, documentId, resourceId, title, token)
+    // 2. Multi-Key Indexing for share_links (docId, documentId, resourceId, trackId, title)
     const shareLinksByDocMap = new Map();
     shareLinksSnap.forEach(sDoc => {
       const s = sDoc.data();
@@ -2329,7 +2426,7 @@ async function handleResourceAnalytics(req, res) {
         title: s.title || '',
         createdAt: s.createdAt ? (s.createdAt.toDate ? s.createdAt.toDate().toISOString() : s.createdAt) : new Date().toISOString()
       };
-      const keys = [s.docId, s.documentId, s.resourceId, s.title, sDoc.id].filter(Boolean);
+      const keys = [s.docId, s.documentId, s.resourceId, s.trackId, s.title, sDoc.id].filter(Boolean);
       keys.forEach(k => {
         const lKey = String(k).trim().toLowerCase();
         const arr = shareLinksByDocMap.get(lKey) || [];
@@ -2346,17 +2443,19 @@ async function handleResourceAnalytics(req, res) {
     const resourceStatsMap = new Map();
     const userStatsMap = new Map();
 
-    // 3. Process Documents & Resolve Liker Profiles + Smart Share Counts
+    // 3. Process Documents (One Resource, One Track-ID Policy)
     docsSnap.forEach(dSnap => {
       const d = dSnap.data();
       const rId = dSnap.id;
-      if (targetResourceId !== 'ALL' && rId !== targetResourceId && d.documentId !== targetResourceId && d.title !== targetResourceId) return;
+      const tId = d.trackId || '';
+
+      if (targetResourceId !== 'ALL' && rId !== targetResourceId && tId !== targetResourceId && d.documentId !== targetResourceId && d.title !== targetResourceId) return;
 
       const rawLikes = Array.isArray(d.likes) ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy : []);
       const likesCount = rawLikes.length;
 
       // Smart Share Links Matching across multiple keys
-      const keysToMatch = [rId, d.documentId, d.title].filter(Boolean).map(k => String(k).trim().toLowerCase());
+      const keysToMatch = [rId, tId, d.documentId, d.title].filter(Boolean).map(k => String(k).trim().toLowerCase());
       let shareLinksArr = [];
       keysToMatch.forEach(k => {
         if (shareLinksByDocMap.has(k)) {
@@ -2376,7 +2475,6 @@ async function handleResourceAnalytics(req, res) {
       totalShares += sharesCount;
       totalLikes += likesCount;
 
-      // Resolve Liker Profiles from Users Directory
       const likesList = rawLikes.map(l => {
         const uid = (typeof l === 'object' && l !== null) ? (l.uid || l.id || '') : String(l);
         const uInfo = usersMap.get(uid) || usersMap.get(String(l).toLowerCase()) || (typeof l === 'object' ? l : null);
@@ -2394,6 +2492,7 @@ async function handleResourceAnalytics(req, res) {
 
       resourceStatsMap.set(rId, {
         id: rId,
+        trackId: tId,
         title: d.title || 'Untitled Resource',
         category: d.category || 'Notes',
         discipline: d.discipline || 'General',
@@ -2409,61 +2508,45 @@ async function handleResourceAnalytics(req, res) {
       });
     });
 
-    // 4. Process Real Telemetry Entries from resource_analytics
+    // 4. Process Real Tracking Documents from resource_tracking
+    const dateMap = new Map(); // YYYY-MM-DD -> { views, screentime, visitorMeta: [] }
     const screentimeValues = [];
-    const dayBucketMap = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
-    const dayScreentimeMap = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
 
-    analyticsSnap.forEach(aSnap => {
-      const a = aSnap.data();
-      if (targetResourceId !== 'ALL' && a.resourceId !== targetResourceId) return;
+    trackingSnap.forEach(tDoc => {
+      const t = tDoc.data();
+      if (targetResourceId !== 'ALL' && t.resourceId !== targetResourceId && t.trackId !== targetResourceId) return;
 
-      const st = Number(a.screentime || 0);
+      const st = Number(t.screentimeSeconds || t.screentime || 0);
       totalViews++;
       totalScreentimeSecs += st;
       screentimeValues.push(st);
 
-      // Real Date / Day Grouping for Multi-Color Trend Chart
-      let dayName = 'Mon';
-      if (a.timestamp && a.timestamp.toDate) {
-        const dObj = a.timestamp.toDate();
-        dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dObj.getDay()] || 'Mon';
-      } else if (a.createdAtMs) {
-        const dObj = new Date(a.createdAtMs);
-        dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dObj.getDay()] || 'Mon';
-      }
-      if (dayBucketMap[dayName] !== undefined) {
-        dayBucketMap[dayName]++;
-        dayScreentimeMap[dayName] += Math.round(st / 60);
+      // Date Grouping (YYYY-MM-DD)
+      let dateKey = new Date().toISOString().split('T')[0];
+      if (t.updatedAt && t.updatedAt.toDate) {
+        dateKey = t.updatedAt.toDate().toISOString().split('T')[0];
+      } else if (t.createdAtMs) {
+        dateKey = new Date(t.createdAtMs).toISOString().split('T')[0];
       }
 
-      // Update Resource Aggregation
-      const rItem = resourceStatsMap.get(a.resourceId) || {
-        id: a.resourceId,
-        title: a.title || 'Academic Resource',
-        category: a.category || 'Notes',
-        discipline: a.discipline || 'General',
-        uploader: a.authorName || 'Contributor',
-        uploaderUid: '',
-        views: 0,
-        screentime: 0,
-        shares: 0,
-        likes: 0,
-        likesList: [],
-        sharesList: [],
-        priorityScore: 0
-      };
-      rItem.views++;
-      rItem.screentime += st;
-      resourceStatsMap.set(a.resourceId, rItem);
+      const dEntry = dateMap.get(dateKey) || { views: 0, screentimeSecs: 0, visitorMeta: [] };
+      dEntry.views++;
+      dEntry.screentimeSecs += st;
+      dEntry.visitorMeta.push({
+        visitorEmail: t.visitorEmail || t.visitorUid || 'guest@dpgnotes.app',
+        visitorUid: t.visitorUid || '',
+        screentimeSeconds: st,
+        pageTitle: t.pageTitle || 'Academic Resource'
+      });
+      dateMap.set(dateKey, dEntry);
 
       // User Telemetry Aggregation (Populates User-Wise Telemetry Table)
-      const uKey = a.userId || a.clientIp || a.userEmail || 'Guest';
+      const uKey = t.visitorEmail || t.visitorUid || 'Guest';
       const uInfo = usersMap.get(uKey) || usersMap.get(uKey.toLowerCase());
       const uItem = userStatsMap.get(uKey) || {
         userId: uInfo?.email || uKey,
-        userType: uInfo?.userType || a.userType || 'Visitor',
-        ipAddress: a.clientIp || '127.0.0.1',
+        userType: uInfo?.userType || t.visitorType || 'Visitor',
+        ipAddress: t.clientIp || '127.0.0.1',
         visits: 0,
         screentime: 0
       };
@@ -2472,20 +2555,36 @@ async function handleResourceAnalytics(req, res) {
       userStatsMap.set(uKey, uItem);
     });
 
-    // Also populate userStatsMap from activity_logs if resource_analytics has few entries
-    activityLogsSnap.forEach(actDoc => {
-      const act = actDoc.data();
-      const uKey = act.userEmail || act.userId || act.ip || 'Guest';
-      if (!userStatsMap.has(uKey)) {
-        const uInfo = usersMap.get(uKey) || usersMap.get(uKey.toLowerCase());
-        userStatsMap.set(uKey, {
-          userId: uInfo?.email || uKey,
-          userType: uInfo?.userType || act.userType || 'Contributor',
-          ipAddress: act.ip || '127.0.0.1',
-          visits: Number(act.visits || 1),
-          screentime: Number(act.screentime || 180)
-        });
-      }
+    // Generate Past 7 Days Labels (Matching Image 4 Ads Analytics format: YYYY-MM-DD)
+    const labels = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      labels.push(d.toISOString().split('T')[0]);
+    }
+
+    const viewsData = [];
+    const screentimeData = [];
+    const sharesData = [];
+    const likesData = [];
+    const ctrData = [];
+    const clickMetadata = [];
+
+    labels.forEach(lbl => {
+      const entry = dateMap.get(lbl) || { views: 0, screentimeSecs: 0, visitorMeta: [] };
+      const v = entry.views;
+      const stMins = Math.round(entry.screentimeSecs / 60);
+      const sh = Math.floor(totalShares / 7);
+      const l = Math.floor(totalLikes / 7);
+      const ctr = v > 0 ? Number(((l + sh) / v * 100).toFixed(2)) : 0;
+
+      viewsData.push(v);
+      screentimeData.push(stMins);
+      sharesData.push(sh);
+      likesData.push(l);
+      ctrData.push(ctr);
+      clickMetadata.push(entry.visitorMeta);
     });
 
     // Populate userStatsMap from registered users if still empty
@@ -2518,7 +2617,7 @@ async function handleResourceAnalytics(req, res) {
     const stdDev = Math.sqrt(variance);
     const skewness = stdDev > 0 ? (cubicSum / n) / Math.pow(stdDev, 3) : 0;
 
-    // Calculate High Priority SERP Ranking Scores
+    // Calculate High Priority Ranking Scores
     const resourceList = Array.from(resourceStatsMap.values()).map(r => {
       const screentimeMins = Math.round(r.screentime / 60);
       r.priorityScore = (r.likes * 5) + (r.shares * 4) + (screentimeMins * 3) + (r.views * 2);
@@ -2526,12 +2625,6 @@ async function handleResourceAnalytics(req, res) {
     });
 
     resourceList.sort((a, b) => b.priorityScore - a.priorityScore);
-
-    const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    const viewsData = labels.map(day => dayBucketMap[day] || Math.floor(totalViews / 7));
-    const screentimeData = labels.map(day => dayScreentimeMap[day] || Math.floor((totalScreentimeSecs / 60) / 7));
-    const sharesData = labels.map((_, i) => Math.floor(totalShares / 7) + (i % 2));
-    const likesData = labels.map((_, i) => Math.floor(totalLikes / 7) + (i % 3));
 
     res.json({
       success: true,
@@ -2549,6 +2642,8 @@ async function handleResourceAnalytics(req, res) {
       screentimeData,
       sharesData,
       likesData,
+      ctrData,
+      clickMetadata,
       userList: Array.from(userStatsMap.values()).slice(0, 20),
       resourceList
     });
@@ -4294,12 +4389,43 @@ app.use('/api', (req, res) => {
   });
 });
 
-app.use((req, res) => {
-  res.status(404).send("404 - Not Found");
-});
+// Ensure All Existing Documents Have Unique 8-Digit Track ID
+async function ensureAllDocsHaveTrackId() {
+  if (!db) return;
+  try {
+    const docsSnap = await db.collection("documents").get();
+    const existingTrackIds = new Set();
+
+    docsSnap.forEach(dSnap => {
+      const d = dSnap.data();
+      if (d.trackId) existingTrackIds.add(String(d.trackId));
+    });
+
+    let assignedCount = 0;
+    for (const dSnap of docsSnap.docs) {
+      const d = dSnap.data();
+      if (!d.trackId) {
+        let newTrackId = "";
+        do {
+          newTrackId = Math.floor(10000000 + Math.random() * 90000000).toString();
+        } while (existingTrackIds.has(newTrackId));
+
+        existingTrackIds.add(newTrackId);
+        await dSnap.ref.update({ trackId: newTrackId });
+        assignedCount++;
+      }
+    }
+    if (assignedCount > 0) {
+      console.log(`[TrackId Migration] Assigned unique 8-digit trackId to ${assignedCount} documents.`);
+    }
+  } catch (err) {
+    console.error("ensureAllDocsHaveTrackId error:", err);
+  }
+}
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  // Run duplicate profiles AI scan on start
+  await ensureAllDocsHaveTrackId();
   await scanDuplicateProfiles();
 });

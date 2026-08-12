@@ -388,27 +388,37 @@
       let results = allDocs;
       if (q) {
         const tokens = q.split(/\s+/).filter(Boolean);
-        results = results.filter(d => {
+        const matched = results.filter(d => {
           const title = (d.title || "").toLowerCase();
           const desc = (d.description || "").toLowerCase();
           const disc = (d.discipline || "").toLowerCase();
           const cat = (d.category || "").toLowerCase();
           const uploader = (d.userName || d.uploader || "").toLowerCase();
+          const docId = (d.documentId || d.id || "").toLowerCase();
           const tags = Array.isArray(d.tags) ? d.tags.join(" ").toLowerCase() : (d.tags || "").toLowerCase();
 
-          const combined = `${title} ${desc} ${disc} ${cat} ${uploader} ${tags}`;
+          const combined = `${title} ${desc} ${disc} ${cat} ${uploader} ${docId} ${tags}`;
           return tokens.some(token => combined.includes(token)); // Flexible multi-token matching
         });
+
+        if (matched.length > 0) {
+          results = matched;
+        } else {
+          // Multi-field AI Fallback: Return all documents sorted by SERP priority score
+          results = allDocs;
+        }
       }
 
       // 2. Category Dropdown Filter
       if (catFilter !== "ALL") {
-        results = results.filter(d => d.category === catFilter);
+        const cFiltered = results.filter(d => (d.category || "").toLowerCase().includes(catFilter.toLowerCase()));
+        if (cFiltered.length > 0) results = cFiltered;
       }
 
       // 3. Discipline Dropdown Filter
       if (discFilter !== "ALL") {
-        results = results.filter(d => d.discipline === discFilter);
+        const dFiltered = results.filter(d => (d.discipline || "").toLowerCase().includes(discFilter.toLowerCase()));
+        if (dFiltered.length > 0) results = dFiltered;
       }
 
       // 4. Advanced High Priority SERP Ranking Algorithm
@@ -417,7 +427,7 @@
         const sCount = d.sharesCount || 0;
         const vCount = d.views || 1;
         const stMins = Math.round((d.screentime || 60) / 60);
-        const relScore = q ? ((d.title || "").toLowerCase().includes(q) ? 10 : 4) : 1;
+        const relScore = q ? (((d.title || "").toLowerCase().includes(q) || (d.category || "").toLowerCase().includes(q) || (d.discipline || "").toLowerCase().includes(q)) ? 10 : 4) : 1;
         d.priorityScore = (lCount * 5) + (sCount * 4) + (stMins * 3) + (vCount * 2) + (relScore * 10);
       });
 
@@ -478,7 +488,7 @@
         results.forEach((d, idx) => {
           const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
           const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
-          const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
+          const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&trackId=${d.trackId || ''}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
 
           const card = document.createElement("article");
           card.className = "result-card";
@@ -556,7 +566,7 @@
               <div style="background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:14px; padding:1rem; text-align:center;">
                 <h5 style="color:#94a3b8; font-size:0.78rem; text-transform:uppercase; margin-bottom:0.75rem; letter-spacing:0.05em;">Resource Preview Thumbnail</h5>
                 <img src="${topDoc.coverImage || 'ANH.png'}" style="width:100%; max-height:160px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.75rem;" alt="Doc Thumbnail">
-                <a href="/dpgnotes-pdf-viewer.html?docid=${topDoc.id || ''}&title=${encodeURIComponent(topDoc.title || '')}" target="_blank" style="background:#6366f1; color:white; text-decoration:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:700; display:inline-block;"><i class="ri-book-open-line"></i> Open Document</a>
+                <a href="/dpgnotes-pdf-viewer.html?docid=${topDoc.id || ''}&trackId=${topDoc.trackId || ''}&title=${encodeURIComponent(topDoc.title || '')}" target="_blank" style="background:#6366f1; color:white; text-decoration:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:700; display:inline-block;"><i class="ri-book-open-line"></i> Open Document</a>
               </div>
             </div>
 
@@ -565,7 +575,7 @@
               <h4 style="color:#a78bfa; font-size:0.88rem; margin-bottom:0.75rem;">Recommended Relevant Academic Documents:</h4>
               <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
                 ${results.slice(0, 3).map(r => `
-                  <a href="/dpgnotes-pdf-viewer.html?docid=${r.id}&title=${encodeURIComponent(r.title)}" target="_blank" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:10px; text-decoration:none; color:white; transition:all 0.2s;">
+                  <a href="/dpgnotes-pdf-viewer.html?docid=${r.id}&trackId=${r.trackId || ''}&title=${encodeURIComponent(r.title)}" target="_blank" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:10px; text-decoration:none; color:white; transition:all 0.2s;">
                     <div style="font-weight:700; font-size:0.85rem; color:#818cf8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.title}</div>
                     <div style="font-size:0.75rem; color:#94a3b8;">${r.category} | ${r.discipline}</div>
                   </a>

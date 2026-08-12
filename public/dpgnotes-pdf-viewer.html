@@ -330,6 +330,55 @@ let docUp   = P.get('uploader')    || '—';
 let docId   = resourceId           || P.get('docid') || '—';
 let docDesc = P.get('description') || '';
 let docTags = P.get('tags')        || '';
+let viewerTrackId = P.get('trackId') || P.get('trackid') || '';
+let viewStartTime = Date.now();
+
+async function resolveTrackIdAndSendTelemetry() {
+  if (!viewerTrackId && resourceId) {
+    try {
+      if (window.getDoc && window.doc && window.dpgDb) {
+        const dSnap = await window.getDoc(window.doc(window.dpgDb, "documents", resourceId));
+        if (dSnap && dSnap.exists && dSnap.exists()) {
+          viewerTrackId = dSnap.data().trackId || '';
+        }
+      }
+    } catch(e) {}
+  }
+
+  const screentimeSecs = Math.round((Date.now() - viewStartTime) / 1000);
+  const visitorUser = window.dpgCurrentUser || (window.auth ? window.auth.currentUser : null);
+  const vUid = visitorUser ? visitorUser.uid : (localStorage.getItem("dpg_guest_uid") || ("guest_" + Math.random().toString(36).substring(2, 10)));
+  const vEmail = visitorUser ? (visitorUser.email || '') : 'guest@dpgnotes.app';
+  const vType = visitorUser ? (visitorUser.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : 'Contributor') : 'Guest User';
+
+  fetch('/api/telemetry/track-resource-view', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      resourceId: resourceId || '',
+      trackId: viewerTrackId || '',
+      userId: vUid,
+      visitorEmail: vEmail,
+      userType: vType,
+      screentime: screentimeSecs,
+      pageUrl: location.href,
+      referrerUrl: document.referrer || '',
+      title: docTitle || 'Academic Resource'
+    })
+  }).catch(() => {});
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => resolveTrackIdAndSendTelemetry(), 3000);
+});
+
+window.addEventListener("beforeunload", () => {
+  resolveTrackIdAndSendTelemetry();
+});
+
+setInterval(() => {
+  resolveTrackIdAndSendTelemetry();
+}, 30000);
 
 function updateDocMetadataUI() {
   document.title = `${docTitle} — DPGNotes PDF Viewer`;

@@ -783,6 +783,7 @@ if(uploadForm) {
         description: document.getElementById("description").value,
         tags: document.getElementById("tags").value.split(",").map(t => t.trim()).filter(t => t !== ""),
         documentId: document.getElementById("documentId").value,
+        trackId: Math.floor(10000000 + Math.random() * 90000000).toString(),
         pdfUrl: finalPdfUrl,
         userId: currentUser.uid,
         userName: currentUser.displayName,
