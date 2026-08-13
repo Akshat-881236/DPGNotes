@@ -2878,24 +2878,142 @@ window.showResourceSharesModal = function(resId) {
   modal.style.display = "flex";
 };
 
-window.triggerWeeklyAnalyticsEmailReport = async function() {
-  const emailPrompt = prompt("Enter Administrator / Contributor Email for Weekly Report Dispatch:", "admin@dpgnotes.app");
-  if (!emailPrompt) return;
-
-  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-  try {
-    const res = await fetch(`${baseUrl}/api/admin/send-weekly-analytics-report`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: emailPrompt })
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      alert(`✅ Weekly Analytics & Performance Report email sent to ${emailPrompt}!`);
-    } else {
-      alert(`⚠️ Email dispatch notice: ${data.error || 'Check server mail logs.'}`);
+// ==========================================
+// DPGNOTES ADMIN CUSTOM MODAL SYSTEM
+// (Replaces native browser prompt, alert & confirm dialogs)
+// ==========================================
+window.customAlert = function(message, options = {}) {
+  return new Promise(resolve => {
+    let modal = document.getElementById("adminCustomModalContainer");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "adminCustomModalContainer";
+      modal.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1rem;";
+      document.body.appendChild(modal);
     }
-  } catch(err) {
-    alert("Network error dispatching report email: " + err.message);
-  }
+    const title = options.title || "Admin Command Center";
+    const isDanger = options.isDanger || false;
+
+    modal.innerHTML = `
+      <div style="background:#0f172a; border:1px solid ${isDanger ? '#ef4444' : 'rgba(139,92,246,0.4)'}; border-radius:18px; padding:1.5rem; max-width:440px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.8); font-family:inherit;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.6rem;">
+          <h3 style="margin:0; color:${isDanger ? '#ef4444' : '#a78bfa'}; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+            ${isDanger ? '⚠️ Alert' : 'ℹ️ Notice'} — ${title}
+          </h3>
+          <button id="adminModalCloseIconBtn" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+        </div>
+        <p style="color:#e2e8f0; font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">${message}</p>
+        <div style="display:flex; justify-content:flex-end;">
+          <button id="adminModalOkBtn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:8px 20px; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">OK</button>
+        </div>
+      </div>
+    `;
+    modal.style.display = "flex";
+
+    const closeHandler = () => {
+      modal.style.display = "none";
+      resolve();
+    };
+
+    document.getElementById("adminModalOkBtn").onclick = closeHandler;
+    document.getElementById("adminModalCloseIconBtn").onclick = closeHandler;
+  });
+};
+
+window.customConfirm = function(message, options = {}) {
+  return new Promise(resolve => {
+    let modal = document.getElementById("adminCustomModalContainer");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "adminCustomModalContainer";
+      modal.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1rem;";
+      document.body.appendChild(modal);
+    }
+    const title = options.title || "Admin Confirmation";
+    const isDanger = options.isDanger || false;
+
+    modal.innerHTML = `
+      <div style="background:#0f172a; border:1px solid ${isDanger ? '#ef4444' : 'rgba(139,92,246,0.4)'}; border-radius:18px; padding:1.5rem; max-width:440px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.8); font-family:inherit;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.6rem;">
+          <h3 style="margin:0; color:${isDanger ? '#ef4444' : '#a78bfa'}; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+            ${isDanger ? '⚠️ Confirm Action' : '❓ Confirmation'} — ${title}
+          </h3>
+          <button id="adminModalCloseIconBtn" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+        </div>
+        <p style="color:#e2e8f0; font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">${message}</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button id="adminModalCancelBtn" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#cbd5e1; padding:8px 16px; border-radius:8px; font-weight:600; font-size:0.85rem; cursor:pointer;">Cancel</button>
+          <button id="adminModalConfirmBtn" style="background:${isDanger ? '#ef4444' : 'linear-gradient(135deg,#6366f1,#8b5cf6)'}; border:none; color:white; padding:8px 20px; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">Confirm</button>
+        </div>
+      </div>
+    `;
+    modal.style.display = "flex";
+
+    document.getElementById("adminModalConfirmBtn").onclick = () => {
+      modal.style.display = "none";
+      resolve(true);
+    };
+
+    const cancelHandler = () => {
+      modal.style.display = "none";
+      resolve(false);
+    };
+    document.getElementById("adminModalCancelBtn").onclick = cancelHandler;
+    document.getElementById("adminModalCloseIconBtn").onclick = cancelHandler;
+  });
+};
+
+window.customPrompt = function(message, defaultValue = "", options = {}) {
+  return new Promise(resolve => {
+    let modal = document.getElementById("adminCustomModalContainer");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "adminCustomModalContainer";
+      modal.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1rem;";
+      document.body.appendChild(modal);
+    }
+    const title = options.title || "Input Required";
+
+    modal.innerHTML = `
+      <div style="background:#0f172a; border:1px solid rgba(139,92,246,0.4); border-radius:18px; padding:1.5rem; max-width:440px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.8); font-family:inherit;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.6rem;">
+          <h3 style="margin:0; color:#a78bfa; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+            💬 ${title}
+          </h3>
+          <button id="adminModalCloseIconBtn" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+        </div>
+        <p style="color:#e2e8f0; font-size:0.9rem; margin-bottom:0.75rem;">${message}</p>
+        <input type="text" id="adminModalInput" value="${defaultValue.replace(/"/g, '&quot;')}" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(139,92,246,0.4); border-radius:10px; padding:10px 14px; color:white; font-family:inherit; font-size:0.9rem; margin-bottom:1.5rem; box-sizing:border-box;">
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button id="adminModalCancelBtn" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#cbd5e1; padding:8px 16px; border-radius:8px; font-weight:600; font-size:0.85rem; cursor:pointer;">Cancel</button>
+          <button id="adminModalSubmitBtn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:8px 20px; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">Submit</button>
+        </div>
+      </div>
+    `;
+    modal.style.display = "flex";
+
+    const input = document.getElementById("adminModalInput");
+    if (input) {
+      input.focus();
+      input.select();
+      input.onkeydown = (e) => {
+        if (e.key === "Enter") {
+          modal.style.display = "none";
+          resolve(input.value);
+        }
+      };
+    }
+
+    document.getElementById("adminModalSubmitBtn").onclick = () => {
+      modal.style.display = "none";
+      resolve(input.value);
+    };
+
+    const cancelHandler = () => {
+      modal.style.display = "none";
+      resolve(null);
+    };
+    document.getElementById("adminModalCancelBtn").onclick = cancelHandler;
+    document.getElementById("adminModalCloseIconBtn").onclick = cancelHandler;
+  });
 };

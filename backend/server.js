@@ -2946,46 +2946,135 @@ async function handleResourceAnalytics(req, res) {
   }
 }
 
-// Weekly Analytics Report System Email API Endpoint
-app.post('/api/admin/send-weekly-analytics-report', async (req, res) => {
+// ==========================================
+// AI SMART SYSTEM AUTOMATIC WEEKLY PROGRESS REPORT & QUOTA HONOUR DAEMON
+// (Automatically notifies contributors when resources meet quota eligibility)
+// ==========================================
+async function evaluateAiSmartWeeklyReports() {
+  if (!db) return;
   try {
-    const targetEmail = req.body?.email || process.env.ADMIN_EMAIL || 'admin@dpgnotes.app';
-    const docsSnap = await db.collection("documents").get().catch(() => ({ size: 0, docs: [] }));
-    const analyticsSnap = await db.collection("resource_analytics").get().catch(() => ({ size: 0 }));
+    console.log("🤖 [AI Smart System] Evaluating contributor weekly quota eligibility & progress reports...");
+    const docsSnap = await db.collection("documents").get().catch(() => ({ forEach: () => {} }));
+    const trackingSnap = await db.collection("resource_tracking").get().catch(() => ({ forEach: () => {} }));
+    const usersSnap = await db.collection("users").get().catch(() => ({ forEach: () => {} }));
 
-    let totalViews = analyticsSnap.size || 0;
-    let totalDocs = docsSnap.size || 0;
+    // Group document metrics by uploader
+    const contributorStats = new Map();
 
-    const reportHtml = createTemplate("Weekly Analytics & Resource Performance Report 📊", `
-      <p>Hello Administrator / Contributor,</p>
-      <p>Here is your automated <strong>Weekly Performance & Telemetry Analytics Summary</strong> for DPGNotes:</p>
-      
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0;">
-        <div style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); padding:12px; border-radius:10px; text-align:center;">
-          <h3 style="margin:0; color:#818cf8; font-size:20px;">${totalViews.toLocaleString()}</h3>
-          <p style="margin:4px 0 0 0; font-size:12px; color:#cbd5e1;">Total Resource Views</p>
-        </div>
-        <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:12px; border-radius:10px; text-align:center;">
-          <h3 style="margin:0; color:#10b981; font-size:20px;">${totalDocs.toLocaleString()}</h3>
-          <p style="margin:4px 0 0 0; font-size:12px; color:#cbd5e1;">Active Hosted Resources</p>
-        </div>
-      </div>
+    // Map users by UID & email
+    const usersMap = new Map();
+    usersSnap.forEach(uDoc => {
+      const u = uDoc.data();
+      if (u.email) {
+        usersMap.set(uDoc.id, u);
+        usersMap.set(u.email.toLowerCase(), u);
+      }
+    });
 
-      <p style="font-size:14px; color:#e2e8f0; line-height:1.6;">
-        All telemetry data has been processed using mathematical legacy metrics (Arithmetic Mean, Standard Deviation, and High Priority SERP Scores). Records older than 60 days are automatically maintained by the cleanup daemon.
-      </p>
+    docsSnap.forEach(dDoc => {
+      const d = dDoc.data();
+      const uId = d.userId || d.uploaderUid || d.uploaderEmail || '';
+      const uEmail = (d.uploaderEmail || d.userEmail || usersMap.get(uId)?.email || '').toLowerCase();
 
-      <div style="text-align:center; margin-top:25px;">
-        <a href="https://dpgnotes.web.app/admin.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700;">Open Admin Command Center</a>
-      </div>
-    `);
+      if (!uEmail) return;
 
-    await sendEmail(targetEmail, "DPGNotes Weekly Analytics & Performance Report 📊", reportHtml);
-    res.json({ success: true, message: `Weekly analytics report dispatched to ${targetEmail}` });
-  } catch (err) {
-    console.error("Send weekly report email error:", err);
-    res.status(500).json({ error: err.message });
+      const stats = contributorStats.get(uEmail) || {
+        email: uEmail,
+        name: d.userName || usersMap.get(uId)?.name || uEmail.split('@')[0],
+        docsCount: 0,
+        totalLikes: 0,
+        totalShares: 0,
+        totalViews: 0,
+        totalScreentimeSecs: 0,
+        lastReportSent: usersMap.get(uId)?.weeklyReportSentMs || 0
+      };
+
+      stats.docsCount += 1;
+      const rawLikes = Array.isArray(d.likes) ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy : []);
+      stats.totalLikes += rawLikes.length;
+      stats.totalShares += Number(d.shareCount || 0);
+
+      contributorStats.set(uEmail, stats);
+    });
+
+    // Add view & screentime telemetry from resource_tracking
+    trackingSnap.forEach(tDoc => {
+      const t = tDoc.data();
+      const st = Number(t.screentimeSeconds || t.screentime || 0);
+      const rId = t.resourceId || '';
+
+      // Match to contributor
+      docsSnap.forEach(dDoc => {
+        if (dDoc.id === rId || dDoc.data()?.trackId === t.trackId) {
+          const uEmail = (dDoc.data()?.uploaderEmail || dDoc.data()?.userEmail || '').toLowerCase();
+          if (uEmail && contributorStats.has(uEmail)) {
+            const stats = contributorStats.get(uEmail);
+            stats.totalViews += 1;
+            stats.totalScreentimeSecs += st;
+          }
+        }
+      });
+    });
+
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const nowMs = Date.now();
+
+    // Evaluate quota eligibility for each contributor
+    for (const [email, stats] of contributorStats.entries()) {
+      // Check 7-day cooldown
+      if (nowMs - stats.lastReportSent < SEVEN_DAYS_MS) continue;
+
+      // Quota Eligibility Threshold: 5+ Views, 2+ Likes, 1+ Share, OR 300s+ Screentime
+      const isEligible = stats.totalViews >= 5 || stats.totalLikes >= 2 || stats.totalShares >= 1 || stats.totalScreentimeSecs >= 300;
+
+      if (isEligible) {
+        const screentimeMins = Math.round(stats.totalScreentimeSecs / 60);
+        const reportHtml = createTemplate("AI Smart Weekly Progress & Quota Honour 📊", `
+          <p>Hi <strong>${stats.name}</strong>,</p>
+          <p>Congratulations! Your academic contributions on DPGNotes have matched our <strong>AI Smart Weekly Quota Eligibility</strong>.</p>
+
+          <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:12px; margin:20px 0; border:1px solid rgba(139,92,246,0.3);">
+            <h3 style="margin:0 0 12px 0; color:#c084fc; font-size:16px;">📈 Your Weekly Performance Highlights:</h3>
+            <p style="margin:6px 0; font-size:14px; color:#e2e8f0;">📚 <strong>Hosted Resources:</strong> ${stats.docsCount} Documents</p>
+            <p style="margin:6px 0; font-size:14px; color:#e2e8f0;">👁️ <strong>Total Student Views:</strong> ${stats.totalViews.toLocaleString()}</p>
+            <p style="margin:6px 0; font-size:14px; color:#e2e8f0;">❤️ <strong>Total Community Likes:</strong> ${stats.totalLikes}</p>
+            <p style="margin:6px 0; font-size:14px; color:#e2e8f0;">🔗 <strong>Total Link Shares Generated:</strong> ${stats.totalShares}</p>
+            <p style="margin:6px 0; font-size:14px; color:#e2e8f0;">⏱️ <strong>Total Student Study Screentime:</strong> ${screentimeMins} Mins</p>
+          </div>
+
+          <p style="font-size:14px; color:#cbd5e1; line-height:1.6;">
+            Thank you for being a valued contributor. Your handwritten notes and exam materials are empowering students across DPG College!
+          </p>
+
+          <div style="text-align:center; margin-top:25px;">
+            <a href="https://dpgnotes.web.app/dashboard.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700;">Open Contributor Dashboard</a>
+          </div>
+        `);
+
+        await sendEmail(email, "Your DPGNotes Weekly Progress & Quota Honour Report 📊", reportHtml).catch(console.error);
+        await createInAppNotification(email, "AI Smart Weekly Progress Report 📊", `Congratulations! Your resources matched weekly quota eligibility (${stats.totalViews} Views, ${stats.totalLikes} Likes). Check your email for full performance breakdown!`, "milestone").catch(console.error);
+
+        // Update last report sent timestamp
+        const uSnap = await db.collection("users").where("email", "==", email).limit(1).get().catch(() => null);
+        if (uSnap && !uSnap.empty) {
+          await db.collection("users").doc(uSnap.docs[0].id).update({ weeklyReportSentMs: nowMs }).catch(console.error);
+        }
+
+        console.log(`✅ [AI Smart System] Weekly Progress Report automatically dispatched to eligible contributor: ${email}`);
+      }
+    }
+  } catch(err) {
+    console.error("AI Smart System Weekly Report evaluation error:", err);
   }
+}
+
+// Automatically run evaluation daemon every 6 hours
+setInterval(evaluateAiSmartWeeklyReports, 6 * 60 * 60 * 1000);
+setTimeout(evaluateAiSmartWeeklyReports, 15 * 1000); // Trigger 15s after startup
+
+app.post('/api/ai/evaluate-weekly-reports', async (req, res) => {
+  await evaluateAiSmartWeeklyReports();
+  res.json({ success: true, message: "AI Smart System weekly progress evaluation complete." });
 });
 
 // 60-Day Auto-Deletion Daemon Function
