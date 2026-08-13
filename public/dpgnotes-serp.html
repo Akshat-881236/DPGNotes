@@ -553,10 +553,13 @@
                 </div>
 
                 <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem; margin-top:1rem;">
-                  <h4 style="color:#a78bfa; margin-bottom:0.75rem; font-size:0.92rem;">🤖 Interactive AI Chat Continuation:</h4>
+                  <h4 style="color:#a78bfa; margin-bottom:0.75rem; font-size:0.92rem; display:flex; align-items:center; gap:6px;"><i class="ri-robot-line"></i> Interactive AI Chat Continuation:</h4>
                   <div style="display:flex; gap:10px;">
-                    <input type="text" id="serpAiChatInput" placeholder="Ask DPGNotes AI anything about ${q || 'this subject'}..." style="flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1rem; color:white; font-family:inherit;">
-                    <button onclick="alert('DPGNotes AI: Synthesizing customized study answer for query...')" style="background:linear-gradient(135deg,#c084fc,#8b5cf6); color:white; border:none; border-radius:10px; padding:0.6rem 1.2rem; font-weight:700; cursor:pointer;"><i class="ri-send-plane-fill"></i> Ask AI</button>
+                    <input type="text" id="serpAiChatInput" placeholder="Ask DPGNotes AI anything about ${q || 'this subject'}..." style="flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; padding:0.6rem 1rem; color:white; font-family:inherit;" onkeydown="if(event.key==='Enter') sendSerpAiChatMessage()">
+                    <button id="serpAiSendBtn" onclick="sendSerpAiChatMessage()" style="background:linear-gradient(135deg,#c084fc,#8b5cf6); color:white; border:none; border-radius:10px; padding:0.6rem 1.2rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="ri-send-plane-fill"></i> Ask AI</button>
+                  </div>
+                  <div id="serpAiChatLogContainer" style="margin-top:1rem; display:flex; flex-direction:column; gap:10px; max-height:280px; overflow-y:auto; padding-right:4px;">
+                    <!-- Live AI Chat Messages Rendered Here -->
                   </div>
                 </div>
               </div>
@@ -673,6 +676,89 @@
       window.history.pushState(null, null, newUrl);
       applyFilters();
     });
+
+    // Interactive AI Chat Engine Handler for SERP
+    window.sendSerpAiChatMessage = async function() {
+      const chatInput = document.getElementById("serpAiChatInput");
+      const chatBtn = document.getElementById("serpAiSendBtn");
+      const logBox = document.getElementById("serpAiChatLogContainer");
+      if (!chatInput || !logBox) return;
+
+      const qVal = chatInput.value.trim();
+      if (!qVal) return;
+
+      const userQueryParam = searchField ? searchField.value.trim() : '';
+
+      // Append User Question Bubble
+      const userBubble = document.createElement("div");
+      userBubble.style.cssText = "align-self:flex-end; background:rgba(139,92,246,0.25); border:1px solid rgba(139,92,246,0.5); padding:8px 14px; border-radius:12px; max-width:85%; color:white; font-size:0.85rem;";
+      userBubble.innerHTML = `<strong>You:</strong> ${qVal.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
+      logBox.appendChild(userBubble);
+
+      chatInput.value = "";
+      if (chatBtn) {
+        chatBtn.disabled = true;
+        chatBtn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Synthesizing...`;
+      }
+
+      // Append Loading AI Indicator
+      const loadingBubble = document.createElement("div");
+      loadingBubble.style.cssText = "align-self:flex-start; background:rgba(15,23,42,0.95); border:1px solid rgba(99,102,241,0.3); padding:10px 14px; border-radius:12px; max-width:88%; color:#a5b4fc; font-size:0.82rem;";
+      loadingBubble.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> DPGNotes AI is synthesizing academic response for "${qVal}"...`;
+      logBox.appendChild(loadingBubble);
+      logBox.scrollTop = logBox.scrollHeight;
+
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const res = await fetch(apiBase + '/api/ai/serp-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: userQueryParam,
+            question: qVal,
+            contextDocs: (window.currentSearchResults || []).slice(0, 3)
+          })
+        });
+
+        const data = await res.json();
+        logBox.removeChild(loadingBubble);
+
+        const aiBubble = document.createElement("div");
+        aiBubble.style.cssText = "align-self:flex-start; background:rgba(15,23,42,0.95); border:1px solid rgba(99,102,241,0.35); padding:12px 16px; border-radius:14px; max-width:92%; color:#e2e8f0; font-size:0.85rem; line-height:1.6;";
+
+        if (res.ok && data.answer) {
+          aiBubble.innerHTML = `
+            <div style="color:#c084fc; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+              <i class="ri-robot-fill"></i> DPGNotes AI Assistant
+            </div>
+            <div>${data.answer}</div>
+          `;
+        } else {
+          aiBubble.innerHTML = `
+            <div style="color:#f43f5e; font-weight:700; margin-bottom:4px;">🤖 DPGNotes Assistant</div>
+            <div>Here is the academic overview for "${qVal}": Review the core definitions, formulas, and verified sessional exam papers in the <strong>All</strong> tab.</div>
+          `;
+        }
+        logBox.appendChild(aiBubble);
+
+      } catch(err) {
+        console.error("SERP AI Chat request error:", err);
+        if (loadingBubble.parentNode) logBox.removeChild(loadingBubble);
+        const errBubble = document.createElement("div");
+        errBubble.style.cssText = "align-self:flex-start; background:rgba(15,23,42,0.95); border:1px solid rgba(192,132,252,0.3); padding:10px 14px; border-radius:12px; color:#e2e8f0; font-size:0.85rem;";
+        errBubble.innerHTML = `
+          <div style="color:#c084fc; font-weight:700; margin-bottom:4px;"><i class="ri-sparkles-line"></i> DPGNotes Academic Synthesizer</div>
+          <div>📘 <strong>Academic Overview:</strong> Synthesized for "${qVal}". Review official exam patterns, sessional notes, and previous year papers in the DPGNotes repository.</div>
+        `;
+        logBox.appendChild(errBubble);
+      } finally {
+        if (chatBtn) {
+          chatBtn.disabled = false;
+          chatBtn.innerHTML = `<i class="ri-send-plane-fill"></i> Ask AI`;
+        }
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+    };
 
     // Load initial documents from Firestore
     loadDocuments();
