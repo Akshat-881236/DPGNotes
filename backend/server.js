@@ -2080,17 +2080,20 @@ app.post('/api/ads/submit-with-verification', async (req, res) => {
   }
 });
 
-// Ad Ownership Verification Endpoint (10-Minute Expiry Check & Admin Mail Dispatch)
+// Ad Ownership Verification Endpoint (Strict Contributor Authority Verification & Rich Media Email Dispatch)
 const handleAdVerification = async (req, res) => {
-  const token = req.query.token || req.body?.token;
-  const adId = req.query.adId || req.body?.adId;
+  const token = req.query.token || req.body?.token || '';
+  const adId = req.query.adId || req.body?.adId || '';
 
   if (!token && !adId) {
     return res.status(200).send(`
-      <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
-        <h2 style="color:#ef4444;">Verification Parameter Missing</h2>
-        <p style="color:#cbd5e1;">Please click the verification link provided in your email.</p>
-        <a href="https://dpgnotes.web.app/dashboard.html" style="color:#60a5fa;">Return to Dashboard</a>
+      <div style="font-family:'Outfit',sans-serif; background:#0c0e1a; color:#e2e8f0; padding:50px 20px; text-align:center; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <div style="background:#161929; border:1px solid rgba(239,68,68,0.3); border-radius:20px; padding:30px; max-width:480px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+          <div style="font-size:3rem; margin-bottom:10px;">⚠️</div>
+          <h2 style="color:#ef4444; margin-bottom:10px;">Verification Token Missing</h2>
+          <p style="color:#94a3b8; font-size:0.9rem; line-height:1.6;">Please use the direct verification link sent to your registered email address to verify campaign authority.</p>
+          <a href="https://dpgnotes.web.app/dashboard.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:700; display:inline-block; margin-top:20px;">Return to Dashboard</a>
+        </div>
       </div>
     `);
   }
@@ -2112,21 +2115,42 @@ const handleAdVerification = async (req, res) => {
 
     if (!adDoc || !docRef) {
       return res.status(200).send(`
-        <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
-          <h2 style="color:#f59e0b;">ℹ️ Verification Status Update</h2>
-          <p style="color:#cbd5e1;">The requested ad campaign verification has already been completed or the record was updated.</p>
-          <a href="https://dpgnotes.web.app/dashboard.html" style="background:#6366f1; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-block; margin-top:15px;">Return to Dashboard</a>
+        <div style="font-family:'Outfit',sans-serif; background:#0c0e1a; color:#e2e8f0; padding:50px 20px; text-align:center; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+          <div style="background:#161929; border:1px solid rgba(245,158,11,0.3); border-radius:20px; padding:30px; max-width:480px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div style="font-size:3rem; margin-bottom:10px;">ℹ️</div>
+            <h2 style="color:#f59e0b; margin-bottom:10px;">Campaign Authority Verified</h2>
+            <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.6;">This ad campaign verification link has already been processed or updated.</p>
+            <a href="https://dpgnotes.web.app/dashboard.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:700; display:inline-block; margin-top:20px;">Open Contributor Dashboard</a>
+          </div>
         </div>
       `);
     }
 
-    // Already Verified Check
-    if (adDoc.status === "Pending Approval" || adDoc.status === "Approved") {
+    // Strict 10-Minute Expiry Enforcement
+    if (adDoc.verifyExpires && Date.now() > adDoc.verifyExpires) {
+      await docRef.delete().catch(() => {});
       return res.status(200).send(`
-        <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
-          <h2 style="color:#10b981;">✅ Ad Campaign Already Verified!</h2>
-          <p style="color:#cbd5e1;">Your sponsored ad campaign <strong>"${adDoc.title}"</strong> is already in the Admin Approval Queue (Status: <strong>${adDoc.status}</strong>).</p>
-          <a href="https://dpgnotes.web.app/dashboard.html" style="background:#6366f1; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-block; margin-top:15px;">Return to Dashboard</a>
+        <div style="font-family:'Outfit',sans-serif; background:#0c0e1a; color:#e2e8f0; padding:50px 20px; text-align:center; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+          <div style="background:#161929; border:1px solid rgba(239,68,68,0.3); border-radius:20px; padding:30px; max-width:480px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div style="font-size:3rem; margin-bottom:10px;">⏳</div>
+            <h2 style="color:#ef4444; margin-bottom:10px;">10-Minute Verification Window Expired</h2>
+            <p style="color:#94a3b8; font-size:0.9rem; line-height:1.6;">The authority verification window for campaign <strong>"${adDoc.title}"</strong> elapsed. As per DPGNotes Ad Security Policies, unverified campaigns are automatically purged.</p>
+            <a href="https://dpgnotes.web.app/dashboard.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:700; display:inline-block; margin-top:20px;">Submit New Campaign</a>
+          </div>
+        </div>
+      `);
+    }
+
+    // Strict Token Identity Verification Check
+    if (token && adDoc.verifyToken && adDoc.verifyToken !== token) {
+      return res.status(200).send(`
+        <div style="font-family:'Outfit',sans-serif; background:#0c0e1a; color:#e2e8f0; padding:50px 20px; text-align:center; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+          <div style="background:#161929; border:1px solid rgba(239,68,68,0.3); border-radius:20px; padding:30px; max-width:480px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div style="font-size:3rem; margin-bottom:10px;">🔒</div>
+            <h2 style="color:#ef4444; margin-bottom:10px;">Authority Token Mismatch</h2>
+            <p style="color:#94a3b8; font-size:0.9rem; line-height:1.6;">The provided authority verification token could not be validated against your contributor record.</p>
+            <a href="https://dpgnotes.web.app/dashboard.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:700; display:inline-block; margin-top:20px;">Return to Dashboard</a>
+          </div>
         </div>
       `);
     }
@@ -2137,53 +2161,77 @@ const handleAdVerification = async (req, res) => {
       verifiedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // Dispatch Admin Approval Email with Direct Action Endpoints & Rich Ad Preview
+    // Send Authority Confirmation Email back to Contributor
+    const contributorHtml = createTemplate("Ad Campaign Authority Verified ✅", `
+      <p>Hi <strong>${adDoc.userName || adDoc.userEmail}</strong>,</p>
+      <p>Your authority verification for sponsored campaign <strong>"${adDoc.title}"</strong> has succeeded!</p>
+      <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:14px; border-radius:10px; margin:15px 0;">
+        <p style="margin:0; font-size:14px; color:#34d399; font-weight:700;">Status: Submitted to Admin Review Queue</p>
+        <p style="margin:4px 0 0 0; font-size:13px; color:#cbd5e1;">Platform administrators will review your ad campaign. You will receive an instant system notification once actioned.</p>
+      </div>
+      <div style="text-align:center; margin-top:20px;">
+        <a href="https://dpgnotes.web.app/dashboard.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700;">Open Contributor Dashboard</a>
+      </div>
+    `);
+    await sendEmail(adDoc.userEmail, `Ad Campaign Verified: ${adDoc.title}`, contributorHtml).catch(e => console.error(e));
+
+    // Dispatch Admin Review Email with Media-Optimized Card & Direct Action Endpoints
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@dpgnotes.app';
     const backendBase = process.env.BACKEND_URL || 'https://dpgnotes-backend.onrender.com';
     const approveUrl = `${backendBase}/api/ads/approve?adId=${docRef.id}`;
     const rejectUrl = `${backendBase}/api/ads/reject?adId=${docRef.id}`;
 
-    const bannerPreview = (adDoc.bannerUrl || adDoc.imageUrl)
-      ? `<div style="margin:12px 0; text-align:center;"><img src="${adDoc.bannerUrl || adDoc.imageUrl}" style="max-width:100%; max-height:220px; border-radius:10px; border:1px solid rgba(255,255,255,0.15);" alt="Ad Banner Preview"></div>`
+    const bannerMediaPreview = (adDoc.bannerUrl || adDoc.imageUrl)
+      ? `<div style="margin:15px 0; text-align:center; background:#0f172a; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
+           <div style="font-size:11px; color:#a5b4fc; margin-bottom:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Campaign Media / Banner Preview</div>
+           <img src="${adDoc.bannerUrl || adDoc.imageUrl}" style="max-width:100%; max-height:220px; border-radius:10px; box-shadow:0 8px 25px rgba(0,0,0,0.6);" alt="Ad Banner Preview">
+         </div>`
       : ``;
 
-    const adminAdHtml = createTemplate("New Ad Submission Verified - Action Required 📢", `
-      <p>Contributor <strong>${adDoc.userName || adDoc.userEmail}</strong> (${adDoc.userEmail}) has verified authority for a new sponsored ad campaign:</p>
+    const adminAdHtml = createTemplate("Verified Sponsored Ad Campaign - Action Required 📢", `
+      <p>Contributor <strong>${adDoc.userName || adDoc.userEmail}</strong> (${adDoc.userEmail}) has verified campaign authority:</p>
       
-      <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.4); padding:16px; border-radius:12px; margin:15px 0;">
-        <h3 style="margin:0 0 8px 0; color:#a78bfa; font-size:18px;">${adDoc.title}</h3>
-        <p style="margin:4px 0; font-size:14px; color:#cbd5e1; line-height:1.5;">${adDoc.description || 'No description provided.'}</p>
+      <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(139,92,246,0.4); padding:18px; border-radius:14px; margin:15px 0; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; margin-bottom:10px;">
+          <h3 style="margin:0; color:#a78bfa; font-size:18px;">${adDoc.title}</h3>
+          <span style="background:rgba(16,185,129,0.2); color:#34d399; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:700;">Verified Authority</span>
+        </div>
         
-        ${bannerPreview}
+        <p style="margin:4px 0 10px 0; font-size:14px; color:#cbd5e1; line-height:1.5;">${adDoc.description || 'No campaign description provided.'}</p>
+        
+        ${bannerMediaPreview}
 
-        <div style="grid-template-columns:1fr 1fr; gap:8px; display:grid; margin-top:10px; font-size:12px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
-          <div><strong>Platform:</strong> ${adDoc.platform || 'General'}</div>
-          <div><strong>Category:</strong> ${adDoc.adCategory || 'Sessional Notes'}</div>
-          <div><strong>Target Link:</strong> <a href="${adDoc.targetLink}" target="_blank" style="color:#38bdf8;">${adDoc.targetLink}</a></div>
-          <div><strong>Contributor UID:</strong> ${adDoc.userId || 'N/A'}</div>
+        <div style="grid-template-columns:1fr 1fr; gap:10px; display:grid; margin-top:12px; font-size:12px; color:#94a3b8; background:rgba(0,0,0,0.3); padding:12px; border-radius:10px;">
+          <div><strong>Placement Platform:</strong> <span style="color:white;">${adDoc.platform || 'General'}</span></div>
+          <div><strong>Ad Category:</strong> <span style="color:white;">${adDoc.adCategory || 'Sessional Notes'}</span></div>
+          <div><strong>Target Destination:</strong> <a href="${adDoc.targetLink}" target="_blank" style="color:#38bdf8; font-weight:700;">${adDoc.targetLink}</a></div>
+          <div><strong>Contributor UID:</strong> <span style="color:#a5b4fc; font-family:monospace;">${adDoc.userId || 'N/A'}</span></div>
         </div>
       </div>
 
       <div style="display:flex; justify-content:center; gap:15px; margin-top:25px; text-align:center;">
-        <a href="${approveUrl}" style="background:#10b981; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block; margin-right:10px;">✅ Approve Ad Campaign</a>
-        <a href="${rejectUrl}" style="background:#ef4444; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block;">❌ Reject Ad Campaign</a>
+        <a href="${approveUrl}" style="background:linear-gradient(135deg,#10b981,#059669); color:white; padding:12px 26px; border-radius:10px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block; margin-right:10px;">✅ Approve Ad Campaign</a>
+        <a href="${rejectUrl}" style="background:linear-gradient(135deg,#ef4444,#dc2626); color:white; padding:12px 26px; border-radius:10px; text-decoration:none; font-weight:700; font-size:14px; display:inline-block;">❌ Reject Ad Campaign</a>
       </div>
     `);
 
-    await sendEmail(adminEmail, `[Admin Review] Verified Sponsored Ad Campaign: ${adDoc.title}`, adminAdHtml).catch(e => console.error(e));
+    await sendEmail(adminEmail, `[Admin Action Required] Verified Sponsored Ad: ${adDoc.title}`, adminAdHtml).catch(e => console.error(e));
 
     res.send(`
-      <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
-        <h2 style="color:#10b981;">✅ Authority Verified Successfully!</h2>
-        <p style="color:#cbd5e1;">Your sponsored ad campaign <strong>"${adDoc.title}"</strong> has been verified and submitted to the Admin Approval Queue.</p>
-        <a href="https://dpgnotes.web.app/dashboard.html" style="background:#6366f1; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block; margin-top:15px;">Return to Dashboard</a>
+      <div style="font-family:'Outfit',sans-serif; background:#0c0e1a; color:#e2e8f0; padding:50px 20px; text-align:center; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <div style="background:#161929; border:1px solid rgba(16,185,129,0.3); border-radius:20px; padding:35px; max-width:500px; box-shadow:0 15px 40px rgba(0,0,0,0.6);">
+          <div style="font-size:3.5rem; margin-bottom:10px;">✅</div>
+          <h2 style="color:#10b981; margin-bottom:10px;">Authority Verified Successfully!</h2>
+          <p style="color:#cbd5e1; font-size:0.95rem; line-height:1.6;">Your sponsored campaign <strong>"${adDoc.title}"</strong> authority has been verified and submitted to the Admin Approval Queue.</p>
+          <a href="https://dpgnotes.web.app/dashboard.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 26px; border-radius:10px; text-decoration:none; font-weight:700; display:inline-block; margin-top:20px;">Return to Contributor Dashboard</a>
+        </div>
       </div>
     `);
 
   } catch (err) {
     console.error("Ad verify error:", err);
     res.status(200).send(`
-      <div style="font-family:sans-serif; background:#0f172a; color:white; padding:40px; text-align:center;">
+      <div style="font-family:'Outfit',sans-serif; background:#0c0e1a; color:#e2e8f0; padding:50px 20px; text-align:center;">
         <h2 style="color:#10b981;">✅ Ad Verification Complete</h2>
         <p style="color:#cbd5e1;">Your ad campaign verification status has been recorded.</p>
         <a href="https://dpgnotes.web.app/dashboard.html" style="color:#60a5fa;">Return to Dashboard</a>
@@ -4381,6 +4429,15 @@ app.get('/api/url/asset/:key', async (req, res) => {
   }
 });
 
+app.all('/api/admin/run-trackid-migration', async (req, res) => {
+  try {
+    const result = await ensureAllDocsHaveTrackId();
+    res.json({ success: true, ...result });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
   res.status(404).json({ 
@@ -4402,6 +4459,7 @@ async function ensureAllDocsHaveTrackId() {
     });
 
     let assignedCount = 0;
+    let existingCount = 0;
     for (const dSnap of docsSnap.docs) {
       const d = dSnap.data();
       if (!d.trackId) {
@@ -4413,13 +4471,17 @@ async function ensureAllDocsHaveTrackId() {
         existingTrackIds.add(newTrackId);
         await dSnap.ref.update({ trackId: newTrackId });
         assignedCount++;
+      } else {
+        existingCount++;
       }
     }
     if (assignedCount > 0) {
       console.log(`[TrackId Migration] Assigned unique 8-digit trackId to ${assignedCount} documents.`);
     }
+    return { totalDocs: docsSnap.size, assignedCount, existingCount };
   } catch (err) {
     console.error("ensureAllDocsHaveTrackId error:", err);
+    return { error: err.message };
   }
 }
 
