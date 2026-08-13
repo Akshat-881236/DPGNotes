@@ -604,18 +604,51 @@
       }
 
       // ==========================================
-      // TAB 4: IMAGES GALLERY GRID
+      // TAB 4: IMAGES GALLERY GRID (Matches Image 3 Sponsored Ads & Document Thumbnails)
       // ==========================================
       else if (window.activeSerpTab === 'image') {
-        let imgHtml = `
-          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:14px;">
-        `;
+        window.galleryImagesList = [];
+        
+        // Collect Images from Search Results
         results.forEach(r => {
           const imgUrl = r.coverImage || r.bannerUrl || 'ANH.png';
+          window.galleryImagesList.push({
+            url: imgUrl,
+            title: r.title || 'Academic Resource',
+            subtitle: `${r.category || 'Notes'} | ${r.discipline || 'General'}`
+          });
+        });
+
+        // Collect Images from Approved Sponsored Ads
+        if (Array.isArray(window.approvedAdsCache)) {
+          window.approvedAdsCache.forEach(ad => {
+            if (ad.thumbnailUrl) {
+              window.galleryImagesList.push({
+                url: ad.thumbnailUrl,
+                title: ad.title || 'Sponsored Ad Campaign',
+                subtitle: `Sponsored | ${ad.platform || 'DPGNotes'} ${ad.adCategory || ''}`
+              });
+            }
+          });
+        }
+
+        if (window.galleryImagesList.length === 0) {
+          window.galleryImagesList.push({
+            url: 'ANH.png',
+            title: 'DPGNotes Academic Network',
+            subtitle: 'Official Academic Repository'
+          });
+        }
+
+        let imgHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap:14px;">`;
+        window.galleryImagesList.forEach((item, idx) => {
           imgHtml += `
-            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer;" onclick="window.open('${imgUrl}', '_blank')">
-              <img src="${imgUrl}" style="width:100%; height:140px; object-fit:cover;" alt="${r.title}">
-              <div style="padding:8px 10px; font-size:0.78rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.title}</div>
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:transform 0.2s;" onclick="openDpgGalleryModal(${idx})">
+              <img src="${item.url}" style="width:100%; height:140px; object-fit:cover;" alt="${item.title}">
+              <div style="padding:10px;">
+                <div style="padding:2px 6px; border-radius:4px; background:rgba(99,102,241,0.2); color:#a5b4fc; font-size:0.7rem; font-weight:700; display:inline-block; margin-bottom:4px;">${item.subtitle}</div>
+                <div style="font-size:0.82rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.title}</div>
+              </div>
             </div>
           `;
         });
@@ -648,23 +681,41 @@
       }
 
       // ==========================================
-      // TAB 6: WEBSITES
+      // TAB 6: WEBSITES (Reads resource_knowledge URLs - Image 2)
       // ==========================================
       else if (window.activeSerpTab === 'website') {
-        list.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
-              <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Platform Portal</div>
-              <h3 style="margin:0 0 6px 0;"><a href="https://dpgnotes.web.app" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Main Portal</a></h3>
-              <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Official Academic Notes, PYQs, and Sessional Exam Repository for DPG College students.</p>
-            </div>
-            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
-              <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Legal Directory</div>
-              <h3 style="margin:0 0 6px 0;"><a href="/dpgnotes-legal-notes.html" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Legal Policies & Compliance Portal</a></h3>
-              <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Standardized copyright policies, terms of service, and student academic compliance regulations.</p>
-            </div>
+        let webListHtml = `<div style="display:flex; flex-direction:column; gap:14px;">`;
+        
+        // Base Verified Websites
+        webListHtml += `
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
+            <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Platform Portal</div>
+            <h3 style="margin:0 0 6px 0;"><a href="https://dpgnotes.web.app" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Main Portal</a></h3>
+            <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Official Academic Notes, PYQs, and Sessional Exam Repository for DPG College students.</p>
+          </div>
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
+            <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Legal Directory</div>
+            <h3 style="margin:0 0 6px 0;"><a href="/dpgnotes-legal-notes.html" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Legal Policies & Compliance Portal</a></h3>
+            <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Standardized copyright policies, terms of service, and student academic compliance regulations.</p>
           </div>
         `;
+
+        // Render URLs from resource_knowledge collection (Image 2)
+        if (Array.isArray(window.knowledgeUrlsCache) && window.knowledgeUrlsCache.length > 0) {
+          window.knowledgeUrlsCache.forEach(urlStr => {
+            webListHtml += `
+              <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:1.2rem;">
+                <div style="color:#a78bfa; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-book-read-line"></i> Resource Knowledge Web Portal</div>
+                <h3 style="margin:0 0 6px 0;"><a href="${urlStr}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">${urlStr.split('/').pop() || 'Academic Web Resource'}</a></h3>
+                <p style="color:#94a3b8; font-size:0.82rem; margin:0 0 8px 0; word-break:break-all;">${urlStr}</p>
+                <a href="${urlStr}" target="_blank" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-external-link-line"></i> Open Academic Site</a>
+              </div>
+            `;
+          });
+        }
+
+        webListHtml += `</div>`;
+        list.innerHTML = webListHtml;
       }
     }
 
@@ -760,9 +811,139 @@
       }
     };
 
+    // Global Gallery Modal Handlers
+    window.currentGalleryIndex = 0;
+
+    window.openDpgGalleryModal = function(index) {
+      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
+      window.currentGalleryIndex = (index >= 0 && index < window.galleryImagesList.length) ? index : 0;
+      updateGalleryModalContent();
+      const modal = document.getElementById("dpgGalleryModal");
+      if (modal) modal.style.display = "flex";
+    };
+
+    window.closeDpgGalleryModal = function() {
+      const modal = document.getElementById("dpgGalleryModal");
+      if (modal) modal.style.display = "none";
+    };
+
+    window.nextGalleryImage = function() {
+      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
+      window.currentGalleryIndex = (window.currentGalleryIndex + 1) % window.galleryImagesList.length;
+      updateGalleryModalContent();
+    };
+
+    window.prevGalleryImage = function() {
+      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
+      window.currentGalleryIndex = (window.currentGalleryIndex - 1 + window.galleryImagesList.length) % window.galleryImagesList.length;
+      updateGalleryModalContent();
+    };
+
+    function updateGalleryModalContent() {
+      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
+      const item = window.galleryImagesList[window.currentGalleryIndex];
+      const imgEl = document.getElementById("galleryModalImage");
+      const titleEl = document.getElementById("galleryModalTitle");
+      const counterEl = document.getElementById("galleryModalCounter");
+      const captionEl = document.getElementById("galleryModalCaption");
+
+      if (imgEl) imgEl.src = item.url;
+      if (titleEl) titleEl.textContent = item.title;
+      if (counterEl) counterEl.textContent = `${window.currentGalleryIndex + 1} of ${window.galleryImagesList.length}`;
+      if (captionEl) captionEl.textContent = `${item.subtitle} — ${item.title}`;
+    }
+
+    // Keyboard Arrow Key & Escape Listener
+    window.addEventListener("keydown", (e) => {
+      const modal = document.getElementById("dpgGalleryModal");
+      if (modal && modal.style.display === "flex") {
+        if (e.key === "ArrowRight") nextGalleryImage();
+        if (e.key === "ArrowLeft") prevGalleryImage();
+        if (e.key === "Escape") closeDpgGalleryModal();
+      }
+    });
+
+    // Touch Swipe Gesture Listener for Mobile/Tablet
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const swipeBox = document.getElementById("gallerySwipeContainer");
+    if (swipeBox) {
+      swipeBox.addEventListener("touchstart", (e) => { touchStartX = e.changedTouches[0].screenX; });
+      swipeBox.addEventListener("touchend", (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (touchEndX < touchStartX - 40) nextGalleryImage(); // Swipe Left -> Next
+        if (touchEndX > touchStartX + 40) prevGalleryImage(); // Swipe Right -> Prev
+      });
+    }
+
+    // Multi-Collection Load: documents, resource_knowledge, user_ads
+    async function loadDocuments() {
+      try {
+        const snap = await getDocs(collection(db, "documents"));
+        allDocs = [];
+        snap.forEach(doc => {
+          allDocs.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Fetch resource_knowledge URLs (Image 2)
+        window.knowledgeUrlsCache = [];
+        try {
+          const rkSnap = await getDocs(collection(db, "resource_knowledge"));
+          rkSnap.forEach(rkDoc => {
+            const rk = rkDoc.data();
+            if (Array.isArray(rk.urls)) window.knowledgeUrlsCache.push(...rk.urls);
+          });
+        } catch(e) { console.warn("Resource knowledge fetch failed", e); }
+
+        // Fetch user_ads Thumbnails (Image 3)
+        window.approvedAdsCache = [];
+        try {
+          const adsSnap = await getDocs(collection(db, "user_ads"));
+          adsSnap.forEach(adDoc => {
+            const ad = adDoc.data();
+            if (ad.status === "Approved") window.approvedAdsCache.push({ id: adDoc.id, ...ad });
+          });
+        } catch(e) { console.warn("User ads fetch failed", e); }
+
+        populateDynamicFilters();
+        applyFilters();
+      } catch (err) {
+        console.error("Failed downloading documents:", err);
+      }
+    }
+
     // Load initial documents from Firestore
     loadDocuments();
   </script>
+
+  <!-- DPGNotes Gallery Lightbox Modal -->
+  <div id="dpgGalleryModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.96); backdrop-filter:blur(12px); flex-direction:column; justify-content:space-between; padding:1.5rem;">
+    <!-- Modal Header: Top-Left Cross Icon (✖) & Counter -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <button onclick="closeDpgGalleryModal()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.4rem; border-radius:50%; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700;" title="Close Gallery (Esc)">✖</button>
+      <span id="galleryModalTitle" style="color:#c084fc; font-weight:700; font-size:0.95rem;">DPGNotes Gallery Viewer</span>
+      <span id="galleryModalCounter" style="color:#94a3b8; font-size:0.85rem; font-weight:600;">1 of 1</span>
+    </div>
+
+    <!-- Modal Content: Prev Button, Main Image, Next Button -->
+    <div id="gallerySwipeContainer" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex:1; margin:1rem 0; touch-action:pan-y;">
+      <button onclick="prevGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Previous Image (Left Arrow)">◀</button>
+      
+      <div style="text-align:center; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:78vh;">
+        <img id="galleryModalImage" src="ANH.png" style="max-width:100%; max-height:65vh; object-fit:contain; border-radius:14px; border:1px solid rgba(255,255,255,0.15); box-shadow:0 20px 50px rgba(0,0,0,0.8);" alt="Gallery Image">
+        <p id="galleryModalCaption" style="color:white; font-size:0.88rem; margin-top:12px; font-weight:600;"></p>
+      </div>
+
+      <button onclick="nextGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Next Image (Right Arrow)">▶</button>
+    </div>
+
+    <!-- Modal Footer: Bottom-Left Close Button -->
+    <div style="display:flex; justify-content:flex-start;">
+      <button onclick="closeDpgGalleryModal()" style="background:#ef4444; border:none; color:white; padding:8px 18px; border-radius:10px; font-weight:700; font-size:0.88rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+        <i class="ri-close-line"></i> Close
+      </button>
+    </div>
+  </div>
 
   <!-- Bottom Footer Native Sponsored Ad Banner -->
   <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1200px; margin:2rem auto 1rem auto; padding:0 1rem; box-sizing:border-box;"></div>

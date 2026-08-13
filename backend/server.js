@@ -2429,7 +2429,8 @@ app.post('/api/telemetry/track-resource-view', async (req, res) => {
 });
 
 // ==========================================
-// SERP AI INTERACTIVE CHAT ENGINE
+// SERP AI MULTI-COLLECTION INTERACTIVE CHAT ENGINE
+// (Reads: documents, resource_knowledge, user_ads, share_links)
 // ==========================================
 app.post('/api/ai/serp-chat', async (req, res) => {
   try {
@@ -2439,11 +2440,94 @@ app.post('/api/ai/serp-chat', async (req, res) => {
       return res.status(400).json({ error: "Question query is required." });
     }
 
+    const lowerQ = userQ.toLowerCase();
+
+    // 1. Read Knowledge & Data across Firestore Collections
+    let matchedKnowledgeFaqs = [];
+    let matchedKnowledgeUrls = [];
+    let matchedAds = [];
+    let matchedShareLink = null;
+    let matchedDoc = null;
+
+    if (db) {
+      // A. Query resource_knowledge collection
+      try {
+        const rkSnap = await db.collection("resource_knowledge").get();
+        rkSnap.forEach(rkDoc => {
+          const rk = rkDoc.data();
+          if (Array.isArray(rk.faqs)) {
+            rk.faqs.forEach(f => {
+              if ((f.query && f.query.toLowerCase().includes(lowerQ)) || (f.solution && f.solution.toLowerCase().includes(lowerQ))) {
+                matchedKnowledgeFaqs.push(f);
+              }
+            });
+          }
+          if (Array.isArray(rk.urls)) {
+            matchedKnowledgeUrls.push(...rk.urls);
+          }
+        });
+      } catch(e) { console.warn("Failed reading resource_knowledge:", e.message); }
+
+      // B. Query user_ads collection
+      try {
+        const adsSnap = await db.collection("user_ads").where("status", "==", "Approved").get();
+        adsSnap.forEach(aDoc => {
+          const a = aDoc.data();
+          const titleMatch = (a.title || '').toLowerCase().includes(lowerQ);
+          const descMatch = (a.description || '').toLowerCase().includes(lowerQ);
+          const tagMatch = Array.isArray(a.tags) && a.tags.some(t => t.toLowerCase().includes(lowerQ));
+          if (titleMatch || descMatch || tagMatch) {
+            matchedAds.push({ id: aDoc.id, ...a });
+          }
+        });
+      } catch(e) { console.warn("Failed reading user_ads for AI:", e.message); }
+
+      // C. Query documents collection
+      try {
+        const docsSnap = await db.collection("documents").get();
+        docsSnap.forEach(dDoc => {
+          const d = dDoc.data();
+          if (!matchedDoc && ((d.title || '').toLowerCase().includes(lowerQ) || (d.description || '').toLowerCase().includes(lowerQ) || (d.category || '').toLowerCase().includes(lowerQ))) {
+            matchedDoc = { id: dDoc.id, ...d };
+          }
+        });
+      } catch(e) { console.warn("Failed reading documents for AI:", e.message); }
+
+      // D. Query or Generate share_links collection
+      try {
+        const targetDocId = matchedDoc ? matchedDoc.id : (contextDocs && contextDocs[0] ? contextDocs[0].id : null);
+        if (targetDocId) {
+          const shareSnap = await db.collection("share_links").where("docId", "==", targetDocId).limit(1).get();
+          if (!shareSnap.empty) {
+            const sData = shareSnap.docs[0].data();
+            matchedShareLink = `https://dpgnotes.web.app/dashboard.html?share=${sData.token || shareSnap.docs[0].id}`;
+          } else {
+            // Generate brand new share_links token dynamically in Firestore
+            const newToken = "SH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+            const dTitle = matchedDoc ? matchedDoc.title : "DPGNotes Academic Resource";
+            const dPdf = matchedDoc ? matchedDoc.pdfUrl : "https://dpgnotes.web.app";
+            const newShareObj = {
+              token: newToken,
+              docId: targetDocId,
+              title: dTitle,
+              pdfUrl: dPdf,
+              originalUrl: `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${targetDocId}`,
+              uploader: "DPGNotes AI Assistant",
+              clicks: 0,
+              createdAt: admin.firestore.FieldValue.serverTimestamp()
+            };
+            await db.collection("share_links").doc(newToken).set(newShareObj);
+            matchedShareLink = `https://dpgnotes.web.app/dashboard.html?share=${newToken}`;
+          }
+        }
+      } catch(e) { console.warn("Failed handling share_links for AI:", e.message); }
+    }
+
     // Try Gemini API if key is present
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey) {
       try {
-        const prompt = `You are DPGNotes AI Academic Assistant for DPG College students. Answer the following student question accurately based on computer science, engineering, and academic curriculum:\n\nQuery Context: ${searchQuery || 'General Notes'}\nStudent Question: ${userQ}\n\nProvide a clear, formatted explanation with bullet points and exam tips.`;
+        const prompt = `You are DPGNotes AI Academic Assistant for DPG College students. Answer the following student question accurately based on computer science, engineering, and academic curriculum:\n\nQuery Context: ${searchQuery || 'General Notes'}\nStudent Question: ${userQ}\nMatched Knowledge FAQs: ${JSON.stringify(matchedKnowledgeFaqs.slice(0, 2))}\nShare Link: ${matchedShareLink || 'None'}\n\nProvide a clear, formatted explanation with bullet points, exam tips, and include the direct share link if applicable.`;
         const geminiRes = await axios.post(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
           { contents: [{ parts: [{ text: prompt }] }] },
@@ -2451,31 +2535,50 @@ app.post('/api/ai/serp-chat', async (req, res) => {
         );
         const aiText = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (aiText) {
-          return res.json({ success: true, answer: aiText, source: "gemini" });
+          let formattedText = aiText;
+          if (matchedShareLink && !formattedText.includes(matchedShareLink)) {
+            formattedText += `<br><br>🔗 <strong>Resource Share Link:</strong> <a href="${matchedShareLink}" target="_blank" style="color:#60a5fa; text-decoration:underline;">${matchedShareLink}</a>`;
+          }
+          return res.json({ success: true, answer: formattedText, source: "gemini" });
         }
       } catch(gemErr) {
         console.warn("Gemini API call skipped/failed, fallback to internal synthesizer:", gemErr.message);
       }
     }
 
-    // Fallback: Intelligent Academic Synthesizer Engine
-    let topDocTitle = "Verified Notes Repository";
-    if (Array.isArray(contextDocs) && contextDocs.length > 0) {
-      topDocTitle = contextDocs[0].title || topDocTitle;
+    // Intelligent Multi-Collection Academic Synthesizer Engine
+    let solutionHtml = "";
+    if (matchedKnowledgeFaqs.length > 0) {
+      solutionHtml = `<div style="background:rgba(139,92,246,0.15); padding:10px 14px; border-radius:8px; border-left:3px solid #a78bfa; margin:8px 0;"><strong>📚 Verified Solution from Knowledge Base:</strong><br>${matchedKnowledgeFaqs[0].solution}</div>`;
     }
 
+    let shareLinkHtml = "";
+    if (matchedShareLink) {
+      shareLinkHtml = `<div style="margin-top:10px; padding:8px 12px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); border-radius:8px; font-size:0.82rem;">🔗 <strong>Official Share Link:</strong> <a href="${matchedShareLink}" target="_blank" style="color:#818cf8; text-decoration:underline; font-weight:700;">${matchedShareLink}</a></div>`;
+    }
+
+    let sponsoredAdHtml = "";
+    if (matchedAds.length > 0) {
+      const ad = matchedAds[0];
+      sponsoredAdHtml = `<div style="margin-top:8px; padding:6px 10px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); border-radius:6px; font-size:0.78rem; color:#fcd34d;">⭐ <strong>Related Campaign:</strong> ${ad.title} (${ad.platform || 'DPGNotes'})</div>`;
+    }
+
+    const topDocTitle = matchedDoc ? matchedDoc.title : (contextDocs && contextDocs[0] ? contextDocs[0].title : "Verified DPGNotes Repository");
+
     const synthesizedAnswer = `
-      <p style="margin-bottom:8px;">📘 <strong>Academic Solution for:</strong> "${userQ}"</p>
-      <p style="margin-bottom:8px;">Synthesized from DPGNotes verified repository reference: <strong>"${topDocTitle}"</strong>.</p>
+      <p style="margin-bottom:8px;">📘 <strong>Academic Overview for:</strong> "${userQ}"</p>
+      <p style="margin-bottom:8px;">Synthesized from verified repository reference: <strong>"${topDocTitle}"</strong>.</p>
+      ${solutionHtml}
       <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin:8px 0; border-left:3px solid #c084fc;">
         <strong>💡 Key Exam & Concept Summary:</strong>
         <ul style="margin:4px 0 0 16px; padding:0;">
-          <li>Review official definitions and core principles associated with <strong>${userQ}</strong>.</li>
+          <li>Review core definitions and theoretical frameworks for <strong>${userQ}</strong>.</li>
           <li>Cross-reference previous year questions (PYQs) and sessional exam patterns for maximum scoring accuracy.</li>
           <li>Ensure structural diagrams and algorithm steps are clearly demarcated in written answers.</li>
         </ul>
       </div>
-      <p style="font-size:0.78rem; color:#a78bfa; margin-top:6px;"><i>Tip: Open the full document preview on the right panel to inspect complete handwritten notes & formulas.</i></p>
+      ${shareLinkHtml}
+      ${sponsoredAdHtml}
     `.trim();
 
     return res.json({ success: true, answer: synthesizedAnswer, source: "synthesizer" });
@@ -2483,6 +2586,56 @@ app.post('/api/ai/serp-chat', async (req, res) => {
   } catch(err) {
     console.error("SERP AI Chat endpoint error:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// URL METADATA & SOURCE CODE SCRAPER ENGINE FOR WEBSITE TAB & AI KNOWLEDGE
+// ==========================================
+app.get('/api/scrape-url-meta', async (req, res) => {
+  try {
+    const targetUrl = req.query.url;
+    if (!targetUrl) return res.status(400).json({ error: "URL query parameter is required." });
+
+    const htmlRes = await axios.get(targetUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) DPGNotesAI/2.0' },
+      timeout: 6000
+    });
+
+    const html = htmlRes.data || '';
+    
+    // Simple RegEx extraction of metadata
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+    const iconMatch = html.match(/<link[^>]*rel=["'](?:shortcut )?icon["'][^>]*href=["']([^"']+)["']/i);
+
+    const title = titleMatch ? titleMatch[1].trim() : 'External Verified Resource';
+    const description = descMatch ? descMatch[1].trim() : 'Verified academic web portal reference.';
+    let icon = iconMatch ? iconMatch[1].trim() : '';
+
+    if (icon && !icon.startsWith('http')) {
+      const parsedUrl = new URL(targetUrl);
+      icon = `${parsedUrl.protocol}//${parsedUrl.host}${icon.startsWith('/') ? '' : '/'}${icon}`;
+    }
+
+    res.json({
+      success: true,
+      url: targetUrl,
+      title,
+      description,
+      iconUrl: icon || 'ANH.png',
+      sourceCodeSnippet: html.substring(0, 1500)
+    });
+
+  } catch(err) {
+    console.warn("URL metadata scrape failed for:", req.query.url, err.message);
+    res.json({
+      success: false,
+      url: req.query.url,
+      title: "Academic Web Reference",
+      description: "Verified external study notes and academic resource portal.",
+      iconUrl: "ANH.png"
+    });
   }
 });
 
