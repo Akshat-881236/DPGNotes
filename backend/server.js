@@ -2022,16 +2022,13 @@ app.post('/api/support/notify', async (req, res) => {
   res.json({ success: true });
 });
 
-// 10-Minute Contributor Ad Submission & Verification Authority Flow
+// Contributor Ad Submission Flow (Direct Pending Status - No Email Verification Required)
 app.post('/api/ads/submit-with-verification', async (req, res) => {
   try {
     const { title, description, targetLink, platform, category, tags, thumbnailUrl, videoUrl, userEmail, userName, userId } = req.body;
     if (!title || !userEmail) {
       return res.status(400).json({ error: "Title and User Email are required." });
     }
-
-    const verifyToken = "VERIFY_AD_" + Math.random().toString(36).substring(2, 10).toUpperCase() + "_" + Date.now();
-    const verifyExpires = Date.now() + (10 * 60 * 1000); // 10 Minutes Expiry
 
     const adData = {
       title,
@@ -2045,9 +2042,7 @@ app.post('/api/ads/submit-with-verification', async (req, res) => {
       userEmail,
       userName: userName || userEmail.split('@')[0],
       userId: userId || 'anon',
-      status: "Unverified",
-      verifyToken,
-      verifyExpires,
+      status: "Pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
@@ -2057,26 +2052,13 @@ app.post('/api/ads/submit-with-verification', async (req, res) => {
       docId = docRef.id;
     }
 
-    const backendBase = process.env.BACKEND_URL || 'https://dpgnotes-backend.onrender.com';
-    const verifyUrl = `${backendBase}/api/ads/verify-owner?token=${verifyToken}&adId=${docId}`;
+    // In-app notification for contributor
+    await createInAppNotification(userEmail, "Ad Campaign Submitted 📣", `Your ad campaign "${title}" has been submitted and is currently pending Admin review.`, "system").catch(console.error);
 
-    const verifyEmailHtml = createTemplate("Verify Your Sponsored Ad Campaign ⏳", `
-      <p>Hi <strong>${userName || userEmail}</strong>,</p>
-      <p>You recently submitted a sponsored ad campaign titled <strong>"${title}"</strong> on DPGNotes.</p>
-      <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:14px; border-radius:10px; margin:15px 0;">
-        <p style="margin:0; font-size:14px; color:#fca5a5; font-weight:700;">⚠️ Immediate Authority Verification Required</p>
-        <p style="margin:6px 0 0 0; font-size:13px; color:#cbd5e1;">You must verify your campaign authority within <strong>10 minutes</strong>. Unverified ad submissions are automatically purged from the system.</p>
-      </div>
-      <div style="text-align:center; margin:25px 0;">
-        <a href="${verifyUrl}" style="background:linear-gradient(135deg,#10b981,#059669); color:white; padding:12px 26px; border-radius:8px; text-decoration:none; font-weight:700; font-size:15px;">Verify Ad Campaign Ownership Now</a>
-      </div>
-    `);
-
-    await sendEmail(userEmail, "Action Required: Verify Ad Campaign Authority (Expires in 10 Mins)", verifyEmailHtml);
-    res.json({ success: true, docId, verifyToken, message: "Verification link sent to email. Link expires in 10 minutes." });
+    res.json({ success: true, docId, message: "Ad campaign submitted successfully and is pending Admin review!" });
   } catch (err) {
-    console.error("Ad submit verification error:", err);
-    res.status(500).json({ error: "Failed to process ad submission: " + err.message });
+    console.error("Ad submission error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

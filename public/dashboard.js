@@ -449,8 +449,6 @@ async function loadLeaderboard() {
   if (!leaderboardList || isLeaderboardLoading) return;
   isLeaderboardLoading = true;
   
-  leaderboardList.innerHTML = `<li style="color:var(--text-muted);">Loading Leaderboard...</li>`;
-  
   try {
     const q = query(collection(db, "documents"));
     const snap = await getDocs(q);
@@ -479,39 +477,38 @@ async function loadLeaderboard() {
       return;
     }
     
-    leaderboardList.innerHTML = "";
+    // Fetch photos upfront in parallel
+    const userDocs = await Promise.all(
+      sortedUsers.map(u => getDoc(doc(db, "users", u.uid)).catch(() => null))
+    );
+    
+    const badges = ["🥇", "🥈", "🥉"];
+    let htmlContent = "";
     
     for (let i = 0; i < sortedUsers.length; i++) {
       const user = sortedUsers[i];
-      const badges = ["🥇", "🥈", "🥉"];
-      
-      // Try to fetch user photo
+      const uDoc = userDocs[i];
       let photoHtml = `<div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;">👤</div>`;
-      try {
-        const uDoc = await getDoc(doc(db, "users", user.uid));
-        if (uDoc.exists() && (uDoc.data().photoURL || uDoc.data().profilePic)) {
-          const pic = uDoc.data().profilePic || uDoc.data().photoURL;
-          photoHtml = `<img src="${pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
-        }
-      } catch(e) {}
+      if (uDoc && uDoc.exists && uDoc.exists() && (uDoc.data().photoURL || uDoc.data().profilePic)) {
+        const pic = uDoc.data().profilePic || uDoc.data().photoURL;
+        photoHtml = `<img src="${pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
+      }
       
-      const li = document.createElement("li");
-      li.style.display = "flex";
-      li.style.alignItems = "center";
-      li.style.gap = "1rem";
-      li.style.padding = "0.8rem 0";
-      li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-      
-      li.innerHTML = `
-        <div style="font-size:1.5rem;">${badges[i]}</div>
-        ${photoHtml}
-        <div style="flex-grow:1;">
-          <h4 style="margin:0; color:var(--text-light);">${user.name}</h4>
-          <span style="font-size:0.85rem; color:var(--text-muted);">${user.likes} Likes • ${user.uploads} Uploads</span>
-        </div>
+      htmlContent += `
+        <li style="display:flex; align-items:center; gap:1rem; padding:0.8rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:1.5rem;">${badges[i]}</div>
+          ${photoHtml}
+          <div style="flex-grow:1;">
+            <h4 style="margin:0; color:var(--text-light);">${user.name}</h4>
+            <span style="font-size:0.85rem; color:var(--text-muted);">${user.likes} Likes • ${user.uploads} Uploads</span>
+          </div>
+        </li>
       `;
-      leaderboardList.appendChild(li);
     }
+    
+    // Atomic Single DOM Replacement
+    leaderboardList.innerHTML = htmlContent;
+
   } catch (err) {
     console.error("Leaderboard Error:", err);
     leaderboardList.innerHTML = `<li style="color:#ef4444;">Failed to load leaderboard</li>`;
