@@ -342,20 +342,6 @@
     }
 
     // Load Documents & filter
-    async function loadDocuments() {
-      try {
-        const snap = await getDocs(collection(db, "documents"));
-        allDocs = [];
-        snap.forEach(doc => {
-          allDocs.push({ id: doc.id, ...doc.data() });
-        });
-        populateDynamicFilters();
-        applyFilters();
-      } catch (err) {
-        console.error("Failed downloading documents:", err);
-      }
-    }
-
     window.activeSerpTab = 'all';
     window.currentSearchResults = [];
 
