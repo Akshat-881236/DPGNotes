@@ -2556,6 +2556,7 @@ async function handleResourceAnalytics(req, res) {
 
     // 4. Process Real Telemetry Documents from resource_tracking (${trackId}_${visitorUid})
     const dateMap = new Map(); // YYYY-MM-DD -> { views, screentimeSecs, likes, shares, visitorMeta: [] }
+    const screentimeValues = [];
     const labels = [];
     const now = new Date();
     for (let i = 6; i >= 0; i--) {
@@ -2576,6 +2577,7 @@ async function handleResourceAnalytics(req, res) {
       const st = Number(t.screentimeSeconds || t.screentime || 0);
       totalViews++;
       totalScreentimeSecs += st;
+      screentimeValues.push(st);
 
       // Update Resource Item Stats
       const rItem = resourceStatsMap.get(rId) || resourceStatsMap.get(tId);
