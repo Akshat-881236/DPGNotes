@@ -443,9 +443,11 @@ async function loadProfile() {
 // =========================================
 // LEADERBOARD
 // =========================================
+let isLeaderboardLoading = false;
 async function loadLeaderboard() {
   const leaderboardList = document.getElementById("leaderboardList");
-  if (!leaderboardList) return;
+  if (!leaderboardList || isLeaderboardLoading) return;
+  isLeaderboardLoading = true;
   
   leaderboardList.innerHTML = `<li style="color:var(--text-muted);">Loading Leaderboard...</li>`;
   
@@ -457,18 +459,18 @@ async function loadLeaderboard() {
     
     snap.forEach(d => {
       const data = d.data();
-      const uid = data.userId;
+      const uid = data.userId || data.uploaderUid || data.userEmail || data.userName;
       if (!uid) return;
       
-      if (!userStats[uid]) {
-        userStats[uid] = { name: data.userName || "Unknown", likes: 0, uploads: 0 };
+      const key = String(uid).trim().toLowerCase();
+      if (!userStats[key]) {
+        userStats[key] = { uid: data.userId || uid, name: data.userName || "Unknown", likes: 0, uploads: 0 };
       }
-      userStats[uid].uploads++;
-      if (data.likes) userStats[uid].likes += data.likes.length;
+      userStats[key].uploads++;
+      if (data.likes && Array.isArray(data.likes)) userStats[key].likes += data.likes.length;
     });
     
-    const sortedUsers = Object.entries(userStats)
-      .map(([uid, stats]) => ({ uid, ...stats }))
+    const sortedUsers = Object.values(userStats)
       .sort((a, b) => b.likes - a.likes || b.uploads - a.uploads)
       .slice(0, 3);
       
@@ -487,8 +489,9 @@ async function loadLeaderboard() {
       let photoHtml = `<div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;">👤</div>`;
       try {
         const uDoc = await getDoc(doc(db, "users", user.uid));
-        if (uDoc.exists() && uDoc.data().photoURL) {
-          photoHtml = `<img src="${uDoc.data().photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
+        if (uDoc.exists() && (uDoc.data().photoURL || uDoc.data().profilePic)) {
+          const pic = uDoc.data().profilePic || uDoc.data().photoURL;
+          photoHtml = `<img src="${pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
         }
       } catch(e) {}
       
@@ -512,6 +515,8 @@ async function loadLeaderboard() {
   } catch (err) {
     console.error("Leaderboard Error:", err);
     leaderboardList.innerHTML = `<li style="color:#ef4444;">Failed to load leaderboard</li>`;
+  } finally {
+    isLeaderboardLoading = false;
   }
 }
 
@@ -618,11 +623,14 @@ async function loadExplore() {
 // =========================================
 // UPLOAD LOGIC
 // =========================================
+let isResourceUploading = false;
 const uploadForm = document.getElementById("uploadForm");
 if(uploadForm) {
   uploadForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if(!currentUser) return alert("Please login first");
+    if(isResourceUploading) return;
+    isResourceUploading = true;
     
     const submitBtn = uploadForm.querySelector("button[type='submit']");
     submitBtn.innerText = "Uploading...";
@@ -882,6 +890,7 @@ if(uploadForm) {
     } finally {
       submitBtn.innerText = "Upload Document";
       submitBtn.disabled = false;
+      isResourceUploading = false;
     }
   });
 }
@@ -1849,6 +1858,7 @@ function generateAdTrackIdLocal(seedStr) {
   return (positiveHash % 90000000 + 10000000).toString();
 }
 
+let isAdSubmitting = false;
 const adForm = document.getElementById("uploadAdForm");
 if (adForm) {
   const titleInput = document.getElementById("adTitle");
@@ -1870,6 +1880,9 @@ if (adForm) {
 
   adForm.addEventListener("submit", async function(e) {
     e.preventDefault();
+    if (isAdSubmitting) return;
+    isAdSubmitting = true;
+
     const btn = document.getElementById("submitAdBtn");
     btn.disabled = true;
     btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Submitting Ad...`;
@@ -1948,6 +1961,7 @@ if (adForm) {
     } finally {
       btn.disabled = false;
       btn.innerHTML = `<i class="ri-rocket-line"></i> Submit Ad Campaign for Admin Approval`;
+      isAdSubmitting = false;
     }
   });
 }

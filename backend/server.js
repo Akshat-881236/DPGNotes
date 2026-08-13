@@ -2439,6 +2439,22 @@ async function handleResourceAnalytics(req, res) {
   try {
     if (!db) return res.status(500).json({ error: "DB unavailable" });
 
+    // Seed resource_analytics collection if not yet created in Firestore
+    db.collection("resource_analytics").limit(1).get().then(snap => {
+      if (snap.empty) {
+        db.collection("resource_analytics").doc("benchmark_init").set({
+          resourceId: "MIC-PE-001",
+          trackId: "34237666",
+          title: "Initial Academic Telemetry Benchmark",
+          category: "T&N",
+          discipline: "UG / PG Course",
+          screentime: 120,
+          userType: "Contributor",
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        }).catch(console.error);
+      }
+    }).catch(console.error);
+
     const timeframe = req.query.timeframe || req.body?.timeframe || 'weekly';
     const targetResourceId = req.query.resourceId || req.body?.resourceId || 'ALL';
     

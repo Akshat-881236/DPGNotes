@@ -145,7 +145,22 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
-    
+    /* ---------- AD & RESOURCE TELEMETRY TRACKING ---------- */
+    match /ad_trackings/{trackingId} {
+      allow read, write: if true;
+    }
+
+    match /resource_trackings/{trackingId} {
+      allow read, write: if true;
+    }
+
+    match /resource_tracking/{trackingId} {
+      allow read, write: if true;
+    }
+
+    match /resource_analytics/{analyticsId} {
+      allow read, write: if true;
+    }
     /* ---------- VALIDATION ---------- */
 
     function validateDocument() {
