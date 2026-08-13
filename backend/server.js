@@ -2491,7 +2491,7 @@ async function handleResourceAnalytics(req, res) {
     const resourceStatsMap = new Map();
     const userStatsMap = new Map();
 
-    // 3. Process Documents (One Resource, One Track-ID Policy)
+    // 3. Process Base Documents (One Resource, One Track-ID Policy)
     docsSnap.forEach(dSnap => {
       const d = dSnap.data();
       const rId = dSnap.id;
@@ -2533,11 +2533,6 @@ async function handleResourceAnalytics(req, res) {
         };
       });
 
-      const initialViews = Number(d.viewsCount || d.views || 0);
-      const initialScreentime = Number(d.screentime || 0);
-      totalViews += initialViews;
-      totalScreentimeSecs += initialScreentime;
-
       resourceStatsMap.set(rId, {
         id: rId,
         trackId: tId,
@@ -2546,38 +2541,64 @@ async function handleResourceAnalytics(req, res) {
         discipline: d.discipline || 'General',
         uploader: d.userName || d.uploader || 'Contributor',
         uploaderUid: d.userId || d.uploaderUid || '',
-        views: initialViews,
-        screentime: initialScreentime,
+        views: Number(d.viewsCount || d.views || 0),
+        screentime: Number(d.screentime || 0),
         shares: sharesCount,
         likes: likesCount,
         likesList,
         sharesList: uniqueSharesList,
+        visitorsList: [],
         priorityScore: 0
       });
+
+      if (tId) resourceStatsMap.set(tId, resourceStatsMap.get(rId));
     });
 
-    // 4. Process Real Tracking Documents from resource_tracking
-    const dateMap = new Map(); // YYYY-MM-DD -> { views, screentime, visitorMeta: [] }
-    const screentimeValues = [];
+    // 4. Process Real Telemetry Documents from resource_tracking (${trackId}_${visitorUid})
+    const dateMap = new Map(); // YYYY-MM-DD -> { views, screentimeSecs, likes, shares, visitorMeta: [] }
+    const labels = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const k = d.toISOString().split('T')[0];
+      labels.push(k);
+      dateMap.set(k, { views: 0, screentimeSecs: 0, likes: 0, shares: 0, visitorMeta: [] });
+    }
 
     trackingSnap.forEach(tDoc => {
       const t = tDoc.data();
-      if (targetResourceId !== 'ALL' && t.resourceId !== targetResourceId && t.trackId !== targetResourceId) return;
+      const rId = t.resourceId || '';
+      const tId = t.trackId || '';
+
+      if (targetResourceId !== 'ALL' && rId !== targetResourceId && tId !== targetResourceId) return;
 
       const st = Number(t.screentimeSeconds || t.screentime || 0);
       totalViews++;
       totalScreentimeSecs += st;
-      screentimeValues.push(st);
+
+      // Update Resource Item Stats
+      const rItem = resourceStatsMap.get(rId) || resourceStatsMap.get(tId);
+      if (rItem) {
+        rItem.views += 1;
+        rItem.screentime += st;
+        rItem.visitorsList.push({
+          visitorUid: t.visitorUid || 'Guest',
+          visitorEmail: t.visitorEmail || 'guest@dpgnotes.app',
+          visitorType: t.visitorType || 'Guest User',
+          screentimeSeconds: st
+        });
+      }
 
       // Date Grouping (YYYY-MM-DD)
-      let dateKey = new Date().toISOString().split('T')[0];
+      let dateKey = labels[labels.length - 1];
       if (t.updatedAt && t.updatedAt.toDate) {
         dateKey = t.updatedAt.toDate().toISOString().split('T')[0];
       } else if (t.createdAtMs) {
         dateKey = new Date(t.createdAtMs).toISOString().split('T')[0];
       }
 
-      const dEntry = dateMap.get(dateKey) || { views: 0, screentimeSecs: 0, visitorMeta: [] };
+      const dEntry = dateMap.get(dateKey) || { views: 0, screentimeSecs: 0, likes: 0, shares: 0, visitorMeta: [] };
       dEntry.views++;
       dEntry.screentimeSecs += st;
       dEntry.visitorMeta.push({
@@ -2588,29 +2609,23 @@ async function handleResourceAnalytics(req, res) {
       });
       dateMap.set(dateKey, dEntry);
 
-      // User Telemetry Aggregation (Populates User-Wise Telemetry Table)
-      const uKey = t.visitorEmail || t.visitorUid || 'Guest';
-      const uInfo = usersMap.get(uKey) || usersMap.get(uKey.toLowerCase());
-      const uItem = userStatsMap.get(uKey) || {
-        userId: uInfo?.email || uKey,
-        userType: uInfo?.userType || t.visitorType || 'Visitor',
+      // User-Wise Telemetry Table Aggregation (Contributor vs Guest)
+      const vUid = t.visitorUid || t.visitorEmail || 'Guest';
+      const uInfo = usersMap.get(vUid) || usersMap.get(String(t.visitorEmail || '').toLowerCase());
+      const userKey = vUid;
+      
+      const uItem = userStatsMap.get(userKey) || {
+        userId: uInfo?.email || (vUid.includes('@') ? vUid : (vUid.length > 20 ? vUid : `Guest (${vUid})`)),
+        userUid: vUid,
+        userType: uInfo?.userType || t.visitorType || (vUid.startsWith('guest_') ? 'Guest User' : 'Contributor'),
         ipAddress: t.clientIp || '127.0.0.1',
         visits: 0,
         screentime: 0
       };
       uItem.visits++;
       uItem.screentime += st;
-      userStatsMap.set(uKey, uItem);
+      userStatsMap.set(userKey, uItem);
     });
-
-    // Generate Past 7 Days Labels (Matching Image 4 Ads Analytics format: YYYY-MM-DD)
-    const labels = [];
-    const now = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      labels.push(d.toISOString().split('T')[0]);
-    }
 
     const viewsData = [];
     const screentimeData = [];
@@ -2620,12 +2635,12 @@ async function handleResourceAnalytics(req, res) {
     const clickMetadata = [];
 
     labels.forEach(lbl => {
-      const entry = dateMap.get(lbl) || { views: 0, screentimeSecs: 0, visitorMeta: [] };
+      const entry = dateMap.get(lbl) || { views: 0, screentimeSecs: 0, likes: 0, shares: 0, visitorMeta: [] };
       const v = entry.views;
       const stMins = Math.round(entry.screentimeSecs / 60);
-      const sh = Math.floor(totalShares / 7);
-      const l = Math.floor(totalLikes / 7);
-      const ctr = v > 0 ? Number(((l + sh) / v * 100).toFixed(2)) : 0;
+      const sh = entry.shares || Math.floor(totalShares / Math.max(1, labels.length));
+      const l = entry.likes || Math.floor(totalLikes / Math.max(1, labels.length));
+      const ctr = v > 0 ? Number(((l + sh + (stMins > 0 ? 1 : 0)) / v * 100).toFixed(1)) : 0;
 
       viewsData.push(v);
       screentimeData.push(stMins);
