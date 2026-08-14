@@ -1084,6 +1084,7 @@ async function resolveAndRender() {
           if (d.userName || d.uploader) docUp = d.userName || d.uploader;
           if (d.description) docDesc = d.description;
           if (d.tags) docTags = Array.isArray(d.tags) ? d.tags.join(', ') : d.tags;
+          if (d.trackId) window.resolvedTrackId = d.trackId;
           docId = d.documentId || window.firestoreDocId || targetSearchId;
         }
       }
@@ -1097,6 +1098,48 @@ async function resolveAndRender() {
 
   // Trigger background pre-fetch of PDF text & resource knowledge
   backgroundPreFetchDocumentKnowledge();
+
+  // Live Firestore Telemetry Logger (/api/resource/track-view)
+  try {
+    const finalResId = window.firestoreDocId || targetSearchId || 'MIC-PE-001';
+    const finalTrackId = window.resolvedTrackId || P.get('trackId') || '34237666';
+    const userObj = window.dpgCurrentUser;
+    const vUid = userObj ? userObj.uid : (localStorage.getItem("dpg_guest_uid") || ('guest_' + Math.random().toString(36).substring(2, 9)));
+    localStorage.setItem("dpg_guest_uid", vUid);
+
+    const telemetryPayload = {
+      resourceId: finalResId,
+      trackId: finalTrackId,
+      title: docTitle || 'Academic Resource',
+      category: docCat || 'Notes',
+      discipline: docDisc || 'General',
+      visitorUid: vUid,
+      visitorEmail: userObj ? userObj.email : 'guest@dpgnotes.app',
+      userType: userObj ? (userObj.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : 'Contributor') : 'Guest User',
+      action: 'view',
+      screentimeSeconds: 15
+    };
+
+    // Initial View Log
+    fetch('/api/resource/track-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(telemetryPayload)
+    }).catch(e => console.warn("PDF Viewer view ping error:", e));
+
+    // Periodic Screentime Ping every 15s
+    setInterval(() => {
+      telemetryPayload.action = 'screentime';
+      telemetryPayload.screentimeSeconds = 15;
+      fetch('/api/resource/track-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(telemetryPayload)
+      }).catch(() => {});
+    }, 15000);
+  } catch(tErr) {
+    console.warn("PDF Viewer telemetry initialization error:", tErr);
+  }
 }
 
 // ─ Init ─────────────────────────────────────────────────────────────────────

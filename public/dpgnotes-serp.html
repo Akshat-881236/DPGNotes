@@ -735,48 +735,41 @@
           </div>
         `;
 
-        // Render URLs from resource_knowledge collection with Title Cleaning
+        // Render URLs from resource_knowledge collection with Live Metadata Scraping
         if (Array.isArray(window.knowledgeUrlsCache) && window.knowledgeUrlsCache.length > 0) {
           window.knowledgeUrlsCache.forEach((urlStr, idx) => {
-            let displayTitle = "Resource Knowledge Web Portal";
-            try {
-              const u = new URL(urlStr);
-              const topicParam = u.searchParams.get("topic");
-              if (topicParam) {
-                const m = topicParam.match(/u(\d+)t(\d+)/i);
-                if (m) {
-                  displayTitle = `Physical Education — Unit ${m[1]} Topic ${m[2]} Notes`;
-                } else {
-                  displayTitle = `Academic Topic: ${topicParam.toUpperCase()}`;
-                }
-              } else {
-                displayTitle = `Academic Portal (${u.hostname})`;
-              }
-            } catch(e) {}
-
+            const wrapId = `webCardWrap_${idx}`;
             const cardId = `webCardTitle_${idx}`;
             const descId = `webCardDesc_${idx}`;
 
             webListHtml += `
-              <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:1.2rem;">
+              <div id="${wrapId}" style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:1.2rem;">
                 <div style="color:#a78bfa; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-book-read-line"></i> Resource Knowledge Web Portal</div>
-                <h3 style="margin:0 0 6px 0;"><a id="${cardId}" href="${urlStr}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">${displayTitle}</a></h3>
+                <h3 style="margin:0 0 6px 0;"><a id="${cardId}" href="${urlStr}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">Loading live web page metadata...</a></h3>
                 <p id="${descId}" style="color:#94a3b8; font-size:0.82rem; margin:0 0 8px 0; word-break:break-all;">${urlStr}</p>
                 <a href="${urlStr}" target="_blank" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-external-link-line"></i> Open Academic Site</a>
               </div>
             `;
 
-            // Asynchronously fetch live scraped metadata
+            // Asynchronously fetch live scraped metadata (CORS/Broken links hidden)
             fetch(`/api/scrape-url-meta?url=${encodeURIComponent(urlStr)}`)
               .then(res => res.json())
               .then(meta => {
-                if (meta && meta.title) {
-                  const titleEl = document.getElementById(cardId);
-                  const descEl = document.getElementById(descId);
-                  if (titleEl && meta.title !== 'External Verified Resource') titleEl.textContent = meta.title;
+                const wrapEl = document.getElementById(wrapId);
+                const titleEl = document.getElementById(cardId);
+                const descEl = document.getElementById(descId);
+
+                if (!meta || !meta.success) {
+                  // Hide CORS blocked or un-fetchable URLs
+                  if (wrapEl) wrapEl.style.display = "none";
+                } else {
+                  if (titleEl && meta.title) titleEl.textContent = meta.title;
                   if (descEl && meta.description) descEl.textContent = meta.description;
                 }
-              }).catch(() => {});
+              }).catch(() => {
+                const wrapEl = document.getElementById(wrapId);
+                if (wrapEl) wrapEl.style.display = "none";
+              });
           });
         }
 

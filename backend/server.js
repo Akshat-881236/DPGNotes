@@ -2685,61 +2685,56 @@ app.post('/api/ai/serp-chat', async (req, res) => {
 
 // ==========================================
 // URL METADATA & SOURCE CODE SCRAPER ENGINE FOR WEBSITE TAB & AI KNOWLEDGE
+// (Strict Live URL Scraping - No Artificial Fallbacks - CORS/Error URLs Hidden)
 // ==========================================
 app.get('/api/scrape-url-meta', async (req, res) => {
   try {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.status(400).json({ error: "URL query parameter is required." });
 
-    // Handle YouTube Links
+    // Handle YouTube Video Links
     if (targetUrl.includes('youtube.com') || targetUrl.includes('youtu.be')) {
       return res.json({
         success: true,
         url: targetUrl,
         isYouTube: true,
-        title: "YouTube Educational Video Lecture",
-        description: "Official DPG College video lecture and study tutorial.",
+        title: "YouTube Video Lecture Tutorial",
+        description: "Official video tutorial & academic lecture demonstration.",
         iconUrl: "https://www.youtube.com/favicon.ico",
         sourceCodeSnippet: `<iframe src="${targetUrl}"></iframe>`
       });
     }
 
     const htmlRes = await axios.get(targetUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) DPGNotesAI/2.0' },
-      timeout: 6000
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 DPGNotesAI/2.0' 
+      },
+      timeout: 7000
     });
 
     const html = htmlRes.data || '';
+    if (!html || typeof html !== 'string') {
+      return res.json({ success: false, error: "Empty HTML response from target URL", url: targetUrl });
+    }
     
-    // Simple RegEx extraction of metadata
+    // Exact RegEx extraction of metadata from live source code
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
     const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
-    const iconMatch = html.match(/<link[^>]*rel=["'](?:shortcut )?icon["'][^>]*href=["']([^"']+)["']/i);
+    const iconMatch = html.match(/<link[^>]*rel=["'](?:shortcut )?icon["'][^>]*href=["']([^"']+)["']/i) || html.match(/<link[^>]*rel=["']icon["'][^>]*href=["']([^"']+)["']/i);
 
-    let rawTitle = titleMatch ? titleMatch[1].trim() : (h1Match ? h1Match[1].trim() : '');
+    let parsedTitle = titleMatch ? titleMatch[1].trim() : (h1Match ? h1Match[1].trim() : '');
     
-    // Clean up generic filenames in titles like "index.html?topic=u1t2"
-    if (!rawTitle || rawTitle.includes('index.html') || rawTitle.length < 3) {
+    if (!parsedTitle) {
       try {
         const u = new URL(targetUrl);
-        const topicParam = u.searchParams.get("topic");
-        if (topicParam) {
-          const match = topicParam.match(/u(\d+)t(\d+)/i);
-          if (match) {
-            rawTitle = `Physical Education — Unit ${match[1]} Topic ${match[2]} Notes`;
-          } else {
-            rawTitle = `Academic Study Topic: ${topicParam.toUpperCase()}`;
-          }
-        } else {
-          rawTitle = `Academic Web Resource (${u.hostname})`;
-        }
+        parsedTitle = `Academic Portal (${u.hostname}${u.pathname})`;
       } catch(e) {
-        rawTitle = "Verified Academic Resource";
+        parsedTitle = targetUrl;
       }
     }
 
-    const description = descMatch ? descMatch[1].trim() : 'Verified external study notes and academic resource portal.';
+    const description = descMatch ? descMatch[1].trim() : 'Verified external academic resource notes portal.';
     let icon = iconMatch ? iconMatch[1].trim() : '';
 
     if (icon && !icon.startsWith('http')) {
@@ -2752,34 +2747,18 @@ app.get('/api/scrape-url-meta', async (req, res) => {
     res.json({
       success: true,
       url: targetUrl,
-      title: rawTitle,
+      title: parsedTitle,
       description,
       iconUrl: icon || 'ANH.png',
-      sourceCodeSnippet: html.substring(0, 1500)
+      sourceCodeSnippet: html.substring(0, 2000)
     });
 
   } catch(err) {
-    console.warn("URL metadata scrape fallback for:", req.query.url, err.message);
-
-    // Smart Fallback Title from Query Params
-    let fallbackTitle = "Academic Web Reference";
-    try {
-      const u = new URL(req.query.url);
-      const topicParam = u.searchParams.get("topic");
-      if (topicParam) {
-        const match = topicParam.match(/u(\d+)t(\d+)/i);
-        if (match) {
-          fallbackTitle = `Physical Education — Unit ${match[1]} Topic ${match[2]} Notes`;
-        }
-      }
-    } catch(e) {}
-
+    console.warn("Strict Live URL scrape failed/blocked for:", req.query.url, err.message);
     res.json({
       success: false,
       url: req.query.url,
-      title: fallbackTitle,
-      description: "Verified external study notes and academic resource portal.",
-      iconUrl: "ANH.png"
+      error: `Scrape/CORS error: ${err.message}`
     });
   }
 });
