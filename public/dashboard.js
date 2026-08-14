@@ -2059,6 +2059,20 @@ window.copyVerificationCode = function(elementId) {
   }).catch(() => {});
 };
 
+window.copyBothVerificationCodes = function() {
+  const metaEl = document.getElementById("verificationMetaTagCode");
+  const scriptEl = document.getElementById("verificationScriptCode");
+  if (!metaEl || !scriptEl) return;
+  const combined = `${metaEl.textContent}\n${scriptEl.textContent}`;
+  navigator.clipboard.writeText(combined).then(() => {
+    if (window.customAlert) {
+      window.customAlert("Both Meta & Script tags copied to clipboard! Paste inside your HTML <head> section.", { title: "Both Tags Copied 📋" });
+    } else {
+      alert("Both tags copied to clipboard!");
+    }
+  }).catch(() => {});
+};
+
 window.runMetaTagVerification = async function() {
   const websiteId = window.currentVerificationWebsiteId;
   if (!websiteId) return;

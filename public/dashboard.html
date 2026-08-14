@@ -585,11 +585,19 @@
                 <span id="verificationScriptCode">&lt;script src="https://dpgnotes.web.app/track-init.js?referer-to=FIREBASE_DOC_ID&used-by=CONTRIBUTOR_UID" defer&gt;&lt;/script&gt;</span>
                 <button type="button" onclick="window.copyVerificationCode('verificationScriptCode')" style="position:absolute; top:6px; right:6px; background:rgba(245,158,11,0.3); border:1px solid rgba(245,158,11,0.5); color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;">Copy</button>
               </div>
-              <ul style="color:#94a3b8; font-size:0.78rem; margin:0; padding-left:1.2rem; line-height:1.4;">
+              <ul style="color:#94a3b8; font-size:0.78rem; margin:0 0 1rem 0; padding-left:1.2rem; line-height:1.4;">
                 <li>Real-time Visitor Screentime & Outbound Link Audit</li>
                 <li>Phishing & Malicious Activity Detection</li>
                 <li>Accurate Visitor Geolocation, IP, GMT & Timezone Data</li>
               </ul>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button type="button" onclick="window.copyBothVerificationCodes()" style="padding:0.6rem 1rem; border-radius:8px; border:1px solid rgba(245,158,11,0.5); background:rgba(245,158,11,0.15); color:#fbbf24; font-weight:700; font-size:0.8rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                  <i class="ri-file-copy-line"></i> Copy Both (Meta + Script Tags)
+                </button>
+              </div>
+              <p style="color:#64748b; font-size:0.75rem; margin-top:8px; margin-bottom:0;">
+                💡 <strong>GitHub Tip:</strong> Paste tags directly inside <code>&lt;head&gt;...&lt;/head&gt;</code> of <code>index.html</code> (not index.htm), and ensure valid HTML tags without broken quotes.
+              </p>
             </div>
           </div>
         </div>

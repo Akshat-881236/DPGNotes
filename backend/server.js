@@ -5042,14 +5042,6 @@ app.all('/api/admin/run-trackid-migration', async (req, res) => {
   }
 });
 
-// Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
-app.use('/api', (req, res) => {
-  res.status(404).json({ 
-    error: "Endpoint not found or method not allowed.", 
-    message: "This is a DPGNotes API endpoint. It requires a specific request method (usually POST) and payload. It cannot be accessed directly via the browser." 
-  });
-});
-
 // Ensure All Existing Documents Have Unique 8-Digit Track ID
 async function ensureAllDocsHaveTrackId() {
   if (!db) return;
@@ -5541,6 +5533,14 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
     console.error("admin website-analytics error:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
+app.use('/api', (req, res) => {
+  res.status(404).json({ 
+    error: "Endpoint not found or method not allowed.", 
+    message: "This is a DPGNotes API endpoint. It requires a specific request method (usually POST) and payload. It cannot be accessed directly via the browser." 
+  });
 });
 
 const PORT = process.env.PORT || 5000;
