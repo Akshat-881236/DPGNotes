@@ -3176,7 +3176,339 @@ document.addEventListener("click", (e) => {
   if (!e.target.closest(".custom-searchable-dropdown")) {
     const resPop = document.getElementById("resourceDropdownPopover");
     const adPop = document.getElementById("adDropdownPopover");
+    const webPop = document.getElementById("webDropdownPopover");
     if (resPop) resPop.style.display = "none";
     if (adPop) adPop.style.display = "none";
+    if (webPop) webPop.style.display = "none";
   }
 });
+
+// Update selectCustomDropdownOption to support 'web'
+const origSelectCustomDropdownOption = window.selectCustomDropdownOption;
+window.selectCustomDropdownOption = function(type, id, label) {
+  if (type === 'web') {
+    const hiddenInput = document.getElementById('webAnalyticsFilterSelect');
+    const labelEl = document.getElementById('webDropdownLabel');
+    const popover = document.getElementById('webDropdownPopover');
+    if (hiddenInput) hiddenInput.value = id;
+    if (labelEl) labelEl.textContent = label;
+    if (popover) popover.style.display = "none";
+    if (window.loadWebAnalyticsAdmin) window.loadWebAnalyticsAdmin();
+    return;
+  }
+  if (origSelectCustomDropdownOption) origSelectCustomDropdownOption(type, id, label);
+};
+
+// ==========================================
+// ADMIN WEB ANALYTICS & WEBSITE MANAGEMENT
+// ==========================================
+window.switchWebSubTab = function(subTab) {
+  const btnList = document.getElementById("btnWebSubTabList");
+  const btnAnalytics = document.getElementById("btnWebSubTabAnalytics");
+  const contentList = document.getElementById("webSubTabListContent");
+  const contentAnalytics = document.getElementById("webSubTabAnalyticsContent");
+
+  if (subTab === 'list') {
+    if (btnList) {
+      btnList.className = "btn-action primary";
+      btnList.style.background = "";
+      btnList.style.color = "";
+    }
+    if (btnAnalytics) {
+      btnAnalytics.className = "btn-action";
+      btnAnalytics.style.background = "transparent";
+      btnAnalytics.style.color = "#94a3b8";
+    }
+    if (contentList) contentList.style.display = "block";
+    if (contentAnalytics) contentAnalytics.style.display = "none";
+    window.loadAdminWebsitesList();
+  } else {
+    if (btnAnalytics) {
+      btnAnalytics.className = "btn-action primary";
+      btnAnalytics.style.background = "";
+      btnAnalytics.style.color = "";
+    }
+    if (btnList) {
+      btnList.className = "btn-action";
+      btnList.style.background = "transparent";
+      btnList.style.color = "#94a3b8";
+    }
+    if (contentAnalytics) contentAnalytics.style.display = "block";
+    if (contentList) contentList.style.display = "none";
+    window.loadWebAnalyticsAdmin();
+  }
+};
+
+window.loadAdminWebsitesList = async function() {
+  const tbody = document.getElementById("adminWebsitesTableBody");
+  if (!tbody) return;
+
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/website-list`);
+    if (!res.ok) throw new Error("Failed fetching websites list");
+    const data = await res.json();
+    const sites = data.websites || [];
+
+    if (sites.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No websites registered in system yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    sites.forEach(s => {
+      const tr = document.createElement("tr");
+      const isVerified = s.status === 'Verified' || s.status === 'Approved' || s.status === 'Verified & Active';
+      const statusBadge = isVerified ?
+        `<span class="badge active">Verified & Active</span>` :
+        `<span class="badge suspended">Pending Meta Verification</span>`;
+
+      const targetUid = s.contributorUid || s.userId || '';
+      const pLink = (targetUid && !targetUid.includes('@') && targetUid.length > 5) ? `profile.html?uid=${encodeURIComponent(targetUid)}` : `profile.html`;
+      const avatar = s.contributorAvatar ? `<img src="${s.contributorAvatar}" style="width:34px; height:34px; border-radius:50%; border:2px solid #6366f1; vertical-align:middle; margin-right:8px;">` : `<span style="display:inline-flex; width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.85rem; margin-right:8px; vertical-align:middle;">👤</span>`;
+
+      tr.innerHTML = `
+        <td style="padding:0.75rem; text-align:center;">
+          <input type="checkbox" class="admin-website-chk" value="${s.id}" style="cursor:pointer;">
+        </td>
+        <td style="padding:0.75rem;">
+          <a href="${pLink}" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center;">
+            ${avatar} <span style="font-weight:700; color:white;">${s.contributorName || 'Contributor'}</span>
+          </a>
+        </td>
+        <td style="padding:0.75rem; color:#cbd5e1; font-size:0.85rem;">${s.contributorEmail || '—'}</td>
+        <td style="padding:0.75rem;">
+          <div style="font-weight:700; color:white; font-size:0.88rem;">${s.title || 'Untitled Site'}</div>
+          <a href="${s.url}" target="_blank" style="color:#60a5fa; text-decoration:none; font-size:0.78rem;">${s.url} <i class="ri-external-link-line"></i></a>
+        </td>
+        <td style="padding:0.75rem;">${statusBadge}</td>
+        <td style="padding:0.75rem; text-align:center;">
+          <div class="action-group" style="justify-content:center;">
+            <a href="${s.url}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;" title="Visit Website"><i class="ri-external-link-line"></i></a>
+            <button onclick="window.adminVerifyWebsiteMeta('${s.id}')" class="btn-action success" style="padding:4px 8px; font-size:0.75rem;" title="Test Meta Verification"><i class="ri-checkbox-circle-line"></i> Verify</button>
+            <button onclick="window.adminDeleteSingleWebsite('${s.id}')" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" title="Delete Website"><i class="ri-delete-bin-line"></i></button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(e) {
+    console.warn("loadAdminWebsitesList error:", e);
+  }
+};
+
+window.toggleSelectAllWebsites = function(masterChk) {
+  const checkboxes = document.querySelectorAll(".admin-website-chk");
+  checkboxes.forEach(chk => chk.checked = masterChk.checked);
+};
+
+window.bulkDeleteWebsites = async function() {
+  const checkboxes = document.querySelectorAll(".admin-website-chk:checked");
+  if (checkboxes.length === 0) {
+    alert("Please select at least one website to delete.");
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to delete ${checkboxes.length} selected website(s)?`)) return;
+
+  const ids = Array.from(checkboxes).map(c => c.value);
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/website-bulk-delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    });
+
+    if (!res.ok) throw new Error("Bulk delete failed");
+    window.loadAdminWebsitesList();
+  } catch(e) {
+    alert("Bulk Delete Error: " + e.message);
+  }
+};
+
+window.adminVerifyWebsiteMeta = async function(siteId) {
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+  try {
+    const res = await fetch(`${baseUrl}/api/website/verify-meta`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ websiteId: siteId })
+    });
+    const data = await res.json();
+    alert(data.message || (data.success ? "Verified!" : "Verification Failed"));
+    window.loadAdminWebsitesList();
+  } catch(e) {
+    alert("Verification Error: " + e.message);
+  }
+};
+
+window.adminDeleteSingleWebsite = async function(siteId) {
+  if (!confirm("Are you sure you want to delete this website?")) return;
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+  try {
+    const res = await fetch(`${baseUrl}/api/website/delete-site`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ websiteId: siteId })
+    });
+    if (!res.ok) throw new Error("Delete failed");
+    window.loadAdminWebsitesList();
+  } catch(e) {
+    alert("Delete Error: " + e.message);
+  }
+};
+
+window.loadWebAnalyticsAdmin = async function() {
+  const timeframeSelect = document.getElementById("webTimeframeSelect");
+  const filterInput = document.getElementById("webAnalyticsFilterSelect");
+  const timeframe = timeframeSelect ? timeframeSelect.value : 'weekly';
+  const selectedWebId = filterInput ? filterInput.value : 'ALL';
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/website-analytics?timeframe=${timeframe}&websiteId=${encodeURIComponent(selectedWebId)}`);
+    if (!res.ok) throw new Error("Failed fetching web analytics");
+    const data = await res.json();
+
+    // Populate Custom Typable Dropdown
+    const listEl = document.getElementById("webDropdownOptionsList");
+    const poolWebsites = data.websiteList || [];
+    if (listEl) {
+      let optHtml = `
+        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('web', 'ALL', 'All Registered Websites (${poolWebsites.length})')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:white; font-size:0.82rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+          🌐 All Registered Websites (${poolWebsites.length})
+        </div>
+      `;
+      poolWebsites.forEach(w => {
+        const itemLabel = w.title || w.url;
+        optHtml += `
+          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('web', '${w.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.8rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+            ${itemLabel}
+          </div>
+        `;
+      });
+      listEl.innerHTML = optHtml;
+    }
+
+    // Stat Cards
+    if (document.getElementById("statWebViews")) document.getElementById("statWebViews").textContent = (data.totalViews || 0).toLocaleString();
+    if (document.getElementById("statWebScreentime")) document.getElementById("statWebScreentime").textContent = (data.totalScreentimeMins || 0) + "m";
+    if (document.getElementById("statWebClicks")) document.getElementById("statWebClicks").textContent = (data.totalClicks || 0).toLocaleString();
+    if (document.getElementById("statWebUniqueIps")) document.getElementById("statWebUniqueIps").textContent = (data.uniqueIps || 0).toLocaleString();
+
+    // Multi-line Spline Chart
+    const canvas = document.getElementById("webAnalyticsChart");
+    if (canvas && window.Chart) {
+      if (window.myWebAnalyticsChart) window.myWebAnalyticsChart.destroy();
+      const ctx = canvas.getContext("2d");
+      window.myWebAnalyticsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels || [],
+          datasets: [
+            {
+              label: 'CTR % (Green Line)',
+              data: data.ctrData || [],
+              borderColor: '#10b981',
+              backgroundColor: '#10b981',
+              tension: 0.4,
+              yAxisID: 'yPercent'
+            },
+            {
+              label: 'Web Impressions (Yellow Line)',
+              data: data.viewsData || [],
+              borderColor: '#f59e0b',
+              backgroundColor: '#f59e0b',
+              tension: 0.4,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'Outbound Clicks (Red Dots)',
+              data: data.clicksData || [],
+              borderColor: '#ef4444',
+              backgroundColor: '#ef4444',
+              tension: 0.4,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'Visitor Screentime Mins (Purple Line)',
+              data: data.screentimeData || [],
+              borderColor: '#c084fc',
+              backgroundColor: '#c084fc',
+              tension: 0.4,
+              yAxisID: 'yCount'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            yCount: { type: 'linear', position: 'left', grid: { color: 'rgba(255,255,255,0.05)' } },
+            yPercent: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: (v) => v + '%' } },
+            x: { grid: { color: 'rgba(255,255,255,0.05)' } }
+          }
+        }
+      });
+    }
+
+    // User-Wise Visitor Telemetry Table
+    const userTbody = document.getElementById("webUsersTableBody");
+    if (userTbody) {
+      const vList = data.visitorTelemetryList || [];
+      if (vList.length === 0) {
+        userTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No web visitor telemetry recorded yet.</td></tr>`;
+      } else {
+        userTbody.innerHTML = "";
+        vList.forEach(v => {
+          const tr = document.createElement("tr");
+          const threatBadge = v.phishingAlert ? `<span class="badge blocked">⚠️ Phishing Threat Alert</span>` : `<span class="badge active">Clean & Secure</span>`;
+          tr.innerHTML = `
+            <td style="padding:0.75rem;">
+              <div style="font-weight:700; color:white;">${v.visitorId || 'Guest Visitor'}</div>
+              <div style="font-size:0.75rem; color:#64748b; font-family:monospace;">IP: ${v.visitorIp || '127.0.0.1'}</div>
+            </td>
+            <td style="padding:0.75rem; font-weight:700; color:#38bdf8;">${v.domain || 'External Website'}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#f59e0b;">${v.screentimeSeconds || 0}s</td>
+            <td style="padding:0.75rem; color:#cbd5e1; font-size:0.82rem;">${v.geolocation || 'Global'}, ${v.timezone || 'UTC'} (${v.gmtOffset || 'GMT+0'})</td>
+            <td style="padding:0.75rem;">${threatBadge}</td>
+          `;
+          userTbody.appendChild(tr);
+        });
+      }
+    }
+
+    // Contributor Uploaded Site Performance Table
+    const contribTbody = document.getElementById("webContributorsTableBody");
+    if (contribTbody) {
+      const cList = data.contributorPerformanceList || [];
+      if (cList.length === 0) {
+        contribTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No contributor performance metrics available.</td></tr>`;
+      } else {
+        contribTbody.innerHTML = "";
+        cList.forEach(c => {
+          const tr = document.createElement("tr");
+          const targetUid = c.userUid || '';
+          const pLink = (targetUid && !targetUid.includes('@') && targetUid.length > 5) ? `profile.html?uid=${encodeURIComponent(targetUid)}` : `profile.html`;
+          tr.innerHTML = `
+            <td style="padding:0.75rem; font-weight:700; color:white;">${c.contributorName}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#38bdf8;">${c.siteCount || 1} Sites</td>
+            <td style="padding:0.75rem; font-weight:700; color:#f59e0b;">${(c.totalViews || 0).toLocaleString()}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#ef4444;">${(c.totalClicks || 0).toLocaleString()}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#10b981;">${c.averageCtrPct || '0.00'}%</td>
+            <td style="padding:0.75rem; font-weight:800; color:#f59e0b;">⭐ ${c.rankScore || 10}</td>
+            <td style="padding:0.75rem;">
+              <a href="${pLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 10px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;"><i class="ri-user-line"></i> Profile</a>
+            </td>
+          `;
+          contribTbody.appendChild(tr);
+        });
+      }
+    }
+  } catch(e) {
+    console.warn("loadWebAnalyticsAdmin error:", e);
+  }
+};

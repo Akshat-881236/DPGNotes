@@ -470,6 +470,9 @@
         <a class="nav-link" onclick="switchTab('resource-analytics'); if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin();">
           <i class="ri-bar-chart-2-line" style="color:#6366f1;"></i> Resource Analytics
         </a>
+        <a class="nav-link" onclick="switchTab('web-analytics'); if(window.loadWebAnalyticsAdmin) window.loadWebAnalyticsAdmin();">
+          <i class="ri-global-line" style="color:#38bdf8;"></i> Web Analytics
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -1326,6 +1329,161 @@
               <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading resource rankings...</td></tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- WEB ANALYTICS TAB (2 SUB-TABS: WEBSITES LIST & ANALYTICS) -->
+      <section id="view-web-analytics" class="admin-tab">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-size:1.4rem; color:white; font-family:'Outfit',sans-serif; margin:0; display:flex; align-items:center; gap:8px;">
+              <i class="ri-global-line" style="color:#38bdf8;"></i> External Web Network Analytics & Audit
+            </h2>
+            <p style="margin:4px 0 0 0; color:var(--admin-text-muted); font-size:0.85rem;">Manage registered contributor websites, review verification tags, and monitor live web telemetry & phishing alerts.</p>
+          </div>
+
+          <!-- Sub-Tab Switcher Buttons -->
+          <div style="display:flex; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:12px; padding:4px; gap:4px;">
+            <button id="btnWebSubTabList" onclick="window.switchWebSubTab('list')" class="btn-action primary" style="padding:6px 16px; border-radius:8px; font-weight:700; font-size:0.85rem;">
+              <i class="ri-list-check-3"></i> Website List
+            </button>
+            <button id="btnWebSubTabAnalytics" onclick="window.switchWebSubTab('analytics')" class="btn-action" style="padding:6px 16px; border-radius:8px; font-weight:600; font-size:0.85rem; background:transparent; color:#94a3b8;">
+              <i class="ri-bar-chart-box-line"></i> Web Analytics
+            </button>
+          </div>
+        </div>
+
+        <!-- SUB-TAB 1: WEBSITES LIST TABLE -->
+        <div id="webSubTabListContent" style="display:block;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+            <h3 style="font-size:1.1rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:#a5b4fc;"></i> Registered Contributor Websites & Meta Verification Status
+            </h3>
+            <button onclick="window.bulkDeleteWebsites()" class="btn-action danger" style="padding:6px 14px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+              <i class="ri-delete-bin-7-line"></i> Bulk Delete Selected
+            </button>
+          </div>
+
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem; width:40px; text-align:center;">
+                    <input type="checkbox" id="selectAllWebsitesCheckbox" onchange="window.toggleSelectAllWebsites(this)" style="cursor:pointer;">
+                  </th>
+                  <th style="padding:0.75rem;">Profile Photo (Contributor)</th>
+                  <th style="padding:0.75rem;">Contributor Email</th>
+                  <th style="padding:0.75rem;">Website Title & Target URL</th>
+                  <th style="padding:0.75rem;">Verification Status</th>
+                  <th style="padding:0.75rem; text-align:center;">Action Panel</th>
+                </tr>
+              </thead>
+              <tbody id="adminWebsitesTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading registered websites...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUB-TAB 2: WEB ANALYTICS DASHBOARD -->
+        <div id="webSubTabAnalyticsContent" style="display:none;">
+          <!-- Controls Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <select id="webTimeframeSelect" onchange="if(window.loadWebAnalyticsAdmin) window.loadWebAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer;">
+                <option value="daily">Daily (Hourly Analytics)</option>
+                <option value="weekly" selected>Weekly (Day-wise Analytics)</option>
+                <option value="monthly">Monthly (Week-wise Analytics)</option>
+              </select>
+
+              <!-- Custom Searchable Typable Dropdown Component for Web Analytics -->
+              <div class="custom-searchable-dropdown" id="webCustomDropdownWrap" style="position:relative; width:280px;">
+                <button id="webDropdownTrigger" type="button" onclick="window.toggleCustomDropdown('web')" style="width:100%; padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer; text-align:left; display:flex; justify-content:space-between; align-items:center;">
+                  <span id="webDropdownLabel" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">All Registered Websites</span>
+                  <i class="ri-arrow-down-s-line"></i>
+                </button>
+                <input type="hidden" id="webAnalyticsFilterSelect" value="ALL">
+                <div id="webDropdownPopover" style="display:none; position:absolute; top:calc(100% + 6px); left:0; width:100%; z-index:500; background:#0f172a; border:1px solid rgba(99,102,241,0.4); border-radius:12px; padding:8px; box-shadow:0 12px 30px rgba(0,0,0,0.8); backdrop-filter:blur(12px);">
+                  <input type="text" id="webDropdownSearchInput" oninput="window.filterCustomDropdownOptions('web')" placeholder="🔍 Type to filter websites..." style="width:100%; padding:6px 10px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:6px; color:white; font-size:0.8rem; margin-bottom:6px; box-sizing:border-box; outline:none;">
+                  <div id="webDropdownOptionsList" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:3px;">
+                    <!-- Options populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="if(window.loadWebAnalyticsAdmin) window.loadWebAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Web Analytics</button>
+            </div>
+          </div>
+
+          <!-- 4 Stat Summary Cards -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1.2rem; margin-bottom:1.5rem;">
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem;">
+              <div style="color:var(--admin-text-muted); font-size:0.85rem;">Total Web Impressions</div>
+              <div id="statWebViews" style="font-size:1.8rem; font-weight:800; color:#38bdf8; margin-top:4px;">0</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem;">
+              <div style="color:var(--admin-text-muted); font-size:0.85rem;">Total Visitor Screentime</div>
+              <div id="statWebScreentime" style="font-size:1.8rem; font-weight:800; color:#c084fc; margin-top:4px;">0m</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem;">
+              <div style="color:var(--admin-text-muted); font-size:0.85rem;">Outbound Link Clicks</div>
+              <div id="statWebClicks" style="font-size:1.8rem; font-weight:800; color:#10b981; margin-top:4px;">0</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem;">
+              <div style="color:var(--admin-text-muted); font-size:0.85rem;">Unique Visitor IPs & Geos</div>
+              <div id="statWebUniqueIps" style="font-size:1.8rem; font-weight:800; color:#f59e0b; margin-top:4px;">0</div>
+            </div>
+          </div>
+
+          <!-- Trend Chart -->
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; position:relative;">
+            <h3 style="font-size:1.1rem; color:white; margin:0 0 1rem 0; display:flex; align-items:center; gap:8px;">
+              <i class="ri-line-chart-line" style="color:#38bdf8;"></i> External Web Traffic & Telemetry Spline Chart
+            </h3>
+            <div style="height:320px; width:100%; position:relative;">
+              <canvas id="webAnalyticsChart"></canvas>
+            </div>
+          </div>
+
+          <!-- User-Wise Visitor Telemetry Table -->
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto;">
+            <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-search-line" style="color:#60a5fa;"></i> Web Visitor Telemetry & Geolocation Logs</h3>
+            <table class="data-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem;">Visitor Identity / IP</th>
+                  <th style="padding:0.75rem;">Visited Site Domain</th>
+                  <th style="padding:0.75rem;">Total Screentime</th>
+                  <th style="padding:0.75rem;">Geolocation / Timezone</th>
+                  <th style="padding:0.75rem;">Phishing Threat Status</th>
+                </tr>
+              </thead>
+              <tbody id="webUsersTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading web visitor logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Contributor Web Performance Metrics Table -->
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
+            <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line" style="color:#f59e0b;"></i> Contributor Registered Website Performance Metrics</h3>
+            <table class="data-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem;">Contributor</th>
+                  <th style="padding:0.75rem;">Registered Sites</th>
+                  <th style="padding:0.75rem;">Total Impressions</th>
+                  <th style="padding:0.75rem;">Outbound Clicks</th>
+                  <th style="padding:0.75rem;">Average CTR %</th>
+                  <th style="padding:0.75rem;">Rank Score</th>
+                  <th style="padding:0.75rem;">Profile</th>
+                </tr>
+              </thead>
+              <tbody id="webContributorsTableBody">
+                <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading contributor performance...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </main>

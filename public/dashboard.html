@@ -143,6 +143,7 @@
         <button class="tab-btn" data-target="contributionTab">Contribution</button>
         <button class="tab-btn" data-target="manageResourcesTab">Manage Resources</button>
         <button class="tab-btn" data-target="uploadAdsTab">Promote & Upload Ads</button>
+        <button class="tab-btn" data-target="websiteTab">Website</button>
         <button class="tab-btn" data-target="exploreTab">Explore</button>
         <button class="tab-btn" data-target="settingsTab">Settings</button>
         <a href="legal/index.html?from=contributor" class="tab-btn" style="text-decoration:none; display:block; text-align:left; line-height:36px; padding-left:1.5rem; color:inherit;">Legal Center</a>
@@ -496,6 +497,102 @@
             </button>
           </form>
         </section>
+
+        <!-- WEBSITE REGISTRATION & VERIFICATION TAB -->
+        <section id="websiteTab" class="dashboard-tab">
+          <h2>Website Registration & Verification <i class="ri-global-line" style="color:var(--primary-light);"></i></h2>
+          <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.5rem;">
+            Register your external website URL for SERP discovery and live telemetry analytics. (Note: Registered websites are indexed naturally and are NOT treated as Sponsored Ads).
+          </p>
+
+          <!-- Website Submission Form -->
+          <div style="background:rgba(15,23,42,0.85); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:2rem; max-width:750px;">
+            <h3 style="color:white; margin-top:0; margin-bottom:1rem; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+              <i class="ri-add-circle-line" style="color:#38bdf8;"></i> Submit New Website URL
+            </h3>
+            <form id="websiteSubmitForm" onsubmit="window.handleWebsiteSubmit(event)">
+              <div style="margin-bottom:1.2rem;">
+                <label style="color:var(--text-muted); font-size:0.85rem; display:block; margin-bottom:6px;">Website Target URL *</label>
+                <div style="display:flex; gap:10px;">
+                  <input type="url" id="contributorWebsiteUrl" placeholder="https://yourwebsite.com" required style="flex:1; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.4); color:white;">
+                  <button type="submit" id="submitWebsiteBtn" style="padding:0.75rem 1.5rem; border-radius:8px; border:none; background:linear-gradient(135deg,#38bdf8,#818cf8); color:white; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;">
+                    <i class="ri-search-eye-line"></i> Crawl & Submit Site
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Submitted Websites List -->
+          <h3 style="color:white; font-size:1.1rem; margin-bottom:1rem;">Your Registered Websites</h3>
+          <div class="manage-res-table-wrapper">
+            <table class="manage-res-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--primary-light);">
+                  <th style="padding:0.75rem 0.9rem;">Website Title</th>
+                  <th style="padding:0.75rem 0.9rem;">Target URL</th>
+                  <th style="padding:0.75rem 0.9rem;">Status</th>
+                  <th style="padding:0.75rem 0.9rem;">Submission Date</th>
+                  <th style="padding:0.75rem 0.9rem; text-align:center;">Verification & Actions</th>
+                </tr>
+              </thead>
+              <tbody id="contributorWebsitesTableBody">
+                <tr><td colspan="5" style="padding:1.5rem; text-align:center; color:var(--text-muted);">Loading registered websites...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- WEBSITE VERIFICATION STEPS MODAL -->
+        <div id="websiteVerificationModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; align-items:center; justify-content:center; padding:1rem;">
+          <div style="background:#0f172a; border:1px solid rgba(99,102,241,0.4); border-radius:18px; padding:2rem; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.9); position:relative; font-family:inherit;">
+            <button type="button" onclick="document.getElementById('websiteVerificationModal').style.display='none'" style="position:absolute; top:1.2rem; right:1.2rem; background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+            
+            <h2 style="margin-top:0; color:white; font-size:1.3rem; display:flex; align-items:center; gap:8px;">
+              <i class="ri-checkbox-circle-line" style="color:#10b981;"></i> Website Verification & Analytics Integration
+            </h2>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.5rem;">
+              Complete the compulsory meta tag verification below to enable DPGNotes SERP inclusion. Verification must be completed within <strong>48 hours</strong>, otherwise the site entry will be automatically purged.
+            </p>
+
+            <!-- Option 1: Compulsory Meta Tag Verification -->
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:1.2rem; margin-bottom:1.5rem;">
+              <h4 style="margin:0 0 0.5rem 0; color:#34d399; font-size:0.98rem; display:flex; align-items:center; gap:6px;">
+                1️⃣ Compulsory Meta Tag Verification (SERP Inclusion)
+              </h4>
+              <p style="color:#cbd5e1; font-size:0.82rem; margin-bottom:0.75rem;">
+                Add the following meta tag to the <code>&lt;head&gt;</code> section of your website source code:
+              </p>
+              <div style="position:relative; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px 12px; font-family:monospace; font-size:0.8rem; color:#a5b4fc; word-break:break-all; margin-bottom:1rem;">
+                <span id="verificationMetaTagCode">&lt;meta name="dpg-notes-verification-tag" content="FIREBASE_DOC_ID"&gt;</span>
+                <button type="button" onclick="window.copyVerificationCode('verificationMetaTagCode')" style="position:absolute; top:6px; right:6px; background:rgba(99,102,241,0.3); border:1px solid rgba(99,102,241,0.5); color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;">Copy</button>
+              </div>
+
+              <button type="button" id="verifyMetaTagBtn" onclick="window.runMetaTagVerification()" style="padding:0.7rem 1.2rem; border-radius:8px; border:none; background:linear-gradient(135deg,#10b981,#059669); color:white; font-weight:700; font-size:0.85rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                <i class="ri-refresh-line"></i> Verify Meta Tag Live
+              </button>
+            </div>
+
+            <!-- Option 2: DPGNotes Advanced Analytics Script Integration (Optional) -->
+            <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:12px; padding:1.2rem;">
+              <h4 style="margin:0 0 0.5rem 0; color:#38bdf8; font-size:0.98rem; display:flex; align-items:center; gap:6px;">
+                2️⃣ DPGNotes Analytics Script Integration (Optional Advanced Telemetry)
+              </h4>
+              <p style="color:#cbd5e1; font-size:0.82rem; margin-bottom:0.75rem;">
+                To enable detailed visitor screentime, outbound link audit, geolocation tracking, and phishing threat protection on DPGNotes, add this script tag to your site's <code>&lt;head&gt;</code>:
+              </p>
+              <div style="position:relative; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px 12px; font-family:monospace; font-size:0.78rem; color:#f59e0b; word-break:break-all; margin-bottom:0.75rem;">
+                <span id="verificationScriptCode">&lt;script src="https://dpgnotes.web.app/track-init.js?referer-to=FIREBASE_DOC_ID&used-by=CONTRIBUTOR_UID" defer&gt;&lt;/script&gt;</span>
+                <button type="button" onclick="window.copyVerificationCode('verificationScriptCode')" style="position:absolute; top:6px; right:6px; background:rgba(245,158,11,0.3); border:1px solid rgba(245,158,11,0.5); color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;">Copy</button>
+              </div>
+              <ul style="color:#94a3b8; font-size:0.78rem; margin:0; padding-left:1.2rem; line-height:1.4;">
+                <li>Real-time Visitor Screentime & Outbound Link Audit</li>
+                <li>Phishing & Malicious Activity Detection</li>
+                <li>Accurate Visitor Geolocation, IP, GMT & Timezone Data</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
         <!-- EXPLORE TAB -->
         <section id="exploreTab" class="dashboard-tab">

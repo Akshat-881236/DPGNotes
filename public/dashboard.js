@@ -1962,3 +1962,212 @@ if (adForm) {
     }
   });
 }
+
+// ==========================================
+// CONTRIBUTOR WEBSITE SUBMISSION & VERIFICATION LOGIC
+// ==========================================
+window.currentVerificationWebsiteId = null;
+
+window.handleWebsiteSubmit = async function(e) {
+  if (e) e.preventDefault();
+  const urlInput = document.getElementById("contributorWebsiteUrl");
+  const btn = document.getElementById("submitWebsiteBtn");
+  if (!urlInput || !urlInput.value) return;
+
+  const targetUrl = urlInput.value.trim();
+  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Crawling Source Code...`;
+    }
+
+    const user = currentUser || auth.currentUser;
+    const res = await fetch(`${apiBase}/api/website/submit-site`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: targetUrl,
+        contributorUid: user ? user.uid : 'guest',
+        contributorEmail: user ? user.email : 'guest@dpgnotes.app',
+        contributorName: user ? (user.displayName || 'Contributor') : 'Contributor',
+        contributorAvatar: user ? (user.photoURL || '') : ''
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || "Failed submitting website");
+
+    window.currentVerificationWebsiteId = data.websiteId;
+    window.openWebsiteVerificationModal(data.websiteId);
+    urlInput.value = "";
+    window.loadContributorWebsites();
+  } catch(err) {
+    console.error("handleWebsiteSubmit error:", err);
+    if (window.customAlert) {
+      await window.customAlert(err.message, { title: "Crawler Error", isDanger: true });
+    } else {
+      alert("Error: " + err.message);
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-search-eye-line"></i> Crawl & Submit Site`;
+    }
+  }
+};
+
+window.openWebsiteVerificationModal = function(websiteId) {
+  window.currentVerificationWebsiteId = websiteId;
+  const user = currentUser || auth.currentUser;
+  const cUid = user ? user.uid : 'guest';
+
+  const metaEl = document.getElementById("verificationMetaTagCode");
+  const scriptEl = document.getElementById("verificationScriptCode");
+
+  if (metaEl) {
+    metaEl.textContent = `<meta name="dpg-notes-verification-tag" content="${websiteId}">`;
+  }
+  if (scriptEl) {
+    scriptEl.textContent = `<script src="https://dpgnotes.web.app/track-init.js?referer-to=${websiteId}&used-by=${cUid}" defer></script>`;
+  }
+
+  const modal = document.getElementById("websiteVerificationModal");
+  if (modal) modal.style.display = "flex";
+};
+
+window.copyVerificationCode = function(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    if (window.customAlert) {
+      window.customAlert("Verification code snippet copied to clipboard!", { title: "Copied to Clipboard 📋" });
+    } else {
+      alert("Copied to clipboard!");
+    }
+  }).catch(() => {});
+};
+
+window.runMetaTagVerification = async function() {
+  const websiteId = window.currentVerificationWebsiteId;
+  if (!websiteId) return;
+
+  const btn = document.getElementById("verifyMetaTagBtn");
+  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Checking Head Tags Live...`;
+    }
+
+    const res = await fetch(`${apiBase}/api/website/verify-meta`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ websiteId })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || "Meta tag verification failed.");
+
+    if (window.customAlert) {
+      await window.customAlert(data.message || "Meta tag verified successfully!", { title: "Verification Successful! ✅" });
+    } else {
+      alert(data.message || "Meta tag verified successfully!");
+    }
+
+    document.getElementById("websiteVerificationModal").style.display = "none";
+    window.loadContributorWebsites();
+  } catch(err) {
+    console.error("runMetaTagVerification error:", err);
+    if (window.customAlert) {
+      await window.customAlert(err.message, { title: "Verification Failed ❌", isDanger: true });
+    } else {
+      alert("Verification Failed: " + err.message);
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-refresh-line"></i> Verify Meta Tag Live`;
+    }
+  }
+};
+
+window.loadContributorWebsites = async function() {
+  const tbody = document.getElementById("contributorWebsitesTableBody");
+  if (!tbody) return;
+
+  const user = currentUser || auth.currentUser;
+  if (!user) return;
+
+  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    const res = await fetch(`${apiBase}/api/website/contributor-sites?uid=${user.uid}`);
+    if (!res.ok) throw new Error("Failed fetching websites");
+    const data = await res.json();
+    const sites = data.websites || [];
+
+    if (sites.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="padding:1.5rem; text-align:center; color:var(--text-muted);">No websites registered yet. Submit your website URL above!</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    sites.forEach(s => {
+      const tr = document.createElement("tr");
+      tr.className = "manage-res-row";
+      
+      const isVerified = s.status === 'Verified' || s.status === 'Approved' || s.status === 'Verified & Active';
+      const statusBadge = isVerified ?
+        `<span style="background:rgba(16,185,129,0.2); color:#34d399; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">Verified & Active</span>` :
+        `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">Pending Meta Verification</span>`;
+
+      const favicon = s.iconUrl ? `<img src="${s.iconUrl}" style="width:16px; height:16px; vertical-align:middle; margin-right:6px; border-radius:3px;">` : `<i class="ri-global-line" style="color:#38bdf8; margin-right:6px;"></i>`;
+
+      tr.innerHTML = `
+        <td style="padding:0.75rem 0.9rem; font-weight:700; color:white;">
+          ${favicon} ${s.title || 'Untitled Website'}
+        </td>
+        <td style="padding:0.75rem 0.9rem;">
+          <a href="${s.url}" target="_blank" style="color:#60a5fa; text-decoration:none; font-size:0.85rem;">${s.url} <i class="ri-external-link-line"></i></a>
+        </td>
+        <td style="padding:0.75rem 0.9rem;">${statusBadge}</td>
+        <td style="padding:0.75rem 0.9rem; color:#94a3b8; font-size:0.8rem;">${s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'Recent'}</td>
+        <td style="padding:0.75rem 0.9rem; text-align:center;">
+          <button onclick="window.openWebsiteVerificationModal('${s.id}')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; margin-right:6px;">
+            ⚡ Verification Steps
+          </button>
+          <button onclick="window.deleteContributorWebsite('${s.id}')" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:4px 8px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer;">
+            <i class="ri-delete-bin-line"></i> Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(e) {
+    console.warn("loadContributorWebsites error:", e);
+  }
+};
+
+window.deleteContributorWebsite = async function(siteId) {
+  if (!confirm("Are you sure you want to delete this registered website?")) return;
+  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    const res = await fetch(`${apiBase}/api/website/delete-site`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ websiteId: siteId })
+    });
+    if (!res.ok) throw new Error("Delete failed");
+    window.loadContributorWebsites();
+  } catch(err) {
+    alert("Delete error: " + err.message);
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => window.loadContributorWebsites(), 1200);
+});
