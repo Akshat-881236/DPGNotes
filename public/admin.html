@@ -1240,21 +1240,43 @@
           </div>
         </div>
 
-        <!-- User-Wise Telemetry Table -->
+        <!-- User-Wise Visitor Telemetry Analytics (Matches Image 5 Top Table) -->
         <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto;">
-          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-search-line" style="color:#a5b4fc;"></i> User-Wise Telemetry & Visitor Activity</h3>
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-search-line" style="color:#60a5fa;"></i> User-Wise Visitor Telemetry Analytics</h3>
           <table class="data-table">
             <thead>
               <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
-                <th style="padding:0.75rem;">User ID / IP</th>
-                <th style="padding:0.75rem;">User Type</th>
-                <th style="padding:0.75rem;">Visits</th>
+                <th style="padding:0.75rem;">Visitor Identity</th>
+                <th style="padding:0.75rem;">Visited Resources</th>
                 <th style="padding:0.75rem;">Total Screentime</th>
-                <th style="padding:0.75rem;">Action</th>
+                <th style="padding:0.75rem;">Avg Screentime</th>
+                <th style="padding:0.75rem;">Conversion Prob %</th>
+                <th style="padding:0.75rem;">Profile Link</th>
               </tr>
             </thead>
             <tbody id="resourceUsersTableBody">
-              <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading user telemetry...</td></tr>
+              <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading user visitor telemetry...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Contributor Uploaded Resource Performance Metrics (Matches Image 5 Bottom Table) -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto;">
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line" style="color:#f59e0b;"></i> Contributor Uploaded Resource Performance Metrics</h3>
+          <table class="data-table">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                <th style="padding:0.75rem;">Contributor</th>
+                <th style="padding:0.75rem;">Uploaded Resources</th>
+                <th style="padding:0.75rem;">Total Impressions</th>
+                <th style="padding:0.75rem;">Total Clicks</th>
+                <th style="padding:0.75rem;">Average CTR %</th>
+                <th style="padding:0.75rem;">Rank Score</th>
+                <th style="padding:0.75rem;">Profile</th>
+              </tr>
+            </thead>
+            <tbody id="resourceContributorsTableBody">
+              <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading contributor performance...</td></tr>
             </tbody>
           </table>
         </div>

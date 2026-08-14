@@ -2648,25 +2648,29 @@ export async function loadResourceAnalyticsAdmin() {
       }
     }
 
-    // 3. Render User-Wise Telemetry Table
+    // 3. Render User-Wise Visitor Telemetry Table (Matches Image 5 Top Table)
     const userTbody = document.getElementById("resourceUsersTableBody");
     if (userTbody) {
-      const uList = data.userList || [];
-      if (uList.length === 0) {
-        userTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No visitor telemetry recorded yet.</td></tr>`;
+      const vList = data.visitorTelemetryList || data.userList || [];
+      if (vList.length === 0) {
+        userTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No visitor telemetry recorded yet.</td></tr>`;
       } else {
         userTbody.innerHTML = "";
-        uList.forEach(u => {
+        vList.forEach(v => {
           const tr = document.createElement("tr");
-          const targetUid = u.userUid || u.uid || '';
+          const targetUid = v.userUid || v.uid || '';
           const pLink = (targetUid && !targetUid.includes('@') && targetUid.length > 5) ? `profile.html?uid=${encodeURIComponent(targetUid)}` : `profile.html`;
           tr.innerHTML = `
-            <td style="padding:0.75rem; font-family:monospace; color:#a5b4fc; font-weight:600;">${u.userId}</td>
-            <td style="padding:0.75rem;"><span class="badge ${u.userType === 'Contributor' ? 'active' : 'suspended'}">${u.userType}</span></td>
-            <td style="padding:0.75rem; font-weight:700; color:white;">${u.visits} Visits</td>
-            <td style="padding:0.75rem; font-weight:700; color:#c084fc;">${Math.round(u.screentime / 60)} mins</td>
             <td style="padding:0.75rem;">
-              <a href="${pLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-user-line"></i> Profile</a>
+              <div style="font-weight:700; color:white; font-size:0.88rem;">${v.visitorEmail || 'guest@dpgnotes.app'}</div>
+              <div style="font-size:0.75rem; color:#64748b; font-family:monospace;">UID: ${targetUid || 'guest_session'}</div>
+            </td>
+            <td style="padding:0.75rem; font-weight:700; color:#38bdf8;">${v.visitedCount || 1} Resources</td>
+            <td style="padding:0.75rem; font-weight:700; color:#f59e0b;">${v.totalScreentimeSecs || 0}s</td>
+            <td style="padding:0.75rem; font-weight:700; color:#c084fc;">${v.avgScreentimeSecs || 0}s</td>
+            <td style="padding:0.75rem; font-weight:700; color:#10b981;">${v.conversionProbPct || '0.00'}%</td>
+            <td style="padding:0.75rem;">
+              <a href="${pLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 10px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;"><i class="ri-user-line"></i> Profile</a>
             </td>
           `;
           userTbody.appendChild(tr);
@@ -2674,7 +2678,35 @@ export async function loadResourceAnalyticsAdmin() {
       }
     }
 
-    // 4. Render Resource-Wise Telemetry & Interactive Likes/Shares Modals
+    // 4. Render Contributor Uploaded Resource Performance Metrics (Matches Image 5 Bottom Table)
+    const contribTbody = document.getElementById("resourceContributorsTableBody");
+    if (contribTbody) {
+      const cList = data.contributorPerformanceList || [];
+      if (cList.length === 0) {
+        contribTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No contributor performance metrics available.</td></tr>`;
+      } else {
+        contribTbody.innerHTML = "";
+        cList.forEach(c => {
+          const tr = document.createElement("tr");
+          const targetUid = c.userUid || '';
+          const pLink = (targetUid && !targetUid.includes('@') && targetUid.length > 5) ? `profile.html?uid=${encodeURIComponent(targetUid)}` : `profile.html`;
+          tr.innerHTML = `
+            <td style="padding:0.75rem; font-weight:700; color:white;">${c.contributorName}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#38bdf8;">${c.uploadedCount} Resources</td>
+            <td style="padding:0.75rem; font-weight:700; color:#f59e0b;">${c.totalViews.toLocaleString()}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#ef4444;">${c.totalClicks.toLocaleString()}</td>
+            <td style="padding:0.75rem; font-weight:700; color:#10b981;">${c.averageCtrPct}%</td>
+            <td style="padding:0.75rem; font-weight:800; color:#f59e0b;">⭐ ${c.rankScore}</td>
+            <td style="padding:0.75rem;">
+              <a href="${pLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 10px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;"><i class="ri-user-line"></i> Profile</a>
+            </td>
+          `;
+          contribTbody.appendChild(tr);
+        });
+      }
+    }
+
+    // 5. Render Resource-Wise Telemetry & Interactive Likes/Shares Modals
     const resTbody = document.getElementById("resourceAnalyticsTableBody");
     if (resTbody) {
       const rList = data.resourceList || [];
