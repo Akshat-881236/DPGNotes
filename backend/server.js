@@ -2398,8 +2398,7 @@ app.post('/api/telemetry/track-resource-view', async (req, res) => {
         action: action || 'view',
         screentime: screentimeSecs,
         clientIp,
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        createdAtMs: Date.now()
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
     }
 
@@ -2410,9 +2409,77 @@ app.post('/api/telemetry/track-resource-view', async (req, res) => {
   }
 });
 
+// Contributor Ad Submission Flow (Direct Pending Status - Deduplication Rules Applied)
+app.post('/api/ads/submit-with-verification', async (req, res) => {
+  try {
+    const { title, description, targetLink, platform, category, tags, thumbnailUrl, videoUrl, userEmail, userName, userId } = req.body;
+    if (!title || !userEmail) {
+      return res.status(400).json({ error: "Title and User Email are required." });
+    }
+
+    const cleanTitle = title.trim();
+    const cleanEmail = userEmail.trim().toLowerCase();
+    const cleanTargetLink = (targetLink || '').trim();
+
+    // Deduplication Checks (Based on Title + Email OR Target URL)
+    if (db) {
+      const dupTitleSnap = await db.collection("user_ads")
+        .where("userEmail", "==", cleanEmail)
+        .where("title", "==", cleanTitle)
+        .limit(1)
+        .get().catch(() => null);
+
+      if (dupTitleSnap && !dupTitleSnap.empty) {
+        return res.status(400).json({ error: "Duplicate Ad Campaign: An ad with this title has already been submitted by your account." });
+      }
+
+      if (cleanTargetLink) {
+        const dupLinkSnap = await db.collection("user_ads")
+          .where("targetLink", "==", cleanTargetLink)
+          .limit(1)
+          .get().catch(() => null);
+
+        if (dupLinkSnap && !dupLinkSnap.empty) {
+          return res.status(400).json({ error: "Duplicate Ad Campaign: An ad pointing to this destination URL already exists." });
+        }
+      }
+    }
+
+    const adData = {
+      title: cleanTitle,
+      description: description || '',
+      targetLink: cleanTargetLink,
+      platform: platform || 'dpgnotes',
+      adCategory: category || 'General',
+      tags: Array.isArray(tags) ? tags : [],
+      thumbnailUrl: thumbnailUrl || '',
+      videoUrl: videoUrl || '',
+      userEmail: cleanEmail,
+      userName: userName || cleanEmail.split('@')[0],
+      userId: userId || 'anon',
+      status: "Pending",
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    let docId = "";
+    if (db) {
+      const docRef = await db.collection("user_ads").add(adData);
+      docId = docRef.id;
+    }
+
+    // In-app notification for contributor
+    await createInAppNotification(cleanEmail, "Ad Campaign Submitted 📣", `Your ad campaign "${cleanTitle}" has been submitted and is currently pending Admin review.`, "system").catch(console.error);
+
+    res.json({ success: true, docId, message: "Ad campaign submitted successfully and is pending Admin review!" });
+  } catch (err) {
+    console.error("Ad submission error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==========================================
 // SERP AI MULTI-COLLECTION INTERACTIVE CHAT ENGINE
-// (Reads: documents, resource_knowledge, user_ads, share_links)
+// (Query-Specific Document & Dynamic Share Code Generation + Dual Synthesis Output)
 // ==========================================
 app.post('/api/ai/serp-chat', async (req, res) => {
   try {
@@ -2423,13 +2490,12 @@ app.post('/api/ai/serp-chat', async (req, res) => {
     }
 
     const lowerQ = userQ.toLowerCase();
+    const queryTokens = lowerQ.split(/\s+/).filter(t => t.length > 2);
 
-    // 1. Read Knowledge & Data across Firestore Collections
     let matchedKnowledgeFaqs = [];
     let matchedKnowledgeUrls = [];
     let matchedAds = [];
-    let matchedShareLink = null;
-    let matchedDoc = null;
+    let matchedDocsWithShareLinks = [];
 
     if (db) {
       // A. Query resource_knowledge collection
@@ -2464,79 +2530,141 @@ app.post('/api/ai/serp-chat', async (req, res) => {
         });
       } catch(e) { console.warn("Failed reading user_ads for AI:", e.message); }
 
-      // C. Query documents collection
+      // C. Smart Match & Rank Documents based on Query Keywords
+      let matchingDocsList = [];
       try {
         const docsSnap = await db.collection("documents").get();
         docsSnap.forEach(dDoc => {
           const d = dDoc.data();
-          if (!matchedDoc && ((d.title || '').toLowerCase().includes(lowerQ) || (d.description || '').toLowerCase().includes(lowerQ) || (d.category || '').toLowerCase().includes(lowerQ))) {
-            matchedDoc = { id: dDoc.id, ...d };
+          const titleL = (d.title || '').toLowerCase();
+          const descL = (d.description || '').toLowerCase();
+          const catL = (d.category || '').toLowerCase();
+          const discL = (d.discipline || '').toLowerCase();
+          const tagsArr = Array.isArray(d.tags) ? d.tags.map(t => t.toLowerCase()) : [];
+
+          let score = 0;
+          if (titleL.includes(lowerQ)) score += 10;
+          if (descL.includes(lowerQ)) score += 5;
+          if (catL.includes(lowerQ) || discL.includes(lowerQ)) score += 4;
+          queryTokens.forEach(t => {
+            if (titleL.includes(t)) score += 3;
+            if (descL.includes(t) || tagsArr.includes(t)) score += 2;
+          });
+
+          if (score > 0) {
+            matchingDocsList.push({ id: dDoc.id, score, ...d });
           }
         });
+
+        matchingDocsList.sort((a, b) => b.score - a.score);
       } catch(e) { console.warn("Failed reading documents for AI:", e.message); }
 
-      // D. Query or Generate share_links collection
-      try {
-        const targetDocId = matchedDoc ? matchedDoc.id : (contextDocs && contextDocs[0] ? contextDocs[0].id : null);
-        if (targetDocId) {
-          const shareSnap = await db.collection("share_links").where("docId", "==", targetDocId).limit(1).get();
+      // Fallback to contextDocs or top docs if no direct keyword score
+      if (matchingDocsList.length === 0 && Array.isArray(contextDocs) && contextDocs.length > 0) {
+        matchingDocsList = contextDocs.slice(0, 3);
+      }
+
+      // D. Query or Dynamic Generate Share Code for EACH Matched Document
+      const targetDocs = matchingDocsList.slice(0, 3);
+      for (const d of targetDocs) {
+        try {
+          const shareSnap = await db.collection("share_links").where("docId", "==", d.id).limit(1).get();
+          let shareUrl = "";
+          let token = "";
           if (!shareSnap.empty) {
             const sData = shareSnap.docs[0].data();
-            matchedShareLink = `https://dpgnotes.web.app/dashboard.html?share=${sData.token || shareSnap.docs[0].id}`;
+            token = sData.token || shareSnap.docs[0].id;
+            shareUrl = `https://dpgnotes.web.app/dashboard.html?share=${token}`;
           } else {
-            // Generate brand new share_links token dynamically in Firestore
-            const newToken = "SH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
-            const dTitle = matchedDoc ? matchedDoc.title : "DPGNotes Academic Resource";
-            const dPdf = matchedDoc ? matchedDoc.pdfUrl : "https://dpgnotes.web.app";
+            // Generate brand new share_links document in Firestore for this document
+            token = "SH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
             const newShareObj = {
-              token: newToken,
-              docId: targetDocId,
-              title: dTitle,
-              pdfUrl: dPdf,
-              originalUrl: `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${targetDocId}`,
-              uploader: "DPGNotes AI Assistant",
+              token: token,
+              docId: d.id,
+              title: d.title || "DPGNotes Resource",
+              pdfUrl: d.pdfUrl || "https://dpgnotes.web.app",
+              originalUrl: `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${d.id}`,
+              uploader: d.userName || "DPGNotes AI Assistant",
               clicks: 0,
               createdAt: admin.firestore.FieldValue.serverTimestamp()
             };
-            await db.collection("share_links").doc(newToken).set(newShareObj);
-            matchedShareLink = `https://dpgnotes.web.app/dashboard.html?share=${newToken}`;
+            await db.collection("share_links").doc(token).set(newShareObj);
+            shareUrl = `https://dpgnotes.web.app/dashboard.html?share=${token}`;
           }
-        }
-      } catch(e) { console.warn("Failed handling share_links for AI:", e.message); }
+          matchedDocsWithShareLinks.push({
+            id: d.id,
+            title: d.title || 'Academic Resource',
+            category: d.category || 'Notes',
+            discipline: d.discipline || 'General',
+            token: token,
+            shareUrl: shareUrl
+          });
+        } catch(e) { console.warn("Share link resolution failed for doc:", d.id, e.message); }
+      }
     }
 
-    // Try Gemini API if key is present
+    // Dual Synthesis Output Generator: Gemini / Internet Knowledge (Top) + Local Trainee Report (Bottom)
+    let aiMainResponse = "";
+
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey) {
       try {
-        const prompt = `You are DPGNotes AI Academic Assistant for DPG College students. Answer the following student question accurately based on computer science, engineering, and academic curriculum:\n\nQuery Context: ${searchQuery || 'General Notes'}\nStudent Question: ${userQ}\nMatched Knowledge FAQs: ${JSON.stringify(matchedKnowledgeFaqs.slice(0, 2))}\nShare Link: ${matchedShareLink || 'None'}\n\nProvide a clear, formatted explanation with bullet points, exam tips, and include the direct share link if applicable.`;
+        const prompt = `You are DPGNotes AI Academic Assistant for DPG College. Provide a detailed, highly accurate, length academic explanation for the following student question:\n\nStudent Question: ${userQ}\nContext: ${searchQuery || 'General Study Material'}\nMatched Knowledge FAQs: ${JSON.stringify(matchedKnowledgeFaqs.slice(0, 2))}\n\nExplain core concepts, definitions, sub-types, exam scoring criteria, and structural bullet points.`;
         const geminiRes = await axios.post(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
           { contents: [{ parts: [{ text: prompt }] }] },
           { timeout: 8000 }
         );
-        const aiText = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (aiText) {
-          let formattedText = aiText;
-          if (matchedShareLink && !formattedText.includes(matchedShareLink)) {
-            formattedText += `<br><br>🔗 <strong>Resource Share Link:</strong> <a href="${matchedShareLink}" target="_blank" style="color:#60a5fa; text-decoration:underline;">${matchedShareLink}</a>`;
-          }
-          return res.json({ success: true, answer: formattedText, source: "gemini" });
-        }
+        const text = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) aiMainResponse = text;
       } catch(gemErr) {
-        console.warn("Gemini API call skipped/failed, fallback to internal synthesizer:", gemErr.message);
+        console.warn("Gemini API call skipped/failed:", gemErr.message);
       }
     }
 
-    // Intelligent Multi-Collection Academic Synthesizer Engine
-    let solutionHtml = "";
-    if (matchedKnowledgeFaqs.length > 0) {
-      solutionHtml = `<div style="background:rgba(139,92,246,0.15); padding:10px 14px; border-radius:8px; border-left:3px solid #a78bfa; margin:8px 0;"><strong>📚 Verified Solution from Knowledge Base:</strong><br>${matchedKnowledgeFaqs[0].solution}</div>`;
+    if (!aiMainResponse) {
+      let solutionHtml = "";
+      if (matchedKnowledgeFaqs.length > 0) {
+        solutionHtml = `<div style="background:rgba(139,92,246,0.15); padding:10px 14px; border-radius:8px; border-left:3px solid #a78bfa; margin:8px 0;"><strong>📚 Verified Solution from Knowledge Base:</strong><br>${matchedKnowledgeFaqs[0].solution}</div>`;
+      }
+      aiMainResponse = `
+        <p style="margin-bottom:8px;">📘 <strong>Academic Overview for:</strong> "${userQ}"</p>
+        ${solutionHtml}
+        <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin:8px 0; border-left:3px solid #c084fc;">
+          <strong>💡 Key Exam & Concept Summary:</strong>
+          <ul style="margin:4px 0 0 16px; padding:0;">
+            <li>Review core definitions, classification models, and theoretical frameworks for <strong>${userQ}</strong>.</li>
+            <li>Cross-reference previous year questions (PYQs) and sessional exam patterns for maximum scoring accuracy.</li>
+            <li>Ensure structural diagrams and step-by-step algorithms are clearly demarcated in written answers.</li>
+          </ul>
+        </div>
+      `.trim();
     }
 
-    let shareLinkHtml = "";
-    if (matchedShareLink) {
-      shareLinkHtml = `<div style="margin-top:10px; padding:8px 12px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); border-radius:8px; font-size:0.82rem;">🔗 <strong>Official Share Link:</strong> <a href="${matchedShareLink}" target="_blank" style="color:#818cf8; text-decoration:underline; font-weight:700;">${matchedShareLink}</a></div>`;
+    // Append Local DPGNotes Trainee Data Report with Dynamic Document Share Links at Bottom
+    let localReportHtml = "";
+    if (matchedDocsWithShareLinks.length > 0) {
+      localReportHtml = `
+        <div style="margin-top:16px; padding:14px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); border-radius:12px;">
+          <h4 style="margin:0 0 8px 0; color:#a78bfa; font-size:0.92rem; display:flex; align-items:center; gap:6px;">
+            <i class="ri-database-2-line"></i> DPGNotes Local Trainee Repository & Matched Share Links:
+          </h4>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+      `;
+      matchedDocsWithShareLinks.forEach(md => {
+        localReportHtml += `
+          <div style="background:rgba(15,23,42,0.8); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div>
+              <div style="color:white; font-weight:700; font-size:0.85rem;">${md.title}</div>
+              <div style="color:#94a3b8; font-size:0.75rem;">${md.category} (${md.discipline})</div>
+            </div>
+            <a href="${md.shareUrl}" target="_blank" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+              🔗 Share Link (${md.token})
+            </a>
+          </div>
+        `;
+      });
+      localReportHtml += `</div></div>`;
     }
 
     let sponsoredAdHtml = "";
@@ -2545,25 +2673,9 @@ app.post('/api/ai/serp-chat', async (req, res) => {
       sponsoredAdHtml = `<div style="margin-top:8px; padding:6px 10px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); border-radius:6px; font-size:0.78rem; color:#fcd34d;">⭐ <strong>Related Campaign:</strong> ${ad.title} (${ad.platform || 'DPGNotes'})</div>`;
     }
 
-    const topDocTitle = matchedDoc ? matchedDoc.title : (contextDocs && contextDocs[0] ? contextDocs[0].title : "Verified DPGNotes Repository");
+    const finalCombinedAnswer = `${aiMainResponse}\n${localReportHtml}\n${sponsoredAdHtml}`;
 
-    const synthesizedAnswer = `
-      <p style="margin-bottom:8px;">📘 <strong>Academic Overview for:</strong> "${userQ}"</p>
-      <p style="margin-bottom:8px;">Synthesized from verified repository reference: <strong>"${topDocTitle}"</strong>.</p>
-      ${solutionHtml}
-      <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin:8px 0; border-left:3px solid #c084fc;">
-        <strong>💡 Key Exam & Concept Summary:</strong>
-        <ul style="margin:4px 0 0 16px; padding:0;">
-          <li>Review core definitions and theoretical frameworks for <strong>${userQ}</strong>.</li>
-          <li>Cross-reference previous year questions (PYQs) and sessional exam patterns for maximum scoring accuracy.</li>
-          <li>Ensure structural diagrams and algorithm steps are clearly demarcated in written answers.</li>
-        </ul>
-      </div>
-      ${shareLinkHtml}
-      ${sponsoredAdHtml}
-    `.trim();
-
-    return res.json({ success: true, answer: synthesizedAnswer, source: "synthesizer" });
+    return res.json({ success: true, answer: finalCombinedAnswer, source: "dual_synthesizer" });
 
   } catch(err) {
     console.error("SERP AI Chat endpoint error:", err);
@@ -2579,6 +2691,19 @@ app.get('/api/scrape-url-meta', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.status(400).json({ error: "URL query parameter is required." });
 
+    // Handle YouTube Links
+    if (targetUrl.includes('youtube.com') || targetUrl.includes('youtu.be')) {
+      return res.json({
+        success: true,
+        url: targetUrl,
+        isYouTube: true,
+        title: "YouTube Educational Video Lecture",
+        description: "Official DPG College video lecture and study tutorial.",
+        iconUrl: "https://www.youtube.com/favicon.ico",
+        sourceCodeSnippet: `<iframe src="${targetUrl}"></iframe>`
+      });
+    }
+
     const htmlRes = await axios.get(targetUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) DPGNotesAI/2.0' },
       timeout: 6000
@@ -2588,33 +2713,71 @@ app.get('/api/scrape-url-meta', async (req, res) => {
     
     // Simple RegEx extraction of metadata
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
     const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
     const iconMatch = html.match(/<link[^>]*rel=["'](?:shortcut )?icon["'][^>]*href=["']([^"']+)["']/i);
 
-    const title = titleMatch ? titleMatch[1].trim() : 'External Verified Resource';
-    const description = descMatch ? descMatch[1].trim() : 'Verified academic web portal reference.';
+    let rawTitle = titleMatch ? titleMatch[1].trim() : (h1Match ? h1Match[1].trim() : '');
+    
+    // Clean up generic filenames in titles like "index.html?topic=u1t2"
+    if (!rawTitle || rawTitle.includes('index.html') || rawTitle.length < 3) {
+      try {
+        const u = new URL(targetUrl);
+        const topicParam = u.searchParams.get("topic");
+        if (topicParam) {
+          const match = topicParam.match(/u(\d+)t(\d+)/i);
+          if (match) {
+            rawTitle = `Physical Education — Unit ${match[1]} Topic ${match[2]} Notes`;
+          } else {
+            rawTitle = `Academic Study Topic: ${topicParam.toUpperCase()}`;
+          }
+        } else {
+          rawTitle = `Academic Web Resource (${u.hostname})`;
+        }
+      } catch(e) {
+        rawTitle = "Verified Academic Resource";
+      }
+    }
+
+    const description = descMatch ? descMatch[1].trim() : 'Verified external study notes and academic resource portal.';
     let icon = iconMatch ? iconMatch[1].trim() : '';
 
     if (icon && !icon.startsWith('http')) {
-      const parsedUrl = new URL(targetUrl);
-      icon = `${parsedUrl.protocol}//${parsedUrl.host}${icon.startsWith('/') ? '' : '/'}${icon}`;
+      try {
+        const parsedUrl = new URL(targetUrl);
+        icon = `${parsedUrl.protocol}//${parsedUrl.host}${icon.startsWith('/') ? '' : '/'}${icon}`;
+      } catch(e) {}
     }
 
     res.json({
       success: true,
       url: targetUrl,
-      title,
+      title: rawTitle,
       description,
       iconUrl: icon || 'ANH.png',
       sourceCodeSnippet: html.substring(0, 1500)
     });
 
   } catch(err) {
-    console.warn("URL metadata scrape failed for:", req.query.url, err.message);
+    console.warn("URL metadata scrape fallback for:", req.query.url, err.message);
+
+    // Smart Fallback Title from Query Params
+    let fallbackTitle = "Academic Web Reference";
+    try {
+      const u = new URL(req.query.url);
+      const topicParam = u.searchParams.get("topic");
+      if (topicParam) {
+        const match = topicParam.match(/u(\d+)t(\d+)/i);
+        if (match) {
+          fallbackTitle = `Physical Education — Unit ${match[1]} Topic ${match[2]} Notes`;
+        }
+      }
+    } catch(e) {}
+
     res.json({
       success: false,
       url: req.query.url,
-      title: "Academic Web Reference",
+      title: fallbackTitle,
       description: "Verified external study notes and academic resource portal.",
       iconUrl: "ANH.png"
     });
