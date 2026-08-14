@@ -2841,6 +2841,7 @@ async function handleResourceAnalytics(req, res) {
 
     const resourceStatsMap = new Map();
     const userStatsMap = new Map();
+    const trackIdToResMap = new Map();
 
     // 3. Process Base Documents (One Resource, One Track-ID Policy)
     docsSnap.forEach(dSnap => {
@@ -2884,7 +2885,7 @@ async function handleResourceAnalytics(req, res) {
         };
       });
 
-      resourceStatsMap.set(rId, {
+      const itemData = {
         id: rId,
         trackId: tId,
         title: d.title || 'Untitled Resource',
@@ -2900,9 +2901,10 @@ async function handleResourceAnalytics(req, res) {
         sharesList: uniqueSharesList,
         visitorsList: [],
         priorityScore: 0
-      });
+      };
 
-      if (tId) resourceStatsMap.set(tId, resourceStatsMap.get(rId));
+      resourceStatsMap.set(rId, itemData);
+      if (tId) trackIdToResMap.set(tId, rId);
     });
 
     // 4. Process Telemetry Snapshots (resource_tracking & resource_analytics)
@@ -2945,7 +2947,8 @@ async function handleResourceAnalytics(req, res) {
       screentimeValues.push(st);
 
       // Update Resource Item Stats
-      const rItem = resourceStatsMap.get(rId) || resourceStatsMap.get(tId);
+      const actualResId = rId || trackIdToResMap.get(tId);
+      const rItem = resourceStatsMap.get(actualResId) || (tId ? resourceStatsMap.get(tId) : null);
       if (rItem) {
         rItem.views += 1;
         rItem.screentime += st;

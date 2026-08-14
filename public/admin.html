@@ -981,9 +981,22 @@
               <option value="hourly">🕒 Daily (Hourly: 00:00 - 23:00)</option>
               <option value="weekly">📆 Monthly (Week-wise)</option>
             </select>
-            <select id="adAnalyticsFilterSelect" onchange="loadAdsAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer; max-width:280px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
-              <option value="ALL">All Approved Ad Campaigns</option>
-            </select>
+
+            <!-- Custom Searchable Typable Dropdown Component for Ads Analytics -->
+            <div class="custom-searchable-dropdown" id="adCustomDropdownWrap" style="position:relative; width:280px;">
+              <button id="adDropdownTrigger" type="button" onclick="window.toggleCustomDropdown('ad')" style="width:100%; padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer; text-align:left; display:flex; justify-content:space-between; align-items:center;">
+                <span id="adDropdownLabel" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">All Approved Ad Campaigns</span>
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <input type="hidden" id="adAnalyticsFilterSelect" value="ALL">
+              <div id="adDropdownPopover" style="display:none; position:absolute; top:calc(100% + 6px); left:0; width:100%; z-index:500; background:#0f172a; border:1px solid rgba(99,102,241,0.4); border-radius:12px; padding:8px; box-shadow:0 12px 30px rgba(0,0,0,0.8); backdrop-filter:blur(12px);">
+                <input type="text" id="adDropdownSearchInput" oninput="window.filterCustomDropdownOptions('ad')" placeholder="🔍 Type to filter ad campaigns..." style="width:100%; padding:6px 10px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:6px; color:white; font-size:0.8rem; margin-bottom:6px; box-sizing:border-box; outline:none;">
+                <div id="adDropdownOptionsList" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:3px;">
+                  <!-- Options populated dynamically -->
+                </div>
+              </div>
+            </div>
+
             <button onclick="loadAdsAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Stats</button>
           </div>
         </div>
@@ -1142,9 +1155,22 @@
               <option value="weekly" selected>Weekly (Day-wise Analytics)</option>
               <option value="monthly">Monthly (Week-wise Analytics)</option>
             </select>
-            <select id="resourceAnalyticsFilterSelect" onchange="if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer; max-width:280px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
-              <option value="ALL">All Academic Resources</option>
-            </select>
+            
+            <!-- Custom Searchable Typable Dropdown Component for Resource Analytics -->
+            <div class="custom-searchable-dropdown" id="resourceCustomDropdownWrap" style="position:relative; width:280px;">
+              <button id="resourceDropdownTrigger" type="button" onclick="window.toggleCustomDropdown('resource')" style="width:100%; padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer; text-align:left; display:flex; justify-content:space-between; align-items:center;">
+                <span id="resourceDropdownLabel" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">All Academic Resources</span>
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <input type="hidden" id="resourceAnalyticsFilterSelect" value="ALL">
+              <div id="resourceDropdownPopover" style="display:none; position:absolute; top:calc(100% + 6px); left:0; width:100%; z-index:500; background:#0f172a; border:1px solid rgba(99,102,241,0.4); border-radius:12px; padding:8px; box-shadow:0 12px 30px rgba(0,0,0,0.8); backdrop-filter:blur(12px);">
+                <input type="text" id="resourceDropdownSearchInput" oninput="window.filterCustomDropdownOptions('resource')" placeholder="🔍 Type to filter resources..." style="width:100%; padding:6px 10px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:6px; color:white; font-size:0.8rem; margin-bottom:6px; box-sizing:border-box; outline:none;">
+                <div id="resourceDropdownOptionsList" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:3px;">
+                  <!-- Options populated dynamically -->
+                </div>
+              </div>
+            </div>
+
             <button onclick="if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Analytics</button>
           </div>
         </div>

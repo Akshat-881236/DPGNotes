@@ -2010,19 +2010,35 @@ export async function loadAdsAnalyticsAdmin() {
     }
 
     const poolAds = data.allAds || data.rawAds || [];
-    if (filterSelect && poolAds.length > 0) {
-      filterSelect.innerHTML = `<option value="ALL">All Approved Ad Campaigns (${poolAds.length})</option>`;
-      poolAds.forEach(a => {
+    const uniqueAds = [];
+    const seenAdIds = new Set();
+    poolAds.forEach(a => {
+      if (a && a.id && !seenAdIds.has(a.id)) {
+        seenAdIds.add(a.id);
+        uniqueAds.push(a);
+      }
+    });
+
+    const adOptionsListEl = document.getElementById("adDropdownOptionsList");
+    if (adOptionsListEl) {
+      let optionsHtml = `
+        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('ad', 'ALL', 'All Approved Ad Campaigns (${uniqueAds.length})')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:white; font-size:0.82rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+          📢 All Approved Ad Campaigns (${uniqueAds.length})
+        </div>
+      `;
+      uniqueAds.forEach(a => {
         const pTag = (a.platform || "dpgnotes") === "linkedin" ? "[LinkedIn]" :
                      (a.platform === "github") ? "[GitHub]" :
                      (a.platform === "medium") ? "[Medium]" :
                      (a.platform === "youtube") ? "[YouTube]" : "[Resource]";
-        const opt = document.createElement("option");
-        opt.value = a.id;
-        opt.textContent = `${pTag} ${a.title || 'Ad'} (${a.id})`;
-        if (a.id === selectedAdId) opt.selected = true;
-        filterSelect.appendChild(opt);
+        const itemLabel = `${pTag} ${a.title || 'Ad'}`;
+        optionsHtml += `
+          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('ad', '${a.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.8rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+            ${itemLabel}
+          </div>
+        `;
       });
+      adOptionsListEl.innerHTML = optionsHtml;
     }
 
     document.getElementById("statAdAppearances").textContent = (data.totalImpressions || 0).toLocaleString();
@@ -2369,22 +2385,37 @@ export async function loadResourceAnalyticsAdmin() {
     if (!res.ok) throw new Error("Failed to fetch resource analytics");
     const data = await res.json();
 
-    // Store in global cache map for modals
-    window.currentResourceCacheMap = new Map();
+    // Deduplicate Resource Pool Items
     const poolResources = data.resourceList || [];
-    poolResources.forEach(r => window.currentResourceCacheMap.set(r.id, r));
+    const uniquePool = [];
+    const seenIds = new Set();
+    
+    poolResources.forEach(r => {
+      if (r && r.id && !seenIds.has(r.id)) {
+        seenIds.add(r.id);
+        uniquePool.push(r);
+      }
+    });
 
-    // Populate Resource Filter Select Dropdown
-    if (filterSelect && poolResources.length > 0) {
-      const currentOptVal = filterSelect.value;
-      filterSelect.innerHTML = `<option value="ALL">All Academic Resources (${poolResources.length})</option>`;
-      poolResources.forEach(r => {
-        const opt = document.createElement("option");
-        opt.value = r.id;
-        opt.textContent = `[${r.category}] ${r.title}`;
-        if (r.id === currentOptVal) opt.selected = true;
-        filterSelect.appendChild(opt);
+    uniquePool.forEach(r => window.currentResourceCacheMap.set(r.id, r));
+
+    // Populate Custom Typable Searchable Dropdown for Resource Analytics
+    const optionsListEl = document.getElementById("resourceDropdownOptionsList");
+    if (optionsListEl) {
+      let optionsHtml = `
+        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('resource', 'ALL', 'All Academic Resources (${uniquePool.length})')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:white; font-size:0.82rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+          📘 All Academic Resources (${uniquePool.length})
+        </div>
+      `;
+      uniquePool.forEach(r => {
+        const itemLabel = `[${r.category}] ${r.title}`;
+        optionsHtml += `
+          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('resource', '${r.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.8rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+            ${itemLabel}
+          </div>
+        `;
       });
+      optionsListEl.innerHTML = optionsHtml;
     }
 
     // 1. Metric Stat Cards with Mathematical Legacy Formulas
@@ -3073,3 +3104,70 @@ window.customPrompt = function(message, defaultValue = "", options = {}) {
     document.getElementById("adminModalCloseIconBtn").onclick = cancelHandler;
   });
 };
+
+// ==========================================
+// CUSTOM SEARCHABLE TYPABLE DROPDOWN COMPONENT LOGIC
+// ==========================================
+window.toggleCustomDropdown = function(type) {
+  const popover = document.getElementById(`${type}DropdownPopover`);
+  if (!popover) return;
+  const isShown = popover.style.display === "block";
+  
+  const resPop = document.getElementById("resourceDropdownPopover");
+  const adPop = document.getElementById("adDropdownPopover");
+  if (resPop) resPop.style.display = "none";
+  if (adPop) adPop.style.display = "none";
+
+  if (!isShown) {
+    popover.style.display = "block";
+    const sInput = document.getElementById(`${type}DropdownSearchInput`);
+    if (sInput) {
+      sInput.value = "";
+      sInput.focus();
+      window.filterCustomDropdownOptions(type);
+    }
+  }
+};
+
+window.filterCustomDropdownOptions = function(type) {
+  const sInput = document.getElementById(`${type}DropdownSearchInput`);
+  const listEl = document.getElementById(`${type}DropdownOptionsList`);
+  if (!listEl) return;
+  
+  const query = sInput ? sInput.value.toLowerCase().trim() : "";
+  const items = listEl.querySelectorAll(".custom-dropdown-opt-item");
+  
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    if (!query || text.includes(query)) {
+      item.style.display = "block";
+    } else {
+      item.style.display = "none";
+    }
+  });
+};
+
+window.selectCustomDropdownOption = function(type, id, label) {
+  const hiddenInput = document.getElementById(type === 'resource' ? 'resourceAnalyticsFilterSelect' : 'adAnalyticsFilterSelect');
+  const labelEl = document.getElementById(`${type}DropdownLabel`);
+  const popover = document.getElementById(`${type}DropdownPopover`);
+  
+  if (hiddenInput) hiddenInput.value = id;
+  if (labelEl) labelEl.textContent = label;
+  if (popover) popover.style.display = "none";
+
+  if (type === 'resource' && window.loadResourceAnalyticsAdmin) {
+    window.loadResourceAnalyticsAdmin();
+  } else if (type === 'ad' && window.loadAdsAnalyticsAdmin) {
+    window.loadAdsAnalyticsAdmin();
+  }
+};
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".custom-searchable-dropdown")) {
+    const resPop = document.getElementById("resourceDropdownPopover");
+    const adPop = document.getElementById("adDropdownPopover");
+    if (resPop) resPop.style.display = "none";
+    if (adPop) adPop.style.display = "none";
+  }
+});
