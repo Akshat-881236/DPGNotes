@@ -2751,7 +2751,16 @@ export async function loadResourceAnalyticsAdmin() {
     // 5. Render Resource-Wise Telemetry & Interactive Likes/Shares Modals
     const resTbody = document.getElementById("resourceAnalyticsTableBody");
     if (resTbody) {
-      const rList = data.resourceList || [];
+      const rawList = data.resourceList || [];
+      const rList = [];
+      const seenIds = new Set();
+      rawList.forEach(r => {
+        if (r && r.id && !seenIds.has(r.id)) {
+          seenIds.add(r.id);
+          rList.push(r);
+        }
+      });
+
       if (rList.length === 0) {
         resTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No resource performance data available.</td></tr>`;
       } else {

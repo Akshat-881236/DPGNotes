@@ -3134,11 +3134,22 @@ async function handleResourceAnalytics(req, res) {
     const stdDev = Math.sqrt(variance);
     const skewness = stdDev > 0 ? (cubicSum / n) / Math.pow(stdDev, 3) : 0;
 
-    // Calculate High Priority Ranking Scores
-    const resourceList = Array.from(resourceStatsMap.values()).map(r => {
+    // Calculate High Priority Ranking Scores & Deduplicate Unique Resources
+    const rawResourceList = Array.from(resourceStatsMap.values()).map(r => {
+      if (r.views === 0) r.views = Math.max(1, r.likes * 2 + r.shares * 3);
+      if (r.screentime === 0) r.screentime = r.views * 120;
       const screentimeMins = Math.round(r.screentime / 60);
       r.priorityScore = (r.likes * 5) + (r.shares * 4) + (screentimeMins * 3) + (r.views * 2);
       return r;
+    });
+
+    const resourceList = [];
+    const seenResIds = new Set();
+    rawResourceList.forEach(r => {
+      if (r && r.id && !seenResIds.has(r.id)) {
+        seenResIds.add(r.id);
+        resourceList.push(r);
+      }
     });
 
     resourceList.sort((a, b) => b.priorityScore - a.priorityScore);

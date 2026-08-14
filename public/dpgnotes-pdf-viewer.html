@@ -235,7 +235,7 @@
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const cfg = {
   apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
@@ -253,6 +253,9 @@ window.collection = collection;
 window.query = query;
 window.where = where;
 window.getDocs = getDocs;
+window.setDoc = setDoc;
+window.addDoc = addDoc;
+window.serverTimestamp = serverTimestamp;
 
 // CTR telemetry check
 const P = new URLSearchParams(location.search);
@@ -1136,17 +1139,57 @@ async function resolveAndRender() {
         screentimeSeconds: 15
       };
 
-      // Initial View Log
+      const writeDirectFirestoreTelemetry = (payload) => {
+        try {
+          if (window.dpgDb && window.doc && window.setDoc && window.collection && window.addDoc) {
+            const trackDocRef = window.doc(window.dpgDb, "resource_tracking", `${payload.trackId}_${payload.visitorUid}`);
+            window.setDoc(trackDocRef, {
+              resourceId: payload.resourceId,
+              trackId: payload.trackId,
+              title: payload.title,
+              category: payload.category,
+              discipline: payload.discipline,
+              visitorUid: payload.visitorUid,
+              visitorEmail: payload.visitorEmail,
+              userType: payload.userType,
+              action: payload.action,
+              screentimeSeconds: payload.screentimeSeconds,
+              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+              updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+            }, { merge: true }).catch(err => console.warn("Direct resource_tracking write error:", err));
+
+            window.addDoc(window.collection(window.dpgDb, "resource_analytics"), {
+              resourceId: payload.resourceId,
+              trackId: payload.trackId,
+              title: payload.title,
+              category: payload.category,
+              discipline: payload.discipline,
+              visitorUid: payload.visitorUid,
+              visitorEmail: payload.visitorEmail,
+              userType: payload.userType,
+              action: payload.action,
+              screentimeSeconds: payload.screentimeSeconds,
+              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
+            }).catch(err => console.warn("Direct resource_analytics write error:", err));
+          }
+        } catch(fErr) {
+          console.warn("Direct Firestore telemetry log error:", fErr);
+        }
+      };
+
+      // Initial View Log (Direct Firestore + Backend API)
+      writeDirectFirestoreTelemetry(telemetryPayload);
       fetch('/api/resource/track-view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(telemetryPayload)
       }).catch(e => console.warn("PDF Viewer view ping error:", e));
 
-      // Periodic Screentime Ping every 15s
+      // Periodic Screentime Ping every 15s (Direct Firestore + Backend API)
       setInterval(() => {
         telemetryPayload.action = 'screentime';
         telemetryPayload.screentimeSeconds = 15;
+        writeDirectFirestoreTelemetry(telemetryPayload);
         fetch('/api/resource/track-view', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
