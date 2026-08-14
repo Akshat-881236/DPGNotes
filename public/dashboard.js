@@ -1984,17 +1984,27 @@ window.handleWebsiteSubmit = async function(e) {
     }
 
     const user = currentUser || auth.currentUser;
-    const res = await fetch(`${apiBase}/api/website/submit-site`, {
+    const reqBody = JSON.stringify({
+      url: targetUrl,
+      contributorUid: user ? user.uid : 'guest',
+      contributorEmail: user ? user.email : 'guest@dpgnotes.app',
+      contributorName: user ? (user.displayName || 'Contributor') : 'Contributor',
+      contributorAvatar: user ? (user.photoURL || '') : ''
+    });
+
+    let res = await fetch(`${apiBase}/api/website/submit-site`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url: targetUrl,
-        contributorUid: user ? user.uid : 'guest',
-        contributorEmail: user ? user.email : 'guest@dpgnotes.app',
-        contributorName: user ? (user.displayName || 'Contributor') : 'Contributor',
-        contributorAvatar: user ? (user.photoURL || '') : ''
-      })
+      body: reqBody
     });
+
+    if (!res.ok && res.status === 404) {
+      res = await fetch(`${apiBase}/submit-site`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: reqBody
+      });
+    }
 
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || "Failed submitting website");

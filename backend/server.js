@@ -13,6 +13,39 @@ const ILovePDFApi = require('@ilovepdf/ilovepdf-nodejs');
 const crypto = require('crypto');
 const { PDFDocument, rgb, degrees, StandardFonts } = require('pdf-lib');
 const rateLimit = require('express-rate-limit');
+const { spawn } = require('child_process');
+
+// Helper function to run Python analytics scripts safely
+function runPythonAnalyticsScript(scriptRelativePath, inputData) {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(__dirname, '..', scriptRelativePath);
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const pyProc = spawn(pythonCmd, [scriptPath]);
+
+    let stdoutData = '';
+    let stderrData = '';
+
+    pyProc.stdout.on('data', data => stdoutData += data.toString());
+    pyProc.stderr.on('data', data => stderrData += data.toString());
+
+    pyProc.on('close', code => {
+      if (code === 0 && stdoutData.trim()) {
+        try {
+          resolve(JSON.parse(stdoutData));
+        } catch (e) {
+          reject(e);
+        }
+      } else {
+        reject(new Error(stderrData || `Python script exited with code ${code}`));
+      }
+    });
+
+    pyProc.on('error', err => reject(err));
+
+    pyProc.stdin.write(JSON.stringify(inputData));
+    pyProc.stdin.end();
+  });
+}
 
 // ==========================================
 // INIT APP
@@ -5061,7 +5094,7 @@ async function ensureAllDocsHaveTrackId() {
 // ==========================================
 
 // 1. Submit Website URL & Live Python/Node Source Code Crawler
-app.post('/api/website/submit-site', async (req, res) => {
+app.post(['/api/website/submit-site', '/submit-site', '/api/submit-site'], async (req, res) => {
   const { url, contributorUid, contributorEmail, contributorName, contributorAvatar } = req.body;
   if (!url) return res.status(400).json({ error: "Website URL is required" });
 
@@ -5170,7 +5203,7 @@ app.post('/api/website/submit-site', async (req, res) => {
 });
 
 // 2. Verify Meta Tag Live Endpoint
-app.post('/api/website/verify-meta', async (req, res) => {
+app.post(['/api/website/verify-meta', '/verify-meta', '/api/verify-meta'], async (req, res) => {
   const { websiteId } = req.body;
   if (!websiteId) return res.status(400).json({ error: "websiteId required" });
 
@@ -5224,7 +5257,7 @@ app.post('/api/website/verify-meta', async (req, res) => {
 });
 
 // 3. Get Contributor Registered Websites
-app.get('/api/website/contributor-sites', async (req, res) => {
+app.get(['/api/website/contributor-sites', '/contributor-sites', '/api/contributor-sites'], async (req, res) => {
   const { uid } = req.query;
   if (!uid) return res.status(400).json({ error: "uid required" });
 
@@ -5256,7 +5289,7 @@ app.get('/api/website/contributor-sites', async (req, res) => {
 });
 
 // 4. Delete Single Registered Website
-app.post('/api/website/delete-site', async (req, res) => {
+app.post(['/api/website/delete-site', '/delete-site', '/api/delete-site'], async (req, res) => {
   const { websiteId } = req.body;
   if (!websiteId) return res.status(400).json({ error: "websiteId required" });
 
@@ -5270,7 +5303,7 @@ app.post('/api/website/delete-site', async (req, res) => {
 });
 
 // 5. External Website Telemetry Ingestion (from track-init.js)
-app.post('/api/website/track-telemetry', async (req, res) => {
+app.post(['/api/website/track-telemetry', '/track-telemetry', '/api/track-telemetry'], async (req, res) => {
   const { websiteId, contributorUid, visitorId, pageUrl, pageTitle, hostOrigin, action, screentimeSeconds, timezone, gmtOffset, userAgent, phishingAlert } = req.body;
   if (!websiteId) return res.status(400).json({ error: "websiteId required" });
 
@@ -5311,7 +5344,7 @@ app.post('/api/website/track-telemetry', async (req, res) => {
 });
 
 // 6. Phishing Threat Alert Reporting
-app.post('/api/website/report-phishing', async (req, res) => {
+app.post(['/api/website/report-phishing', '/report-phishing', '/api/report-phishing'], async (req, res) => {
   const { websiteId, domain, pageUrl, reason } = req.body;
   if (!websiteId) return res.status(400).json({ error: "websiteId required" });
 
@@ -5329,7 +5362,7 @@ app.post('/api/website/report-phishing', async (req, res) => {
 });
 
 // 7. Admin Get All Registered Websites
-app.get('/api/admin/website-list', async (req, res) => {
+app.get(['/api/admin/website-list', '/website-list', '/api/website-list', '/api/admin/websites'], async (req, res) => {
   try {
     const snap = await db.collection("contributor_websites").orderBy("createdAt", "desc").get();
     const websites = [];
@@ -5348,7 +5381,7 @@ app.get('/api/admin/website-list', async (req, res) => {
 });
 
 // 8. Admin Bulk Delete Selected Websites
-app.post('/api/admin/website-bulk-delete', async (req, res) => {
+app.post(['/api/admin/website-bulk-delete', '/website-bulk-delete', '/api/website-bulk-delete'], async (req, res) => {
   const { ids } = req.body;
   if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: "ids array required" });
 
@@ -5370,7 +5403,7 @@ app.post('/api/admin/website-bulk-delete', async (req, res) => {
 });
 
 // 9. Admin Web Analytics Engine
-app.get('/api/admin/website-analytics', async (req, res) => {
+app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-analytics'], async (req, res) => {
   const { timeframe = 'weekly', websiteId = 'ALL' } = req.query;
 
   try {

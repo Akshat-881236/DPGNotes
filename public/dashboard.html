@@ -513,9 +513,9 @@
             <form id="websiteSubmitForm" onsubmit="window.handleWebsiteSubmit(event)">
               <div style="margin-bottom:1.2rem;">
                 <label style="color:var(--text-muted); font-size:0.85rem; display:block; margin-bottom:6px;">Website Target URL *</label>
-                <div style="display:flex; gap:10px;">
-                  <input type="url" id="contributorWebsiteUrl" placeholder="https://yourwebsite.com" required style="flex:1; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.4); color:white;">
-                  <button type="submit" id="submitWebsiteBtn" style="padding:0.75rem 1.5rem; border-radius:8px; border:none; background:linear-gradient(135deg,#38bdf8,#818cf8); color:white; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;">
+                <div class="website-input-group" style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <input type="url" id="contributorWebsiteUrl" placeholder="https://yourwebsite.com" required style="flex:1 1 220px; min-width:0; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.4); color:white;">
+                  <button type="submit" id="submitWebsiteBtn" style="flex:1 1 auto; padding:0.75rem 1.5rem; border-radius:8px; border:none; background:linear-gradient(135deg,#38bdf8,#818cf8); color:white; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap;">
                     <i class="ri-search-eye-line"></i> Crawl & Submit Site
                   </button>
                 </div>
