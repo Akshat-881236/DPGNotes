@@ -2965,12 +2965,13 @@ async function handleResourceAnalytics(req, res) {
       // User-Wise Telemetry Table Aggregation (Contributor vs Guest)
       const vUid = t.visitorUid || t.visitorEmail || 'Guest';
       const uInfo = usersMap.get(vUid) || usersMap.get(String(t.visitorEmail || '').toLowerCase());
-      const userKey = vUid;
+      const userKey = (uInfo && uInfo.uid) ? uInfo.uid : vUid;
+      const realUid = (uInfo && uInfo.uid && !uInfo.uid.includes('@')) ? uInfo.uid : (vUid && !vUid.includes('@') ? vUid : '');
       
       const uItem = userStatsMap.get(userKey) || {
-        userId: uInfo?.email || (vUid.includes('@') ? vUid : (vUid.length > 20 ? vUid : `Guest (${vUid})`)),
-        userUid: vUid,
-        userType: uInfo?.userType || t.visitorType || (vUid.startsWith('guest_') ? 'Guest User' : 'Contributor'),
+        userId: uInfo?.email || (vUid.includes('@') ? vUid : `Guest (${vUid})`),
+        userUid: realUid,
+        userType: uInfo?.userType || t.visitorType || (vUid.startsWith('guest_') ? 'Guest User' : 'Registered User'),
         ipAddress: t.clientIp || '127.0.0.1',
         visits: 0,
         screentime: 0
@@ -3009,6 +3010,7 @@ async function handleResourceAnalytics(req, res) {
         const u = uDoc.data();
         userStatsMap.set(uDoc.id, {
           userId: u.email || u.displayName || uDoc.id,
+          userUid: uDoc.id,
           userType: u.role || (u.isContributor ? 'Contributor' : 'Registered User'),
           ipAddress: '127.0.0.1',
           visits: Math.floor(Math.random() * 8) + 1,

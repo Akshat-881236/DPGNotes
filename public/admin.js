@@ -2658,7 +2658,8 @@ export async function loadResourceAnalyticsAdmin() {
         userTbody.innerHTML = "";
         uList.forEach(u => {
           const tr = document.createElement("tr");
-          const pLink = u.userId && u.userId !== "Guest" && !u.userId.startsWith("127.") ? `profile.html?uid=${encodeURIComponent(u.userId)}` : `profile.html`;
+          const targetUid = u.userUid || u.uid || '';
+          const pLink = (targetUid && !targetUid.includes('@') && targetUid.length > 5) ? `profile.html?uid=${encodeURIComponent(targetUid)}` : `profile.html`;
           tr.innerHTML = `
             <td style="padding:0.75rem; font-family:monospace; color:#a5b4fc; font-weight:600;">${u.userId}</td>
             <td style="padding:0.75rem;"><span class="badge ${u.userType === 'Contributor' ? 'active' : 'suspended'}">${u.userType}</span></td>

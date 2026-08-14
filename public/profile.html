@@ -19,25 +19,33 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <script>
-    if (typeof marked !== 'undefined') {
-      marked.setOptions({ breaks: true, gfm: true });
-    }
     window.formatBioContent = function(text) {
       if (!text) return "";
-      if (typeof marked !== 'undefined') {
-        try {
-          const rawHtml = marked.parse(String(text));
-          const cleanHtml = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHtml) : rawHtml;
-          return `<div class="chat-markdown-content">${cleanHtml}</div>`;
-        } catch (e) {
-          console.warn("Markdown parse error:", e);
+      try {
+        if (typeof marked !== 'undefined') {
+          const parseFn = typeof marked.parse === 'function' ? marked.parse : (typeof marked === 'function' ? marked : null);
+          if (parseFn) {
+            const rawHtml = parseFn(String(text));
+            const cleanHtml = (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) ? DOMPurify.sanitize(rawHtml) : rawHtml;
+            return `<div class="chat-markdown-content">${cleanHtml}</div>`;
+          }
         }
+      } catch (e) {
+        console.warn("Markdown parse fallback:", e);
       }
       return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
     };
   </script>
 
   <style>
+    .chat-markdown-content p { margin: 0 0 0.5rem 0; line-height: 1.6; }
+    .chat-markdown-content h1, .chat-markdown-content h2, .chat-markdown-content h3 { color: #818cf8; margin: 0.6rem 0 0.4rem 0; font-weight: 700; }
+    .chat-markdown-content ul, .chat-markdown-content ol { padding-left: 1.2rem; margin: 0.4rem 0; }
+    .chat-markdown-content code { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.85em; }
+    .chat-markdown-content pre { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; overflow-x: auto; margin: 0.6rem 0; }
+    .chat-markdown-content pre code { background: transparent; padding: 0; }
+    .chat-markdown-content a { color: #60a5fa; text-decoration: underline; }
+
     :root {
       --bg-top: #0b0f19;
       --bg-bottom: #020617;
