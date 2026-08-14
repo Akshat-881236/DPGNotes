@@ -1099,47 +1099,75 @@ async function resolveAndRender() {
   // Trigger background pre-fetch of PDF text & resource knowledge
   backgroundPreFetchDocumentKnowledge();
 
-  // Live Firestore Telemetry Logger (/api/resource/track-view)
-  try {
-    const finalResId = window.firestoreDocId || targetSearchId || 'MIC-PE-001';
-    const finalTrackId = window.resolvedTrackId || P.get('trackId') || '34237666';
-    const userObj = window.dpgCurrentUser;
-    const vUid = userObj ? userObj.uid : (localStorage.getItem("dpg_guest_uid") || ('guest_' + Math.random().toString(36).substring(2, 9)));
-    localStorage.setItem("dpg_guest_uid", vUid);
+  // Live Firestore Telemetry Logger (/api/resource/track-view) with Asynchronous Auth Resolution
+  window.initLiveTelemetryLogger = function() {
+    if (window.hasLoggedTelemetry) return;
+    
+    const performPing = (userObj) => {
+      if (window.hasLoggedTelemetry) return;
+      window.hasLoggedTelemetry = true;
 
-    const telemetryPayload = {
-      resourceId: finalResId,
-      trackId: finalTrackId,
-      title: docTitle || 'Academic Resource',
-      category: docCat || 'Notes',
-      discipline: docDisc || 'General',
-      visitorUid: vUid,
-      visitorEmail: userObj ? userObj.email : 'guest@dpgnotes.app',
-      userType: userObj ? (userObj.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : 'Contributor') : 'Guest User',
-      action: 'view',
-      screentimeSeconds: 15
-    };
+      const finalResId = window.firestoreDocId || targetSearchId || 'MIC-PE-001';
+      const finalTrackId = window.resolvedTrackId || P.get('trackId') || '34237666';
 
-    // Initial View Log
-    fetch('/api/resource/track-view', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(telemetryPayload)
-    }).catch(e => console.warn("PDF Viewer view ping error:", e));
+      let vUid = 'guest_session';
+      let vEmail = 'guest@dpgnotes.app';
+      let uType = 'Guest User';
 
-    // Periodic Screentime Ping every 15s
-    setInterval(() => {
-      telemetryPayload.action = 'screentime';
-      telemetryPayload.screentimeSeconds = 15;
+      if (userObj) {
+        vUid = userObj.uid;
+        vEmail = userObj.email || `${userObj.uid}@dpgnotes.app`;
+        uType = (userObj.email === 'its.akshatnetworkhub23@gmail.com') ? 'Admin' : 'Contributor';
+      } else {
+        vUid = localStorage.getItem("dpg_guest_uid") || ('guest_' + Math.random().toString(36).substring(2, 9));
+        localStorage.setItem("dpg_guest_uid", vUid);
+      }
+
+      const telemetryPayload = {
+        resourceId: finalResId,
+        trackId: finalTrackId,
+        title: docTitle || 'Academic Resource',
+        category: docCat || 'Notes',
+        discipline: docDisc || 'General',
+        visitorUid: vUid,
+        visitorEmail: vEmail,
+        userType: uType,
+        action: 'view',
+        screentimeSeconds: 15
+      };
+
+      // Initial View Log
       fetch('/api/resource/track-view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(telemetryPayload)
-      }).catch(() => {});
-    }, 15000);
-  } catch(tErr) {
-    console.warn("PDF Viewer telemetry initialization error:", tErr);
-  }
+      }).catch(e => console.warn("PDF Viewer view ping error:", e));
+
+      // Periodic Screentime Ping every 15s
+      setInterval(() => {
+        telemetryPayload.action = 'screentime';
+        telemetryPayload.screentimeSeconds = 15;
+        fetch('/api/resource/track-view', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(telemetryPayload)
+        }).catch(() => {});
+      }, 15000);
+    };
+
+    if (window.dpgCurrentUser || auth.currentUser) {
+      performPing(window.dpgCurrentUser || auth.currentUser);
+    } else {
+      const unsubscribe = onAuthStateChanged(auth, (u) => {
+        window.dpgCurrentUser = u;
+        performPing(u);
+        if (typeof unsubscribe === 'function') unsubscribe();
+      });
+      setTimeout(() => performPing(window.dpgCurrentUser || auth.currentUser), 800);
+    }
+  };
+
+  window.initLiveTelemetryLogger();
 }
 
 // ─ Init ─────────────────────────────────────────────────────────────────────

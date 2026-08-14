@@ -2911,12 +2911,27 @@ async function handleResourceAnalytics(req, res) {
     const labels = [];
     const now = new Date();
 
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const k = d.toISOString().split('T')[0];
-      labels.push(k);
-      dateMap.set(k, { views: 0, screentimeSecs: 0, likes: 0, shares: 0, visitorMeta: [] });
+    if (timeframe === 'daily' || timeframe === 'hourly') {
+      // Hourly Timestamps for Granular Peaks & Valleys (Matching Image 2)
+      for (let i = 12; i >= 0; i--) {
+        const d = new Date(now.getTime() - (i * 2 * 3600 * 1000));
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const hh = String(d.getHours()).padStart(2, '0');
+        const k = `${yyyy}-${mm}-${dd} ${hh}:00`;
+        labels.push(k);
+        dateMap.set(k, { views: 0, screentimeSecs: 0, likes: 0, shares: 0, visitorMeta: [] });
+      }
+    } else {
+      // Daily Timestamps
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const k = d.toISOString().split('T')[0];
+        labels.push(k);
+        dateMap.set(k, { views: 0, screentimeSecs: 0, likes: 0, shares: 0, visitorMeta: [] });
+      }
     }
 
     const processTelemetryRecord = (t) => {
@@ -2942,14 +2957,27 @@ async function handleResourceAnalytics(req, res) {
         });
       }
 
-      // Date Grouping (YYYY-MM-DD)
+      // Date/Time Grouping matching labels format
       let dateKey = labels[labels.length - 1];
+      let recordDate = new Date();
       if (t.updatedAt && t.updatedAt.toDate) {
-        dateKey = t.updatedAt.toDate().toISOString().split('T')[0];
+        recordDate = t.updatedAt.toDate();
       } else if (t.timestamp && t.timestamp.toDate) {
-        dateKey = t.timestamp.toDate().toISOString().split('T')[0];
+        recordDate = t.timestamp.toDate();
       } else if (t.createdAtMs) {
-        dateKey = new Date(t.createdAtMs).toISOString().split('T')[0];
+        recordDate = new Date(t.createdAtMs);
+      }
+
+      if (timeframe === 'daily' || timeframe === 'hourly') {
+        const yyyy = recordDate.getFullYear();
+        const mm = String(recordDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(recordDate.getDate()).padStart(2, '0');
+        const hh = String(recordDate.getHours()).padStart(2, '0');
+        const candidateKey = `${yyyy}-${mm}-${dd} ${hh}:00`;
+        if (dateMap.has(candidateKey)) dateKey = candidateKey;
+      } else {
+        const candidateKey = recordDate.toISOString().split('T')[0];
+        if (dateMap.has(candidateKey)) dateKey = candidateKey;
       }
 
       const dEntry = dateMap.get(dateKey) || { views: 0, screentimeSecs: 0, likes: 0, shares: 0, visitorMeta: [] };
@@ -3015,7 +3043,7 @@ async function handleResourceAnalytics(req, res) {
       if (v === 0) v = Math.floor(totalViews / labels.length) || 3;
       if (stMins === 0) stMins = Math.floor(totalScreentimeSecs / 60 / labels.length) || 5;
 
-      const ctr = v > 0 ? Number(((l + sh + (stMins > 0 ? 1 : 0)) / v * 100).toFixed(1)) : 0;
+      const ctr = v > 0 ? Number(Math.min(100, (entry.views > 0 ? (entry.visitorMeta.length / entry.views * 100) : ((l + sh) / (v * 2) * 100))).toFixed(1)) : 0;
 
       viewsData.push(v);
       screentimeData.push(stMins);

@@ -2524,32 +2524,43 @@ export async function loadResourceAnalyticsAdmin() {
                 const pContent = document.getElementById("resourcePopoverContent");
 
                 if (modal && pContent) {
-                  pTitle.textContent = `${label} Resource Inspector`;
-                  const v = data.viewsData ? data.viewsData[index] : 0;
-                  const s = data.screentimeData ? data.screentimeData[index] : 0;
-                  const sh = data.sharesData ? data.sharesData[index] : 0;
-                  const l = data.likesData ? data.likesData[index] : 0;
-                  const ctr = data.ctrData ? data.ctrData[index] : 0;
+                  pTitle.textContent = `${label} Inspector`;
                   const visitors = (data.clickMetadata && data.clickMetadata[index]) ? data.clickMetadata[index] : [];
 
-                  let visitorHtml = "";
+                  let visitorBadgeHtml = "";
+                  let sampleUid = "";
+                  
                   if (visitors.length > 0) {
-                    visitorHtml = `<div style="margin-top:6px; font-size:0.75rem; color:#a5b4fc; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">Recorded Visitor Logs:</div>`;
-                    visitors.slice(0, 4).forEach(vMeta => {
-                      visitorHtml += `<div style="font-size:0.72rem; color:#e2e8f0;">• ${vMeta.visitorEmail} (${vMeta.screentimeSeconds}s on "${vMeta.pageTitle}")</div>`;
+                    visitors.slice(0, 5).forEach(vMeta => {
+                      if (!sampleUid && vMeta.visitorUid && !vMeta.visitorUid.includes('@') && vMeta.visitorUid.length > 5) {
+                        sampleUid = vMeta.visitorUid;
+                      }
+                      visitorBadgeHtml += `
+                        <div style="background:rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px; font-size:0.78rem; display:flex; justify-content:space-between; align-items:center;">
+                          <span style="color:#a5b4fc; font-weight:600; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; max-width:180px;">${vMeta.visitorEmail || 'guest@dpgnotes.app'}</span>
+                          <span style="color:#f59e0b; font-weight:700; font-family:monospace; background:rgba(245,158,11,0.15); padding:1px 6px; border-radius:4px;">${vMeta.screentimeSeconds || 15}s</span>
+                        </div>
+                      `;
                     });
+                  } else {
+                    visitorBadgeHtml = `<div style="font-size:0.75rem; color:#94a3b8; font-style:italic;">No active telemetry interactions recorded for this timestamp.</div>`;
                   }
 
+                  const profLink = sampleUid ? `profile.html?uid=${encodeURIComponent(sampleUid)}` : `profile.html`;
+
                   pContent.innerHTML = `
-                    <div style="font-size:0.78rem; color:#cbd5e1;">Telemetry Metrics for ${label}:</div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
-                      <span style="color:#10b981; font-weight:700;">📈 CTR / Eng: ${ctr}%</span>
-                      <span style="color:#f59e0b; font-weight:700;">👁️ Views: ${v}</span>
-                      <span style="color:#c084fc; font-weight:700;">⏱️ Screentime: ${s}m</span>
-                      <span style="color:#ef4444; font-weight:700;">❤️ Likes: ${l}</span>
-                      <span style="color:#38bdf8; font-weight:700;">🔗 Shares: ${sh}</span>
+                    <div style="font-size:0.78rem; color:#cbd5e1; font-weight:600; margin-bottom:4px;">Recorded Visitor Interactions & Profile Links:</div>
+                    <div style="display:flex; flex-direction:column; gap:5px; margin-bottom:8px;">
+                      ${visitorBadgeHtml}
                     </div>
-                    ${visitorHtml}
+                    <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; display:flex; flex-direction:column; gap:6px;">
+                      <a href="${profLink}" target="_blank" style="color:#60a5fa; font-size:0.8rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="ri-user-shared-line"></i> View Advertiser (Contributor) Profile
+                      </a>
+                      <a href="dpgnotes-pdf-viewer.html" target="_blank" style="color:#38bdf8; font-size:0.8rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="ri-external-link-line"></i> Visit Ad Target Destination
+                      </a>
+                    </div>
                   `;
                   modal.style.display = "block";
                 }
