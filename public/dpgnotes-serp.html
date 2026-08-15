@@ -288,6 +288,13 @@
 
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+    function extractYouTubeId(url) {
+      if (!url || typeof url !== 'string') return '';
+      const match = url.match(/(?:watch\?v=|embed\/|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : '';
+    }
 
     let allDocs = [];
 
@@ -656,26 +663,22 @@
       }
 
       // ==========================================
-      // TAB 5: VIDEOS GRID (Includes YouTube URLs from resource_knowledge & user_ads cleanly)
+      // TAB 5: VIDEOS GRID (Safe YouTube Embeds + Fail-Safe Thumbnail Cards)
       // ==========================================
       else if (window.activeSerpTab === 'videos') {
-        let videoList = [
-          { embedUrl: 'https://www.youtube.com/embed/CgdR5BGT9w0', title: 'DPGNotes Pdf Viewer Demo', source: 'Akshat Network Hub' },
-          { embedUrl: 'https://www.youtube.com/embed/Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story' },
-          { embedUrl: 'https://www.youtube.com/embed/hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship' },
-          { embedUrl: 'https://www.youtube.com/embed/Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship' }
+        let rawVideoPool = [
+          { url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes Pdf Viewer', source: 'Akshat Network Hub' },
+          { url: 'https://www.youtube.com/watch?v=Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story' },
+          { url: 'https://www.youtube.com/watch?v=hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship' },
+          { url: 'https://www.youtube.com/watch?v=Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship' }
         ];
 
-        // Add YouTube videos from resource_knowledge
+        // Collect URLs from resource_knowledge
         if (Array.isArray(window.knowledgeUrlsCache)) {
           window.knowledgeUrlsCache.forEach(uStr => {
-            if (uStr.includes('youtube.com') || uStr.includes('youtu.be')) {
-              let embed = uStr;
-              if (uStr.includes('watch?v=')) {
-                embed = uStr.replace('watch?v=', 'embed/');
-              }
-              videoList.push({
-                embedUrl: embed,
+            if (uStr && (uStr.includes('youtube.com') || uStr.includes('youtu.be'))) {
+              rawVideoPool.push({
+                url: uStr,
                 title: 'Resource Knowledge Video Lecture',
                 source: 'Academic Tutorial Portal'
               });
@@ -683,17 +686,13 @@
           });
         }
 
-        // Add YouTube videos from approved user_ads WITHOUT sponsored mark
+        // Collect URLs from approved user_ads
         if (Array.isArray(window.approvedAdsCache)) {
           window.approvedAdsCache.forEach(ad => {
             const vLink = ad.videoUrl || ad.targetLink || '';
-            if (vLink.includes('youtube.com') || vLink.includes('youtu.be')) {
-              let embed = vLink;
-              if (vLink.includes('watch?v=')) {
-                embed = vLink.replace('watch?v=', 'embed/');
-              }
-              videoList.push({
-                embedUrl: embed,
+            if (vLink && (vLink.includes('youtube.com') || vLink.includes('youtu.be'))) {
+              rawVideoPool.push({
+                url: vLink,
                 title: ad.title || 'Educational Video Tutorial',
                 source: `${ad.platform || 'DPGNotes'} Video Tutorial`
               });
@@ -702,17 +701,41 @@
         }
 
         let vidHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">`;
-        videoList.forEach(v => {
-          vidHtml += `
-            <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
-              <iframe width="100%" height="170" src="${v.embedUrl}" frameborder="0" allowfullscreen style="border:none;"></iframe>
-              <div style="padding:12px;">
-                <h4 style="color:white; font-size:0.9rem; margin-bottom:4px;">${v.title}</h4>
-                <p style="color:#94a3b8; font-size:0.78rem; margin:0;">${v.source}</p>
+
+        rawVideoPool.forEach(v => {
+          const ytId = extractYouTubeId(v.url);
+
+          if (ytId) {
+            // Clean YouTube Embed Player (bypasses X-Frame-Options/CORS blocks)
+            const embedUrl = `https://www.youtube-nocookie.com/embed/${ytId}`;
+            vidHtml += `
+              <div style="background:rgba(15,23,42,0.92); border:1px solid var(--border); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+                <div style="position:relative; width:100%; padding-top:56.25%; background:#000;">
+                  <iframe src="${embedUrl}" title="${v.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>
+                </div>
+                <div style="padding:12px; display:flex; flex-direction:column; gap:4px; flex:1;">
+                  <h4 style="color:white; font-size:0.92rem; margin:0; line-height:1.3; font-weight:700;">${v.title}</h4>
+                  <p style="color:#94a3b8; font-size:0.78rem; margin:0;">${v.source}</p>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          } else {
+            // Fallback Video Link Card
+            vidHtml += `
+              <div style="background:rgba(15,23,42,0.92); border:1px solid var(--border); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; padding:1.2rem; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                  <i class="ri-video-line" style="color:#f43f5e; font-size:1.4rem;"></i>
+                  <h4 style="color:white; font-size:0.92rem; margin:0; line-height:1.3; font-weight:700;">${v.title}</h4>
+                </div>
+                <p style="color:#94a3b8; font-size:0.78rem; margin:0 0 12px 0;">${v.source}</p>
+                <a href="${v.url}" target="_blank" style="margin-top:auto; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.4); color:#fb7185; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:700; text-decoration:none; text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                  <i class="ri-play-circle-line"></i> Watch Video Portal
+                </a>
+              </div>
+            `;
+          }
         });
+
         vidHtml += `</div>`;
         list.innerHTML = vidHtml;
       }
