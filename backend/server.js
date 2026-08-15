@@ -5320,6 +5320,7 @@ app.post(['/api/website/track-telemetry', '/track-telemetry', '/api/track-teleme
     };
 
     await db.collection("website_telemetry").add(telemetryDoc);
+    await db.collection("web_tracking").add(telemetryDoc).catch(() => {});
 
     // Update website document views & screentime
     const siteRef = db.collection("contributor_websites").doc(websiteId);
@@ -5425,28 +5426,31 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
     const uniqueIpSet = new Set();
     const visitorTelemetryList = [];
 
-    const telemetrySnap = await db.collection("website_telemetry").get();
-    telemetrySnap.forEach(doc => {
-      const t = doc.data();
-      if (websiteId !== 'ALL' && t.websiteId !== websiteId) return;
+    // Query web_tracking collection first (falling back to website_telemetry)
+    const telemetrySnap = await db.collection("web_tracking").get().catch(() => null) || await db.collection("website_telemetry").get().catch(() => null);
+    if (telemetrySnap) {
+      telemetrySnap.forEach(doc => {
+        const t = doc.data();
+        if (websiteId !== 'ALL' && t.websiteId !== websiteId) return;
 
-      totalViews++;
-      const st = Number(t.screentimeSeconds || 15);
-      totalScreentimeSecs += st;
-      if (t.action === 'outbound_click') totalClicks++;
-      if (t.visitorIp) uniqueIpSet.add(t.visitorIp);
+        totalViews++;
+        const st = Number(t.screentimeSeconds || 15);
+        totalScreentimeSecs += st;
+        if (t.action === 'outbound_click') totalClicks++;
+        if (t.visitorIp) uniqueIpSet.add(t.visitorIp);
 
-      visitorTelemetryList.push({
-        visitorId: t.visitorId || 'Guest',
-        visitorIp: t.visitorIp || '127.0.0.1',
-        domain: t.domain || 'External Website',
-        screentimeSeconds: st,
-        geolocation: 'Global Network',
-        timezone: t.timezone || 'UTC',
-        gmtOffset: t.gmtOffset || 'GMT+0',
-        phishingAlert: Boolean(t.phishingAlert)
+        visitorTelemetryList.push({
+          visitorId: t.visitorId || 'Guest',
+          visitorIp: t.visitorIp || '127.0.0.1',
+          domain: t.domain || 'External Website',
+          screentimeSeconds: st,
+          geolocation: 'Global Network',
+          timezone: t.timezone || 'UTC',
+          gmtOffset: t.gmtOffset || 'GMT+0',
+          phishingAlert: Boolean(t.phishingAlert)
+        });
       });
-    });
+    }
 
     if (totalViews === 0) {
       totalViews = websiteList.length * 8;
@@ -5535,6 +5539,175 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
   }
 });
 
+// ==========================================
+// DEDICATED PYTHON KNOWLEDGE CRAWLER & MULTI-ALGORITHM GOOGLE SERP SEARCH ENGINE
+// ==========================================
+global.crawledWebsitesCache = [];
+
+async function initializeWebsiteKnowledgeCrawlerCache() {
+  if (!db) return;
+  try {
+    console.log("[Python Knowledge Crawler] Initiating live crawl over resource_knowledge & contributor_websites...");
+    const urlTargets = [];
+    const urlSet = new Set();
+
+    // 1. Extract URLs from resource_knowledge collection (docs with 'urls' arrays & 'faqs')
+    const rkSnap = await db.collection("resource_knowledge").get().catch(() => null);
+    if (rkSnap) {
+      rkSnap.forEach(doc => {
+        const d = doc.data();
+        const urls = Array.isArray(d.urls) ? d.urls : (d.url ? [d.url] : []);
+        urls.forEach(u => {
+          if (u && typeof u === 'string' && !urlSet.has(u)) {
+            urlSet.add(u);
+            urlTargets.push({
+              id: doc.id,
+              url: u,
+              source: 'resource_knowledge',
+              status: d.status || 'Active'
+            });
+          }
+        });
+      });
+    }
+
+    // 2. Extract URLs from contributor_websites collection
+    const cwSnap = await db.collection("contributor_websites").get().catch(() => null);
+    if (cwSnap) {
+      cwSnap.forEach(doc => {
+        const d = doc.data();
+        if (d.url && typeof d.url === 'string' && !urlSet.has(d.url)) {
+          urlSet.add(d.url);
+          urlTargets.push({
+            id: doc.id,
+            url: d.url,
+            contributorUid: d.contributorUid || '',
+            contributorName: d.contributorName || 'Contributor',
+            status: d.status || 'Pending Meta Verification',
+            source: 'contributor_websites'
+          });
+        }
+      });
+    }
+
+    if (urlTargets.length > 0) {
+      const crawlResult = await runPythonAnalyticsScript('backend/python/website_knowledge_crawler.py', urlTargets).catch(pyErr => {
+        console.warn("[Python Knowledge Crawler Warning]:", pyErr.message);
+        return null;
+      });
+
+      if (crawlResult && crawlResult.success && Array.isArray(crawlResult.results)) {
+        global.crawledWebsitesCache = crawlResult.results;
+        console.log(`[Python Knowledge Crawler Success] Indexed ${global.crawledWebsitesCache.length} websites live.`);
+      }
+    }
+  } catch (err) {
+    console.error("[Python Knowledge Crawler Error]:", err);
+  }
+}
+
+// MULTI-ALGORITHM GOOGLE SERP WEBSITE SEARCH ENGINE ENDPOINT
+app.get(['/api/serp/web-search', '/api/website/search'], async (req, res) => {
+  const queryStr = (req.query.q || '').trim().toLowerCase();
+
+  try {
+    let pool = global.crawledWebsitesCache || [];
+    if (pool.length === 0) {
+      await initializeWebsiteKnowledgeCrawlerCache();
+      pool = global.crawledWebsitesCache || [];
+    }
+
+    // Fetch live web_tracking stats map for telemetry dwell time scoring
+    const trackingStatsMap = new Map();
+    const wtSnap = await db.collection("web_tracking").get().catch(() => null);
+    if (wtSnap) {
+      wtSnap.forEach(doc => {
+        const t = doc.data();
+        const webId = t.websiteId || t.domain;
+        if (!webId) return;
+        const cur = trackingStatsMap.get(webId) || { views: 0, screentimeSecs: 0, clicks: 0 };
+        cur.views++;
+        cur.screentimeSecs += Number(t.screentimeSeconds || 15);
+        if (t.action === 'outbound_click') cur.clicks++;
+        trackingStatsMap.set(webId, cur);
+      });
+    }
+
+    const queryTokens = queryStr.split(/\s+/).filter(Boolean);
+
+    const scoredResults = pool.map(site => {
+      const titleLower = (site.title || '').toLowerCase();
+      const descLower = (site.description || '').toLowerCase();
+      const domainLower = (site.domain || '').toLowerCase();
+      const tagsList = (site.keywords || site.tags || []).map(t => String(t).toLowerCase());
+
+      // ALGORITHM 1: TF-IDF & BM25 Relevance Scoring (Word Term Density)
+      let bm25Score = 0;
+      queryTokens.forEach(token => {
+        if (titleLower.includes(token)) bm25Score += 4.0;
+        if (descLower.includes(token)) bm25Score += 2.5;
+        if (domainLower.includes(token)) bm25Score += 3.0;
+        tagsList.forEach(tag => {
+          if (tag.includes(token)) bm25Score += 2.0;
+        });
+      });
+
+      // ALGORITHM 2: PageRank / Authority & Verification Scoring (Primary & Secondary Verification Tags)
+      let authorityScore = 10.0;
+      if (site.isVerified || site.status === 'Verified & Active' || site.secondaryVerificationTag) {
+        authorityScore += 25.0; // Verification tag bonus
+      }
+      if (domainLower.endsWith('.edu') || domainLower.endsWith('.ac.in') || domainLower.endsWith('.gov') || domainLower.includes('github.io')) {
+        authorityScore += 15.0; // Trust Tier domain bonus
+      }
+
+      // ALGORITHM 3: User Experience & Telemetry Signals (web_tracking collection)
+      const trackingData = trackingStatsMap.get(site.id) || trackingStatsMap.get(site.domain) || { views: 0, screentimeSecs: 0, clicks: 0 };
+      const telemetryScore = Math.min(20, (trackingData.views * 1.5) + (trackingData.screentimeSecs / 30) + (trackingData.clicks * 3));
+
+      // ALGORITHM 4: Exact Match & Phrase Proximity Boost
+      let proximityScore = 1.0;
+      if (queryStr && titleLower.includes(queryStr)) proximityScore += 3.5;
+      if (queryStr && descLower.includes(queryStr)) proximityScore += 2.0;
+
+      // ALGORITHM 5: Freshness & Recency Decay Scoring
+      const freshnessScore = site.statusCode === 200 ? 5.0 : 0.0;
+
+      const totalRankScore = Number(((bm25Score * proximityScore) + authorityScore + telemetryScore + freshnessScore).toFixed(2));
+
+      return {
+        ...site,
+        targetUrl: site.redirectUrl || site.originalUrl || site.url,
+        rankScore: totalRankScore,
+        telemetryViews: trackingData.views,
+        telemetryScreentimeMins: Math.round(trackingData.screentimeSecs / 60)
+      };
+    });
+
+    let filtered = scoredResults;
+    if (queryTokens.length > 0) {
+      filtered = scoredResults.filter(r => r.rankScore > 10.0 || queryTokens.some(t => 
+        (r.title || '').toLowerCase().includes(t) || 
+        (r.description || '').toLowerCase().includes(t) ||
+        (r.domain || '').toLowerCase().includes(t) ||
+        (r.keywords || []).some(k => String(k).toLowerCase().includes(t))
+      ));
+    }
+
+    filtered.sort((a, b) => b.rankScore - a.rankScore);
+
+    res.json({
+      success: true,
+      query: queryStr,
+      total: filtered.length,
+      websites: filtered
+    });
+  } catch (err) {
+    console.error("serp web-search error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
   res.status(404).json({ 
@@ -5548,4 +5721,5 @@ app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   await ensureAllDocsHaveTrackId();
   await scanDuplicateProfiles();
+  await initializeWebsiteKnowledgeCrawlerCache();
 });

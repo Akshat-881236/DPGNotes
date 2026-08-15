@@ -718,65 +718,94 @@
       }
 
       // ==========================================
-      // TAB 6: WEBSITES (Reads resource_knowledge with live metadata scraper)
+      // TAB 6: WEBSITES (Google Search Engine Style UI + Multi-Algorithm SERP Ranking)
       // ==========================================
       else if (window.activeSerpTab === 'website') {
-        let webListHtml = `<div style="display:flex; flex-direction:column; gap:14px;">`;
-        
-        // Base Verified Websites
-        webListHtml += `
-          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
-            <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Platform Portal</div>
-            <h3 style="margin:0 0 6px 0;"><a href="https://dpgnotes.web.app" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Main Portal</a></h3>
-            <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Official Academic Notes, PYQs, and Sessional Exam Repository for DPG College students.</p>
-          </div>
-          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:1.2rem;">
-            <div style="color:#10b981; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-shield-check-line"></i> Verified Legal Directory</div>
-            <h3 style="margin:0 0 6px 0;"><a href="/dpgnotes-legal-notes.html" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">DPGNotes Legal Policies & Compliance Portal</a></h3>
-            <p style="color:#cbd5e1; font-size:0.88rem; margin:0;">Standardized copyright policies, terms of service, and student academic compliance regulations.</p>
-          </div>
-        `;
+        const qStr = searchField ? searchField.value.trim() : '';
+        list.innerHTML = `<div style="padding:2rem; text-align:center; color:#a78bfa;"><i class="ri-loader-4-line ri-spin" style="font-size:2rem;"></i><p style="margin-top:8px; font-weight:600;">Crawling & Ranking Web Resources via Google Engine...</p></div>`;
 
-        // Render URLs from resource_knowledge collection with Live Metadata Scraping
-        if (Array.isArray(window.knowledgeUrlsCache) && window.knowledgeUrlsCache.length > 0) {
-          window.knowledgeUrlsCache.forEach((urlStr, idx) => {
-            const wrapId = `webCardWrap_${idx}`;
-            const cardId = `webCardTitle_${idx}`;
-            const descId = `webCardDesc_${idx}`;
+        fetch(`${apiBase}/api/serp/web-search?q=${encodeURIComponent(qStr)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (!data || !data.success || !Array.isArray(data.websites) || data.websites.length === 0) {
+              list.innerHTML = `
+                <div style="background:rgba(15,23,42,0.9); border:1px solid var(--border); border-radius:16px; padding:2rem; text-align:center; color:var(--text-muted);">
+                  <i class="ri-global-line" style="font-size:2.5rem; color:#64748b; margin-bottom:8px; display:block;"></i>
+                  <h4 style="margin:0 0 6px 0; color:white;">No matching web resources found</h4>
+                  <p style="font-size:0.85rem; margin:0;">Try searching for broad terms like "Health Education", "First Aid", "Disaster", or "Notes".</p>
+                </div>
+              `;
+              return;
+            }
 
-            webListHtml += `
-              <div id="${wrapId}" style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:1.2rem;">
-                <div style="color:#a78bfa; font-size:0.78rem; font-weight:700; margin-bottom:4px;"><i class="ri-book-read-line"></i> Resource Knowledge Web Portal</div>
-                <h3 style="margin:0 0 6px 0;"><a id="${cardId}" href="${urlStr}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">Loading live web page metadata...</a></h3>
-                <p id="${descId}" style="color:#94a3b8; font-size:0.82rem; margin:0 0 8px 0; word-break:break-all;">${urlStr}</p>
-                <a href="${urlStr}" target="_blank" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:4px 10px; border-radius:6px; font-size:0.78rem; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-external-link-line"></i> Open Academic Site</a>
-              </div>
-            `;
+            let webListHtml = `<div style="display:flex; flex-direction:column; gap:16px; max-width:900px; width:100%; box-sizing:border-box;">`;
 
-            // Asynchronously fetch live scraped metadata (CORS/Broken links hidden)
-            fetch(`/api/scrape-url-meta?url=${encodeURIComponent(urlStr)}`)
-              .then(res => res.json())
-              .then(meta => {
-                const wrapEl = document.getElementById(wrapId);
-                const titleEl = document.getElementById(cardId);
-                const descEl = document.getElementById(descId);
+            data.websites.forEach(site => {
+              const targetUrl = site.targetUrl || site.redirectUrl || site.url || '#';
+              const domain = site.domain || 'External Website';
+              const iconUrl = site.iconUrl || `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+              const title = site.title || `Web Resource (${domain})`;
+              const description = site.description || 'External web resource indexed by DPGNotes search crawler.';
+              const keywords = Array.isArray(site.keywords) ? site.keywords : (Array.isArray(site.tags) ? site.tags : []);
+              const isVerified = Boolean(site.isVerified || site.status === 'Verified & Active' || site.secondaryVerificationTag);
+              const rankScore = site.rankScore || 10.0;
 
-                if (!meta || !meta.success) {
-                  // Hide CORS blocked or un-fetchable URLs
-                  if (wrapEl) wrapEl.style.display = "none";
-                } else {
-                  if (titleEl && meta.title) titleEl.textContent = meta.title;
-                  if (descEl && meta.description) descEl.textContent = meta.description;
-                }
-              }).catch(() => {
-                const wrapEl = document.getElementById(wrapId);
-                if (wrapEl) wrapEl.style.display = "none";
+              let tagsHtml = '';
+              keywords.slice(0, 5).forEach(k => {
+                tagsHtml += `<span style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600;">#${k}</span> `;
               });
-          });
-        }
 
-        webListHtml += `</div>`;
-        list.innerHTML = webListHtml;
+              const verifiedBadge = isVerified 
+                ? `<span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#34d399; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-check-fill"></i> Verified & Active</span>` 
+                : `<span style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600;">Indexed Resource</span>`;
+
+              webListHtml += `
+                <div class="google-serp-card" style="background:rgba(15,23,42,0.92); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:1.25rem; transition:transform 0.2s, border-color 0.2s; box-shadow:0 10px 25px rgba(0,0,0,0.5); word-break:break-word;">
+                  <!-- Google Header: Icon + Domain + Path -->
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+                    <img src="${iconUrl}" onerror="this.onerror=null; this.src='https://www.google.com/s2/favicons?domain=${domain}&sz=64';" alt="favicon" style="width:20px; height:20px; border-radius:4px; object-fit:contain; background:#000;">
+                    <div style="display:flex; flex-direction:column; line-height:1.2;">
+                      <span style="color:#e2e8f0; font-weight:700; font-size:0.85rem;">${domain}</span>
+                      <span style="color:#64748b; font-size:0.75rem; overflow:hidden; text-overflow:ellipsis; max-width:320px; white-space:nowrap;">${targetUrl}</span>
+                    </div>
+                    <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+                      ${verifiedBadge}
+                      <span style="font-size:0.7rem; color:#a855f7; font-weight:700; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); padding:2px 6px; border-radius:10px;">⭐ Rank ${rankScore}</span>
+                    </div>
+                  </div>
+
+                  <!-- Google Clickable Title -->
+                  <h3 style="margin:4px 0 6px 0; font-size:1.15rem; line-height:1.35; font-family:'Outfit',sans-serif;">
+                    <a href="${targetUrl}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700; transition:color 0.2s;" onmouseover="this.style.textDecoration='underline'; this.style.color='#93c5fd';" onmouseout="this.style.textDecoration='none'; this.style.color='#60a5fa';">
+                      ${title}
+                    </a>
+                  </h3>
+
+                  <!-- Live Meta Description -->
+                  <p style="color:#cbd5e1; font-size:0.88rem; line-height:1.5; margin:0 0 10px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
+                    ${description}
+                  </p>
+
+                  <!-- Tags & Open Link Footer -->
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                      ${tagsHtml}
+                    </div>
+                    <a href="${targetUrl}" target="_blank" style="background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.3)); border:1px solid rgba(139,92,246,0.5); color:white; padding:4px 12px; border-radius:8px; font-size:0.78rem; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#6366f1,#8b5cf6)';" onmouseout="this.style.background='linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.3))';">
+                      Visit Website <i class="ri-arrow-right-up-line"></i>
+                    </a>
+                  </div>
+                </div>
+              `;
+            });
+
+            webListHtml += `</div>`;
+            list.innerHTML = webListHtml;
+          })
+          .catch(err => {
+            console.error("SERP Web Search fetch error:", err);
+            list.innerHTML = `<div style="padding:1.5rem; text-align:center; color:#f87171;">Failed loading web search results. Please try again.</div>`;
+          });
       }
     }
 
