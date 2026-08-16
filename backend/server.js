@@ -5736,9 +5736,18 @@ app.use('/api', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
-  await ensureAllDocsHaveTrackId();
-  await scanDuplicateProfiles();
-  await initializeWebsiteKnowledgeCrawlerCache();
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, async () => {
+    console.log(`Server running on port ${PORT}`);
+    await ensureAllDocsHaveTrackId();
+    await scanDuplicateProfiles();
+    await initializeWebsiteKnowledgeCrawlerCache();
+  });
+} else {
+  // Initialize caches on Vercel cold boot
+  ensureAllDocsHaveTrackId();
+  scanDuplicateProfiles();
+  initializeWebsiteKnowledgeCrawlerCache();
+}
+
+module.exports = app;
