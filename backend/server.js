@@ -157,25 +157,34 @@ try {
   let serviceAccount;
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     let envVar = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
-    // If it doesn't start with '{', assume it is Base64 encoded
-    if (!envVar.startsWith('{')) {
-      envVar = Buffer.from(envVar, 'base64').toString('utf8');
+    if ((envVar.startsWith('"') && envVar.endsWith('"')) || (envVar.startsWith("'") && envVar.endsWith("'"))) {
+      envVar = envVar.slice(1, -1).trim();
     }
-    
-    // Sometimes platforms escape newlines, so we ensure \n is properly handled for the private key
+    if (!envVar.startsWith('{')) {
+      envVar = Buffer.from(envVar, 'base64').toString('utf8').trim();
+    }
     envVar = envVar.replace(/\\\\n/g, '\\n');
-    
     serviceAccount = JSON.parse(envVar);
+  } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+    serviceAccount = {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+    };
   } else {
     serviceAccount = require('./serviceAccountKey.json');
   }
-  
+
+  if (serviceAccount && serviceAccount.private_key) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
+
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
-  console.log("Firebase Admin Initialized.");
+  console.log("Firebase Admin Initialized Successfully.");
 } catch (error) {
-  console.error("Firebase Admin Initialization Error: Please provide a valid serviceAccountKey.json or set FIREBASE_SERVICE_ACCOUNT environment variable. Details:", error.message);
+  console.error("Firebase Admin Initialization Error:", error.message);
 }
 let db = null;
 if (admin.firestore) {
