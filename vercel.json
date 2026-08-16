@@ -6,11 +6,19 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/python_service.py",
+      "use": "@vercel/python"
+    },
+    {
       "src": "public/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/api/python-crawler(.*)",
+      "dest": "api/python_service.py"
+    },
     {
       "src": "/api/(.*)",
       "dest": "backend/server.js"
