@@ -316,7 +316,13 @@
           } catch (err) {
             console.error("Quota lock Google Sign In error:", err);
             if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In / Sign Up with Google';
-            alert("Sign in failed: " + (err.message || err));
+            if (err && (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain')))) {
+              if (confirm("Google Auth requires adding 'dpgnotes.vercel.app' to Firebase Authorized Domains.\n\nRedirect to official portal (https://dpgnotes.web.app) for instant Google Auth?")) {
+                window.location.href = "https://dpgnotes.web.app/";
+              }
+            } else {
+              alert("Sign in failed: " + (err.message || err));
+            }
           }
         };
 

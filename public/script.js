@@ -548,7 +548,23 @@ if (googleLogin) {
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error("Google Auth error:", error);
+      if (error && (error.code === 'auth/unauthorized-domain' || (error.message && error.message.includes('unauthorized-domain')))) {
+        if (typeof window.showCustomAlert === 'function') {
+          window.showCustomAlert(
+            "🔒 Domain Auth Notice",
+            "Google Auth requires adding 'dpgnotes.vercel.app' to Firebase Console -> Authentication -> Authorized Domains.\n\nClick below to open official portal (dpgnotes.web.app) for instant Google Auth!",
+            "Go to Official Portal",
+            () => { window.location.href = "https://dpgnotes.web.app/"; }
+          );
+        } else {
+          if (confirm("Google Auth requires adding 'dpgnotes.vercel.app' to Firebase Authorized Domains.\n\nRedirect to official portal (https://dpgnotes.web.app) for instant Google Auth?")) {
+            window.location.href = "https://dpgnotes.web.app/";
+          }
+        }
+      } else {
+        alert("Google Sign-In Error: " + (error.message || error));
+      }
     }
   });
 }
