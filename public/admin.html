@@ -24,9 +24,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" href="ANH.png" type="image/png" />
-  <title>DPGNotes | Enterprise Admin</title>
-  
-  <link rel="stylesheet" href="style.css" />
+  <title>DPGNotes | Enterprise Admin Panel & Web Intelligence Dashboard</title>
+  <meta name="description" content="DPGNotes Enterprise Administration & Security Operations Portal. Manage verified resources, review contributor website telemetry, audit ad campaigns, and track real-time analytics." />
+  <meta name="keywords" content="DPGNotes Admin, Web Analytics, Contributor Verification, Educational Resource Management, Security Operations, Akshat Network Hub" />
+  <meta name="author" content="DPGNotes / Akshat Network Hub" />
+  <meta property="og:title" content="DPGNotes | Enterprise Admin & Analytics" />
+  <meta property="og:description" content="Real-time website analytics, contributor telemetry, and security moderation dashboard." />
+  <meta property="og:image" content="ANH.png" />
+  <meta property="og:type" content="website" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <style>
@@ -1435,13 +1440,21 @@
             </div>
           </div>
 
-          <!-- Trend Chart -->
+          <!-- Web Analytics Trend Chart -->
           <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; position:relative;">
-            <h3 style="font-size:1.1rem; color:white; margin:0 0 1rem 0; display:flex; align-items:center; gap:8px;">
-              <i class="ri-line-chart-line" style="color:#38bdf8;"></i> External Web Traffic & Telemetry Spline Chart
-            </h3>
-            <div style="height:320px; width:100%; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:0.75rem;">
+              <h3 style="font-size:1.1rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+                <i class="ri-line-chart-line" style="color:#38bdf8;"></i> Web Analytics Trend Chart
+              </h3>
+              <span style="font-size:0.78rem; color:#94a3b8; display:flex; align-items:center; gap:4px;">
+                <i class="ri-information-line"></i> Real telemetry traffic signals & outbound click tracking via <code>track-init.js</code>
+              </span>
+            </div>
+            <div style="height:340px; width:100%; position:relative;">
               <canvas id="webAnalyticsChart"></canvas>
+            </div>
+            <div style="margin-top:0.75rem; font-size:0.8rem; color:#94a3b8; text-align:center;">
+              ℹ️ <strong>Tip:</strong> Click on any red dot on the graph to inspect corresponding web visitor telemetry & IP logs below!
             </div>
           </div>
 

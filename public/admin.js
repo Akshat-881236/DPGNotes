@@ -3410,7 +3410,7 @@ window.loadWebAnalyticsAdmin = async function() {
           labels: data.labels || [],
           datasets: [
             {
-              label: 'CTR % (Green Line)',
+              label: 'Engagement / CTR % (Green Line)',
               data: data.ctrData || [],
               borderColor: '#10b981',
               backgroundColor: '#10b981',
@@ -3421,7 +3421,7 @@ window.loadWebAnalyticsAdmin = async function() {
               yAxisID: 'yPercent'
             },
             {
-              label: 'Web Impressions (Yellow Line)',
+              label: 'Page Views & Traffic (Yellow Line)',
               data: data.viewsData || [],
               borderColor: '#f59e0b',
               backgroundColor: '#f59e0b',
@@ -3432,7 +3432,7 @@ window.loadWebAnalyticsAdmin = async function() {
               yAxisID: 'yCount'
             },
             {
-              label: 'Link Clicks (Red Dots - Click to open User Profile)',
+              label: 'Outbound Link Clicks (Red Dots - Click to inspect visitor logs)',
               data: data.clicksData || [],
               borderColor: '#ef4444',
               backgroundColor: '#ef4444',
@@ -3443,7 +3443,15 @@ window.loadWebAnalyticsAdmin = async function() {
               yAxisID: 'yCount'
             },
             {
-              label: 'YouTube Ads/Links (YouTube Red)',
+              label: 'Visitor Screentime Mins (Purple Line)',
+              data: data.screentimeData || [],
+              borderColor: '#c084fc',
+              backgroundColor: '#c084fc',
+              tension: 0.4,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'YouTube Links & Media (YouTube Red)',
               data: data.youtubeData || [],
               borderColor: '#ff0000',
               backgroundColor: '#ff0000',
@@ -3452,7 +3460,7 @@ window.loadWebAnalyticsAdmin = async function() {
               yAxisID: 'yCount'
             },
             {
-              label: 'GitHub Ads/Links (Gray Line)',
+              label: 'GitHub & Repositories (Gray Line)',
               data: data.githubData || [],
               borderColor: '#94a3b8',
               backgroundColor: '#94a3b8',
@@ -3461,18 +3469,10 @@ window.loadWebAnalyticsAdmin = async function() {
               yAxisID: 'yCount'
             },
             {
-              label: 'LinkedIn Ads/Links (Blue Line)',
+              label: 'LinkedIn & Socials (Blue Line)',
               data: data.linkedinData || [],
               borderColor: '#0284c7',
               backgroundColor: '#0284c7',
-              tension: 0.4,
-              yAxisID: 'yCount'
-            },
-            {
-              label: 'Medium Ads/Links (Purple Line)',
-              data: data.mediumData || [],
-              borderColor: '#c084fc',
-              backgroundColor: '#c084fc',
               tension: 0.4,
               yAxisID: 'yCount'
             }
