@@ -50,6 +50,9 @@ function runPythonAnalyticsScript(scriptRelativePath, inputData) {
 // ==========================================
 // INIT APP
 // ==========================================
+const app = express();
+app.set('trust proxy', 1);
+
 const corsOptions = {
   origin: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -5755,18 +5758,9 @@ app.use('/api', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-if (!process.env.VERCEL) {
-  app.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
-    await ensureAllDocsHaveTrackId();
-    await scanDuplicateProfiles();
-    await initializeWebsiteKnowledgeCrawlerCache();
-  });
-} else {
-  // Initialize caches on Vercel cold boot
-  ensureAllDocsHaveTrackId();
-  scanDuplicateProfiles();
-  initializeWebsiteKnowledgeCrawlerCache();
-}
-
-module.exports = app;
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
+  await ensureAllDocsHaveTrackId();
+  await scanDuplicateProfiles();
+  await initializeWebsiteKnowledgeCrawlerCache();
+});
