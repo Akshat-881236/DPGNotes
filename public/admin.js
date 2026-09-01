@@ -3399,7 +3399,7 @@ window.loadWebAnalyticsAdmin = async function() {
     if (document.getElementById("statWebClicks")) document.getElementById("statWebClicks").textContent = (data.totalClicks || 0).toLocaleString();
     if (document.getElementById("statWebUniqueIps")) document.getElementById("statWebUniqueIps").textContent = (data.uniqueIps || 0).toLocaleString();
 
-    // Multi-line Spline Chart
+    // Multi-line Spline Chart (Matching Image 1 Design & Multi-channel datasets)
     const canvas = document.getElementById("webAnalyticsChart");
     if (canvas && window.Chart) {
       if (window.myWebAnalyticsChart) window.myWebAnalyticsChart.destroy();
@@ -3414,6 +3414,9 @@ window.loadWebAnalyticsAdmin = async function() {
               data: data.ctrData || [],
               borderColor: '#10b981',
               backgroundColor: '#10b981',
+              pointRadius: 5,
+              pointHoverRadius: 8,
+              pointBackgroundColor: '#10b981',
               tension: 0.4,
               yAxisID: 'yPercent'
             },
@@ -3422,20 +3425,52 @@ window.loadWebAnalyticsAdmin = async function() {
               data: data.viewsData || [],
               borderColor: '#f59e0b',
               backgroundColor: '#f59e0b',
+              pointRadius: 5,
+              pointHoverRadius: 8,
+              pointBackgroundColor: '#f59e0b',
               tension: 0.4,
               yAxisID: 'yCount'
             },
             {
-              label: 'Outbound Clicks (Red Dots)',
+              label: 'Link Clicks (Red Dots - Click to open User Profile)',
               data: data.clicksData || [],
               borderColor: '#ef4444',
               backgroundColor: '#ef4444',
+              pointRadius: 7,
+              pointHoverRadius: 10,
+              pointBackgroundColor: '#ef4444',
               tension: 0.4,
               yAxisID: 'yCount'
             },
             {
-              label: 'Visitor Screentime Mins (Purple Line)',
-              data: data.screentimeData || [],
+              label: 'YouTube Ads/Links (YouTube Red)',
+              data: data.youtubeData || [],
+              borderColor: '#ff0000',
+              backgroundColor: '#ff0000',
+              borderDash: [5, 5],
+              tension: 0.4,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'GitHub Ads/Links (Gray Line)',
+              data: data.githubData || [],
+              borderColor: '#94a3b8',
+              backgroundColor: '#94a3b8',
+              borderDash: [3, 3],
+              tension: 0.4,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'LinkedIn Ads/Links (Blue Line)',
+              data: data.linkedinData || [],
+              borderColor: '#0284c7',
+              backgroundColor: '#0284c7',
+              tension: 0.4,
+              yAxisID: 'yCount'
+            },
+            {
+              label: 'Medium Ads/Links (Purple Line)',
+              data: data.mediumData || [],
               borderColor: '#c084fc',
               backgroundColor: '#c084fc',
               tension: 0.4,
@@ -3446,10 +3481,47 @@ window.loadWebAnalyticsAdmin = async function() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          onClick: (evt, activeElements) => {
+            if (activeElements && activeElements.length > 0) {
+              const el = activeElements[0];
+              const datasetIdx = el.datasetIndex;
+              if (datasetIdx === 2) { // Red Dots Line Clicked!
+                const visitorSection = document.getElementById("webUsersTableBody");
+                if (visitorSection) {
+                  visitorSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#f8fafc', font: { family: 'Inter', size: 12 } }
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleColor: '#f8fafc',
+              bodyColor: '#cbd5e1',
+              borderColor: '#334155',
+              borderWidth: 1
+            }
+          },
           scales: {
-            yCount: { type: 'linear', position: 'left', grid: { color: 'rgba(255,255,255,0.05)' } },
-            yPercent: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: (v) => v + '%' } },
-            x: { grid: { color: 'rgba(255,255,255,0.05)' } }
+            yCount: {
+              type: 'linear',
+              position: 'left',
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            yPercent: {
+              type: 'linear',
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#10b981', callback: (v) => v + '%' }
+            },
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8' }
+            }
           }
         }
       });

@@ -60,7 +60,7 @@ const corsOptions = {
   credentials: true
 };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options('/(.*)', cors(corsOptions));
 
 // Explicit Response Header Middleware to guarantee CORS headers on all endpoints
 app.use((req, res, next) => {
@@ -5453,9 +5453,9 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
         title: d.title || 'Untitled Website',
         contributorName: d.contributorName || 'Contributor',
         contributorUid: d.contributorUid || '',
-        views: Number(d.viewsCount || 1),
-        screentime: Number(d.screentime || 60),
-        clicks: Math.round(Number(d.viewsCount || 1) * 0.4)
+        views: Number(d.viewsCount || 0),
+        screentime: Number(d.screentime || 0),
+        clicks: Number(d.clicksCount || 0)
       };
       websiteList.push(item);
       siteStatsMap.set(doc.id, item);
@@ -5466,6 +5466,7 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
     let totalClicks = 0;
     const uniqueIpSet = new Set();
     const visitorTelemetryList = [];
+    const telemetryDocs = [];
 
     // Query web_tracking collection first (falling back to website_telemetry)
     const telemetrySnap = await db.collection("web_tracking").get().catch(() => null) || await db.collection("website_telemetry").get().catch(() => null);
@@ -5474,10 +5475,11 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
         const t = doc.data();
         if (websiteId !== 'ALL' && t.websiteId !== websiteId) return;
 
+        telemetryDocs.push(t);
         totalViews++;
         const st = Number(t.screentimeSeconds || 15);
         totalScreentimeSecs += st;
-        if (t.action === 'outbound_click') totalClicks++;
+        if (t.action === 'outbound_click' || t.outboundUrl) totalClicks++;
         if (t.visitorIp) uniqueIpSet.add(t.visitorIp);
 
         visitorTelemetryList.push({
@@ -5493,44 +5495,78 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
       });
     }
 
-    if (totalViews === 0) {
-      totalViews = websiteList.length * 8;
-      totalScreentimeSecs = totalViews * 90;
-      totalClicks = Math.round(totalViews * 0.35);
-      uniqueIpSet.add('127.0.0.1');
-    }
-
-    // Build Spline Trend Curve Labels & Datasets
+    // Mathematical Bucket Aggregation based on timeframe (hourly, weekly, monthly)
     const now = new Date();
-    const labels = [];
-    const viewsData = [];
-    const screentimeData = [];
-    const clicksData = [];
-    const ctrData = [];
-
-    if (timeframe === 'daily' || timeframe === 'hourly') {
-      for (let i = 12; i >= 0; i--) {
-        const d = new Date(now.getTime() - (i * 2 * 3600 * 1000));
-        const hh = String(d.getHours()).padStart(2, '0');
-        labels.push(`${hh}:00`);
-        const v = Math.floor(Math.random() * 5) + 1;
-        viewsData.push(v);
-        screentimeData.push(Math.round(v * 2.5));
-        clicksData.push(Math.floor(v * 0.4));
-        ctrData.push(Number((Math.random() * 20 + 5).toFixed(1)));
+    const buckets = [];
+    
+    if (timeframe === 'hourly' || timeframe === 'daily') {
+      // 16 1-hour buckets matching Image 1 format (YYYY-MM-DD HH:00)
+      for (let i = 15; i >= 0; i--) {
+        const bucketTime = new Date(now.getTime() - (i * 3600 * 1000));
+        const dateStr = bucketTime.toISOString().split('T')[0];
+        const hh = String(bucketTime.getHours()).padStart(2, '0');
+        const label = `${dateStr} ${hh}:00`;
+        buckets.push({ label, bucketKey: `${dateStr}T${hh}`, views: 0, clicks: 0, screentimeSecs: 0, youtube: 0, github: 0, linkedin: 0, medium: 0, dpg: 0 });
+      }
+    } else if (timeframe === 'monthly') {
+      // 30 1-day buckets
+      for (let i = 29; i >= 0; i--) {
+        const bucketTime = new Date(now.getTime() - (i * 24 * 3600 * 1000));
+        const dateStr = bucketTime.toISOString().split('T')[0];
+        buckets.push({ label: dateStr, bucketKey: dateStr, views: 0, clicks: 0, screentimeSecs: 0, youtube: 0, github: 0, linkedin: 0, medium: 0, dpg: 0 });
       }
     } else {
+      // Weekly: 7 1-day buckets
       for (let i = 6; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - i);
-        labels.push(d.toISOString().split('T')[0]);
-        const v = Math.floor(totalViews / 7) + Math.floor(Math.random() * 3);
-        viewsData.push(v);
-        screentimeData.push(Math.round(v * 1.8));
-        clicksData.push(Math.floor(v * 0.3));
-        ctrData.push(Number((Math.random() * 15 + 8).toFixed(1)));
+        const bucketTime = new Date(now.getTime() - (i * 24 * 3600 * 1000));
+        const dateStr = bucketTime.toISOString().split('T')[0];
+        buckets.push({ label: dateStr, bucketKey: dateStr, views: 0, clicks: 0, screentimeSecs: 0, youtube: 0, github: 0, linkedin: 0, medium: 0, dpg: 0 });
       }
     }
+
+    // Map telemetry docs into mathematical buckets
+    telemetryDocs.forEach(t => {
+      let tDate;
+      if (t.timestamp && typeof t.timestamp.toDate === 'function') {
+        tDate = t.timestamp.toDate();
+      } else if (t.timestamp) {
+        tDate = new Date(t.timestamp);
+      } else {
+        tDate = new Date();
+      }
+
+      const dateStr = tDate.toISOString().split('T')[0];
+      const hh = String(tDate.getHours()).padStart(2, '0');
+      const docKey = (timeframe === 'hourly' || timeframe === 'daily') ? `${dateStr}T${hh}` : dateStr;
+
+      const targetBucket = buckets.find(b => b.bucketKey === docKey) || buckets[buckets.length - 1];
+      if (targetBucket) {
+        targetBucket.views++;
+        targetBucket.screentimeSecs += Number(t.screentimeSeconds || 15);
+        if (t.action === 'outbound_click' || t.outboundUrl) {
+          targetBucket.clicks++;
+          const outUrl = (t.outboundUrl || '').toLowerCase();
+          if (outUrl.includes('youtube.com') || outUrl.includes('youtu.be')) targetBucket.youtube++;
+          else if (outUrl.includes('github.com')) targetBucket.github++;
+          else if (outUrl.includes('linkedin.com')) targetBucket.linkedin++;
+          else if (outUrl.includes('medium.com')) targetBucket.medium++;
+          else targetBucket.dpg++;
+        }
+      }
+    });
+
+    const labels = buckets.map(b => b.label);
+    const viewsData = buckets.map(b => b.views);
+    const clicksData = buckets.map(b => b.clicks);
+    const screentimeData = buckets.map(b => Math.round(b.screentimeSecs / 60));
+    const youtubeData = buckets.map(b => b.youtube);
+    const githubData = buckets.map(b => b.github);
+    const linkedinData = buckets.map(b => b.linkedin);
+    const mediumData = buckets.map(b => b.medium);
+    const dpgData = buckets.map(b => b.dpg);
+
+    // Exact mathematical CTR % calculation per bucket: (clicks / views) * 100
+    const ctrData = buckets.map(b => b.views > 0 ? Number(((b.clicks / b.views) * 100).toFixed(1)) : 0);
 
     // Contributor Performance List
     const contributorMap = new Map();
@@ -5570,6 +5606,11 @@ app.get(['/api/admin/website-analytics', '/website-analytics', '/api/website-ana
       screentimeData,
       clicksData,
       ctrData,
+      youtubeData,
+      githubData,
+      linkedinData,
+      mediumData,
+      dpgData,
       websiteList,
       visitorTelemetryList: visitorTelemetryList.slice(0, 20),
       contributorPerformanceList
