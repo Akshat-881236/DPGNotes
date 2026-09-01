@@ -26,6 +26,11 @@
       localStorage.setItem('dpg_web_visitor_id', visitorSessionId);
     }
 
+    // Live Render Express API Backend
+    const backendBase = (typeof window !== 'undefined' && window.DPGNOTES_BACKEND_URL) 
+      ? window.DPGNOTES_BACKEND_URL 
+      : 'https://dpgnotes.onrender.com';
+
     // 2. Phishing & Malicious Activity Heuristic Detection
     let phishingDetected = false;
     let phishingReason = "";
@@ -43,7 +48,7 @@
     }
 
     const reportPhishingThreat = (reason) => {
-      fetch('https://dpgnotes.web.app/api/website/report-phishing', {
+      fetch(`${backendBase}/api/website/report-phishing`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,7 +84,7 @@
         ...extra
       };
 
-      fetch('https://dpgnotes.web.app/api/website/track-telemetry', {
+      fetch(`${backendBase}/api/website/track-telemetry`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
