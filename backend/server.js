@@ -60,7 +60,6 @@ const corsOptions = {
   credentials: true
 };
 app.use(cors(corsOptions));
-app.options('/(.*)', cors(corsOptions));
 
 // Explicit Response Header Middleware to guarantee CORS headers on all endpoints
 app.use((req, res, next) => {
