@@ -19,7 +19,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
+  <script src="notes-handler.js"></script>
   <style>
     :root {
       --bg-top: #0b0f19;
@@ -37,6 +39,153 @@
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
       margin: 0;
+    }
+    .train-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.65rem 1.3rem;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.2);
+      color: #c4b5fd;
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+    .tab-btn:hover:not(.active) {
+      color: white;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .badge-pill {
+      background: #6366f1;
+      color: white;
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .rend-option-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.65rem 1.2rem;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+      font-size: 0.9rem;
+    }
+    .rend-option-label:has(input:checked) {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: #818cf8;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+    }
+    .rend-option-label.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+    .tools-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 0.8rem;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .note-tool-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .note-tool-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #818cf8;
+      color: white;
+    }
+    .status-notice {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin-top: 0.75rem;
+    }
+    .status-notice.available {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+    .status-notice.warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+    }
+    .status-notice.collision {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .view-mode-tabs {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .view-mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .view-mode-btn.active {
+      background: rgba(99, 102, 241, 0.3);
+      color: white;
+    }
+    .note-preview-box {
+      border: 1px dashed rgba(99, 102, 241, 0.35);
+      border-radius: 12px;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.25);
+      min-height: 120px;
     }
     .header-nav {
       background: rgba(15, 23, 42, 0.8);
@@ -160,63 +309,221 @@
         <span style="font-size:2rem; color:var(--primary-light);"><i class="ri-brain-line"></i></span>
       </div>
 
-      <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6; margin-bottom:2rem;">
-        Add external web links for Python crawler indexing and structured FAQs to build a custom runtime knowledge base (<code style="color:#c4b5fd;">knowledge.md</code>) for this resource's DPGNotes PDF Viewer AI Assistant.
-      </p>
+      <!-- NAVIGATION TABS -->
+      <div class="train-tabs">
+        <button type="button" id="tabBtnAi" onclick="switchTrainTab('ai')" class="tab-btn active">
+          <i class="ri-brain-line"></i> AI Knowledge Base (Links & FAQs)
+        </button>
+        <button type="button" id="tabBtnNotes" onclick="switchTrainTab('notes')" class="tab-btn">
+          <i class="ri-file-edit-line"></i> In-Document Notes Manager <span id="notesCountBadge" class="badge-pill">0</span>
+        </button>
+      </div>
 
-      <form id="trainForm" onsubmit="handleTrainSubmit(event)">
-        <!-- WEB LINKS SECTION -->
-        <div style="margin-bottom:2rem;">
-          <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
-            <i class="ri-link" style="color:var(--primary-light);"></i> External Crawler Web Links
-          </h3>
-          <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Provide URLs to documentation, academic portals, or notes that Python crawler will extract data from.</p>
+      <!-- TAB PANE 1: AI Knowledge Base -->
+      <div id="tabPaneAi">
+        <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6; margin-bottom:2rem;">
+          Add external web links for Python crawler indexing and structured FAQs to build a custom runtime knowledge base (<code style="color:#c4b5fd;">knowledge.md</code>) for this resource's DPGNotes PDF Viewer AI Assistant.
+        </p>
 
-          <div id="linksContainer">
-            <div style="display:flex; gap:8px; margin-bottom:8px;">
-              <input type="url" class="input-field crawler-url" placeholder="https://example.com/reference-notes">
-            </div>
-          </div>
-          <button type="button" onclick="addLinkInput()" class="btn-secondary"><i class="ri-add-line"></i> Add Another Link</button>
-        </div>
+        <form id="trainForm" onsubmit="handleTrainSubmit(event)">
+          <!-- WEB LINKS SECTION -->
+          <div style="margin-bottom:2rem;">
+            <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
+              <i class="ri-link" style="color:var(--primary-light);"></i> External Crawler Web Links
+            </h3>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Provide URLs to documentation, academic portals, or notes that Python crawler will extract data from.</p>
 
-        <!-- FAQ SECTION -->
-        <div style="margin-bottom:2rem;">
-          <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
-            <i class="ri-question-answer-line" style="color:var(--primary-light);"></i> Resource FAQs & Custom Q&A Pair
-          </h3>
-          <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Query field maximum length is <strong>80 characters</strong>. Solution field maximum length is <strong>300 characters</strong>.</p>
-
-          <div id="faqsContainer">
-            <!-- FAQ item 1 -->
-            <div class="faq-item">
-              <div style="margin-bottom:1rem;">
-                <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Query / Question (Max 80 chars) *</label>
-                <input type="text" class="input-field faq-query" maxlength="80" placeholder="e.g. What are the key topics in Unit 1?" required oninput="updateCounter(this, 'qCount1', 80)">
-                <div class="char-counter" id="qCount1">0 / 80</div>
-              </div>
-              <div>
-                <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Solution / Answer (Max 300 chars) *</label>
-                <textarea class="input-field faq-solution" maxlength="300" style="height:80px;" placeholder="e.g. Unit 1 covers Kinematics, Newtonian Laws of Motion, and Physical Dynamics." required oninput="updateCounter(this, 'sCount1', 300)"></textarea>
-                <div class="char-counter" id="sCount1">0 / 300</div>
+            <div id="linksContainer">
+              <div style="display:flex; gap:8px; margin-bottom:8px;">
+                <input type="url" class="input-field crawler-url" placeholder="https://example.com/reference-notes">
               </div>
             </div>
+            <button type="button" onclick="addLinkInput()" class="btn-secondary"><i class="ri-add-line"></i> Add Another Link</button>
           </div>
-          <button type="button" onclick="addFaqInput()" class="btn-secondary"><i class="ri-add-line"></i> Add FAQ Pair</button>
+
+          <!-- FAQ SECTION -->
+          <div style="margin-bottom:2rem;">
+            <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
+              <i class="ri-question-answer-line" style="color:var(--primary-light);"></i> Resource FAQs & Custom Q&A Pair
+            </h3>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Query field maximum length is <strong>80 characters</strong>. Solution field maximum length is <strong>300 characters</strong>.</p>
+
+            <div id="faqsContainer">
+              <!-- FAQ item 1 -->
+              <div class="faq-item">
+                <div style="margin-bottom:1rem;">
+                  <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Query / Question (Max 80 chars) *</label>
+                  <input type="text" class="input-field faq-query" maxlength="80" placeholder="e.g. What are the key topics in Unit 1?" required oninput="updateCounter(this, 'qCount1', 80)">
+                  <div class="char-counter" id="qCount1">0 / 80</div>
+                </div>
+                <div>
+                  <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Solution / Answer (Max 300 chars) *</label>
+                  <textarea class="input-field faq-solution" maxlength="300" style="height:80px;" placeholder="e.g. Unit 1 covers Kinematics, Newtonian Laws of Motion, and Physical Dynamics." required oninput="updateCounter(this, 'sCount1', 300)"></textarea>
+                  <div class="char-counter" id="sCount1">0 / 300</div>
+                </div>
+              </div>
+            </div>
+            <button type="button" onclick="addFaqInput()" class="btn-secondary"><i class="ri-add-line"></i> Add FAQ Pair</button>
+          </div>
+
+          <div style="margin-top:2.5rem; text-align:right; border-top:1px solid var(--border); padding-top:1.5rem;">
+            <button type="submit" id="submitTrainBtn" class="btn-primary">
+              <i class="ri-cpu-line"></i> Process & Generate Runtime Knowledge Model
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB PANE 2: In-Document Notes Manager -->
+      <div id="tabPaneNotes" style="display:none;">
+        <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:2rem;">
+          <h2 style="color:white; font-size:1.25rem; font-family:'Outfit',sans-serif; margin-bottom:0.4rem; display:flex; align-items:center; gap:8px;">
+            <i class="ri-sticky-note-line" style="color:var(--primary-light);"></i> Add In-Document Note
+          </h2>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem; line-height:1.5;">
+            Attach contributor notes, syllabus formulas, or exam insights before or after specific pages in the PDF reader. Real-time slot collision protection prevents overlaps.
+          </p>
+
+          <div style="display:flex; flex-wrap:wrap; gap:1.2rem; margin-bottom:1.2rem;">
+            <!-- Page Number Input -->
+            <div style="flex:1; min-width:200px;">
+              <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+                Target Page Number *
+              </label>
+              <input type="number" id="notePageNum" min="1" class="input-field" placeholder="e.g. 1" oninput="handlePageSlotValidation()" required>
+            </div>
+
+            <!-- Rendering Option Radio -->
+            <div style="flex:1.2; min-width:240px;">
+              <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+                Rendering Position *
+              </label>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <label id="lblRendBefore" class="rend-option-label" onclick="selectRendering('before')">
+                  <input type="radio" name="noteRendering" id="rendBefore" value="before" onchange="handlePageSlotValidation()">
+                  <span><i class="ri-skip-back-line"></i> Before Page</span>
+                </label>
+                <label id="lblRendAfter" class="rend-option-label" onclick="selectRendering('after')">
+                  <input type="radio" name="noteRendering" id="rendAfter" value="after" onchange="handlePageSlotValidation()" checked>
+                  <span><i class="ri-skip-forward-line"></i> After Page</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Slot Collision Notice -->
+          <div id="slotStatusNotice" style="display:none;"></div>
+
+          <!-- Tags Input -->
+          <div style="margin:1.2rem 0;">
+            <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+              Tags (Quick Topics Covered) *
+            </label>
+            <input type="text" id="noteTags" class="input-field" placeholder="e.g. Kinematics, Newton's Laws, Velocity, Formulas" oninput="updateLiveNotePreview()" required>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+              Listed out all Quick topic cover in small length separated by commas.
+            </div>
+          </div>
+
+          <!-- Content Tools Palette -->
+          <div style="margin-top:1.4rem;">
+            <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+              Content Formatting Tools
+            </label>
+            <div class="tools-palette">
+              <button type="button" class="note-tool-btn" onclick="insertTool('h1')" title="Main Heading (h1)">
+                <i class="ri-heading"></i> Main Heading (h1)
+              </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('h2')" title="Subheading (h2)">
+                <i class="ri-h-2"></i> Subheading (h2)
+              </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('h3')" title="Mini Heading (h3)">
+                <i class="ri-h-3"></i> Mini Heading (h3)
+              </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('p')" title="Paragraph (p)">
+                <i class="ri-paragraph"></i> Content (p)
+              </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('a')" title="Hyperlink (a)">
+                <i class="ri-link"></i> Link (a)
+              </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('ol')" title="Numbered List (ol/li)">
+                <i class="ri-list-ordered"></i> Ordered List (ol)
+              </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('ul')" title="Bulleted List (ul/li)">
+                <i class="ri-list-unordered"></i> Unordered List (ul)
+              </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('code')" title="Inline Code">
+                <i class="ri-code-line"></i> Code
+              </button>
+              <button type="button" class="note-tool-btn" onclick="clearNoteContent()" style="margin-left:auto; color:#ef4444;" title="Clear Editor">
+                <i class="ri-delete-bin-line"></i> Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Dual Mode: HTML Editor / Live Preview -->
+          <div style="margin-top:1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:8px;">
+              <div class="view-mode-tabs">
+                <button type="button" id="btnModeEdit" class="view-mode-btn active" onclick="switchNoteViewMode('edit')">
+                  <i class="ri-code-s-slash-line"></i> HTML Editor
+                </button>
+                <button type="button" id="btnModePreview" class="view-mode-btn" onclick="switchNoteViewMode('preview')">
+                  <i class="ri-eye-line"></i> Live Visual Preview
+                </button>
+              </div>
+              <span style="font-size:0.75rem; color:var(--text-muted);">
+                Wrap text or write raw HTML directly (anchor tags supported for links)
+              </span>
+            </div>
+
+            <!-- HTML Editor Area -->
+            <div id="noteEditorWrap">
+              <textarea id="noteHtmlContent" class="input-field" style="height:170px; font-family:'Fira Code', monospace; font-size:0.88rem; line-height:1.5;" placeholder="Use tools above or write HTML here... For links in content directly write anchor tags HTML code: <a href='...'>Link</a>" oninput="updateLiveNotePreview()"></textarea>
+            </div>
+
+            <!-- Live Preview Area -->
+            <div id="notePreviewWrap" style="display:none;">
+              <div class="note-preview-box">
+                <div id="liveNotePreviewTarget">
+                  <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem 0;">
+                    Preview will render here once content is entered...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div style="margin-top:1.8rem; text-align:right; border-top:1px solid var(--border); padding-top:1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <span style="font-size:0.78rem; color:var(--text-muted);" id="noteTargetSlotLabel">
+              Target Slot: Page 1 (After Page)
+            </span>
+            <button type="button" id="btnSaveNote" onclick="submitNewNote()" class="btn-primary">
+              <i class="ri-upload-cloud-line"></i> Save & Publish In-Document Note
+            </button>
+          </div>
         </div>
 
-        <div style="margin-top:2.5rem; text-align:right; border-top:1px solid var(--border); padding-top:1.5rem;">
-          <button type="submit" id="submitTrainBtn" class="btn-primary">
-            <i class="ri-cpu-line"></i> Process & Generate Runtime Knowledge Model
-          </button>
+        <!-- EXISTING NOTES ACCORDION / LIST -->
+        <div>
+          <h3 style="color:white; font-size:1.15rem; font-family:'Outfit',sans-serif; margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between;">
+            <span><i class="ri-stack-line" style="color:var(--primary-light);"></i> Active In-Document Notes for this Resource</span>
+            <span id="existingNotesSummary" style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">0 Notes</span>
+          </h3>
+          <div id="existingNotesList">
+            <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:2rem; background:rgba(0,0,0,0.15); border-radius:12px; border:1px dashed var(--border);">
+              Loading notes...
+            </div>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const cfg = {
@@ -233,6 +540,527 @@
 
     const activeUid = localStorage.getItem("dpgActiveUserUid") || "";
     let faqCounter = 1;
+
+    // ----------------------------------------------------
+    // IN-DOCUMENT NOTES MANAGEMENT & COLLISION VALIDATION
+    // ----------------------------------------------------
+    window.currentResourceNotes = [];
+
+    window.switchTrainTab = function(tab) {
+      const btnAi = document.getElementById('tabBtnAi');
+      const btnNotes = document.getElementById('tabBtnNotes');
+      const paneAi = document.getElementById('tabPaneAi');
+      const paneNotes = document.getElementById('tabPaneNotes');
+
+      if (tab === 'notes') {
+        btnAi?.classList.remove('active');
+        btnNotes?.classList.add('active');
+        if (paneAi) paneAi.style.display = 'none';
+        if (paneNotes) paneNotes.style.display = 'block';
+        window.handlePageSlotValidation();
+        window.updateLiveNotePreview();
+      } else {
+        btnNotes?.classList.remove('active');
+        btnAi?.classList.add('active');
+        if (paneNotes) paneNotes.style.display = 'none';
+        if (paneAi) paneAi.style.display = 'block';
+      }
+    };
+
+    window.switchNoteViewMode = function(mode) {
+      const btnEdit = document.getElementById('btnModeEdit');
+      const btnPreview = document.getElementById('btnModePreview');
+      const wrapEdit = document.getElementById('noteEditorWrap');
+      const wrapPreview = document.getElementById('notePreviewWrap');
+
+      if (mode === 'preview') {
+        btnEdit?.classList.remove('active');
+        btnPreview?.classList.add('active');
+        if (wrapEdit) wrapEdit.style.display = 'none';
+        if (wrapPreview) wrapPreview.style.display = 'block';
+        window.updateLiveNotePreview();
+      } else {
+        btnPreview?.classList.remove('active');
+        btnEdit?.classList.add('active');
+        if (wrapPreview) wrapPreview.style.display = 'none';
+        if (wrapEdit) wrapEdit.style.display = 'block';
+      }
+    };
+
+    window.selectRendering = function(val) {
+      if (val === 'before') {
+        const r = document.getElementById('rendBefore');
+        if (r && !r.disabled) r.checked = true;
+      } else {
+        const r = document.getElementById('rendAfter');
+        if (r && !r.disabled) r.checked = true;
+      }
+      window.handlePageSlotValidation();
+    };
+
+    window.handlePageSlotValidation = function() {
+      const pageInput = document.getElementById('notePageNum');
+      const pgVal = pageInput ? pageInput.value.trim() : '';
+      const pg = parseInt(pgVal, 10);
+      const beforeRadio = document.getElementById('rendBefore');
+      const afterRadio = document.getElementById('rendAfter');
+      const lblBefore = document.getElementById('lblRendBefore');
+      const lblAfter = document.getElementById('lblRendAfter');
+      const statusNotice = document.getElementById('slotStatusNotice');
+      const slotLabel = document.getElementById('noteTargetSlotLabel');
+      const saveBtn = document.getElementById('btnSaveNote');
+
+      if (!beforeRadio || !afterRadio) return;
+
+      if (isNaN(pg) || pg < 1) {
+        lblBefore?.classList.remove('disabled');
+        lblAfter?.classList.remove('disabled');
+        beforeRadio.disabled = false;
+        afterRadio.disabled = false;
+        if (statusNotice) statusNotice.style.display = 'none';
+        if (slotLabel) slotLabel.textContent = 'Enter a valid Page Number (>= 1)';
+        return;
+      }
+
+      const notes = window.currentResourceNotes || [];
+
+      // Check slot collisions:
+      // 1. Direct 'before' on Page N
+      // 2. If N > 1, 'after' on Page N-1 occupies the same slot
+      let beforeCollision = null;
+      const directBefore = notes.some(n => parseInt(n.pageNumber, 10) === pg && String(n.rendering).toLowerCase() === 'before');
+      if (directBefore) {
+        beforeCollision = `Page ${pg} already has a "Before Page" note.`;
+      } else if (pg > 1) {
+        const prevAfter = notes.some(n => parseInt(n.pageNumber, 10) === pg - 1 && String(n.rendering).toLowerCase() === 'after');
+        if (prevAfter) {
+          beforeCollision = `Page ${pg - 1} has an "After Page" note, which occupies the slot before Page ${pg}.`;
+        }
+      }
+
+      // Check slot collisions for 'after':
+      // 1. Direct 'after' on Page N
+      // 2. 'before' on Page N+1 occupies the same slot
+      let afterCollision = null;
+      const directAfter = notes.some(n => parseInt(n.pageNumber, 10) === pg && String(n.rendering).toLowerCase() === 'after');
+      if (directAfter) {
+        afterCollision = `Page ${pg} already has an "After Page" note.`;
+      } else {
+        const nextBefore = notes.some(n => parseInt(n.pageNumber, 10) === pg + 1 && String(n.rendering).toLowerCase() === 'before');
+        if (nextBefore) {
+          afterCollision = `Page ${pg + 1} has a "Before Page" note, which occupies the slot after Page ${pg}.`;
+        }
+      }
+
+      // Update 'before' controls
+      if (beforeCollision) {
+        lblBefore?.classList.add('disabled');
+        beforeRadio.disabled = true;
+        if (beforeRadio.checked && !afterCollision) {
+          afterRadio.checked = true;
+        }
+      } else {
+        lblBefore?.classList.remove('disabled');
+        beforeRadio.disabled = false;
+      }
+
+      // Update 'after' controls
+      if (afterCollision) {
+        lblAfter?.classList.add('disabled');
+        afterRadio.disabled = true;
+        if (afterRadio.checked && !beforeCollision) {
+          beforeRadio.checked = true;
+        }
+      } else {
+        lblAfter?.classList.remove('disabled');
+        afterRadio.disabled = false;
+      }
+
+      // Notification messages & button state
+      const curRend = beforeRadio.checked ? 'before' : 'after';
+      if (slotLabel) {
+        slotLabel.textContent = `Target Slot: Page ${pg} (${curRend === 'before' ? 'Before Page' : 'After Page'})`;
+      }
+
+      if (beforeCollision && afterCollision) {
+        if (statusNotice) {
+          statusNotice.style.display = 'block';
+          statusNotice.className = 'status-notice collision';
+          statusNotice.innerHTML = `<strong><i class="ri-close-circle-fill"></i> Both Slots Unavailable for Page ${pg}:</strong><br>• ${beforeCollision}<br>• ${afterCollision}`;
+        }
+        if (saveBtn) saveBtn.disabled = true;
+      } else if (beforeCollision) {
+        if (statusNotice) {
+          statusNotice.style.display = 'block';
+          statusNotice.className = 'status-notice warning';
+          statusNotice.innerHTML = `<strong><i class="ri-alert-line"></i> "Before Page" Unavailable for Page ${pg}:</strong> ${beforeCollision} Automatically selected "After Page".`;
+        }
+        if (saveBtn) saveBtn.disabled = false;
+      } else if (afterCollision) {
+        if (statusNotice) {
+          statusNotice.style.display = 'block';
+          statusNotice.className = 'status-notice warning';
+          statusNotice.innerHTML = `<strong><i class="ri-alert-line"></i> "After Page" Unavailable for Page ${pg}:</strong> ${afterCollision} Automatically selected "Before Page".`;
+        }
+        if (saveBtn) saveBtn.disabled = false;
+      } else {
+        if (statusNotice) {
+          statusNotice.style.display = 'block';
+          statusNotice.className = 'status-notice available';
+          statusNotice.innerHTML = `<strong><i class="ri-checkbox-circle-fill"></i> Page ${pg} Ready:</strong> Both "Before" and "After" slots are available.`;
+        }
+        if (saveBtn) saveBtn.disabled = false;
+      }
+
+      window.updateLiveNotePreview();
+    };
+
+    function wrapOrInsert(textarea, beforeTag, afterTag, placeholder) {
+      const start = textarea.selectionStart || 0;
+      const end = textarea.selectionEnd || 0;
+      const text = textarea.value;
+      const selected = text.substring(start, end);
+      const insert = selected ? (beforeTag + selected + afterTag) : (beforeTag + placeholder + afterTag);
+      textarea.value = text.substring(0, start) + insert + text.substring(end);
+      const newPos = start + insert.length;
+      textarea.setSelectionRange(newPos, newPos);
+      textarea.focus();
+    }
+
+    window.insertTool = async function(type) {
+      const textarea = document.getElementById('noteHtmlContent');
+      if (!textarea) return;
+
+      if (type === 'h1') {
+        wrapOrInsert(textarea, '<h1>', '</h1>', 'Main Concept Heading');
+      } else if (type === 'h2') {
+        wrapOrInsert(textarea, '<h2>', '</h2>', 'Sub-Topic Heading');
+      } else if (type === 'h3') {
+        wrapOrInsert(textarea, '<h3>', '</h3>', 'Mini Keynote / Formula Heading');
+      } else if (type === 'p') {
+        wrapOrInsert(textarea, '<p>', '</p>', 'Add your detailed academic explanations, study formulas, or exam tips here.');
+      } else if (type === 'code') {
+        wrapOrInsert(textarea, '<code>', '</code>', 'inline_variable_or_math');
+      } else if (type === 'a') {
+        let url = 'https://';
+        let text = 'Reference Link';
+        if (window.customPrompt) {
+          const uRes = await window.customPrompt('Enter the target URL:', { title: 'Insert Link', defaultValue: 'https://' });
+          if (!uRes) return;
+          url = uRes;
+          const tRes = await window.customPrompt('Enter clickable link text:', { title: 'Link Label', defaultValue: 'Read Documentation / Notes' });
+          if (tRes) text = tRes;
+        } else {
+          const uRes = prompt('Enter the target URL:', 'https://');
+          if (!uRes) return;
+          url = uRes;
+          const tRes = prompt('Enter clickable link text:', 'Read Documentation / Notes');
+          if (tRes) text = tRes;
+        }
+        const snippet = `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+        wrapOrInsert(textarea, '', '', snippet);
+      } else if (type === 'ol' || type === 'ul') {
+        const isOl = type === 'ol';
+        let rawItems = '';
+        const promptMsg = isOl 
+          ? 'Enter numbered list items (separate items by newlines or commas):' 
+          : 'Enter bullet list items (separate items by newlines or commas):';
+        if (window.customPrompt) {
+          const res = await window.customPrompt(promptMsg, { title: isOl ? 'Create Ordered List' : 'Create Unordered List', defaultValue: 'Step 1 / Key Item\nStep 2 / Important Point' });
+          if (res) rawItems = res;
+        } else {
+          const res = prompt(promptMsg, 'Step 1 / Key Item\nStep 2 / Important Point');
+          if (res) rawItems = res;
+        }
+        if (rawItems) {
+          const items = rawItems.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+          if (items.length > 0) {
+            const listHtml = `<${type}>\n` + items.map(it => `  <li>${it}</li>`).join('\n') + `\n</${type}>\n`;
+            wrapOrInsert(textarea, '', '', listHtml);
+          }
+        }
+      }
+
+      window.updateLiveNotePreview();
+    };
+
+    window.clearNoteContent = function() {
+      const textarea = document.getElementById('noteHtmlContent');
+      if (textarea) {
+        textarea.value = '';
+        window.updateLiveNotePreview();
+      }
+    };
+
+    window.updateLiveNotePreview = function() {
+      const target = document.getElementById('liveNotePreviewTarget');
+      if (!target) return;
+
+      const pageInput = document.getElementById('notePageNum');
+      const pg = parseInt(pageInput?.value, 10) || 1;
+      const beforeRadio = document.getElementById('rendBefore');
+      const rend = (beforeRadio && beforeRadio.checked) ? 'before' : 'after';
+      const tagsVal = document.getElementById('noteTags')?.value || '';
+      const htmlVal = document.getElementById('noteHtmlContent')?.value || '';
+
+      if (!htmlVal.trim()) {
+        target.innerHTML = `
+          <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem 0;">
+            Type content in the editor or click formatting tools above to see the live rendered note preview here...
+          </div>
+        `;
+        return;
+      }
+
+      const mockNote = {
+        resourceId: targetId,
+        pageNumber: pg,
+        rendering: rend,
+        pageId: `${targetId}-${pg}`,
+        elementId: `${rend === 'before' ? 'be' : 'af'}-preview`,
+        tags: tagsVal.split(',').map(s => s.trim()).filter(Boolean),
+        htmlContent: htmlVal
+      };
+
+      if (window.renderNoteElement) {
+        const el = window.renderNoteElement(mockNote);
+        target.innerHTML = '';
+        target.appendChild(el);
+      } else {
+        target.innerHTML = `
+          <div class="added-notes" type="${rend}" page-id="${mockNote.pageId}" id="${mockNote.elementId}">
+            <div class="added-notes-header">
+              <div class="added-notes-badge">
+                <span>Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})</span>
+              </div>
+            </div>
+            <div class="added-notes-body">${htmlVal}</div>
+          </div>
+        `;
+      }
+    };
+
+    window.loadExistingNotes = async function() {
+      const container = document.getElementById('existingNotesList');
+      const summary = document.getElementById('existingNotesSummary');
+      const badge = document.getElementById('notesCountBadge');
+
+      try {
+        let notes = [];
+        // Try Backend API
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        try {
+          const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.notes)) {
+              notes = data.notes;
+            }
+          }
+        } catch(apiErr) {
+          console.warn("Backend notes fetch error, falling back to Firestore client:", apiErr);
+        }
+
+        // Client Firestore Fallback
+        if (notes.length === 0 && db) {
+          const subCol = collection(db, "resource-notes", targetId, "notes");
+          const snap = await getDocs(subCol);
+          snap.forEach(d => notes.push({ id: d.id, ...d.data() }));
+        }
+
+        notes.sort((a, b) => {
+          if (a.pageNumber !== b.pageNumber) return a.pageNumber - b.pageNumber;
+          return a.rendering === 'before' ? -1 : 1;
+        });
+
+        window.currentResourceNotes = notes;
+        if (badge) badge.textContent = notes.length;
+        if (summary) summary.textContent = `${notes.length} Active Note${notes.length === 1 ? '' : 's'}`;
+
+        renderExistingNotesList(notes);
+        window.handlePageSlotValidation();
+      } catch (err) {
+        console.error("Failed to load existing notes:", err);
+        if (container) {
+          container.innerHTML = `<div style="color:#ef4444; font-size:0.85rem; padding:1rem; text-align:center;">Failed to load existing notes: ${err.message}</div>`;
+        }
+      }
+    };
+
+    function renderExistingNotesList(notes) {
+      const container = document.getElementById('existingNotesList');
+      if (!container) return;
+
+      if (!notes || notes.length === 0) {
+        container.innerHTML = `
+          <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:2rem; background:rgba(0,0,0,0.15); border-radius:12px; border:1px dashed var(--border);">
+            <i class="ri-sticky-note-line" style="font-size:2rem; display:block; margin-bottom:8px; opacity:0.5;"></i>
+            No in-document notes created yet for this resource. Use the form above to add your first note!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = notes.map((note) => {
+        const nid = note.notesId || note.id;
+        const rendLabel = note.rendering === 'before' ? 'Before Page' : 'After Page';
+        const pageId = note.pageId || `${targetId}-${note.pageNumber}`;
+        const elemId = note.elementId || `${note.rendering === 'before' ? 'be' : 'af'}-${nid}`;
+        const tagsArr = Array.isArray(note.tags) ? note.tags : (note.tags ? String(note.tags).split(',') : []);
+
+        return `
+          <div class="faq-item" style="margin-bottom:1.2rem; border-left:4px solid ${note.rendering === 'before' ? '#8b5cf6' : '#10b981'};">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:0.8rem;">
+              <div>
+                <span style="background:${note.rendering === 'before' ? 'rgba(139,92,246,0.2)' : 'rgba(16,185,129,0.2)'}; color:${note.rendering === 'before' ? '#c4b5fd' : '#6ee7b7'}; border:1px solid ${note.rendering === 'before' ? 'rgba(139,92,246,0.4)' : 'rgba(16,185,129,0.4)'}; padding:3px 10px; border-radius:999px; font-size:0.75rem; font-weight:700;">
+                  Page ${note.pageNumber} • ${rendLabel}
+                </span>
+                <span style="font-size:0.72rem; color:var(--text-muted); margin-left:8px;">
+                  <code>page-id="${pageId}"</code> <code>id="${elemId}"</code>
+                </span>
+              </div>
+              <button type="button" onclick="handleDeleteNote('${nid}')" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
+                <i class="ri-delete-bin-line"></i> Delete
+              </button>
+            </div>
+
+            ${tagsArr.length ? `
+              <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:0.8rem;">
+                ${tagsArr.map(t => `<span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#94a3b8; font-size:0.7rem; padding:2px 8px; border-radius:4px;">${t.trim()}</span>`).join('')}
+              </div>
+            ` : ''}
+
+            <details style="margin-top:0.6rem; cursor:pointer;">
+              <summary style="font-size:0.82rem; color:var(--primary-light); font-weight:600; outline:none;">
+                Preview HTML Content Snippet
+              </summary>
+              <div style="margin-top:0.8rem; background:rgba(0,0,0,0.35); padding:1rem; border-radius:8px; border:1px solid var(--border); font-size:0.88rem;">
+                ${note.htmlContent || ''}
+              </div>
+            </details>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.submitNewNote = async function() {
+      const pgInput = document.getElementById('notePageNum');
+      const pg = parseInt(pgInput?.value, 10);
+      if (isNaN(pg) || pg < 1) {
+        if (window.customAlert) await window.customAlert("Please enter a valid Page Number (>= 1).", { title: "Input Required", isDanger: true });
+        else alert("Please enter a valid Page Number (>= 1).");
+        return;
+      }
+
+      const beforeRadio = document.getElementById('rendBefore');
+      const rend = (beforeRadio && beforeRadio.checked) ? 'before' : 'after';
+
+      const tagsInput = document.getElementById('noteTags');
+      const tagsVal = tagsInput?.value.trim() || '';
+      if (!tagsVal) {
+        if (window.customAlert) await window.customAlert("Please provide tags for quick topics covered.", { title: "Input Required", isDanger: true });
+        else alert("Please provide tags for quick topics covered.");
+        return;
+      }
+
+      const htmlInput = document.getElementById('noteHtmlContent');
+      const htmlVal = htmlInput?.value.trim() || '';
+      if (!htmlVal) {
+        if (window.customAlert) await window.customAlert("Please provide note content using the formatting tools or HTML.", { title: "Input Required", isDanger: true });
+        else alert("Please provide note content using the formatting tools or HTML.");
+        return;
+      }
+
+      const btn = document.getElementById('btnSaveNote');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Saving In-Document Note...`;
+      }
+
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pageNumber: pg,
+            rendering: rend,
+            tags: tagsVal,
+            htmlContent: htmlVal,
+            userId: activeUid
+          })
+        });
+
+        const resData = await res.json();
+        if (!res.ok || !resData.success) {
+          throw new Error(resData.error || "Failed to save note");
+        }
+
+        if (window.customAlert) {
+          await window.customAlert(`In-Document Note published successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`, { title: "Note Published" });
+        } else {
+          alert(`In-Document Note published successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`);
+        }
+
+        // Reset inputs
+        if (htmlInput) htmlInput.value = '';
+        if (tagsInput) tagsInput.value = '';
+        window.switchNoteViewMode('edit');
+
+        // Reload existing notes and slot validation
+        await window.loadExistingNotes();
+
+      } catch (err) {
+        console.error("Save note error:", err);
+        if (window.customAlert) {
+          await window.customAlert(err.message, { title: "Collision / Save Error", isDanger: true });
+        } else {
+          alert("Error: " + err.message);
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="ri-upload-cloud-line"></i> Save & Publish In-Document Note`;
+        }
+      }
+    };
+
+    window.handleDeleteNote = async function(nid) {
+      let ok = false;
+      if (window.customConfirm) {
+        ok = await window.customConfirm("Are you sure you want to permanently delete this in-document note?", { title: "Confirm Delete", isDanger: true });
+      } else {
+        ok = confirm("Are you sure you want to permanently delete this in-document note?");
+      }
+      if (!ok) return;
+
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}/${encodeURIComponent(nid)}`, {
+          method: 'DELETE'
+        });
+
+        const resData = await res.json();
+        if (!res.ok || !resData.success) {
+          throw new Error(resData.error || "Failed to delete note");
+        }
+
+        if (window.customAlert) {
+          await window.customAlert("Note deleted successfully.", { title: "Note Deleted" });
+        } else {
+          alert("Note deleted successfully.");
+        }
+
+        await window.loadExistingNotes();
+      } catch (err) {
+        console.error("Delete note error:", err);
+        if (window.customAlert) {
+          await window.customAlert("Failed to delete note: " + err.message, { title: "Error", isDanger: true });
+        } else {
+          alert("Failed to delete note: " + err.message);
+        }
+      }
+    };
 
     window.updateCounter = function(el, countId, maxLen) {
       const len = el.value.length;
@@ -343,6 +1171,7 @@
         document.getElementById("resDisc").textContent = data.discipline || "N/A";
         document.getElementById("resDocId").textContent = data.documentId || targetId;
         document.getElementById("trainCard").style.display = "block";
+        window.loadExistingNotes();
 
       } catch (err) {
         console.error("Train model load error:", err);

@@ -31,6 +31,7 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <script src="/custom-dialogs.js"></script>
   <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script src="notes-handler.js"></script>
   <script>
     if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
     function renderMarkdown(md) {
@@ -469,8 +470,29 @@ async function renderAllPages() {
       sbAdWrap.innerHTML = "";
     }
 
+    // Pre-load In-Document Contributor Notes for this resource
+    const targetDocId = resourceId || docId || P.get('docid') || P.get('id') || '';
+    if (window.loadResourceNotes && targetDocId) {
+      try {
+        await window.loadResourceNotes(targetDocId);
+      } catch (noteLoadErr) {
+        console.warn("Failed pre-loading resource notes in viewer:", noteLoadErr);
+      }
+    }
+
     for (let i = 1; i <= totalPages; i++) {
+      // 1. Inject 'before' in-document note if configured for this page
+      if (window.injectNoteForPage) {
+        window.injectNoteForPage(i, 'before', pdfArea);
+      }
+
       await renderPage(i);
+
+      // 2. Inject 'after' in-document note if configured for this page
+      if (window.injectNoteForPage) {
+        window.injectNoteForPage(i, 'after', pdfArea);
+      }
+
       // Alternating Ad after every 3rd page (not after the last)
       if (i % 3 === 0 && i < totalPages) {
         const slotN = Math.floor(i/3);
@@ -876,6 +898,16 @@ async function backgroundPreFetchDocumentKnowledge() {
     } catch (e) {
       console.warn("Background resource_knowledge pre-fetch warning:", e);
     }
+  }
+  if (window.dpgResourceNotesCache && window.dpgResourceNotesCache.length > 0) {
+    let notesSummary = "\n\n### In-Document Contributor Notes (Page-Level Guidance):\n";
+    window.dpgResourceNotesCache.forEach(n => {
+      const text = (n.htmlContent || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      const tags = Array.isArray(n.tags) ? n.tags.join(', ') : (n.tags || '');
+      const rendText = n.rendering === 'before' ? 'Before Page' : 'After Page';
+      notesSummary += `- Note at Page ${n.pageNumber} (${rendText}): [Topics: ${tags}] ${text}\n`;
+    });
+    window.resourceKnowledgeMd = (window.resourceKnowledgeMd || '') + notesSummary;
   }
 }
 

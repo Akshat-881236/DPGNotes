@@ -408,6 +408,182 @@ app.post('/api/ai/train-model', async (req, res) => {
 });
 
 // ==========================================
+// ROUTES: IN-DOCUMENT RESOURCE NOTES & AI COMPLIANCE
+// ==========================================
+
+async function getResourceNotesContext(resourceId) {
+  if (!db || !resourceId) return "";
+  try {
+    const snap = await db.collection("resource-notes").doc(resourceId).collection("notes").get();
+    if (snap.empty) return "";
+    let notesText = "\n\n### In-Document Contributor Notes:\n";
+    snap.docs.forEach(docSnap => {
+      const d = docSnap.data();
+      const plainText = (d.htmlContent || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      const tags = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
+      notesText += `- Note at Page ${d.pageNumber} (${d.rendering === 'before' ? 'Before Page' : 'After Page'}): [Topics: ${tags}]\n  ${plainText}\n`;
+    });
+    return notesText;
+  } catch (err) {
+    console.warn("Error fetching resource notes for AI:", err.message);
+    return "";
+  }
+}
+
+// GET all notes for a resource
+app.get('/api/resource-notes/:resourceId', async (req, res) => {
+  try {
+    const { resourceId } = req.params;
+    if (!resourceId) return res.status(400).json({ error: "resourceId is required" });
+
+    if (!db) return res.json({ success: true, notes: [] });
+
+    const snap = await db.collection("resource-notes").doc(resourceId).collection("notes").get();
+    const notes = [];
+    snap.docs.forEach(docSnap => {
+      notes.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    // Sort by pageNumber asc, then 'before' before 'after'
+    notes.sort((a, b) => {
+      if (a.pageNumber !== b.pageNumber) return a.pageNumber - b.pageNumber;
+      return a.rendering === 'before' ? -1 : 1;
+    });
+
+    res.json({ success: true, notes });
+  } catch (err) {
+    console.error("GET resource-notes error:", err);
+    res.status(500).json({ error: "Failed to fetch resource notes: " + err.message });
+  }
+});
+
+// POST add new note with collision checking
+app.post('/api/resource-notes/:resourceId', async (req, res) => {
+  try {
+    const { resourceId } = req.params;
+    const { pageNumber, rendering, tags, htmlContent, userId } = req.body;
+
+    if (!resourceId) return res.status(400).json({ error: "resourceId is required" });
+    const pg = parseInt(pageNumber, 10);
+    if (isNaN(pg) || pg < 1) return res.status(400).json({ error: "Valid Page Number (>= 1) is required" });
+
+    const rend = String(rendering || '').toLowerCase();
+    if (rend !== 'before' && rend !== 'after') {
+      return res.status(400).json({ error: "Rendering option must be either 'before' or 'after'" });
+    }
+
+    if (!htmlContent || !htmlContent.trim()) {
+      return res.status(400).json({ error: "Note HTML content is required" });
+    }
+
+    if (!db) return res.status(500).json({ error: "Firestore DB not connected" });
+
+    // Fetch existing notes for collision detection
+    const existingSnap = await db.collection("resource-notes").doc(resourceId).collection("notes").get();
+    const existingNotes = existingSnap.docs.map(d => d.data());
+
+    // Collision Rule Validation:
+    // Rule 1: A page can have both before and after notes.
+    // Rule 2: If Page N has an 'after' note, Page N+1 cannot have a 'before' note (same physical slot).
+    // Rule 3: If Page N has a 'before' note, Page N-1 cannot have an 'after' note.
+    // Also: Only 1 note per exact slot.
+    for (const en of existingNotes) {
+      const enPg = parseInt(en.pageNumber, 10);
+      const enRend = String(en.rendering || '').toLowerCase();
+
+      if (rend === 'before') {
+        if (enPg === pg && enRend === 'before') {
+          return res.status(400).json({ error: `A 'before' note already exists for Page ${pg}.` });
+        }
+        if (pg > 1 && enPg === pg - 1 && enRend === 'after') {
+          return res.status(400).json({
+            error: `Slot collision: Page ${pg - 1} already has an 'after' note, which occupies the space before Page ${pg}.`
+          });
+        }
+      } else if (rend === 'after') {
+        if (enPg === pg && enRend === 'after') {
+          return res.status(400).json({ error: `An 'after' note already exists for Page ${pg}.` });
+        }
+        if (enPg === pg + 1 && enRend === 'before') {
+          return res.status(400).json({
+            error: `Slot collision: Page ${pg + 1} already has a 'before' note, which occupies the space after Page ${pg}.`
+          });
+        }
+      }
+    }
+
+    const notesId = 'nt_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+    const contentId = `cnt_${notesId}`;
+    const pageId = `${resourceId}-${pg}`;
+    const elementId = `${rend === 'before' ? 'be' : 'af'}-${notesId}`;
+
+    const tagsArr = Array.isArray(tags) 
+      ? tags 
+      : String(tags || '').split(',').map(s => s.trim()).filter(Boolean);
+
+    const noteData = {
+      notesId,
+      resourceId,
+      pageNumber: pg,
+      rendering: rend,
+      pageId,
+      elementId,
+      contentId,
+      tags: tagsArr,
+      htmlContent: htmlContent.trim(),
+      uploaderId: userId || req.headers['x-user-id'] || 'uploader',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    // Save note document
+    const noteRef = db.collection("resource-notes").doc(resourceId).collection("notes").doc(notesId);
+    await noteRef.set(noteData);
+
+    // Save content-id sub-document
+    await noteRef.collection("content").doc(contentId).set({
+      contentId,
+      htmlContent: noteData.htmlContent,
+      tags: tagsArr,
+      pageId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({ success: true, note: noteData });
+  } catch (err) {
+    console.error("POST resource-notes error:", err);
+    res.status(500).json({ error: "Failed to create resource note: " + err.message });
+  }
+});
+
+// DELETE note by id
+app.delete('/api/resource-notes/:resourceId/:notesId', async (req, res) => {
+  try {
+    const { resourceId, notesId } = req.params;
+    if (!resourceId || !notesId) {
+      return res.status(400).json({ error: "resourceId and notesId are required" });
+    }
+
+    if (!db) return res.status(500).json({ error: "Firestore DB not connected" });
+
+    const noteRef = db.collection("resource-notes").doc(resourceId).collection("notes").doc(notesId);
+    
+    // Delete content subcollection docs if any
+    try {
+      const contentSnap = await noteRef.collection("content").get();
+      for (const d of contentSnap.docs) {
+        await d.ref.delete();
+      }
+    } catch(e) {}
+
+    await noteRef.delete();
+    res.json({ success: true, message: "Note deleted successfully" });
+  } catch (err) {
+    console.error("DELETE resource-notes error:", err);
+    res.status(500).json({ error: "Failed to delete resource note: " + err.message });
+  }
+});
+
+// ==========================================
 // ROUTES: AI ANALYSIS & CHAT (MULTI-MODEL GEMINI + PAGE-AWARE SYNTHESIS)
 // ==========================================
 app.post('/api/ai/analyse-document', async (req, res) => {
@@ -420,6 +596,7 @@ app.post('/api/ai/analyse-document', async (req, res) => {
     const resourceId = data.docid || data.id || data.resourceId || '';
     const extractedPdfText = data.extractedPdfText || '';
     const knowledgeMd = data.knowledgeMd || '';
+    const inDocNotes = await getResourceNotesContext(resourceId);
 
     const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
@@ -439,7 +616,8 @@ Category: ${category}
 Discipline: ${discipline}
 Description: ${description}
 Extracted PDF Text: ${extractedPdfText.slice(0, 3000)}
-Runtime Knowledge Base: ${knowledgeMd.slice(0, 3000)}`;
+Runtime Knowledge Base: ${knowledgeMd.slice(0, 3000)}
+${inDocNotes}`;
 
       for (const mId of models) {
         try {
@@ -551,13 +729,23 @@ app.post('/api/ai/chat', async (req, res) => {
       contextBlock = `Admin Report Context:\n${JSON.stringify(context || {}, null, 2)}`;
     } else {
       systemPersona = "You are DPGNotes Academic AI Assistant, an expert academic tutor. Help students understand, summarize, and answer questions about the specific note/paper PDF being viewed.";
+      
+      const targetResId = resourceId || (context && context.documentId) || '';
+      let inDocNotes = '';
+      if (targetResId) {
+        try {
+          inDocNotes = await getResourceNotesContext(targetResId);
+        } catch(ne) {}
+      }
+
       contextBlock = `Academic Document Context:
 - Title: ${context?.documentTitle || 'Academic Resource'}
 - Category: ${context?.documentCategory || 'Notes'}
 - Discipline: ${context?.documentDiscipline || 'General'}
 - Description: ${context?.documentDescription || 'N/A'}
 - Extracted PDF Text: ${context?.extractedPdfText ? context.extractedPdfText.slice(0, 3500) : 'N/A'}
-- Knowledge Base: ${context?.knowledgeBase ? context.knowledgeBase.slice(0, 3500) : 'N/A'}`;
+- Knowledge Base: ${context?.knowledgeBase ? context.knowledgeBase.slice(0, 3500) : 'N/A'}
+${inDocNotes}`;
     }
 
     const fullPrompt = `${systemPersona}\n\nContext:\n${contextBlock}\n\nUser Question: ${userQuery}`;
