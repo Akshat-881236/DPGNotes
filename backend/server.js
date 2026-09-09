@@ -793,6 +793,118 @@ Guidelines:
   }
 });
 
+// PUT update existing note with collision checking and layout rule enforcement
+app.put('/api/resource-notes/:resourceId/:notesId', async (req, res) => {
+  try {
+    const { resourceId, notesId } = req.params;
+    const { pageNumber, rendering, tags, htmlContent, userId } = req.body;
+
+    if (!resourceId) return res.status(400).json({ error: "resourceId is required" });
+    if (!notesId) return res.status(400).json({ error: "notesId is required" });
+
+    const pg = parseInt(pageNumber, 10);
+    if (isNaN(pg) || pg < 1) return res.status(400).json({ error: "Valid Page Number (>= 1) is required" });
+
+    const rend = String(rendering || '').toLowerCase();
+    if (rend !== 'before' && rend !== 'after') {
+      return res.status(400).json({ error: "Rendering option must be either 'before' or 'after'" });
+    }
+
+    if (!htmlContent || !htmlContent.trim()) {
+      return res.status(400).json({ error: "Note HTML content is required" });
+    }
+
+    // Enforce Layout Rules (1 H1, 1-3 H2, H3 within H2)
+    const layoutCheck = validateNoteLayout(htmlContent.trim());
+    if (!layoutCheck.valid) {
+      return res.status(400).json({ error: layoutCheck.error });
+    }
+
+    if (!db) return res.status(500).json({ error: "Firestore DB not connected" });
+
+    const noteRef = db.collection("resource-notes").doc(resourceId).collection("notes").doc(notesId);
+    const existingDoc = await noteRef.get();
+    if (!existingDoc.exists) {
+      return res.status(404).json({ error: "Note document not found" });
+    }
+
+    // Fetch existing notes for collision detection (excluding this note)
+    const existingSnap = await db.collection("resource-notes").doc(resourceId).collection("notes").get();
+    const otherNotes = existingSnap.docs
+      .filter(d => d.id !== notesId)
+      .map(d => ({ id: d.id, ...d.data() }));
+
+    // Collision Rule Validation:
+    for (const en of otherNotes) {
+      const enPg = parseInt(en.pageNumber, 10);
+      const enRend = String(en.rendering || '').toLowerCase();
+
+      if (rend === 'before') {
+        if (enPg === pg && enRend === 'before') {
+          return res.status(400).json({ error: `A 'before' note already exists for Page ${pg}.` });
+        }
+        if (pg > 1 && enPg === pg - 1 && enRend === 'after') {
+          return res.status(400).json({
+            error: `Slot collision: Page ${pg - 1} already has an 'after' note, which occupies the space before Page ${pg}.`
+          });
+        }
+      } else if (rend === 'after') {
+        if (enPg === pg && enRend === 'after') {
+          return res.status(400).json({ error: `An 'after' note already exists for Page ${pg}.` });
+        }
+        if (enPg === pg + 1 && enRend === 'before') {
+          return res.status(400).json({
+            error: `Slot collision: Page ${pg + 1} already has a 'before' note, which occupies the space after Page ${pg}.`
+          });
+        }
+      }
+    }
+
+    const pageId = `${resourceId}-${pg}`;
+    const elementId = `${rend === 'before' ? 'be' : 'af'}-${notesId}`;
+    const prevData = existingDoc.data() || {};
+    const contentId = prevData.contentId || `cnt_${notesId}`;
+
+    const tagsArr = Array.isArray(tags)
+      ? tags
+      : String(tags || '').split(',').map(s => s.trim()).filter(Boolean);
+
+    const updateData = {
+      pageNumber: pg,
+      rendering: rend,
+      pageId,
+      elementId,
+      contentId,
+      tags: tagsArr,
+      htmlContent: htmlContent.trim(),
+      containerFormula: `<div class="added-notes" type="${rend}" page-id="${pageId}" id="${elementId}"></div>`,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (userId) {
+      updateData.lastEditedBy = userId;
+    }
+
+    // Update note document
+    await noteRef.set(updateData, { merge: true });
+
+    // Update content sub-document
+    await noteRef.collection("content").doc(contentId).set({
+      contentId,
+      htmlContent: updateData.htmlContent,
+      tags: tagsArr,
+      pageId,
+      elementId,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    res.json({ success: true, note: { ...prevData, ...updateData, notesId } });
+  } catch (err) {
+    console.error("PUT resource-notes error:", err);
+    res.status(500).json({ error: "Failed to update resource note: " + err.message });
+  }
+});
+
 // DELETE note by id
 app.delete('/api/resource-notes/:resourceId/:notesId', async (req, res) => {
   try {

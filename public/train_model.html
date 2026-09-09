@@ -665,9 +665,20 @@
 
       <!-- TAB PANE 2: In-Document Notes Manager -->
       <div id="tabPaneNotes" style="display:none;">
-        <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:2rem;">
+        <div id="noteEditorSection" style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:2rem;">
+          <!-- Active Editing Banner -->
+          <div id="editingNoteBanner" style="display:none; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.45); border-radius:10px; padding:0.75rem 1.2rem; margin-bottom:1.2rem; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <span style="font-size:0.85rem; color:#c4b5fd; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+              <i class="ri-edit-circle-line" style="color:#a855f7; font-size:1.15rem;"></i>
+              <span id="editingNoteBannerText">Editing In-Document Note for Page 1</span>
+            </span>
+            <button type="button" onclick="cancelEditingNote()" style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; font-size:0.75rem; padding:4px 10px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <i class="ri-close-circle-line"></i> Cancel Editing Mode
+            </button>
+          </div>
+
           <h2 style="color:white; font-size:1.25rem; font-family:'Outfit',sans-serif; margin-bottom:0.4rem; display:flex; align-items:center; gap:8px;">
-            <i class="ri-sticky-note-line" style="color:var(--primary-light);"></i> Add In-Document Note
+            <i class="ri-sticky-note-line" style="color:var(--primary-light);"></i> <span id="noteCardTitleText">Add In-Document Note</span>
           </h2>
           <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem; line-height:1.5;">
             Attach contributor notes, syllabus formulas, or exam insights before or after specific pages in the PDF reader. Real-time slot collision protection prevents overlaps.
@@ -939,13 +950,13 @@
       }
     };
 
-    window.selectRendering = function(val) {
+    window.selectRendering = function(val, force) {
       if (val === 'before') {
         const r = document.getElementById('rendBefore');
-        if (r && !r.disabled) r.checked = true;
+        if (r && (force || !r.disabled)) r.checked = true;
       } else {
         const r = document.getElementById('rendAfter');
-        if (r && !r.disabled) r.checked = true;
+        if (r && (force || !r.disabled)) r.checked = true;
       }
       window.handlePageSlotValidation();
     };
@@ -992,7 +1003,11 @@
         return;
       }
 
-      const notes = window.currentResourceNotes || [];
+      const rawNotes = window.currentResourceNotes || [];
+      // When editing an existing note, exclude it from collision check so it won't collide with its own current slot
+      const notes = window.editingNoteId 
+        ? rawNotes.filter(n => (n.notesId || n.id) !== window.editingNoteId)
+        : rawNotes;
 
       // Check slot collisions:
       // 1. Direct 'before' on Page N
@@ -1555,9 +1570,14 @@
                   Slot: ${pageId}
                 </span>
               </div>
-              <button type="button" onclick="handleDeleteNote('${nid}')" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
-                <i class="ri-delete-bin-line"></i> Delete
-              </button>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button type="button" onclick="startEditingNote('${nid}')" style="background:rgba(99,102,241,0.2); color:#a5b4fc; border:1px solid rgba(99,102,241,0.4); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
+                  <i class="ri-edit-line"></i> Edit
+                </button>
+                <button type="button" onclick="handleDeleteNote('${nid}')" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
+                  <i class="ri-delete-bin-line"></i> Delete
+                </button>
+              </div>
             </div>
 
             <!-- Prominent Formula Inspector Specification Tag -->
@@ -1583,6 +1603,102 @@
         `;
       }).join('');
     }
+
+    // State for Editing Existing Note
+    window.editingNoteId = null;
+
+    window.startEditingNote = function(nid) {
+      const notes = window.currentResourceNotes || [];
+      const note = notes.find(n => (n.notesId || n.id) === nid);
+      if (!note) {
+        if (window.customAlert) window.customAlert("Selected note could not be found.", { title: "Error", isDanger: true });
+        else alert("Selected note could not be found.");
+        return;
+      }
+
+      window.editingNoteId = nid;
+
+      // Set form fields
+      const pgInput = document.getElementById('notePageNum');
+      if (pgInput) pgInput.value = note.pageNumber;
+
+      const rend = String(note.rendering || '').toLowerCase();
+      window.selectRendering(rend === 'before' ? 'before' : 'after', true);
+
+      const tagsInput = document.getElementById('noteTags');
+      if (tagsInput) {
+        tagsInput.value = Array.isArray(note.tags) ? note.tags.join(', ') : (note.tags || '');
+      }
+
+      const htmlInput = document.getElementById('noteHtmlContent');
+      if (htmlInput) {
+        htmlInput.value = note.htmlContent || '';
+      }
+
+      // Show editing banner
+      const banner = document.getElementById('editingNoteBanner');
+      const bannerText = document.getElementById('editingNoteBannerText');
+      if (banner) banner.style.display = 'flex';
+      if (bannerText) {
+        bannerText.innerHTML = `Editing Note for <strong>Page ${note.pageNumber} (${rend === 'before' ? 'Before Page' : 'After Page'})</strong> &bull; Slot: <code style="color:#a5b4fc;">${note.elementId || nid}</code>`;
+      }
+
+      const cardTitle = document.getElementById('noteCardTitleText');
+      if (cardTitle) cardTitle.textContent = "Edit In-Document Note";
+
+      const btnSave = document.getElementById('btnSaveNote');
+      if (btnSave) {
+        btnSave.innerHTML = `<i class="ri-check-double-line"></i> Update &amp; Publish Note`;
+      }
+
+      // Switch to edit view mode
+      window.switchNoteViewMode('edit');
+
+      // Trigger real-time helpers (Layout Quality, Collision Protection, Live Preview)
+      window.checkNoteLayoutRules(note.htmlContent || '');
+      window.handlePageSlotValidation();
+      window.updateLiveNotePreview();
+
+      // Smooth scroll to editor
+      const editorEl = document.getElementById('noteEditorSection');
+      if (editorEl) {
+        editorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    window.cancelEditingNote = function() {
+      window.editingNoteId = null;
+
+      const banner = document.getElementById('editingNoteBanner');
+      if (banner) banner.style.display = 'none';
+
+      const cardTitle = document.getElementById('noteCardTitleText');
+      if (cardTitle) cardTitle.textContent = "Add In-Document Note";
+
+      const btnSave = document.getElementById('btnSaveNote');
+      if (btnSave) {
+        btnSave.innerHTML = `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
+      }
+
+      const htmlInput = document.getElementById('noteHtmlContent');
+      const tagsInput = document.getElementById('noteTags');
+      const pgInput = document.getElementById('notePageNum');
+      if (htmlInput) htmlInput.value = '';
+      if (tagsInput) tagsInput.value = '';
+      if (pgInput) pgInput.value = '1';
+      window.selectRendering('after', true);
+
+      const tagBar = document.getElementById('aiTagSuggestionsBar');
+      if (tagBar) tagBar.style.display = 'none';
+
+      const assistBar = document.getElementById('aiContentAssistBar');
+      if (assistBar) assistBar.style.display = 'none';
+
+      window.switchNoteViewMode('edit');
+      window.checkNoteLayoutRules('');
+      window.handlePageSlotValidation();
+      window.updateLiveNotePreview();
+    };
 
     // Save Note with Layout Verification and Submit-Time AI Fact-Checking
     window.submitNewNote = async function() {
@@ -1627,10 +1743,11 @@
         return;
       }
 
+      const isEditing = !!window.editingNoteId;
       const btn = document.getElementById('btnSaveNote');
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> AI Verification & Fact-Checking...`;
+        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> AI Verification &amp; Fact-Checking...`;
       }
 
       try {
@@ -1686,7 +1803,9 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
+          btn.innerHTML = isEditing
+            ? `<i class="ri-check-double-line"></i> Update &amp; Publish Note`
+            : `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
         }
       }
     };
@@ -1710,16 +1829,24 @@
 
       window.closeAiVerifyModal();
 
+      const isEditing = !!window.editingNoteId;
+      const targetNoteId = window.editingNoteId;
+
       const btn = document.getElementById('btnSaveNote');
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Publishing Note...`;
+        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> ${isEditing ? 'Updating Note...' : 'Publishing Note...'}`;
       }
 
       try {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-        const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`, {
-          method: 'POST',
+        const url = isEditing
+          ? `${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}/${encodeURIComponent(targetNoteId)}`
+          : `${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`;
+        const method = isEditing ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             pageNumber: pg,
@@ -1732,21 +1859,21 @@
 
         const resData = await res.json();
         if (!res.ok || !resData.success) {
-          throw new Error(resData.error || "Failed to save note");
+          throw new Error(resData.error || (isEditing ? "Failed to update note" : "Failed to save note"));
         }
+
+        const successMsg = isEditing
+          ? `In-Document Note updated successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`
+          : `In-Document Note published successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`;
 
         if (window.customAlert) {
-          await window.customAlert(`In-Document Note published successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`, { title: "Note Published" });
+          await window.customAlert(successMsg, { title: isEditing ? "Note Updated" : "Note Published" });
         } else {
-          alert(`In-Document Note published successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`);
+          alert(successMsg);
         }
 
-        // Reset inputs
-        const tagsInput = document.getElementById('noteTags');
-        if (htmlInput) htmlInput.value = '';
-        if (tagsInput) tagsInput.value = '';
-        window.switchNoteViewMode('edit');
-        window.checkNoteLayoutRules('');
+        // Reset editing state and inputs
+        window.cancelEditingNote();
 
         // Reload existing notes and slot validation
         await window.loadExistingNotes();
@@ -1761,7 +1888,9 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
+          btn.innerHTML = window.editingNoteId 
+            ? `<i class="ri-check-double-line"></i> Update &amp; Publish Note`
+            : `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
         }
       }
     };
@@ -1790,6 +1919,10 @@
           await window.customAlert("Note deleted successfully.", { title: "Note Deleted" });
         } else {
           alert("Note deleted successfully.");
+        }
+
+        if (window.editingNoteId === nid) {
+          window.cancelEditingNote();
         }
 
         await window.loadExistingNotes();
