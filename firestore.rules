@@ -116,6 +116,20 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    /* ---------- RESOURCE NOTES (In-Document Notes & Subcollections) ---------- */
+    match /resource-notes/{document=**} {
+      allow read, write: if true;
+    }
+    match /resource-notes/{resourceId}/notes/{noteId} {
+      allow read, write: if true;
+    }
+    match /resource_notes/{document=**} {
+      allow read, write: if true;
+    }
+    match /resource_notes/{resourceId}/notes/{noteId} {
+      allow read, write: if true;
+    }
+
     /* ---------- BLOGS ---------- */
     match /blogs/{blogId} {
       allow read, write: if true;
