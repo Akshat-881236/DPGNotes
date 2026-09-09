@@ -167,6 +167,84 @@
         font-weight: 700;
         margin-bottom: 6px;
       }
+      .added-notes-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+      }
+      .note-like-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #94a3b8;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+      }
+      .note-like-btn:hover {
+        background: rgba(244, 63, 94, 0.15);
+        border-color: rgba(244, 63, 94, 0.4);
+        color: #f43f5e;
+        transform: scale(1.03);
+      }
+      .note-like-btn.liked {
+        background: rgba(244, 63, 94, 0.22);
+        border-color: #f43f5e;
+        color: #f43f5e;
+      }
+      .note-like-btn.liked .like-icon {
+        color: #f43f5e;
+      }
+      .note-share-btn {
+        background: rgba(99, 102, 241, 0.14);
+        border: 1px solid rgba(99, 102, 241, 0.35);
+        color: #c4b5fd;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+      }
+      .note-share-btn:hover {
+        background: rgba(99, 102, 241, 0.3);
+        color: #ffffff;
+        border-color: #818cf8;
+        transform: scale(1.03);
+      }
+      @keyframes noteHighlightPulse {
+        0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.8); border-color: #a855f7; }
+        50% { box-shadow: 0 0 35px 12px rgba(168, 85, 247, 0.9); border-color: #c084fc; transform: scale(1.01); }
+        100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); border-color: rgba(99, 102, 241, 0.3); }
+      }
+      .note-target-highlight {
+        animation: noteHighlightPulse 2.8s ease-in-out;
+      }
+      .note-copy-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #0f172a;
+        color: #e2e8f0;
+        border: 1px solid #8b5cf6;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -262,6 +340,12 @@
     const tagsHtml = tagsArr.map(t => `<span class="added-notes-tag">${escapeHtml(t)}</span>`).join('');
     const rendLabel = rend === 'before' ? 'Before Page' : 'After Page';
 
+    const visitorId = getOrCreateVisitorId();
+    const storedLiked = localStorage.getItem('dpg_liked_note_' + noteId) === 'true';
+    const likedByArr = Array.isArray(note.likedBy) ? note.likedBy : [];
+    const isLiked = storedLiked || (visitorId && likedByArr.includes(visitorId));
+    const likesCount = typeof note.likesCount === 'number' ? note.likesCount : (likedByArr.length || 0);
+
     noteDiv.innerHTML = `
       <div class="added-notes-header">
         <div class="added-notes-badge">
@@ -269,6 +353,16 @@
           <span>Contributor Notes • Page ${pageNum} (${rendLabel})</span>
         </div>
         ${tagsHtml ? `<div class="added-notes-tags">${tagsHtml}</div>` : ''}
+        <div class="added-notes-actions">
+          <button type="button" class="note-like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${noteId}" onclick="window.toggleNoteLike('${resId}', '${noteId}', this)" title="${isLiked ? 'Unlike this note' : 'Like this note'}">
+            <i class="${isLiked ? 'ri-heart-fill' : 'ri-heart-line'} like-icon"></i>
+            <span class="like-count">${likesCount}</span>
+          </button>
+          <button type="button" class="note-share-btn" onclick="window.shareInDocumentNote('${resId}', '${noteId}', '${elementId}', ${pageNum}, '${rend}', this)" title="Share this contributor note">
+            <i class="ri-share-forward-line"></i>
+            <span>Share</span>
+          </button>
+        </div>
       </div>
       <div class="added-notes-body">
         ${note.htmlContent || ''}
@@ -281,13 +375,204 @@
       if (!ad.innerHTML.trim()) {
         ad.innerHTML = `
           <div class="dpg-native-ad-badge"><i class="ri-advertisement-line"></i> DPGNotes Academic Partner Block</div>
-          <div style="font-weight:600; font-size:0.95rem; color:white; margin-bottom:4px;">Recommended Academic Tools & Learning Resources</div>
+          <div style="font-weight:600; font-size:0.95rem; color:white; margin-bottom:4px;">Recommended Academic Tools &amp; Learning Resources</div>
           <div style="font-size:0.82rem; color:#94a3b8; line-height:1.4;">Explore student-verified study datasets, mock test series, and textbook companion vector indices on DPGNotes.</div>
         `;
       }
     });
 
     return noteDiv;
+  };
+
+  function getOrCreateVisitorId() {
+    let vid = localStorage.getItem('dpg_visitor_id');
+    if (!vid) {
+      vid = 'v_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+      localStorage.setItem('dpg_visitor_id', vid);
+    }
+    return vid;
+  }
+
+  function showNoteToast(message) {
+    const existing = document.getElementById('noteToastEl');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'noteToastEl';
+    toast.className = 'note-copy-toast';
+    toast.innerHTML = `<i class="ri-checkbox-circle-fill" style="color:#10b981;"></i> <span>${escapeHtml(message)}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.4s ease';
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
+  }
+
+  // Like / Unlike Note Hierarchy (single like -> no like -> like, default not like)
+  window.toggleNoteLike = async function (resourceId, noteId, btnEl) {
+    if (!resourceId || !noteId) return;
+    const visitorId = getOrCreateVisitorId();
+    const userId = window.activeUid || localStorage.getItem('dpgUserId') || '';
+
+    const icon = btnEl ? btnEl.querySelector('.like-icon') : null;
+    const countEl = btnEl ? btnEl.querySelector('.like-count') : null;
+    let currentLikes = countEl ? parseInt(countEl.textContent, 10) || 0 : 0;
+    const wasLiked = btnEl ? btnEl.classList.contains('liked') : false;
+
+    // Optimistic UI update
+    const willBeLiked = !wasLiked;
+    if (btnEl) {
+      if (willBeLiked) {
+        btnEl.classList.add('liked');
+        if (icon) { icon.className = 'ri-heart-fill like-icon'; }
+        if (countEl) countEl.textContent = currentLikes + 1;
+      } else {
+        btnEl.classList.remove('liked');
+        if (icon) { icon.className = 'ri-heart-line like-icon'; }
+        if (countEl) countEl.textContent = Math.max(0, currentLikes - 1);
+      }
+    }
+    localStorage.setItem('dpg_liked_note_' + noteId, willBeLiked ? 'true' : 'false');
+
+    try {
+      const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+      const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(resourceId)}/${encodeURIComponent(noteId)}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorId, userId })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        if (countEl && typeof data.likesCount === 'number') {
+          countEl.textContent = data.likesCount;
+        }
+        if (btnEl) {
+          if (data.liked) {
+            btnEl.classList.add('liked');
+            if (icon) icon.className = 'ri-heart-fill like-icon';
+          } else {
+            btnEl.classList.remove('liked');
+            if (icon) icon.className = 'ri-heart-line like-icon';
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Like toggle failed, reverting:", err);
+      // Revert on error
+      if (btnEl) {
+        if (wasLiked) {
+          btnEl.classList.add('liked');
+          if (icon) icon.className = 'ri-heart-fill like-icon';
+          if (countEl) countEl.textContent = currentLikes;
+        } else {
+          btnEl.classList.remove('liked');
+          if (icon) icon.className = 'ri-heart-line like-icon';
+          if (countEl) countEl.textContent = currentLikes;
+        }
+      }
+      localStorage.setItem('dpg_liked_note_' + noteId, wasLiked ? 'true' : 'false');
+    }
+  };
+
+  // Generate and copy note share link
+  window.shareInDocumentNote = async function (resourceId, noteId, elementId, pageNum, rend, btnEl) {
+    const origHtml = btnEl ? btnEl.innerHTML : '';
+    if (btnEl) {
+      btnEl.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> <span>Sharing...</span>`;
+      btnEl.disabled = true;
+    }
+
+    try {
+      const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+      const res = await fetch(`${apiBase}/api/share/generate-note`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resourceId,
+          noteId,
+          elementId,
+          pageNumber: pageNum,
+          rendering: rend,
+          createdBy: window.activeUid || localStorage.getItem('dpgUserId') || 'guest'
+        })
+      });
+
+      const data = await res.json();
+      let shareUrl = '';
+      if (data && data.success && data.shareUrl) {
+        shareUrl = data.shareUrl;
+      } else {
+        // Fallback direct URL
+        const origin = window.location.origin;
+        shareUrl = `${origin}/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(resourceId)}&note=${encodeURIComponent(elementId)}#note-${encodeURIComponent(elementId)}`;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      showNoteToast(`Note share link copied! Clicking will auto-scroll directly to Page ${pageNum}.`);
+
+      if (btnEl) {
+        btnEl.innerHTML = `<i class="ri-check-line" style="color:#10b981;"></i> <span>Copied!</span>`;
+        setTimeout(() => {
+          btnEl.innerHTML = origHtml;
+          btnEl.disabled = false;
+        }, 2200);
+      }
+    } catch (err) {
+      console.warn("Share note error:", err);
+      // Fallback copy
+      const origin = window.location.origin;
+      const shareUrl = `${origin}/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(resourceId)}&note=${encodeURIComponent(elementId)}#note-${encodeURIComponent(elementId)}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showNoteToast(`Note share link copied!`);
+      } catch(e) {
+        prompt("Copy note share URL:", shareUrl);
+      }
+      if (btnEl) {
+        btnEl.innerHTML = origHtml;
+        btnEl.disabled = false;
+      }
+    }
+  };
+
+  // Auto-scroll and highlight target shared note
+  window.scrollToNote = function (targetNoteId) {
+    if (!targetNoteId) return;
+    const cleanId = String(targetNoteId).replace(/^note-/, '').trim();
+
+    // Look for matching element
+    let el = document.getElementById(cleanId) ||
+             document.getElementById('note-' + cleanId) ||
+             document.getElementById('be-' + cleanId) ||
+             document.getElementById('af-' + cleanId) ||
+             document.querySelector(`[id*="${cleanId}"]`) ||
+             document.querySelector(`[page-id="${cleanId}"]`);
+
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('note-target-highlight');
+      setTimeout(() => el.classList.remove('note-target-highlight'), 3000);
+      console.log("Successfully auto-scrolled to shared note:", cleanId);
+    } else {
+      // Retry after DOM settles if pdf pages are rendering asynchronously
+      let attempts = 0;
+      const retryInterval = setInterval(() => {
+        attempts++;
+        el = document.getElementById(cleanId) ||
+             document.getElementById('be-' + cleanId) ||
+             document.getElementById('af-' + cleanId) ||
+             document.querySelector(`[id*="${cleanId}"]`) ||
+             document.querySelector(`[page-id="${cleanId}"]`);
+        if (el) {
+          clearInterval(retryInterval);
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('note-target-highlight');
+          setTimeout(() => el.classList.remove('note-target-highlight'), 3000);
+        } else if (attempts >= 10) {
+          clearInterval(retryInterval);
+        }
+      }, 400);
+    }
   };
 
   // Helper: Escape HTML for tags

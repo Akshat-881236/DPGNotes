@@ -528,6 +528,22 @@ async function renderAllPages() {
       loadEndPdfRecommendations();
     }
 
+    // Auto-scroll to shared / target in-document note if specified in URL
+    const targetNoteParam = P.get('note') || (location.hash ? location.hash.replace(/^#note-/, '').replace(/^#/, '') : '');
+    const shareTokenParam = P.get('share');
+    if (targetNoteParam && window.scrollToNote) {
+      setTimeout(() => {
+        window.scrollToNote(targetNoteParam);
+      }, 500);
+    }
+    if (shareTokenParam) {
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const guestName = (typeof auth !== 'undefined' && auth.currentUser) ? (auth.currentUser.displayName || auth.currentUser.email) : 'Guest';
+        fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareTokenParam)}&openedBy=${encodeURIComponent(guestName)}`).catch(() => {});
+      } catch (e) {}
+    }
+
   } catch(err) {
     console.error(err);
     spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">Failed to load PDF.</p>`;

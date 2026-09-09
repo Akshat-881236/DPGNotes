@@ -565,6 +565,7 @@ function handleSwipe() {
 
 // Global cache for shares
 let adminSharesCache = [];
+window.currentSharesFilter = 'ALL';
 
 async function loadShares() {
   const tbody = document.getElementById("sharesTableBody");
@@ -573,19 +574,81 @@ async function loadShares() {
   try {
     const snap = await getDocs(query(collection(db, "share_links"), orderBy("createdAt", "desc")));
     adminSharesCache = [];
+    let docShares = 0;
+    let noteShares = 0;
+    let totalClicks = 0;
+
     snap.forEach(doc => {
-      adminSharesCache.push({ id: doc.id, ...doc.data() });
+      const data = doc.data() || {};
+      const item = { id: doc.id, ...data };
+      adminSharesCache.push(item);
+
+      if (item.type === 'note') {
+        noteShares++;
+      } else {
+        docShares++;
+      }
+      totalClicks += (Number(item.clicks) || 0);
     });
     
-    // Update stats
+    // Update Stat Cards in Admin
     const statShares = document.getElementById("statShares");
     if (statShares) statShares.innerText = adminSharesCache.length;
+
+    const statTotalSharesCount = document.getElementById("statTotalSharesCount");
+    if (statTotalSharesCount) statTotalSharesCount.innerText = adminSharesCache.length;
+
+    const statDocSharesCount = document.getElementById("statDocSharesCount");
+    if (statDocSharesCount) statDocSharesCount.innerText = docShares;
+
+    const statNoteSharesCount = document.getElementById("statNoteSharesCount");
+    if (statNoteSharesCount) statNoteSharesCount.innerText = noteShares;
+
+    const statTotalShareClicks = document.getElementById("statTotalShareClicks");
+    if (statTotalShareClicks) statTotalShareClicks.innerText = totalClicks.toLocaleString();
     
-    renderSharesTable(adminSharesCache);
+    applySharesFilterAndRender();
   } catch (err) {
     console.error("Failed to load shares", err);
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-danger);">Failed to load shares data.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-danger);">Failed to load shares data: ${err.message}</td></tr>`;
   }
+}
+window.loadShares = loadShares;
+
+window.filterSharesByType = function(type, btnEl) {
+  window.currentSharesFilter = type;
+  const buttons = ['shareFilterAll', 'shareFilterDoc', 'shareFilterNote'];
+  buttons.forEach(bId => {
+    const b = document.getElementById(bId);
+    if (b) {
+      b.classList.remove('primary');
+    }
+  });
+  if (btnEl) btnEl.classList.add('primary');
+
+  applySharesFilterAndRender();
+};
+
+function applySharesFilterAndRender() {
+  const queryStr = (document.getElementById("shareSearch")?.value || "").toLowerCase().trim();
+  let list = adminSharesCache;
+
+  if (window.currentSharesFilter === 'document') {
+    list = list.filter(l => l.type !== 'note');
+  } else if (window.currentSharesFilter === 'note') {
+    list = list.filter(l => l.type === 'note');
+  }
+
+  if (queryStr) {
+    list = list.filter(link => 
+      (link.token && link.token.toLowerCase().includes(queryStr)) ||
+      (link.title && link.title.toLowerCase().includes(queryStr)) ||
+      (link.uploader && link.uploader.toLowerCase().includes(queryStr)) ||
+      (link.elementId && link.elementId.toLowerCase().includes(queryStr))
+    );
+  }
+
+  renderSharesTable(list);
 }
 
 function renderSharesTable(shares) {
@@ -594,21 +657,39 @@ function renderSharesTable(shares) {
   
   tbody.innerHTML = "";
   if (shares.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">No share links found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-muted); padding:1.5rem;">No matching share links found.</td></tr>`;
     return;
   }
   
   shares.forEach(link => {
+    const isNote = link.type === 'note';
+    const typeBadge = isNote
+      ? `<span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📝 NOTE (Pg ${link.pageNumber || 1} ${link.rendering || 'after'})</span>`
+      : `<span style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📄 DOC</span>`;
+
+    const targetDocId = link.docId || link.id || '';
+    const noteParam = link.elementId ? `&note=${encodeURIComponent(link.elementId)}#note-${encodeURIComponent(link.elementId)}` : '';
+    const directViewerLink = isNote
+      ? `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetDocId)}&share=${encodeURIComponent(link.token)}${noteParam}`
+      : `dashboard.html?share=${encodeURIComponent(link.token)}`;
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td style="font-family:monospace; font-weight:600;">${link.token}</td>
-      <td>${link.title || "Untitled"}</td>
-      <td style="color:var(--admin-muted);">${link.uploader || "Unknown"}</td>
-      <td><strong>${link.clicks || 0}</strong> clicks</td>
+      <td style="font-family:monospace; font-weight:700; color:#a5b4fc;">${link.token}</td>
       <td>
-        <div style="display:flex; gap:0.5rem;">
-          <a href="report.html?code=${link.token}" target="_blank" class="btn-action success" style="text-decoration:none;">View Report</a>
-          <button onclick="window.deleteShareCode('${link.token}')" class="btn-action danger">Delete</button>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          ${typeBadge}
+          <span style="font-weight:500; color:#f8fafc;">${link.title || "Untitled"}</span>
+        </div>
+      </td>
+      <td style="color:var(--admin-muted); font-size:0.82rem;">${link.uploader || link.generatedBy || "Unknown"}</td>
+      <td><strong style="color:#10b981;">${link.clicks || 0}</strong> clicks</td>
+      <td>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <a href="${directViewerLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;" title="Open directly"><i class="ri-external-link-line"></i> Open</a>
+          <a href="report.html?code=${encodeURIComponent(link.token)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-file-chart-line"></i> Report</a>
+          <button type="button" onclick="navigator.clipboard.writeText('https://dpgnotes.web.app/${directViewerLink}'); alert('Share link copied to clipboard!');" class="btn-action" style="padding:4px 8px; font-size:0.75rem;" title="Copy public share URL"><i class="ri-file-copy-line"></i> Copy</button>
+          <button type="button" onclick="window.deleteShareCode('${link.token}')" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" title="Delete share code"><i class="ri-delete-bin-line"></i></button>
         </div>
       </td>
     `;
@@ -650,18 +731,8 @@ window.deleteShareCode = async function(token) {
 // Live search for shares
 const shareSearch = document.getElementById("shareSearch");
 if (shareSearch) {
-  shareSearch.addEventListener("input", (e) => {
-    const queryStr = e.target.value.toLowerCase().trim();
-    if (!queryStr) {
-      renderSharesTable(adminSharesCache);
-      return;
-    }
-    const filtered = adminSharesCache.filter(link => 
-      link.token.toLowerCase().includes(queryStr) ||
-      (link.title || "").toLowerCase().includes(queryStr) ||
-      (link.uploader || "").toLowerCase().includes(queryStr)
-    );
-    renderSharesTable(filtered);
+  shareSearch.addEventListener("input", () => {
+    applySharesFilterAndRender();
   });
 }
 
@@ -673,14 +744,19 @@ window.switchTab = function(tabId) {
   } else {
     document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-    document.getElementById('view-' + tabId).classList.add('active');
-    if (event && event.currentTarget) {
-      event.currentTarget.classList.add('active');
+    const targetSection = document.getElementById('view-' + tabId);
+    if (targetSection) targetSection.classList.add('active');
+    if (window.event && window.event.currentTarget) {
+      window.event.currentTarget.classList.add('active');
     }
   }
   
   if (tabId === 'shares') {
     loadShares();
+  } else if (tabId === 'notes-analytics') {
+    if (typeof window.loadNotesAnalyticsAdmin === 'function') {
+      window.loadNotesAnalyticsAdmin();
+    }
   } else if (tabId === 'users') {
     loadUsers();
   } else if (tabId === 'logs') {
@@ -2370,6 +2446,172 @@ export async function loadAdsAnalyticsAdmin() {
 }
 
 window.loadAdsAnalyticsAdmin = loadAdsAnalyticsAdmin;
+
+// ==========================================
+// IN-DOCUMENT NOTES & CONTRIBUTOR ANALYTICS
+// ==========================================
+let notesAnalyticsChartInstance = null;
+
+export async function loadNotesAnalyticsAdmin() {
+  const granularitySelect = document.getElementById("notesAnalyticsTimeGranularity");
+  const selectedGranularity = granularitySelect ? granularitySelect.value : "daily";
+  const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/notes-analytics?granularity=${encodeURIComponent(selectedGranularity)}`);
+    const data = await res.json();
+
+    if (!data || !data.success) {
+      console.warn("Notes analytics fetch failed:", data?.error);
+      return;
+    }
+
+    // 1. Update Stat Summary Cards
+    const elNotesCount = document.getElementById("statNotesCount");
+    if (elNotesCount) elNotesCount.textContent = (data.totalNotesCount || 0).toLocaleString();
+
+    const elNotesLikes = document.getElementById("statNotesLikes");
+    if (elNotesLikes) elNotesLikes.textContent = (data.totalLikesCount || 0).toLocaleString();
+
+    const elNotesContribs = document.getElementById("statNotesContributors");
+    if (elNotesContribs) elNotesContribs.textContent = (data.totalContributorsCount || 0).toLocaleString();
+
+    const elNotesAvg = document.getElementById("statNotesAvgLikes");
+    if (elNotesAvg) elNotesAvg.textContent = `${data.averageLikesPerNote || '0.00'}`;
+
+    const elNotesTop = document.getElementById("statNotesTopContributor");
+    if (elNotesTop) elNotesTop.textContent = data.topContributor || 'N/A';
+
+    const elNotesShares = document.getElementById("statNotesShares");
+    if (elNotesShares) elNotesShares.textContent = (data.totalNoteShares || 0).toLocaleString();
+
+    // 2. Render Multi-Line Chart with Chart.js
+    const canvas = document.getElementById("notesAnalyticsChart");
+    if (canvas && typeof Chart !== "undefined") {
+      if (notesAnalyticsChartInstance) {
+        notesAnalyticsChartInstance.destroy();
+      }
+
+      const ctx = canvas.getContext("2d");
+      notesAnalyticsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels || [],
+          datasets: [
+            {
+              label: 'Total Contributor Likes (Purple Line)',
+              data: data.likesTrend || [],
+              borderColor: '#a855f7',
+              backgroundColor: 'rgba(168, 85, 247, 0.15)',
+              pointBackgroundColor: '#a855f7',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              borderWidth: 3,
+              tension: 0.35,
+              fill: true
+            },
+            {
+              label: 'Notes Created (Emerald Line)',
+              data: data.notesTrend || [],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              pointBackgroundColor: '#ffffff',
+              pointBorderColor: '#10b981',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              borderWidth: 2.5,
+              borderDash: [5, 5],
+              tension: 0.35,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#e2e8f0',
+                font: { family: 'Outfit, sans-serif', size: 12 }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
+              borderColor: 'rgba(168, 85, 247, 0.4)',
+              borderWidth: 1,
+              titleFont: { weight: 'bold' },
+              padding: 10
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.06)' },
+              ticks: { color: '#94a3b8' }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255, 255, 255, 0.06)' },
+              ticks: { color: '#94a3b8', stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Populate Contributor Performance Leaderboard Table
+    const tbody = document.getElementById("notesContributorsTableBody");
+    if (tbody) {
+      const contributors = Array.isArray(data.contributors) ? data.contributors : [];
+      if (contributors.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--admin-muted); padding:1.5rem;">No contributor notes recorded yet.</td></tr>`;
+      } else {
+        tbody.innerHTML = contributors.map((c, idx) => {
+          const rankBadge = idx === 0 ? '🥇 1' : idx === 1 ? '🥈 2' : idx === 2 ? '🥉 3' : `#${idx + 1}`;
+          const topNoteText = c.topNoteInfo
+            ? `Page ${c.topNoteInfo.pageNumber} (${c.topNoteInfo.rendering}) • ${c.topNoteInfo.likes} ❤️`
+            : 'N/A';
+          const profileLink = (c.contributorId && c.contributorId !== 'Unknown' && c.contributorId !== 'contributor')
+            ? `profile.html?uid=${encodeURIComponent(c.contributorId)}`
+            : (c.contributorEmail ? `profile.html?email=${encodeURIComponent(c.contributorEmail)}` : '#');
+
+          const safeName = (c.contributorName || 'Contributor').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          const safeEmail = (c.contributorEmail || c.contributorId || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+          return `
+            <tr>
+              <td style="font-weight:700; color:${idx === 0 ? '#f59e0b' : '#a5b4fc'};">${rankBadge}</td>
+              <td>
+                <div style="font-weight:600; color:#f8fafc;">${safeName}</div>
+                <div style="font-size:0.75rem; color:#64748b;">${safeEmail}</div>
+              </td>
+              <td style="font-weight:600; color:#e2e8f0;">${c.totalNotes || 0}</td>
+              <td style="font-weight:700; color:#f87171;"><i class="ri-heart-fill"></i> ${c.totalLikes || 0}</td>
+              <td style="font-weight:600; color:#38bdf8;"><i class="ri-share-forward-line"></i> ${c.totalShares || 0}</td>
+              <td style="font-weight:700; color:#10b981;">${c.engagementRate || '0.00'}</td>
+              <td style="font-size:0.8rem; color:#c084fc;">${topNoteText}</td>
+              <td>
+                ${profileLink !== '#' ? `<a href="${profileLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;"><i class="ri-user-line"></i> Profile</a>` : `<span style="color:#64748b; font-size:0.75rem;">Guest</span>`}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+  } catch (err) {
+    console.error("loadNotesAnalyticsAdmin error:", err);
+  }
+}
+
+window.loadNotesAnalyticsAdmin = loadNotesAnalyticsAdmin;
 
 window.currentResourceCacheMap = new Map();
 

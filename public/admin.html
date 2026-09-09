@@ -472,6 +472,9 @@
         <a class="nav-link" onclick="switchTab('ads-analytics'); if(window.loadAdsAnalyticsAdmin) window.loadAdsAnalyticsAdmin();">
           <i class="ri-line-chart-line" style="color:#10b981;"></i> Ads Analytics
         </a>
+        <a class="nav-link" onclick="switchTab('notes-analytics'); if(window.loadNotesAnalyticsAdmin) window.loadNotesAnalyticsAdmin();">
+          <i class="ri-sticky-note-line" style="color:#a855f7;"></i> Notes Analytics
+        </a>
         <a class="nav-link" onclick="switchTab('resource-analytics'); if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin();">
           <i class="ri-bar-chart-2-line" style="color:#6366f1;"></i> Resource Analytics
         </a>
@@ -674,16 +677,63 @@
       <!-- VIEW: SHARES -->
       <section id="view-shares" class="view-section">
         <div class="section-card">
-          <div class="section-header">
-            <h2 class="section-title">Smart Share Link Directory & Traffic Analysis <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Engagements and click track analytics are managed in accordance with our Tracking & Analytics Policy. Click to view." onclick="window.open('legal/index.html?from=admin#analytics', '_blank')"></i></h2>
-            <input type="text" id="shareSearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search share token / title...">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2 class="section-title">Smart Share Link Directory & Traffic Analysis <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Engagements and click track analytics are managed in accordance with our Tracking & Analytics Policy. Click to view." onclick="window.open('legal/index.html?from=admin#analytics', '_blank')"></i></h2>
+              <p style="color:var(--admin-text-muted); font-size:0.82rem; margin-top:3px;">Track and audit active short share links for academic resources and in-document contributor notes.</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="text" id="shareSearch" class="admin-input" style="width:240px; margin:0; padding:0.5rem 1rem;" placeholder="Search share token / title...">
+              <button onclick="loadShares()" class="btn-action success" style="padding:0.5rem 0.9rem;"><i class="ri-refresh-line"></i> Refresh</button>
+            </div>
           </div>
+
+          <!-- Share Stat Cards -->
+          <div class="stat-cards" style="margin: 1.2rem 0 1.2rem 0; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+            <div class="stat-card" style="padding:1rem;">
+              <div class="stat-icon" style="background:rgba(99,102,241,0.15); color:#818cf8;"><i class="ri-share-line"></i></div>
+              <div class="stat-info">
+                <h3 id="statTotalSharesCount" style="color:#818cf8; font-size:1.4rem;">0</h3>
+                <p style="font-size:0.75rem;">Total Share Links</p>
+              </div>
+            </div>
+            <div class="stat-card" style="padding:1rem;">
+              <div class="stat-icon" style="background:rgba(14,165,233,0.15); color:#38bdf8;"><i class="ri-file-text-line"></i></div>
+              <div class="stat-info">
+                <h3 id="statDocSharesCount" style="color:#38bdf8; font-size:1.4rem;">0</h3>
+                <p style="font-size:0.75rem;">Resource Shares</p>
+              </div>
+            </div>
+            <div class="stat-card" style="padding:1rem;">
+              <div class="stat-icon" style="background:rgba(168,85,247,0.15); color:#c084fc;"><i class="ri-sticky-note-line"></i></div>
+              <div class="stat-info">
+                <h3 id="statNoteSharesCount" style="color:#c084fc; font-size:1.4rem;">0</h3>
+                <p style="font-size:0.75rem;">In-Doc Note Shares</p>
+              </div>
+            </div>
+            <div class="stat-card" style="padding:1rem;">
+              <div class="stat-icon" style="background:rgba(16,185,129,0.15); color:#10b981;"><i class="ri-cursor-line"></i></div>
+              <div class="stat-info">
+                <h3 id="statTotalShareClicks" style="color:#10b981; font-size:1.4rem;">0</h3>
+                <p style="font-size:0.75rem;">Total Link Clicks</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Pills -->
+          <div style="display:flex; gap:8px; margin-bottom:1rem; align-items:center; flex-wrap:wrap;">
+            <span style="font-size:0.8rem; color:var(--admin-text-muted); font-weight:600;">Filter:</span>
+            <button type="button" id="shareFilterAll" class="btn-action primary" onclick="window.filterSharesByType('ALL', this)" style="padding:4px 12px; font-size:0.78rem;">All Shares</button>
+            <button type="button" id="shareFilterDoc" class="btn-action" onclick="window.filterSharesByType('document', this)" style="padding:4px 12px; font-size:0.78rem;">📄 Document Shares</button>
+            <button type="button" id="shareFilterNote" class="btn-action" onclick="window.filterSharesByType('note', this)" style="padding:4px 12px; font-size:0.78rem;">📝 In-Doc Note Shares</button>
+          </div>
+
           <div style="overflow-x:auto;">
             <table class="data-table">
               <thead>
                 <tr>
                   <th>Share Code</th>
-                  <th>Resource Title</th>
+                  <th>Type & Title</th>
                   <th>Uploader</th>
                   <th>Total CTR (Clicks)</th>
                   <th>Action</th>
@@ -1147,6 +1197,115 @@
         </div>
       </section>
 
+      <!-- IN-DOCUMENT NOTES & CONTRIBUTOR ANALYTICS TAB -->
+      <section id="view-notes-analytics" class="view-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-size:1.5rem; color:white; font-weight:700; display:flex; align-items:center; gap:10px;">
+              <i class="ri-sticky-note-line" style="color:#a855f7;"></i> In-Document Notes & Contributor Analytics
+            </h2>
+            <p style="color:var(--admin-text-muted); font-size:0.85rem; margin-top:2px;">Real-time contributor metrics, like/unlike hierarchy tracking, and engagement trend visualization.</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select id="notesAnalyticsTimeGranularity" onchange="loadNotesAnalyticsAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:#c084fc; font-family:inherit; font-size:0.85rem; cursor:pointer; font-weight:600;">
+              <option value="daily" selected>📅 Daily Trend (Date-wise)</option>
+              <option value="hourly">🕒 Daily (Hourly: 00:00 - 23:00)</option>
+              <option value="weekly">📆 Monthly (Week-wise)</option>
+            </select>
+
+            <button onclick="loadNotesAnalyticsAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Notes Stats</button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Summary Cards -->
+        <div class="stat-cards" style="margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(168,85,247,0.15); color:#a855f7;"><i class="ri-sticky-note-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statNotesCount" style="color:#a855f7;">0</h3>
+              <p>Total In-Document Notes</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(239,68,68,0.15); color:#ef4444;"><i class="ri-heart-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statNotesLikes" style="color:#ef4444;">0</h3>
+              <p>Total Contributor Likes</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(99,102,241,0.15); color:#818cf8;"><i class="ri-team-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statNotesContributors" style="color:#818cf8;">0</h3>
+              <p>Active Contributors</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(16,185,129,0.15); color:#10b981;"><i class="ri-thumb-up-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statNotesAvgLikes" style="color:#10b981;">0.00</h3>
+              <p>Average Likes / Note</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(245,158,11,0.15); color:#f59e0b;"><i class="ri-trophy-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statNotesTopContributor" style="color:#f59e0b; font-size:1.15rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">-</h3>
+              <p>Top Performing Contributor</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(14,165,233,0.15); color:#38bdf8;"><i class="ri-share-forward-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statNotesShares" style="color:#38bdf8;">0</h3>
+              <p>Total Note Shares Generated</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- In-Document Notes Multi-Line Trend Chart -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+            <h3 style="font-size:1.1rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+              <i class="ri-line-chart-line" style="color:#a855f7;"></i> In-Document Notes & Likes Trend Chart
+            </h3>
+            <div style="display:flex; gap:15px; font-size:0.8rem; font-weight:600; flex-wrap:wrap;">
+              <span style="color:#a855f7; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:3px; background:#a855f7; display:inline-block; border-radius:2px;"></span> Total Contributor Likes (Purple Line)</span>
+              <span style="color:#10b981; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:3px; background:#10b981; display:inline-block; border-radius:2px;"></span> Notes Created (Emerald Line)</span>
+            </div>
+          </div>
+
+          <div style="position:relative; width:100%; height:320px;">
+            <canvas id="notesAnalyticsChart"></canvas>
+          </div>
+          <p style="font-size:0.78rem; color:var(--admin-text-muted); margin-top:8px; text-align:center;"><i class="ri-information-line"></i> Visualizes contributor publication frequency alongside real-time visitor like/unlike engagement.</p>
+        </div>
+
+        <!-- Contributor Performance Leaderboard Table -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto;">
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+            <i class="ri-medal-line" style="color:#f59e0b;"></i> Contributor Notes & Engagement Leaderboard
+          </h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Contributor</th>
+                <th>Notes Created</th>
+                <th>Total Likes</th>
+                <th>Shares</th>
+                <th>Avg Likes / Note</th>
+                <th>Top Performing Note</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="notesContributorsTableBody">
+              <tr><td colspan="8" style="text-align:center; color:var(--admin-muted);">Loading contributor metrics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- VIEW: RESOURCE & CONTRIBUTOR ANALYTICS -->
       <section id="view-resource-analytics" class="view-section">
         <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
@@ -1555,8 +1714,12 @@
         window.loadAdsAdmin();
       } else if (tabId === 'ads-analytics' && typeof window.loadAdsAnalyticsAdmin === 'function') {
         window.loadAdsAnalyticsAdmin();
+      } else if (tabId === 'notes-analytics' && typeof window.loadNotesAnalyticsAdmin === 'function') {
+        window.loadNotesAnalyticsAdmin();
       } else if (tabId === 'resource-analytics' && typeof window.loadResourceAnalyticsAdmin === 'function') {
         window.loadResourceAnalyticsAdmin();
+      } else if (tabId === 'shares' && typeof window.loadShares === 'function') {
+        window.loadShares();
       }
     }
     window.switchTab = switchTab;
