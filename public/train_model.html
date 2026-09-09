@@ -224,6 +224,154 @@
       border-color: #ef4444;
       color: white;
     }
+    /* AI TAG ASSISTANT BAR */
+    .ai-tag-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px dashed rgba(99, 102, 241, 0.28);
+      border-radius: 8px;
+      min-height: 38px;
+    }
+    .ai-tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c4b5fd;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ai-tag-chip:hover {
+      background: rgba(139, 92, 246, 0.4);
+      color: #ffffff;
+      border-color: #a78bfa;
+      transform: translateY(-1px);
+    }
+    .ai-status-indicator {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    /* NOTE LAYOUT RULES CHECKLIST */
+    .note-layout-rules-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .rule-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .rule-pill.valid {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+    .rule-pill.invalid {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+    /* AI CONTENT ASSIST BAR */
+    .ai-content-assist-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 8px;
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+    .ai-suggestion-chip {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #c4b5fd;
+      padding: 3px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ai-suggestion-chip:hover {
+      background: rgba(99, 102, 241, 0.4);
+      color: white;
+    }
+    /* FORMULA INSPECTOR */
+    .formula-inspector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+      padding: 6px 12px;
+      margin-bottom: 10px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.74rem;
+      color: #93c5fd;
+      word-break: break-all;
+    }
+    /* AI VERIFICATION MODAL */
+    .ai-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 1rem;
+    }
+    .ai-modal-content {
+      background: #0f172a;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: 16px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.8rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
     /* STATUS NOTICE */
     .status-notice {
       padding: 0.75rem 1rem;
@@ -558,35 +706,50 @@
           <!-- Real-Time Slot Collision Notice -->
           <div id="slotStatusNotice" style="display:none;"></div>
 
-          <!-- Tags Input -->
+          <!-- Tags Input with AI Real-Time Crawler & Typo Fixer -->
           <div style="margin:1.2rem 0;">
-            <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
-              Key Topics Covered *
-            </label>
-            <input type="text" id="noteTags" class="input-field" placeholder="e.g. Kinematics, Newton's Laws, Velocity, Core Formulas" oninput="updateLiveNotePreview()" required>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+                Key Topics Covered *
+              </label>
+              <span style="font-size:0.75rem; color:#a78bfa; display:inline-flex; align-items:center; gap:4px;">
+                <i class="ri-sparkling-fill"></i> AI Auto-Correct & Keyword Standardizer
+              </span>
+            </div>
+            <input type="text" id="noteTags" class="input-field" placeholder="e.g. Kinematics, Newton's Laws, Velocity, Core Formulas" oninput="handleTagInput()" required>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-              Enter concise topic keywords separated by commas.
+              Enter concise topic keywords separated by commas (e.g. Gogle &rarr; Google, Binge &rarr; Bing).
+            </div>
+            <!-- Real-Time AI Tag Suggestions Bar -->
+            <div id="aiTagSuggestionsBar" class="ai-tag-bar" style="display:none;">
+              <span class="ai-status-indicator" id="aiTagStatus">
+                <i class="ri-sparkling-fill" style="color:#a855f7;"></i> AI Tag Standardizer:
+              </span>
+              <div id="aiTagChipsContainer" style="display:inline-flex; flex-wrap:wrap; gap:6px;"></div>
+              <button type="button" id="btnApplyAllTags" onclick="applyAllAiTags()" style="display:none; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:#6ee7b7; font-size:0.72rem; padding:2px 8px; border-radius:4px; cursor:pointer; margin-left:auto;">
+                <i class="ri-check-line"></i> Fix All
+              </button>
             </div>
           </div>
 
-          <!-- Content Formatting Tools (Clean Non-Technical Labels) -->
+          <!-- Content Formatting Tools (Clean Non-Technical Labels + Native Ad) -->
           <div style="margin-top:1.4rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <label style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">
                 Formatting Tools
               </label>
               <span style="font-size:0.75rem; color:var(--text-muted);">
-                Tap any tool to insert formatted elements
+                Tap any tool to insert formatted elements (1 H1, 1–3 H2s, H3 in H2)
               </span>
             </div>
             <div class="tools-palette">
-              <button type="button" class="note-tool-btn" onclick="insertTool('h1')" title="Insert Heading">
+              <button type="button" class="note-tool-btn" onclick="insertTool('h1')" title="Insert Main Heading (Only 1 allowed)">
                 <i class="ri-heading"></i> Heading
               </button>
-              <button type="button" class="note-tool-btn" onclick="insertTool('h2')" title="Insert Subheading">
+              <button type="button" class="note-tool-btn" onclick="insertTool('h2')" title="Insert Subheading (Min 1, Max 3)">
                 <i class="ri-h-2"></i> Subheading
               </button>
-              <button type="button" class="note-tool-btn" onclick="insertTool('h3')" title="Insert Keynote / Highlight">
+              <button type="button" class="note-tool-btn" onclick="insertTool('h3')" title="Insert Keynote / Highlight (Within H2 only)">
                 <i class="ri-lightbulb-line"></i> Keynote
               </button>
               <button type="button" class="note-tool-btn" onclick="insertTool('p')" title="Insert Paragraph">
@@ -604,6 +767,9 @@
               <button type="button" class="note-tool-btn" onclick="insertTool('code')" title="Insert Code / Formula Snippet">
                 <i class="ri-code-line"></i> Code Snippet
               </button>
+              <button type="button" class="note-tool-btn" onclick="insertTool('native-ad')" title="Insert DPGNotes Native Ad Block" style="border-color:rgba(99,102,241,0.4); background:rgba(99,102,241,0.12); color:#a5b4fc;">
+                <i class="ri-advertisement-line"></i> Native Ad
+              </button>
               <button type="button" class="note-tool-btn btn-clear" onclick="clearNoteContent()" title="Clear Content">
                 <i class="ri-delete-bin-line"></i> Clear
               </button>
@@ -612,6 +778,25 @@
 
           <!-- Dual Mode: Note Editor / Live Preview -->
           <div style="margin-top:1rem;">
+            <!-- Real-Time Layout Quality Checklist -->
+            <div class="note-layout-rules-bar" id="noteLayoutChecklist">
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-right:4px;">
+                <i class="ri-shield-check-line" style="color:var(--primary-light);"></i> Layout Quality:
+              </span>
+              <span id="ruleH1" class="rule-pill invalid">
+                <i class="ri-close-circle-line"></i> 1 Main Title (H1)
+              </span>
+              <span id="ruleH2" class="rule-pill invalid">
+                <i class="ri-close-circle-line"></i> 1–3 Subheadings (H2)
+              </span>
+              <span id="ruleH3" class="rule-pill valid">
+                <i class="ri-checkbox-circle-line"></i> Keynotes (H3 inside H2)
+              </span>
+              <span id="ruleContent" class="rule-pill invalid">
+                <i class="ri-close-circle-line"></i> Accompanying Content
+              </span>
+            </div>
+
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:8px;">
               <div class="view-mode-tabs">
                 <button type="button" id="btnModeEdit" class="view-mode-btn active" onclick="switchNoteViewMode('edit')">
@@ -626,13 +811,31 @@
               </span>
             </div>
 
-            <!-- Note Editor Area -->
+            <!-- Note Editor Area with Real-Time AI Auto-Complete -->
             <div id="noteEditorWrap">
-              <textarea id="noteHtmlContent" class="input-field" style="height:180px; font-family:'Fira Code', 'Courier New', monospace; font-size:0.88rem; line-height:1.6;" placeholder="Draft your note here or tap formatting tools above (Heading, Keynote, Paragraph, Link, Lists, Code)..." oninput="updateLiveNotePreview()"></textarea>
+              <textarea id="noteHtmlContent" class="input-field" style="height:190px; font-family:'Fira Code', 'Courier New', monospace; font-size:0.88rem; line-height:1.6;" placeholder="Draft your note here or tap formatting tools above (Heading, Keynote, Paragraph, Link, Lists, Code, Native Ad)..." oninput="handleContentInput()"></textarea>
+              
+              <!-- Floating AI Content Assistant (Next 5 Words & Typo Check) -->
+              <div id="aiContentAssistBar" class="ai-content-assist-bar" style="display:none;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <span style="display:inline-flex; align-items:center; gap:4px; color:#c4b5fd; font-weight:600;">
+                    <i class="ri-flashlight-line" style="color:#f59e0b;"></i> AI Assistant:
+                  </span>
+                  <span id="aiTypoBadge" style="display:none; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; font-size:0.72rem; padding:2px 6px; border-radius:4px;"></span>
+                  <span id="aiNextWordsSuggestion" style="color:#e2e8f0; font-style:italic;"></span>
+                </div>
+                <button type="button" id="btnInsertAiNextWords" onclick="insertAiNextWords()" class="ai-suggestion-chip" style="font-size:0.75rem; padding:3px 8px;">
+                  <i class="ri-add-line"></i> Insert Next 5 Words
+                </button>
+              </div>
             </div>
 
-            <!-- Live Preview Area -->
+            <!-- Live Preview Area with Formula Inspector -->
             <div id="notePreviewWrap" style="display:none;">
+              <div class="formula-inspector" id="formulaInspectorBadge">
+                <span><i class="ri-code-s-slash-line" style="color:#a855f7;"></i> Formula: &lt;div class="added-notes" type="after" page-id="..." id="..."&gt;&lt;/div&gt;</span>
+                <span style="font-size:0.7rem; color:var(--text-muted);">Live DOM Spec</span>
+              </div>
               <div class="note-preview-box">
                 <div id="liveNotePreviewTarget">
                   <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem 0;">
@@ -882,6 +1085,62 @@
       window.updateLiveNotePreview();
     };
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    // Strict Layout Rules Validator (1 H1, 1-3 H2, H3 within H2, Content present)
+    window.checkNoteLayoutRules = function(html) {
+      const h1Matches = (html || '').match(/<h1[\s>][\s\S]*?<\/h1>/gi) || [];
+      const h2Matches = (html || '').match(/<h2[\s>][\s\S]*?<\/h2>/gi) || [];
+      const h3Matches = (html || '').match(/<h3[\s>][\s\S]*?<\/h3>/gi) || [];
+      const firstH2Idx = (html || '').search(/<h2[\s>]/i);
+      const firstH3Idx = (html || '').search(/<h3[\s>]/i);
+      const cleanText = (html || '').replace(/<[^>]+>/g, '').trim();
+
+      const isH1Valid = h1Matches.length === 1;
+      const isH2Valid = h2Matches.length >= 1 && h2Matches.length <= 3;
+      const isH3Valid = h3Matches.length === 0 || (firstH2Idx !== -1 && firstH3Idx > firstH2Idx);
+      const isContentValid = cleanText.length >= 10;
+
+      const pillH1 = document.getElementById('ruleH1');
+      const pillH2 = document.getElementById('ruleH2');
+      const pillH3 = document.getElementById('ruleH3');
+      const pillContent = document.getElementById('ruleContent');
+
+      if (pillH1) {
+        pillH1.className = `rule-pill ${isH1Valid ? 'valid' : 'invalid'}`;
+        pillH1.innerHTML = `<i class="${isH1Valid ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'}"></i> ${h1Matches.length === 1 ? '1 Main Title (H1)' : (h1Matches.length === 0 ? 'H1 Title Missing' : 'Only 1 H1 Allowed')}`;
+      }
+      if (pillH2) {
+        pillH2.className = `rule-pill ${isH2Valid ? 'valid' : 'invalid'}`;
+        pillH2.innerHTML = `<i class="${isH2Valid ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'}"></i> ${isH2Valid ? `${h2Matches.length} Subheading${h2Matches.length > 1 ? 's' : ''} (H2)` : (h2Matches.length === 0 ? 'Min 1 H2 Subheading' : 'Max 3 H2 Subheadings')}`;
+      }
+      if (pillH3) {
+        pillH3.className = `rule-pill ${isH3Valid ? 'valid' : 'invalid'}`;
+        pillH3.innerHTML = `<i class="${isH3Valid ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'}"></i> ${isH3Valid ? (h3Matches.length > 0 ? `${h3Matches.length} Keynote${h3Matches.length > 1 ? 's' : ''} (H3 in H2)` : 'Keynotes (H3 inside H2)') : 'H3 must be inside H2'}`;
+      }
+      if (pillContent) {
+        pillContent.className = `rule-pill ${isContentValid ? 'valid' : 'invalid'}`;
+        pillContent.innerHTML = `<i class="${isContentValid ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'}"></i> ${isContentValid ? 'Content Body Ready' : 'Content Body Missing'}`;
+      }
+
+      if (!isH1Valid) {
+        return { valid: false, error: h1Matches.length === 0 ? "Note layout requires exactly ONE main <h1> title at the top." : "Note layout allows only ONE <h1> title. Multiple <h1> headings are prohibited." };
+      }
+      if (!isH2Valid) {
+        return { valid: false, error: h2Matches.length === 0 ? "Note layout requires at least 1 <h2> subheading." : "Note layout allows a maximum of 3 <h2> subheadings." };
+      }
+      if (!isH3Valid) {
+        return { valid: false, error: "<h3> keynotes are only allowed within an <h2> subheading section (cannot appear before the first <h2>)." };
+      }
+      if (!isContentValid) {
+        return { valid: false, error: "Please write accompanying note content." };
+      }
+      return { valid: true };
+    };
+
     function wrapOrInsert(textarea, beforeTag, afterTag, placeholder) {
       const start = textarea.selectionStart || 0;
       const end = textarea.selectionEnd || 0;
@@ -898,16 +1157,39 @@
       const textarea = document.getElementById('noteHtmlContent');
       if (!textarea) return;
 
+      const currentVal = textarea.value;
+
       if (type === 'h1') {
-        wrapOrInsert(textarea, '<h1>', '</h1>', 'Heading');
+        const h1Count = (currentVal.match(/<h1[\s>]/gi) || []).length;
+        if (h1Count >= 1) {
+          if (window.customAlert) await window.customAlert("Note layout standard allows only ONE main <h1> title.", { title: "Heading Limit", isDanger: true });
+          else alert("Note layout standard allows only ONE main <h1> title.");
+          return;
+        }
+        wrapOrInsert(textarea, '<h1>', '</h1>', 'Main Note Title');
       } else if (type === 'h2') {
-        wrapOrInsert(textarea, '<h2>', '</h2>', 'Subheading');
+        const h2Count = (currentVal.match(/<h2[\s>]/gi) || []).length;
+        if (h2Count >= 3) {
+          if (window.customAlert) await window.customAlert("Note layout standard permits a maximum of 3 <h2> subheadings.", { title: "Subheading Limit", isDanger: true });
+          else alert("Note layout standard permits a maximum of 3 <h2> subheadings.");
+          return;
+        }
+        wrapOrInsert(textarea, '<h2>', '</h2>', 'Key Concept Subheading');
       } else if (type === 'h3') {
-        wrapOrInsert(textarea, '<h3>', '</h3>', 'Keynote / Important Concept');
+        const h2Count = (currentVal.match(/<h2[\s>]/gi) || []).length;
+        if (h2Count === 0) {
+          if (window.customAlert) await window.customAlert("<h3> keynotes can only be placed within an <h2> subheading section. Please create an <h2> subheading first.", { title: "Hierarchy Rule", isDanger: true });
+          else alert("<h3> keynotes can only be placed within an <h2> subheading section. Please create an <h2> subheading first.");
+          return;
+        }
+        wrapOrInsert(textarea, '<h3>', '</h3>', 'Core Exam Insight / Highlight');
       } else if (type === 'p') {
         wrapOrInsert(textarea, '<p>', '</p>', 'Add your detailed academic explanations, study formulas, or exam tips here.');
       } else if (type === 'code') {
         wrapOrInsert(textarea, '<code>', '</code>', 'inline_variable_or_formula');
+      } else if (type === 'native-ad') {
+        const adSnippet = `\n<div class="dpg-native-ad-block" data-ad-format="in-note">\n  <div class="dpg-native-ad-badge"><i class="ri-advertisement-line"></i> DPGNotes Academic Partner Block</div>\n  <div style="font-weight:600; font-size:0.95rem; color:white; margin-bottom:4px;">Recommended Academic Tools &amp; Learning Resources</div>\n  <div style="font-size:0.82rem; color:#94a3b8; line-height:1.4;">Explore student-verified study datasets, mock test series, and textbook companion vector indices on DPGNotes.</div>\n</div>\n`;
+        wrapOrInsert(textarea, '', '', adSnippet);
       } else if (type === 'a') {
         let url = 'https://';
         let text = 'Reference Link';
@@ -948,6 +1230,7 @@
         }
       }
 
+      window.checkNoteLayoutRules(textarea.value);
       window.updateLiveNotePreview();
     };
 
@@ -955,10 +1238,166 @@
       const textarea = document.getElementById('noteHtmlContent');
       if (textarea) {
         textarea.value = '';
+        window.checkNoteLayoutRules('');
         window.updateLiveNotePreview();
       }
     };
 
+    // Real-Time As-You-Type AI Tag Suggestions & Typo Correction
+    let tagDebounceTimer = null;
+    window.handleTagInput = function() {
+      window.updateLiveNotePreview();
+      const input = document.getElementById('noteTags');
+      const bar = document.getElementById('aiTagSuggestionsBar');
+      const chips = document.getElementById('aiTagChipsContainer');
+      const applyAllBtn = document.getElementById('btnApplyAllTags');
+      const status = document.getElementById('aiTagStatus');
+      if (!input) return;
+
+      clearTimeout(tagDebounceTimer);
+      const raw = input.value.trim();
+      if (raw.length < 3) {
+        if (bar) bar.style.display = 'none';
+        return;
+      }
+
+      tagDebounceTimer = setTimeout(async () => {
+        try {
+          if (status) status.innerHTML = `<i class="ri-loader-4-line spin-icon" style="color:#a855f7;"></i> AI Analyzing &amp; Fixing Tags...`;
+          if (bar) bar.style.display = 'flex';
+
+          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+          const res = await fetch(`${apiBase}/api/ai/suggest-tags`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              rawTags: raw,
+              resourceTitle: window.docData?.title || '',
+              discipline: window.docData?.discipline || '',
+              category: window.docData?.category || ''
+            })
+          });
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.tags) && data.tags.length > 0) {
+            window.lastAiSuggestedTags = data.tags;
+            if (chips) {
+              chips.innerHTML = data.tags.map(t => `
+                <span class="ai-tag-chip" onclick="applySingleAiTag('${escapeHtml(t)}')" title="Click to use standardized tag">
+                  <i class="ri-sparkling-fill" style="font-size:0.65rem;"></i> ${escapeHtml(t)}
+                </span>
+              `).join('');
+            }
+            if (applyAllBtn) applyAllBtn.style.display = 'inline-flex';
+            if (status) status.innerHTML = `<i class="ri-sparkling-fill" style="color:#a855f7;"></i> AI Standardized Tags:`;
+          } else {
+            if (bar) bar.style.display = 'none';
+          }
+        } catch(e) {
+          console.warn("AI Tag suggest error:", e);
+          if (bar) bar.style.display = 'none';
+        }
+      }, 450);
+    };
+
+    window.applySingleAiTag = function(tag) {
+      const input = document.getElementById('noteTags');
+      if (!input) return;
+      const current = input.value.split(',').map(s => s.trim()).filter(Boolean);
+      if (!current.some(c => c.toLowerCase() === tag.toLowerCase())) {
+        current.push(tag);
+        input.value = current.join(', ');
+      }
+      window.updateLiveNotePreview();
+    };
+
+    window.applyAllAiTags = function() {
+      const input = document.getElementById('noteTags');
+      if (input && Array.isArray(window.lastAiSuggestedTags) && window.lastAiSuggestedTags.length > 0) {
+        input.value = window.lastAiSuggestedTags.join(', ');
+        const bar = document.getElementById('aiTagSuggestionsBar');
+        if (bar) bar.style.display = 'none';
+        window.updateLiveNotePreview();
+      }
+    };
+
+    // Real-Time As-You-Type AI Content Assistant (Next 5 Words & Typo Check)
+    let contentDebounceTimer = null;
+    window.handleContentInput = function() {
+      const textarea = document.getElementById('noteHtmlContent');
+      if (!textarea) return;
+
+      const html = textarea.value;
+      window.checkNoteLayoutRules(html);
+      window.updateLiveNotePreview();
+
+      const assistBar = document.getElementById('aiContentAssistBar');
+      const nextWordsEl = document.getElementById('aiNextWordsSuggestion');
+      const typoEl = document.getElementById('aiTypoBadge');
+
+      clearTimeout(contentDebounceTimer);
+      const plainText = html.replace(/<[^>]+>/g, ' ').trim();
+      if (plainText.length < 8) {
+        if (assistBar) assistBar.style.display = 'none';
+        return;
+      }
+
+      contentDebounceTimer = setTimeout(async () => {
+        try {
+          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+          const res = await fetch(`${apiBase}/api/ai/autocomplete-content`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              currentText: plainText,
+              resourceTitle: window.docData?.title || ''
+            })
+          });
+          const data = await res.json();
+          if (data && data.success && (data.nextWords || data.typoFix)) {
+            window.currentAiNextWords = data.nextWords || '';
+            if (nextWordsEl) {
+              nextWordsEl.textContent = data.nextWords ? `"...${data.nextWords}..."` : '';
+            }
+            if (typoEl) {
+              if (data.typoFix) {
+                typoEl.style.display = 'inline-flex';
+                typoEl.innerHTML = `<i class="ri-spell-check-line"></i> Fix: ${escapeHtml(data.typoFix)}`;
+              } else {
+                typoEl.style.display = 'none';
+              }
+            }
+            if (assistBar) assistBar.style.display = 'flex';
+          } else {
+            if (assistBar) assistBar.style.display = 'none';
+          }
+        } catch (e) {
+          if (assistBar) assistBar.style.display = 'none';
+        }
+      }, 600);
+    };
+
+    window.insertAiNextWords = function() {
+      const textarea = document.getElementById('noteHtmlContent');
+      if (!textarea || !window.currentAiNextWords) return;
+      const words = window.currentAiNextWords.trim();
+      const start = textarea.selectionStart || textarea.value.length;
+      const end = textarea.selectionEnd || textarea.value.length;
+      const text = textarea.value;
+      const spacer = (start > 0 && !/\s$/.test(text.substring(0, start))) ? ' ' : '';
+      const insert = spacer + words;
+      textarea.value = text.substring(0, start) + insert + text.substring(end);
+      const newPos = start + insert.length;
+      textarea.setSelectionRange(newPos, newPos);
+      textarea.focus();
+
+      const assistBar = document.getElementById('aiContentAssistBar');
+      if (assistBar) assistBar.style.display = 'none';
+      window.currentAiNextWords = '';
+      window.checkNoteLayoutRules(textarea.value);
+      window.updateLiveNotePreview();
+    };
+
+    // Live Note Preview with Formula Spec Inspector
     window.updateLiveNotePreview = function() {
       const target = document.getElementById('liveNotePreviewTarget');
       if (!target) return;
@@ -969,6 +1408,23 @@
       const rend = (beforeRadio && beforeRadio.checked) ? 'before' : 'after';
       const tagsVal = document.getElementById('noteTags')?.value || '';
       const htmlVal = document.getElementById('noteHtmlContent')?.value || '';
+
+      const pageId = `${targetId}-${pg}`;
+      const elementId = `${rend === 'before' ? 'be' : 'af'}-preview`;
+      const formulaStr = `<div class="added-notes" type="${rend}" page-id="${pageId}" id="${elementId}"></div>`;
+
+      const formulaBadge = document.getElementById('formulaInspectorBadge');
+      if (formulaBadge) {
+        formulaBadge.innerHTML = `
+          <span><i class="ri-code-s-slash-line" style="color:#a855f7;"></i> Formula: <strong>${escapeHtml(formulaStr)}</strong></span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">${rend === 'before' ? 'be (Before)' : 'af (After)'}</span>
+        `;
+      }
+
+      const slotLabel = document.getElementById('noteTargetSlotLabel');
+      if (slotLabel) {
+        slotLabel.innerHTML = `Target Slot: <strong>Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})</strong> • Formula ID: <code style="color:#a5b4fc;">${elementId}</code>`;
+      }
 
       if (!htmlVal.trim()) {
         target.innerHTML = `
@@ -983,8 +1439,8 @@
         resourceId: targetId,
         pageNumber: pg,
         rendering: rend,
-        pageId: `${targetId}-${pg}`,
-        elementId: `${rend === 'before' ? 'be' : 'af'}-preview`,
+        pageId,
+        elementId,
         tags: tagsVal.split(',').map(s => s.trim()).filter(Boolean),
         htmlContent: htmlVal
       };
@@ -1081,16 +1537,19 @@
 
       container.innerHTML = notes.map((note) => {
         const nid = note.notesId || note.id;
-        const rendLabel = note.rendering === 'before' ? 'Before Page' : 'After Page';
+        const rend = (String(note.rendering || '').toLowerCase() === 'before') ? 'before' : 'after';
+        const rendLabel = rend === 'before' ? 'Before Page' : 'After Page';
         const pageId = note.pageId || `${targetId}-${note.pageNumber}`;
+        const elementId = note.elementId || `${rend === 'before' ? 'be' : 'af'}-${nid}`;
+        const formulaTag = `<div class="added-notes" type="${rend}" page-id="${pageId}" id="${elementId}"></div>`;
         const tagsArr = Array.isArray(note.tags) ? note.tags : (note.tags ? String(note.tags).split(',') : []);
 
         return `
-          <div class="faq-item" style="margin-bottom:1.2rem; border-left:4px solid ${note.rendering === 'before' ? '#8b5cf6' : '#10b981'};">
+          <div class="faq-item" style="margin-bottom:1.2rem; border-left:4px solid ${rend === 'before' ? '#8b5cf6' : '#10b981'};">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:0.8rem;">
               <div>
-                <span style="background:${note.rendering === 'before' ? 'rgba(139,92,246,0.2)' : 'rgba(16,185,129,0.2)'}; color:${note.rendering === 'before' ? '#c4b5fd' : '#6ee7b7'}; border:1px solid ${note.rendering === 'before' ? 'rgba(139,92,246,0.4)' : 'rgba(16,185,129,0.4)'}; padding:3px 10px; border-radius:999px; font-size:0.75rem; font-weight:700;">
-                  Page ${note.pageNumber} • ${rendLabel}
+                <span style="background:${rend === 'before' ? 'rgba(139,92,246,0.2)' : 'rgba(16,185,129,0.2)'}; color:${rend === 'before' ? '#c4b5fd' : '#6ee7b7'}; border:1px solid ${rend === 'before' ? 'rgba(139,92,246,0.4)' : 'rgba(16,185,129,0.4)'}; padding:3px 10px; border-radius:999px; font-size:0.75rem; font-weight:700;">
+                  Page ${note.pageNumber} &bull; ${rendLabel}
                 </span>
                 <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">
                   Slot: ${pageId}
@@ -1101,15 +1560,20 @@
               </button>
             </div>
 
+            <!-- Prominent Formula Inspector Specification Tag -->
+            <div style="font-family:'Fira Code', 'Courier New', monospace; font-size:0.72rem; color:#93c5fd; background:rgba(0,0,0,0.35); padding:5px 10px; border-radius:6px; border:1px solid rgba(99,102,241,0.25); margin-bottom:0.8rem; word-break:break-all;">
+              <i class="ri-code-s-slash-line" style="color:#a855f7;"></i> Formula: <strong>${escapeHtml(formulaTag)}</strong>
+            </div>
+
             ${tagsArr.length ? `
               <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:0.8rem;">
-                ${tagsArr.map(t => `<span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#94a3b8; font-size:0.7rem; padding:2px 8px; border-radius:4px;">${t.trim()}</span>`).join('')}
+                ${tagsArr.map(t => `<span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#94a3b8; font-size:0.7rem; padding:2px 8px; border-radius:4px;">${escapeHtml(t.trim())}</span>`).join('')}
               </div>
             ` : ''}
 
             <details style="margin-top:0.6rem; cursor:pointer;">
               <summary style="font-size:0.82rem; color:var(--primary-light); font-weight:600; outline:none; display:inline-flex; align-items:center; gap:5px;">
-                <i class="ri-eye-line"></i> View Note Content Preview
+                <i class="ri-eye-line"></i> View Rendered Note Content Preview
               </summary>
               <div style="margin-top:0.8rem; background:rgba(0,0,0,0.35); padding:1rem; border-radius:8px; border:1px solid var(--border); font-size:0.88rem;">
                 ${note.htmlContent || ''}
@@ -1120,6 +1584,7 @@
       }).join('');
     }
 
+    // Save Note with Layout Verification and Submit-Time AI Fact-Checking
     window.submitNewNote = async function() {
       const pgInput = document.getElementById('notePageNum');
       const pg = parseInt(pgInput?.value, 10);
@@ -1134,9 +1599,6 @@
         else alert(`Page ${pg} exceeds total document pages (${window.resourceTotalPages}).`);
         return;
       }
-
-      const beforeRadio = document.getElementById('rendBefore');
-      const rend = (beforeRadio && beforeRadio.checked) ? 'before' : 'after';
 
       const tagsInput = document.getElementById('noteTags');
       const tagsVal = tagsInput?.value.trim() || '';
@@ -1154,10 +1616,104 @@
         return;
       }
 
+      // Check Note Layout Rules (1 H1, 1-3 H2, H3 in H2)
+      const layoutCheck = window.checkNoteLayoutRules(htmlVal);
+      if (!layoutCheck.valid) {
+        if (window.customAlert) {
+          await window.customAlert(layoutCheck.error, { title: "Layout Structure Error", isDanger: true });
+        } else {
+          alert("Layout Structure Error: " + layoutCheck.error);
+        }
+        return;
+      }
+
       const btn = document.getElementById('btnSaveNote');
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Saving Note...`;
+        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> AI Verification & Fact-Checking...`;
+      }
+
+      try {
+        // Run submit-time AI verification with internet knowledge
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        let verifyData = null;
+        try {
+          const vRes = await fetch(`${apiBase}/api/ai/verify-note-content`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              htmlContent: htmlVal,
+              tags: tagsVal,
+              resourceTitle: window.docData?.title || '',
+              allowInternetKnowledge: true
+            })
+          });
+          if (vRes.ok) {
+            verifyData = await vRes.json();
+          }
+        } catch(aiErr) {
+          console.warn("AI verification call error:", aiErr);
+        }
+
+        if (verifyData && verifyData.hasChanges && verifyData.suggestedHtml && verifyData.suggestedHtml.trim() !== htmlVal.trim()) {
+          window.pendingOriginalHtml = htmlVal;
+          window.pendingRefinedHtml = verifyData.suggestedHtml;
+          
+          const modal = document.getElementById('aiVerifyModal');
+          const notice = document.getElementById('aiVerifyStatusNotice');
+          const preview = document.getElementById('aiVerifyPreviewBox');
+          
+          if (notice) {
+            notice.innerHTML = `<strong><i class="ri-sparkling-fill" style="color:#a855f7;"></i> AI Verification Completed:</strong> ${escapeHtml(verifyData.summary || 'Minimal fact-checking and grammar polish recommended.')}`;
+          }
+          if (preview) {
+            preview.innerHTML = verifyData.suggestedHtml;
+          }
+          if (modal) modal.style.display = 'flex';
+          return;
+        }
+
+        // If no AI changes or fallback, publish directly
+        await window.publishFinalNote(false);
+
+      } catch (err) {
+        console.error("Submit note error:", err);
+        if (window.customAlert) {
+          await window.customAlert(err.message, { title: "Save Error", isDanger: true });
+        } else {
+          alert("Error: " + err.message);
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
+        }
+      }
+    };
+
+    window.closeAiVerifyModal = function() {
+      const modal = document.getElementById('aiVerifyModal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.publishFinalNote = async function(useRefined) {
+      const pgInput = document.getElementById('notePageNum');
+      const pg = parseInt(pgInput?.value, 10);
+      const beforeRadio = document.getElementById('rendBefore');
+      const rend = (beforeRadio && beforeRadio.checked) ? 'before' : 'after';
+      const tagsVal = document.getElementById('noteTags')?.value.trim() || '';
+      
+      const htmlInput = document.getElementById('noteHtmlContent');
+      let finalHtml = useRefined 
+        ? (window.pendingRefinedHtml || htmlInput?.value.trim()) 
+        : (window.pendingOriginalHtml || htmlInput?.value.trim());
+
+      window.closeAiVerifyModal();
+
+      const btn = document.getElementById('btnSaveNote');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Publishing Note...`;
       }
 
       try {
@@ -1169,7 +1725,7 @@
             pageNumber: pg,
             rendering: rend,
             tags: tagsVal,
-            htmlContent: htmlVal,
+            htmlContent: finalHtml,
             userId: activeUid
           })
         });
@@ -1186,15 +1742,17 @@
         }
 
         // Reset inputs
+        const tagsInput = document.getElementById('noteTags');
         if (htmlInput) htmlInput.value = '';
         if (tagsInput) tagsInput.value = '';
         window.switchNoteViewMode('edit');
+        window.checkNoteLayoutRules('');
 
         // Reload existing notes and slot validation
         await window.loadExistingNotes();
 
       } catch (err) {
-        console.error("Save note error:", err);
+        console.error("Publish note error:", err);
         if (window.customAlert) {
           await window.customAlert(err.message, { title: "Collision / Save Error", isDanger: true });
         } else {
@@ -1203,7 +1761,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = `<i class="ri-upload-cloud-line"></i> Save & Publish In-Document Note`;
+          btn.innerHTML = `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
         }
       }
     };
@@ -1497,5 +2055,40 @@
 
     initTrainModel();
   </script>
+
+  <!-- AI Verification & Polish Modal (Submit-Time Internet Knowledge Check) -->
+  <div id="aiVerifyModal" class="ai-modal-overlay" style="display:none;">
+    <div class="ai-modal-content">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.8rem;">
+        <h3 style="margin:0; font-size:1.15rem; color:white; display:flex; align-items:center; gap:8px;">
+          <i class="ri-sparkling-fill" style="color:#a855f7;"></i> AI Academic Verification &amp; Polish
+        </h3>
+        <button type="button" onclick="closeAiVerifyModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div id="aiVerifyStatusNotice" style="margin-bottom:1rem; font-size:0.85rem; line-height:1.5; color:#cbd5e1; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:0.8rem 1rem;">
+        Verifying note structure and academic accuracy against Internet Knowledge...
+      </div>
+      <div style="margin-bottom:1.2rem;">
+        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">
+          Refined Academic Note Content Preview:
+        </label>
+        <div id="aiVerifyPreviewBox" style="background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:8px; padding:1rem; max-height:260px; overflow-y:auto; font-size:0.88rem;">
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; border-top:1px solid var(--border); padding-top:1rem;">
+        <button type="button" onclick="closeAiVerifyModal()" class="btn-secondary">
+          Edit Further
+        </button>
+        <button type="button" id="btnPublishOriginal" onclick="publishFinalNote(false)" class="btn-secondary" style="color:#cbd5e1;">
+          Publish Original As-Is
+        </button>
+        <button type="button" id="btnPublishRefined" onclick="publishFinalNote(true)" class="btn-primary" style="background:linear-gradient(135deg, #8b5cf6, #6366f1);">
+          <i class="ri-checkbox-circle-line"></i> Accept AI Polish &amp; Publish
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

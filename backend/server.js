@@ -430,6 +430,79 @@ async function getResourceNotesContext(resourceId) {
   }
 }
 
+// Gemini API Helper for Real-time Content & Tag Intelligence
+async function callGeminiApi(promptText, maxTokens = 1000) {
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!geminiKey) throw new Error("GEMINI_API_KEY not configured in environment");
+
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-lite'];
+  let lastError = null;
+  for (const model of models) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            maxOutputTokens: maxTokens,
+            temperature: 0.2
+          }
+        })
+      });
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(`Gemini ${model} HTTP ${res.status}: ${errTxt}`);
+      }
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return text.trim();
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("All Gemini models failed");
+}
+
+// Layout Structure Validation for In-Document Notes
+function validateNoteLayout(htmlContent) {
+  if (!htmlContent || typeof htmlContent !== 'string') {
+    return { valid: false, error: "Note content is required." };
+  }
+  
+  // Count H1, H2, H3 tags
+  const h1Matches = htmlContent.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi) || [];
+  const h2Matches = htmlContent.match(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi) || [];
+  const h3Matches = htmlContent.match(/<h3\b[^>]*>([\s\S]*?)<\/h3>/gi) || [];
+
+  // Rule 1: Exactly 1 H1 mandatory
+  if (h1Matches.length === 0) {
+    return { valid: false, error: "Primary Heading (H1) is required. Each note must start with exactly one H1 title." };
+  }
+  if (h1Matches.length > 1) {
+    return { valid: false, error: `Only 1 Primary Heading (H1) is allowed. Found ${h1Matches.length} H1 headings. Use Subheadings (H2) for dividing sections.` };
+  }
+
+  // Rule 2: Min 1 to Max 3 H2
+  if (h2Matches.length === 0) {
+    return { valid: false, error: "At least one Subheading (H2) is required (1 to 3 H2 allowed)." };
+  }
+  if (h2Matches.length > 3) {
+    return { valid: false, error: `Too many Subheadings (${h2Matches.length}). A maximum of 3 H2 subheadings is allowed per note for optimal layout.` };
+  }
+
+  // Rule 3: H3 only allowed within H2 (after the first H2)
+  if (h3Matches.length > 0) {
+    const firstH2Index = htmlContent.search(/<h2\b[^>]*>/i);
+    const firstH3Index = htmlContent.search(/<h3\b[^>]*>/i);
+    if (firstH3Index < firstH2Index) {
+      return { valid: false, error: "Keynotes (H3) are only allowed within a Subheading (H2) section. An H3 cannot appear before the first H2." };
+    }
+  }
+
+  return { valid: true };
+}
+
 // GET all notes for a resource
 app.get('/api/resource-notes/:resourceId', async (req, res) => {
   try {
@@ -456,7 +529,7 @@ app.get('/api/resource-notes/:resourceId', async (req, res) => {
   }
 });
 
-// POST add new note with collision checking
+// POST add new note with collision checking and layout rule enforcement
 app.post('/api/resource-notes/:resourceId', async (req, res) => {
   try {
     const { resourceId } = req.params;
@@ -475,6 +548,12 @@ app.post('/api/resource-notes/:resourceId', async (req, res) => {
       return res.status(400).json({ error: "Note HTML content is required" });
     }
 
+    // Enforce Layout Rules (1 H1, 1-3 H2, H3 within H2)
+    const layoutCheck = validateNoteLayout(htmlContent.trim());
+    if (!layoutCheck.valid) {
+      return res.status(400).json({ error: layoutCheck.error });
+    }
+
     if (!db) return res.status(500).json({ error: "Firestore DB not connected" });
 
     // Fetch existing notes for collision detection
@@ -485,7 +564,6 @@ app.post('/api/resource-notes/:resourceId', async (req, res) => {
     // Rule 1: A page can have both before and after notes.
     // Rule 2: If Page N has an 'after' note, Page N+1 cannot have a 'before' note (same physical slot).
     // Rule 3: If Page N has a 'before' note, Page N-1 cannot have an 'after' note.
-    // Also: Only 1 note per exact slot.
     for (const en of existingNotes) {
       const enPg = parseInt(en.pageNumber, 10);
       const enRend = String(en.rendering || '').toLowerCase();
@@ -511,10 +589,12 @@ app.post('/api/resource-notes/:resourceId', async (req, res) => {
       }
     }
 
-    const notesId = 'nt_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
-    const contentId = `cnt_${notesId}`;
+    // Allocate note doc ref to obtain Firestore Document ID
+    const noteRef = db.collection("resource-notes").doc(resourceId).collection("notes").doc();
+    const notesId = noteRef.id;
     const pageId = `${resourceId}-${pg}`;
     const elementId = `${rend === 'before' ? 'be' : 'af'}-${notesId}`;
+    const contentId = `cnt_${notesId}`;
 
     const tagsArr = Array.isArray(tags) 
       ? tags 
@@ -530,13 +610,13 @@ app.post('/api/resource-notes/:resourceId', async (req, res) => {
       contentId,
       tags: tagsArr,
       htmlContent: htmlContent.trim(),
+      containerFormula: `<div class="added-notes" type="${rend}" page-id="${pageId}" id="${elementId}"></div>`,
       uploaderId: userId || req.headers['x-user-id'] || 'uploader',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
     // Save note document
-    const noteRef = db.collection("resource-notes").doc(resourceId).collection("notes").doc(notesId);
     await noteRef.set(noteData);
 
     // Save content-id sub-document
@@ -545,6 +625,7 @@ app.post('/api/resource-notes/:resourceId', async (req, res) => {
       htmlContent: noteData.htmlContent,
       tags: tagsArr,
       pageId,
+      elementId,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -552,6 +633,163 @@ app.post('/api/resource-notes/:resourceId', async (req, res) => {
   } catch (err) {
     console.error("POST resource-notes error:", err);
     res.status(500).json({ error: "Failed to create resource note: " + err.message });
+  }
+});
+
+// Real-Time AI Tag Suggestion & Typo Fixer (As You Type)
+app.post('/api/ai/suggest-tags', async (req, res) => {
+  try {
+    const { rawTags, resourceTitle, discipline, category } = req.body || {};
+    if (!rawTags || !String(rawTags).trim()) {
+      return res.json({ success: true, tags: [] });
+    }
+
+    const prompt = `You are DPGNotes Academic Tag Standardizer and Typo Fixer.
+Document Topic: "${resourceTitle || 'Academic Study Document'}" (Discipline: ${discipline || 'General'}, Category: ${category || 'Notes'}).
+The contributor typed the following raw tag input: "${rawTags}".
+
+Requirements:
+1. Fix all spelling and typo mistakes based on context (e.g. "Gogle" -> "Google", "Binge" -> "Bing", "seach engne optmization" -> "SEO", "pythn" -> "Python", "machne leanin" -> "Machine Learning").
+2. Shorten long verbose tags into concise, standardized academic keywords (1-3 words max).
+3. Remove exact duplicates.
+4. Output format: Return ONLY a valid JSON array of strings without markdown code fences. Example: ["Google", "Bing", "SEO"]`;
+
+    try {
+      const reply = await callGeminiApi(prompt, 300);
+      const cleaned = reply.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return res.json({ success: true, tags: parsed.slice(0, 10) });
+      }
+    } catch (aiErr) {
+      console.warn("AI Tag suggestion error:", aiErr.message);
+    }
+
+    // Heuristic Fallback
+    const fallbackTags = String(rawTags)
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean)
+      .map(t => {
+        if (/^gogle$/i.test(t)) return "Google";
+        if (/^binge$/i.test(t)) return "Bing";
+        if (/^pythn$/i.test(t)) return "Python";
+        return t;
+      });
+    res.json({ success: true, tags: fallbackTags });
+  } catch (err) {
+    res.status(500).json({ error: "Tag suggestion failed: " + err.message });
+  }
+});
+
+// Real-Time AI Content Typo Check & Next 5 Words Autocomplete (As You Type)
+app.post('/api/ai/autocomplete-content', async (req, res) => {
+  try {
+    const { currentText, resourceTitle } = req.body || {};
+    if (!currentText || String(currentText).trim().length < 6) {
+      return res.json({ success: true, nextWords: "", typoFix: "" });
+    }
+
+    const snippet = String(currentText).slice(-250);
+    const prompt = `You are DPGNotes AI Note Writing Partner.
+Resource Topic: "${resourceTitle || 'Academic Resource'}".
+The contributor is actively typing this text snippet:
+"...${snippet}"
+
+Tasks:
+1. Provide the next 5 words to smoothly continue the academic sentence or thought.
+2. If the last 1-2 words contain a typo, provide the corrected spelling.
+Output format: Return ONLY a valid JSON object without markdown fences:
+{"nextWords": "...", "typoFix": "..."}`;
+
+    try {
+      const reply = await callGeminiApi(prompt, 150);
+      const cleaned = reply.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      return res.json({
+        success: true,
+        nextWords: parsed.nextWords || "",
+        typoFix: parsed.typoFix || ""
+      });
+    } catch (aiErr) {
+      return res.json({ success: true, nextWords: "", typoFix: "" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Autocomplete failed: " + err.message });
+  }
+});
+
+// Submit-Time AI Verification & Polish with Internet Knowledge
+app.post('/api/ai/verify-note-content', async (req, res) => {
+  try {
+    const { htmlContent, tags, resourceTitle, allowInternetKnowledge } = req.body || {};
+    if (!htmlContent || !String(htmlContent).trim()) {
+      return res.status(400).json({ error: "Content is required" });
+    }
+
+    // 1. Enforce layout rules
+    const layoutCheck = validateNoteLayout(htmlContent.trim());
+    if (!layoutCheck.valid) {
+      return res.json({
+        success: true,
+        layoutValid: false,
+        layoutError: layoutCheck.error,
+        hasChanges: false,
+        suggestedHtml: htmlContent,
+        summary: layoutCheck.error
+      });
+    }
+
+    let suggestedHtml = htmlContent;
+    let summary = "Layout conforms to academic note standards (1 H1, valid H2/H3 structure).";
+    let hasChanges = false;
+
+    if (allowInternetKnowledge !== false) {
+      try {
+        const prompt = `You are DPGNotes Academic Quality & Verification Engine powered by Internet Knowledge.
+Resource Topic: "${resourceTitle || 'Academic Notes'}".
+Tags: "${Array.isArray(tags) ? tags.join(', ') : (tags || '')}".
+
+In-Document Note HTML:
+"""
+${htmlContent}
+"""
+
+Guidelines:
+1. STRICTLY PRESERVE the single <h1>, the 1 to 3 <h2> subheadings, and <h3> keynotes. Do NOT add extra <h1> tags.
+2. Correct any academic factual inaccuracies, spelling errors, or grammar mistakes using internet knowledge.
+3. Make only MINIMAL necessary adjustments for precision. Do NOT rewrite the student's note from scratch.
+4. Preserve any <div class="dpg-native-ad-block" data-ad-format="in-note"></div> intact.
+5. Output format: Return ONLY a valid JSON object without markdown fences:
+{
+  "hasChanges": true,
+  "summary": "1 sentence describing minimum corrections made",
+  "improvedHtml": "Cleaned valid HTML string"
+}`;
+
+        const reply = await callGeminiApi(prompt, 3000);
+        const cleaned = reply.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        if (parsed.improvedHtml && parsed.hasChanges) {
+          suggestedHtml = parsed.improvedHtml;
+          hasChanges = true;
+          summary = parsed.summary || "Corrected spelling and refined academic terminology.";
+        }
+      } catch (aiErr) {
+        console.warn("AI verification error:", aiErr.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      layoutValid: true,
+      layoutError: null,
+      hasChanges,
+      suggestedHtml,
+      summary
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to verify note: " + err.message });
   }
 });
 

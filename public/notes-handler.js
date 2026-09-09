@@ -93,12 +93,15 @@
       }
       .added-notes-body h1 {
         font-family: 'Outfit', sans-serif;
-        font-size: 1.45rem;
-        font-weight: 700;
+        font-size: 1.6rem;
+        font-weight: 800;
         color: #ffffff;
-        margin: 0.6rem 0 0.8rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        padding-bottom: 0.4rem;
+        margin: 0.8rem 0 1rem 0;
+        border-bottom: 2px solid rgba(139, 92, 246, 0.4);
+        padding-bottom: 0.5rem;
+        display: block;
+        letter-spacing: -0.015em;
+        line-height: 1.3;
       }
       .added-notes-body h2 {
         font-family: 'Outfit', sans-serif;
@@ -144,6 +147,26 @@
         font-size: 0.85em;
         color: #f472b6;
       }
+      .dpg-native-ad-block {
+        margin: 1.4rem 0;
+        padding: 1.1rem 1.4rem;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.85));
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+      .dpg-native-ad-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        color: #a5b4fc;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -172,12 +195,20 @@
     // 2. Client Firestore Fallback
     try {
       if (window.dpgDb && window.collection && window.getDocs) {
-        const subCol = window.collection(window.dpgDb, "resource-notes", resourceId, "notes");
-        const snap = await window.getDocs(subCol);
+        let snap = null;
+        try {
+          const subCol = window.collection(window.dpgDb, "resource-notes", resourceId, "notes");
+          snap = await window.getDocs(subCol);
+        } catch (fsErr) {
+          const subCol2 = window.collection(window.dpgDb, "resource_notes", resourceId, "notes");
+          snap = await window.getDocs(subCol2);
+        }
         const notes = [];
-        snap.forEach(d => {
-          notes.push({ id: d.id, ...d.data() });
-        });
+        if (snap) {
+          snap.forEach(d => {
+            notes.push({ id: d.id, ...d.data() });
+          });
+        }
         notes.sort((a, b) => {
           if (a.pageNumber !== b.pageNumber) return a.pageNumber - b.pageNumber;
           return a.rendering === 'before' ? -1 : 1;
@@ -202,30 +233,40 @@
     );
   };
 
-  // Create HTML Node for a Note
+  // Create HTML Node for a Note adhering to exact formula
   window.renderNoteElement = function (note) {
     if (!note) return null;
     injectNotesStyles();
 
     const noteDiv = document.createElement('div');
     noteDiv.className = 'added-notes';
-    noteDiv.setAttribute('type', note.rendering || 'after');
-    noteDiv.setAttribute('page-id', note.pageId || `${note.resourceId}-${note.pageNumber}`);
-    noteDiv.setAttribute('id', note.elementId || `${note.rendering === 'before' ? 'be' : 'af'}-${note.notesId || note.id}`);
+    const rend = (String(note.rendering || '').toLowerCase() === 'before') ? 'before' : 'after';
+    const pageNum = parseInt(note.pageNumber, 10) || 1;
+    const resId = note.resourceId || '';
+    const noteId = note.notesId || note.id || 'default';
+    
+    // Exact user formula:
+    // page-id= {firebase-id of target resource}-{Page No}
+    // id = "be-{firebase-id-of-notes-in-firestore}" where be = before and af = after
+    const pageId = note.pageId || `${resId}-${pageNum}`;
+    const elementId = note.elementId || `${rend === 'before' ? 'be' : 'af'}-${noteId}`;
+
+    noteDiv.setAttribute('type', rend);
+    noteDiv.setAttribute('page-id', pageId);
+    noteDiv.setAttribute('id', elementId);
 
     const tagsArr = Array.isArray(note.tags)
       ? note.tags
       : String(note.tags || '').split(',').map(s => s.trim()).filter(Boolean);
 
     const tagsHtml = tagsArr.map(t => `<span class="added-notes-tag">${escapeHtml(t)}</span>`).join('');
-
-    const rendLabel = note.rendering === 'before' ? 'Before Page' : 'After Page';
+    const rendLabel = rend === 'before' ? 'Before Page' : 'After Page';
 
     noteDiv.innerHTML = `
       <div class="added-notes-header">
         <div class="added-notes-badge">
           <i class="ri-file-text-line"></i>
-          <span>Contributor Notes • Page ${note.pageNumber} (${rendLabel})</span>
+          <span>Contributor Notes • Page ${pageNum} (${rendLabel})</span>
         </div>
         ${tagsHtml ? `<div class="added-notes-tags">${tagsHtml}</div>` : ''}
       </div>
@@ -233,6 +274,18 @@
         ${note.htmlContent || ''}
       </div>
     `;
+
+    // Hydrate native ad blocks if present
+    const adBlocks = noteDiv.querySelectorAll('.dpg-native-ad-block');
+    adBlocks.forEach(ad => {
+      if (!ad.innerHTML.trim()) {
+        ad.innerHTML = `
+          <div class="dpg-native-ad-badge"><i class="ri-advertisement-line"></i> DPGNotes Academic Partner Block</div>
+          <div style="font-weight:600; font-size:0.95rem; color:white; margin-bottom:4px;">Recommended Academic Tools & Learning Resources</div>
+          <div style="font-size:0.82rem; color:#94a3b8; line-height:1.4;">Explore student-verified study datasets, mock test series, and textbook companion vector indices on DPGNotes.</div>
+        `;
+      }
+    });
 
     return noteDiv;
   };
