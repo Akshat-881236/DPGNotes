@@ -778,7 +778,7 @@
               <button type="button" class="note-tool-btn" onclick="insertTool('code')" title="Insert Code / Formula Snippet">
                 <i class="ri-code-line"></i> Code Snippet
               </button>
-              <button type="button" class="note-tool-btn" onclick="insertTool('native-ad')" title="Insert DPGNotes Native Ad Block" style="border-color:rgba(99,102,241,0.4); background:rgba(99,102,241,0.12); color:#a5b4fc;">
+              <button type="button" class="note-tool-btn" id="btnToolNativeAd" onclick="insertTool('native-ad')" title="Insert DPGNotes Native Ad Block (Optional)" style="border-color:rgba(99,102,241,0.4); background:rgba(99,102,241,0.12); color:#a5b4fc;">
                 <i class="ri-advertisement-line"></i> Native Ad
               </button>
               <button type="button" class="note-tool-btn btn-clear" onclick="clearNoteContent()" title="Clear Content">
@@ -1097,6 +1097,22 @@
         if (saveBtn) saveBtn.disabled = false;
       }
 
+      // Native Ad Tool button availability check
+      const btnNativeAd = document.getElementById('btnToolNativeAd');
+      if (btnNativeAd) {
+        if (curRend === 'after' && pg % 3 === 0) {
+          btnNativeAd.disabled = true;
+          btnNativeAd.style.opacity = '0.35';
+          btnNativeAd.style.cursor = 'not-allowed';
+          btnNativeAd.title = `Native Ads are disabled for After Notes of Page ${pg} (pages divisible by 3 already contain Google AdSense and Native Ads)`;
+        } else {
+          btnNativeAd.disabled = false;
+          btnNativeAd.style.opacity = '1';
+          btnNativeAd.style.cursor = 'pointer';
+          btnNativeAd.title = 'Insert DPGNotes Native Ad Block (Optional)';
+        }
+      }
+
       window.updateLiveNotePreview();
     };
 
@@ -1203,7 +1219,16 @@
       } else if (type === 'code') {
         wrapOrInsert(textarea, '<code>', '</code>', 'inline_variable_or_formula');
       } else if (type === 'native-ad') {
-        const adSnippet = `\n<div class="dpg-native-ad-block" data-ad-format="in-note">\n  <div class="dpg-native-ad-badge"><i class="ri-advertisement-line"></i> DPGNotes Academic Partner Block</div>\n  <div style="font-weight:600; font-size:0.95rem; color:white; margin-bottom:4px;">Recommended Academic Tools &amp; Learning Resources</div>\n  <div style="font-size:0.82rem; color:#94a3b8; line-height:1.4;">Explore student-verified study datasets, mock test series, and textbook companion vector indices on DPGNotes.</div>\n</div>\n`;
+        const pgInput = document.getElementById('notePageNum');
+        const pgVal = parseInt(pgInput ? pgInput.value : '1', 10) || 1;
+        const rendVal = (document.querySelector('input[name="noteRendering"]:checked')?.value || 'after').toLowerCase();
+        if (rendVal === 'after' && pgVal % 3 === 0) {
+          const warnMsg = `Native Ads are not allowed in After Notes for Page ${pgVal} (pages divisible by 3 already contain Google AdSense and System Native Ads).`;
+          if (window.customAlert) await window.customAlert(warnMsg, { title: "Native Ads Restriction", isDanger: true });
+          else alert(warnMsg);
+          return;
+        }
+        const adSnippet = `\n<div class="native-ads" data-ad-variant="feed" data-ad-count="1" style="max-width:100%; margin:0.8rem 0;"></div>\n`;
         wrapOrInsert(textarea, '', '', adSnippet);
       } else if (type === 'a') {
         let url = 'https://';
@@ -1560,6 +1585,8 @@
         const tagsArr = Array.isArray(note.tags) ? note.tags : (note.tags ? String(note.tags).split(',') : []);
 
         const likes = typeof note.likesCount === 'number' ? note.likesCount : (Array.isArray(note.likedBy) ? note.likedBy.length : 0);
+        const noteDirectUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetId)}&note=${encodeURIComponent(elementId)}#note-${encodeURIComponent(elementId)}`;
+        const waShareMsg = encodeURIComponent(`Read this verified academic note on DPGNotes (Page ${note.pageNumber}):\n${noteDirectUrl}`);
 
         return `
           <div class="faq-item" style="margin-bottom:1.2rem; border-left:4px solid ${rend === 'before' ? '#8b5cf6' : '#10b981'};">
@@ -1576,9 +1603,12 @@
                 <span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:999px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;" title="Total Contributor Likes Received">
                   <i class="ri-heart-fill"></i> ${likes} Likes
                 </span>
-                <button type="button" onclick="if(window.shareInDocumentNote) window.shareInDocumentNote('${targetId}', '${nid}', '${elementId}', ${note.pageNumber}, '${rend}', this);" style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" title="Generate & Copy Note Share Link">
+                <button type="button" onclick="if(window.shareInDocumentNote) window.shareInDocumentNote('${targetId}', '${nid}', '${elementId}', ${note.pageNumber}, '${rend}', this);" style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" title="Share via Advanced Web Share or Copy Link">
                   <i class="ri-share-forward-line"></i> Share
                 </button>
+                <a href="https://api.whatsapp.com/send?text=${waShareMsg}" target="_blank" rel="noopener noreferrer" style="background:rgba(37,211,102,0.15); color:#4ade80; border:1px solid rgba(37,211,102,0.35); padding:4px 10px; border-radius:6px; font-size:0.75rem; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Share Note directly to WhatsApp">
+                  <i class="ri-whatsapp-line"></i> WhatsApp
+                </a>
                 <a href="dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetId)}&note=${encodeURIComponent(elementId)}#note-${encodeURIComponent(elementId)}" target="_blank" style="background:rgba(255,255,255,0.06); color:#cbd5e1; border:1px solid var(--border); padding:4px 10px; border-radius:6px; text-decoration:none; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" title="Open in PDF Viewer at this specific Note">
                   <i class="ri-external-link-line"></i> View
                 </a>
@@ -1750,6 +1780,20 @@
           await window.customAlert(layoutCheck.error, { title: "Layout Structure Error", isDanger: true });
         } else {
           alert("Layout Structure Error: " + layoutCheck.error);
+        }
+        return;
+      }
+
+      // Native Ads Restriction Check:
+      const rendVal = (document.querySelector('input[name="noteRendering"]:checked')?.value || 'after').toLowerCase();
+      const isAfterDiv3 = (rendVal === 'after' && pg % 3 === 0);
+      const hasNativeAdBlock = /class=["'][^"']*(?:native-ads|dpg-native-ad-block)[^"']*["']|data-ad-variant/i.test(htmlVal);
+      if (isAfterDiv3 && hasNativeAdBlock) {
+        const errorMsg = `Native Ads are not allowed in After Notes for pages divisible by 3 (Page ${pg}) because these page slots already feature Google AdSense and System Native Ads. Please remove the native ad block or switch to Before Page rendering.`;
+        if (window.customAlert) {
+          await window.customAlert(errorMsg, { title: "Native Ads Restriction", isDanger: true });
+        } else {
+          alert(errorMsg);
         }
         return;
       }

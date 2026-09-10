@@ -415,7 +415,11 @@ function updateDocMetadataUI() {
     tEl.innerHTML = '';
     const tagsArr = typeof docTags === 'string' ? docTags.split(',') : (Array.isArray(docTags) ? docTags : []);
     tagsArr.forEach(t => {
-      const s = String(t).trim(); if (s) tEl.innerHTML += `<span class="btag">${s}</span>`;
+      const s = String(t).trim();
+      if (s) {
+        const serpUrl = `https://dpgnotes.web.app/dpgnotes-serp.html?q=${encodeURIComponent(s)}`;
+        tEl.innerHTML += `<a href="${serpUrl}" target="_blank" class="btag" style="text-decoration:none; cursor:pointer;" title="Search '${s}' on DPGNotes SERP">${s}</a>`;
+      }
     });
     document.getElementById('mTagsWrap').style.display = 'block';
   }
@@ -1100,8 +1104,25 @@ async function sharePdf() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error||'Failed');
-    if (navigator.share) await navigator.share({title: `${docTitle} — DPGNotes`, url: data.shareUrl}).catch(()=>{});
-    else { await navigator.clipboard.writeText(data.shareUrl); alert('Share link copied:\n' + data.shareUrl); }
+
+    const shareTitle = `${docTitle} — DPGNotes`;
+    const shareText = `Read "${docTitle}" on DPGNotes - Verified Academic Resource:\n${data.shareUrl}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: `Read "${docTitle}" on DPGNotes - Verified Academic Resource:`,
+          url: data.shareUrl
+        });
+        return;
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') return;
+      }
+    }
+
+    await navigator.clipboard.writeText(data.shareUrl);
+    alert('Share link copied to clipboard:\n' + data.shareUrl);
   } catch(err) { alert('Share error: ' + err.message); }
 }
 window.sharePdf = sharePdf;

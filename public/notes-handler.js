@@ -79,12 +79,25 @@
       }
       .added-notes-tag {
         background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.14);
         color: #94a3b8;
         font-size: 0.72rem;
         padding: 2px 9px;
         border-radius: 6px;
         font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+      .added-notes-tag:hover {
+        background: rgba(99, 102, 241, 0.25);
+        border-color: rgba(99, 102, 241, 0.5);
+        color: #c4b5fd;
+        text-decoration: none;
+        transform: translateY(-1px);
       }
       .added-notes-body {
         font-size: 0.95rem;
@@ -337,7 +350,13 @@
       ? note.tags
       : String(note.tags || '').split(',').map(s => s.trim()).filter(Boolean);
 
-    const tagsHtml = tagsArr.map(t => `<span class="added-notes-tag">${escapeHtml(t)}</span>`).join('');
+    // All Notes Card Tags point to DigiIndia Search Engine
+    const tagsHtml = tagsArr.map(t => {
+      const cleanTag = String(t).trim();
+      if (!cleanTag) return '';
+      const digiIndiaUrl = `https://digiindia-student-platform.onrender.com/search.html?q=${encodeURIComponent(cleanTag)}`;
+      return `<a href="${digiIndiaUrl}" target="_blank" rel="noopener noreferrer" class="added-notes-tag" title="Search '${escapeHtml(cleanTag)}' on DigiIndia Student Platform"><i class="ri-search-line" style="font-size:0.68rem; opacity:0.75;"></i> ${escapeHtml(cleanTag)}</a>`;
+    }).filter(Boolean).join('');
     const rendLabel = rend === 'before' ? 'Before Page' : 'After Page';
 
     const visitorId = getOrCreateVisitorId();
@@ -358,7 +377,7 @@
             <i class="${isLiked ? 'ri-heart-fill' : 'ri-heart-line'} like-icon"></i>
             <span class="like-count">${likesCount}</span>
           </button>
-          <button type="button" class="note-share-btn" onclick="window.shareInDocumentNote('${resId}', '${noteId}', '${elementId}', ${pageNum}, '${rend}', this)" title="Share this contributor note">
+          <button type="button" class="note-share-btn" onclick="window.shareInDocumentNote('${resId}', '${noteId}', '${elementId}', ${pageNum}, '${rend}', this)" title="Share this contributor note via WhatsApp, Web Share, or Link">
             <i class="ri-share-forward-line"></i>
             <span>Share</span>
           </button>
@@ -369,17 +388,29 @@
       </div>
     `;
 
-    // Hydrate native ad blocks if present
-    const adBlocks = noteDiv.querySelectorAll('.dpg-native-ad-block');
-    adBlocks.forEach(ad => {
-      if (!ad.innerHTML.trim()) {
-        ad.innerHTML = `
-          <div class="dpg-native-ad-badge"><i class="ri-advertisement-line"></i> DPGNotes Academic Partner Block</div>
-          <div style="font-weight:600; font-size:0.95rem; color:white; margin-bottom:4px;">Recommended Academic Tools &amp; Learning Resources</div>
-          <div style="font-size:0.82rem; color:#94a3b8; line-height:1.4;">Explore student-verified study datasets, mock test series, and textbook companion vector indices on DPGNotes.</div>
-        `;
+    // Native Ads System Support & Restriction Rule:
+    // NOT allow / disable rendering in After Notes of Page 3, 6, 9, 12... (divisible by 3) as they already have Google AdSense and Native Ads
+    const isAfterDivBy3 = (rend === 'after' && pageNum % 3 === 0);
+    if (isAfterDivBy3) {
+      // Disallow / strip native ad blocks from After notes of pages divisible by 3
+      noteDiv.querySelectorAll('.native-ads, .dpg-native-ad-block').forEach(adEl => adEl.remove());
+    } else {
+      // Support DPGNotes Common Native Ads System across notes
+      const adBlocks = noteDiv.querySelectorAll('.native-ads, .dpg-native-ad-block');
+      if (adBlocks.length > 0) {
+        adBlocks.forEach(ad => {
+          if (!ad.classList.contains('native-ads')) ad.classList.add('native-ads');
+          if (!ad.dataset.adVariant) ad.dataset.adVariant = 'feed';
+          if (!ad.dataset.adCount) ad.dataset.adCount = '1';
+        });
+        // Hydrate random approved ads using common engine
+        if (typeof window.renderNativeDPGAds === 'function') {
+          setTimeout(() => {
+            try { window.renderNativeDPGAds(); } catch(e) {}
+          }, 150);
+        }
       }
-    });
+    }
 
     return noteDiv;
   };
@@ -507,6 +538,40 @@
         shareUrl = `${origin}/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(resourceId)}&note=${encodeURIComponent(elementId)}#note-${encodeURIComponent(elementId)}`;
       }
 
+      const shareTitle = `DPGNotes: In-Document Note (Page ${pageNum})`;
+      const shareText = `Explore this verified academic note on DPGNotes (Page ${pageNum})!`;
+
+      // Advanced Web Share Feature (WhatsApp, Telegram, System Sheet, etc.)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: shareTitle,
+            text: `${shareText}\n`,
+            url: shareUrl
+          });
+          showNoteToast(`Shared successfully! Auto-scrolls to Page ${pageNum}.`);
+          if (btnEl) {
+            btnEl.innerHTML = `<i class="ri-check-line" style="color:#10b981;"></i> <span>Shared!</span>`;
+            setTimeout(() => {
+              btnEl.innerHTML = origHtml;
+              btnEl.disabled = false;
+            }, 2000);
+          }
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            // User closed share sheet without completing
+            if (btnEl) {
+              btnEl.innerHTML = origHtml;
+              btnEl.disabled = false;
+            }
+            return;
+          }
+          console.warn("navigator.share failed, falling back to clipboard:", shareErr);
+        }
+      }
+
+      // Fallback: Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
       showNoteToast(`Note share link copied! Clicking will auto-scroll directly to Page ${pageNum}.`);
 
@@ -523,10 +588,20 @@
       const origin = window.location.origin;
       const shareUrl = `${origin}/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(resourceId)}&note=${encodeURIComponent(elementId)}#note-${encodeURIComponent(elementId)}`;
       try {
-        await navigator.clipboard.writeText(shareUrl);
-        showNoteToast(`Note share link copied!`);
+        if (navigator.share) {
+          await navigator.share({
+            title: `DPGNotes Note (Page ${pageNum})`,
+            text: `Explore this verified academic note on DPGNotes (Page ${pageNum}):\n`,
+            url: shareUrl
+          });
+        } else {
+          await navigator.clipboard.writeText(shareUrl);
+          showNoteToast(`Note share link copied!`);
+        }
       } catch(e) {
-        prompt("Copy note share URL:", shareUrl);
+        if (e.name !== 'AbortError') {
+          prompt("Copy note share URL:", shareUrl);
+        }
       }
       if (btnEl) {
         btnEl.innerHTML = origHtml;

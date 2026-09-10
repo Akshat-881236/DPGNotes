@@ -554,6 +554,18 @@ app.post('/api/resource-notes/:resourceId', async (req, res) => {
       return res.status(400).json({ error: layoutCheck.error });
     }
 
+    // Native Ads Restriction Rule:
+    // NOT allowed / disabled in After Notes of Page 3, 6, 9, 12... (pages divisible by 3)
+    // as these slots already have Google AdSense Ads and Native Ads.
+    const isPageDivisibleBy3 = (pg % 3 === 0);
+    const isAfterSlot = (rend === 'after');
+    const containsNativeAd = /class=["'][^"']*(?:native-ads|dpg-native-ad-block)[^"']*["']|data-ad-variant/i.test(htmlContent || '');
+    if (isPageDivisibleBy3 && isAfterSlot && containsNativeAd) {
+      return res.status(400).json({
+        error: `Native Ads are not allowed in After Notes for pages divisible by 3 (Page ${pg}) because these page gaps already feature Google AdSense and System Native Ads.`
+      });
+    }
+
     if (!db) return res.status(500).json({ error: "Firestore DB not connected" });
 
     // Fetch existing notes for collision detection
@@ -818,6 +830,18 @@ app.put('/api/resource-notes/:resourceId/:notesId', async (req, res) => {
     const layoutCheck = validateNoteLayout(htmlContent.trim());
     if (!layoutCheck.valid) {
       return res.status(400).json({ error: layoutCheck.error });
+    }
+
+    // Native Ads Restriction Rule:
+    // NOT allowed / disabled in After Notes of Page 3, 6, 9, 12... (pages divisible by 3)
+    // as these slots already have Google AdSense Ads and Native Ads.
+    const isPageDivisibleBy3 = (pg % 3 === 0);
+    const isAfterSlot = (rend === 'after');
+    const containsNativeAd = /class=["'][^"']*(?:native-ads|dpg-native-ad-block)[^"']*["']|data-ad-variant/i.test(htmlContent || '');
+    if (isPageDivisibleBy3 && isAfterSlot && containsNativeAd) {
+      return res.status(400).json({
+        error: `Native Ads are not allowed in After Notes for pages divisible by 3 (Page ${pg}) because these page gaps already feature Google AdSense and System Native Ads.`
+      });
     }
 
     if (!db) return res.status(500).json({ error: "Firestore DB not connected" });
