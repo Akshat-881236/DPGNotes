@@ -262,13 +262,14 @@ def generate_pdf(data, output_path, assets_dir=None):
     c.drawString(left_x, row5_y, "DPG STM")
     c.drawString(right_x, row5_y, course_sec)
 
-    # 6. Footer Section (Centered)
+    # 6. Footer Section (Centered - All Bold)
     date_val = str(data.get("date", "")).strip().upper()
     day_val = str(data.get("day", "")).strip().upper()
     
     footer_row1 = f"SUBMITTED ON {date_val} ({day_val})" if day_val else f"SUBMITTED ON {date_val}"
     footer_row2 = "MDU ROHTAK, HARYANA"
 
+    c.setFont(font_bold, font_size_main)
     c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (692.0 * scale_y), footer_row1)
     c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (716.0 * scale_y), footer_row2)
 

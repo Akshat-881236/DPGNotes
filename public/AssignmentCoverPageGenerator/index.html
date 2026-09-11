@@ -13,7 +13,7 @@
   <script src="../native-dpgnotes-ads.js?v=1.0.0"></script>
 
   <!-- Google Fonts & Remix Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Tinos:wght@700&family=Merriweather:wght@700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
   <!-- PDF-Lib & JSPDF for Client-Side A4 Vector Export -->
@@ -971,26 +971,39 @@
         ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
       }
 
-      // Font styling: Classic Times New Roman Bold
-      ctx.fillStyle = '#000000';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
-
+      // Font styling: Format Cover Page as EVERY text is BOLD irrespective of template
       const fontTitleSize = Math.round(13.17 * scaleY);
-      ctx.font = `bold ${fontTitleSize}px 'Times New Roman', Times, serif`;
+      const fontBold = `bold ${fontTitleSize}px 'Times New Roman', 'Tinos', Times, Georgia, serif`;
 
-      // 2. Headings (Centered)
-      // ASSIGNMENT -> {NUM}
+      // Helper function to render solid, heavy, high-contrast BOLD text across all devices
+      function drawBoldText(text, x, y, align = 'center') {
+        if (!text) return;
+        ctx.save();
+        ctx.textAlign = align;
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = fontBold;
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(0.75, 0.22 * scaleX);
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        // Stroke outline first to enforce heavy bold letterforms
+        ctx.strokeText(text, x, y);
+        // Fill text to ensure solid black ink density
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      // 2. Headings (Centered - All Bold)
       const assignText = `ASSIGNMENT ➔ ${d.assignmentNo.toUpperCase()}`;
-      ctx.fillText(assignText, W / 2.0, 131.0 * scaleY);
+      drawBoldText(assignText, W / 2.0, 131.0 * scaleY, 'center');
+      drawBoldText("OF", W / 2.0, 155.0 * scaleY, 'center');
+      drawBoldText(d.subjectName.toUpperCase(), W / 2.0, 179.0 * scaleY, 'center');
+      drawBoldText(d.subjectCode.toUpperCase(), W / 2.0, 203.0 * scaleY, 'center');
+      drawBoldText(d.courseSection.toUpperCase(), W / 2.0, 226.0 * scaleY, 'center');
 
-      ctx.fillText("OF", W / 2.0, 155.0 * scaleY);
-      ctx.fillText(d.subjectName.toUpperCase(), W / 2.0, 179.0 * scaleY);
-      ctx.fillText(d.subjectCode.toUpperCase(), W / 2.0, 203.0 * scaleY);
-      ctx.fillText(d.courseSection.toUpperCase(), W / 2.0, 226.0 * scaleY);
-
-      ctx.fillText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 250.0 * scaleY);
-      ctx.fillText(d.degreeName.toUpperCase(), W / 2.0, 267.0 * scaleY);
+      drawBoldText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 250.0 * scaleY, 'center');
+      drawBoldText(d.degreeName.toUpperCase(), W / 2.0, 267.0 * scaleY, 'center');
 
       // 3. Center Logo (MDU Emblem)
       const logoW = 134.76 * scaleX;
@@ -1002,41 +1015,38 @@
         ctx.drawImage(centerLogoImg, logoX, logoY, logoW, logoH);
       }
 
-      // 4. Session
-      ctx.font = `bold ${fontTitleSize}px 'Times New Roman', Times, serif`;
-      ctx.fillText(`SESSION: ${d.session.toUpperCase()}`, W / 2.0, 414.0 * scaleY);
+      // 4. Session (All Bold)
+      drawBoldText(`SESSION: ${d.session.toUpperCase()}`, W / 2.0, 414.0 * scaleY, 'center');
 
-      // 5. Two Columns
+      // 5. Two Columns (Submitted To on Left, Submitted By on Right - All Bold)
       const leftColX = 59.76 * scaleX;
       const rightColX = 364.25 * scaleX;
-      ctx.textAlign = 'left';
 
       // Row 1: Headers
-      ctx.fillText("SUBMITTED TO", leftColX, 462.0 * scaleY);
-      ctx.fillText("SUBMITTED BY", rightColX, 462.0 * scaleY);
+      drawBoldText("SUBMITTED TO", leftColX, 462.0 * scaleY, 'left');
+      drawBoldText("SUBMITTED BY", rightColX, 462.0 * scaleY, 'left');
 
       // Row 2: Names
-      ctx.fillText(d.profName.toUpperCase(), leftColX, 486.0 * scaleY);
-      ctx.fillText(d.studentName.toUpperCase(), rightColX, 486.0 * scaleY);
+      drawBoldText(d.profName.toUpperCase(), leftColX, 486.0 * scaleY, 'left');
+      drawBoldText(d.studentName.toUpperCase(), rightColX, 486.0 * scaleY, 'left');
 
       // Row 3: Designation / Father
-      ctx.fillText(d.designation.toUpperCase(), leftColX, 510.0 * scaleY);
-      ctx.fillText(`${d.relation.toUpperCase()} ${d.fatherName.toUpperCase()}`, rightColX, 510.0 * scaleY);
+      drawBoldText(d.designation.toUpperCase(), leftColX, 510.0 * scaleY, 'left');
+      drawBoldText(`${d.relation.toUpperCase()} ${d.fatherName.toUpperCase()}`, rightColX, 510.0 * scaleY, 'left');
 
       // Row 4: Department / Student ID
       const deptStr = d.department.toUpperCase();
-      ctx.fillText(deptStr.startsWith("DEPARTMENT") ? deptStr : `DEPARTMENT OF ${deptStr}`, leftColX, 534.0 * scaleY);
-      ctx.fillText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY);
+      drawBoldText(deptStr.startsWith("DEPARTMENT") ? deptStr : `DEPARTMENT OF ${deptStr}`, leftColX, 534.0 * scaleY, 'left');
+      drawBoldText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY, 'left');
 
       // Row 5: DPG STM / Course & Section
-      ctx.fillText("DPG STM", leftColX, 558.0 * scaleY);
-      ctx.fillText(d.courseSection.toUpperCase(), rightColX, 558.0 * scaleY);
+      drawBoldText("DPG STM", leftColX, 558.0 * scaleY, 'left');
+      drawBoldText(d.courseSection.toUpperCase(), rightColX, 558.0 * scaleY, 'left');
 
-      // 6. Footer Section (Centered)
-      ctx.textAlign = 'center';
+      // 6. Footer Section (Centered - All Bold)
       const dayText = d.day ? ` (${d.day.toUpperCase()})` : '';
-      ctx.fillText(`SUBMITTED ON ${d.date.toUpperCase()}${dayText}`, W / 2.0, 701.0 * scaleY);
-      ctx.fillText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY);
+      drawBoldText(`SUBMITTED ON ${d.date.toUpperCase()}${dayText}`, W / 2.0, 701.0 * scaleY, 'center');
+      drawBoldText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY, 'center');
     }
 
     // Validation rule: Course & Section format {Course}-{Section}
