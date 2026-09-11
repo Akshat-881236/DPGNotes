@@ -54,6 +54,25 @@
       color: var(--text-muted, #94a3b8);
       margin: 0;
     }
+    .telemetry-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.88rem;
+    }
+    .telemetry-table th, .telemetry-table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .telemetry-table th {
+      background: rgba(99, 102, 241, 0.15);
+      color: #fff;
+      font-weight: 600;
+    }
+    .telemetry-table tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
   </style>
 </head>
 <body class="theme-auto">
@@ -67,13 +86,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +112,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link active"><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link active"><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +129,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -116,7 +137,7 @@
               <span class="badge-dot"></span>
               <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-            <h1 class="document-title">DPGNotes Tracking & Analytics Policy</h1>
+            <h1 class="document-title">DPGNotes Tracking &amp; Analytics Policy</h1>
             <div class="document-meta">
               <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
               <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-ANLY-2026-V3.2</span>
@@ -137,58 +158,118 @@
 
           <article class="legal-article">
             
-            <h2>1. Principles of Educational Telemetry</h2>
-            <p>DPGNotes believes that academic tools should empower students without subjecting them to intrusive surveillance or behavioral commercial profiling. This Tracking & Analytics Policy transparently explains our telemetry methodologies, analytical metrics, and privacy safeguards.</p>
-            <p>Our analytics infrastructure operates in compliance with the DPDP Act 2023, the ePrivacy Directive, and the principle of data minimization.</p>
+            <h2>1. Principles of Privacy-First Educational Telemetry</h2>
+            <p>DPGNotes believes firmly that academic tools and digital note repositories must empower students without subjecting them to pervasive commercial surveillance, data harvesting, or biometric profiling. As an open-access collegiate knowledge network operated under Akshat Network Hub, we gather only the minimum telemetry strictly necessary to maintain high-speed document delivery, eliminate broken syllabus links, diagnose client-side rendering bottlenecks, and protect shared infrastructure against distributed denial-of-service (DDoS) exploitation.</p>
+            <p>Our analytics architecture is engineered around the principle of <strong>Privacy by Design</strong>, in full compliance with Section 6 of the <strong>Digital Personal Data Protection (DPDP) Act, 2023</strong>, the EU General Data Protection Regulation (GDPR Article 25), and the ePrivacy Directive (Directive 2002/58/EC).</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
                 <h4><i class="ri-fingerprint-line"></i> Zero PII Telemetry</h4>
-                <p>We do not collect names, contact numbers, exact GPS coordinates, or private browsing histories in our analytical feeds.</p>
+                <p>We strictly do not collect student names, contact numbers, exact GPS coordinates, or private web browsing histories.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-refresh-line"></i> Ephemeral Tokens</h4>
-                <p>Anonymous visitor tokens rotate periodically and are never mapped to real-world government identities.</p>
+                <h4><i class="ri-refresh-line"></i> Ephemeral Identifiers</h4>
+                <p>Anonymous visitor tokens rotate automatically and are never cross-referenced against real-world identity databases.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-bar-chart-2-line"></i> Academic Insights</h4>
-                <p>Telemetry serves exclusively to optimize popular syllabus searches, document rendering speeds, and platform uptime.</p>
+                <h4><i class="ri-bar-chart-2-line"></i> Pure Academic Utility</h4>
+                <p>Metrics serve exclusively to detect trending course topics, optimize PDF load times, and preserve platform availability.</p>
               </div>
             </div>
 
-            <h2>2. Specific Metrics Collected & Analytical Objectives</h2>
-            <p>DPGNotes logs limited, aggregated telemetry events strictly for service improvement and infrastructure scalability:</p>
+            <h2>2. Comprehensive Telemetry Inventory &amp; Analytical Objectives</h2>
+            <p>To provide full transparency regarding our platform telemetry, the table below enumerates every metric captured by DPGNotes:</p>
+
+            <table class="telemetry-table">
+              <thead>
+                <tr>
+                  <th>Telemetry Event</th>
+                  <th>Data Points Collected</th>
+                  <th>Primary Technical Purpose</th>
+                  <th>Storage Lifecycle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Document Engagement</strong></td>
+                  <td>Subject code, semester module, reading duration bucket, PDF download counter.</td>
+                  <td>Determines which academic subjects require updated notes or additional formula guides.</td>
+                  <td>Aggregated counts stored permanently; raw logs pruned after 90 days.</td>
+                </tr>
+                <tr>
+                  <td><strong>Search Query Telemetry</strong></td>
+                  <td>Internal search query string, matched course count, zero-result keyword flags.</td>
+                  <td>Expands the DPGNotes search index and tags missing university syllabi.</td>
+                  <td>Stripped of IP addresses; stored in aggregate for 180 days.</td>
+                </tr>
+                <tr>
+                  <td><strong>Cover Page Generator Quotas</strong></td>
+                  <td>Daily token counter, user role (Guest / Contributor), timestamp of last generation.</td>
+                  <td>Enforces fair-use generation limits (1/day for guests, 3/day for contributors) without logging student personal data.</td>
+                  <td>Local browser storage; resets automatically every 24 hours.</td>
+                </tr>
+                <tr>
+                  <td><strong>Performance &amp; Diagnostics</strong></td>
+                  <td>Canvas render latency, JavaScript runtime errors, browser viewport dimensions, HTTP status codes.</td>
+                  <td>Identifies mobile responsive rendering glitches and repairs broken endpoints.</td>
+                  <td>Diagnostic error logs pruned automatically within 30 days.</td>
+                </tr>
+                <tr>
+                  <td><strong>Sponsor Banner CTR</strong></td>
+                  <td>Aggregated impressions, banner slot identifier, anonymized click counter.</td>
+                  <td>Measures educational sponsorship effectiveness to fund free cloud server hosting.</td>
+                  <td>Aggregated statistical summary; no individual tracking profiles.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h2>3. Client-Side Anonymous Guest Identifiers</h2>
+            <p>To enable non-authenticated students to utilize search and formatting tools without requiring cumbersome login credentials, DPGNotes issues a pseudonymous client identifier (<code>dpg_guest_id</code>):</p>
             <ul>
-              <li><strong>Document Engagement Counts:</strong> Aggregate page views, PDF viewer reading duration, and download requests across semester courses. This reveals which syllabi require updated notes.</li>
-              <li><strong>Query Telemetry:</strong> Anonymized internal search queries entered in our DPGNotes Search Engine and SERP pages, used to identify missing subject topics and improve search indexing.</li>
-              <li><strong>Daily Fair-Use Quota Counters:</strong> Ephemeral daily counters stored in browser LocalStorage to verify compliance with visitor generation limits.</li>
-              <li><strong>Sponsor Banner Interaction CTR:</strong> Aggregated, non-personalized click-through rates (CTR) on educational partner banners to measure ad performance for server funding.</li>
-              <li><strong>Performance & Error Telemetry:</strong> Client-side JavaScript errors, canvas rendering latencies, and network timeout logs used by our engineering volunteers to fix bugs.</li>
+              <li><strong>Generation Mechanism:</strong> A cryptographically pseudorandom string (e.g., <code>gst_9f83a...</code>) created entirely in client-side JavaScript upon first visit.</li>
+              <li><strong>No Real-World Linkage:</strong> The guest identifier contains no email address, telephone number, IP address, or demographic marker. It cannot be used to de-anonymize a student's real-world identity.</li>
+              <li><strong>Local Control:</strong> The token resides exclusively within your browser's LocalStorage and is wiped immediately if you clear site data or use private incognito browsing.</li>
             </ul>
 
-            <h2>3. Anonymous Guest Identifiers & Storage Mechanisms</h2>
-            <p>When you visit DPGNotes without logging in, our system generates an anonymous randomized token stored locally in your browser (e.g., <code>dpg_guest_id</code>). This token does not contain personal data, cannot identify your physical location, and exists solely to ensure fair distribution of cloud resources across our student user base.</p>
-
-            <h2>4. Third-Party Analytics & Google Analytics Safeguards</h2>
-            <p>Where Google Analytics is utilized to assess aggregate traffic patterns, we enforce strict privacy enhancements:</p>
+            <h2>4. Third-Party Analytics &amp; Google Analytics Safeguards</h2>
+            <p>Where third-party telemetry tools, such as Google Analytics 4, are deployed to evaluate site-wide traffic volume, DPGNotes enforces strict cryptographic shielding:</p>
             <ul>
-              <li>IP Anonymization: IP addresses are automatically masked and truncated at the earliest ingestion stage.</li>
-              <li>Disabled Advertising Demographics: We disable Google Signals cross-device tracking and behavioral advertising demographics.</li>
-              <li>Zero Data Sharing: Data sharing settings with Google benchmarking services and third-party advertising brokers are turned off.</li>
+              <li><strong>Mandatory IP Masking:</strong> IP addresses are truncated and obfuscated at the earliest ingestion node before being committed to persistent analytical memory.</li>
+              <li><strong>Google Signals Permanently Disabled:</strong> We explicitly disable Google Signals, preventing cross-device tracking, interest-based ad profiling, and remarketing audiences.</li>
+              <li><strong>Zero Cross-Site Data Sharing:</strong> All data-sharing agreements enabling Google benchmarking or advertising ecosystem cross-referencing are deactivated.</li>
             </ul>
 
-            <h2>5. Opt-Out Rights & Browser Privacy Controls</h2>
-            <p>You maintain the right to prevent analytical logging at any time. You may install the official Google Analytics Opt-out Browser Add-on, enable the Global Privacy Control (GPC) signal, or activate "Do Not Track" in your browser settings. DPGNotes respects client-side privacy signals without degrading your ability to read study documents.</p>
-        
+            <h2>5. Non-Sale &amp; Anti-Brokerage Pledge</h2>
+            <p>DPGNotes operates under an uncompromising ethical code: <strong>We do not sell, rent, monetize, or license student analytical data to data brokers, commercial marketing agencies, or academic research consortiums</strong>. Telemetry generated on DPGNotes exists solely to serve our active student community and optimize platform responsiveness.</p>
+
+            <h2>6. Browser Privacy Controls, GPC &amp; Do Not Track</h2>
+            <p>You retain absolute sovereignty over your analytical footprint. DPGNotes natively respects and supports all standard browser privacy controls:</p>
+            <ul>
+              <li><strong>Global Privacy Control (GPC):</strong> When your browser broadcasts a valid GPC header, all non-essential analytical tracking scripts are automatically suppressed.</li>
+              <li><strong>Do Not Track (DNT):</strong> We honor standard DNT browser requests, restricting telemetry to anonymous error diagnostics.</li>
+              <li><strong>Google Analytics Opt-Out:</strong> Students may install the official <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics Opt-out Browser Add-on</a> to disable GA tracking across all web destinations.</li>
+              <li><strong>Content Blockers:</strong> DPGNotes is engineered to maintain full functionality (including PDF viewing and document reading) even when privacy-focused content blockers (such as uBlock Origin, Brave Shields, or Privacy Badger) are active.</li>
+            </ul>
+
+            <h2>7. Telemetry Governance &amp; Data Protection Officer Contact</h2>
+            <p>If you have technical questions regarding our analytical architecture or wish to request an audit of telemetry associated with your contributor account, please contact our Analytics &amp; Privacy Governance Desk:</p>
+
+            <div style="background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--primary); padding: 1.2rem; border-radius: 8px; margin: 2rem 0;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #fff; font-size: 1.05rem;"><i class="ri-line-chart-line" style="color: var(--primary);"></i> Analytics &amp; Privacy Governance Desk</h4>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">DPGNotes Data Privacy &amp; Systems Architecture Office</p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Official Inquiries: <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color: var(--primary); font-weight: 600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Grievance &amp; Inquiries Portal: <a href="../support-contact-form.html" style="color: var(--primary); font-weight: 600;">Submit Privacy &amp; Analytics Inquiry</a></p>
+              <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">Response Commitment: Technical inquiries answered within 48 business hours.</p>
+            </div>
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
               <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
-<a href="cookie-policy.html" class="related-policy-chip"><i class="bi bi-cookie"></i> Cookie Policy</a>
-<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
-<a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
+              <a href="cookie-policy.html" class="related-policy-chip"><i class="bi bi-cookie"></i> Cookie Policy</a>
+              <a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+              <a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
             </div>
           </article>
         </div>
@@ -216,8 +297,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

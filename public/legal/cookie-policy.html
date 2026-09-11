@@ -67,13 +67,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +93,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link active"><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +110,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -116,7 +118,7 @@
               <span class="badge-dot"></span>
               <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-            <h1 class="document-title">DPGNotes Cookie & Storage Policy</h1>
+            <h1 class="document-title">DPGNotes Cookie &amp; Storage Policy</h1>
             <div class="document-meta">
               <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
               <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-COOK-2026-V3.2</span>
@@ -139,7 +141,7 @@
             
             <h2>1. What Are Cookies and Browser Storage Technologies?</h2>
             <p>Cookies and browser LocalStorage are standardized web technologies that allow websites to store small data strings on your device. These packets ensure seamless user authentication, preserve visual interface preferences across page reloads, and facilitate anonymous visitor telemetry without requiring repetitive credential inputs.</p>
-            <p>This Cookie Policy explains how DPGNotes uses cookies, local browser storage objects, and related tracking technologies in strict accordance with the ePrivacy Directive, GDPR, and the DPDP Act 2023.</p>
+            <p>This Cookie Policy explains how DPGNotes (maintained by <strong>Akshat Network Hub</strong>) uses cookies, local browser storage objects, and related tracking technologies in strict accordance with the <strong>ePrivacy Directive (Directive 2002/58/EC as amended)</strong>, the <strong>General Data Protection Regulation (GDPR)</strong>, and the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act, India)</strong>.</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
@@ -158,56 +160,58 @@
 
             <h2>2. Specific Storage Keys Employed on DPGNotes</h2>
             <p>The table below provides a comprehensive itemization of all persistent keys and tokens used across our academic platform:</p>
-            <table style="width:100%; border-collapse:collapse; margin:1.2rem 0; font-size:0.88rem;">
-              <thead>
-                <tr style="background:rgba(99,102,241,0.12); text-align:left;">
-                  <th style="padding:10px; border:1px solid var(--border-color);">Storage Key / Cookie</th>
-                  <th style="padding:10px; border:1px solid var(--border-color);">Mechanism</th>
-                  <th style="padding:10px; border:1px solid var(--border-color);">Duration</th>
-                  <th style="padding:10px; border:1px solid var(--border-color);">Purpose &amp; Governance</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);"><code>legal-theme</code></td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Persistent</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Stores preferred color mode (Light, Dark, Auto) for readability.</td>
-                </tr>
-                <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);"><code>dpg_guest_id</code></td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">1 Year</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Anonymous visitor token used to calculate daily fair-use quotas.</td>
-                </tr>
-                <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);"><code>dpgActiveUserUid</code></td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Session</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Authenticates logged-in contributors for document editing and uploads.</td>
-                </tr>
-                <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);"><code>dpg_liked_note_*</code></td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Persistent</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Tracks local like/unlike states on individual notes without central tracking.</td>
-                </tr>
-                <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);"><code>dpg_assign_tokens_*</code></td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Daily</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Tracks daily cover page generation allowances and ad-watch restorations.</td>
-                </tr>
-                <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);"><code>__gads, __gpi</code></td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Cookie (Google)</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">13 Months</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Google AdSense cookies used to measure ad interactions and prevent fraud.</td>
-                </tr>
-              </tbody>
-            </table>
+            <div style="overflow-x:auto; margin:1.2rem 0;">
+              <table style="width:100%; border-collapse:collapse; font-size:0.88rem; min-width:580px;">
+                <thead>
+                  <tr style="background:rgba(99,102,241,0.12); text-align:left;">
+                    <th style="padding:10px; border:1px solid var(--border-color);">Storage Key / Cookie</th>
+                    <th style="padding:10px; border:1px solid var(--border-color);">Mechanism</th>
+                    <th style="padding:10px; border:1px solid var(--border-color);">Duration</th>
+                    <th style="padding:10px; border:1px solid var(--border-color);">Purpose &amp; Governance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:10px; border:1px solid var(--border-color);"><code>legal-theme</code></td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Persistent</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Stores preferred color mode (Light, Dark, Auto) for readability.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px; border:1px solid var(--border-color);"><code>dpg_guest_id</code></td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">1 Year</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Anonymous visitor token used to calculate daily fair-use quotas.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px; border:1px solid var(--border-color);"><code>dpgActiveUserUid</code></td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Session</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Authenticates logged-in contributors for document editing and uploads.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px; border:1px solid var(--border-color);"><code>dpg_liked_note_*</code></td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Persistent</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Tracks local like/unlike states on individual notes without central tracking.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px; border:1px solid var(--border-color);"><code>dpg_assign_tokens_*</code></td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">LocalStorage</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Daily</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Tracks daily cover page generation allowances and ad-watch restorations.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px; border:1px solid var(--border-color);"><code>__gads, __gpi</code></td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Cookie (Google)</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">13 Months</td>
+                    <td style="padding:10px; border:1px solid var(--border-color);">Google AdSense cookies used to measure ad interactions and prevent fraud.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-            <h2>3. Third-Party Advertising & Telemetry Cookies</h2>
+            <h2>3. Third-Party Advertising &amp; Telemetry Cookies</h2>
             <p>Our platform integrates Google AdSense and native sponsored partner units. Third-party advertising partners may set anonymous tracking cookies to:</p>
             <ul>
               <li>Serve contextual advertisements relevant to academic disciplines and career pathways.</li>
@@ -216,25 +220,34 @@
             </ul>
             <p>You can opt out of personalized third-party ad profiling via Google Ad Settings or the Digital Advertising Alliance Consumer Choice tool.</p>
 
-            <h2>4. Step-by-Step Guide to Managing & Clearing Cookies</h2>
+            <h2>4. Step-by-Step Guide to Managing &amp; Clearing Cookies</h2>
             <p>Every major web browser empowers you to review, restrict, or clear stored cookies and local storage tokens. Follow the instructions corresponding to your browser:</p>
             <ul>
               <li><strong>Google Chrome:</strong> Settings &rarr; Privacy and security &rarr; Third-party cookies &rarr; Clear browsing data.</li>
-              <li><strong>Mozilla Firefox:</strong> Settings &rarr; Privacy & Security &rarr; Cookies and Site Data &rarr; Clear Data.</li>
+              <li><strong>Mozilla Firefox:</strong> Settings &rarr; Privacy &amp; Security &rarr; Cookies and Site Data &rarr; Clear Data.</li>
               <li><strong>Apple Safari:</strong> Preferences &rarr; Privacy &rarr; Manage Website Data &rarr; Remove All.</li>
               <li><strong>Microsoft Edge:</strong> Settings &rarr; Cookies and site permissions &rarr; Manage and delete cookies.</li>
             </ul>
             <p><em>Note: Disabling strictly essential cookies will prevent authenticated contributors from maintaining active sessions in the dashboard.</em></p>
-        
+
+            <h2>5. Privacy Governance &amp; Contact Desk</h2>
+            <p>For inquiries regarding our cookie architecture or to exercise your statutory data subject rights:</p>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.5rem; margin:1.5rem 0; line-height:1.7;">
+              <p style="margin:0 0 0.5rem 0; font-size:1.05rem; color:#fff;"><strong>Cookie Compliance &amp; Privacy Office</strong></p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Publisher:</strong> Akshat Network Hub &bull; DPGNotes Platform</p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Official Email:</strong> <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin:0 0 0.5rem 0;"><strong>Support Desk:</strong> <a href="../support-contact-form.html" style="color:#38bdf8; text-decoration:underline; font-weight:600;">DPGNotes Support &amp; Contact Desk ↗</a></p>
+              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Response Commitment: Inquiries resolved within 48 business hours.</p>
+            </div>
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
               <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
-<a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
-<a href="analytics-policy.html" class="related-policy-chip"><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a>
-<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+              <a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
+              <a href="analytics-policy.html" class="related-policy-chip"><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms &amp; Conditions</a>
             </div>
           </article>
         </div>
@@ -262,8 +275,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

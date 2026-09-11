@@ -2,6 +2,7 @@
 export function initSidebar(onSectionChangeCallback) {
   const sidebar = document.getElementById('legalSidebar');
   const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+  const backdrop = document.getElementById('sidebarBackdrop');
   const navLinks = document.querySelectorAll('.nav-link');
   const currentCrumb = document.getElementById('currentCrumb');
   const actionTitle = document.getElementById('actionTitle');
@@ -11,6 +12,16 @@ export function initSidebar(onSectionChangeCallback) {
     mobileMenuBtn.addEventListener('click', () => {
       sidebar.classList.toggle('active');
       mobileMenuBtn.classList.toggle('active');
+      if (backdrop) backdrop.classList.toggle('active');
+    });
+  }
+
+  // Backdrop click closes sidebar
+  if (backdrop && sidebar) {
+    backdrop.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      if (mobileMenuBtn) mobileMenuBtn.classList.remove('active');
+      backdrop.classList.remove('active');
     });
   }
 
@@ -31,6 +42,7 @@ export function initSidebar(onSectionChangeCallback) {
       if (sidebar && sidebar.classList.contains('active')) {
         sidebar.classList.remove('active');
         if (mobileMenuBtn) mobileMenuBtn.classList.remove('active');
+        if (backdrop) backdrop.classList.remove('active');
       }
     });
   });

@@ -67,13 +67,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +93,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link active"><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link active"><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +110,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -116,7 +118,7 @@
               <span class="badge-dot"></span>
               <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-            <h1 class="document-title">DPGNotes Terms & Conditions of Service</h1>
+            <h1 class="document-title">DPGNotes Terms &amp; Conditions of Service</h1>
             <div class="document-meta">
               <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
               <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-TERMS-2026-V3.2</span>
@@ -137,9 +139,9 @@
 
           <article class="legal-article">
             
-            <h2>1. Binding Agreement & Eligibility Criteria</h2>
-            <p>Welcome to DPGNotes. By accessing our website, browsing lecture summaries, downloading assignment cover pages, or contributing academic notes, you enter into a legally binding agreement with DPGNotes and Akshat Network Hub. If you do not consent to all provisions set forth in these Terms and Conditions, you must immediately terminate use of our platform.</p>
-            <p>Access is permitted for individuals who have attained at least 13 years of age. Users under the age of majority in their jurisdiction must review these Terms with a parent or legal guardian to ensure mutual understanding and agreement.</p>
+            <h2>1. Binding Agreement &amp; Eligibility Criteria</h2>
+            <p>Welcome to <strong>DPGNotes</strong> (accessible via <code>https://dpgnotes.web.app</code>), engineered and maintained by <strong>Akshat Network Hub</strong>. By visiting our website, accessing digital lecture notes, utilizing our assignment and practical cover page generators, or registering an academic contributor profile, you enter into a legally enforceable agreement governed by these Terms and Conditions ("Terms").</p>
+            <p>If you disagree with any provision contained herein, you must immediately discontinue your use of the platform. Access to DPGNotes is open to individuals who have reached at least 13 years of age. Students under the age of majority in their jurisdiction are required to review these terms with a parent, legal guardian, or educational mentor.</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
@@ -156,54 +158,58 @@
               </div>
             </div>
 
-            <h2>2. Permitted Academic Use & Intellectual Property Grant</h2>
-            <p>DPGNotes grants visitors and registered users a limited, revocable, non-exclusive, non-sublicensable, and non-transferable license to access, view, and download study materials solely for personal, non-commercial educational study and exam preparation.</p>
-            <p>Except as expressly authorized under fair-dealing provisions of Section 52 of the Indian Copyright Act, 1957, you agree not to systematically scrape, mirror, redistribute, repackage, or sell any document, notes index, or visual asset hosted on DPGNotes for commercial profit.</p>
+            <h2>2. Permitted Academic Use &amp; Non-Commercial License</h2>
+            <p>Subject to ongoing compliance with these Terms, DPGNotes grants you a revocable, non-exclusive, non-transferable, and royalty-free personal license to access, view, and print study materials solely for non-commercial educational study, exam preparation, and classroom revision.</p>
+            <p>Except as statutorily permitted under the fair dealing provisions of <strong>Section 52 of the Indian Copyright Act, 1957</strong>, you may not repackage, re-license, sell, scrape, bulk-mirror, or commercially distribute any document or asset obtained from DPGNotes without explicit prior written authorization from Akshat Network Hub.</p>
 
-            <h2>3. Contributor Warranties, Representations & Content Licensing</h2>
-            <p>When you author, format, or upload study notes, revision cheat-sheets, or examination analysis documents to DPGNotes:</p>
+            <h2>3. Contributor Warranties &amp; Creative Commons Distribution</h2>
+            <p>Contributors who share lecture notes, practical files, or previous year examination analyses make the following binding representations:</p>
             <ul>
-              <li><strong>Originality Warranty:</strong> You represent and warrant that the content represents your original intellectual work, synthesized lecture summaries, or properly attributed fair-use educational commentary.</li>
-              <li><strong>Non-Infringement:</strong> You warrant that your contribution does not violate any third-party copyright, trade secret, trademark, or confidentiality obligation of any educational institution or publisher.</li>
-              <li><strong>Worldwide Academic License:</strong> You grant DPGNotes a perpetual, irrevocable, worldwide, royalty-free, non-exclusive license to host, cache, index, render, format, and display your contributions for academic peer review and student discovery.</li>
-              <li><strong>Right of Retraction:</strong> You retain the full prerogative to modify, revise, or permanently delete your authored documents at any time through your authenticated Contributor Dashboard.</li>
+              <li><strong>Originality &amp; Authorship:</strong> All submitted notes represent the contributor's independent intellectual analysis, personal classroom syntheses, or legitimately permitted commentary.</li>
+              <li><strong>Third-Party Rights:</strong> Materials do not infringe upon any third-party copyright, trade secret, trademark, or institutional confidentiality restrictions.</li>
+              <li><strong>Creative Commons License:</strong> Unless specifically agreed otherwise, all public submissions are distributed under the <strong>Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)</strong>.</li>
+              <li><strong>Editorial Freedom &amp; Deletion:</strong> Contributors retain the right to edit, update, or remove their publications at any time using their Contributor Dashboard.</li>
             </ul>
 
-            <h2>4. Strictly Prohibited Conduct & Zero-Tolerance Infractions</h2>
-            <p>To preserve a secure, welcoming, and high-integrity learning environment, users are strictly prohibited from:</p>
-            <ul>
-              <li>Uploading copyrighted commercial textbooks, complete commercial test-prep answer keys, or confidential university examination papers prior to official public release.</li>
-              <li>Deploying automated crawlers, bots, extraction spiders, or data harvesters without advance written authorization from platform administrators.</li>
-              <li>Manipulating referral invite tokens, falsifying visitor metrics, or attempting referral abuse to fraudulently bypass daily access limits.</li>
-              <li>Injecting malicious code, cross-site scripting (XSS) vectors, database payload injections, or tampering with database rules and access control tokens.</li>
-              <li>Publishing defamatory, obscene, harassing, hateful, or abusive content in public comment fields or contributor bios.</li>
-            </ul>
+            <h2>4. Strictly Prohibited Conduct &amp; System Abuse</h2>
+            <p>To ensure a safe, supportive, and reliable academic ecosystem, users must not engage in any of the following activities:</p>
+            <ol>
+              <li><strong>Commercial Piracy:</strong> Uploading or distributing complete commercial textbooks, instructor-only solution manuals, or leaked question papers.</li>
+              <li><strong>Automated Scraping:</strong> Deploying bots, scrapers, data-mining scripts, or automated extraction tools against DPGNotes document endpoints without administrative authorization.</li>
+              <li><strong>Quota Evasion:</strong> Falsifying guest session tokens, manipulating referral counters, or abusing ad-supported generation tokens in cover page utilities.</li>
+              <li><strong>Infrastructure Tampering:</strong> Attempting SQL injection, cross-site scripting (XSS), token tampering, or unauthorized inspection of backend database nodes.</li>
+              <li><strong>Harassment &amp; Defamation:</strong> Uploading abusive, obscene, hateful, or defamatory remarks in contributor biographies or document metadata.</li>
+            </ol>
 
-            <h2>5. Disclaimers of Warranties & Academic Accuracy Limitation</h2>
-            <p>DPGNotes provides all academic documents, syllabus analyses, formulas, and examination papers on an <strong>"AS IS" and "AS AVAILABLE"</strong> basis without warranties of any kind, whether express, implied, statutory, or otherwise.</p>
-            <p>While our community and automated verification tools endeavor to maintain pedagogical fidelity, university syllabi and grading criteria vary across institutions (such as MDU Rohtak, Gurugram University, Kurukshetra University, and Delhi University). Students are solely responsible for cross-verifying lecture notes against official university curricula and prescribed textbooks. DPGNotes disclaims liability for academic performance or examination marks.</p>
+            <h2>5. Service Availability &amp; Academic Syllabus Disclaimers</h2>
+            <p>DPGNotes provides all academic resources on an <strong>"AS IS" and "AS AVAILABLE"</strong> basis without warranties of any kind. While student contributors and mentors strive for high accuracy, educational curricula differ across universities (e.g., MDU Rohtak, Gurugram University, Kurukshetra University, Delhi University). Users must cross-verify lecture notes against prescribed university guidelines. DPGNotes expressly disclaims liability for examination results, grades, or academic performance.</p>
 
-            <h2>6. Limitation of Liability & Indemnification</h2>
-            <p>To the fullest extent permissible under applicable law, DPGNotes, its student administrators, developers, and academic volunteers shall not be held liable for any indirect, incidental, consequential, special, or punitive damages arising out of or related to your access or inability to access hosted educational materials.</p>
-            <p>You agree to defend, indemnify, and hold harmless DPGNotes and its administrative team from any third-party claims, liabilities, damages, losses, or expenses (including reasonable legal fees) arising from your violation of these Terms, your unauthorized use of copyrighted works, or your infringement of any third-party rights.</p>
+            <h2>6. Limitation of Liability &amp; Intermediary Safe Harbor</h2>
+            <p>DPGNotes operates as an interactive academic intermediary under <strong>Section 79 of the Information Technology Act 2000</strong>. Under no circumstances shall DPGNotes, Akshat Network Hub, or its volunteers be liable for direct, indirect, incidental, punitive, or consequential damages resulting from reliance on hosted study materials, technical downtime, or third-party links.</p>
 
-            <h2>7. Regulatory Enforcement & DRASA Escalation</h2>
-            <p>Failure to comply with these Terms may trigger enforcement actions under the <strong>DPGNotes Regulations & Suspension Act (DRASA)</strong>. Penalties include formal administrative warnings, temporary feature restrictions, resource de-indexing, and permanent IP/account bans.</p>
+            <h2>7. DRASA Regulations &amp; Disciplinary Appeals</h2>
+            <p>Violations of these Terms are subject to enforcement under the <strong>DPGNotes Regulations &amp; Suspension Act (DRASA)</strong>, which establishes progressive administrative sanctions from informational notices to permanent IP bans. Sanctioned users hold the statutory right to submit an appeal within 15 calendar days via our official support portal.</p>
 
-            <h2>8. Governing Law & Dispute Resolution</h2>
-            <p>These Terms & Conditions shall be governed by and construed in accordance with the laws of the Republic of India. In the event of any legal dispute arising from this agreement, the parties agree to submit to the exclusive jurisdiction of the competent courts situated in Gurugram, Haryana, India.</p>
-        
+            <h2>8. Governing Law, Jurisdiction &amp; Grievance Support</h2>
+            <p>These Terms shall be governed by and construed in accordance with the substantive laws of the Republic of India. Any legal dispute or controversy arising out of this agreement shall be subject to the exclusive jurisdiction of the competent courts located in Gurugram, Haryana, India.</p>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.5rem; margin:1.5rem 0; line-height:1.7;">
+              <p style="margin:0 0 0.5rem 0; font-size:1.05rem; color:#fff;"><strong>Legal Administration &amp; Grievance Redressal</strong></p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Publisher:</strong> Akshat Network Hub &bull; DPGNotes Academic Platform</p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Official Email:</strong> <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin:0 0 0.5rem 0;"><strong>Support &amp; Appeal Portal:</strong> <a href="../support-contact-form.html" style="color:#38bdf8; text-decoration:underline; font-weight:600;">DPGNotes Support &amp; Contact Desk ↗</a></p>
+              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Response Commitment: Grievance resolution acknowledged within 24 hours; comprehensive adjudication within 15 business days.</p>
+            </div>
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
               <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
-<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
-<a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
-<a href="disclaimer.html" class="related-policy-chip"><i class="ri-alert-line"></i> Legal Disclaimer</a>
-<a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
-<a href="dmca-policy.html" class="related-policy-chip"><i class="ri-file-shield-2-line"></i> DMCA Policy</a>
+              <a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
+              <a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
+              <a href="disclaimer.html" class="related-policy-chip"><i class="ri-alert-line"></i> Legal Disclaimer</a>
+              <a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
+              <a href="dmca-policy.html" class="related-policy-chip"><i class="ri-file-shield-2-line"></i> DMCA Policy</a>
             </div>
           </article>
         </div>
@@ -231,8 +237,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

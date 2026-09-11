@@ -19,18 +19,37 @@
   .search-shortcut {
     display: none;
   }
-  .legal-content {
+  .legal-content, .legal-main {
     padding: 2rem 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
+  .header-container {
+    padding: 0 1rem;
+  }
+  
+  .header-actions {
+    gap: 0.4rem;
+  }
+  
+  .header-actions .nav-link {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.85rem;
+  }
+  
+  .header-actions .nav-link span {
+    display: none;
+  }
+  
   .mobile-menu-btn {
-    display: flex;
+    display: flex !important;
+    z-index: 101;
   }
   
   .search-trigger {
-    width: 44px;
+    width: 40px;
+    height: 40px;
     padding: 0;
     justify-content: center;
     border-radius: 50%;
@@ -41,18 +60,42 @@
   }
   
   .legal-sidebar {
-    left: -100%;
-    width: 280px;
-    transition: left var(--transition-normal);
+    position: fixed;
+    top: var(--header-height);
+    bottom: 0;
+    left: -100% !important;
+    width: min(300px, 85vw) !important;
+    z-index: 999;
+    box-shadow: none;
+    transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
   .legal-sidebar.active {
-    left: 0;
+    left: 0 !important;
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7);
   }
   
-  .legal-content {
-    margin-left: 0;
-    padding: 1.5rem 1rem;
+  .legal-content, .legal-main {
+    margin-left: 0 !important;
+    padding: 1.25rem 1rem !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 990;
+  }
+  
+  .sidebar-backdrop.active {
+    display: block;
   }
   
   .viewer-actions {
@@ -76,8 +119,14 @@
     padding: 1.5rem 1rem;
   }
   
-  .policy-section h1 {
-    font-size: 1.8rem;
+  .policy-section h1, .document-title {
+    font-size: 1.6rem !important;
+    line-height: 1.25 !important;
+  }
+  
+  .compliance-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.9rem !important;
   }
   
   .pdf-viewer-container {

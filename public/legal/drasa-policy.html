@@ -54,6 +54,25 @@
       color: var(--text-muted, #94a3b8);
       margin: 0;
     }
+    .drasa-tier-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.88rem;
+    }
+    .drasa-tier-table th, .drasa-tier-table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .drasa-tier-table th {
+      background: rgba(99, 102, 241, 0.15);
+      color: #fff;
+      font-weight: 600;
+    }
+    .drasa-tier-table tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
   </style>
 </head>
 <body class="theme-auto">
@@ -67,13 +86,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +112,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link active"><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +129,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -116,7 +137,7 @@
               <span class="badge-dot"></span>
               <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-            <h1 class="document-title">DPGNotes Regulations & Suspension Act (DRASA)</h1>
+            <h1 class="document-title">DPGNotes Regulations &amp; Suspension Act (DRASA)</h1>
             <div class="document-meta">
               <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
               <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-DRAS-2026-V3.2</span>
@@ -137,56 +158,131 @@
 
           <article class="legal-article">
             
-            <h2>1. Statutory Mission & Regulatory Scope</h2>
-            <p>The <strong>DPGNotes Regulations & Suspension Act (DRASA)</strong> represents our statutory governance framework designed to maintain academic integrity, protect contributor rights, and prevent malicious exploitation of collaborative student tools across the DPGNotes platform.</p>
-            <p>DRASA applies uniformly to all platform participants, including anonymous guests, verified student contributors, academic peer reviewers, and platform moderators.</p>
+            <h2>1. Legislative Purpose &amp; Institutional Governance</h2>
+            <p>The <strong>DPGNotes Regulations &amp; Suspension Act (DRASA)</strong> constitutes the binding statutory disciplinary charter of DPGNotes and Akshat Network Hub. As an open collaborative academic ecosystem serving thousands of students across engineering, management, computer applications, and vocational degree programs, the platform requires rigorous, impartial standards to safeguard academic integrity, protect original student works, prevent resource hoarding, and defeat cyber exploitation.</p>
+            <p>DRASA applies universally and without exception to all individuals accessing our services, including unregistered guest users, registered student contributors, faculty reviewers, and community moderators.</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
                 <h4><i class="ri-shield-flash-line"></i> Proactive Defense</h4>
-                <p>Automated threat detection and peer audits designed to maintain a trustworthy academic repository.</p>
+                <p>Automated rate-limiting and cryptographic integrity checks detecting unauthorized scripting and scrapers.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-list-ordered-line"></i> 5-Tier Violation Matrix</h4>
-                <p>Proportional disciplinary escalation ranging from formal warnings to permanent IP and network blacklisting.</p>
+                <h4><i class="ri-list-ordered-line"></i> 5-Tier Escalation</h4>
+                <p>Structured, proportional disciplinary measures ranging from automated advisories to permanent IP termination.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-scales-line"></i> Due Process & Appeals</h4>
-                <p>Transparent investigation protocols with guaranteed right of appeal to an impartial Grievance Officer.</p>
+                <h4><i class="ri-scales-line"></i> Due Process &amp; Natural Justice</h4>
+                <p>Auditable investigation records, clear notice of charges, and a guaranteed right of appeal before independent review.</p>
               </div>
             </div>
 
-            <h2>2. Comprehensive Five-Tier Violation Hierarchy</h2>
-            <p>Violations under DRASA are categorized into five progressive tiers based on severity, intentionality, and systemic risk:</p>
+            <h2>2. The Comprehensive Five-Tier Violation Hierarchy</h2>
+            <p>Under DRASA, infractions are classified according to a five-tier hierarchy calibrated by degree of malice, impact on platform performance, and violation of academic ethics:</p>
+
+            <table class="drasa-tier-table">
+              <thead>
+                <tr>
+                  <th>Violation Tier</th>
+                  <th>Infraction Scope</th>
+                  <th>Operational Sanction</th>
+                  <th>Rehabilitation Window</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Tier 1: Administrative &amp; Formatting</strong></td>
+                  <td>Improper course code tagging, malformed metadata, duplicate submission attempts, or minor upload defects.</td>
+                  <td>Automated warning flag; resource metadata corrected by moderators.</td>
+                  <td>Immediate clearance upon advisory acknowledgment.</td>
+                </tr>
+                <tr>
+                  <td><strong>Tier 2: Content Quality &amp; Citation Deficits</strong></td>
+                  <td>Uploading unreadable scans, plagiarized slide summaries without source attribution, or misleading course titles.</td>
+                  <td>Temporary document unpublishing; 7-day restriction on new uploads.</td>
+                  <td>7 days; mandatory resubmission of corrected attribution.</td>
+                </tr>
+                <tr>
+                  <td><strong>Tier 3: Quota Manipulation &amp; Token Fraud</strong></td>
+                  <td>Simulating ad impressions, deploying headless bots to bypass cover page limits, or forging referral tokens.</td>
+                  <td>14-day token generation freeze; forfeiture of contributor badges; strict CAPTCHA enforcement.</td>
+                  <td>14 days; written undertaking via Support Portal.</td>
+                </tr>
+                <tr>
+                  <td><strong>Tier 4: Copyright Piracy &amp; Academic Fraud</strong></td>
+                  <td>Publishing commercial scanned textbooks, selling university examination question papers, or uploading confidential institutional files.</td>
+                  <td>Permanent deletion of infringing materials; 30 to 90-day account suspension; forfeiture of all platform karma.</td>
+                  <td>30–90 days subject to formal copyright dispute resolution.</td>
+                </tr>
+                <tr>
+                  <td><strong>Tier 5: Cyber Security Violations &amp; Malice</strong></td>
+                  <td>Cross-site scripting (XSS), SQL/NoSQL payload injection, DDoS assaults, database exfiltration, or credential credential stuffing.</td>
+                  <td>Immediate permanent account termination; cryptographic CIDR network IP ban; referral to cyber law enforcement.</td>
+                  <td>Permanent; non-appealable except in cases of verified identity spoofing.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h2>3. Contributor Governance &amp; Academic Integrity Code</h2>
+            <p>Every student contributor uploading revision guides, laboratory manuals, or lecture summaries covenants to observe the Academic Integrity Code:</p>
             <ul>
-              <li><strong>Tier 1 — Administrative Non-Compliance:</strong> Inadvertent formatting errors, duplicate tag creation, or minor typographical non-compliance. <em>Sanction:</em> Automated notification, formatting correction, and formal advisory.</li>
-              <li><strong>Tier 2 — Content Quality & Attribution Infractions:</strong> Uploading low-fidelity notes, unverified formula summaries, or failing to properly cite referenced open-access lecture materials. <em>Sanction:</em> Temporary resource delisting pending revision; 7-day contributor account probation.</li>
-              <li><strong>Tier 3 — Referral Fraud & Quota Exploitation:</strong> Forging invite tokens, deploying automated click scripts, or attempting to bypass daily generation quotas through synthetic identities. <em>Sanction:</em> 14-day account suspension, forfeiture of referral badges, and quota throttling.</li>
-              <li><strong>Tier 4 — Copyright Infringement & Intellectual Property Violations:</strong> Uploading commercially copyrighted textbooks, paid exam test-banks, or infringing third-party proprietary academic works. <em>Sanction:</em> Immediate permanent document deletion, 30-day account suspension, and formal copyright advisory.</li>
-              <li><strong>Tier 5 — Security Breaches & Malicious Tampering:</strong> Attempting database payload injections, cross-site scripting (XSS), credential phishing, distributed denial-of-service (DDoS), or unauthorized database tampering. <em>Sanction:</em> Permanent account termination, cryptographic IP ban, and reporting to relevant statutory cyber authorities under the Indian Information Technology Act 2000.</li>
+              <li><strong>Originality &amp; Attribution:</strong> Uploads must represent original student work or properly credited open-access academic commentary under Creative Commons licensing.</li>
+              <li><strong>Prohibition of Commercial Monetization:</strong> No user may attempt to sell, paywall, or lock educational content hosted on DPGNotes behind third-party pay gates or micro-transaction shorteners.</li>
+              <li><strong>Safe File Standards:</strong> All uploaded files must be pure PDF, DOCX, or text documents free of macro-scripts, embedded executables, or obfuscated hyperlinks.</li>
             </ul>
 
-            <h2>3. Investigation Procedures & Due Process</h2>
-            <p>Upon detection of an infraction (either via automated telemetry or community user reports), the platform administration executes an impartial review process:</p>
+            <h2>4. Automated Telemetry, Abuse Detection &amp; Security Audits</h2>
+            <p>To enforce DRASA systematically without bias, DPGNotes employs client-side and edge-level telemetry monitors:</p>
             <ul>
-              <li>Evidence gathering: Cryptographic audit logs, content diffs, and network telemetry are recorded securely.</li>
-              <li>Notification: The account holder receives an electronic notice detailing the alleged infraction, affected documents, and applicable DRASA tier.</li>
-              <li>Interim measures: Potentially infringing or harmful documents are quarantined from public discovery during active review.</li>
-              <li>Determination: Findings are published within 7 business days with transparent rationale.</li>
+              <li><strong>Rate-Limiting Safeguards:</strong> Cover page generation endpoints and search APIs enforce automated rate caps (e.g., 1 daily generation for guests, 3 daily generations for contributors). Rapid automated bursts trigger immediate temporary cool-downs.</li>
+              <li><strong>Integrity Fingerprinting:</strong> Hash checks and anomaly detection scripts identify automated token restoration scripts and headless browser bots.</li>
+              <li><strong>Immutable Audit Logs:</strong> Security telemetry records timestamped request headers, token hashes, and anonymized IP subnets for 90 days to support grievance adjudication.</li>
             </ul>
 
-            <h2>4. Formal Appeals & Restoration Protocol</h2>
-            <p>Any participant whose account or contribution has been subject to disciplinary sanctions under DRASA holds the statutory right to appeal within 15 calendar days of sanction notification. Appeals must be submitted through our <a href="../suspension-support-contact-form.html">Official Appeals Portal</a> or emailed directly to <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a> with supporting academic evidence. Decisions by the Grievance Review Panel are finalized within 10 business days.</p>
-        
+            <h2>5. Investigation Protocols &amp; Natural Justice Safeguards</h2>
+            <p>DPGNotes firmly rejects arbitrary account termination. Except in urgent Tier 5 cyber emergencies requiring immediate network shielding, our disciplinary enforcement adheres to the principles of natural justice:</p>
+            <ul>
+              <li><strong>Notice of Infraction:</strong> The accused account receives an electronic notification articulating the specific policy clause violated, timestamp of the detected behavior, and applicable tier.</li>
+              <li><strong>Preservation of Contributor Data:</strong> Legitimate academic notes unconnected to the violation remain secured during the investigative period.</li>
+              <li><strong>Expedited Deliberation:</strong> Contributor cases are adjudicated by the Platform Review Desk within five (5) business days.</li>
+            </ul>
+
+            <h2>6. Account Suspension Categories</h2>
+            <p>Sanctions imposed under DRASA are strictly proportional to the verified tier:</p>
+            <ul>
+              <li><strong>Soft Cool-Down:</strong> A short-term, 24-hour rate limit on generation tools or download bandwidth triggered by high request frequency.</li>
+              <li><strong>Contributor Probation:</strong> Account retains full reading and download rights but loses note uploading privileges for 7 to 30 days.</li>
+              <li><strong>Full Suspension:</strong> Total denial of login authentication, dashboard tools, and generation features.</li>
+              <li><strong>Permanent Blacklist:</strong> Irreversible account deletion and firewall-level rejection of associated network identifiers.</li>
+            </ul>
+
+            <h2>7. Formal Appeals &amp; Reinstatement Procedure</h2>
+            <p>Any participant whose privileges have been restricted or suspended under DRASA holds the statutory right to submit an appeal within <strong>fifteen (15) calendar days</strong> of the disciplinary notice. Appeals are handled by an independent Grievance Review Officer who was not involved in the initial automated flag:</p>
+            <ul>
+              <li><strong>Online Ticket Submission:</strong> File an appeal via our dedicated <a href="../support-contact-form.html" style="color:var(--primary); font-weight:600;">Support &amp; Appeal Portal</a> (or the suspension-specific desk at <a href="../suspension-support-contact-form.html">Suspension Support Desk</a>).</li>
+              <li><strong>Required Documentation:</strong> Appeals must state the registered User ID or Contributor UID, date of sanction, explanation of circumstances, and any relevant academic counter-evidence.</li>
+              <li><strong>Decision Turnaround:</strong> The Review Officer issues a final, written determination within <strong>ten (10) business days</strong>. Successful appeals result in immediate restoration of account privileges and expungement of disciplinary points.</li>
+            </ul>
+
+            <h2>8. Statutory Interplay with Indian Cyber Law</h2>
+            <p>Nothing within DRASA limits the right of DPGNotes and Akshat Network Hub to pursue formal legal remedies under the laws of the Republic of India. In cases involving Tier 5 cyber attacks, extortion, unauthorized database penetration, or deliberate data sabotage, DPGNotes reserves the express right to initiate criminal complaints under Sections 43, 66, and 70 of the <strong>Information Technology Act, 2000</strong>, and corresponding provisions of the Bharatiya Nyaya Sanhita (BNS) with the Cyber Crime Police Cell, Gurugram, Haryana.</p>
+
+            <div style="background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--primary); padding: 1.2rem; border-radius: 8px; margin: 2rem 0;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #fff; font-size: 1.05rem;"><i class="ri-shield-user-line" style="color: var(--primary);"></i> DRASA Enforcement &amp; Appeals Board</h4>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">DPGNotes Disciplinary Review &amp; Natural Justice Authority</p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Appeals &amp; Inquiries: <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color: var(--primary); font-weight: 600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Direct Portal Link: <a href="../support-contact-form.html" style="color: var(--primary); font-weight: 600;">Support &amp; Contact Appeal Desk</a></p>
+              <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">Review Window: Formal appeals resolved within 10 business days.</p>
+            </div>
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
-              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
-<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
-<a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
-<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms &amp; Conditions</a>
+              <a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+              <a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
+              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
             </div>
           </article>
         </div>
@@ -214,8 +310,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

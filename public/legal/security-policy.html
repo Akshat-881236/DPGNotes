@@ -54,6 +54,25 @@
       color: var(--text-muted, #94a3b8);
       margin: 0;
     }
+    .security-matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.88rem;
+    }
+    .security-matrix-table th, .security-matrix-table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .security-matrix-table th {
+      background: rgba(99, 102, 241, 0.15);
+      color: #fff;
+      font-weight: 600;
+    }
+    .security-matrix-table tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
   </style>
 </head>
 <body class="theme-auto">
@@ -67,13 +86,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +112,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link active"><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +129,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -137,59 +158,129 @@
 
           <article class="legal-article">
             
-            <h2>1. Defense-in-Depth Architecture</h2>
-            <p>DPGNotes is committed to safeguarding academic repositories, contributor profiles, and community interactions against digital threats, unauthorized access, and data corruption. Our engineering standards adhere to modern defense-in-depth principles, combining transport encryption, strict database authorization rules, and proactive vulnerability scanning.</p>
-            <p>This Security Policy details the technical safeguards and vulnerability response workflows governing our platform.</p>
+            <h2>1. Defense-in-Depth Architecture &amp; Security Charter</h2>
+            <p>DPGNotes is dedicated to maintaining the absolute confidentiality, integrity, and availability of student academic notes, contributor credentials, and institutional resources. Operating under Akshat Network Hub, our technical architecture implements a rigorous <strong>Defense-in-Depth</strong> security methodology. We presume hostile network environments and enforce multi-layered cryptographic, transport, database, and client-side barriers against unauthorized access, data poisoning, credential theft, and denial-of-service disruptions.</p>
+            <p>This comprehensive Security Policy details our cryptographic protocols, cloud database access rules, vulnerability mitigation mechanisms, and ethical researcher disclosure guidelines in compliance with the <strong>Digital Personal Data Protection (DPDP) Act 2023</strong> and guidelines of the Indian Computer Emergency Response Team (CERT-In).</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
-                <h4><i class="ri-lock-password-line"></i> TLS 1.3 & AES-256</h4>
-                <p>End-to-end cryptographic protection for all data in transit across modern TLS 1.3 tunnels and hardware AES-256 at rest.</p>
+                <h4><i class="ri-lock-password-line"></i> TLS 1.3 &amp; AES-256</h4>
+                <p>Mandatory cryptographic forward secrecy across TLS 1.3 tunnels and hardware-accelerated AES-256 data volume encryption.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-key-2-line"></i> Cryptographic Tokens</h4>
-                <p>Access-controlled administrative endpoints with cryptographically signed tokens and granular authorization scopes.</p>
+                <h4><i class="ri-shield-keyhole-line"></i> Granular Database Rules</h4>
+                <p>Zero-trust cloud database security rules enforcing schema checks, role-based access, and strict client isolation.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-bug-line"></i> Responsible Disclosure</h4>
-                <p>Structured Vulnerability Disclosure Program welcoming security researchers to report potential vulnerabilities safely.</p>
+                <h4><i class="ri-bug-line"></i> Ethical VDP Program</h4>
+                <p>Safe-harbor Vulnerability Disclosure Program welcoming collegiate cybersecurity researchers to report bugs responsibly.</p>
               </div>
             </div>
 
-            <h2>2. Cryptographic Protocols & Network Defense</h2>
-            <p>Our security architecture implements rigorous technical controls across all operational layers:</p>
+            <h2>2. Comprehensive Security Controls &amp; Infrastructure Matrix</h2>
+            <p>The matrix below outlines the specific security technologies and controls active across DPGNotes infrastructure:</p>
+
+            <table class="security-matrix-table">
+              <thead>
+                <tr>
+                  <th>Security Layer</th>
+                  <th>Core Technology / Standard</th>
+                  <th>Implementation Mechanism</th>
+                  <th>Threat Mitigated</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Transport Encryption</strong></td>
+                  <td>TLS 1.3 &amp; TLS 1.2 with ECDHE</td>
+                  <td>Enforced HTTPS redirection, HSTS headers with preload max-age.</td>
+                  <td>Man-in-the-Middle (MitM) eavesdropping, packet sniffing.</td>
+                </tr>
+                <tr>
+                  <td><strong>Data at Rest</strong></td>
+                  <td>Hardware-Accelerated AES-256</td>
+                  <td>Cloud-managed key rotation on underlying persistent storage volumes.</td>
+                  <td>Physical disk theft, offline database extraction.</td>
+                </tr>
+                <tr>
+                  <td><strong>Client-Side Sanitization</strong></td>
+                  <td>DOMPurify &amp; Entity Encoding</td>
+                  <td>Strict output filtering on all note titles, subjects, and search parameters.</td>
+                  <td>Stored &amp; Reflected Cross-Site Scripting (XSS).</td>
+                </tr>
+                <tr>
+                  <td><strong>HTTP Security Headers</strong></td>
+                  <td>CSP, HSTS, X-Frame-Options: DENY</td>
+                  <td>Edge-level HTTP header injection on every response payload.</td>
+                  <td>Clickjacking, MIME sniffing, unauthorized script execution.</td>
+                </tr>
+                <tr>
+                  <td><strong>API &amp; Quota Protection</strong></td>
+                  <td>Token Bucket Rate Limiting</td>
+                  <td>Algorithmic burst throttling on generation and search endpoints.</td>
+                  <td>DDoS attacks, credential brute-forcing, scraper scraping.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h2>3. Cloud Database Access Controls &amp; Tenant Isolation</h2>
+            <p>Our cloud data storage utilizes strictly configured access rules evaluated directly at the database engine level:</p>
             <ul>
-              <li><strong>Transport Layer Security (TLS):</strong> All HTTP traffic is strictly redirected to HTTPS utilizing TLS 1.3 and TLS 1.2 with forward secrecy cipher suites. HSTS (HTTP Strict Transport Security) headers are enforced across all subdomains.</li>
-              <li><strong>Data Encryption at Rest:</strong> Database records, document indexes, and user configuration metadata are stored on encrypted cloud volumes using hardware-accelerated AES-256 encryption.</li>
-              <li><strong>Database Security Rules:</strong> Database operations undergo strict cloud validation rules. Unauthorized document alterations, cross-tenant data leaks, and arbitrary node insertions are blocked at the protocol level.</li>
-              <li><strong>Cross-Site Scripting (XSS) Prevention:</strong> All user-generated content, note titles, and contributor comments undergo HTML sanitization and entity escaping before rendering in the document DOM.</li>
+              <li><strong>Zero Implicit Access:</strong> By default, all read and write operations from unauthenticated sources are denied unless explicitly matched against a public read rule for approved study notes.</li>
+              <li><strong>Contributor Segregation:</strong> Contributors can only update or delete documents for which their cryptographically verified User UID matches the document's author metadata. Cross-tenant tampering is architecturally impossible.</li>
+              <li><strong>Strict Field Schema Validation:</strong> Write requests to Cover Page Logs and Note collections must validate field type, character length constraints, and required fields (such as Subject Name, Subject Code, and Session). Requests containing unexpected keys or malformed JSON are immediately rejected.</li>
             </ul>
 
-            <h2>3. Identity Management & Administrative Protection</h2>
-            <p>Privileged administrative functions (such as note moderation, security violation reviews, and contributor verification) are secured using multi-factor authorization and short-lived signed tokens. Admin credentials are never stored in client-accessible scripts or repository codebases.</p>
-
-            <h2>4. Automated Threat Mitigation & Rate Limiting</h2>
-            <p>To defend against distributed denial-of-service (DDoS) events, brute-force dictionary attacks, and synthetic traffic exploitation, DPGNotes deploys intelligent rate-limiting middleware across all API routes. IP addresses exhibiting anomalous request velocity or signature injection patterns are temporarily quarantined automatically.</p>
-
-            <h2>5. Responsible Vulnerability Disclosure Program (VDP)</h2>
-            <p>DPGNotes welcomes ethical security researchers, university computer science students, and white-hat penetration testers to audit our public endpoints under our Responsible Vulnerability Disclosure Program. If you identify a potential security vulnerability:</p>
+            <h2>4. Client-Side Integrity &amp; Cross-Site Scripting (XSS) Prevention</h2>
+            <p>To ensure student browsers are never compromised when reviewing community study documents, DPGNotes maintains uncompromising DOM hygiene:</p>
             <ul>
-              <li>Submit a detailed vulnerability report to <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a> with reproducible steps, proof-of-concept payloads, and affected URLs.</li>
-              <li>Grant our volunteer engineering team a reasonable coordination window of at least 72 business hours before making any public disclosure.</li>
-              <li>Do not attempt to access, modify, or exfiltrate another student or contributor's personal data.</li>
-              <li>Do not execute destructive denial-of-service payloads against live production systems.</li>
+              <li><strong>Content Security Policy (CSP):</strong> Restricts script execution to vetted origin scripts and authorized CDN endpoints (Google Fonts, RemixIcon, and AdSense). Inline script injection is blocked.</li>
+              <li><strong>Anti-Clickjacking Framing Controls:</strong> The platform sends <code>X-Frame-Options: DENY</code> and CSP <code>frame-ancestors 'none'</code> headers to prevent hostile websites from embedding DPGNotes inside malicious transparent iframes.</li>
+              <li><strong>Secure Cookie Flags:</strong> All tracking and session tokens carry mandatory <code>Secure</code>, <code>HttpOnly</code> (where server-mediated), and <code>SameSite=Lax</code> or <code>SameSite=Strict</code> attributes to prevent cross-site request forgery (CSRF).</li>
             </ul>
-            <p>DPGNotes pledges not to initiate legal action against researchers acting in good faith compliance with this disclosure policy.</p>
-        
+
+            <h2>5. Rate Limiting, DDoS Mitigation &amp; Edge Defense</h2>
+            <p>Our content delivery network (CDN) edge incorporates automated threat analysis to defend against distributed denial-of-service (DDoS) events, brute-force dictionary attacks, and headless bot crawlers:</p>
+            <ul>
+              <li><strong>Generator Endpoint Throttling:</strong> Cover page generation endpoints enforce token-based daily quotas (1/day for guests, 3/day for contributors). Requests exceeding allowed burst velocity are met with HTTP 429 (Too Many Requests).</li>
+              <li><strong>Search Query Caps:</strong> High-frequency automated search requests are subjected to temporary cryptographic challenges (CAPTCHA) to prevent database resource exhaustion.</li>
+            </ul>
+
+            <h2>6. Incident Response Plan (IRP) &amp; Breach Notification Protocol</h2>
+            <p>DPGNotes maintains a structured Incident Response Plan (IRP) governed by our core engineering team. In the event of a suspected cybersecurity incident or unauthorized data access:</p>
+            <ul>
+              <li><strong>Phase 1 — Identification &amp; Triage:</strong> Anomaly detection triggers automated alerts to the Security Administrator within 15 minutes of occurrence.</li>
+              <li><strong>Phase 2 — Containment &amp; Isolation:</strong> Compromised endpoints or affected database paths are instantly quarantined at the firewall edge.</li>
+              <li><strong>Phase 3 — Eradication &amp; Patching:</strong> Vulnerability causes are diagnosed, patched in source control, and pushed through automated deployment pipelines.</li>
+              <li><strong>Phase 4 — Statutory Reporting:</strong> In strict compliance with CERT-In directions and the DPDP Act 2023, significant cybersecurity incidents are notified to the <strong>Data Protection Board of India</strong> and affected users within <strong>72 hours</strong> of formal confirmation.</li>
+            </ul>
+
+            <h2>7. Responsible Vulnerability Disclosure Program (VDP)</h2>
+            <p>DPGNotes enthusiastically welcomes collegiate cybersecurity scholars, ethical penetration testers, and independent security researchers to participate in our Vulnerability Disclosure Program under full legal safe harbor:</p>
+            <ul>
+              <li><strong>Safe Harbor Guarantee:</strong> DPGNotes pledges not to initiate civil litigation or report researchers to cyber law enforcement under Section 43 of the Information Technology Act 2000, provided testing complies strictly with these guidelines.</li>
+              <li><strong>In-Scope Testing:</strong> Web application business logic flaws, DOM-based XSS, server-side misconfigurations, and authentication bypasses on DPGNotes public endpoints.</li>
+              <li><strong>Out-of-Scope Behaviors:</strong> Volumetric DDoS attacks, social engineering of student volunteers, physical intrusions, or unauthorized access to/alteration of another student's academic documents.</li>
+              <li><strong>Reporting Protocol:</strong> Send a complete vulnerability report detailing reproduction steps, request logs, and proof-of-concept payloads to our Security Officer at <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600;">its.akshatnetworkhub23@gmail.com</a>.</li>
+              <li><strong>SLA Commitment:</strong> Acknowledgement within <strong>24 business hours</strong>; preliminary technical assessment within <strong>72 hours</strong>.</li>
+            </ul>
+
+            <div style="background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--primary); padding: 1.2rem; border-radius: 8px; margin: 2rem 0;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #fff; font-size: 1.05rem;"><i class="ri-shield-keyhole-line" style="color: var(--primary);"></i> Information Security &amp; Vulnerability Desk</h4>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">DPGNotes Cyber Operations &amp; Platform Defense Team</p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Official Security Email: <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color: var(--primary); font-weight: 600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Grievance &amp; Security Ticket: <a href="../support-contact-form.html" style="color: var(--primary); font-weight: 600;">Support &amp; Security Escalation Portal</a></p>
+              <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">SLA Commitment: Vulnerability reports acknowledged within 24 hours.</p>
+            </div>
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
               <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
-<a href="retention-policy.html" class="related-policy-chip"><i class="ri-database-2-line"></i> Data Retention</a>
-<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
-<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+              <a href="retention-policy.html" class="related-policy-chip"><i class="ri-database-2-line"></i> Data Retention</a>
+              <a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms &amp; Conditions</a>
             </div>
           </article>
         </div>
@@ -217,8 +308,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

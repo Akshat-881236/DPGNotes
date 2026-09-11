@@ -67,13 +67,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +93,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link active"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +110,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -137,88 +139,86 @@
 
           <article class="legal-article">
             
-            <h2>1. Preamble & Scope of Governance</h2>
-            <p>This Comprehensive Privacy Policy governs the collection, processing, storage, and retention of information by DPGNotes (an open student academic collaboration portal operated under Akshat Network Hub). We are firmly dedicated to preserving the digital privacy of every student, teacher, researcher, and educational volunteer who visits or interacts with our study repository.</p>
-            <p>Our data governance practices comply strictly with the <strong>Digital Personal Data Protection Act (DPDP Act) 2023</strong> (India), the <strong>Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011</strong>, the European Union <strong>General Data Protection Regulation (GDPR)</strong>, and the <strong>California Consumer Privacy Act (CCPA/CPRA)</strong>.</p>
+            <h2>1. Legal Preamble &amp; Scope of Data Governance</h2>
+            <p>This Comprehensive Privacy Policy ("Privacy Policy") governs the processing, collection, storage, and dissemination of personal data across <strong>DPGNotes</strong> (accessible via <code>https://dpgnotes.web.app</code>), engineered and maintained by <strong>Akshat Network Hub</strong>. This charter is formulated in strict compliance with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act, India)</strong>, the <strong>Information Technology Act, 2000 (Section 43A)</strong>, the <strong>European Union General Data Protection Regulation (Regulation EU 2016/679 - GDPR)</strong>, and the <strong>California Consumer Privacy Act as amended by the CPRA (CCPA/CPRA)</strong>.</p>
+            <p>DPGNotes is committed to preserving digital sovereignty, transparency, and data minimization. We guarantee that student lecture notes, exam papers, and educational resources remain accessible with minimal personal telemetry, and we explicitly pledge that student personal data is never sold, leased, or rented to commercial brokers.</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
-                <h4><i class="ri-shield-check-line"></i> DPDP Act 2023</h4>
-                <p>Strict lawful purpose limitation, explicit affirmative consent, and comprehensive data principal rights under Indian statutory law.</p>
+                <h4><i class="ri-shield-check-line"></i> DPDP Act 2023 Aligned</h4>
+                <p>Full statutory alignment with India's data protection architecture, notice transparency, and consent frameworks.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-global-line"></i> GDPR & CCPA</h4>
-                <p>Global privacy parity offering EU and California users right to access, right to rectification, and right to complete digital erasure.</p>
+                <h4><i class="ri-user-heart-line"></i> Zero Data Brokering</h4>
+                <p>Explicit, legally binding commitment that student information is never sold or commercialized to data aggregators.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-lock-2-line"></i> Zero Commercial Sale</h4>
-                <p>We pledge unconditionally that student data, email addresses, and reading habits are never commercialized, rented, or brokered.</p>
+                <h4><i class="ri-lock-password-line"></i> TLS 1.3 &amp; AES-256</h4>
+                <p>Enterprise cryptographic tunneling for transit and hardware-accelerated encryption for at-rest storage.</p>
               </div>
             </div>
 
-            <h2>2. Information We Collect & Collection Modalities</h2>
-            <p>DPGNotes follows a strict data minimization doctrine. We collect only the minimum quantum of data necessary to provide academic services, track daily fair-use generation limits, and safeguard the integrity of collaborative study notes.</p>
+            <h2>2. Categories of Information We Collect</h2>
+            <p>DPGNotes gathers information strictly necessary to facilitate authorized educational resource delivery, community verification, and platform security:</p>
             <ul>
-              <li><strong>Anonymous Guest Identifiers:</strong> Randomly generated cryptographic tokens stored locally in your browser to maintain daily fair-use quotas (such as assignment cover page downloads) without collecting identifying personal profiles.</li>
-              <li><strong>Authenticated Contributor Data:</strong> When you voluntarily register or log in via verified federated OAuth providers (such as Google Identity), we receive your basic public profile, including your verified email address, full display name, and avatar image. We do not obtain, store, or process your external account passwords.</li>
-              <li><strong>Academic Contribution Records:</strong> Digital notes, revision cheat-sheets, syllabus breakdowns, examination papers, and tags submitted by contributors. These contributions are published under academic community guidelines with public contributor attribution.</li>
-              <li><strong>Device & Interaction Telemetry:</strong> Anonymized HTTP network logs, approximate non-granular geolocation (country and state level only), browser user-agent tokens, referring search parameters, and interface interaction metrics used solely for performance optimization and abuse defense.</li>
+              <li><strong>Contributor Account Data:</strong> When students register or authenticate via federated Google OAuth, we collect full name, verified institutional email address, Google unique user ID (UID), and profile avatar URI.</li>
+              <li><strong>Academic Contribution Metadata:</strong> Academic course, semester, subject name, subject code, institutional department, and contributor biographical summaries associated with uploaded study papers.</li>
+              <li><strong>Guest Session Telemetry:</strong> Anonymized, rotating guest session identifiers, transient screen-time metrics (logged in 15-second intervals to compute resource difficulty), and search query terms.</li>
+              <li><strong>Technical Diagnostic Logs:</strong> Browser client user-agent strings, approximate geographic area at country/state level derived from IP headers, operating system version, and system error diagnostics for debugging.</li>
             </ul>
 
-            <h2>3. Purpose of Data Processing & Legal Grounds</h2>
-            <p>Every processing activity conducted by DPGNotes is grounded in legitimate educational interests or explicit user consent under Section 6 of the DPDP Act 2023 and Article 6 of the GDPR:</p>
+            <h2>3. Legal Bases for Data Processing</h2>
+            <p>In accordance with Section 6 of the DPDP Act 2023 and Article 6 of the GDPR, DPGNotes processes personal data strictly under established legal justifications:</p>
+            <ol>
+              <li><strong>Explicit Consent:</strong> Provided voluntarily by users upon signing up, uploading resources, or subscribing to academic notifications.</li>
+              <li><strong>Legitimate Academic Interest:</strong> Maintaining system integrity, preventing malicious script injections, and computing contributor leaderboard rankings.</li>
+              <li><strong>Statutory Compliance:</strong> Preserving intermediary security audit records mandated by the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021.</li>
+            </ol>
+
+            <h2>4. Advertising Transparency &amp; Google AdSense Compliance</h2>
+            <p>To sustain free educational access and server infrastructure, DPGNotes participates in the Google AdSense and publisher advertising program. We strictly comply with Google Publisher Policies:</p>
             <ul>
-              <li>To render, format, and deliver interactive lecture notes and PDF academic previews.</li>
-              <li>To enable contributors to author, revise, and categorize curriculum-aligned study materials.</li>
-              <li>To compute anonymous community engagement metrics (such as note likes and verified shares).</li>
-              <li>To prevent distributed denial-of-service (DDoS) disruptions, automated scraping, and unauthorized attempts to breach database nodes.</li>
-              <li>To display contextual educational partner banners and Google AdSense advertisements compliant with strict publisher standards.</li>
+              <li>Third-party vendors, including Google, utilize cookies (such as the DoubleClick cookie) to serve relevant advertisements based on visits to DPGNotes or other educational sites.</li>
+              <li>Users may opt out of personalized ad targeting at any time via <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a> or through the Network Advertising Initiative portal.</li>
+              <li>We enforce strict category filtering: all gambling, adult content, deceptive homework essay-writing mills, and unauthorized software downloads are blocked.</li>
+              <li>Native sponsored announcements in document viewers are strictly restricted and never rendered on pages divisible by 3 to prevent ad clustering.</li>
             </ul>
 
-            <h2>4. Third-Party Services & Advertising Disclosures</h2>
-            <p>DPGNotes displays contextual learning advertisements and collaborates with vetted technology partners. In compliance with Google AdSense Publisher Policies:</p>
+            <h2>5. Cryptographic Storage &amp; Database Architecture</h2>
+            <p>All database records are maintained within enterprise-grade encrypted cloud infrastructure featuring multi-region redundancy. All external communication is enforced through TLS 1.3 cryptographic tunnels. At-rest storage is safeguarded by AES-256 bit hardware-level encryption. Role-based access control (RBAC) ensures only authorized administrators can access operational audit trails.</p>
+
+            <h2>6. User Rights &amp; Data Principal Sovereignty</h2>
+            <p>DPGNotes empowers users with comprehensive data rights:</p>
             <ul>
-              <li>Third-party ad vendors, including Google, employ cookies (such as the DoubleClick cookie) to serve ads based on prior visits to our platform or other educational websites on the internet.</li>
-              <li>Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a> or through the Network Advertising Initiative opt-out portal.</li>
-              <li>We enforce strict content safety guidelines: advertisements depicting gambling, adult themes, deceptive academic dishonesty services, or malicious download redirects are prohibited and automatically blocked.</li>
+              <li><strong>Right to Access &amp; Summary:</strong> Request an electronic copy of all personal records, contribution history, and profile data held by the platform.</li>
+              <li><strong>Right to Correction:</strong> Edit or update inaccurate academic details, course designations, or biographical data via your Contributor Dashboard.</li>
+              <li><strong>Right to Erasure (Right to Be Forgotten):</strong> Permanently delete your account and all associated documents using the self-service Danger Zone tool or by emailing our Grievance Officer.</li>
+              <li><strong>Right to Grievance Redressal:</strong> Submit inquiries or complaints regarding privacy compliance with mandatory resolution within 30 calendar days.</li>
             </ul>
 
-            <h2>5. Data Storage, Cryptographic Protection & Cloud Architecture</h2>
-            <p>All user records, security violation logs, and published study resources are stored in encrypted cloud database infrastructure with multi-zone redundancy. Data in transit is protected using TLS 1.3 cryptographic tunnels, and data at rest is secured via AES-256 bit hardware-accelerated encryption.</p>
-            <p>Database access privileges are restricted via role-based access controls (RBAC) and automated validation rules. Administrative endpoints require cryptographically signed tokens with rotating secrets, preventing unauthorized database inspection.</p>
+            <h2>7. Protection of Minors &amp; Children's Privacy</h2>
+            <p>DPGNotes is designed for higher education and university students. In compliance with Section 9 of the DPDP Act 2023 and the Children's Online Privacy Protection Act (COPPA), we do not knowingly solicit or collect identifiable information from minors under the age of 13 without verifiable parental or school authorization.</p>
 
-            <h2>6. User Rights & Data Principal Privileges</h2>
-            <p>Regardless of your geographic location, DPGNotes grants you comprehensive sovereignty over your personal data:</p>
-            <ul>
-              <li><strong>Right to Access & Review:</strong> You may request an export of all personal data, contribution logs, and profile records linked to your account.</li>
-              <li><strong>Right to Correction & Updating:</strong> Contributors can update inaccurate academic records, biographical descriptions, and subject tags directly through their profile dashboard.</li>
-              <li><strong>Right to Erasure (The Right to Be Forgotten):</strong> You may permanently delete your account and all associated documents using the self-service Danger Zone panel or by submitting a formal erasure request to our Grievance Officer.</li>
-              <li><strong>Right to Withdraw Consent:</strong> You may withdraw consent for optional analytics or telemetry processing at any time through your browser settings without affecting core document reading features.</li>
-            </ul>
-
-            <h2>7. Protection of Minors & Academic Age Gate</h2>
-            <p>DPGNotes is an academic resource designed for university students, college scholars, and high school learners. We do not knowingly collect personal identifiable information from children under the age of 13 without verifiable parental or institutional consent, in adherence with COPPA and Section 9 of the DPDP Act 2023.</p>
-
-            <h2>8. Grievance Redressal & Data Protection Officer Contact</h2>
-            <p>In accordance with the Information Technology Act 2000 and the DPDP Act 2023, DPGNotes has designated an official Data Protection Officer and Grievance Redressal Officer. For inquiries, data audits, or dispute resolutions, contact us at:</p>
-            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:1.2rem; margin:1rem 0;">
-              <p style="margin:0 0 0.4rem 0;"><strong>Office of Data Protection &amp; Legal Governance</strong></p>
-              <p style="margin:0 0 0.4rem 0;">Akshat Network Hub &bull; DPGNotes Platform Administration</p>
-              <p style="margin:0 0 0.4rem 0;">Email: <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a> &bull; Response SLA: 48 Business Hours</p>
-              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Jurisdiction: Gurugram, Haryana, Republic of India</p>
+            <h2>8. Data Protection Officer &amp; Grievance Redressal Mechanism</h2>
+            <p>In adherence to the DPDP Act 2023 and Rule 3(2) of the IT Rules 2021, DPGNotes has appointed an official Data Protection Officer and Grievance Officer:</p>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.5rem; margin:1.5rem 0; line-height:1.7;">
+              <p style="margin:0 0 0.5rem 0; font-size:1.05rem; color:#fff;"><strong>Office of the Data Protection &amp; Grievance Officer</strong></p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Publisher &amp; Controller:</strong> Akshat Network Hub</p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Official Email:</strong> <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin:0 0 0.5rem 0;"><strong>Interactive Support Desk:</strong> <a href="../support-contact-form.html" style="color:#38bdf8; text-decoration:underline; font-weight:600;">DPGNotes Official Support &amp; Contact Desk ↗</a></p>
+              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Jurisdiction: Gurugram, Haryana, India &bull; Statutory Grievance Response SLA: 48 Business Hours</p>
             </div>
-        
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
-              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
-<a href="cookie-policy.html" class="related-policy-chip"><i class="bi bi-cookie"></i> Cookie Policy</a>
-<a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
-<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
-<a href="retention-policy.html" class="related-policy-chip"><i class="ri-database-2-line"></i> Data Retention</a>
-<a href="analytics-policy.html" class="related-policy-chip"><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms &amp; Conditions</a>
+              <a href="cookie-policy.html" class="related-policy-chip"><i class="bi bi-cookie"></i> Cookie Policy</a>
+              <a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
+              <a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+              <a href="retention-policy.html" class="related-policy-chip"><i class="ri-database-2-line"></i> Data Retention</a>
+              <a href="analytics-policy.html" class="related-policy-chip"><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a>
             </div>
           </article>
         </div>
@@ -246,8 +246,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

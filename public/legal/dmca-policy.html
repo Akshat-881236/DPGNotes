@@ -67,13 +67,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -108,7 +110,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -137,67 +139,94 @@
 
           <article class="legal-article">
             
-            <h2>1. Safe Harbor Framework & DMCA Alignment</h2>
-            <p>DPGNotes complies with the notice and takedown provisions of the <strong>Digital Millennium Copyright Act (17 U.S.C. § 512)</strong> ("DMCA"). As an online service provider hosting user-submitted educational content, DPGNotes maintains Safe Harbor protections by promptly investigating and remediating alleged intellectual property infringements.</p>
-            <p>Our designated copyright agent is prepared to process formal notices of claimed infringement and valid counter-notifications expeditiously.</p>
+            <h2>1. Safe Harbor Framework &amp; Statutory Background</h2>
+            <p>DPGNotes, an open educational resource platform developed and maintained by <strong>Akshat Network Hub</strong>, strictly adheres to the notice-and-takedown framework established by the <strong>Digital Millennium Copyright Act (Title 17, United States Code, Section 512)</strong> ("DMCA"), as well as the intermediary safe harbor provisions of <strong>Section 79 of the Information Technology Act 2000 (India)</strong> and Rule 3(1)(d) of the <strong>Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules 2021</strong>.</p>
+            <p>As an online service provider facilitating peer-to-peer sharing of collegiate lecture summaries, sessional question paper analyses, and laboratory manuals, DPGNotes maintains safe harbor immunity by operating a transparent, expeditious, and non-discriminatory protocol to address copyright infringement claims submitted by verified intellectual property rights holders.</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
-                <h4><i class="ri-shield-user-line"></i> Designated Agent</h4>
-                <p>Direct electronic contact with our platform legal officer for immediate triage and processing.</p>
+                <h4><i class="ri-shield-user-line"></i> Designated DMCA Agent</h4>
+                <p>Direct electronic and formal dispatch channel with our platform Legal Officer for rapid intake and verified provenance evaluation.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-time-line"></i> 48-Hour Takedown</h4>
-                <p>Expedited review and temporary content quarantine executed within two business days.</p>
+                <h4><i class="ri-time-line"></i> 48-Hour Takedown SLA</h4>
+                <p>Swift administrative triage and temporary quarantine of reported documents executed within two business days of valid notice.</p>
               </div>
               <div class="compliance-card">
-                <h4><i class="ri-user-unfollow-line"></i> Repeat Infringers</h4>
-                <p>Strict policy terminating accounts of contributors with repeated substantiated copyright strikes.</p>
+                <h4><i class="ri-user-unfollow-line"></i> Repeat Infringer Rules</h4>
+                <p>Zero-tolerance disciplinary policy mandating permanent termination of accounts subject to repeated substantiated notices.</p>
               </div>
             </div>
 
-            <h2>2. Submitting a Valid DMCA Notice of Infringement</h2>
-            <p>To ensure valid legal standing under 17 U.S.C. § 512(c)(3), your written DMCA notice must contain the following statutory components:</p>
+            <h2>2. Scope of Educational Hosting &amp; Contributor Obligations</h2>
+            <p>DPGNotes is dedicated to fostering academic collaboration and accessibility. Under our platform terms, registered student contributors explicitly warrant and represent that:</p>
+            <ol>
+              <li>All uploaded lecture notes, study materials, and practical solutions represent their own original analysis, commentary, or legitimate classroom syntheses created independently.</li>
+              <li>No whole commercial textbooks, copyrighted publisher question test-banks, proprietary institutional software code, or unauthorized examination keys are published on the platform.</li>
+              <li>Any brief excerpts included from academic sources constitute non-infringing educational fair use under <strong>Section 52 of the Indian Copyright Act 1957</strong> and <strong>17 U.S.C. § 107</strong>, credited with appropriate citations.</li>
+            </ol>
+            <p>Notwithstanding contributor warranties, DPGNotes respects the legitimate proprietary rights of authors, publishing houses, faculty members, and academic institutions worldwide, and acts decisively upon notice of infringement.</p>
+
+            <h2>3. Mandatory Requirements for a Valid DMCA Notice</h2>
+            <p>To establish legal validity under 17 U.S.C. § 512(c)(3), an infringement notification must be provided in writing to our Designated Agent and contain substantially the following items:</p>
             <ul>
-              <li>A physical or electronic signature of a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.</li>
-              <li>Identification of the copyrighted work claimed to have been infringed, or a representative list if multiple works are involved.</li>
-              <li>Identification of the material claimed to be infringing and information reasonably sufficient to permit DPGNotes to locate the material (specifically direct page URLs or resource IDs).</li>
-              <li>Information reasonably sufficient to permit DPGNotes to contact you, such as an address, telephone number, and email address.</li>
-              <li>A statement that you have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law.</li>
-              <li>A statement that the information in the notification is accurate, and under penalty of perjury, that you are authorized to act on behalf of the copyright owner.</li>
+              <li><strong>Physical or Electronic Signature:</strong> A physical or digital signature of a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.</li>
+              <li><strong>Identification of the Copyrighted Work:</strong> Precise description and identification of the original copyrighted work claimed to have been infringed, or if multiple works at a single site are covered, a representative catalog of such works.</li>
+              <li><strong>Identification of Infringing Material:</strong> Clear identification of the specific file, note, or document alleged to be infringing, accompanied by direct, verifiable URLs on DPGNotes (e.g., <code>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?docId=...</code>) or unique resource identifiers.</li>
+              <li><strong>Contact Information of the Claimant:</strong> Sufficiently detailed contact data allowing our compliance team to communicate with you, including legal name, organization, mailing address, telephone number, and official email address.</li>
+              <li><strong>Good Faith Statement:</strong> A formal statement that: <em>"I have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law."</em></li>
+              <li><strong>Penalty of Perjury Certification:</strong> A formal certification statement that: <em>"The information in this notification is accurate, and under penalty of perjury, that I am the owner, or authorized to act on behalf of the owner, of an exclusive right that is allegedly infringed."</em></li>
             </ul>
 
-            <h2>3. Counter-Notification Procedure</h2>
-            <p>If you are a student contributor whose shared notes were removed or disabled as a result of a DMCA notice, and you believe the removal occurred due to mistake or misidentification (for instance, the material represents original notes or permissible fair use), you may submit a formal Counter-Notification under Section 512(g)(3).</p>
-            <p>A valid counter-notification must include:</p>
+            <h2>4. Takedown Protocol &amp; Content Quarantine Procedure</h2>
+            <p>Upon receiving an actionable DMCA notice compliant with statutory standards, DPGNotes adheres to the following workflow:</p>
+            <ol>
+              <li><strong>Immediate Acknowledgment:</strong> Our compliance team acknowledges receipt within 24 hours and issues a unique Case Tracking Token.</li>
+              <li><strong>Material Quarantine:</strong> The contested resource is immediately deactivated and removed from public access, indexing feeds, and search caches within 48 business hours.</li>
+              <li><strong>Contributor Notification:</strong> The contributor who uploaded the material is promptly alerted via registered email with a copy of the notice (redacted of personal claimant data if legally permitted) and instructed on their statutory counter-notification rights.</li>
+            </ol>
+
+            <h2>5. Contributor Counter-Notification &amp; Dispute Redressal</h2>
+            <p>If a student contributor believes in good faith that their material was removed or disabled as a result of mistake, misidentification, or legitimate fair use, they may submit a formal Counter-Notification pursuant to <strong>17 U.S.C. § 512(g)(2)-(3)</strong>.</p>
+            <p>A legally sufficient Counter-Notification must include:</p>
             <ul>
-              <li>Your physical or electronic signature.</li>
-              <li>Identification of the material that was removed and the URL where it appeared before removal.</li>
-              <li>A statement under penalty of perjury that you have a good faith belief that the material was removed or disabled as a result of mistake or misidentification.</li>
-              <li>Your full legal name, physical address, telephone number, and consent to the jurisdiction of the federal district court.</li>
+              <li>The contributor's physical or electronic signature.</li>
+              <li>Identification of the material that has been removed or disabled, and the location/URL at which it previously appeared.</li>
+              <li>A statement under penalty of perjury: <em>"I declare under penalty of perjury that I have a good faith belief that the material was removed or disabled as a result of mistake or misidentification of the material to be removed or disabled."</em></li>
+              <li>The contributor's full legal name, permanent address, telephone number, and student identity credentials.</li>
+              <li>Consent to the jurisdiction of the competent court of law for the judicial district in which the user is located, or if outside the United States, to any judicial jurisdiction where DPGNotes may be found, and agreement to accept service of process from the original claimant.</li>
             </ul>
-            <p>Upon receipt of a valid counter-notice, DPGNotes will transmit a copy to the original complaining party. If no legal court action is initiated within 10 to 14 business days, the disabled content will be restored.</p>
+            <p>Upon receiving a valid Counter-Notification, DPGNotes forwards a duplicate copy to the original complaining party. If the claimant does not notify DPGNotes within <strong>10 to 14 business days</strong> that they have filed a court action seeking to restrain the contributor from engaging in the infringing activity, DPGNotes is statutorily authorized to restore the removed content.</p>
 
-            <h2>4. Repeat Infringer Policy</h2>
-            <p>In adherence to 17 U.S.C. § 512(i)(1)(A), DPGNotes enforces a strict repeat infringer policy under DRASA Tier 4 regulations. Accounts subject to multiple substantiated copyright infringement claims will have their contributor privileges permanently revoked and their IP addresses banned from the platform.</p>
+            <h2>6. Repeat Infringer Policy &amp; Account Sanctions</h2>
+            <p>In accordance with 17 U.S.C. § 512(i)(1)(A) and our DRASA regulations, DPGNotes enforces a transparent <strong>Three-Strike Policy</strong> for contributors:</p>
+            <ul>
+              <li><strong>Strike 1 (Informational Warning):</strong> Removal of the disputed material, educational advisory on academic integrity, and mandatory acknowledgment of copyright policies.</li>
+              <li><strong>Strike 2 (Temporary Restriction):</strong> Removal of disputed content, 30-day suspension of publishing permissions, and review of all prior submissions.</li>
+              <li><strong>Strike 3 (Permanent Termination):</strong> Immediate revocation of account access, permanent deletion of author profile, and referral of systemic abuse to institutional authorities.</li>
+            </ul>
 
-            <h2>5. Designated DMCA Agent Contact</h2>
-            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:1.2rem; margin:1rem 0;">
-              <p style="margin:0 0 0.4rem 0;"><strong>Designated DMCA Copyright Agent</strong></p>
-              <p style="margin:0 0 0.4rem 0;">DPGNotes Legal &amp; Intellectual Property Division</p>
-              <p style="margin:0 0 0.4rem 0;">Email: <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a> &bull; Subject: <em>"DMCA Infringement Notice"</em></p>
-              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Response Commitment: Acknowledgment within 24 hours; Takedown triage within 48 hours.</p>
+            <h2>7. Misrepresentation &amp; Fraudulent Claims (17 U.S.C. § 512(f))</h2>
+            <p>Claimants should be aware that under <strong>17 U.S.C. § 512(f)</strong>, any person who knowingly materially misrepresents that material or activity is infringing may be held liable for statutory damages, including court costs and attorney's fees incurred by the alleged infringer or by DPGNotes. DPGNotes reserves the right to pursue civil remedies against bad-faith notices designed to stifle legitimate educational discourse.</p>
+
+            <h2>8. Designated DMCA Agent &amp; Grievance Helpdesk</h2>
+            <p>Formal notices of copyright infringement and counter-notifications must be dispatched directly to our Designated Agent:</p>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.5rem; margin:1.5rem 0; line-height:1.7;">
+              <p style="margin:0 0 0.5rem 0; font-size:1.05rem; color:#fff;"><strong>DPGNotes Designated DMCA Copyright Agent</strong></p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Publisher:</strong> Akshat Network Hub &bull; Intellectual Property &amp; Legal Compliance</p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Official Email:</strong> <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin:0 0 0.5rem 0;"><strong>Online Redressal Portal:</strong> <a href="../support-contact-form.html" style="color:#38bdf8; text-decoration:underline; font-weight:600;">DPGNotes Support &amp; Contact Desk ↗</a></p>
+              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Expected Response Time: Acknowledgment within 24 hours; Statutory quarantine executed within 48 business hours.</p>
             </div>
-        
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
               <a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
-<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
-<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
-<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms &amp; Conditions</a>
+              <a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
+              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
             </div>
           </article>
         </div>
@@ -225,8 +254,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

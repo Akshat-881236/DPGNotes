@@ -67,13 +67,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +93,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link active"><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +110,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -116,7 +118,7 @@
               <span class="badge-dot"></span>
               <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-            <h1 class="document-title">DPGNotes Comprehensive Copyright Policy</h1>
+            <h1 class="document-title">DPGNotes Comprehensive Copyright &amp; IP Policy</h1>
             <div class="document-meta">
               <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
               <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-CPYR-2026-V3.2</span>
@@ -137,9 +139,9 @@
 
           <article class="legal-article">
             
-            <h2>1. Commitment to Intellectual Property & Academic Fair Use</h2>
-            <p>DPGNotes respects the intellectual property rights of authors, educators, academic publishers, and researchers. Our platform operate in strict adherence to the <strong>Copyright Act, 1957</strong> (India) and international intellectual property treaties, including the Berne Convention and TRIPS Agreement.</p>
-            <p>Our educational repository provides non-commercial peer-to-peer study notes synthesized under statutory fair-dealing provisions.</p>
+            <h2>1. Commitment to Intellectual Property &amp; Academic Fair Use</h2>
+            <p>DPGNotes, engineered and operated by <strong>Akshat Network Hub</strong>, upholds rigorous standards of academic integrity and intellectual property compliance. The platform functions strictly under the framework of the <strong>Indian Copyright Act, 1957</strong>, the <strong>Information Technology Act, 2000</strong>, and international copyright conventions including the <strong>Berne Convention for the Protection of Literary and Artistic Works</strong> and the <strong>TRIPS Agreement</strong>.</p>
+            <p>DPGNotes is designed as an open academic repository facilitating legitimate peer-to-peer knowledge exchange. All educational materials hosted on our servers are required to be synthesized notes, classroom formula compilations, research outlines, or student analysis created under recognized statutory fair dealing doctrines.</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
@@ -156,42 +158,62 @@
               </div>
             </div>
 
-            <h2>2. Statutory Fair Dealing under Indian Law</h2>
-            <p>In accordance with <strong>Section 52(1)(a)(i) of the Indian Copyright Act, 1957</strong>, the following educational acts do not constitute an infringement of copyright:</p>
+            <h2>2. Statutory Fair Dealing under Indian Law (Section 52)</h2>
+            <p>Under <strong>Section 52(1)(a)(i) of the Indian Copyright Act, 1957</strong>, the following activities are statutorily recognized as non-infringing fair dealings:</p>
+            <ol>
+              <li>A fair dealing with any work for the purpose of private or personal use, including academic research, exam preparation, and private study.</li>
+              <li>The synthesis, summarization, and independent commentary on lecture topics, pedagogical textbooks, and syllabus concepts conducted by students or educators.</li>
+              <li>The reproduction or quotation of short illustrative excerpts accompanied by an explicit academic citation attributing authorship and publishing source.</li>
+              <li>The reproduction of examination questions set by universities or autonomous boards for academic evaluation and historical analysis.</li>
+            </ol>
+
+            <h2>3. Contributor Authorship &amp; Creative Commons Licensing</h2>
+            <p>When student authors and educators upload notes to DPGNotes, they retain the moral and original copyright to their independently drafted pedagogical analyses. By submitting content, contributors grant DPGNotes a non-exclusive, worldwide, royalty-free license to host, display, index, and format the materials for educational access.</p>
+            <p>Unless expressly specified otherwise by the contributor, all shared educational resources are distributed under the <strong>Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)</strong>. Users are free to share and adapt the material for personal and academic purposes, provided proper credit is given, no commercial profit is derived, and new creations are distributed under identical terms.</p>
+
+            <h2>4. Strictly Prohibited Submissions &amp; Piracy Restrictions</h2>
+            <p>DPGNotes enforces an absolute prohibition against uploading or sharing the following materials:</p>
             <ul>
-              <li>A fair dealing with any work for the purpose of private or personal use, including educational research and study.</li>
-              <li>The making of synthesized lecture notes, student revision guides, and summary outlines by scholars for peer learning.</li>
-              <li>The quotation and academic citation of brief excerpts accompanied by clear identification of the original author and publication source.</li>
+              <li><strong>Scanned Commercial Textbooks:</strong> Complete or substantial scans of commercial academic textbooks, commercial study guides, or copyrighted monographs.</li>
+              <li><strong>Proprietary Publisher Test Banks:</strong> Restricted question banks, answer keys, or paid solution manuals intended exclusively for instructors.</li>
+              <li><strong>Unauthorized Institutional Documents:</strong> Confidential university administrative papers, leaked examination question drafts, or proprietary institutional curriculum assets.</li>
+              <li><strong>Commercial Software Code:</strong> Proprietary binary software, cracked tools, or proprietary code repositories exceeding fair instructional excerpts.</li>
             </ul>
 
-            <h2>3. Contributor Guidelines for Copyright Compliance</h2>
-            <p>Contributors must strictly observe the following rules prior to publishing materials on DPGNotes:</p>
+            <h2>5. Attribution Standards for Academic Submissions</h2>
+            <p>In accordance with academic publishing standards, contributors must ensure proper attribution whenever textbook diagrams, authoritative definitions, or mathematical models are referenced. Citations should include the author name, book title, edition, and publication year. Failure to provide academic attribution may lead to administrative content review or submission rejection.</p>
+
+            <h2>6. Formal Copyright Infringement Notice Protocol</h2>
+            <p>If you are a copyright owner, author, or authorized licensing representative and believe that any resource on DPGNotes infringes upon your exclusive copyright, you may submit a formal Notice of Infringement containing:</p>
             <ul>
-              <li><strong>Original Authorship:</strong> Study notes must represent original synthesis, personal summaries, and explanatory prose created by the contributor.</li>
-              <li><strong>No Scanned Commercial Volumes:</strong> Do not upload verbatim scans or digital copies of commercially available textbooks, reference handbooks, or copyrighted question banks.</li>
-              <li><strong>Attribution Requirement:</strong> When drawing definitions, formulas, or academic diagrams from textbooks, proper academic attribution must be included.</li>
+              <li>Full legal name, organization/institution, physical address, telephone number, and official email address of the copyright claimant.</li>
+              <li>Accurate identification of the copyrighted work claimed to have been infringed (including title, ISBN, or copyright registration certificate).</li>
+              <li>Direct URL or Resource ID of the allegedly infringing document on DPGNotes (e.g., <code>https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?docId=...</code>).</li>
+              <li>A statement that you have a good faith belief that the contested use is not authorized by the copyright owner, its agent, or statutory fair use provisions.</li>
+              <li>A statement, under penalty of perjury, that the notification is accurate and that you are authorized to act on behalf of the exclusive copyright owner.</li>
             </ul>
 
-            <h2>4. Copyright Infringement Notice & Removal Protocol</h2>
-            <p>If you are a copyright holder or an authorized licensing representative who believes that material hosted on DPGNotes infringes upon your exclusive copyright, please submit a formal notification containing:</p>
-            <ul>
-              <li>Identification of the copyrighted work claimed to have been infringed, including title, ISBN, or online source URL.</li>
-              <li>The exact URL or resource ID on DPGNotes where the allegedly infringing material is hosted.</li>
-              <li>Your contact details, including full legal name, physical address, telephone number, and official email address.</li>
-              <li>A statement of good faith belief that the disputed use is not authorized by the copyright owner, its agent, or statutory law.</li>
-              <li>A statement made under penalty of perjury that the information in the notification is accurate and that you are authorized to act on behalf of the owner.</li>
-            </ul>
-            <p>Submit all infringement notices to our designated agent at <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a>. Removals are executed within 48 hours of verification.</p>
-        
+            <h2>7. Takedown Timelines &amp; Enforcement under DRASA</h2>
+            <p>Upon receiving a bona fide notification, DPGNotes initiates prompt content review and deactivates access to the contested material within <strong>48 business hours</strong>. Persistent copyright violations by any contributor trigger progressive sanctions under the <strong>DPGNotes Regulations &amp; Suspension Act (DRASA)</strong>, culminating in permanent revocation of uploading privileges and removal of contributor badges.</p>
+
+            <h2>8. Grievance Officer &amp; Copyright Compliance Contact</h2>
+            <p>All copyright inquiries, formal statutory notices, and licensing questions should be directed to our dedicated compliance team:</p>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.5rem; margin:1.5rem 0; line-height:1.7;">
+              <p style="margin:0 0 0.5rem 0; font-size:1.05rem; color:#fff;"><strong>DPGNotes Intellectual Property &amp; Copyright Division</strong></p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Publisher:</strong> Akshat Network Hub &bull; Compliance &amp; Academic Affairs</p>
+              <p style="margin:0 0 0.3rem 0;"><strong>Official Email:</strong> <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin:0 0 0.5rem 0;"><strong>Grievance &amp; Appeal Form:</strong> <a href="../support-contact-form.html" style="color:#38bdf8; text-decoration:underline; font-weight:600;">DPGNotes Support &amp; Contact Desk ↗</a></p>
+              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Processing Window: Statutory acknowledgment within 24 hours; Quarantine execution within 48 hours.</p>
+            </div>
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
               <a href="dmca-policy.html" class="related-policy-chip"><i class="ri-file-shield-2-line"></i> DMCA Policy</a>
-<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
-<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
-<a href="disclaimer.html" class="related-policy-chip"><i class="ri-alert-line"></i> Legal Disclaimer</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms &amp; Conditions</a>
+              <a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
+              <a href="disclaimer.html" class="related-policy-chip"><i class="ri-alert-line"></i> Legal Disclaimer</a>
             </div>
           </article>
         </div>
@@ -219,8 +241,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;

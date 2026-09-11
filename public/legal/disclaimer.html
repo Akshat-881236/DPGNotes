@@ -67,13 +67,15 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
-        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="legal-layout-container">
     <!-- Sidebar Navigation -->
@@ -91,14 +93,14 @@
           <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
-            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
+            <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
             <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
             <li><a href="disclaimer.html" class="nav-link active"><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
             <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
-            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
+            <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
             <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
             <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
@@ -108,7 +110,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-main">
+    <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
           <header class="document-header">
@@ -116,7 +118,7 @@
               <span class="badge-dot"></span>
               <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-            <h1 class="document-title">DPGNotes Legal & Academic Disclaimer</h1>
+            <h1 class="document-title">DPGNotes Legal &amp; Academic Disclaimer</h1>
             <div class="document-meta">
               <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
               <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-DISC-2026-V3.2</span>
@@ -137,50 +139,97 @@
 
           <article class="legal-article">
             
-            <h2>1. Academic Collaboration & Educational Purpose</h2>
-            <p>DPGNotes is an open, student-led academic collaboration platform operated under Akshat Network Hub. All lecture notes, formula cheat-sheets, syllabus breakdowns, and examination review guides shared on this portal are prepared voluntarily by student contributors and academic volunteers solely for non-commercial educational assistance.</p>
-            <p>This comprehensive Disclaimer articulates the boundaries of our hosted educational materials and clarifies institutional affiliations.</p>
+            <h2>1. Academic Collaboration &amp; Pedagogical Purpose</h2>
+            <p>DPGNotes is an open, student-driven academic collaboration initiative operated under Akshat Network Hub. All lecture notes, formula cheat-sheets, syllabus breakdowns, solved previous-year examination compilations, and model laboratory cover templates hosted across this platform are authored, uploaded, and curated voluntarily by student contributors and academic volunteers solely for supplementary educational assistance and personal study guidance.</p>
+            <p>This comprehensive Legal &amp; Academic Disclaimer delineates the precise operational boundaries, non-warranty principles, non-affiliation guarantees, and statutory liabilities governing your access to and utilization of DPGNotes resources.</p>
 
             <div class="compliance-grid">
               <div class="compliance-card">
                 <h4><i class="ri-file-text-line"></i> Peer Summaries</h4>
-                <p>Materials reflect student lecture notes and peer summaries, not official university-authorized textbooks or grading rubrics.</p>
+                <p>Materials reflect student lecture notes and peer study summaries, not authorized university textbooks or grading rubrics.</p>
               </div>
               <div class="compliance-card">
                 <h4><i class="ri-government-line"></i> Non-Affiliation</h4>
-                <p>No official institutional sponsorship or endorsement by universities, government departments, or commercial publishers.</p>
+                <p>No institutional partnership or official endorsement exists with universities, educational boards, or publishers.</p>
               </div>
               <div class="compliance-card">
                 <h4><i class="ri-compass-3-line"></i> Independent Verification</h4>
-                <p>Students must cross-check revision notes against official syllabus guidelines published by their respective universities.</p>
+                <p>Students must cross-examine all notes against official university syllabus circulars and faculty guidelines.</p>
               </div>
             </div>
 
-            <h2>2. Syllabus Discrepancies & Independent Cross-Verification</h2>
-            <p>University academic curricula, course syllabi, recommended textbook editions, and grading structures undergo periodic revisions across academic sessions and university boards (including Maharshi Dayanand University Rohtak, Gurugram University, Kurukshetra University, and Delhi University).</p>
-            <p>While our student editorial team and automated verification algorithms strive to ensure academic fidelity, DPGNotes cannot guarantee that hosted notes reflect recent mid-semester syllabus amendments. Users are strongly urged to cross-verify all study notes against official university notifications, department handouts, and prescribed textbooks before examinations.</p>
+            <h2>2. Syllabus Discrepancies &amp; University Board Variations</h2>
+            <p>Higher education curricula, course structures, prescribed reading lists, and semester evaluation schemes are subject to frequent revisions by university academic councils and state statutory boards (including, but not limited to, Maharshi Dayanand University Rohtak, Gurugram University, Kurukshetra University, Chaudhary Charan Singh University, Guru Gobind Singh Indraprastha University, and Delhi University).</p>
+            <p>While our community editorial desk and peer verification volunteers strive to ensure academic fidelity, <strong>DPGNotes does not warrant or guarantee that hosted documents represent the most updated version of any university curriculum</strong>. Mid-session syllabus updates, elective paper substitutions, and ordinance amendments may render certain study guides incomplete or outdated. Students bear sole responsibility for verifying their study curriculum against official university notices, department handouts, and faculty instructions before sitting for university examinations.</p>
 
-            <h2>3. No Institutional Affiliation or Official Endorsement</h2>
-            <p>Reference to any university, college, educational board, professor, department head, or commercial textbook publisher on DPGNotes is made strictly for descriptive, educational, and categorization purposes. Such references do not imply or constitute official endorsement, institutional sponsorship, or contractual partnership between DPGNotes and said entities, unless explicitly articulated.</p>
+            <h2>3. Categorical Institutional Non-Affiliation &amp; Fair Use Identification</h2>
+            <p>Any reference appearing on DPGNotes to specific universities, colleges, academic faculties, examination boards, department names, course codes (e.g., BCA, B.Tech, BBA, B.Com, MBA, MCA), or published textbook titles is made strictly for <strong>descriptive, educational, and navigational identification</strong>. Such references do not constitute, indicate, or imply:</p>
+            <ul>
+              <li>Official sponsorship, affiliation, certification, or sanction by any mentioned educational board or university administration.</li>
+              <li>An official endorsement by university department heads, professors, lecturers, or academic councils.</li>
+              <li>Official publication status: DPGNotes is an independent collaborative web portal and does not act as an official university publication repository.</li>
+            </ul>
+            <p>All registered trademarks, university crests, acronyms, and institution names mentioned on the platform remain the intellectual property of their respective trademark proprietors.</p>
 
-            <h2>4. AI Knowledge Assistant & Fact-Checking Disclaimer</h2>
-            <p>Our platform incorporates artificial intelligence tools for real-time tag standardization, spelling verification, and academic content assistance. While these algorithms utilize modern natural language processing, automated suggestions may occasionally contain factual nuances or typographical variations. Students must exercise scholarly discernment before incorporating automated suggestions into academic submissions.</p>
+            <h2>4. Examination Performance &amp; Scholastic Non-Warranty</h2>
+            <p>Educational outcomes depend fundamentally upon individual scholastic effort, classroom attendance, faculty instruction, textbook study, and continuous laboratory practice. DPGNotes provides all study guides, formula sheets, code snippets, and review papers on an <strong>"AS IS" and "AS AVAILABLE"</strong> basis, without warranties of any kind, whether express, implied, or statutory.</p>
+            <p>DPGNotes, Akshat Network Hub, its administrators, contributors, and infrastructure providers expressly disclaim any guarantee that reliance on materials hosted on this portal will result in academic success, passing grades, semester honours, university ranks, or successful job placement. Under no circumstances shall DPGNotes be held accountable for any academic failure, mark deduction, disciplinary hearing, or scholastic reprimand.</p>
 
-            <h2>5. External Links & Third-Party Endpoints</h2>
-            <p>DPGNotes contains outbound hyperlinks to external academic endpoints, including DigiIndia Student Search Engine, YouTube video lectures, GitHub source repositories, and cloud document drives. DPGNotes holds no control over, and assumes no liability for, the content, privacy standards, or uptime of third-party web destinations.</p>
+            <h2>5. Intermediary Status Under Section 79 of the Information Technology Act</h2>
+            <p>DPGNotes functions as an academic content intermediary under Section 79 of the <strong>Information Technology Act, 2000</strong> (and the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021). Our servers provide technical transmission, indexing, and storage facilities for content contributed by independent student volunteers.</p>
+            <p>In our capacity as an intermediary:</p>
+            <ul>
+              <li>We do not initiate the technical transmission of third-party user uploads, select the recipients, or modify academic notes without author consent.</li>
+              <li>We observe statutory due diligence and maintain an expedited notice-and-takedown mechanism. If any hosted document infringes upon third-party intellectual property or institutional confidentiality, rights holders may submit a formal takedown request under our <a href="dmca-policy.html">DMCA Policy</a> or <a href="copyright-policy.html">Copyright Policy</a>.</li>
+            </ul>
 
-            <h2>6. Limitation of Academic Liability</h2>
-            <p>Under no circumstances shall DPGNotes, Akshat Network Hub, its developers, or its student contributors be held liable for any academic outcomes, loss of marks, exam disqualifications, or scholastic consequences resulting from reliance on notes hosted on this portal.</p>
-        
+            <h2>6. AI Knowledge Assistants &amp; Algorithmic Fact-Checking</h2>
+            <p>Our platform incorporates client-side search indexing and artificial intelligence modules to assist students in discovering related study topics, standardizing taxonomy tags, and summarizing lengthy topics. Users must acknowledge that:</p>
+            <ul>
+              <li>Algorithmic synthesis and AI-assisted summaries are probabilistic and may contain nuanced factual oversights, mathematical rounding discrepancies, or synthesized approximations (colloquially known as hallucinations).</li>
+              <li>Automated keyword tagging does not constitute faculty peer-review.</li>
+              <li>Scholars and students must cross-reference automated code examples and theoretical theorems against authoritative academic textbooks before submitting assignments.</li>
+            </ul>
+
+            <h2>7. Cover Page Generators &amp; Practical Utility Boundaries</h2>
+            <p>DPGNotes offers automated document formatting utilities, including the <strong>Assignment Cover Page Generator</strong> and the <strong>Practical Cover Page Generator</strong>. These tools are provided solely to assist collegiate students in standardizing font hierarchies, document margins, and submission aesthetics for college assignments.</p>
+            <p>Students are explicitly cautioned that:</p>
+            <ul>
+              <li>Using our cover page generators does not guarantee compliance with departmental formatting rules that mandate specific physical stamping or custom university stationery.</li>
+              <li>The generator tools must never be utilized to submit fraudulent academic declarations, misrepresent student identity, or commit plagiarism.</li>
+            </ul>
+
+            <h2>8. Professional STEM, Legal, Medical &amp; Financial Disclaimers</h2>
+            <p>Notes hosted within specialized academic modules (including Computer Science, Engineering, Business Administration, Accounting, and Legal Studies) are meant exclusively for classroom educational review:</p>
+            <ul>
+              <li><strong>Engineering &amp; Code Modules:</strong> Code snippets, circuit diagrams, and system designs are pedagogical examples. They are not engineered for mission-critical, life-safety, or enterprise commercial production environments.</li>
+              <li><strong>Accounting &amp; Taxation Notes:</strong> Solved balance sheets and taxation illustrations do not constitute certified chartered accountancy or professional financial advisory.</li>
+              <li><strong>Legal &amp; Jurisprudence Summaries:</strong> Case briefs and statutory analyses are student study aids and do not constitute formal legal counsel or advocate advice.</li>
+            </ul>
+
+            <h2>9. External Hyperlinks &amp; Third-Party Services</h2>
+            <p>Our study directories may contain hyperlinks directing students to external repositories, digital textbook archives, open-source repositories (e.g., GitHub), or educational video channels (e.g., YouTube). Such external destinations are independent entities. DPGNotes does not control, supervise, verify, or assume legal liability for the safety, accuracy, privacy practices, or content of third-party domains. Navigating external links occurs solely at your own discretion, governed by our <a href="links-policy.html">External Links Policy</a>.</p>
+
+            <h2>10. Limitation of Liability &amp; Redressal Escalation</h2>
+            <p>To the maximum extent permissible under applicable law, DPGNotes, Akshat Network Hub, its founding administrators, and volunteer editors shall not be liable for any direct, indirect, punitive, incidental, special, consequential, or exemplary damages arising out of the use, inability to use, or reliance on academic content hosted on this portal.</p>
+            <p>If you identify an egregious factual inaccuracy, copyrighted material published without authorization, or an institutional conflict, please contact our Editorial and Legal Compliance Board:</p>
+
+            <div style="background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--primary); padding: 1.2rem; border-radius: 8px; margin: 2rem 0;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #fff; font-size: 1.05rem;"><i class="ri-scales-3-line" style="color: var(--primary);"></i> Academic Compliance &amp; Editorial Board</h4>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">DPGNotes Academic Governance Desk</p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Official Redressal Email: <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color: var(--primary); font-weight: 600;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Support &amp; Grievance Redressal Form: <a href="../support-contact-form.html" style="color: var(--primary); font-weight: 600;">Submit Academic Dispute Ticket</a></p>
+              <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">Response SLA: Review and preliminary assessment initiated within 48 business hours.</p>
+            </div>
 
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
             <div class="related-policies-grid">
-              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
-<a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
-<a href="links-policy.html" class="related-policy-chip"><i class="ri-external-link-line"></i> External Links</a>
-<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms &amp; Conditions</a>
+              <a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
+              <a href="links-policy.html" class="related-policy-chip"><i class="ri-external-link-line"></i> External Links</a>
+              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
             </div>
           </article>
         </div>
@@ -208,8 +257,20 @@
     }
     const mobBtn = document.getElementById('mobileMenuBtn');
     const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (mobBtn && sbar) {
-      mobBtn.addEventListener('click', () => { sbar.classList.toggle('active'); mobBtn.classList.toggle('active'); });
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
     }
     window.addEventListener('scroll', () => {
       const h = document.documentElement, b = document.body;
