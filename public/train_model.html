@@ -1490,14 +1490,25 @@
         target.innerHTML = '';
         target.appendChild(el);
       } else {
+        const parsed = (typeof window.extractNoteTitleAndBody === 'function')
+          ? window.extractNoteTitleAndBody(htmlVal, 'Study Note')
+          : (function(h) {
+              const m = (h || '').match(/<h1[\s>]([\s\S]*?)<\/h1>/i);
+              return { 
+                title: m ? m[1].replace(/<[^>]+>/g, '').trim() : 'Study Note', 
+                body: (h || '').replace(/<h1[\s>][\s\S]*?<\/h1>/gi, '') 
+              };
+            })(htmlVal);
         target.innerHTML = `
-          <div class="added-notes" type="${rend}" page-id="${mockNote.pageId}" id="${mockNote.elementId}">
+          <div class="added-notes" type="${rend}" page-id="${mockNote.pageId}" id="${mockNote.elementId}" role="article">
             <div class="added-notes-header">
-              <div class="added-notes-badge">
-                <span>Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})</span>
+              <div class="added-notes-header-top">
+                <div class="added-notes-title-wrap">
+                  <h1 class="added-notes-title">${parsed.title}</h1>
+                </div>
               </div>
             </div>
-            <div class="added-notes-body">${htmlVal}</div>
+            <div class="added-notes-body">${parsed.body}</div>
           </div>
         `;
       }

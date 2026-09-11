@@ -20,15 +20,15 @@
         width: 100%;
         max-width: 860px;
         margin: 2rem auto;
-        padding: 1.6rem 2rem;
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 27, 75, 0.9));
-        border: 1px solid rgba(99, 102, 241, 0.35);
+        padding: 1.75rem 2rem;
+        background: linear-gradient(145deg, #0b0f19 0%, #131728 50%, #1e1b4b 100%);
+        border: 1px solid rgba(139, 92, 246, 0.35);
         border-left: 5px solid #8b5cf6;
         border-radius: 16px;
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.15);
+        box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(139, 92, 246, 0.12);
         backdrop-filter: blur(16px);
-        color: #f1f5f9;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         box-sizing: border-box;
         position: relative;
         overflow: hidden;
@@ -50,115 +50,200 @@
       }
       .added-notes-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 0.9rem;
-        margin-bottom: 1.2rem;
+        flex-direction: column;
+        gap: 0.85rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        padding-bottom: 1.1rem;
+        margin-bottom: 1.3rem;
       }
-      .added-notes-badge {
-        display: inline-flex;
+      .added-notes-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1.2rem;
+        width: 100%;
+      }
+      .added-notes-title-wrap {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .added-notes-title {
+        font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+        font-weight: 750;
+        line-height: 1.32;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+        margin: 0;
+        padding: 0;
+        border: none;
+        word-break: break-word;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+      }
+      .added-notes-tags-row {
+        display: flex;
         align-items: center;
         gap: 8px;
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.3));
-        color: #c4b5fd;
-        border: 1px solid rgba(167, 139, 250, 0.3);
-        padding: 4px 12px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
+        flex-wrap: wrap;
+      }
+      .added-notes-tags-label {
+        color: #a5b4fc;
+        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 600;
+        opacity: 0.9;
       }
       .added-notes-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
+        align-items: center;
       }
       .added-notes-tag {
         background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        color: #94a3b8;
-        font-size: 0.72rem;
-        padding: 2px 9px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: #e2e8f0;
+        font-size: 0.75rem;
+        padding: 3px 10px;
         border-radius: 6px;
         font-weight: 500;
         text-decoration: none;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        transition: all 0.2s ease;
+        gap: 5px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       }
       .added-notes-tag:hover {
-        background: rgba(99, 102, 241, 0.25);
-        border-color: rgba(99, 102, 241, 0.5);
-        color: #c4b5fd;
+        background: rgba(99, 102, 241, 0.35);
+        border-color: rgba(167, 139, 250, 0.65);
+        color: #ffffff;
         text-decoration: none;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+      }
+      .added-notes-tag:focus-visible {
+        outline: 2px solid #a855f7;
+        outline-offset: 2px;
+      }
+      .added-notes-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .note-like-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #f1f5f9;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 34px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .note-like-btn:hover {
+        background: rgba(244, 63, 94, 0.18);
+        border-color: rgba(244, 63, 94, 0.5);
+        color: #f43f5e;
+        transform: scale(1.03);
+      }
+      .note-like-btn.liked {
+        background: rgba(244, 63, 94, 0.25);
+        border-color: #f43f5e;
+        color: #f43f5e;
+      }
+      .note-like-btn.liked .like-icon {
+        color: #f43f5e;
+      }
+      .note-like-btn:focus-visible {
+        outline: 2px solid #f43f5e;
+        outline-offset: 2px;
+      }
+      .note-share-btn {
+        background: rgba(99, 102, 241, 0.22);
+        border: 1px solid rgba(139, 92, 246, 0.45);
+        color: #ede9fe;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 34px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .note-share-btn:hover {
+        background: rgba(99, 102, 241, 0.4);
+        color: #ffffff;
+        border-color: #a78bfa;
+        transform: scale(1.03);
+      }
+      .note-share-btn:focus-visible {
+        outline: 2px solid #818cf8;
+        outline-offset: 2px;
       }
       .added-notes-body {
-        font-size: 0.95rem;
-        line-height: 1.7;
-        color: #e2e8f0;
-      }
-      .added-notes-body h1 {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.6rem;
-        font-weight: 800;
-        color: #ffffff;
-        margin: 0.8rem 0 1rem 0;
-        border-bottom: 2px solid rgba(139, 92, 246, 0.4);
-        padding-bottom: 0.5rem;
-        display: block;
-        letter-spacing: -0.015em;
-        line-height: 1.3;
+        font-size: 0.96rem;
+        line-height: 1.75;
+        color: #f1f5f9;
+        word-break: break-word;
       }
       .added-notes-body h2 {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.22rem;
-        font-weight: 600;
-        color: #a5b4fc;
-        margin: 0.8rem 0 0.5rem 0;
+        font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #c4b5fd;
+        margin: 1.1rem 0 0.5rem 0;
+        letter-spacing: -0.01em;
       }
       .added-notes-body h3 {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.05rem;
+        font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 1.08rem;
         font-weight: 600;
-        color: #cbd5e1;
-        margin: 0.6rem 0 0.4rem 0;
+        color: #93c5fd;
+        margin: 0.9rem 0 0.4rem 0;
       }
       .added-notes-body p {
-        margin: 0.5rem 0 0.8rem 0;
-        color: #cbd5e1;
+        margin: 0.6rem 0 0.9rem 0;
+        color: #e2e8f0;
       }
       .added-notes-body ul, .added-notes-body ol {
         margin: 0.6rem 0 1rem 1.4rem;
         padding-left: 0.5rem;
       }
       .added-notes-body li {
-        margin-bottom: 0.35rem;
-        color: #e2e8f0;
+        margin-bottom: 0.4rem;
+        color: #f1f5f9;
       }
       .added-notes-body a {
         color: #38bdf8;
         text-decoration: underline;
         text-underline-offset: 3px;
         transition: color 0.2s;
-        font-weight: 500;
+        font-weight: 600;
       }
       .added-notes-body a:hover {
-        color: #818cf8;
+        color: #a5b4fc;
       }
       .added-notes-body code {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 2px 6px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        padding: 2px 7px;
         border-radius: 4px;
-        font-size: 0.85em;
+        font-size: 0.88em;
         color: #f472b6;
+        font-family: 'Fira Code', 'Courier New', monospace;
       }
       .dpg-native-ad-block {
         margin: 1.4rem 0;
@@ -179,60 +264,6 @@
         letter-spacing: 0.04em;
         font-weight: 700;
         margin-bottom: 6px;
-      }
-      .added-notes-actions {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-left: auto;
-      }
-      .note-like-btn {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #94a3b8;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.2s ease;
-      }
-      .note-like-btn:hover {
-        background: rgba(244, 63, 94, 0.15);
-        border-color: rgba(244, 63, 94, 0.4);
-        color: #f43f5e;
-        transform: scale(1.03);
-      }
-      .note-like-btn.liked {
-        background: rgba(244, 63, 94, 0.22);
-        border-color: #f43f5e;
-        color: #f43f5e;
-      }
-      .note-like-btn.liked .like-icon {
-        color: #f43f5e;
-      }
-      .note-share-btn {
-        background: rgba(99, 102, 241, 0.14);
-        border: 1px solid rgba(99, 102, 241, 0.35);
-        color: #c4b5fd;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.2s ease;
-      }
-      .note-share-btn:hover {
-        background: rgba(99, 102, 241, 0.3);
-        color: #ffffff;
-        border-color: #818cf8;
-        transform: scale(1.03);
       }
       @keyframes noteHighlightPulse {
         0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.8); border-color: #a855f7; }
@@ -257,6 +288,41 @@
         display: flex;
         align-items: center;
         gap: 8px;
+      }
+      @media (max-width: 640px) {
+        .added-notes {
+          padding: 1.2rem 1rem;
+          margin: 1.2rem auto;
+          border-radius: 12px;
+        }
+        .added-notes-header {
+          gap: 0.75rem;
+          padding-bottom: 0.9rem;
+          margin-bottom: 1.1rem;
+        }
+        .added-notes-header-top {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.75rem;
+        }
+        .added-notes-actions {
+          justify-content: flex-end;
+          width: 100%;
+        }
+        .added-notes-title {
+          font-size: 1.22rem;
+          line-height: 1.35;
+        }
+        .added-notes-body {
+          font-size: 0.92rem;
+          line-height: 1.68;
+        }
+        .added-notes-body h2 {
+          font-size: 1.12rem;
+        }
+        .added-notes-body h3 {
+          font-size: 0.98rem;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -324,6 +390,28 @@
     );
   };
 
+  // Extract main H1 title and remaining body from htmlContent to ensure strictly ONE H1 tag
+  function extractNoteTitleAndBody(htmlContent, fallbackTitle) {
+    if (!htmlContent) return { title: fallbackTitle || 'Study Note', body: '' };
+    try {
+      const temp = document.createElement('div');
+      temp.innerHTML = htmlContent;
+      const allH1 = temp.querySelectorAll('h1');
+      let title = fallbackTitle || 'Study Note';
+      if (allH1.length > 0) {
+        title = allH1[0].innerHTML.trim() || allH1[0].textContent.trim() || title;
+        allH1.forEach(el => el.remove());
+      }
+      return {
+        title,
+        body: temp.innerHTML
+      };
+    } catch (e) {
+      return { title: fallbackTitle || 'Study Note', body: htmlContent };
+    }
+  }
+  window.extractNoteTitleAndBody = extractNoteTitleAndBody;
+
   // Create HTML Node for a Note adhering to exact formula
   window.renderNoteElement = function (note) {
     if (!note) return null;
@@ -345,6 +433,8 @@
     noteDiv.setAttribute('type', rend);
     noteDiv.setAttribute('page-id', pageId);
     noteDiv.setAttribute('id', elementId);
+    noteDiv.setAttribute('role', 'article');
+    noteDiv.setAttribute('aria-labelledby', `note-title-${noteId}`);
 
     const tagsArr = Array.isArray(note.tags)
       ? note.tags
@@ -355,9 +445,8 @@
       const cleanTag = String(t).trim();
       if (!cleanTag) return '';
       const digiIndiaUrl = `https://digiindia-student-platform.onrender.com/search.html?q=${encodeURIComponent(cleanTag)}`;
-      return `<a href="${digiIndiaUrl}" target="_blank" rel="noopener noreferrer" class="added-notes-tag" title="Search '${escapeHtml(cleanTag)}' on DigiIndia Student Platform"><i class="ri-search-line" style="font-size:0.68rem; opacity:0.75;"></i> ${escapeHtml(cleanTag)}</a>`;
+      return `<a href="${digiIndiaUrl}" target="_blank" rel="noopener noreferrer" class="added-notes-tag" role="listitem" title="Search '${escapeHtml(cleanTag)}' on DigiIndia Student Platform" aria-label="Search tag ${escapeHtml(cleanTag)} on DigiIndia"><i class="ri-search-line" aria-hidden="true" style="font-size:0.68rem; opacity:0.8;"></i> ${escapeHtml(cleanTag)}</a>`;
     }).filter(Boolean).join('');
-    const rendLabel = rend === 'before' ? 'Before Page' : 'After Page';
 
     const visitorId = getOrCreateVisitorId();
     const storedLiked = localStorage.getItem('dpg_liked_note_' + noteId) === 'true';
@@ -365,26 +454,33 @@
     const isLiked = storedLiked || (visitorId && likedByArr.includes(visitorId));
     const likesCount = typeof note.likesCount === 'number' ? note.likesCount : (likedByArr.length || 0);
 
+    const parsed = extractNoteTitleAndBody(note.htmlContent, note.title || (note.pageNumber ? `Study Note • Page ${note.pageNumber}` : 'Study Note'));
+
     noteDiv.innerHTML = `
       <div class="added-notes-header">
-        <div class="added-notes-badge">
-          <i class="ri-file-text-line"></i>
-          <span>Contributor Notes • Page ${pageNum} (${rendLabel})</span>
+        <div class="added-notes-header-top">
+          <div class="added-notes-title-wrap">
+            <h1 class="added-notes-title" id="note-title-${noteId}">${parsed.title}</h1>
+          </div>
+          <div class="added-notes-actions" role="toolbar" aria-label="Note interaction controls">
+            <button type="button" class="note-like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${noteId}" onclick="window.toggleNoteLike('${resId}', '${noteId}', this)" aria-label="${isLiked ? 'Unlike this note' : 'Like this note'}" title="${isLiked ? 'Unlike this note' : 'Like this note'}">
+              <i class="${isLiked ? 'ri-heart-fill' : 'ri-heart-line'} like-icon" aria-hidden="true"></i>
+              <span class="like-count">${likesCount}</span>
+            </button>
+            <button type="button" class="note-share-btn" onclick="window.shareInDocumentNote('${resId}', '${noteId}', '${elementId}', ${pageNum}, '${rend}', this)" aria-label="Share this note" title="Share this contributor note via WhatsApp, Web Share, or Link">
+              <i class="ri-share-forward-line" aria-hidden="true"></i>
+              <span>Share</span>
+            </button>
+          </div>
         </div>
-        ${tagsHtml ? `<div class="added-notes-tags">${tagsHtml}</div>` : ''}
-        <div class="added-notes-actions">
-          <button type="button" class="note-like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${noteId}" onclick="window.toggleNoteLike('${resId}', '${noteId}', this)" title="${isLiked ? 'Unlike this note' : 'Like this note'}">
-            <i class="${isLiked ? 'ri-heart-fill' : 'ri-heart-line'} like-icon"></i>
-            <span class="like-count">${likesCount}</span>
-          </button>
-          <button type="button" class="note-share-btn" onclick="window.shareInDocumentNote('${resId}', '${noteId}', '${elementId}', ${pageNum}, '${rend}', this)" title="Share this contributor note via WhatsApp, Web Share, or Link">
-            <i class="ri-share-forward-line"></i>
-            <span>Share</span>
-          </button>
-        </div>
+        ${tagsHtml ? `
+        <div class="added-notes-tags-row">
+          <span class="added-notes-tags-label" aria-hidden="true"><i class="ri-price-tag-3-line"></i></span>
+          <div class="added-notes-tags" role="list" aria-label="Study topics">${tagsHtml}</div>
+        </div>` : ''}
       </div>
       <div class="added-notes-body">
-        ${note.htmlContent || ''}
+        ${parsed.body || ''}
       </div>
     `;
 
