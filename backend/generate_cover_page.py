@@ -22,64 +22,161 @@ PAGE_WIDTH, PAGE_HEIGHT = A4
 
 def get_degree_name(course_str):
     c = (course_str or '').upper().strip()
-    if 'BCA' in c:
+    if 'BCA-CTIS' in c or 'CTIS' in c:
+        return "BACHELOR OF COMPUTER APPLICATION (CLOUD TECH & INFO SECURITY)"
+    elif 'BCA-DS' in c or 'DS' in c and 'BCA' in c:
+        return "BACHELOR OF COMPUTER APPLICATION (DATA SCIENCE)"
+    elif 'BCA' in c:
         return "BACHELOR OF COMPUTER APPLICATION"
+    elif 'BBA-CAM' in c or 'CAM' in c:
+        return "BACHELOR OF BUSINESS ADMINISTRATION (COMPUTER AIDED MANAGEMENT)"
+    elif 'BBA-HM' in c or 'HOSPITAL' in c:
+        return "BACHELOR OF BUSINESS ADMINISTRATION (HOSPITAL MANAGEMENT)"
     elif 'BBA' in c:
         return "BACHELOR OF BUSINESS ADMINISTRATION"
+    elif 'B.TECH' in c or 'BTECH' in c:
+        if 'CSE' in c or 'COMPUTER' in c:
+            if 'AI' in c or 'ML' in c:
+                return "BACHELOR OF TECHNOLOGY (CSE - ARTIFICIAL INTELLIGENCE & MACHINE LEARNING)"
+            elif 'DATA' in c:
+                return "BACHELOR OF TECHNOLOGY (CSE - DATA SCIENCE)"
+            return "BACHELOR OF TECHNOLOGY (COMPUTER SCIENCE & ENGINEERING)"
+        elif 'ECE' in c or 'ELECTRONIC' in c:
+            return "BACHELOR OF TECHNOLOGY (ELECTRONICS & COMMUNICATION ENGINEERING)"
+        elif 'ME' in c or 'MECHANICAL' in c:
+            return "BACHELOR OF TECHNOLOGY (MECHANICAL ENGINEERING)"
+        elif 'CIVIL' in c:
+            return "BACHELOR OF TECHNOLOGY (CIVIL ENGINEERING)"
+        elif 'EE' in c or 'ELECTRICAL' in c:
+            return "BACHELOR OF TECHNOLOGY (ELECTRICAL ENGINEERING)"
+        return "BACHELOR OF TECHNOLOGY"
     elif 'MCA' in c:
         return "MASTER OF COMPUTER APPLICATION"
     elif 'MBA' in c:
         return "MASTER OF BUSINESS ADMINISTRATION"
-    elif 'B.TECH' in c or 'BTECH' in c:
-        return "BACHELOR OF TECHNOLOGY"
     elif 'M.TECH' in c or 'MTECH' in c:
+        if 'CSE' in c:
+            return "MASTER OF TECHNOLOGY (COMPUTER SCIENCE & ENGINEERING)"
         return "MASTER OF TECHNOLOGY"
     elif 'B.SC' in c or 'BSC' in c:
+        if 'CS' in c or 'COMPUTER' in c:
+            return "BACHELOR OF SCIENCE (COMPUTER SCIENCE)"
+        elif 'IT' in c:
+            return "BACHELOR OF SCIENCE (INFORMATION TECHNOLOGY)"
+        elif 'BIOTECH' in c:
+            return "BACHELOR OF SCIENCE (BIOTECHNOLOGY)"
+        elif 'NON-MED' in c or 'NON MEDICAL' in c:
+            return "BACHELOR OF SCIENCE (NON-MEDICAL)"
+        elif 'MED' in c:
+            return "BACHELOR OF SCIENCE (MEDICAL)"
+        elif 'DATA' in c:
+            return "BACHELOR OF SCIENCE (DATA ANALYTICS)"
         return "BACHELOR OF SCIENCE"
     elif 'M.SC' in c or 'MSC' in c:
+        if 'CS' in c or 'COMPUTER' in c:
+            return "MASTER OF SCIENCE (COMPUTER SCIENCE)"
+        elif 'MATH' in c:
+            return "MASTER OF SCIENCE (MATHEMATICS)"
+        elif 'PHYSIC' in c:
+            return "MASTER OF SCIENCE (PHYSICS)"
+        elif 'CHEM' in c:
+            return "MASTER OF SCIENCE (CHEMISTRY)"
+        elif 'BIOTECH' in c:
+            return "MASTER OF SCIENCE (BIOTECHNOLOGY)"
         return "MASTER OF SCIENCE"
     elif 'B.COM' in c or 'BCOM' in c:
+        if 'HONS' in c or 'HONOURS' in c:
+            return "BACHELOR OF COMMERCE (HONOURS)"
         return "BACHELOR OF COMMERCE"
     elif 'M.COM' in c or 'MCOM' in c:
         return "MASTER OF COMMERCE"
-    elif 'BA' in c:
+    elif 'B.A' in c or 'BA' in c:
+        if 'LLB' in c or 'LL.B' in c:
+            return "INTEGRATED BACHELOR OF ARTS & BACHELOR OF LAWS (B.A. LL.B)"
+        elif 'ENG' in c:
+            return "BACHELOR OF ARTS (HONOURS IN ENGLISH)"
+        elif 'POL' in c:
+            return "BACHELOR OF ARTS (HONOURS IN POLITICAL SCIENCE)"
+        elif 'HIST' in c:
+            return "BACHELOR OF ARTS (HONOURS IN HISTORY)"
+        elif 'ECO' in c:
+            return "BACHELOR OF ARTS (HONOURS IN ECONOMICS)"
         return "BACHELOR OF ARTS"
-    elif 'MA' in c:
+    elif 'M.A' in c or 'MA' in c:
+        if 'ENG' in c:
+            return "MASTER OF ARTS (ENGLISH)"
+        elif 'ECO' in c:
+            return "MASTER OF ARTS (ECONOMICS)"
+        elif 'HIST' in c:
+            return "MASTER OF ARTS (HISTORY)"
+        elif 'POL' in c:
+            return "MASTER OF ARTS (POLITICAL SCIENCE)"
+        elif 'HINDI' in c:
+            return "MASTER OF ARTS (HINDI)"
         return "MASTER OF ARTS"
+    elif 'B.PHARM' in c or 'BPHARM' in c:
+        return "BACHELOR OF PHARMACY"
+    elif 'D.PHARM' in c or 'DPHARM' in c:
+        return "DIPLOMA IN PHARMACY"
+    elif 'B.ED' in c or 'BED' in c:
+        return "BACHELOR OF EDUCATION"
+    elif 'M.ED' in c or 'MED' in c:
+        return "MASTER OF EDUCATION"
+    elif 'LLB' in c or 'LL.B' in c:
+        return "BACHELOR OF LAWS (LL.B)"
+    elif 'LLM' in c or 'LL.M' in c:
+        return "MASTER OF LAWS (LL.M)"
+    elif 'BHMCT' in c or 'HOTEL' in c:
+        return "BACHELOR OF HOTEL MANAGEMENT & CATERING TECHNOLOGY"
+    elif 'BTTM' in c or 'TOURISM' in c:
+        return "BACHELOR OF TOURISM & TRAVEL MANAGEMENT"
+    elif 'BJMC' in c or 'JOURNALISM' in c:
+        return "BACHELOR OF JOURNALISM & MASS COMMUNICATION"
+    elif 'MJMC' in c:
+        return "MASTER OF JOURNALISM & MASS COMMUNICATION"
+    elif 'DIPLOMA' in c or 'POLYTECHNIC' in c:
+        return "DIPLOMA IN ENGINEERING & TECHNOLOGY"
     return "BACHELOR OF COMPUTER APPLICATION"
 
 def generate_pdf(data, output_path, assets_dir=None):
+    doc_type = str(data.get("docType", "assignment")).lower().strip()
+    if not data.get("assignmentNo") and doc_type != "practical":
+        if "practical" in str(data.get("subjectName", "")).lower() or "practical" in str(data.get("title", "")).lower():
+            doc_type = "practical"
+
     if assets_dir is None:
-        # Default assets directory: public/AssignmentCoverPageGenerator
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        assets_dir = os.path.join(base_dir, "public", "AssignmentCoverPageGenerator")
+        folder_name = "PracticalCoverPageGenerator" if doc_type == "practical" else "AssignmentCoverPageGenerator"
+        assets_dir = os.path.join(base_dir, "public", folder_name)
+        if not os.path.exists(assets_dir):
+            assets_dir = os.path.join(base_dir, "public", "AssignmentCoverPageGenerator")
 
     header_img_path = os.path.join(assets_dir, "Header_Image.jpg")
     center_logo_path = os.path.join(assets_dir, "Center_Logo.jpg")
 
     c = canvas.Canvas(output_path, pagesize=A4)
-    c.setTitle(f"Assignment_{data.get('assignmentNo', '1')}_Cover_Page")
-    c.setAuthor("DPGNotes Assignment Cover Page Generator")
+    if doc_type == "practical":
+        c.setTitle(f"Practical_File_{data.get('subjectCode', 'Cover')}_Page")
+        c.setAuthor("DPGNotes Academic Cover Page Generator")
+    else:
+        c.setTitle(f"Assignment_{data.get('assignmentNo', '1')}_Cover_Page")
+        c.setAuthor("DPGNotes Academic Cover Page Generator")
     c.setSubject(f"{data.get('subjectName', '')} ({data.get('subjectCode', '')})")
 
     # 1. Header Banner Image
-    # In template: width=507.48, height=77.88, centered on 595.28 pt page
     header_w = 507.48
     header_h = 77.88
     header_x = (PAGE_WIDTH - header_w) / 2.0
-    header_y = PAGE_HEIGHT - 34.0 - header_h  # ~730 pt
+    header_y = PAGE_HEIGHT - 34.0 - header_h
 
     if os.path.exists(header_img_path):
         c.drawImage(header_img_path, header_x, header_y, width=header_w, height=header_h, preserveAspectRatio=True, mask='auto')
 
-    # Typography setup: Times-Bold is standard PDF core font (supported in 100% of PDF readers)
+    # Typography setup
     font_bold = "Times-Bold"
-    font_regular = "Times-Roman"
-    font_size_main = 13.0
-    c.setFillColorRGB(0, 0, 0)
+    font_size_main = 10.5
 
-    # 2. Assignment Heading & Subject Info (Centered)
-    # Positions mapped proportionally from template to A4 height:
+    # 2. Heading & Subject Info (Centered)
     scale_y = PAGE_HEIGHT / 792.0
 
     num_val = str(data.get("assignmentNo", "1")).strip()
@@ -87,20 +184,26 @@ def generate_pdf(data, output_path, assets_dir=None):
     sub_code = str(data.get("subjectCode", "")).strip().upper()
     course_sec = str(data.get("courseSection", "")).strip().upper()
     session = str(data.get("session", "")).strip().upper()
+    degree_name = str(data.get("degreeName") or get_degree_name(course_sec)).strip().upper()
 
-    # Dynamic degree fulfillment
-    degree_name = data.get("degreeName") or get_degree_name(course_sec)
-
-    # Assignment -> {NUM}
-    # Note: Use Unicode right arrow '➔' or '->' cleanly
-    assign_line = f"ASSIGNMENT -> {num_val}"
     c.setFont(font_bold, font_size_main)
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (122.0 * scale_y), assign_line)
 
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (146.0 * scale_y), "OF")
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (170.0 * scale_y), sub_name)
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (194.0 * scale_y), sub_code)
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (218.0 * scale_y), course_sec)
+    if doc_type == "practical":
+        # Matches PracticalCoverPageTemplate.pdf
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (118.0 * scale_y), "A")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (139.0 * scale_y), "PRACTICAL FILE")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (160.0 * scale_y), "OF")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (182.0 * scale_y), sub_name)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (204.0 * scale_y), sub_code)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (226.0 * scale_y), course_sec)
+    else:
+        # Matches FrontpageTemplate.pdf
+        assign_line = f"ASSIGNMENT -> {num_val}"
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (122.0 * scale_y), assign_line)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (146.0 * scale_y), "OF")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (170.0 * scale_y), sub_name)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (194.0 * scale_y), sub_code)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (218.0 * scale_y), course_sec)
 
     # Fulfillment statement (splits cleanly into 2 lines if needed)
     fulfillment_prefix = "IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF"

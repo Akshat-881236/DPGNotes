@@ -356,7 +356,7 @@
           <div style="background:#0f172a; border:1px solid var(--border); border-radius:16px; padding:2rem; width:100%; max-width:650px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
             <button type="button" onclick="closeEditResourceModal()" style="position:absolute; top:1.2rem; right:1.2rem; background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="ri-close-line"></i></button>
             <h2 style="margin-top:0; color:white; font-family:'Outfit',sans-serif; font-size:1.4rem; display:flex; align-items:center; gap:8px;"><i class="ri-edit-box-line" style="color:var(--primary-light);"></i> Edit Resource Contribution</h2>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Update resource fields below. Saving will overlap and update the document directly in Firestore.</p>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Update resource fields below. Saving will update the document directly in your cloud repository.</p>
 
             <form id="editResourceForm" onsubmit="handleEditResourceSubmit(event)">
               <input type="hidden" id="modalResDocId">
@@ -629,7 +629,7 @@
 
         <!-- SETTINGS TAB -->
         <section id="settingsTab" class="dashboard-tab">
-          <h2>Settings <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Your configuration data is saved securely on DPGNotes Servers. Click to view Data Retention Policy." onclick="window.open('legal/index.html?from=contributor#retention', '_blank')"></i></h2>
+          <h2>Settings <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Your configuration data is saved securely in DPGNotes encrypted cloud storage. Click to view Data Retention Policy." onclick="window.open('legal/index.html?from=contributor#retention', '_blank')"></i></h2>
           <form id="settingsForm" class="upload-form">
             <div class="form-grid">
               <label>Profile Photo</label>

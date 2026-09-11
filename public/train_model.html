@@ -611,16 +611,16 @@
       <!-- TAB PANE 1: AI Knowledge Base -->
       <div id="tabPaneAi">
         <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6; margin-bottom:2rem;">
-          Add external web links for Python crawler indexing and structured FAQs to build a custom runtime knowledge base (<code style="color:#c4b5fd;">knowledge.md</code>) for this resource's DPGNotes PDF Viewer AI Assistant.
+          Add external web links for automated AI knowledge indexing and structured FAQs to build a custom runtime knowledge base (<code style="color:#c4b5fd;">knowledge.md</code>) for this resource's DPGNotes PDF Viewer AI Assistant.
         </p>
 
         <form id="trainForm" onsubmit="handleTrainSubmit(event)">
           <!-- WEB LINKS SECTION -->
           <div style="margin-bottom:2rem;">
             <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
-              <i class="ri-link" style="color:var(--primary-light);"></i> External Crawler Web Links
+              <i class="ri-link" style="color:var(--primary-light);"></i> External Reference Web Links
             </h3>
-            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Provide URLs to documentation, academic portals, or notes that Python crawler will extract data from.</p>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Provide URLs to documentation, academic portals, or notes that the AI engine will extract knowledge from.</p>
 
             <div id="linksContainer">
               <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -2193,7 +2193,7 @@
 
       const btn = document.getElementById("submitTrainBtn");
       btn.disabled = true;
-      btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Processing Python AI Crawler & Knowledge Generation...`;
+      btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Processing AI Knowledge Extraction & Generation...`;
 
       try {
         // Send request to backend

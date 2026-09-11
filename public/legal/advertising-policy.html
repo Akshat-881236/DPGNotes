@@ -4,14 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
-  <title>Advertising Policy & Community Standards | DPGNotes Legal Center</title>
-  <meta name="description" content="Advertising Policy & Community Standards of DPGNotes - Comprehensive academic documentation and regulatory standards." />
+  <title>Comprehensive Advertising Policy | DPGNotes Legal Center</title>
+  <meta name="description" content="Comprehensive Advertising Policy of DPGNotes detailing Google AdSense standards, native ad formats, content vetting, and minor protection." />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
@@ -24,7 +67,8 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Center</a>
+        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
+        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
         <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
@@ -38,83 +82,119 @@
         <div class="sidebar-group">
           <h3 class="group-title">Overview</h3>
           <ul class="nav-list">
-            <li><a href="index.html" class="nav-link"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
             <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
         <div class="sidebar-group">
-          <h3 class="group-title">Dedicated Policies</h3>
+          <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
             <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
-            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Disclaimer</a></li>
-            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link active"><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
             <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
-            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
-            <li><a href="advertising-policy.html" class="nav-link active"><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
-            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
           </ul>
         </div>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-content">
-      <div class="content-wrapper">
-        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="index.html">Legal Center</a></li>
-            <li class="current-crumb">Advertising Policy & Community Standards</li>
-          </ol>
-        </nav>
-
-        <div class="doc-viewer-card">
-          <div class="viewer-actions">
-            <span class="current-policy-title">Advertising Policy & Community Standards</span>
-            <div class="btn-group">
-              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="action-btn"><i class="ri-share-line"></i> Share</button>
-              <button onclick="window.print();" class="action-btn"><i class="ri-printer-line"></i> Print</button>
+    <main class="legal-main">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-          </div>
+            <h1 class="document-title">DPGNotes Comprehensive Advertising Policy</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-ADVT-2026-V3.2</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
+            </div>
+          </header>
 
-          <!-- Bi-directional Link to Legal Notes Summary -->
+          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
-              <i class="ri-information-fill"></i>
-              <span>Looking for a quick brief? Read the summarized version in the Legal Notes Center.</span>
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#advertising">Summary Version of this Policy in Legal Hub</a>.
+              </div>
             </div>
-            <a href="index.html#ads-policy" class="summary-back-link">View Summary in Legal Notes <i class="ri-arrow-right-line"></i></a>
           </div>
 
-          <article class="policy-section active-section">
-            <h1>DPGNotes Advertising Policy & Community Standards</h1>
-            <p class="subtitle">Effective Date: July 13, 2026 | Document ID: POL-DPG-ADS-2026-V3</p>
+          <article class="legal-article">
             
-            <h2>1. Purpose & Supported Formats</h2>
-            <p>DPGNotes enables students, developers, and educators to promote academic tools, open-source repositories, and verified tutorials across five formats: <strong>DPGNotes Resource Boost</strong>, <strong>LinkedIn Post</strong>, <strong>Medium Story</strong>, <strong>GitHub Repository</strong>, and <strong>YouTube Tech Video</strong>.</p>
+            <h2>1. Purpose & Standards of Platform Monetization</h2>
+            <p>DPGNotes is dedicated to maintaining free, barrier-free access to high-quality academic notes, formula repositories, and syllabus guides for students worldwide. To sustain cloud hosting expenses, domain renewals, continuous security monitoring, and content delivery network (CDN) bandwidth, our platform displays carefully vetted educational advertisements and Google AdSense partner banners.</p>
+            <p>This Advertising Policy establishes clear rules regarding promotional units, user safety, and strict compliance with the <strong>Google AdSense Program Policies</strong> and the <strong>Better Ads Standards</strong>.</p>
 
-            <h2>2. Advertising Quality & Safety Rules</h2>
-            <p>All sponsored advertisements must comply with the following standards:</p>
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-shield-check-line"></i> AdSense Certified</h4>
+                <p>Strict compliance with Google Publisher Policies, no deceptive layouts, and clear disclosure markers on all promo units.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-eye-line"></i> Non-Intrusive UX</h4>
+                <p>No pop-unders, no forced redirects, no audio auto-play, and strict spacing that preserves document readability.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-user-heart-line"></i> Student Safety</h4>
+                <p>Zero tolerance for adult products, academic dishonesty mills, gambling, or deceptive malware downloads.</p>
+              </div>
+            </div>
+
+            <h2>2. Permitted Ad Formats & Layout Mechanics</h2>
+            <p>Promotional banners across DPGNotes are categorized into five clearly labeled formats:</p>
             <ul>
-              <li><strong>Academic Relevance:</strong> Campaigns must relate to computer science, engineering, management, sciences, or professional student development.</li>
-              <li><strong>Direct Landing Endpoints:</strong> Advertisements must link directly to authentic, operational pages without misleading intermediary redirects.</li>
-              <li><strong>No Academic Dishonesty:</strong> Promotion of essay-writing mills, contract cheating, exam proxy services, or unverified software cracks is strictly prohibited.</li>
+              <li><strong>Header Sponsored Banner:</strong> High-profile horizontal leaderboard positioned below top navigation bars, strictly demarcated with clear "Sponsored" tags.</li>
+              <li><strong>Sidebar Contextual Display:</strong> Sticky or inline cards highlighting university conferences, internships, and accredited educational software tools.</li>
+              <li><strong>Feed & In-Article Cards:</strong> Native format promo cards styled consistently with dark card aesthetics, strictly distinguished from genuine student lecture notes.</li>
+              <li><strong>Interactive Watch-Ad Restoration Units:</strong> Optional, voluntary sponsor units that allow visitors and contributors to replenish daily generation tokens without monetary expenditure.</li>
+              <li><strong>Footer Educational Banner:</strong> Bottom-of-page contextual units positioned above regulatory disclosures.</li>
             </ul>
 
-            <h2>3. Native Ads System & Reader Page Restrictions</h2>
-            <p>To preserve reading comfort and avoid ad clutter in the DPGNotes PDF Viewer, <strong>Native Ads are strictly disallowed in After Notes for pages divisible by 3 (Pages 3, 6, 9, 12...)</strong>, as those slots are reserved for system sponsors.</p>
+            <h2>3. The Divisible-by-Three (Div-by-3) Reader Spacing Rule</h2>
+            <p>To ensure student reading experiences remain focused and distraction-free in our comprehensive PDF Viewer and Model Training Hub, DPGNotes enforces a strict structural layout constraint: <strong>The Divisible-by-3 Rule</strong>.</p>
+            <p>Pages whose numbers are divisible by 3 (Page 3, Page 6, Page 9, Page 12, etc.) already host standardized Google AdSense display units. Therefore, custom native ad blocks are strictly forbidden from rendering in the "After Note" slot of any page divisible by 3. This algorithmic enforcement prevents ad stacking and guarantees optimal pedagogical immersion.</p>
+
+            <h2>4. Strictly Prohibited Advertising Categories</h2>
+            <p>To safeguard our student audience, the following advertising categories are permanently banned from DPGNotes:</p>
+            <ul>
+              <li><strong>Academic Dishonesty Services:</strong> Essay writing mills, paid ghostwriting, exam proxy testing, or term paper purchase platforms.</li>
+              <li><strong>Adult & Sexually Suggestive Content:</strong> Mature themes, adult games, or dating platforms.</li>
+              <li><strong>Gambling & High-Risk Speculation:</strong> Online casinos, sports betting, real-money gaming, or unregulated cryptocurrency schemes.</li>
+              <li><strong>Deceptive & Malicious Software:</strong> Fake download buttons, scareware system warnings, malware, or deceptive browser extensions.</li>
+              <li><strong>Tobacco, Alcohol & Controlled Substances:</strong> Any promotional messaging promoting smoking, vaping, or intoxicants.</li>
+            </ul>
+
+            <h2>5. Google AdSense Third-Party Cookies & Ad Settings</h2>
+            <p>Google, as a third-party vendor, uses cookies to serve ads on DPGNotes. Google's use of advertising cookies enables it and its partners to serve ads to our users based on their visits to our site and other sites on the Internet. Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>.</p>
+
+            <h2>6. User Reporting & Rapid Escalation Protocol</h2>
+            <p>If you encounter an advertisement on DPGNotes that violates our content standards or appears misleading, please report it immediately to our moderation desk at <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a> with the destination URL and a screenshot. Offending ad networks are blacklisted within 24 business hours.</p>
         
 
-            <!-- Inter-linking section to other policies -->
-            <h2>Related Legal Frameworks & Policies</h2>
-            <p>This policy functions alongside our other governance documents across the DPGNotes academic portal:</p>
+            <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
+            </h3>
             <div class="related-policies-grid">
-              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>\n<a href="links-policy.html" class="related-policy-chip"><i class="ri-external-link-line"></i> External Links Disclaimer</a>\n<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
+              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+<a href="cookie-policy.html" class="related-policy-chip"><i class="bi bi-cookie"></i> Cookie Policy</a>
+<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+<a href="disclaimer.html" class="related-policy-chip"><i class="ri-alert-line"></i> Legal Disclaimer</a>
             </div>
           </article>
         </div>

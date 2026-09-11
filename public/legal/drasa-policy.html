@@ -5,13 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
   <title>DPGNotes Regulations & Suspension Act (DRASA) | DPGNotes Legal Center</title>
-  <meta name="description" content="DPGNotes Regulations & Suspension Act (DRASA) of DPGNotes - Comprehensive academic documentation and regulatory standards." />
+  <meta name="description" content="Official text of the DPGNotes Regulations and Suspension Act (DRASA) detailing violation tiers, investigation protocols, and appeal mechanisms." />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
@@ -24,7 +67,8 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Center</a>
+        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
+        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
         <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
@@ -38,106 +82,111 @@
         <div class="sidebar-group">
           <h3 class="group-title">Overview</h3>
           <ul class="nav-list">
-            <li><a href="index.html" class="nav-link"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
             <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
         <div class="sidebar-group">
-          <h3 class="group-title">Dedicated Policies</h3>
+          <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
             <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
-            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Disclaimer</a></li>
-            <li><a href="drasa-policy.html" class="nav-link active"><i class="ri-scales-line"></i> DRASA Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link active"><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
             <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
-            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
-            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
-            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
           </ul>
         </div>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-content">
-      <div class="content-wrapper">
-        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="index.html">Legal Center</a></li>
-            <li class="current-crumb">DPGNotes Regulations & Suspension Act (DRASA)</li>
-          </ol>
-        </nav>
-
-        <div class="doc-viewer-card">
-          <div class="viewer-actions">
-            <span class="current-policy-title">DPGNotes Regulations & Suspension Act (DRASA)</span>
-            <div class="btn-group">
-              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="action-btn"><i class="ri-share-line"></i> Share</button>
-              <button onclick="window.print();" class="action-btn"><i class="ri-printer-line"></i> Print</button>
+    <main class="legal-main">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-          </div>
+            <h1 class="document-title">DPGNotes Regulations & Suspension Act (DRASA)</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-DRAS-2026-V3.2</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
+            </div>
+          </header>
 
-          <!-- Bi-directional Link to Legal Notes Summary -->
+          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
-              <i class="ri-information-fill"></i>
-              <span>Looking for a quick brief? Read the summarized version in the Legal Notes Center.</span>
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#drasa">Summary Version of this Policy in Legal Hub</a>.
+              </div>
             </div>
-            <a href="index.html#drasa" class="summary-back-link">View Summary in Legal Notes <i class="ri-arrow-right-line"></i></a>
           </div>
 
-          <article class="policy-section active-section">
-            <h1>DPGNotes Regulations & Suspension Act (DRASA)</h1>
-            <p class="subtitle">Effective Date: July 13, 2026 | Document ID: ACT-DPG-DRASA-2026-V3</p>
+          <article class="legal-article">
             
-            <h2>1. Legislative Purpose & Jurisdiction</h2>
-            <p>The DPGNotes Regulations & Suspension Act (DRASA) serves as the primary governance code of DPGNotes. Enacted to preserve scholarly integrity, deter fraudulent traffic inflation, and protect platform safety, DRASA applies universally to all visitors, contributors, and administrators.</p>
+            <h2>1. Statutory Mission & Regulatory Scope</h2>
+            <p>The <strong>DPGNotes Regulations & Suspension Act (DRASA)</strong> represents our statutory governance framework designed to maintain academic integrity, protect contributor rights, and prevent malicious exploitation of collaborative student tools across the DPGNotes platform.</p>
+            <p>DRASA applies uniformly to all platform participants, including anonymous guests, verified student contributors, academic peer reviewers, and platform moderators.</p>
 
-            <h2>2. The Five-Tier Disciplinary Classification</h2>
-            <div style="display:flex; flex-direction:column; gap:1rem; margin:1.5rem 0;">
-              <div style="background:rgba(59,130,246,0.08); border-left:4px solid #3b82f6; padding:1rem; border-radius:6px;">
-                <h4 style="color:#60a5fa; margin-bottom:4px;">Level I — Informational & Formatting Guidance</h4>
-                <p style="margin:0; font-size:0.88rem;">Minor formatting defects, missing tags, or accidental duplicate uploads. Outcome: Educational guidance and automated tag suggestions.</p>
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-shield-flash-line"></i> Proactive Defense</h4>
+                <p>Automated threat detection and peer audits designed to maintain a trustworthy academic repository.</p>
               </div>
-              <div style="background:rgba(234,179,8,0.08); border-left:4px solid #eab308; padding:1rem; border-radius:6px;">
-                <h4 style="color:#facc15; margin-bottom:4px;">Level II — Minor Infractions</h4>
-                <p style="margin:0; font-size:0.88rem;">Low-effort spam submissions, non-academic uploads, or repeated category mismatches. Outcome: Formal warning badge and mandatory review for subsequent uploads.</p>
+              <div class="compliance-card">
+                <h4><i class="ri-list-ordered-line"></i> 5-Tier Violation Matrix</h4>
+                <p>Proportional disciplinary escalation ranging from formal warnings to permanent IP and network blacklisting.</p>
               </div>
-              <div style="background:rgba(249,115,22,0.08); border-left:4px solid #f97316; padding:1rem; border-radius:6px;">
-                <h4 style="color:#fb923c; margin-bottom:4px;">Level III — Moderate Violations</h4>
-                <p style="margin:0; font-size:0.88rem;">Share link spamming, automated script abuse, or misleading document titles. Outcome: Temporary 7-day contributor suspension and revocation of share generation privileges.</p>
-              </div>
-              <div style="background:rgba(239,68,68,0.08); border-left:4px solid #ef4444; padding:1rem; border-radius:6px;">
-                <h4 style="color:#f87171; margin-bottom:4px;">Level IV — Referral Fraud & Serious Copyright Piracy</h4>
-                <p style="margin:0; font-size:0.88rem;">Uploading commercial scanned textbooks, fabricating referral invitations, or generating fake engagement clicks.<br>
-                <strong>Referral Fraud Penalty Escalation:</strong><br>
-                • 1st Offense: 5-day account suspension & referral points forfeiture.<br>
-                • 2nd Offense: 12-day account suspension & full contributor demotion.<br>
-                • 3rd Offense: Permanent account termination and hardware fingerprint ban.</p>
-              </div>
-              <div style="background:rgba(220,38,38,0.12); border-left:4px solid #dc2626; padding:1rem; border-radius:6px;">
-                <h4 style="color:#ef4444; margin-bottom:4px;">Level V — Critical Security & Malicious Tampering</h4>
-                <p style="margin:0; font-size:0.88rem;">SQL injection, API exploitation, credential theft, cross-site scripting, or illegal content hosting. Outcome: Immediate, permanent IP and Google account termination with legal escalation.</p>
+              <div class="compliance-card">
+                <h4><i class="ri-scales-line"></i> Due Process & Appeals</h4>
+                <p>Transparent investigation protocols with guaranteed right of appeal to an impartial Grievance Officer.</p>
               </div>
             </div>
 
-            <h2>3. Unauthenticated Guest Access Quota Architecture</h2>
-            <p>To thwart aggressive bot scrapers while maintaining open education, guest users are allocated a strict daily quota of <strong>6 page visits</strong> and <strong>3 PDF reads</strong> per 24 hours. Quotas reset daily at 00:00 UTC. Legal policy documentation is permanently exempt from quota restrictions.</p>
+            <h2>2. Comprehensive Five-Tier Violation Hierarchy</h2>
+            <p>Violations under DRASA are categorized into five progressive tiers based on severity, intentionality, and systemic risk:</p>
+            <ul>
+              <li><strong>Tier 1 — Administrative Non-Compliance:</strong> Inadvertent formatting errors, duplicate tag creation, or minor typographical non-compliance. <em>Sanction:</em> Automated notification, formatting correction, and formal advisory.</li>
+              <li><strong>Tier 2 — Content Quality & Attribution Infractions:</strong> Uploading low-fidelity notes, unverified formula summaries, or failing to properly cite referenced open-access lecture materials. <em>Sanction:</em> Temporary resource delisting pending revision; 7-day contributor account probation.</li>
+              <li><strong>Tier 3 — Referral Fraud & Quota Exploitation:</strong> Forging invite tokens, deploying automated click scripts, or attempting to bypass daily generation quotas through synthetic identities. <em>Sanction:</em> 14-day account suspension, forfeiture of referral badges, and quota throttling.</li>
+              <li><strong>Tier 4 — Copyright Infringement & Intellectual Property Violations:</strong> Uploading commercially copyrighted textbooks, paid exam test-banks, or infringing third-party proprietary academic works. <em>Sanction:</em> Immediate permanent document deletion, 30-day account suspension, and formal copyright advisory.</li>
+              <li><strong>Tier 5 — Security Breaches & Malicious Tampering:</strong> Attempting database payload injections, cross-site scripting (XSS), credential phishing, distributed denial-of-service (DDoS), or unauthorized database tampering. <em>Sanction:</em> Permanent account termination, cryptographic IP ban, and reporting to relevant statutory cyber authorities under the Indian Information Technology Act 2000.</li>
+            </ul>
 
-            <h2>4. Official Appeal & Grievance Mechanism</h2>
-            <p>Suspended contributors who believe their suspension was issued in error may file an official appeal through the <a href="https://dpgnotes.web.app/suspension-support-contact-form.html" target="_blank" style="color:var(--primary); text-decoration:underline;">Support & Suspension Appeal Portal</a>. Appeals are independently audited within 7 business days.</p>
+            <h2>3. Investigation Procedures & Due Process</h2>
+            <p>Upon detection of an infraction (either via automated telemetry or community user reports), the platform administration executes an impartial review process:</p>
+            <ul>
+              <li>Evidence gathering: Cryptographic audit logs, content diffs, and network telemetry are recorded securely.</li>
+              <li>Notification: The account holder receives an electronic notice detailing the alleged infraction, affected documents, and applicable DRASA tier.</li>
+              <li>Interim measures: Potentially infringing or harmful documents are quarantined from public discovery during active review.</li>
+              <li>Determination: Findings are published within 7 business days with transparent rationale.</li>
+            </ul>
+
+            <h2>4. Formal Appeals & Restoration Protocol</h2>
+            <p>Any participant whose account or contribution has been subject to disciplinary sanctions under DRASA holds the statutory right to appeal within 15 calendar days of sanction notification. Appeals must be submitted through our <a href="../suspension-support-contact-form.html">Official Appeals Portal</a> or emailed directly to <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a> with supporting academic evidence. Decisions by the Grievance Review Panel are finalized within 10 business days.</p>
         
 
-            <!-- Inter-linking section to other policies -->
-            <h2>Related Legal Frameworks & Policies</h2>
-            <p>This policy functions alongside our other governance documents across the DPGNotes academic portal:</p>
+            <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
+            </h3>
             <div class="related-policies-grid">
-              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>\n<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>\n<a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>\n<a href="dmca-policy.html" class="related-policy-chip"><i class="ri-file-shield-2-line"></i> DMCA Policy</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+<a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
+<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
             </div>
           </article>
         </div>

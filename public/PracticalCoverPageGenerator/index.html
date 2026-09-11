@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
-  <title>Practical File Practical File Cover Page Generator | DPGNotes</title>
-  <meta name="description" content="Generate and download standard A4 assignment cover pages for DPG School of Technology & Management (Affiliated to MDU Rohtak) with real-time canvas preview." />
+  <title>Practical File Cover Page Generator | DPGNotes</title>
+  <meta name="description" content="Generate and download standard A4 practical file cover pages for DPG School of Technology & Management (Affiliated to MDU Rohtak) with real-time canvas preview." />
 
   <!-- Global Config & Native Ads Engine -->
   <script src="../config.js"></script>
@@ -43,8 +43,8 @@
     window.deleteDoc = deleteDoc;
     window.serverTimestamp = serverTimestamp;
 
-    if (typeof window.loadUserAssignments === 'function') {
-      window.loadUserAssignments();
+    if (typeof window.loadUserPracticals === 'function') {
+      window.loadUserPracticals();
     }
   </script>
 
@@ -456,7 +456,7 @@
   <nav class="top-navbar">
     <a href="../index.html" class="brand-logo">
       <i class="ri-file-shield-2-fill"></i>
-      <span>DPGNotes <span style="color:#a855f7;">Cover Page</span></span>
+      <span>DPGNotes <span style="color:#a855f7;">Practical File</span></span>
     </a>
     <div class="nav-actions">
       <div class="token-badge" id="tokenDisplay" title="Daily Generation Tokens remaining">
@@ -478,7 +478,7 @@
     <!-- Form Section -->
     <section class="form-card">
       <h1 class="card-title">
-        <i class="ri-edit-2-line" style="color:#8b5cf6;"></i> Assignment Details
+        <i class="ri-file-code-line" style="color:#8b5cf6;"></i> Practical File Details
       </h1>
       <p class="card-subtitle">
         Fill the fields below. The live A4 canvas preview on the right will update in real time.
@@ -487,8 +487,8 @@
       <form id="coverForm" onsubmit="event.preventDefault(); handleGenerateClick();">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Practical File / Lab Title <span class="req">*</span></label>
-            <input type="text" id="inpAssignNo" class="form-control" value="PRACTICAL FILE" placeholder="e.g. PRACTICAL FILE" required oninput="renderLiveCanvas()">
+            <label class="form-label">Subject Name <span class="req">*</span></label>
+            <input type="text" id="inpSubName" class="form-control" value="WEB DEVELOPMENT LAB" placeholder="e.g. DATA STRUCTURES LAB" required oninput="renderLiveCanvas()">
           </div>
           <div class="form-group">
             <label class="form-label">Session <span class="req">*</span> <span class="rule">(YYYY-YYYY)</span></label>
@@ -496,19 +496,86 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Subject Name <span class="req">*</span></label>
-          <input type="text" id="inpSubName" class="form-control" value="DATA STRUCTURES & ALGORITHMS" placeholder="e.g. OPERATING SYSTEM" required oninput="renderLiveCanvas()">
-        </div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Subject Code <span class="req">*</span></label>
-            <input type="text" id="inpSubCode" class="form-control" value="BCA-301" placeholder="e.g. BCA-501, BBA-302" required oninput="renderLiveCanvas()">
+            <input type="text" id="inpSubCode" class="form-control" value="BCA-306" placeholder="e.g. BCA-306, BBA-306" required oninput="renderLiveCanvas()">
           </div>
           <div class="form-group">
             <label class="form-label">Course &amp; Section <span class="req">*</span> <span class="rule">{Course}-{Sec}</span></label>
-            <input type="text" id="inpCourseSec" class="form-control" value="BCA-3A" placeholder="e.g. BCA-5A, BBA-3A" required oninput="handleCourseSecInput()">
+            <input type="text" id="inpCourseSec" list="courseSecList" class="form-control" value="BCA-3A" placeholder="e.g. BCA-5A, BBA-3A, BTECH-CSE-3A" required oninput="handleCourseSecInput()">        <datalist id="courseSecList">
+          <option value="BCA-1A">BCA 1st Sem - Section A</option>
+          <option value="BCA-1B">BCA 1st Sem - Section B</option>
+          <option value="BCA-3A">BCA 3rd Sem - Section A</option>
+          <option value="BCA-3B">BCA 3rd Sem - Section B</option>
+          <option value="BCA-5A">BCA 5th Sem - Section A</option>
+          <option value="BCA-5B">BCA 5th Sem - Section B</option>
+          <option value="BCA-CTIS-3A">BCA (Cloud Tech & Info Security) - 3A</option>
+          <option value="BCA-DS-3A">BCA (Data Science) - 3A</option>
+          <option value="MCA-1A">MCA 1st Sem - Section A</option>
+          <option value="MCA-3A">MCA 3rd Sem - Section A</option>
+          <option value="BBA-1A">BBA 1st Sem - Section A</option>
+          <option value="BBA-1B">BBA 1st Sem - Section B</option>
+          <option value="BBA-3A">BBA 3rd Sem - Section A</option>
+          <option value="BBA-3B">BBA 3rd Sem - Section B</option>
+          <option value="BBA-5A">BBA 5th Sem - Section A</option>
+          <option value="BBA-5B">BBA 5th Sem - Section B</option>
+          <option value="BBA-CAM-3A">BBA (Computer Aided Mgmt) - 3A</option>
+          <option value="BBA-HM-3A">BBA (Hospital Management) - 3A</option>
+          <option value="MBA-1A">MBA 1st Sem - Section A</option>
+          <option value="MBA-3A">MBA 3rd Sem - Section A</option>
+          <option value="BTECH-CSE-1A">B.Tech Computer Science - 1A</option>
+          <option value="BTECH-CSE-3A">B.Tech Computer Science - 3A</option>
+          <option value="BTECH-CSE-5A">B.Tech Computer Science - 5A</option>
+          <option value="BTECH-CSE-7A">B.Tech Computer Science - 7A</option>
+          <option value="BTECH-AIML-3A">B.Tech AI & Machine Learning - 3A</option>
+          <option value="BTECH-AIML-5A">B.Tech AI & Machine Learning - 5A</option>
+          <option value="BTECH-DS-3A">B.Tech Data Science - 3A</option>
+          <option value="BTECH-ECE-3A">B.Tech Electronics & Comm - 3A</option>
+          <option value="BTECH-ME-3A">B.Tech Mechanical Engg - 3A</option>
+          <option value="BTECH-CIVIL-3A">B.Tech Civil Engineering - 3A</option>
+          <option value="BTECH-EE-3A">B.Tech Electrical Engg - 3A</option>
+          <option value="MTECH-CSE-1A">M.Tech Computer Science - 1A</option>
+          <option value="BSC-CS-1A">B.Sc Computer Science - 1A</option>
+          <option value="BSC-CS-3A">B.Sc Computer Science - 3A</option>
+          <option value="BSC-IT-3A">B.Sc Information Technology - 3A</option>
+          <option value="BSC-NONMED-1A">B.Sc Non-Medical - 1A</option>
+          <option value="BSC-NONMED-3A">B.Sc Non-Medical - 3A</option>
+          <option value="BSC-MED-1A">B.Sc Medical - 1A</option>
+          <option value="BSC-BIOTECH-1A">B.Sc Biotechnology - 1A</option>
+          <option value="MSC-CS-1A">M.Sc Computer Science - 1A</option>
+          <option value="MSC-MATH-1A">M.Sc Mathematics - 1A</option>
+          <option value="MSC-PHYS-1A">M.Sc Physics - 1A</option>
+          <option value="MSC-CHEM-1A">M.Sc Chemistry - 1A</option>
+          <option value="BCOM-1A">B.Com General - 1A</option>
+          <option value="BCOM-3A">B.Com General - 3A</option>
+          <option value="BCOM-5A">B.Com General - 5A</option>
+          <option value="BCOM-HONS-1A">B.Com Honours - 1A</option>
+          <option value="BCOM-HONS-3A">B.Com Honours - 3A</option>
+          <option value="MCOM-1A">M.Com - 1A</option>
+          <option value="BA-1A">B.A. General - 1A</option>
+          <option value="BA-3A">B.A. General - 3A</option>
+          <option value="BA-ENG-1A">B.A. English Honours - 1A</option>
+          <option value="BA-POL-1A">B.A. Political Science - 1A</option>
+          <option value="BA-HIST-1A">B.A. History Honours - 1A</option>
+          <option value="MA-ENG-1A">M.A. English - 1A</option>
+          <option value="MA-ECO-1A">M.A. Economics - 1A</option>
+          <option value="BPHARM-1A">B.Pharmacy - 1A</option>
+          <option value="BPHARM-3A">B.Pharmacy - 3A</option>
+          <option value="DPHARM-1A">D.Pharmacy - 1A</option>
+          <option value="BED-1A">B.Ed - 1A</option>
+          <option value="MED-1A">M.Ed - 1A</option>
+          <option value="BALLB-1A">B.A. LL.B 5-Year Integrated - 1A</option>
+          <option value="BBALLB-1A">B.B.A. LL.B 5-Year Integrated - 1A</option>
+          <option value="LLB-1A">LL.B 3-Year - 1A</option>
+          <option value="LLM-1A">LL.M - 1A</option>
+          <option value="BHMCT-1A">BHMCT (Hotel Management) - 1A</option>
+          <option value="BTTM-1A">BTTM (Tourism Management) - 1A</option>
+          <option value="BJMC-1A">BJMC (Journalism & Mass Comm) - 1A</option>
+          <option value="MJMC-1A">MJMC - 1A</option>
+          <option value="DIPLOMA-CSE-1A">Diploma Polytechnic CSE - 1A</option>
+          <option value="DIPLOMA-ME-1A">Diploma Polytechnic ME - 1A</option>
+        </datalist>
           </div>
         </div>
 
@@ -556,22 +623,24 @@
             <input type="text" id="inpStuId" class="form-control" value="2112345678" placeholder="e.g. 2112345678" required oninput="renderLiveCanvas()">
           </div>
           <div class="form-group">
-            <label class="form-label">Submission Date &amp; Day <span class="req">*</span></label>
-            <input type="date" id="inpDate" class="form-control" required onchange="handleDateChange()">
-            <input type="hidden" id="inpDay" value="">
+            <label class="form-label">Submission Date &amp; Day <span class="req">*</span> <span class="rule">(Auto-calculated)</span></label>
+            <div style="display:flex; gap:6px;">
+              <input type="date" id="inpDate" class="form-control" required onchange="handleDateChange()">
+              <input type="text" id="inpDay" class="form-control" style="width:115px; flex-shrink:0; font-weight:700; color:#a5b4fc; text-align:center;" readonly>
+            </div>
           </div>
         </div>
 
         <button type="submit" id="btnSubmitGenerate" class="btn-generate">
-          <i class="ri-flashlight-line"></i> Generate &amp; Save Cover Page
+          <i class="ri-flashlight-line"></i> Generate &amp; Save Practical Cover Page
         </button>
 
         <div class="btn-secondary-group">
           <button type="button" class="btn-sub" onclick="downloadClientPdf()">
-            <i class="ri-download-2-line"></i> Instant Vector PDF (Client)
+            <i class="ri-download-2-line"></i> Instant Fast PDF
           </button>
           <button type="button" class="btn-sub" onclick="downloadServerPdf()">
-            <i class="ri-server-line"></i> Server PDF (Python Engine)
+            <i class="ri-file-pdf-2-line"></i> Official High-Precision PDF
           </button>
         </div>
       </form>
@@ -608,10 +677,10 @@
           <i class="ri-history-line" style="color:#10b981;"></i> My Saved Practical File Cover Pages
         </h2>
         <p style="font-size:0.82rem; color:#94a3b8; margin-top:2px;">
-          All previous generated cover pages stored in Firestore with quick actions (View, Download, Edit, Delete).
+          All your previously generated cover pages stored securely in cloud records with quick actions (View, Download, Edit, Delete).
         </p>
       </div>
-      <button onclick="loadUserAssignments()" class="btn-sub" style="padding:5px 12px;">
+      <button onclick="loadUserPracticals()" class="btn-sub" style="padding:5px 12px;">
         <i class="ri-refresh-line"></i> Refresh Logs
       </button>
     </div>
@@ -619,7 +688,7 @@
     <div class="logs-grid" id="logsGrid">
       <div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:#64748b;">
         <i class="ri-loader-4-line spin-icon" style="font-size:1.8rem; color:#8b5cf6;"></i>
-        <p style="margin-top:8px;">Loading saved assignments from Firestore...</p>
+        <p style="margin-top:8px;">Loading your saved cover pages from cloud records...</p>
       </div>
     </div>
   </section>
@@ -687,23 +756,23 @@
     // Token Management Logic
     function getDailyTokens() {
       const today = new Date().toISOString().split('T')[0];
-      const savedDate = localStorage.getItem('dpg_practical_tokens_date');
+      const savedDate = localStorage.getItem('dpg_pract_tokens_date');
       const isContrib = isContributor();
       const defaultMax = isContrib ? 3 : 1;
 
       if (savedDate !== today) {
-        localStorage.setItem('dpg_practical_tokens_date', today);
-        localStorage.setItem('dpg_practical_tokens_count', String(defaultMax));
+        localStorage.setItem('dpg_pract_tokens_date', today);
+        localStorage.setItem('dpg_pract_tokens_count', String(defaultMax));
         return defaultMax;
       }
-      return parseInt(localStorage.getItem('dpg_practical_tokens_count') || String(defaultMax), 10);
+      return parseInt(localStorage.getItem('dpg_pract_tokens_count') || String(defaultMax), 10);
     }
 
     function decrementToken() {
       let tokens = getDailyTokens();
       if (tokens > 0) {
         tokens--;
-        localStorage.setItem('dpg_practical_tokens_count', String(tokens));
+        localStorage.setItem('dpg_pract_tokens_count', String(tokens));
         updateTokenBadge();
       }
     }
@@ -721,18 +790,79 @@
     // Degree Name Inference Helper
     function getDegreeFromCourse(courseStr) {
       const c = (courseStr || '').toUpperCase().trim();
+      if (c.includes('BCA-CTIS') || c.includes('CTIS')) return "BACHELOR OF COMPUTER APPLICATION (CLOUD TECH & INFO SECURITY)";
+      if (c.includes('BCA-DS') || (c.includes('DS') && c.includes('BCA'))) return "BACHELOR OF COMPUTER APPLICATION (DATA SCIENCE)";
       if (c.includes('BCA')) return "BACHELOR OF COMPUTER APPLICATION";
+      if (c.includes('BBA-CAM') || c.includes('CAM')) return "BACHELOR OF BUSINESS ADMINISTRATION (COMPUTER AIDED MANAGEMENT)";
+      if (c.includes('BBA-HM') || c.includes('HOSPITAL')) return "BACHELOR OF BUSINESS ADMINISTRATION (HOSPITAL MANAGEMENT)";
       if (c.includes('BBA')) return "BACHELOR OF BUSINESS ADMINISTRATION";
+      if (c.includes('B.TECH') || c.includes('BTECH')) {
+        if (c.includes('CSE') || c.includes('COMPUTER')) {
+          if (c.includes('AI') || c.includes('ML')) return "BACHELOR OF TECHNOLOGY (CSE - ARTIFICIAL INTELLIGENCE & MACHINE LEARNING)";
+          if (c.includes('DATA')) return "BACHELOR OF TECHNOLOGY (CSE - DATA SCIENCE)";
+          return "BACHELOR OF TECHNOLOGY (COMPUTER SCIENCE & ENGINEERING)";
+        }
+        if (c.includes('ECE') || c.includes('ELECTRONIC')) return "BACHELOR OF TECHNOLOGY (ELECTRONICS & COMMUNICATION ENGINEERING)";
+        if (c.includes('ME') || c.includes('MECHANICAL')) return "BACHELOR OF TECHNOLOGY (MECHANICAL ENGINEERING)";
+        if (c.includes('CIVIL')) return "BACHELOR OF TECHNOLOGY (CIVIL ENGINEERING)";
+        if (c.includes('EE') || c.includes('ELECTRICAL')) return "BACHELOR OF TECHNOLOGY (ELECTRICAL ENGINEERING)";
+        return "BACHELOR OF TECHNOLOGY";
+      }
       if (c.includes('MCA')) return "MASTER OF COMPUTER APPLICATION";
       if (c.includes('MBA')) return "MASTER OF BUSINESS ADMINISTRATION";
-      if (c.includes('B.TECH') || c.includes('BTECH')) return "BACHELOR OF TECHNOLOGY";
-      if (c.includes('M.TECH') || c.includes('MTECH')) return "MASTER OF TECHNOLOGY";
-      if (c.includes('BSC') || c.includes('B.SC')) return "BACHELOR OF SCIENCE";
-      if (c.includes('MSC') || c.includes('M.SC')) return "MASTER OF SCIENCE";
-      if (c.includes('BCOM') || c.includes('B.COM')) return "BACHELOR OF COMMERCE";
+      if (c.includes('M.TECH') || c.includes('MTECH')) {
+        if (c.includes('CSE')) return "MASTER OF TECHNOLOGY (COMPUTER SCIENCE & ENGINEERING)";
+        return "MASTER OF TECHNOLOGY";
+      }
+      if (c.includes('BSC') || c.includes('B.SC')) {
+        if (c.includes('CS') || c.includes('COMPUTER')) return "BACHELOR OF SCIENCE (COMPUTER SCIENCE)";
+        if (c.includes('IT')) return "BACHELOR OF SCIENCE (INFORMATION TECHNOLOGY)";
+        if (c.includes('BIOTECH')) return "BACHELOR OF SCIENCE (BIOTECHNOLOGY)";
+        if (c.includes('NON-MED') || c.includes('NON MEDICAL')) return "BACHELOR OF SCIENCE (NON-MEDICAL)";
+        if (c.includes('MED')) return "BACHELOR OF SCIENCE (MEDICAL)";
+        if (c.includes('DATA')) return "BACHELOR OF SCIENCE (DATA ANALYTICS)";
+        return "BACHELOR OF SCIENCE";
+      }
+      if (c.includes('MSC') || c.includes('M.SC')) {
+        if (c.includes('CS') || c.includes('COMPUTER')) return "MASTER OF SCIENCE (COMPUTER SCIENCE)";
+        if (c.includes('MATH')) return "MASTER OF SCIENCE (MATHEMATICS)";
+        if (c.includes('PHYSIC')) return "MASTER OF SCIENCE (PHYSICS)";
+        if (c.includes('CHEM')) return "MASTER OF SCIENCE (CHEMISTRY)";
+        if (c.includes('BIOTECH')) return "MASTER OF SCIENCE (BIOTECHNOLOGY)";
+        return "MASTER OF SCIENCE";
+      }
+      if (c.includes('BCOM') || c.includes('B.COM')) {
+        if (c.includes('HONS') || c.includes('HONOURS')) return "BACHELOR OF COMMERCE (HONOURS)";
+        return "BACHELOR OF COMMERCE";
+      }
       if (c.includes('MCOM') || c.includes('M.COM')) return "MASTER OF COMMERCE";
-      if (c.includes('BA')) return "BACHELOR OF ARTS";
-      if (c.includes('MA')) return "MASTER OF ARTS";
+      if (c.includes('BA') || c.includes('B.A')) {
+        if (c.includes('LLB') || c.includes('LL.B')) return "INTEGRATED BACHELOR OF ARTS & BACHELOR OF LAWS (B.A. LL.B)";
+        if (c.includes('ENG')) return "BACHELOR OF ARTS (HONOURS IN ENGLISH)";
+        if (c.includes('POL')) return "BACHELOR OF ARTS (HONOURS IN POLITICAL SCIENCE)";
+        if (c.includes('HIST')) return "BACHELOR OF ARTS (HONOURS IN HISTORY)";
+        if (c.includes('ECO')) return "BACHELOR OF ARTS (HONOURS IN ECONOMICS)";
+        return "BACHELOR OF ARTS";
+      }
+      if (c.includes('MA') || c.includes('M.A')) {
+        if (c.includes('ENG')) return "MASTER OF ARTS (ENGLISH)";
+        if (c.includes('ECO')) return "MASTER OF ARTS (ECONOMICS)";
+        if (c.includes('HIST')) return "MASTER OF ARTS (HISTORY)";
+        if (c.includes('POL')) return "MASTER OF ARTS (POLITICAL SCIENCE)";
+        if (c.includes('HINDI')) return "MASTER OF ARTS (HINDI)";
+        return "MASTER OF ARTS";
+      }
+      if (c.includes('BPHARM') || c.includes('B.PHARM')) return "BACHELOR OF PHARMACY";
+      if (c.includes('DPHARM') || c.includes('D.PHARM')) return "DIPLOMA IN PHARMACY";
+      if (c.includes('BED') || c.includes('B.ED')) return "BACHELOR OF EDUCATION";
+      if (c.includes('MED') || c.includes('M.ED')) return "MASTER OF EDUCATION";
+      if (c.includes('LLB') || c.includes('LL.B')) return "BACHELOR OF LAWS (LL.B)";
+      if (c.includes('LLM') || c.includes('LL.M')) return "MASTER OF LAWS (LL.M)";
+      if (c.includes('BHMCT') || c.includes('HOTEL')) return "BACHELOR OF HOTEL MANAGEMENT & CATERING TECHNOLOGY";
+      if (c.includes('BTTM') || c.includes('TOURISM')) return "BACHELOR OF TOURISM & TRAVEL MANAGEMENT";
+      if (c.includes('BJMC') || c.includes('JOURNALISM')) return "BACHELOR OF JOURNALISM & MASS COMMUNICATION";
+      if (c.includes('MJMC')) return "MASTER OF JOURNALISM & MASS COMMUNICATION";
+      if (c.includes('DIPLOMA') || c.includes('POLYTECHNIC')) return "DIPLOMA IN ENGINEERING & TECHNOLOGY";
       return "BACHELOR OF COMPUTER APPLICATION";
     }
 
@@ -747,22 +877,34 @@
 
     function handleDateChange() {
       const dateVal = document.getElementById('inpDate')?.value;
-      const dayHidden = document.getElementById('inpDay');
-      if (dateVal && dayHidden) {
-        const d = new Date(dateVal);
-        const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-        dayHidden.value = days[d.getDay()] || 'FRIDAY';
+      const dayInput = document.getElementById('inpDay');
+      if (dateVal && dayInput) {
+        const parts = dateVal.split('-');
+        if (parts.length === 3) {
+          const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+          dayInput.value = days[d.getDay()] || 'FRIDAY';
+        }
       }
       renderLiveCanvas();
     }
 
-    // Set today's date on initial load
+    // Set today's date and day immediately on initial load
     function initDefaultDate() {
       const dateInput = document.getElementById('inpDate');
-      if (dateInput && !dateInput.value) {
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
-        handleDateChange();
+      const dayInput = document.getElementById('inpDay');
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+      
+      if (dateInput) {
+        dateInput.value = todayStr;
+      }
+      if (dayInput) {
+        dayInput.value = days[now.getDay()];
       }
     }
 
@@ -778,7 +920,8 @@
       }
 
       return {
-        assignmentNo: document.getElementById('inpAssignNo')?.value.trim() || '1',
+        docType: 'practical',
+        assignmentNo: '',
         session: document.getElementById('inpSession')?.value.trim() || '2025-2026',
         subjectName: document.getElementById('inpSubName')?.value.trim() || 'DATA STRUCTURES & ALGORITHMS',
         subjectCode: document.getElementById('inpSubCode')?.value.trim() || 'BCA-301',
@@ -832,14 +975,13 @@
       const fontTitleSize = Math.round(13.17 * scaleY);
       ctx.font = `bold ${fontTitleSize}px 'Times New Roman', Times, serif`;
 
-      // 2. Headings (Centered)
-      // A PRACTICAL FILE OF ...
-      ctx.fillText("A", W / 2.0, 120.0 * scaleY);
-      ctx.fillText("PRACTICAL FILE", W / 2.0, 142.0 * scaleY);
-      ctx.fillText("OF", W / 2.0, 164.0 * scaleY);
-      ctx.fillText(d.subjectName.toUpperCase(), W / 2.0, 186.0 * scaleY);
-      ctx.fillText(d.subjectCode.toUpperCase(), W / 2.0, 208.0 * scaleY);
-      ctx.fillText(d.courseSection.toUpperCase(), W / 2.0, 230.0 * scaleY);
+      // 2. Headings (Centered - Strictly matching PracticalCoverPageTemplate.pdf)
+      ctx.fillText("A", W / 2.0, 118.0 * scaleY);
+      ctx.fillText("PRACTICAL FILE", W / 2.0, 140.0 * scaleY);
+      ctx.fillText("OF", W / 2.0, 162.0 * scaleY);
+      ctx.fillText(d.subjectName.toUpperCase(), W / 2.0, 184.0 * scaleY);
+      ctx.fillText(d.subjectCode.toUpperCase(), W / 2.0, 206.0 * scaleY);
+      ctx.fillText(d.courseSection.toUpperCase(), W / 2.0, 228.0 * scaleY);
 
       ctx.fillText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 250.0 * scaleY);
       ctx.fillText(d.degreeName.toUpperCase(), W / 2.0, 267.0 * scaleY);
@@ -944,11 +1086,11 @@
         if (res.ok && resData.success) {
           // Decrement token
           decrementToken();
-          alert("Assignment cover page generated and saved to Firestore successfully!");
+          alert("Cover page generated and saved to your cloud records successfully!");
           // Trigger instant client download
           downloadClientPdf();
           // Reload history list
-          await loadUserAssignments();
+          await loadUserPracticals();
         } else {
           throw new Error(resData.error || "Failed to save assignment to Firestore");
         }
@@ -962,8 +1104,8 @@
             await window.setDoc(ref, { id: aid, userId: uid, ...d, createdAt: new Date().toISOString() });
             decrementToken();
             downloadClientPdf();
-            await loadUserAssignments();
-            alert("Saved to Firestore via client connection!");
+            await loadUserPracticals();
+            alert("Saved successfully to your cloud records!");
           } else {
             // If offline, still download client PDF
             downloadClientPdf();
@@ -974,7 +1116,7 @@
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = '<i class="ri-flashlight-line"></i> Generate &amp; Save Cover Page';
+          submitBtn.innerHTML = '<i class="ri-flashlight-line"></i> Generate &amp; Save Practical Cover Page';
         }
       }
     }
@@ -1029,7 +1171,7 @@
     }
 
     // Load User Saved Assignment Logs
-    async function loadUserAssignments() {
+    async function loadUserPracticals() {
       const container = document.getElementById('logsGrid');
       if (!container) return;
       const uid = getActiveUserId();
@@ -1089,7 +1231,7 @@
             <div class="log-card-top">
               <div>
                 <span class="log-card-code">${escapeHtml(r.subjectCode || 'CODE')}</span>
-                <span style="font-size:0.75rem; color:#cbd5e1; margin-left:6px; font-weight:600;">Assignment #${escapeHtml(r.assignmentNo || '1')}</span>
+                <span style="font-size:0.75rem; color:#cbd5e1; margin-left:6px; font-weight:600;">Practical File</span>
               </div>
               <span style="font-size:0.72rem; color:#64748b;">${escapeHtml(dateStr)}</span>
             </div>
@@ -1103,16 +1245,16 @@
             </div>
 
             <div class="log-actions">
-              <button type="button" class="log-btn log-btn-view" onclick='viewSavedAssignment(${JSON.stringify(r)})' title="View in Canvas Preview">
+              <button type="button" class="log-btn log-btn-view" onclick='viewSavedPractical(${JSON.stringify(r)})' title="View in Canvas Preview">
                 <i class="ri-eye-line"></i> View
               </button>
-              <button type="button" class="log-btn log-btn-dl" onclick='downloadSingleLogPdf(${JSON.stringify(r)})' title="Download PDF">
+              <button type="button" class="log-btn log-btn-dl" onclick='downloadSinglePractLogPdf(${JSON.stringify(r)})' title="Download PDF">
                 <i class="ri-download-line"></i> Download
               </button>
-              <button type="button" class="log-btn log-btn-edit" onclick='editSavedAssignment(${JSON.stringify(r)})' title="Load into Form to Edit">
+              <button type="button" class="log-btn log-btn-edit" onclick='editSavedPractical(${JSON.stringify(r)})' title="Load into Form to Edit">
                 <i class="ri-edit-line"></i> Edit
               </button>
-              <button type="button" class="log-btn log-btn-del" onclick="deleteSavedAssignment('${r.id}')" title="Delete from Firestore">
+              <button type="button" class="log-btn log-btn-del" onclick="deleteSavedPractical('${r.id}')" title="Remove from Records">
                 <i class="ri-delete-bin-line"></i> Delete
               </button>
             </div>
@@ -1122,12 +1264,12 @@
     }
 
     // Quick Actions
-    window.viewSavedAssignment = function(r) {
-      editSavedAssignment(r);
+    window.viewSavedPractical = function(r) {
+      editSavedPractical(r);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    window.editSavedAssignment = function(r) {
+    window.editSavedPractical = function(r) {
       if (!r) return;
       if (document.getElementById('inpAssignNo')) document.getElementById('inpAssignNo').value = r.assignmentNo || '1';
       if (document.getElementById('inpSession')) document.getElementById('inpSession').value = r.session || '2025-2026';
@@ -1148,15 +1290,15 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    window.downloadSingleLogPdf = function(r) {
-      editSavedAssignment(r);
+    window.downloadSinglePractLogPdf = function(r) {
+      editSavedPractical(r);
       setTimeout(() => {
         downloadClientPdf();
       }, 100);
     };
 
-    window.deleteSavedAssignment = async function(aid) {
-      if (!confirm("Are you sure you want to permanently delete this assignment cover page from Firestore?")) return;
+    window.deleteSavedPractical = async function(aid) {
+      if (!confirm("Are you sure you want to permanently delete this cover page from your records?")) return;
       const uid = getActiveUserId();
 
       try {
@@ -1168,7 +1310,7 @@
         if (res.ok) {
           const card = document.getElementById(`card-${aid}`);
           if (card) card.remove();
-          alert("Assignment cover page deleted from Firestore.");
+          alert("Cover page removed from your records successfully.");
         } else {
           throw new Error("API delete failed");
         }
@@ -1179,7 +1321,7 @@
             await window.deleteDoc(window.doc(window.dpgDb, "Assignment", uid, "records", aid));
             const card = document.getElementById(`card-${aid}`);
             if (card) card.remove();
-            alert("Deleted from Firestore!");
+            alert("Removed from your records successfully!");
           }
         } catch (e) {
           alert("Error deleting record: " + e.message);
@@ -1244,7 +1386,7 @@
             closeRestoreTokensModal();
             // Restore token!
             const defaultMax = isContrib ? 3 : 1;
-            localStorage.setItem('dpg_practical_tokens_count', String(defaultMax));
+            localStorage.setItem('dpg_pract_tokens_count', String(defaultMax));
             updateTokenBadge();
             alert("🎉 Thank you! Your assignment generation tokens have been restored!");
           }
@@ -1261,7 +1403,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       initDefaultDate();
       updateTokenBadge();
-      loadUserAssignments();
+      loadUserPracticals();
       renderLiveCanvas();
     });
   </script>

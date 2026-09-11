@@ -4,14 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
-  <title>External Links & Redirect Disclaimer | DPGNotes Legal Center</title>
-  <meta name="description" content="External Links & Redirect Disclaimer of DPGNotes - Comprehensive academic documentation and regulatory standards." />
+  <title>Comprehensive External Links Policy | DPGNotes Legal Center</title>
+  <meta name="description" content="Comprehensive External Links Policy of DPGNotes explaining outbound link interception, whitelist mechanics, and safety guidelines." />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
@@ -24,7 +67,8 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Center</a>
+        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
+        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
         <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
@@ -38,83 +82,112 @@
         <div class="sidebar-group">
           <h3 class="group-title">Overview</h3>
           <ul class="nav-list">
-            <li><a href="index.html" class="nav-link"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
             <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
         <div class="sidebar-group">
-          <h3 class="group-title">Dedicated Policies</h3>
+          <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
             <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
-            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Disclaimer</a></li>
-            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
             <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
-            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
-            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
-            <li><a href="links-policy.html" class="nav-link active"><i class="ri-external-link-line"></i> External Links Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link active"><i class="ri-external-link-line"></i> External Links</a></li>
           </ul>
         </div>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-content">
-      <div class="content-wrapper">
-        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="index.html">Legal Center</a></li>
-            <li class="current-crumb">External Links & Redirect Disclaimer</li>
-          </ol>
-        </nav>
-
-        <div class="doc-viewer-card">
-          <div class="viewer-actions">
-            <span class="current-policy-title">External Links & Redirect Disclaimer</span>
-            <div class="btn-group">
-              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="action-btn"><i class="ri-share-line"></i> Share</button>
-              <button onclick="window.print();" class="action-btn"><i class="ri-printer-line"></i> Print</button>
+    <main class="legal-main">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-          </div>
+            <h1 class="document-title">DPGNotes External Links Policy</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-LINK-2026-V3.2</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
+            </div>
+          </header>
 
-          <!-- Bi-directional Link to Legal Notes Summary -->
+          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
-              <i class="ri-information-fill"></i>
-              <span>Looking for a quick brief? Read the summarized version in the Legal Notes Center.</span>
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#links-policy">Summary Version of this Policy in Legal Hub</a>.
+              </div>
             </div>
-            <a href="index.html#links-policy" class="summary-back-link">View Summary in Legal Notes <i class="ri-arrow-right-line"></i></a>
           </div>
 
-          <article class="policy-section active-section">
-            <h1>DPGNotes External Links & Redirect Policy</h1>
-            <p class="subtitle">Effective Date: July 13, 2026 | Document ID: POL-DPG-LINK-2026-V3</p>
+          <article class="legal-article">
             
-            <h2>1. External Link Interception Engine</h2>
-            <p>To defend students from malicious phishing sites and unverified domains, DPGNotes employs a centralized client-side redirect interception engine (<code>redirect.js</code>). Whenever a user clicks an outbound link, a warning modal displays destination details and requires deliberate confirmation before proceeding.</p>
+            <h2>1. Objective & The Outbound Interception Architecture</h2>
+            <p>To protect students from malicious redirects, phishing domains, and unverified commercial traps, DPGNotes implements a global client-side <strong>External Link Interception Architecture</strong>. Whenever a user clicks an outbound hyperlink leading away from DPGNotes, our system intercepts the navigation and presents an informative warning modal.</p>
+            <p>This External Links Policy establishes our link verification standards, trusted domains whitelist, and user safety practices.</p>
 
-            <h2>2. Trusted Internal Platform Whitelist</h2>
-            <p>The following domains are officially recognized as trusted internal platforms and bypass external redirect warnings:</p>
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-shield-keyhole-line"></i> Interception Modal</h4>
+                <p>Informs visitors before they exit the academic perimeter, displaying the full transparent destination URL.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-verified-badge-line"></i> Trusted Whitelist</h4>
+                <p>Seamless navigation to verified internal partners including DigiIndia Student Search Engine.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-lock-line"></i> Security Headers</h4>
+                <p>Outbound links automatically apply rel="noopener noreferrer" to prevent reverse tab-jacking exploits.</p>
+              </div>
+            </div>
+
+            <h2>2. The Trusted Internal Whitelist Architecture</h2>
+            <p>To balance rigorous student safety with smooth navigation, DPGNotes maintains a programmatic <strong>Trusted Whitelist</strong>. Hyperlinks pointing to verified affiliated academic services bypass the external redirect warning and open directly. Our trusted whitelist includes:</p>
             <ul>
-              <li><code>dpgnotes.web.app</code> & <code>dpgnotes.firebaseapp.com</code> (Official Portal)</li>
-              <li><code>digiindia-student-platform.onrender.com</code> & DigiIndia partner ecosystem</li>
-              <li>Official university portals and verified syllabus companion repositories</li>
+              <li><code>dpgnotes.web.app</code> and <code>dpgnotes.firebaseapp.com</code> — The primary official DPGNotes production portals.</li>
+              <li><code>digiindia-student-platform.onrender.com</code> and <code>digiindia</code> — Our verified collaborative student search engine and partner directory.</li>
+              <li><code>localhost</code> and <code>127.0.0.1</code> — Local development, educational testing, and offline preview environments.</li>
+              <li>Dynamic host matches for verified GitHub Pages deployments and official mirrors.</li>
             </ul>
 
-            <h2>3. Secure Browsing Headers</h2>
-            <p>All external links are opened with <code>rel="noopener noreferrer"</code> attributes to prevent window-opener hijacking and protect browser tab isolation.</p>
+            <h2>3. External Link Security Controls & Exploit Defense</h2>
+            <p>When users choose to proceed to external web destinations, DPGNotes automatically enforces standardized browser security attributes:</p>
+            <ul>
+              <li><strong><code>rel="noopener"</code>:</strong> Prevents the newly opened third-party webpage from acquiring access to your current DPGNotes window object via <code>window.opener</code>, neutralizing reverse tab-jacking exploits.</li>
+              <li><strong><code>rel="noreferrer"</code>:</strong> Protects your educational privacy by withholding the full referrer URL containing search queries or internal note identifiers.</li>
+              <li><strong>Safe Browsing Checks:</strong> Contributor-submitted external links are cross-referenced against automated malware blacklists prior to publication.</li>
+            </ul>
+
+            <h2>4. No Endorsement & Disclaimer of Third-Party Liability</h2>
+            <p>The appearance of external hyperlinks on DPGNotes does not constitute an endorsement, official sponsorship, or commercial recommendation of the external website, its sponsoring organization, or any commercial products advertised therein. DPGNotes holds no liability for external website availability, privacy practices, or content fidelity.</p>
+
+            <h2>5. Reporting Deceptive or Broken Outbound Links</h2>
+            <p>Students and contributors who discover malicious, broken, or deceptive external links within any lecture note card or author bio are urged to report the URL to <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a>. Reported links are inspected and removed from our database within 24 hours.</p>
         
 
-            <!-- Inter-linking section to other policies -->
-            <h2>Related Legal Frameworks & Policies</h2>
-            <p>This policy functions alongside our other governance documents across the DPGNotes academic portal:</p>
+            <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
+            </h3>
             <div class="related-policies-grid">
-              <a href="disclaimer.html" class="related-policy-chip"><i class="ri-alert-line"></i> Disclaimer</a>\n<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>\n<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+<a href="disclaimer.html" class="related-policy-chip"><i class="ri-alert-line"></i> Legal Disclaimer</a>
+<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
             </div>
           </article>
         </div>

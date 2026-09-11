@@ -5,13 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
   <title>Comprehensive Legal & Academic Disclaimer | DPGNotes Legal Center</title>
-  <meta name="description" content="Comprehensive Legal & Academic Disclaimer of DPGNotes - Comprehensive academic documentation and regulatory standards." />
+  <meta name="description" content="Comprehensive Legal and Academic Disclaimer of DPGNotes detailing syllabus variations, non-endorsement, and educational fair use." />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
@@ -24,7 +67,8 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Center</a>
+        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
+        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
         <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
@@ -38,81 +82,105 @@
         <div class="sidebar-group">
           <h3 class="group-title">Overview</h3>
           <ul class="nav-list">
-            <li><a href="index.html" class="nav-link"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
             <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
         <div class="sidebar-group">
-          <h3 class="group-title">Dedicated Policies</h3>
+          <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
             <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
-            <li><a href="disclaimer.html" class="nav-link active"><i class="ri-alert-line"></i> Disclaimer</a></li>
-            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="disclaimer.html" class="nav-link active"><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
             <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
-            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
-            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
-            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
           </ul>
         </div>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-content">
-      <div class="content-wrapper">
-        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="index.html">Legal Center</a></li>
-            <li class="current-crumb">Comprehensive Legal & Academic Disclaimer</li>
-          </ol>
-        </nav>
-
-        <div class="doc-viewer-card">
-          <div class="viewer-actions">
-            <span class="current-policy-title">Comprehensive Legal & Academic Disclaimer</span>
-            <div class="btn-group">
-              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="action-btn"><i class="ri-share-line"></i> Share</button>
-              <button onclick="window.print();" class="action-btn"><i class="ri-printer-line"></i> Print</button>
+    <main class="legal-main">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-          </div>
+            <h1 class="document-title">DPGNotes Legal & Academic Disclaimer</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-DISC-2026-V3.2</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
+            </div>
+          </header>
 
-          <!-- Bi-directional Link to Legal Notes Summary -->
+          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
-              <i class="ri-information-fill"></i>
-              <span>Looking for a quick brief? Read the summarized version in the Legal Notes Center.</span>
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#disclaimer">Summary Version of this Policy in Legal Hub</a>.
+              </div>
             </div>
-            <a href="index.html#disclaimer" class="summary-back-link">View Summary in Legal Notes <i class="ri-arrow-right-line"></i></a>
           </div>
 
-          <article class="policy-section active-section">
-            <h1>DPGNotes Legal & Academic Disclaimer</h1>
-            <p class="subtitle">Effective Date: July 13, 2026 | Document ID: POL-DPG-DISC-2026-V3</p>
+          <article class="legal-article">
             
-            <h2>1. Academic Content & Community Contributions</h2>
-            <p>DPGNotes is an open student-led academic collaboration platform. The lecture notes, revision summaries, sample questions, and formula cheat-sheets available on the portal are prepared and shared by student contributors and academic volunteers for educational assistance only.</p>
+            <h2>1. Academic Collaboration & Educational Purpose</h2>
+            <p>DPGNotes is an open, student-led academic collaboration platform operated under Akshat Network Hub. All lecture notes, formula cheat-sheets, syllabus breakdowns, and examination review guides shared on this portal are prepared voluntarily by student contributors and academic volunteers solely for non-commercial educational assistance.</p>
+            <p>This comprehensive Disclaimer articulates the boundaries of our hosted educational materials and clarifies institutional affiliations.</p>
 
-            <h2>2. No Guarantee of Exam Syllabus Accuracy</h2>
-            <p>While we encourage peer review and rigorous fact-checking (including automated AI fact-checking verification tools), university syllabi and grading criteria vary across universities (such as MDU Rohtak, Gurugram University, Delhi University, etc.) and academic sessions. Users are strongly advised to cross-verify all study notes against their official university syllabus guidelines and prescribed textbooks.</p>
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-file-text-line"></i> Peer Summaries</h4>
+                <p>Materials reflect student lecture notes and peer summaries, not official university-authorized textbooks or grading rubrics.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-government-line"></i> Non-Affiliation</h4>
+                <p>No official institutional sponsorship or endorsement by universities, government departments, or commercial publishers.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-compass-3-line"></i> Independent Verification</h4>
+                <p>Students must cross-check revision notes against official syllabus guidelines published by their respective universities.</p>
+              </div>
+            </div>
 
-            <h2>3. No Professional or Institutional Endorsement</h2>
-            <p>Reference to any university, college department, professor, or third-party academic publisher does not constitute official endorsement, sponsorship, or institutional affiliation by said entities, unless explicitly specified.</p>
+            <h2>2. Syllabus Discrepancies & Independent Cross-Verification</h2>
+            <p>University academic curricula, course syllabi, recommended textbook editions, and grading structures undergo periodic revisions across academic sessions and university boards (including Maharshi Dayanand University Rohtak, Gurugram University, Kurukshetra University, and Delhi University).</p>
+            <p>While our student editorial team and automated verification algorithms strive to ensure academic fidelity, DPGNotes cannot guarantee that hosted notes reflect recent mid-semester syllabus amendments. Users are strongly urged to cross-verify all study notes against official university notifications, department handouts, and prescribed textbooks before examinations.</p>
 
-            <h2>4. External Endpoints & Third-Party Links</h2>
-            <p>The platform links to third-party services including DigiIndia Student Platform, YouTube video tutorials, GitHub repositories, and cloud document storage. DPGNotes holds no liability for the content, privacy standards, availability, or policies of external sites.</p>
+            <h2>3. No Institutional Affiliation or Official Endorsement</h2>
+            <p>Reference to any university, college, educational board, professor, department head, or commercial textbook publisher on DPGNotes is made strictly for descriptive, educational, and categorization purposes. Such references do not imply or constitute official endorsement, institutional sponsorship, or contractual partnership between DPGNotes and said entities, unless explicitly articulated.</p>
+
+            <h2>4. AI Knowledge Assistant & Fact-Checking Disclaimer</h2>
+            <p>Our platform incorporates artificial intelligence tools for real-time tag standardization, spelling verification, and academic content assistance. While these algorithms utilize modern natural language processing, automated suggestions may occasionally contain factual nuances or typographical variations. Students must exercise scholarly discernment before incorporating automated suggestions into academic submissions.</p>
+
+            <h2>5. External Links & Third-Party Endpoints</h2>
+            <p>DPGNotes contains outbound hyperlinks to external academic endpoints, including DigiIndia Student Search Engine, YouTube video lectures, GitHub source repositories, and cloud document drives. DPGNotes holds no control over, and assumes no liability for, the content, privacy standards, or uptime of third-party web destinations.</p>
+
+            <h2>6. Limitation of Academic Liability</h2>
+            <p>Under no circumstances shall DPGNotes, Akshat Network Hub, its developers, or its student contributors be held liable for any academic outcomes, loss of marks, exam disqualifications, or scholastic consequences resulting from reliance on notes hosted on this portal.</p>
         
 
-            <!-- Inter-linking section to other policies -->
-            <h2>Related Legal Frameworks & Policies</h2>
-            <p>This policy functions alongside our other governance documents across the DPGNotes academic portal:</p>
+            <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
+            </h3>
             <div class="related-policies-grid">
-              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>\n<a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>\n<a href="links-policy.html" class="related-policy-chip"><i class="ri-external-link-line"></i> External Links Disclaimer</a>\n<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+              <a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+<a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
+<a href="links-policy.html" class="related-policy-chip"><i class="ri-external-link-line"></i> External Links</a>
+<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
             </div>
           </article>
         </div>

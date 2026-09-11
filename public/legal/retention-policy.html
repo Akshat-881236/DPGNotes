@@ -4,14 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
-  <title>Data Retention & Permanent Deletion Policy | DPGNotes Legal Center</title>
-  <meta name="description" content="Data Retention & Permanent Deletion Policy of DPGNotes - Comprehensive academic documentation and regulatory standards." />
+  <title>Comprehensive Data Retention Policy | DPGNotes Legal Center</title>
+  <meta name="description" content="Comprehensive Data Retention Policy of DPGNotes specifying lifecycle schedules, account deletion protocols, and automated archiving." />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
@@ -24,7 +67,8 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Center</a>
+        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
+        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
         <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
@@ -38,108 +82,151 @@
         <div class="sidebar-group">
           <h3 class="group-title">Overview</h3>
           <ul class="nav-list">
-            <li><a href="index.html" class="nav-link"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
             <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
         <div class="sidebar-group">
-          <h3 class="group-title">Dedicated Policies</h3>
+          <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
             <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
-            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Disclaimer</a></li>
-            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
             <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
-            <li><a href="retention-policy.html" class="nav-link active"><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
-            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
-            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link active"><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
           </ul>
         </div>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-content">
-      <div class="content-wrapper">
-        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="index.html">Legal Center</a></li>
-            <li class="current-crumb">Data Retention & Permanent Deletion Policy</li>
-          </ol>
-        </nav>
-
-        <div class="doc-viewer-card">
-          <div class="viewer-actions">
-            <span class="current-policy-title">Data Retention & Permanent Deletion Policy</span>
-            <div class="btn-group">
-              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="action-btn"><i class="ri-share-line"></i> Share</button>
-              <button onclick="window.print();" class="action-btn"><i class="ri-printer-line"></i> Print</button>
+    <main class="legal-main">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-          </div>
+            <h1 class="document-title">DPGNotes Data Retention & Disposal Policy</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-RETN-2026-V3.2</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
+            </div>
+          </header>
 
-          <!-- Bi-directional Link to Legal Notes Summary -->
+          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
-              <i class="ri-information-fill"></i>
-              <span>Looking for a quick brief? Read the summarized version in the Legal Notes Center.</span>
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#retention">Summary Version of this Policy in Legal Hub</a>.
+              </div>
             </div>
-            <a href="index.html#retention" class="summary-back-link">View Summary in Legal Notes <i class="ri-arrow-right-line"></i></a>
           </div>
 
-          <article class="policy-section active-section">
-            <h1>DPGNotes Data Retention & Disposal Policy</h1>
-            <p class="subtitle">Effective Date: July 13, 2026 | Document ID: POL-DPG-RET-2026-V3</p>
+          <article class="legal-article">
             
-            <h2>1. Retention Philosophy & Legal Basis</h2>
-            <p>Under the DPDP Act 2023, personal data must not be retained beyond the period necessary to fulfill the purpose for which it was processed. This policy outlines our exact archival and deletion schedules.</p>
+            <h2>1. Lifecycle Governance & Data Minimization</h2>
+            <p>DPGNotes adheres strictly to statutory data storage limitations articulated in the Digital Personal Data Protection Act (DPDP Act) 2023 and the GDPR. Personal information, session telemetry, and student interaction records are retained only for the duration necessary to accomplish educational purposes or fulfill statutory obligations.</p>
+            <p>This Data Retention Policy defines specific retention schedules, automated archiving processes, and permanent deletion workflows.</p>
 
-            <h2>2. Specific Data Retention Schedules</h2>
-            <table style="width:100%; border-collapse:collapse; margin:1rem 0; font-size:0.9rem;">
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-calendar-check-line"></i> Defined Schedules</h4>
+                <p>Clear, transparent lifespan limits for every category of user data, guest tokens, and security logs.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-delete-bin-6-line"></i> Self-Service Erasure</h4>
+                <p>1-Click account deletion via the Danger Zone permanently purges all profile records and contributions.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-recycle-line"></i> Automated Pruning</h4>
+                <p>Automated database scheduled routines purge expired guest tokens and transient analytics weekly.</p>
+              </div>
+            </div>
+
+            <h2>2. Comprehensive Data Retention Schedule</h2>
+            <p>Our platform enforces distinct retention schedules across six categories of data:</p>
+            <table style="width:100%; border-collapse:collapse; margin:1.2rem 0; font-size:0.88rem;">
               <thead>
-                <tr style="background:rgba(99,102,241,0.1); text-align:left;">
-                  <th style="padding:10px; border:1px solid var(--border-color);">Data Classification</th>
+                <tr style="background:rgba(99,102,241,0.12); text-align:left;">
+                  <th style="padding:10px; border:1px solid var(--border-color);">Data Category</th>
                   <th style="padding:10px; border:1px solid var(--border-color);">Retention Period</th>
-                  <th style="padding:10px; border:1px solid var(--border-color);">Disposal Mechanism</th>
+                  <th style="padding:10px; border:1px solid var(--border-color);">Trigger Event</th>
+                  <th style="padding:10px; border:1px solid var(--border-color);">Disposal Method</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Contributor Profiles</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Duration of active account</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Purged immediately upon account self-deletion</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);"><strong>Anonymous Guest Identifiers</strong></td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">12 Months</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Last active session timestamp</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Automated database purge</td>
                 </tr>
                 <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Uploaded Study Resources</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Retained until author deletion</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Permanent removal from Cloud Firestore & Storage</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);"><strong>Daily Generation Tokens</strong></td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">24 Hours</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Midnight UTC roll-over</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Local client key reset</td>
                 </tr>
                 <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Telemetry & Click Logs</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);"><strong>Active Contributor Profiles</strong></td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Account Lifespan</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Until voluntary account deletion</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Hard delete from database</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; border:1px solid var(--border-color);"><strong>Published Academic Notes</strong></td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Indefinite / Contributor Discretion</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Active unless removed by author</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Immediate unpublishing &amp; purge</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px; border:1px solid var(--border-color);"><strong>Security Violation Audit Logs</strong></td>
                   <td style="padding:10px; border:1px solid var(--border-color);">180 Days</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Automated database scrub & archival</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">From infraction recording date</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Encrypted archive overwrite</td>
                 </tr>
                 <tr>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Suspension & Disciplinary Records</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">1 Year post-resolution</td>
-                  <td style="padding:10px; border:1px solid var(--border-color);">Anonymized audit logging</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);"><strong>Grievance &amp; Appeal Records</strong></td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">24 Months</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">From resolution closure</td>
+                  <td style="padding:10px; border:1px solid var(--border-color);">Secure cryptographic erasure</td>
                 </tr>
               </tbody>
             </table>
 
-            <h2>3. Contributor Self-Deletion Rights ("Danger Zone")</h2>
-            <p>Every registered contributor possesses the unilateral right to delete their entire account and all associated documents permanently via the Contributor Dashboard Danger Zone.</p>
+            <h2>3. Self-Service Account Deletion (The Danger Zone)</h2>
+            <p>Contributors maintain complete autonomy over their identity. Through your Contributor Dashboard &rarr; Account Settings &rarr; <strong>Danger Zone</strong>, you can trigger irreversible account termination. Executing this action initiates an atomic database deletion transaction that:</p>
+            <ul>
+              <li>Permanently deletes your authenticated user profile, biographical description, and avatar reference.</li>
+              <li>Purges your active session authorizations, contributor badges, and leaderboard standings.</li>
+              <li>Grants you the option to either retain your authored academic notes under anonymous community attribution or permanently delete all uploaded notes.</li>
+            </ul>
+
+            <h2>4. Permanent Cryptographic Disposal Standards</h2>
+            <p>When records reach the conclusion of their statutory retention lifespan or an account erasure request is processed, DPGNotes executes hard deletion protocols. Data blocks are overwritten in compliance with NIST SP 800-88 standards, ensuring that purged information cannot be reconstructed or retrieved.</p>
         
 
-            <!-- Inter-linking section to other policies -->
-            <h2>Related Legal Frameworks & Policies</h2>
-            <p>This policy functions alongside our other governance documents across the DPGNotes academic portal:</p>
+            <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
+            </h3>
             <div class="related-policies-grid">
-              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>\n<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>\n<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
             </div>
           </article>
         </div>

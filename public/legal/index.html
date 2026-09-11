@@ -272,7 +272,7 @@
               <p>We collect credentials and information to provide better services to our users. This includes account profile information (names, emails) and resource uploads (notes, exams, sample papers).</p>
               
               <h2>2. Information Security</h2>
-              <p>All data is hosted securely in Google Firebase / Cloud Firestore. We enforce strict Firebase Security Rules, restricting read/write permissions to verified account uploaders and administrators. Sensitive transactions are processed behind JWT token authorization headers.</p>
+              <p>All data is hosted securely in encrypted cloud database infrastructure. We enforce strict cloud security rules, restricting read/write permissions to verified account uploaders and administrators. Sensitive transactions are processed behind secure cryptographic authorization headers.</p>
 
               <h2>3. AI Assistant Training & Telemetry</h2>
               <p>Contributor personal & network group messages are processed on the server to dynamically train and update the DPGNotes AI Assistant knowledge base. Users whose accounts are suspended or subject to copyright notices can submit an official appeal through the <a href="https://dpgnotes.web.app/suspension-support-contact-form.html" target="_blank" style="color:var(--primary-light); text-decoration:underline;">Support & Suspension Appeal Portal</a>.</p>
@@ -448,11 +448,11 @@
               </div>
               <p>We utilize best-in-class security measures to protect contributor uploads and administrative accounts from unauthorized access.</p>
               
-              <h2>1. Server Security</h2>
-              <p>All database queries undergo validation via Google Firebase server-side Firestore Rules. Admin actions require JWT authentication tokens verified on the Render server.</p>
+              <h2>1. Infrastructure Security & Cloud Protection</h2>
+              <p>All database queries undergo validation via strict cloud database rules. Admin actions require signed cryptographic tokens verified on our secure cloud platform.</p>
               
-              <h2>2. API Security</h2>
-              <p>Our backend APIs employ CORS protection and JWT token verification. Deletions and user modifications are strictly logged in the Activity Logs database.</p>
+              <h2>2. Client-Side Cryptography</h2>
+              <p>Sensitive user actions, passwords, and sessions are encrypted using industry standard protocols before leaving your browser.</p>
             </article>
 
             <!-- Section: Data Retention Policy -->
@@ -472,7 +472,7 @@
               <p>We only retain collected personal data and document records for as long as necessary to fulfill academic usage and compliance mandates.</p>
               
               <h2>1. Contributor Deletion</h2>
-              <p>When a contributor deletes their account, all associated documents, user logs, and database profiles are permanently and immediately deleted from Firestore.</p>
+              <p>When a contributor deletes their account, all associated documents, user logs, and database profiles are permanently and immediately removed from our cloud records.</p>
               
               <h2>2. Activity and Traffic Logs</h2>
               <p>Click engagements, telemetry logs, and activity entries are archived or scrubbed after 180 days to minimize data footprint.</p>

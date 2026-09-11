@@ -5,13 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
   <title>Comprehensive Tracking & Analytics Policy | DPGNotes Legal Center</title>
-  <meta name="description" content="Comprehensive Tracking & Analytics Policy of DPGNotes - Comprehensive academic documentation and regulatory standards." />
+  <meta name="description" content="Comprehensive Tracking and Analytics Policy of DPGNotes detailing event telemetry, guest IDs, CTR tracking, and student privacy safeguards." />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
@@ -24,7 +67,8 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Center</a>
+        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
+        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
         <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
@@ -38,88 +82,113 @@
         <div class="sidebar-group">
           <h3 class="group-title">Overview</h3>
           <ul class="nav-list">
-            <li><a href="index.html" class="nav-link"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
             <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
         <div class="sidebar-group">
-          <h3 class="group-title">Dedicated Policies</h3>
+          <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
             <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
-            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Disclaimer</a></li>
-            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link "><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
             <li><a href="analytics-policy.html" class="nav-link active"><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
-            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
-            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
-            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
           </ul>
         </div>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-content">
-      <div class="content-wrapper">
-        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="index.html">Legal Center</a></li>
-            <li class="current-crumb">Comprehensive Tracking & Analytics Policy</li>
-          </ol>
-        </nav>
-
-        <div class="doc-viewer-card">
-          <div class="viewer-actions">
-            <span class="current-policy-title">Comprehensive Tracking & Analytics Policy</span>
-            <div class="btn-group">
-              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="action-btn"><i class="ri-share-line"></i> Share</button>
-              <button onclick="window.print();" class="action-btn"><i class="ri-printer-line"></i> Print</button>
+    <main class="legal-main">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-          </div>
+            <h1 class="document-title">DPGNotes Tracking & Analytics Policy</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-ANLY-2026-V3.2</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
+            </div>
+          </header>
 
-          <!-- Bi-directional Link to Legal Notes Summary -->
+          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
-              <i class="ri-information-fill"></i>
-              <span>Looking for a quick brief? Read the summarized version in the Legal Notes Center.</span>
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#analytics">Summary Version of this Policy in Legal Hub</a>.
+              </div>
             </div>
-            <a href="index.html#analytics" class="summary-back-link">View Summary in Legal Notes <i class="ri-arrow-right-line"></i></a>
           </div>
 
-          <article class="policy-section active-section">
-            <h1>DPGNotes Tracking & Analytics Policy</h1>
-            <p class="subtitle">Effective Date: July 13, 2026 | Document ID: POL-DPG-ANLY-2026-V3</p>
+          <article class="legal-article">
             
-            <h2>1. Analytics Governance & Purpose</h2>
-            <p>DPGNotes logs essential operational telemetry to measure academic resource engagement, monitor platform performance, safeguard infrastructure from automated scrapers, and reward high-impact student contributors.</p>
+            <h2>1. Principles of Educational Telemetry</h2>
+            <p>DPGNotes believes that academic tools should empower students without subjecting them to intrusive surveillance or behavioral commercial profiling. This Tracking & Analytics Policy transparently explains our telemetry methodologies, analytical metrics, and privacy safeguards.</p>
+            <p>Our analytics infrastructure operates in compliance with the DPDP Act 2023, the ePrivacy Directive, and the principle of data minimization.</p>
 
-            <h2>2. Telemetry Collected from Anonymous Guests</h2>
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-fingerprint-line"></i> Zero PII Telemetry</h4>
+                <p>We do not collect names, contact numbers, exact GPS coordinates, or private browsing histories in our analytical feeds.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-refresh-line"></i> Ephemeral Tokens</h4>
+                <p>Anonymous visitor tokens rotate periodically and are never mapped to real-world government identities.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-bar-chart-2-line"></i> Academic Insights</h4>
+                <p>Telemetry serves exclusively to optimize popular syllabus searches, document rendering speeds, and platform uptime.</p>
+              </div>
+            </div>
+
+            <h2>2. Specific Metrics Collected & Analytical Objectives</h2>
+            <p>DPGNotes logs limited, aggregated telemetry events strictly for service improvement and infrastructure scalability:</p>
             <ul>
-              <li><strong>Random Anonymous Visitor ID:</strong> Persisted in LocalStorage to evaluate resource popularity and daily quotas without collecting personal identity.</li>
-              <li><strong>Resource Navigation:</strong> PDF page flips, search queries, download requests, and study session length.</li>
-              <li><strong>Technical Diagnostics:</strong> Screen viewport, operating system, and browser engine to ensure flawless PDF rendering.</li>
+              <li><strong>Document Engagement Counts:</strong> Aggregate page views, PDF viewer reading duration, and download requests across semester courses. This reveals which syllabi require updated notes.</li>
+              <li><strong>Query Telemetry:</strong> Anonymized internal search queries entered in our DPGNotes Search Engine and SERP pages, used to identify missing subject topics and improve search indexing.</li>
+              <li><strong>Daily Fair-Use Quota Counters:</strong> Ephemeral daily counters stored in browser LocalStorage to verify compliance with visitor generation limits.</li>
+              <li><strong>Sponsor Banner Interaction CTR:</strong> Aggregated, non-personalized click-through rates (CTR) on educational partner banners to measure ad performance for server funding.</li>
+              <li><strong>Performance & Error Telemetry:</strong> Client-side JavaScript errors, canvas rendering latencies, and network timeout logs used by our engineering volunteers to fix bugs.</li>
             </ul>
 
-            <h2>3. Telemetry Collected from Authenticated Contributors</h2>
+            <h2>3. Anonymous Guest Identifiers & Storage Mechanisms</h2>
+            <p>When you visit DPGNotes without logging in, our system generates an anonymous randomized token stored locally in your browser (e.g., <code>dpg_guest_id</code>). This token does not contain personal data, cannot identify your physical location, and exists solely to ensure fair distribution of cloud resources across our student user base.</p>
+
+            <h2>4. Third-Party Analytics & Google Analytics Safeguards</h2>
+            <p>Where Google Analytics is utilized to assess aggregate traffic patterns, we enforce strict privacy enhancements:</p>
             <ul>
-              <li><strong>Author Impact Metrics:</strong> Cumulative document views, like counters, share generation telemetry, and download statistics.</li>
-              <li><strong>Leaderboard Aggregations:</strong> Aggregated in Firestore (e.g. <code>contributor_note_metrics</code>) and rendered visually in the Admin Portal.</li>
+              <li>IP Anonymization: IP addresses are automatically masked and truncated at the earliest ingestion stage.</li>
+              <li>Disabled Advertising Demographics: We disable Google Signals cross-device tracking and behavioral advertising demographics.</li>
+              <li>Zero Data Sharing: Data sharing settings with Google benchmarking services and third-party advertising brokers are turned off.</li>
             </ul>
 
-            <h2>4. Strict Non-Sale Commitment</h2>
-            <p>All collected telemetry is held strictly within our secure cloud infrastructure. We do not sell visitor event data, search patterns, or reading habits to commercial data aggregators.</p>
+            <h2>5. Opt-Out Rights & Browser Privacy Controls</h2>
+            <p>You maintain the right to prevent analytical logging at any time. You may install the official Google Analytics Opt-out Browser Add-on, enable the Global Privacy Control (GPC) signal, or activate "Do Not Track" in your browser settings. DPGNotes respects client-side privacy signals without degrading your ability to read study documents.</p>
         
 
-            <!-- Inter-linking section to other policies -->
-            <h2>Related Legal Frameworks & Policies</h2>
-            <p>This policy functions alongside our other governance documents across the DPGNotes academic portal:</p>
+            <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
+            </h3>
             <div class="related-policies-grid">
-              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>\n<a href="cookie-policy.html" class="related-policy-chip"><i class="bi bi-cookie"></i> Cookie Policy</a>\n<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+              <a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
+<a href="cookie-policy.html" class="related-policy-chip"><i class="bi bi-cookie"></i> Cookie Policy</a>
+<a href="security-policy.html" class="related-policy-chip"><i class="ri-shield-check-line"></i> Security Policy</a>
+<a href="advertising-policy.html" class="related-policy-chip"><i class="ri-advertisement-line"></i> Advertising Policy</a>
             </div>
           </article>
         </div>

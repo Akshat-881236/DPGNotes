@@ -4,14 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
-  <title>DMCA Takedown Policy & Notice Procedure | DPGNotes Legal Center</title>
-  <meta name="description" content="DMCA Takedown Policy & Notice Procedure of DPGNotes - Comprehensive academic documentation and regulatory standards." />
+  <title>Comprehensive DMCA Takedown Policy | DPGNotes Legal Center</title>
+  <meta name="description" content="Comprehensive Digital Millennium Copyright Act (DMCA) Policy of DPGNotes detailing safe harbor procedures, agent details, and counter-notices." />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
@@ -24,7 +67,8 @@
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
       <div class="header-actions">
-        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Center</a>
+        <a href="../index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> Home</a>
+        <a href="index.html" class="nav-link" style="padding:0.4rem 0.8rem;"><i class="ri-arrow-left-line"></i> Legal Hub</a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
         <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
       </div>
@@ -38,94 +82,122 @@
         <div class="sidebar-group">
           <h3 class="group-title">Overview</h3>
           <ul class="nav-list">
-            <li><a href="index.html" class="nav-link"><i class="ri-home-4-line"></i> Legal Overview</a></li>
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
             <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
         <div class="sidebar-group">
-          <h3 class="group-title">Dedicated Policies</h3>
+          <h3 class="group-title">Standalone Policies</h3>
           <ul class="nav-list">
             <li><a href="privacy-policy.html" class="nav-link "><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
             <li><a href="terms-conditions.html" class="nav-link "><i class="ri-article-line"></i> Terms & Conditions</a></li>
             <li><a href="cookie-policy.html" class="nav-link "><i class="bi bi-cookie"></i> Cookie Policy</a></li>
-            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Disclaimer</a></li>
-            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="disclaimer.html" class="nav-link "><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link "><i class="ri-scales-line"></i> DRASA Regulations</a></li>
             <li><a href="copyright-policy.html" class="nav-link "><i class="ri-copyright-line"></i> Copyright Policy</a></li>
             <li><a href="dmca-policy.html" class="nav-link active"><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
             <li><a href="analytics-policy.html" class="nav-link "><i class="ri-bar-chart-box-line"></i> Tracking & Analytics</a></li>
             <li><a href="security-policy.html" class="nav-link "><i class="ri-shield-check-line"></i> Security Policy</a></li>
-            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
-            <li><a href="advertising-policy.html" class="nav-link "><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
-            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link "><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link "><i class="ri-external-link-line"></i> External Links</a></li>
           </ul>
         </div>
       </nav>
     </aside>
 
     <!-- Main Content -->
-    <main class="legal-content">
-      <div class="content-wrapper">
-        <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="index.html">Legal Center</a></li>
-            <li class="current-crumb">DMCA Takedown Policy & Notice Procedure</li>
-          </ol>
-        </nav>
-
-        <div class="doc-viewer-card">
-          <div class="viewer-actions">
-            <span class="current-policy-title">DMCA Takedown Policy & Notice Procedure</span>
-            <div class="btn-group">
-              <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');" class="action-btn"><i class="ri-share-line"></i> Share</button>
-              <button onclick="window.print();" class="action-btn"><i class="ri-printer-line"></i> Print</button>
+    <main class="legal-main">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; AdSense Compliant</span>
             </div>
-          </div>
+            <h1 class="document-title">DPGNotes DMCA Compliance & Takedown Policy</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: September 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-DMCA-2026-V3.2</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
+            </div>
+          </header>
 
-          <!-- Bi-directional Link to Legal Notes Summary -->
+          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
-              <i class="ri-information-fill"></i>
-              <span>Looking for a quick brief? Read the summarized version in the Legal Notes Center.</span>
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#dmca">Summary Version of this Policy in Legal Hub</a>.
+              </div>
             </div>
-            <a href="index.html#dmca" class="summary-back-link">View Summary in Legal Notes <i class="ri-arrow-right-line"></i></a>
           </div>
 
-          <article class="policy-section active-section">
-            <h1>DPGNotes DMCA Policy & Takedown Notice Procedure</h1>
-            <p class="subtitle">Effective Date: July 13, 2026 | Document ID: POL-DPG-DMCA-2026-V3</p>
+          <article class="legal-article">
             
-            <h2>1. Notice and Takedown Procedure (17 U.S.C. § 512)</h2>
-            <p>DPGNotes respects copyright owners and has adopted safe harbor provisions consistent with 17 U.S.C. § 512 of the Digital Millennium Copyright Act (DMCA). If you believe your copyrighted work has been improperly shared on our portal, please submit a formal DMCA Notice.</p>
+            <h2>1. Safe Harbor Framework & DMCA Alignment</h2>
+            <p>DPGNotes complies with the notice and takedown provisions of the <strong>Digital Millennium Copyright Act (17 U.S.C. § 512)</strong> ("DMCA"). As an online service provider hosting user-submitted educational content, DPGNotes maintains Safe Harbor protections by promptly investigating and remediating alleged intellectual property infringements.</p>
+            <p>Our designated copyright agent is prepared to process formal notices of claimed infringement and valid counter-notifications expeditiously.</p>
 
-            <h2>2. Elements of a Valid DMCA Notice</h2>
-            <p>A legally compliant DMCA notice must include:</p>
-            <ol>
-              <li>Physical or electronic signature of the copyright owner or authorized representative.</li>
-              <li>Specific identification of the copyrighted work claimed to have been infringed.</li>
-              <li>The exact URL (e.g. <code>dpgnotes.web.app/dpgnotes-pdf-viewer.html?id=...</code>) or unique document ID.</li>
-              <li>Your contact information including full legal name, physical address, telephone number, and email.</li>
-              <li>A statement of good faith belief that the use is not authorized by the copyright owner, agent, or the law.</li>
-              <li>A statement made under penalty of perjury that the notification is accurate and authorized.</li>
-            </ol>
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-shield-user-line"></i> Designated Agent</h4>
+                <p>Direct electronic contact with our platform legal officer for immediate triage and processing.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-time-line"></i> 48-Hour Takedown</h4>
+                <p>Expedited review and temporary content quarantine executed within two business days.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-user-unfollow-line"></i> Repeat Infringers</h4>
+                <p>Strict policy terminating accounts of contributors with repeated substantiated copyright strikes.</p>
+              </div>
+            </div>
+
+            <h2>2. Submitting a Valid DMCA Notice of Infringement</h2>
+            <p>To ensure valid legal standing under 17 U.S.C. § 512(c)(3), your written DMCA notice must contain the following statutory components:</p>
+            <ul>
+              <li>A physical or electronic signature of a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.</li>
+              <li>Identification of the copyrighted work claimed to have been infringed, or a representative list if multiple works are involved.</li>
+              <li>Identification of the material claimed to be infringing and information reasonably sufficient to permit DPGNotes to locate the material (specifically direct page URLs or resource IDs).</li>
+              <li>Information reasonably sufficient to permit DPGNotes to contact you, such as an address, telephone number, and email address.</li>
+              <li>A statement that you have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law.</li>
+              <li>A statement that the information in the notification is accurate, and under penalty of perjury, that you are authorized to act on behalf of the copyright owner.</li>
+            </ul>
 
             <h2>3. Counter-Notification Procedure</h2>
-            <p>If a contributor believes their upload was removed as a result of mistake or misidentification, they may file a written counter-notification containing their signature, identification of the removed file, and consent to legal jurisdiction.</p>
+            <p>If you are a student contributor whose shared notes were removed or disabled as a result of a DMCA notice, and you believe the removal occurred due to mistake or misidentification (for instance, the material represents original notes or permissible fair use), you may submit a formal Counter-Notification under Section 512(g)(3).</p>
+            <p>A valid counter-notification must include:</p>
+            <ul>
+              <li>Your physical or electronic signature.</li>
+              <li>Identification of the material that was removed and the URL where it appeared before removal.</li>
+              <li>A statement under penalty of perjury that you have a good faith belief that the material was removed or disabled as a result of mistake or misidentification.</li>
+              <li>Your full legal name, physical address, telephone number, and consent to the jurisdiction of the federal district court.</li>
+            </ul>
+            <p>Upon receipt of a valid counter-notice, DPGNotes will transmit a copy to the original complaining party. If no legal court action is initiated within 10 to 14 business days, the disabled content will be restored.</p>
 
-            <h2>4. Designated Copyright Agent</h2>
-            <div class="contact-info-box">
-              <p><strong>Agent:</strong> Copyright Compliance Officer, DPGNotes</p>
-              <p><strong>Organization:</strong> Akshat Network Hub</p>
-              <p><strong>Submission Channel:</strong> <a href="https://dpgnotes.web.app/suspension-support-contact-form.html" target="_blank" style="color:var(--primary);">Official Takedown & Grievance Form</a></p>
-              <p><strong>Turnaround SLA:</strong> Actioned within 24 to 48 business hours of receipt.</p>
+            <h2>4. Repeat Infringer Policy</h2>
+            <p>In adherence to 17 U.S.C. § 512(i)(1)(A), DPGNotes enforces a strict repeat infringer policy under DRASA Tier 4 regulations. Accounts subject to multiple substantiated copyright infringement claims will have their contributor privileges permanently revoked and their IP addresses banned from the platform.</p>
+
+            <h2>5. Designated DMCA Agent Contact</h2>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:1.2rem; margin:1rem 0;">
+              <p style="margin:0 0 0.4rem 0;"><strong>Designated DMCA Copyright Agent</strong></p>
+              <p style="margin:0 0 0.4rem 0;">DPGNotes Legal &amp; Intellectual Property Division</p>
+              <p style="margin:0 0 0.4rem 0;">Email: <a href="mailto:dpgnotes.legal@gmail.com" style="color:var(--primary);">dpgnotes.legal@gmail.com</a> &bull; Subject: <em>"DMCA Infringement Notice"</em></p>
+              <p style="margin:0; font-size:0.85rem; color:#94a3b8;">Response Commitment: Acknowledgment within 24 hours; Takedown triage within 48 hours.</p>
             </div>
         
 
-            <!-- Inter-linking section to other policies -->
-            <h2>Related Legal Frameworks & Policies</h2>
-            <p>This policy functions alongside our other governance documents across the DPGNotes academic portal:</p>
+            <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
+            </h3>
             <div class="related-policies-grid">
-              <a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>\n<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>\n<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
+              <a href="copyright-policy.html" class="related-policy-chip"><i class="ri-copyright-line"></i> Copyright Policy</a>
+<a href="terms-conditions.html" class="related-policy-chip"><i class="ri-article-line"></i> Terms & Conditions</a>
+<a href="drasa-policy.html" class="related-policy-chip"><i class="ri-scales-line"></i> DRASA Regulations</a>
+<a href="privacy-policy.html" class="related-policy-chip"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a>
             </div>
           </article>
         </div>
