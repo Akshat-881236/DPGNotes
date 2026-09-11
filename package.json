@@ -1,0 +1,20 @@
+{
+  "name": "dpgnotes",
+  "version": "1.0.0",
+  "description": "DPGNotes Academic Portal & Student Platform",
+  "scripts": {
+    "start": "node backend/server.js",
+    "serve": "npx http-server public -p 8080 -c-1",
+    "serve:all": "npx http-server . -p 8080 -c-1",
+    "test": "node --check backend/server.js && node --check public/redirect.js"
+  },
+  "keywords": [
+    "dpgnotes",
+    "notes",
+    "mdu-rohtak",
+    "assignment-cover-page-generator",
+    "academic-portal"
+  ],
+  "author": "DPGNotes Contributors",
+  "license": "ISC"
+}

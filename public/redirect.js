@@ -106,12 +106,25 @@
           <button class="redirect-btn redirect-btn-cancel" id="redirectCancelBtn">Stay Here</button>
           <button class="redirect-btn redirect-btn-proceed" id="redirectProceedBtn">Proceed</button>
         </div>
-        <a href="/legal/index.html#links-policy" class="redirect-learn-more" id="redirectLearnMoreLink">Learn more about our External Links Policy</a>
+        <a href="#" class="redirect-learn-more" id="redirectLearnMoreLink">Learn more about our External Links Policy</a>
       </div>
     `;
     document.body.appendChild(overlay);
 
     let pendingUrl = '';
+
+    function getLegalLinksPolicyUrl() {
+      const isSubdir = window.location.pathname.includes('/legal/') || 
+                       window.location.pathname.includes('/AssignmentCoverPageGenerator/') ||
+                       window.location.pathname.includes('/PracticalCoverPageGenerator/') ||
+                       window.location.pathname.includes('/Docs/');
+      return isSubdir ? '../legal/index.html#links-policy' : 'legal/index.html#links-policy';
+    }
+
+    const learnMoreEl = document.getElementById('redirectLearnMoreLink');
+    if (learnMoreEl) {
+      learnMoreEl.setAttribute('href', getLegalLinksPolicyUrl());
+    }
 
     // Bind event handlers
     document.getElementById('redirectCancelBtn').addEventListener('click', () => {
@@ -125,7 +138,7 @@
     });
     document.getElementById('redirectLearnMoreLink').addEventListener('click', (e) => {
       e.preventDefault();
-      window.open('/legal/index.html#links-policy', '_blank');
+      window.open(getLegalLinksPolicyUrl(), '_blank');
       overlay.classList.remove('active');
     });
 
@@ -144,10 +157,19 @@
 
       try {
         const url = new URL(href, window.location.href);
-        const internalHosts = ['dpgnotes.web.app', 'dpgnotes.firebaseapp.com', 'localhost', '127.0.0.1'];
+        const internalHosts = [
+          window.location.hostname,
+          'dpgnotes.web.app', 
+          'dpgnotes.firebaseapp.com', 
+          'localhost', 
+          '127.0.0.1',
+          'github.io',
+          'digiindia-student-platform.onrender.com',
+          'digiindia'
+        ];
         
-        // If it is external
-        if (!internalHosts.some(host => url.hostname.includes(host))) {
+        // If it is external (not in trusted internal hosts)
+        if (!internalHosts.some(host => host && url.hostname.toLowerCase().includes(host.toLowerCase()))) {
           e.preventDefault();
           pendingUrl = url.href;
           document.getElementById('redirectDestUrl').innerText = pendingUrl;

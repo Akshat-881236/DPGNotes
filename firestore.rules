@@ -175,6 +175,11 @@ service cloud.firestore {
     match /resource_analytics/{analyticsId} {
       allow read, write: if true;
     }
+
+    /* ---------- ASSIGNMENT COVER PAGES & LOGS ---------- */
+    match /Assignment/{userId}/{document=**} {
+      allow read, write, delete: if true;
+    }
     /* ---------- VALIDATION ---------- */
 
     function validateDocument() {

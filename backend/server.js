@@ -6663,6 +6663,196 @@ app.get(['/api/serp/web-search', '/api/website/search'], async (req, res) => {
   }
 });
 
+// ============================================================================
+// ASSIGNMENT COVER PAGE GENERATOR & LOGS API
+// ============================================================================
+
+// 1. Save / Update Assignment Cover Page in Firestore
+app.post('/api/assignment/save', async (req, res) => {
+  try {
+    const {
+      userId,
+      assignmentId,
+      assignmentNo,
+      subjectName,
+      subjectCode,
+      courseSection,
+      degreeName,
+      session,
+      profName,
+      designation,
+      department,
+      studentName,
+      fatherName,
+      relation,
+      studentId,
+      date,
+      day,
+      userType
+    } = req.body;
+
+    const uid = String(userId || 'guest_default').trim();
+    const aid = String(assignmentId || `assign_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`).trim();
+
+    const recordData = {
+      id: aid,
+      userId: uid,
+      userType: userType || (uid.startsWith('guest_') ? 'guest' : 'contributor'),
+      assignmentNo: String(assignmentNo || '1').trim(),
+      subjectName: String(subjectName || '').trim(),
+      subjectCode: String(subjectCode || '').trim(),
+      courseSection: String(courseSection || '').trim(),
+      degreeName: String(degreeName || '').trim(),
+      session: String(session || '').trim(),
+      profName: String(profName || '').trim(),
+      designation: String(designation || '').trim(),
+      department: String(department || '').trim(),
+      studentName: String(studentName || '').trim(),
+      fatherName: String(fatherName || '').trim(),
+      relation: String(relation || 'S/O').trim(),
+      studentId: String(studentId || '').trim(),
+      date: String(date || '').trim(),
+      day: String(day || '').trim(),
+      updatedAt: new Date().toISOString(),
+      createdAt: req.body.createdAt || new Date().toISOString()
+    };
+
+    if (db) {
+      // Top-level Assignment collection hierarchy: Assignment/{guest_or_contributor_id}/records/{id}
+      await db.collection('Assignment').doc(uid).collection('records').doc(aid).set(recordData, { merge: true });
+    }
+
+    res.json({
+      success: true,
+      id: aid,
+      detail: recordData,
+      message: "Assignment cover page saved successfully"
+    });
+  } catch (err) {
+    console.error("Assignment save error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. List All Saved Assignment Cover Pages for User/Guest
+app.get('/api/assignment/list/:userId', async (req, res) => {
+  try {
+    const uid = String(req.params.userId || '').trim();
+    if (!uid) {
+      return res.status(400).json({ success: false, error: "userId is required" });
+    }
+
+    let records = [];
+    if (db) {
+      const snap = await db.collection('Assignment').doc(uid).collection('records').get();
+      snap.forEach(doc => {
+        records.push({ id: doc.id, ...doc.data() });
+      });
+      // Sort newest first
+      records.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+
+    res.json({
+      success: true,
+      userId: uid,
+      count: records.length,
+      records
+    });
+  } catch (err) {
+    console.error("Assignment list error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Delete Assignment Cover Page from Firestore
+app.delete('/api/assignment/:userId/:assignmentId', async (req, res) => {
+  try {
+    const uid = String(req.params.userId || '').trim();
+    const aid = String(req.params.assignmentId || '').trim();
+
+    if (!uid || !aid) {
+      return res.status(400).json({ success: false, error: "userId and assignmentId are required" });
+    }
+
+    if (db) {
+      await db.collection('Assignment').doc(uid).collection('records').doc(aid).delete();
+    }
+
+    res.json({
+      success: true,
+      message: `Assignment ${aid} deleted successfully from Firestore`
+    });
+  } catch (err) {
+    console.error("Assignment delete error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Export High-Quality Vector A4 PDF via Python Engine (with pdf-lib fallback)
+app.post('/api/assignment/export-pdf', async (req, res) => {
+  const tmpDir = path.join(__dirname, 'tmp');
+  if (!fs.existsSync(tmpDir)) {
+    try { fs.mkdirSync(tmpDir, { recursive: true }); } catch (e) {}
+  }
+  const outFile = path.join(tmpDir, `cover_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.pdf`);
+
+  try {
+    const pyScript = path.join(__dirname, 'generate_cover_page.py');
+    const { execFile } = require('child_process');
+    const jsonData = JSON.stringify(req.body);
+
+    const runPython = () => new Promise((resolve, reject) => {
+      const child = execFile('python', [pyScript, '--output', outFile], { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+        if (err) return reject(err);
+        resolve(outFile);
+      });
+      child.stdin.write(jsonData);
+      child.stdin.end();
+    });
+
+    let pdfGenerated = false;
+    try {
+      await runPython();
+      if (fs.existsSync(outFile) && fs.statSync(outFile).size > 1000) {
+        pdfGenerated = true;
+      }
+    } catch (pyErr) {
+      console.warn("Python PDF engine execution failed, attempting fallback:", pyErr.message);
+    }
+
+    if (pdfGenerated) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="Assignment_${req.body.assignmentNo || 'Cover'}_Page.pdf"`);
+      const fileStream = fs.createReadStream(outFile);
+      fileStream.pipe(res);
+      fileStream.on('close', () => {
+        try { fs.unlinkSync(outFile); } catch(e) {}
+      });
+      return;
+    }
+
+    // Fallback: Use pdf-lib in Node.js to stamp exact template or create A4
+    const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+    const templatePath = path.join(__dirname, '..', 'public', 'AssignmentCoverPageGenerator', 'FrontpageTemplate.pdf');
+    let pdfDoc;
+    if (fs.existsSync(templatePath)) {
+      const templateBytes = fs.readFileSync(templatePath);
+      pdfDoc = await PDFDocument.load(templateBytes);
+    } else {
+      pdfDoc = await PDFDocument.create();
+      pdfDoc.addPage([595.28, 841.89]);
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="Assignment_${req.body.assignmentNo || 'Cover'}_Page.pdf"`);
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error("Assignment export-pdf error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Catch-all route to prevent "Cannot GET" HTML errors when accessing APIs via browser
 app.use('/api', (req, res) => {
   res.status(404).json({ 

@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../ANH.png" type="image/png" />
+  <title>Assignment Cover Page Generator | DPGNotes</title>
+  <meta name="description" content="Generate and download standard A4 assignment cover pages for DPG School of Technology & Management (Affiliated to MDU Rohtak) with real-time canvas preview." />
+
+  <!-- Global Config & Native Ads Engine -->
+  <script src="../config.js"></script>
+  <script src="../custom-dialogs.js"></script>
+  <script src="../native-dpgnotes-ads.js?v=1.0.0"></script>
+
+  <!-- Google Fonts & Remix Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- PDF-Lib & JSPDF for Client-Side A4 Vector Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Firebase Modular SDK for Direct Client Firestore Operations -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const cfg = {
+      apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
+    const db = getFirestore(app);
+    window.dpgDb = db;
+    window.collection = collection;
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.getDocs = getDocs;
+    window.deleteDoc = deleteDoc;
+    window.serverTimestamp = serverTimestamp;
+
+    if (typeof window.loadUserAssignments === 'function') {
+      window.loadUserAssignments();
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-main: #0b0f19;
+      --bg-card: #131728;
+      --bg-input: #1e2238;
+      --border-color: rgba(139, 92, 246, 0.25);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: rgba(99, 102, 241, 0.15);
+      --accent: #8b5cf6;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .top-navbar {
+      height: 70px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 750;
+      font-size: 1.25rem;
+    }
+    .brand-logo i { color: #a855f7; font-size: 1.5rem; }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .token-badge {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(99, 102, 241, 0.2));
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-restore-tokens {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      border: none;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+    }
+    .btn-restore-tokens:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.45);
+    }
+
+    /* Main Container */
+    .generator-container {
+      max-width: 1440px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 480px 1fr;
+      gap: 2rem;
+      align-items: flex-start;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.8rem;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+    }
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 750;
+      color: #fff;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1.4rem;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+    }
+    .form-label span.req { color: #f43f5e; }
+    .form-label span.rule {
+      font-size: 0.72rem;
+      color: #a5b4fc;
+      font-weight: 400;
+      margin-left: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      background: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.88rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+      background: rgba(30, 27, 75, 0.35);
+    }
+    .form-control.is-invalid {
+      border-color: #ef4444;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* Actions Bar */
+    .btn-generate {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1rem;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+    }
+    .btn-secondary-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+    }
+    .btn-sub {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .btn-sub:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Preview Canvas Area */
+    .preview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: sticky;
+      top: 90px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+    }
+    .preview-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .canvas-wrapper {
+      width: 100%;
+      max-width: 580px;
+      aspect-ratio: 595.28 / 841.89; /* A4 aspect ratio */
+      background: #ffffff;
+      border-radius: 4px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    #coverCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #ffffff;
+    }
+
+    /* Logs & History Section */
+    .logs-section {
+      max-width: 1440px;
+      width: 100%;
+      margin: 2rem auto 4rem auto;
+      padding: 0 1.5rem;
+    }
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.8rem;
+    }
+    .logs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.2rem;
+    }
+    .log-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      transition: all 0.2s ease;
+    }
+    .log-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+    .log-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .log-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .log-card-code {
+      font-size: 0.75rem;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .log-card-details {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .log-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: auto;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .log-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .log-btn-view {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+    }
+    .log-btn-dl {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+    .log-btn-edit {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: #fcd34d;
+    }
+    .log-btn-del {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .log-btn:hover {
+      transform: scale(1.04);
+    }
+
+    /* Ad Modal */
+    .ad-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .ad-modal-box {
+      background: #111827;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: 16px;
+      max-width: 540px;
+      width: 100%;
+      padding: 1.8rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    @media (max-width: 960px) {
+      .generator-container {
+        grid-template-columns: 1fr;
+      }
+      .preview-card {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="top-navbar">
+    <a href="../index.html" class="brand-logo">
+      <i class="ri-file-shield-2-fill"></i>
+      <span>DPGNotes <span style="color:#a855f7;">Cover Page</span></span>
+    </a>
+    <div class="nav-actions">
+      <div class="token-badge" id="tokenDisplay" title="Daily Generation Tokens remaining">
+        <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
+        <span id="tokenCountText">Tokens: 1 / 1</span>
+      </div>
+      <button class="btn-restore-tokens" id="btnRestoreTokens" onclick="openRestoreTokensModal()">
+        <i class="ri-movie-line"></i> Watch Ads to Restore
+      </button>
+      <a href="../legal/index.html" style="color:#94a3b8; font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+        <i class="ri-scales-line"></i> Legal
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Generator Container -->
+  <main class="generator-container">
+
+    <!-- Form Section -->
+    <section class="form-card">
+      <h1 class="card-title">
+        <i class="ri-edit-2-line" style="color:#8b5cf6;"></i> Assignment Details
+      </h1>
+      <p class="card-subtitle">
+        Fill the fields below. The live A4 canvas preview on the right will update in real time.
+      </p>
+
+      <form id="coverForm" onsubmit="event.preventDefault(); handleGenerateClick();">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Assignment No. <span class="req">*</span></label>
+            <input type="text" id="inpAssignNo" class="form-control" value="1" placeholder="e.g. 1, 01, 2" required oninput="renderLiveCanvas()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Session <span class="req">*</span> <span class="rule">(YYYY-YYYY)</span></label>
+            <input type="text" id="inpSession" class="form-control" value="2025-2026" placeholder="2025-2026" required oninput="renderLiveCanvas()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Subject Name <span class="req">*</span></label>
+          <input type="text" id="inpSubName" class="form-control" value="DATA STRUCTURES & ALGORITHMS" placeholder="e.g. OPERATING SYSTEM" required oninput="renderLiveCanvas()">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Subject Code <span class="req">*</span></label>
+            <input type="text" id="inpSubCode" class="form-control" value="BCA-301" placeholder="e.g. BCA-501, BBA-302" required oninput="renderLiveCanvas()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Course &amp; Section <span class="req">*</span> <span class="rule">{Course}-{Sec}</span></label>
+            <input type="text" id="inpCourseSec" class="form-control" value="BCA-3A" placeholder="e.g. BCA-5A, BBA-3A" required oninput="handleCourseSecInput()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Requirement of Degree / Course Title <span class="rule">(Auto-detected)</span></label>
+          <input type="text" id="inpDegreeName" class="form-control" value="BACHELOR OF COMPUTER APPLICATION" oninput="renderLiveCanvas()">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Professor Name <span class="req">*</span></label>
+            <input type="text" id="inpProfName" class="form-control" value="DR. RAJESH KUMAR" placeholder="e.g. DR. ANITA SHARMA" required oninput="renderLiveCanvas()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Designation <span class="req">*</span></label>
+            <input type="text" id="inpDesignation" class="form-control" value="ASSISTANT PROFESSOR" placeholder="e.g. ASSISTANT PROFESSOR, HOD" required oninput="renderLiveCanvas()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Department <span class="req">*</span> <span class="rule">DEPARTMENT OF ...</span></label>
+          <input type="text" id="inpDept" class="form-control" value="COMPUTER SCIENCE & APPLICATIONS" placeholder="e.g. COMPUTER SCIENCE & APPLICATIONS" required oninput="renderLiveCanvas()">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Student Name <span class="req">*</span></label>
+            <input type="text" id="inpStuName" class="form-control" value="AMAN SHARMA" placeholder="Student Full Name" required oninput="renderLiveCanvas()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Relation &amp; Father Name <span class="req">*</span></label>
+            <div style="display:flex; gap:6px;">
+              <select id="inpRelation" class="form-control" style="width:85px; flex-shrink:0;" onchange="renderLiveCanvas()">
+                <option value="S/O">S/O</option>
+                <option value="D/O">D/O</option>
+              </select>
+              <input type="text" id="inpFatherName" class="form-control" value="RAMESH SHARMA" placeholder="Father Name" required oninput="renderLiveCanvas()">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Student ID / Roll No <span class="req">*</span></label>
+            <input type="text" id="inpStuId" class="form-control" value="2112345678" placeholder="e.g. 2112345678" required oninput="renderLiveCanvas()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Submission Date &amp; Day <span class="req">*</span></label>
+            <input type="date" id="inpDate" class="form-control" required onchange="handleDateChange()">
+            <input type="hidden" id="inpDay" value="">
+          </div>
+        </div>
+
+        <button type="submit" id="btnSubmitGenerate" class="btn-generate">
+          <i class="ri-flashlight-line"></i> Generate &amp; Save Cover Page
+        </button>
+
+        <div class="btn-secondary-group">
+          <button type="button" class="btn-sub" onclick="downloadClientPdf()">
+            <i class="ri-download-2-line"></i> Instant Vector PDF (Client)
+          </button>
+          <button type="button" class="btn-sub" onclick="downloadServerPdf()">
+            <i class="ri-server-line"></i> Server PDF (Python Engine)
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Canvas Live Preview Section -->
+    <section class="preview-card">
+      <div class="preview-header">
+        <h2 style="font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
+          <i class="ri-eye-line" style="color:#a855f7;"></i> Live A4 Canvas Preview
+        </h2>
+        <span style="font-size:0.75rem; color:#94a3b8; background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:4px;">
+          Standard A4 (300 DPI)
+        </span>
+      </div>
+
+      <div class="canvas-wrapper">
+        <!-- 300 DPI A4 Resolution: 2480 x 3508 pixels -->
+        <canvas id="coverCanvas" width="2480" height="3508"></canvas>
+      </div>
+
+      <p style="font-size:0.75rem; color:#64748b; margin-top:0.8rem; text-align:center;">
+        <i class="ri-information-line"></i> The rendered canvas matches the strict official A4 template layout irrespective of your device screen size.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- Saved Logs & History Section -->
+  <section class="logs-section">
+    <div class="logs-header">
+      <div>
+        <h2 style="font-family:'Outfit', sans-serif; font-size:1.35rem; font-weight:750; color:#fff;">
+          <i class="ri-history-line" style="color:#10b981;"></i> My Saved Assignment Cover Pages
+        </h2>
+        <p style="font-size:0.82rem; color:#94a3b8; margin-top:2px;">
+          All previous generated cover pages stored in Firestore with quick actions (View, Download, Edit, Delete).
+        </p>
+      </div>
+      <button onclick="loadUserAssignments()" class="btn-sub" style="padding:5px 12px;">
+        <i class="ri-refresh-line"></i> Refresh Logs
+      </button>
+    </div>
+
+    <div class="logs-grid" id="logsGrid">
+      <div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:#64748b;">
+        <i class="ri-loader-4-line spin-icon" style="font-size:1.8rem; color:#8b5cf6;"></i>
+        <p style="margin-top:8px;">Loading saved assignments from Firestore...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Watch Ads to Restore Tokens Modal -->
+  <div class="ad-modal-overlay" id="adModal">
+    <div class="ad-modal-box">
+      <h3 style="font-family:'Outfit', sans-serif; font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">
+        <i class="ri-movie-line" style="color:#ec4899;"></i> Restore Generation Tokens
+      </h3>
+      <p id="adModalSubtitle" style="font-size:0.85rem; color:#94a3b8; margin-bottom:1.2rem;">
+        Watch verified learning sponsor ads to restore your daily cover page tokens.
+      </p>
+
+      <div style="background:rgba(0,0,0,0.4); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:1.2rem; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-bottom:1rem;">
+        <div id="adCountdownBadge" style="background:rgba(236,72,153,0.2); color:#f472b6; border:1px solid rgba(236,72,153,0.4); padding:4px 12px; border-radius:999px; font-size:0.8rem; font-weight:700; margin-bottom:0.8rem;">
+          Ad 1 of 3 (10s remaining...)
+        </div>
+        <div id="adModalContent" style="font-size:0.9rem; color:#e2e8f0; line-height:1.5;">
+          <strong>DPGNotes Verified Learning Partner:</strong><br>
+          Explore interactive revision cheat-sheets, mock viva voce questions, and semester syllabus companions.
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn-sub" onclick="closeRestoreTokensModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Asset image objects
+    const headerImg = new Image();
+    headerImg.src = 'Header_Image.jpg';
+
+    const centerLogoImg = new Image();
+    centerLogoImg.src = 'Center_Logo.jpg';
+
+    let imagesLoaded = 0;
+    function onImgLoad() {
+      imagesLoaded++;
+      if (imagesLoaded >= 2) {
+        renderLiveCanvas();
+      }
+    }
+    headerImg.onload = onImgLoad;
+    centerLogoImg.onload = onImgLoad;
+
+    // Retrieve or initialize user identity
+    function getActiveUserId() {
+      const authUid = localStorage.getItem("dpgActiveUserUid");
+      if (authUid) return authUid;
+      let guestId = localStorage.getItem("dpg_guest_id");
+      if (!guestId) {
+        guestId = "guest_" + Math.random().toString(36).substring(2, 9) + "_" + Date.now().toString(36);
+        localStorage.setItem("dpg_guest_id", guestId);
+      }
+      return guestId;
+    }
+
+    function isContributor() {
+      return !!localStorage.getItem("dpgActiveUserUid");
+    }
+
+    // Token Management Logic
+    function getDailyTokens() {
+      const today = new Date().toISOString().split('T')[0];
+      const savedDate = localStorage.getItem('dpg_assign_tokens_date');
+      const isContrib = isContributor();
+      const defaultMax = isContrib ? 3 : 1;
+
+      if (savedDate !== today) {
+        localStorage.setItem('dpg_assign_tokens_date', today);
+        localStorage.setItem('dpg_assign_tokens_count', String(defaultMax));
+        return defaultMax;
+      }
+      return parseInt(localStorage.getItem('dpg_assign_tokens_count') || String(defaultMax), 10);
+    }
+
+    function decrementToken() {
+      let tokens = getDailyTokens();
+      if (tokens > 0) {
+        tokens--;
+        localStorage.setItem('dpg_assign_tokens_count', String(tokens));
+        updateTokenBadge();
+      }
+    }
+
+    function updateTokenBadge() {
+      const isContrib = isContributor();
+      const maxTokens = isContrib ? 3 : 1;
+      const current = getDailyTokens();
+      const badge = document.getElementById('tokenCountText');
+      if (badge) {
+        badge.textContent = `Tokens: ${current} / ${maxTokens}`;
+      }
+    }
+
+    // Degree Name Inference Helper
+    function getDegreeFromCourse(courseStr) {
+      const c = (courseStr || '').toUpperCase().trim();
+      if (c.includes('BCA')) return "BACHELOR OF COMPUTER APPLICATION";
+      if (c.includes('BBA')) return "BACHELOR OF BUSINESS ADMINISTRATION";
+      if (c.includes('MCA')) return "MASTER OF COMPUTER APPLICATION";
+      if (c.includes('MBA')) return "MASTER OF BUSINESS ADMINISTRATION";
+      if (c.includes('B.TECH') || c.includes('BTECH')) return "BACHELOR OF TECHNOLOGY";
+      if (c.includes('M.TECH') || c.includes('MTECH')) return "MASTER OF TECHNOLOGY";
+      if (c.includes('BSC') || c.includes('B.SC')) return "BACHELOR OF SCIENCE";
+      if (c.includes('MSC') || c.includes('M.SC')) return "MASTER OF SCIENCE";
+      if (c.includes('BCOM') || c.includes('B.COM')) return "BACHELOR OF COMMERCE";
+      if (c.includes('MCOM') || c.includes('M.COM')) return "MASTER OF COMMERCE";
+      if (c.includes('BA')) return "BACHELOR OF ARTS";
+      if (c.includes('MA')) return "MASTER OF ARTS";
+      return "BACHELOR OF COMPUTER APPLICATION";
+    }
+
+    function handleCourseSecInput() {
+      const courseSec = document.getElementById('inpCourseSec')?.value || '';
+      const degreeInput = document.getElementById('inpDegreeName');
+      if (degreeInput && courseSec) {
+        degreeInput.value = getDegreeFromCourse(courseSec);
+      }
+      renderLiveCanvas();
+    }
+
+    function handleDateChange() {
+      const dateVal = document.getElementById('inpDate')?.value;
+      const dayHidden = document.getElementById('inpDay');
+      if (dateVal && dayHidden) {
+        const d = new Date(dateVal);
+        const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+        dayHidden.value = days[d.getDay()] || 'FRIDAY';
+      }
+      renderLiveCanvas();
+    }
+
+    // Set today's date on initial load
+    function initDefaultDate() {
+      const dateInput = document.getElementById('inpDate');
+      if (dateInput && !dateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+        handleDateChange();
+      }
+    }
+
+    // Get current form data
+    function getFormData() {
+      const rawDate = document.getElementById('inpDate')?.value || '';
+      let formattedDate = rawDate;
+      if (rawDate && rawDate.includes('-')) {
+        const parts = rawDate.split('-');
+        if (parts.length === 3) {
+          formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
+        }
+      }
+
+      return {
+        assignmentNo: document.getElementById('inpAssignNo')?.value.trim() || '1',
+        session: document.getElementById('inpSession')?.value.trim() || '2025-2026',
+        subjectName: document.getElementById('inpSubName')?.value.trim() || 'DATA STRUCTURES & ALGORITHMS',
+        subjectCode: document.getElementById('inpSubCode')?.value.trim() || 'BCA-301',
+        courseSection: document.getElementById('inpCourseSec')?.value.trim() || 'BCA-3A',
+        degreeName: document.getElementById('inpDegreeName')?.value.trim() || 'BACHELOR OF COMPUTER APPLICATION',
+        profName: document.getElementById('inpProfName')?.value.trim() || 'DR. RAJESH KUMAR',
+        designation: document.getElementById('inpDesignation')?.value.trim() || 'ASSISTANT PROFESSOR',
+        department: document.getElementById('inpDept')?.value.trim() || 'COMPUTER SCIENCE & APPLICATIONS',
+        studentName: document.getElementById('inpStuName')?.value.trim() || 'AMAN SHARMA',
+        relation: document.getElementById('inpRelation')?.value || 'S/O',
+        fatherName: document.getElementById('inpFatherName')?.value.trim() || 'RAMESH SHARMA',
+        studentId: document.getElementById('inpStuId')?.value.trim() || '2112345678',
+        date: formattedDate,
+        day: document.getElementById('inpDay')?.value || 'FRIDAY'
+      };
+    }
+
+    // Ultra-High-DPI Canvas Rendering (300 DPI A4: 2480 x 3508 px)
+    function renderLiveCanvas() {
+      const canvas = document.getElementById('coverCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;  // 2480
+      const H = canvas.height; // 3508
+
+      // Background: Pure White
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+
+      const d = getFormData();
+
+      // Scale factors from template points (612 x 792) to 300 DPI Canvas (2480 x 3508)
+      const scaleX = W / 612.0;
+      const scaleY = H / 792.0;
+
+      // 1. Header Banner Image (Image1)
+      const headerW = 507.48 * scaleX;
+      const headerH = 77.88 * scaleY;
+      const headerX = (W - headerW) / 2.0;
+      const headerY = 33.84 * scaleY;
+
+      if (headerImg.complete && headerImg.naturalWidth > 0) {
+        ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
+      }
+
+      // Font styling: Classic Times New Roman Bold
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+
+      const fontTitleSize = Math.round(13.17 * scaleY);
+      ctx.font = `bold ${fontTitleSize}px 'Times New Roman', Times, serif`;
+
+      // 2. Headings (Centered)
+      // ASSIGNMENT -> {NUM}
+      const assignText = `ASSIGNMENT ➔ ${d.assignmentNo.toUpperCase()}`;
+      ctx.fillText(assignText, W / 2.0, 131.0 * scaleY);
+
+      ctx.fillText("OF", W / 2.0, 155.0 * scaleY);
+      ctx.fillText(d.subjectName.toUpperCase(), W / 2.0, 179.0 * scaleY);
+      ctx.fillText(d.subjectCode.toUpperCase(), W / 2.0, 203.0 * scaleY);
+      ctx.fillText(d.courseSection.toUpperCase(), W / 2.0, 226.0 * scaleY);
+
+      ctx.fillText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 250.0 * scaleY);
+      ctx.fillText(d.degreeName.toUpperCase(), W / 2.0, 267.0 * scaleY);
+
+      // 3. Center Logo (MDU Emblem)
+      const logoW = 134.76 * scaleX;
+      const logoH = 114.84 * scaleY;
+      const logoX = (W - logoW) / 2.0;
+      const logoY = 280.0 * scaleY;
+
+      if (centerLogoImg.complete && centerLogoImg.naturalWidth > 0) {
+        ctx.drawImage(centerLogoImg, logoX, logoY, logoW, logoH);
+      }
+
+      // 4. Session
+      ctx.font = `bold ${fontTitleSize}px 'Times New Roman', Times, serif`;
+      ctx.fillText(`SESSION: ${d.session.toUpperCase()}`, W / 2.0, 414.0 * scaleY);
+
+      // 5. Two Columns
+      const leftColX = 59.76 * scaleX;
+      const rightColX = 364.25 * scaleX;
+      ctx.textAlign = 'left';
+
+      // Row 1: Headers
+      ctx.fillText("SUBMITTED TO", leftColX, 462.0 * scaleY);
+      ctx.fillText("SUBMITTED BY", rightColX, 462.0 * scaleY);
+
+      // Row 2: Names
+      ctx.fillText(d.profName.toUpperCase(), leftColX, 486.0 * scaleY);
+      ctx.fillText(d.studentName.toUpperCase(), rightColX, 486.0 * scaleY);
+
+      // Row 3: Designation / Father
+      ctx.fillText(d.designation.toUpperCase(), leftColX, 510.0 * scaleY);
+      ctx.fillText(`${d.relation.toUpperCase()} ${d.fatherName.toUpperCase()}`, rightColX, 510.0 * scaleY);
+
+      // Row 4: Department / Student ID
+      const deptStr = d.department.toUpperCase();
+      ctx.fillText(deptStr.startsWith("DEPARTMENT") ? deptStr : `DEPARTMENT OF ${deptStr}`, leftColX, 534.0 * scaleY);
+      ctx.fillText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY);
+
+      // Row 5: DPG STM / Course & Section
+      ctx.fillText("DPG STM", leftColX, 558.0 * scaleY);
+      ctx.fillText(d.courseSection.toUpperCase(), rightColX, 558.0 * scaleY);
+
+      // 6. Footer Section (Centered)
+      ctx.textAlign = 'center';
+      const dayText = d.day ? ` (${d.day.toUpperCase()})` : '';
+      ctx.fillText(`SUBMITTED ON ${d.date.toUpperCase()}${dayText}`, W / 2.0, 701.0 * scaleY);
+      ctx.fillText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY);
+    }
+
+    // Validation rule: Course & Section format {Course}-{Section}
+    function validateCourseSection(str) {
+      // Must contain a hyphen and match Course-Section format
+      const re = /^[A-Za-z0-9\.\s]+-[A-Za-z0-9]+$/;
+      return re.test((str || '').trim());
+    }
+
+    // Submit handler
+    async function handleGenerateClick() {
+      const d = getFormData();
+
+      if (!validateCourseSection(d.courseSection)) {
+        alert("Invalid Course & Section format! Please follow the rule: {Course}-{Section}, e.g. BCA-5A, BBA-3A, MCA-1B.");
+        document.getElementById('inpCourseSec')?.focus();
+        return;
+      }
+
+      // Check token
+      const tokens = getDailyTokens();
+      if (tokens <= 0) {
+        const isContrib = isContributor();
+        const adsNeeded = isContrib ? 2 : 3;
+        alert(`You have used all your daily tokens! Please watch ${adsNeeded} Native Ads to restore your generation tokens.`);
+        openRestoreTokensModal();
+        return;
+      }
+
+      const uid = getActiveUserId();
+      const isContrib = isContributor();
+      const submitBtn = document.getElementById('btnSubmitGenerate');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Generating &amp; Saving...';
+      }
+
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const payload = {
+          userId: uid,
+          userType: isContrib ? 'contributor' : 'guest',
+          ...d
+        };
+
+        const res = await fetch(`${apiBase}/api/assignment/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const resData = await res.json();
+        if (res.ok && resData.success) {
+          // Decrement token
+          decrementToken();
+          alert("Assignment cover page generated and saved to Firestore successfully!");
+          // Trigger instant client download
+          downloadClientPdf();
+          // Reload history list
+          await loadUserAssignments();
+        } else {
+          throw new Error(resData.error || "Failed to save assignment to Firestore");
+        }
+      } catch (err) {
+        console.warn("Backend save failed, trying Firestore client fallback:", err);
+        // Direct Client Firestore fallback
+        try {
+          if (window.dpgDb && window.collection && window.setDoc && window.doc) {
+            const aid = `assign_${Date.now()}`;
+            const ref = window.doc(window.dpgDb, "Assignment", uid, "records", aid);
+            await window.setDoc(ref, { id: aid, userId: uid, ...d, createdAt: new Date().toISOString() });
+            decrementToken();
+            downloadClientPdf();
+            await loadUserAssignments();
+            alert("Saved to Firestore via client connection!");
+          } else {
+            // If offline, still download client PDF
+            downloadClientPdf();
+          }
+        } catch (e2) {
+          downloadClientPdf();
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="ri-flashlight-line"></i> Generate &amp; Save Cover Page';
+        }
+      }
+    }
+
+    // Instant Client A4 Vector/Raster PDF Download
+    function downloadClientPdf() {
+      const canvas = document.getElementById('coverCanvas');
+      if (!canvas) return;
+      const { jsPDF } = window.jspdf;
+      // Standard A4: 210mm x 297mm
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+      const d = getFormData();
+      const filename = `Assignment_${d.assignmentNo || '1'}_${d.subjectCode || 'Cover'}.pdf`;
+      pdf.save(filename);
+    }
+
+    // Download Server Vector PDF (Python Engine)
+    async function downloadServerPdf() {
+      const d = getFormData();
+      const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+      try {
+        const res = await fetch(`${apiBase}/api/assignment/export-pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(d)
+        });
+
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Assignment_${d.assignmentNo || '1'}_Cover_Page.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        } else {
+          downloadClientPdf();
+        }
+      } catch (err) {
+        console.warn("Server PDF download failed, falling back to client PDF:", err);
+        downloadClientPdf();
+      }
+    }
+
+    // Load User Saved Assignment Logs
+    async function loadUserAssignments() {
+      const container = document.getElementById('logsGrid');
+      if (!container) return;
+      const uid = getActiveUserId();
+
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const res = await fetch(`${apiBase}/api/assignment/list/${encodeURIComponent(uid)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.records)) {
+            renderLogsCards(data.records);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("API assignment list error, trying client Firestore:", err);
+      }
+
+      // Client Firestore fallback
+      try {
+        if (window.dpgDb && window.collection && window.getDocs) {
+          const snap = await window.getDocs(window.collection(window.dpgDb, "Assignment", uid, "records"));
+          const list = [];
+          snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+          list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+          renderLogsCards(list);
+          return;
+        }
+      } catch (e) {
+        console.warn("Client firestore logs error:", e);
+      }
+
+      container.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:2rem; color:#94a3b8;">
+          No previous assignments saved yet. Create your first cover page above!
+        </div>
+      `;
+    }
+
+    function renderLogsCards(records) {
+      const container = document.getElementById('logsGrid');
+      if (!container) return;
+
+      if (!records || records.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding:2rem; color:#94a3b8;">
+            No saved assignment cover pages found for your session. Generate your first one above!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = records.map(r => {
+        const dateStr = r.date || (r.createdAt ? r.createdAt.split('T')[0] : '');
+        return `
+          <div class="log-card" id="card-${r.id}">
+            <div class="log-card-top">
+              <div>
+                <span class="log-card-code">${escapeHtml(r.subjectCode || 'CODE')}</span>
+                <span style="font-size:0.75rem; color:#cbd5e1; margin-left:6px; font-weight:600;">Assignment #${escapeHtml(r.assignmentNo || '1')}</span>
+              </div>
+              <span style="font-size:0.72rem; color:#64748b;">${escapeHtml(dateStr)}</span>
+            </div>
+
+            <div class="log-card-title">${escapeHtml(r.subjectName || 'Untitled Subject')}</div>
+
+            <div class="log-card-details">
+              <div><strong>Course:</strong> ${escapeHtml(r.courseSection || '—')} &bull; <strong>Session:</strong> ${escapeHtml(r.session || '—')}</div>
+              <div><strong>Student:</strong> ${escapeHtml(r.studentName || '—')} (${escapeHtml(r.studentId || '—')})</div>
+              <div><strong>Teacher:</strong> ${escapeHtml(r.profName || '—')}</div>
+            </div>
+
+            <div class="log-actions">
+              <button type="button" class="log-btn log-btn-view" onclick='viewSavedAssignment(${JSON.stringify(r)})' title="View in Canvas Preview">
+                <i class="ri-eye-line"></i> View
+              </button>
+              <button type="button" class="log-btn log-btn-dl" onclick='downloadSingleLogPdf(${JSON.stringify(r)})' title="Download PDF">
+                <i class="ri-download-line"></i> Download
+              </button>
+              <button type="button" class="log-btn log-btn-edit" onclick='editSavedAssignment(${JSON.stringify(r)})' title="Load into Form to Edit">
+                <i class="ri-edit-line"></i> Edit
+              </button>
+              <button type="button" class="log-btn log-btn-del" onclick="deleteSavedAssignment('${r.id}')" title="Delete from Firestore">
+                <i class="ri-delete-bin-line"></i> Delete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Quick Actions
+    window.viewSavedAssignment = function(r) {
+      editSavedAssignment(r);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.editSavedAssignment = function(r) {
+      if (!r) return;
+      if (document.getElementById('inpAssignNo')) document.getElementById('inpAssignNo').value = r.assignmentNo || '1';
+      if (document.getElementById('inpSession')) document.getElementById('inpSession').value = r.session || '2025-2026';
+      if (document.getElementById('inpSubName')) document.getElementById('inpSubName').value = r.subjectName || '';
+      if (document.getElementById('inpSubCode')) document.getElementById('inpSubCode').value = r.subjectCode || '';
+      if (document.getElementById('inpCourseSec')) document.getElementById('inpCourseSec').value = r.courseSection || '';
+      if (document.getElementById('inpDegreeName')) document.getElementById('inpDegreeName').value = r.degreeName || getDegreeFromCourse(r.courseSection);
+      if (document.getElementById('inpProfName')) document.getElementById('inpProfName').value = r.profName || '';
+      if (document.getElementById('inpDesignation')) document.getElementById('inpDesignation').value = r.designation || '';
+      if (document.getElementById('inpDept')) document.getElementById('inpDept').value = r.department || '';
+      if (document.getElementById('inpStuName')) document.getElementById('inpStuName').value = r.studentName || '';
+      if (document.getElementById('inpRelation')) document.getElementById('inpRelation').value = r.relation || 'S/O';
+      if (document.getElementById('inpFatherName')) document.getElementById('inpFatherName').value = r.fatherName || '';
+      if (document.getElementById('inpStuId')) document.getElementById('inpStuId').value = r.studentId || '';
+      if (document.getElementById('inpDay')) document.getElementById('inpDay').value = r.day || 'FRIDAY';
+
+      renderLiveCanvas();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.downloadSingleLogPdf = function(r) {
+      editSavedAssignment(r);
+      setTimeout(() => {
+        downloadClientPdf();
+      }, 100);
+    };
+
+    window.deleteSavedAssignment = async function(aid) {
+      if (!confirm("Are you sure you want to permanently delete this assignment cover page from Firestore?")) return;
+      const uid = getActiveUserId();
+
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const res = await fetch(`${apiBase}/api/assignment/${encodeURIComponent(uid)}/${encodeURIComponent(aid)}`, {
+          method: 'DELETE'
+        });
+
+        if (res.ok) {
+          const card = document.getElementById(`card-${aid}`);
+          if (card) card.remove();
+          alert("Assignment cover page deleted from Firestore.");
+        } else {
+          throw new Error("API delete failed");
+        }
+      } catch (err) {
+        console.warn("API delete failed, trying client Firestore:", err);
+        try {
+          if (window.dpgDb && window.doc && window.deleteDoc) {
+            await window.deleteDoc(window.doc(window.dpgDb, "Assignment", uid, "records", aid));
+            const card = document.getElementById(`card-${aid}`);
+            if (card) card.remove();
+            alert("Deleted from Firestore!");
+          }
+        } catch (e) {
+          alert("Error deleting record: " + e.message);
+        }
+      }
+    };
+
+    // Watch Native Ads to Restore Tokens Flow
+    let adWatchInterval = null;
+    let adsRemaining = 3;
+    let secondsLeft = 8;
+
+    function openRestoreTokensModal() {
+      const modal = document.getElementById('adModal');
+      const isContrib = isContributor();
+      adsRemaining = isContrib ? 2 : 3;
+      secondsLeft = 8;
+
+      const sub = document.getElementById('adModalSubtitle');
+      if (sub) {
+        sub.innerHTML = isContrib 
+          ? `<strong>Contributor Pass:</strong> Watch <strong>2 Native Ads</strong> to restore your generation tokens.`
+          : `<strong>Guest Pass:</strong> Watch <strong>3 Native Ads</strong> to restore your generation token.`;
+      }
+
+      if (modal) modal.style.display = 'flex';
+      startAdCycle();
+    }
+
+    function closeRestoreTokensModal() {
+      const modal = document.getElementById('adModal');
+      if (modal) modal.style.display = 'none';
+      if (adWatchInterval) clearInterval(adWatchInterval);
+    }
+
+    function startAdCycle() {
+      const badge = document.getElementById('adCountdownBadge');
+      const isContrib = isContributor();
+      const totalAds = isContrib ? 2 : 3;
+
+      if (adWatchInterval) clearInterval(adWatchInterval);
+
+      adWatchInterval = setInterval(() => {
+        secondsLeft--;
+        const currentAdIndex = (totalAds - adsRemaining) + 1;
+        if (badge) {
+          badge.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Ad ${currentAdIndex} of ${totalAds} (${secondsLeft}s remaining...)`;
+        }
+
+        if (secondsLeft <= 0) {
+          adsRemaining--;
+          if (adsRemaining > 0) {
+            secondsLeft = 8;
+            // Swap next ad
+            const content = document.getElementById('adModalContent');
+            if (content) {
+              content.innerHTML = `<strong>DPGNotes Academic Partner #${currentAdIndex + 1}:</strong><br>Check out student notes, syllabus formula repositories, and engineering lab guides on DPGNotes.`;
+            }
+          } else {
+            // Completed all ads!
+            clearInterval(adWatchInterval);
+            closeRestoreTokensModal();
+            // Restore token!
+            const defaultMax = isContrib ? 3 : 1;
+            localStorage.setItem('dpg_assign_tokens_count', String(defaultMax));
+            updateTokenBadge();
+            alert("🎉 Thank you! Your assignment generation tokens have been restored!");
+          }
+        }
+      }, 1000);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      initDefaultDate();
+      updateTokenBadge();
+      loadUserAssignments();
+      renderLiveCanvas();
+    });
+  </script>
+</body>
+</html>
