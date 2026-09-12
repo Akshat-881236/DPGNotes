@@ -60,15 +60,20 @@
   <style>
     :root {
       --report-bg: #0f111a;
-      --report-surface: rgba(20, 24, 39, 0.7);
+      --report-surface: rgba(20, 24, 39, 0.75);
       --report-border: rgba(255, 255, 255, 0.08);
       --report-primary: #8b5cf6;
+      --report-primary-hover: #7c3aed;
       --report-text: #f8fafc;
       --report-muted: #94a3b8;
       --report-danger: #ef4444;
       --report-success: #10b981;
     }
     
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       background: var(--report-bg);
       font-family: 'Outfit', sans-serif;
@@ -77,6 +82,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
 
     #authCheckOverlay {
@@ -88,27 +94,30 @@
       justify-content: center;
       z-index: 9999;
       flex-direction: column;
+      padding: 1.5rem;
+      text-align: center;
     }
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid rgba(255,255,255,0.1);
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255,255,255,0.1);
       border-top-color: var(--report-primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
     .report-container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 3rem 2rem;
+      padding: 2.5rem 1.5rem;
       width: 100%;
       box-sizing: border-box;
       display: none;
     }
 
+    /* Header */
     .report-header {
       display: flex;
       justify-content: space-between;
@@ -116,51 +125,31 @@
       margin-bottom: 2rem;
       border-bottom: 1px solid var(--report-border);
       padding-bottom: 1.5rem;
+      gap: 1rem;
     }
-    .report-header h1 {
-      margin: 0;
-      font-size: 2rem;
+    .report-header-title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      min-width: 0;
     }
-    .report-header h1 i { color: var(--report-primary); }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
+    .report-header-title h1 {
+      margin: 0;
+      font-size: 1.85rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
     }
-    .stat-box {
-      background: var(--report-surface);
-      border: 1px solid var(--report-border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      backdrop-filter: blur(10px);
+    .report-header-title h1 i.title-icon { color: var(--report-primary); }
+    .report-header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
     }
-    .stat-box h3 { margin: 0 0 0.5rem 0; color: var(--report-muted); font-size: 0.9rem; font-weight: 500; }
-    .stat-box p { margin: 0; font-size: 2rem; font-weight: 700; }
-    
-    .data-card {
-      background: var(--report-surface);
-      border: 1px solid var(--report-border);
-      border-radius: 16px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-    .data-card h2 { margin-top: 0; font-size: 1.3rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;}
-    
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 1rem; border-bottom: 1px solid var(--report-border); }
-    th { color: var(--report-muted); font-weight: 500; }
-    
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-    .badge-usual { background: rgba(16, 185, 129, 0.1); color: var(--report-success); }
-    .badge-unusual { background: rgba(239, 68, 68, 0.1); color: var(--report-danger); }
     
     .back-btn {
-      padding: 0.8rem 1.5rem;
+      padding: 0.75rem 1.25rem;
       background: rgba(20, 24, 39, 0.7);
       color: white;
       border: 1px solid var(--report-border);
@@ -171,14 +160,250 @@
       font-weight: 500;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease;
+      font-size: 0.9rem;
     }
     .back-btn:hover {
       background: linear-gradient(135deg, var(--report-primary), #6366f1);
       border-color: transparent;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 2.25rem;
+    }
+    .stat-box {
+      background: var(--report-surface);
+      border: 1px solid var(--report-border);
+      border-radius: 16px;
+      padding: 1.35rem;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .stat-box h3 {
+      margin: 0 0 0.5rem 0;
+      color: var(--report-muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-box p {
+      margin: 0;
+      font-size: 1.95rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    
+    /* Data Card */
+    .data-card {
+      background: var(--report-surface);
+      border: 1px solid var(--report-border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(10px);
+    }
+    .card-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .card-header-flex h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .log-count-badge {
+      background: rgba(139, 92, 246, 0.12);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* Desktop Table View */
+    .desktop-table-view {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--report-border);
+      vertical-align: middle;
+    }
+    th {
+      color: var(--report-muted);
+      font-weight: 500;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-usual {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--report-success);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .badge-unusual {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--report-danger);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    
+    .ip-pill {
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .device-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--report-text);
+      cursor: default;
+    }
+    .device-pill i {
+      color: var(--report-primary);
+      font-size: 1rem;
+    }
+
+    /* Mobile Log Card View */
+    .mobile-log-view {
+      display: none;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .log-card {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--report-border);
+      border-radius: 14px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s;
+    }
+    .log-card:hover {
+      border-color: rgba(139, 92, 246, 0.35);
+    }
+    .log-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .log-card-time {
+      color: var(--report-muted);
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .log-card-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.65rem;
+    }
+    .log-row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .log-row-label {
+      color: var(--report-muted);
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .device-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      color: #e2e8f0;
+      font-size: 0.82rem;
+    }
+    .device-badge i {
+      color: var(--report-primary);
+      font-size: 0.95rem;
+    }
+    .log-raw-ua {
+      margin-top: 0.25rem;
+      font-size: 0.74rem;
+    }
+    .log-raw-ua summary {
+      outline: none;
+      cursor: pointer;
+      color: #a78bfa;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+    .log-raw-ua summary:hover {
+      text-decoration: underline;
+    }
+    .raw-ua-content {
+      margin-top: 0.4rem;
+      padding: 0.6rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 0.7rem;
+      line-height: 1.4;
+      color: #94a3b8;
     }
 
     /* AI Analysis Panel */
@@ -186,28 +411,99 @@
       background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(99,102,241,0.05));
       border: 1px solid rgba(139,92,246,0.25);
       border-radius: 20px;
-      padding: 2rem;
+      padding: 1.75rem;
       margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
-    .ai-panel h2 { margin-top: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
-    .ai-panel h2 span { font-size: 1.5rem; }
+    .ai-panel h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .ai-panel h2 span { font-size: 1.4rem; }
+    
+    .ai-input-row {
+      display: flex;
+      gap: 0.6rem;
+      width: 100%;
+      box-sizing: border-box;
+      align-items: stretch;
+    }
+    #reportChatInput {
+      flex: 1;
+      min-width: 0;
+      padding: 0.75rem 1rem;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    #reportChatInput:focus {
+      border-color: var(--report-primary);
+      background: rgba(0,0,0,0.5);
+    }
+    #reportChatSendBtn {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0 1.25rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+    #reportChatSendBtn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+    }
     .ai-analyze-btn {
-      padding: 0.75rem 1.8rem;
+      width: 100%;
+      padding: 0.75rem 1.5rem;
       background: linear-gradient(135deg, #8b5cf6, #6366f1);
       color: white;
       border: none;
       border-radius: 12px;
       font-family: 'Outfit', sans-serif;
-      font-size: 1rem;
+      font-size: 0.92rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      box-sizing: border-box;
     }
-    .ai-analyze-btn:hover { opacity: 0.85; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
-    .ai-analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .ai-analyze-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139,92,246,0.4);
+    }
+    .ai-analyze-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     #aiReportOutput {
       margin-top: 1.5rem;
       padding: 1.5rem;
@@ -222,24 +518,83 @@
     #aiReportOutput h1, #aiReportOutput h2, #aiReportOutput h3 { color: #a78bfa; }
     #aiReportOutput strong { color: #c4b5fd; }
 
+    /* Responsive Breakpoints */
+    @media (max-width: 900px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .desktop-table-view {
+        display: none !important;
+      }
+      .mobile-log-view {
+        display: flex !important;
+      }
+    }
+
     @media (max-width: 640px) {
       .report-container {
-        padding: 1.5rem 1rem;
+        padding: 1.25rem 0.85rem;
       }
       .report-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        align-items: stretch;
+        gap: 1.25rem;
+        padding-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
       }
-      .stats-grid {
-        grid-template-columns: 1fr;
+      .report-header-title h1 {
+        font-size: 1.45rem;
+        justify-content: space-between;
+        width: 100%;
       }
-      th, td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.82rem;
+      .report-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .report-header-actions .back-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem 0.5rem;
+        font-size: 0.84rem;
+        white-space: nowrap;
+        box-sizing: border-box;
       }
       .data-card {
-        padding: 1.2rem;
+        padding: 1.15rem;
+        border-radius: 15px;
+      }
+      .ai-panel {
+        padding: 1.25rem;
+        border-radius: 16px;
+      }
+      .ai-panel h2 {
+        font-size: 1.15rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        gap: 0.75rem;
+      }
+      .stat-box {
+        padding: 1rem;
+        border-radius: 14px;
+      }
+      .stat-box h3 {
+        font-size: 0.78rem;
+      }
+      .stat-box p {
+        font-size: 1.65rem;
+      }
+      .stat-box #resourceTitle {
+        font-size: 1.05rem !important;
       }
     }
   </style>
@@ -254,54 +609,69 @@
   
   <div class="report-container" id="reportContainer">
     <div class="report-header">
-      <h1><i class="ri-bar-chart-box-line"></i> Engagement Report <i class="ri-information-line" style="font-size: 1.1rem; color: var(--report-primary); cursor: pointer; vertical-align: middle; margin-left: 6px;" title="Reports track anonymous visitor click CTR under our Tracking & Analytics Policy. Click to view." onclick="window.open('legal/index.html?from=admin#analytics', '_blank')"></i></h1>
-      <div style="display:flex; gap:10px;">
-        <a href="legal/index.html?from=admin" class="back-btn" style="background:rgba(139,92,246,0.1); color:var(--report-primary);"><i class="ri-shield-user-line"></i> Legal Policies</a>
-        <button onclick="window.close()" class="back-btn"><i class="ri-close-line"></i> Close Report</button>
+      <div class="report-header-title">
+        <h1>
+          <i class="ri-bar-chart-box-line title-icon"></i> 
+          <span>Engagement Report</span>
+          <i class="ri-information-line" style="font-size: 1.1rem; color: var(--report-primary); cursor: pointer; vertical-align: middle; margin-left: 4px;" title="Reports track anonymous visitor click CTR under our Tracking & Analytics Policy. Click to view." onclick="window.open('legal/index.html?from=admin#analytics', '_blank')"></i>
+        </h1>
+      </div>
+      <div class="report-header-actions">
+        <a href="legal/index.html?from=admin" class="back-btn" style="background:rgba(139,92,246,0.1); color:var(--report-primary);"><i class="ri-shield-user-line"></i> <span>Legal Policies</span></a>
+        <button onclick="window.close()" class="back-btn"><i class="ri-close-line"></i> <span>Close Report</span></button>
       </div>
     </div>
     
     <div class="stats-grid">
       <div class="stat-box">
-        <h3>Total Opens</h3>
+        <h3><i class="ri-cursor-line"></i> Total Opens</h3>
         <p id="totalOpens">0</p>
       </div>
       <div class="stat-box">
-        <h3>Unique Visitors (IPs)</h3>
+        <h3><i class="ri-user-shared-line"></i> Unique Visitors</h3>
         <p id="uniqueVisitors">0</p>
       </div>
       <div class="stat-box">
-        <h3>Unusual Activity</h3>
+        <h3><i class="ri-alarm-warning-line"></i> Unusual Activity</h3>
         <p id="unusualActivity" style="color:var(--report-danger);">0</p>
       </div>
-      <div class="stat-box">
-        <h3>Resource Title</h3>
-        <p id="resourceTitle" style="font-size: 1.2rem; margin-top: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Loading...</p>
+      <div class="stat-box full-width-mobile">
+        <h3><i class="ri-file-text-line"></i> Resource Title</h3>
+        <p id="resourceTitle" style="font-size: 1.15rem; margin-top: 0.4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Loading...</p>
       </div>
     </div>
     
     <div class="data-card">
-      <h2><i class="ri-history-line"></i> Engagement Traffic Log</h2>
-      <div style="overflow-x:auto;">
+      <div class="card-header-flex">
+        <h2><i class="ri-history-line" style="color:var(--report-primary);"></i> Engagement Traffic Log</h2>
+        <span id="logCountBadge" class="log-count-badge">0 events</span>
+      </div>
+      
+      <!-- Desktop Table View -->
+      <div class="desktop-table-view">
         <table>
           <thead>
             <tr>
-              <th>Timestamp</th>
-              <th>IP Address</th>
-              <th>Status</th>
-              <th>Device / Agent</th>
+              <th style="width: 24%;">Timestamp</th>
+              <th style="width: 22%;">IP Address</th>
+              <th style="width: 16%;">Status</th>
+              <th style="width: 38%;">Device / Platform</th>
             </tr>
           </thead>
           <tbody id="engagementsBody">
-            <tr><td colspan="4" style="text-align:center;">Loading logs...</td></tr>
+            <tr><td colspan="4" style="text-align:center; padding: 2rem; color:var(--report-muted);">Loading logs...</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Log Card View -->
+      <div class="mobile-log-view" id="mobileEngagementsList">
+        <div style="text-align:center; padding: 1.5rem; color: var(--report-muted);">Loading logs...</div>
       </div>
     </div>
 
     <!-- Google Ad Unit -->
-    <div class="ad-banner-section" style="margin: 1.5rem 0; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; text-align: center;">
-      <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; tracking-spacing: 1px;">Sponsored</span>
+    <div class="ad-banner-section">
       <ins class="adsbygoogle"
            style="display:block"
            data-ad-client="ca-pub-5515547448097504"
@@ -314,37 +684,32 @@
     </div>
 
     <!-- AI Analysis Panel (Chat Mode) -->
-    <div class="ai-panel" id="aiAnalysisPanel" style="display: flex; flex-direction: column; gap: 1rem;">
+    <div class="ai-panel" id="aiAnalysisPanel">
       <h2><span>🤖</span> AI Compliance Assistant — DPGNotes Intelligence</h2>
-      <p style="color: var(--report-muted); margin-bottom: 0.5rem; font-size: 0.9rem;">Ask DPGNotes Intelligence anything about this compliance report. We will scan engagements, analyze visitor IPs, and assess security anomalies.</p>
+      <p style="color: var(--report-muted); margin: 0 0 0.25rem 0; font-size: 0.88rem; line-height: 1.5;">Ask DPGNotes Intelligence anything about this compliance report. We will scan engagements, analyze visitor IPs, and assess security anomalies.</p>
       
-      <div id="reportChatArea" style="min-height: 150px; max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.15); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
-        <div class="chat-msg ai" style="align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.6rem 0.9rem; border-radius: 12px; border-bottom-left-radius: 2px; font-size: 0.88rem; line-height: 1.45; color: #e2e8f0; max-width: 85%;">
+      <div id="reportChatArea" style="min-height: 140px; max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.15); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+        <div class="chat-msg ai" style="align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.6rem 0.9rem; border-radius: 12px; border-bottom-left-radius: 2px; font-size: 0.88rem; line-height: 1.45; color: #e2e8f0; max-width: 90%;">
           🤖 Hello! I am DPGNotes Intelligence. Click the button below to generate a compliance brief, or ask me any question about the report data directly!
         </div>
       </div>
 
-      <div class="ai-input-row" style="display: flex; gap: 0.5rem; width: 100%;">
-        <input type="text" id="reportChatInput" placeholder="E.g. Are there any suspicious IP addresses?" style="flex: 1; padding: 0.6rem 1rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-family: inherit; font-size: 0.88rem;" onkeydown="if(event.key==='Enter') sendReportChatQuery()">
-        <button id="reportChatSendBtn" onclick="sendReportChatQuery()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; border-radius: 10px; padding: 0 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem;">Send</button>
+      <div class="ai-input-row">
+        <input type="text" id="reportChatInput" placeholder="Ask about anomalies, IPs..." onkeydown="if(event.key==='Enter') sendReportChatQuery()">
+        <button id="reportChatSendBtn" onclick="sendReportChatQuery()"><i class="ri-send-plane-fill"></i> <span>Send</span></button>
       </div>
 
-      <div style="display: flex; gap: 0.5rem;">
-        <button class="ai-analyze-btn" id="runAiAnalysisBtn" onclick="runAiAnalysis()" style="flex: 1; margin: 0; padding: 0.6rem 1.2rem; font-size: 0.88rem;">
-          <i class="ri-sparkling-line"></i> Generate Compliance Brief
-        </button>
-      </div>
+      <button class="ai-analyze-btn" id="runAiAnalysisBtn" onclick="runAiAnalysis()">
+        <i class="ri-sparkling-line"></i> <span>Generate Compliance Brief</span>
+      </button>
     </div>
   </div>
 <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
   // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   const firebaseConfig = {
     apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
     authDomain: "dpgnotes.firebaseapp.com",
@@ -369,6 +734,8 @@
         }
       });
     }
+    setInterval(checkAds, 2000);
+  </script>
   <!-- Bottom Footer Native Sponsored Ad Banner -->
   <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1100px; margin:2rem auto 1rem auto; padding:0 1rem; box-sizing:border-box;"></div>
   <script src="redirect.js"></script>

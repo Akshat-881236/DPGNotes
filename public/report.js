@@ -71,43 +71,164 @@ async function initReport() {
   }
 }
 
-function renderReport(data) {
-  const { shareInfo, engagements } = data;
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function parseUserAgent(ua) {
+  if (!ua || typeof ua !== 'string') {
+    return { label: 'Unknown Device', icon: 'ri-question-line', os: 'Unknown', browser: 'Unknown' };
+  }
   
-  document.getElementById("resourceTitle").innerText = shareInfo.title || "Unknown Document";
-  document.getElementById("totalOpens").innerText = shareInfo.clicks || 0;
+  let os = 'Unknown OS';
+  let icon = 'ri-device-line';
+  
+  if (/android/i.test(ua)) {
+    os = 'Android';
+    icon = 'ri-android-fill';
+  } else if (/iphone|ipad|ipod/i.test(ua)) {
+    os = 'iOS';
+    icon = 'ri-apple-fill';
+  } else if (/windows/i.test(ua)) {
+    os = 'Windows';
+    icon = 'ri-windows-fill';
+  } else if (/macintosh|mac os x/i.test(ua)) {
+    os = 'macOS';
+    icon = 'ri-apple-fill';
+  } else if (/linux/i.test(ua)) {
+    os = 'Linux';
+    icon = 'ri-ubuntu-fill';
+  } else if (/cros/i.test(ua)) {
+    os = 'ChromeOS';
+    icon = 'ri-chrome-fill';
+  }
+
+  let browser = 'Browser';
+  if (/edg\//i.test(ua)) {
+    browser = 'Edge';
+  } else if (/opr\/|opera/i.test(ua)) {
+    browser = 'Opera';
+  } else if (/chrome|crios/i.test(ua)) {
+    browser = /android|iphone|ipad|ipod/i.test(ua) ? 'Chrome Mobile' : 'Chrome';
+  } else if (/firefox|fxios/i.test(ua)) {
+    browser = /android|iphone|ipad|ipod/i.test(ua) ? 'Firefox Mobile' : 'Firefox';
+  } else if (/safari/i.test(ua) && !/chrome|crios/i.test(ua)) {
+    browser = /iphone|ipad|ipod/i.test(ua) ? 'Safari Mobile' : 'Safari';
+  } else if (/bot|crawler|spider/i.test(ua)) {
+    browser = 'Bot / Crawler';
+    icon = 'ri-robot-line';
+  }
+
+  return {
+    label: `${os} • ${browser}`,
+    icon: icon,
+    os: os,
+    browser: browser
+  };
+}
+
+function renderReport(data) {
+  const { shareInfo, engagements = [] } = data;
+  
+  const titleEl = document.getElementById("resourceTitle");
+  if (titleEl) titleEl.innerText = shareInfo?.title || "Unknown Document";
+
+  const opensEl = document.getElementById("totalOpens");
+  if (opensEl) opensEl.innerText = shareInfo?.clicks || 0;
   
   const uniqueIps = new Set(engagements.map(e => e.ipAddress)).size;
-  document.getElementById("uniqueVisitors").innerText = uniqueIps;
+  const uniqueEl = document.getElementById("uniqueVisitors");
+  if (uniqueEl) uniqueEl.innerText = uniqueIps;
   
   const unusualCount = engagements.filter(e => e.status === "Unusual").length;
-  document.getElementById("unusualActivity").innerText = unusualCount;
+  const unusualEl = document.getElementById("unusualActivity");
+  if (unusualEl) unusualEl.innerText = unusualCount;
+
+  const countBadge = document.getElementById("logCountBadge");
+  if (countBadge) {
+    countBadge.innerText = `${engagements.length} ${engagements.length === 1 ? 'event' : 'events'}`;
+  }
   
   const tbody = document.getElementById("engagementsBody");
+  const mobileList = document.getElementById("mobileEngagementsList");
+
   if (engagements.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No engagement data yet.</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--report-muted);">No engagement data logged yet.</td></tr>`;
+    if (mobileList) mobileList.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--report-muted);">No engagement data logged yet.</div>`;
+    window._cachedReportData = data;
     return;
   }
   
-  tbody.innerHTML = "";
+  if (tbody) tbody.innerHTML = "";
+  if (mobileList) mobileList.innerHTML = "";
+
   engagements.forEach(e => {
     let timeStr = "Unknown";
-    if (e.timestamp && e.timestamp._seconds) {
-      timeStr = new Date(e.timestamp._seconds * 1000).toLocaleString();
+    if (e.timestamp) {
+      if (e.timestamp._seconds) {
+        timeStr = new Date(e.timestamp._seconds * 1000).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+      } else if (typeof e.timestamp === 'string' || typeof e.timestamp === 'number') {
+        timeStr = new Date(e.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+      } else if (e.timestamp.toDate && typeof e.timestamp.toDate === 'function') {
+        timeStr = e.timestamp.toDate().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+      }
     }
     
     const badgeClass = e.status === "Unusual" ? "badge-unusual" : "badge-usual";
+    const statusText = escapeHtml(e.status || "Usual");
+    const ip = escapeHtml(e.ipAddress || "Unknown");
+    const rawUa = escapeHtml(e.userAgent || "Unknown");
+    const devInfo = parseUserAgent(e.userAgent);
     
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="color:var(--report-muted);">${timeStr}</td>
-      <td style="font-family:monospace;">${e.ipAddress || "Unknown"}</td>
-      <td><span class="badge ${badgeClass}">${e.status || "Usual"}</span></td>
-      <td style="font-size:0.85rem; color:var(--report-muted); max-width: 300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${e.userAgent}">
-        ${e.userAgent || "Unknown"}
-      </td>
-    `;
-    tbody.appendChild(tr);
+    // Desktop Table Row
+    if (tbody) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="color:var(--report-muted); white-space:nowrap;"><i class="ri-time-line" style="vertical-align:middle; margin-right:4px;"></i>${timeStr}</td>
+        <td><span class="ip-pill"><i class="ri-shield-keyhole-line"></i> ${ip}</span></td>
+        <td><span class="badge ${badgeClass}"><i class="${e.status === 'Unusual' ? 'ri-alert-line' : 'ri-checkbox-circle-line'}"></i> ${statusText}</span></td>
+        <td>
+          <div class="device-pill" title="${rawUa}">
+            <i class="${devInfo.icon}"></i>
+            <span>${escapeHtml(devInfo.label)}</span>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // Mobile Card Item
+    if (mobileList) {
+      const card = document.createElement("div");
+      card.className = "log-card";
+      card.innerHTML = `
+        <div class="log-card-top">
+          <span class="badge ${badgeClass}"><i class="${e.status === 'Unusual' ? 'ri-alert-line' : 'ri-checkbox-circle-line'}"></i> ${statusText}</span>
+          <span class="log-card-time"><i class="ri-time-line"></i> ${timeStr}</span>
+        </div>
+        <div class="log-card-rows">
+          <div class="log-row-item">
+            <span class="log-row-label"><i class="ri-shield-keyhole-line"></i> IP Address:</span>
+            <span class="ip-pill">${ip}</span>
+          </div>
+          <div class="log-row-item">
+            <span class="log-row-label"><i class="ri-device-line"></i> Platform:</span>
+            <span class="device-badge"><i class="${devInfo.icon}"></i> ${escapeHtml(devInfo.label)}</span>
+          </div>
+          <details class="log-raw-ua">
+            <summary><i class="ri-terminal-window-line"></i> Raw User-Agent</summary>
+            <div class="raw-ua-content">${rawUa}</div>
+          </details>
+        </div>
+      `;
+      mobileList.appendChild(card);
+    }
   });
 
   // Cache report data for AI analysis
@@ -169,8 +290,16 @@ window.runAiAnalysis = async function() {
   const btn = document.getElementById("runAiAnalysisBtn");
   const token = localStorage.getItem("adminToken");
   
-  if (!token) { alert("Admin session required."); return; }
-  if (!window._cachedReportData) { alert("Report data not loaded yet."); return; }
+  if (!token) {
+    if (window.customAlert) window.customAlert("Admin session required.", "Authentication Error");
+    else alert("Admin session required.");
+    return;
+  }
+  if (!window._cachedReportData) {
+    if (window.customAlert) window.customAlert("Report data not loaded yet.", "Please Wait");
+    else alert("Report data not loaded yet.");
+    return;
+  }
 
   btn.disabled = true;
   btn.innerHTML = '<i class="ri-loader-4-line"></i> Generating...';
