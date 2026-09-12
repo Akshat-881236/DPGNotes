@@ -112,42 +112,66 @@
   `;
   document.head.appendChild(style);
 
-  // Overwrite window.alert globally
-  window.alert = function(message) {
-    const overlay = document.createElement('div');
-    overlay.className = 'dpg-modal-overlay';
-    
-    let iconClass = 'ri-notification-3-line';
-    let titleText = 'Alert';
-    
-    const msgLower = String(message).toLowerCase();
-    if (msgLower.includes('success') || msgLower.includes('complete') || msgLower.includes('saved') || msgLower.includes('congratulations')) {
-      iconClass = 'ri-checkbox-circle-line';
-      titleText = 'Success';
-    } else if (msgLower.includes('fail') || msgLower.includes('error') || msgLower.includes('invalid') || msgLower.includes('denied') || msgLower.includes('suspended')) {
-      iconClass = 'ri-error-warning-line';
-      titleText = 'Oops!';
-    }
-    
-    const themeColor = titleText === 'Success' ? '#10b981' : (titleText === 'Oops!' ? '#ef4444' : '#8b5cf6');
-    
-    overlay.innerHTML = `
-      <div class="dpg-modal-box">
-        <i class="${iconClass} dpg-modal-icon" style="color: ${themeColor}"></i>
-        <h3 class="dpg-modal-title">${titleText}</h3>
-        <p class="dpg-modal-text">${message}</p>
-        <button class="dpg-modal-btn" id="dpgAlertOkBtn" style="background: linear-gradient(135deg, ${themeColor}, #6366f1); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);">OK</button>
-      </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    
-    setTimeout(() => overlay.classList.add('active'), 10);
-    
-    overlay.querySelector('#dpgAlertOkBtn').addEventListener('click', () => {
-      overlay.classList.remove('active');
-      setTimeout(() => overlay.remove(), 300);
+  // Helper for alert dialogs (Promise-based)
+  window.customAlert = function(message, options = {}) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'dpg-modal-overlay';
+      
+      let iconClass = 'ri-notification-3-line';
+      let titleText = options.title || 'Alert';
+      const isDanger = options.isDanger || false;
+      
+      const msgLower = String(message).toLowerCase();
+      if (!options.title) {
+        if (msgLower.includes('success') || msgLower.includes('complete') || msgLower.includes('saved') || msgLower.includes('congratulations') || msgLower.includes('welcome') || msgLower.includes('restored')) {
+          iconClass = 'ri-checkbox-circle-line';
+          titleText = 'Success';
+        } else if (isDanger || msgLower.includes('fail') || msgLower.includes('error') || msgLower.includes('invalid') || msgLower.includes('denied') || msgLower.includes('suspended') || msgLower.includes('blocked') || msgLower.includes('restriction')) {
+          iconClass = 'ri-error-warning-line';
+          titleText = 'Oops!';
+        }
+      } else {
+        if (isDanger || msgLower.includes('fail') || msgLower.includes('error') || msgLower.includes('restriction') || msgLower.includes('invalid')) {
+          iconClass = 'ri-error-warning-line';
+        } else if (msgLower.includes('success') || msgLower.includes('welcome') || msgLower.includes('restored')) {
+          iconClass = 'ri-checkbox-circle-line';
+        }
+      }
+      
+      const themeColor = isDanger || titleText === 'Oops!' ? '#ef4444' : (titleText === 'Success' ? '#10b981' : '#8b5cf6');
+      
+      overlay.innerHTML = `
+        <div class="dpg-modal-box">
+          <i class="${iconClass} dpg-modal-icon" style="color: ${themeColor}"></i>
+          <h3 class="dpg-modal-title">${titleText}</h3>
+          <p class="dpg-modal-text">${message}</p>
+          <button class="dpg-modal-btn" id="dpgAlertOkBtn" style="background: linear-gradient(135deg, ${themeColor}, #6366f1); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);">OK</button>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      setTimeout(() => overlay.classList.add('active'), 10);
+      
+      overlay.querySelector('#dpgAlertOkBtn').addEventListener('click', () => {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+          overlay.remove();
+          resolve();
+        }, 300);
+      });
     });
+  };
+
+  // Overwrite native window.alert globally with custom modal
+  window.alert = function(message, options) {
+    return window.customAlert(message, options);
+  };
+
+  // Overwrite native window.confirm globally with custom modal
+  window.confirm = function(message, options) {
+    return window.customConfirm(message, options);
   };
 
   // Helper for confirm dialogs (Promise-based)

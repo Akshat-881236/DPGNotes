@@ -1091,16 +1091,12 @@
           exitQuotaLockdown();
           if (typeof window.loadUserPracticals === 'function') window.loadUserPracticals();
 
-          if (typeof window.customAlert === 'function') {
-            await window.customAlert("🎉 Welcome Contributor! Your daily cover page quota has been doubled (2 tokens) and permanent cloud storage enabled.", { title: "Signed In Successfully" });
-          } else {
-            alert("🎉 Welcome! Your quota has been doubled (2 tokens).");
-          }
+          await window.customAlert("🎉 Welcome Contributor! Your daily cover page quota has been doubled (2 tokens) and permanent cloud storage enabled.", { title: "Signed In Successfully" });
         }
       } catch (err) {
         console.error("Google sign in error:", err);
         if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In with Google (Double Quota)';
-        alert("Sign in error: " + (err.message || err));
+        await window.customAlert("Sign in error: " + (err.message || err), { title: "Authentication Error", isDanger: true });
       }
     };
 

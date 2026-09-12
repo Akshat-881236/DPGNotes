@@ -245,6 +245,17 @@
         color: #f472b6;
         font-family: 'Fira Code', 'Courier New', monospace;
       }
+      .note-adsense-unit {
+        margin: 1.2rem auto;
+        padding: 0.8rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        text-align: center;
+        max-width: 100%;
+        min-height: 90px;
+        box-sizing: border-box;
+      }
       .dpg-native-ad-block {
         margin: 1.4rem 0;
         padding: 1.1rem 1.4rem;
@@ -484,14 +495,14 @@
       </div>
     `;
 
-    // Native Ads System Support & Restriction Rule:
+    // Ads System Support & Restriction Rule:
     // NOT allow / disable rendering in After Notes of Page 3, 6, 9, 12... (divisible by 3) as they already have Google AdSense and Native Ads
     const isAfterDivBy3 = (rend === 'after' && pageNum % 3 === 0);
     if (isAfterDivBy3) {
-      // Disallow / strip native ad blocks from After notes of pages divisible by 3
-      noteDiv.querySelectorAll('.native-ads, .dpg-native-ad-block').forEach(adEl => adEl.remove());
+      // Disallow / strip all ad blocks from After notes of pages divisible by 3
+      noteDiv.querySelectorAll('.native-ads, .dpg-native-ad-block, .note-adsense-unit, ins.adsbygoogle').forEach(adEl => adEl.remove());
     } else {
-      // Support DPGNotes Common Native Ads System across notes
+      // 1. Support DPGNotes Common Native Ads System across notes
       const adBlocks = noteDiv.querySelectorAll('.native-ads, .dpg-native-ad-block');
       if (adBlocks.length > 0) {
         adBlocks.forEach(ad => {
@@ -505,6 +516,19 @@
             try { window.renderNativeDPGAds(); } catch(e) {}
           }, 150);
         }
+      }
+
+      // 2. Support Google AdSense Ads across notes
+      const adsenseBlocks = noteDiv.querySelectorAll('ins.adsbygoogle');
+      if (adsenseBlocks.length > 0) {
+        setTimeout(() => {
+          adsenseBlocks.forEach(ins => {
+            if (!ins.dataset.adsenseInjected) {
+              ins.dataset.adsenseInjected = "true";
+              try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+            }
+          });
+        }, 150);
       }
     }
 

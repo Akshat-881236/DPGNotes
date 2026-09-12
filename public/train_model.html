@@ -781,6 +781,9 @@
               <button type="button" class="note-tool-btn" id="btnToolNativeAd" onclick="insertTool('native-ad')" title="Insert DPGNotes Native Ad Block (Optional)" style="border-color:rgba(99,102,241,0.4); background:rgba(99,102,241,0.12); color:#a5b4fc;">
                 <i class="ri-advertisement-line"></i> Native Ad
               </button>
+              <button type="button" class="note-tool-btn" id="btnToolAdsenseAd" onclick="insertTool('adsense-ad')" title="Insert Google AdSense Fluid In-Article Unit (Optional)" style="border-color:rgba(16,185,129,0.4); background:rgba(16,185,129,0.12); color:#6ee7b7;">
+                <i class="ri-google-fill"></i> AdSense Ad
+              </button>
               <button type="button" class="note-tool-btn btn-clear" onclick="clearNoteContent()" title="Clear Content">
                 <i class="ri-delete-bin-line"></i> Clear
               </button>
@@ -1097,10 +1100,13 @@
         if (saveBtn) saveBtn.disabled = false;
       }
 
-      // Native Ad Tool button availability check
+      // Native & AdSense Tool button availability check
       const btnNativeAd = document.getElementById('btnToolNativeAd');
+      const btnAdsenseAd = document.getElementById('btnToolAdsenseAd');
+      const isDiv3After = (curRend === 'after' && pg % 3 === 0);
+
       if (btnNativeAd) {
-        if (curRend === 'after' && pg % 3 === 0) {
+        if (isDiv3After) {
           btnNativeAd.disabled = true;
           btnNativeAd.style.opacity = '0.35';
           btnNativeAd.style.cursor = 'not-allowed';
@@ -1110,6 +1116,20 @@
           btnNativeAd.style.opacity = '1';
           btnNativeAd.style.cursor = 'pointer';
           btnNativeAd.title = 'Insert DPGNotes Native Ad Block (Optional)';
+        }
+      }
+
+      if (btnAdsenseAd) {
+        if (isDiv3After) {
+          btnAdsenseAd.disabled = true;
+          btnAdsenseAd.style.opacity = '0.35';
+          btnAdsenseAd.style.cursor = 'not-allowed';
+          btnAdsenseAd.title = `Google AdSense is disabled for After Notes of Page ${pg} (pages divisible by 3 already contain Google AdSense)`;
+        } else {
+          btnAdsenseAd.disabled = false;
+          btnAdsenseAd.style.opacity = '1';
+          btnAdsenseAd.style.cursor = 'pointer';
+          btnAdsenseAd.title = 'Insert Google AdSense Fluid In-Article Unit (Optional)';
         }
       }
 
@@ -1224,11 +1244,21 @@
         const rendVal = (document.querySelector('input[name="noteRendering"]:checked')?.value || 'after').toLowerCase();
         if (rendVal === 'after' && pgVal % 3 === 0) {
           const warnMsg = `Native Ads are not allowed in After Notes for Page ${pgVal} (pages divisible by 3 already contain Google AdSense and System Native Ads).`;
-          if (window.customAlert) await window.customAlert(warnMsg, { title: "Native Ads Restriction", isDanger: true });
-          else alert(warnMsg);
+          await window.customAlert(warnMsg, { title: "Native Ads Restriction", isDanger: true });
           return;
         }
         const adSnippet = `\n<div class="native-ads" data-ad-variant="feed" data-ad-count="1" style="max-width:100%; margin:0.8rem 0;"></div>\n`;
+        wrapOrInsert(textarea, '', '', adSnippet);
+      } else if (type === 'adsense-ad') {
+        const pgInput = document.getElementById('notePageNum');
+        const pgVal = parseInt(pgInput ? pgInput.value : '1', 10) || 1;
+        const rendVal = (document.querySelector('input[name="noteRendering"]:checked')?.value || 'after').toLowerCase();
+        if (rendVal === 'after' && pgVal % 3 === 0) {
+          const warnMsg = `Google AdSense is not allowed in After Notes for Page ${pgVal} (pages divisible by 3 already contain Google AdSense and System Native Ads).`;
+          await window.customAlert(warnMsg, { title: "AdSense Restriction", isDanger: true });
+          return;
+        }
+        const adSnippet = `\n<div class="note-adsense-unit" style="max-width:100%; margin:0.8rem auto; text-align:center;">\n  <ins class="adsbygoogle"\n       style="display:block; text-align:center;"\n       data-ad-layout="in-article"\n       data-ad-format="fluid"\n       data-ad-client="ca-pub-5515547448097504"\n       data-ad-slot="6070257271"></ins>\n  <script>\n       (adsbygoogle = window.adsbygoogle || []).push({});\n  </script>\n</div>\n`;
         wrapOrInsert(textarea, '', '', adSnippet);
       } else if (type === 'a') {
         let url = 'https://';
@@ -1795,17 +1825,13 @@
         return;
       }
 
-      // Native Ads Restriction Check:
+      // Ads (Native & AdSense) Restriction Check:
       const rendVal = (document.querySelector('input[name="noteRendering"]:checked')?.value || 'after').toLowerCase();
       const isAfterDiv3 = (rendVal === 'after' && pg % 3 === 0);
-      const hasNativeAdBlock = /class=["'][^"']*(?:native-ads|dpg-native-ad-block)[^"']*["']|data-ad-variant/i.test(htmlVal);
-      if (isAfterDiv3 && hasNativeAdBlock) {
-        const errorMsg = `Native Ads are not allowed in After Notes for pages divisible by 3 (Page ${pg}) because these page slots already feature Google AdSense and System Native Ads. Please remove the native ad block or switch to Before Page rendering.`;
-        if (window.customAlert) {
-          await window.customAlert(errorMsg, { title: "Native Ads Restriction", isDanger: true });
-        } else {
-          alert(errorMsg);
-        }
+      const hasAdBlock = /class=["'][^"']*(?:native-ads|dpg-native-ad-block|note-adsense-unit|adsbygoogle)[^"']*["']|data-ad-variant|data-ad-slot/i.test(htmlVal);
+      if (isAfterDiv3 && hasAdBlock) {
+        const errorMsg = `Ads (Native or Google AdSense) are not allowed in After Notes for pages divisible by 3 (Page ${pg}) because these page slots already feature Google AdSense and System Native Ads. Please remove the ad block or switch to Before Page rendering.`;
+        await window.customAlert(errorMsg, { title: "Ads Restriction", isDanger: true });
         return;
       }
 
