@@ -138,6 +138,26 @@ def get_degree_name(course_str):
         return "DIPLOMA IN ENGINEERING & TECHNOLOGY"
     return "BACHELOR OF COMPUTER APPLICATION"
 
+def split_department_text(raw_dept):
+    text = (raw_dept or '').strip()
+    if text.upper().startswith("DEPARTMENT OF "):
+        text = text[14:].strip()
+    if len(text) <= 17:
+        return f"DEPARTMENT OF {text.upper()}", None
+
+    split_idx = -1
+    max_first_line = min(len(text) - 1, 19)
+    for i in range(max_first_line, 7, -1):
+        if text[i] in (' ', '-'):
+            split_idx = i
+            break
+    if split_idx == -1:
+        split_idx = text.find(' ')
+    if 0 < split_idx < len(text):
+        return f"DEPARTMENT OF {text[:split_idx].strip().upper()}", text[split_idx:].strip().upper()
+    else:
+        return f"DEPARTMENT OF {text[:17].strip().upper()}", text[17:].strip().upper()
+
 def generate_pdf(data, output_path, assets_dir=None):
     doc_type = str(data.get("docType", "assignment")).lower().strip()
     if not data.get("assignmentNo") and doc_type != "practical":
@@ -189,26 +209,27 @@ def generate_pdf(data, output_path, assets_dir=None):
     c.setFont(font_bold, font_size_main)
 
     if doc_type == "practical":
-        # Matches PracticalCoverPageTemplate.pdf
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (118.0 * scale_y), "A")
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (139.0 * scale_y), "PRACTICAL FILE")
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (160.0 * scale_y), "OF")
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (182.0 * scale_y), sub_name)
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (204.0 * scale_y), sub_code)
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (226.0 * scale_y), course_sec)
+        # Matches PracticalCoverPageTemplate.pdf - 'A' positioned at 130 to avoid touching header
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (130.0 * scale_y), "A")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (149.0 * scale_y), "PRACTICAL FILE")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (168.0 * scale_y), "OF")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (188.0 * scale_y), sub_name)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (208.0 * scale_y), sub_code)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (228.0 * scale_y), course_sec)
+        fulfillment_prefix = "IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF"
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (249.0 * scale_y), fulfillment_prefix)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (268.0 * scale_y), degree_name)
     else:
         # Matches FrontpageTemplate.pdf
         assign_line = f"ASSIGNMENT -> {num_val}"
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (122.0 * scale_y), assign_line)
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (146.0 * scale_y), "OF")
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (170.0 * scale_y), sub_name)
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (194.0 * scale_y), sub_code)
-        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (218.0 * scale_y), course_sec)
-
-    # Fulfillment statement (splits cleanly into 2 lines if needed)
-    fulfillment_prefix = "IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF"
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (242.0 * scale_y), fulfillment_prefix)
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (258.0 * scale_y), degree_name)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (131.0 * scale_y), assign_line)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (155.0 * scale_y), "OF")
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (179.0 * scale_y), sub_name)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (203.0 * scale_y), sub_code)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (226.0 * scale_y), course_sec)
+        fulfillment_prefix = "IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF"
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (250.0 * scale_y), fulfillment_prefix)
+        c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (267.0 * scale_y), degree_name)
 
     # 3. Center Logo (MDU Emblem)
     logo_w = 134.76
@@ -221,7 +242,7 @@ def generate_pdf(data, output_path, assets_dir=None):
 
     # 4. Session
     c.setFont(font_bold, font_size_main)
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (406.0 * scale_y), f"SESSION: {session}")
+    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (414.0 * scale_y), f"SESSION: {session}")
 
     # 5. Two Columns (Submitted To on Left, Submitted By on Right)
     left_x = 60.0
@@ -235,11 +256,12 @@ def generate_pdf(data, output_path, assets_dir=None):
     relation = str(data.get("relation", "S/O")).strip().upper()
     stu_id = str(data.get("studentId", "")).strip().upper()
 
-    row1_y = PAGE_HEIGHT - (454.0 * scale_y)
-    row2_y = PAGE_HEIGHT - (478.0 * scale_y)
-    row3_y = PAGE_HEIGHT - (502.0 * scale_y)
-    row4_y = PAGE_HEIGHT - (526.0 * scale_y)
-    row5_y = PAGE_HEIGHT - (550.0 * scale_y)
+    row1_y = PAGE_HEIGHT - (462.0 * scale_y)
+    row2_y = PAGE_HEIGHT - (486.0 * scale_y)
+    row3_y = PAGE_HEIGHT - (510.0 * scale_y)
+    row4_y = PAGE_HEIGHT - (534.0 * scale_y)
+    row5_y = PAGE_HEIGHT - (558.0 * scale_y)
+    row6_y = PAGE_HEIGHT - (582.0 * scale_y)
 
     # Row 1: Headers
     c.setFont(font_bold, font_size_main)
@@ -254,13 +276,27 @@ def generate_pdf(data, output_path, assets_dir=None):
     c.drawString(left_x, row3_y, designation)
     c.drawString(right_x, row3_y, f"{relation} {father_name}")
 
-    # Row 4: Department / Student ID
-    c.drawString(left_x, row4_y, f"DEPARTMENT OF {dept}" if not dept.startswith("DEPARTMENT") else dept)
-    c.drawString(right_x, row4_y, f"STUDENT ID: {stu_id}")
+    # Row 4, 5, 6: Department / Student ID / DPG STM / Course & Section
+    dept_line1, dept_line2 = split_department_text(dept)
+    if dept_line2:
+        # When department character count crosses 17:
+        # Row 4: Left = Department Part 1, Right = Student ID
+        c.drawString(left_x, row4_y, dept_line1)
+        c.drawString(right_x, row4_y, f"STUDENT ID: {stu_id}")
 
-    # Row 5: DPG STM / Course & Section
-    c.drawString(left_x, row5_y, "DPG STM")
-    c.drawString(right_x, row5_y, course_sec)
+        # Row 5: in place of DPG STM, write the rest part! Right = Course & Section
+        c.drawString(left_x, row5_y, dept_line2)
+        c.drawString(right_x, row5_y, course_sec)
+
+        # Row 6: DPG STM moves to the next line just below!
+        c.drawString(left_x, row6_y, "DPG STM")
+    else:
+        # Standard <= 17 characters
+        c.drawString(left_x, row4_y, dept_line1)
+        c.drawString(right_x, row4_y, f"STUDENT ID: {stu_id}")
+
+        c.drawString(left_x, row5_y, "DPG STM")
+        c.drawString(right_x, row5_y, course_sec)
 
     # 6. Footer Section (Centered - All Bold)
     date_val = str(data.get("date", "")).strip().upper()
@@ -270,8 +306,8 @@ def generate_pdf(data, output_path, assets_dir=None):
     footer_row2 = "MDU ROHTAK, HARYANA"
 
     c.setFont(font_bold, font_size_main)
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (692.0 * scale_y), footer_row1)
-    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (716.0 * scale_y), footer_row2)
+    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (701.0 * scale_y), footer_row1)
+    c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (725.0 * scale_y), footer_row2)
 
     # Finalize Page
     c.showPage()

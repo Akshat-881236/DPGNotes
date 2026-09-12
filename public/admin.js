@@ -44,6 +44,7 @@ auth.authStateReady().then(() => {
       if (typeof loadShares === 'function') loadShares();
       if (typeof loadAdminNotifications === 'function') loadAdminNotifications();
       if (typeof loadEngagementTelemetry === 'function') loadEngagementTelemetry();
+      if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
     } else {
       // Firebase auth missing but backend token exists. Needs re-login.
       localStorage.removeItem("adminToken");
@@ -103,6 +104,7 @@ otpForm.addEventListener("submit", async (e) => {
       if (typeof loadShares === 'function') loadShares();
       if (typeof loadAdminNotifications === 'function') loadAdminNotifications();
       if (typeof loadEngagementTelemetry === 'function') loadEngagementTelemetry();
+      if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
     } else {
       alert(data.error);
     }
@@ -3863,10 +3865,29 @@ window.switchCoverSubTab = function(subTab) {
   filterCoverPages();
 };
 
+function updateCoverAnalyticsUI() {
+  const all = coverPagesCache || [];
+  const assignmentCount = all.filter(r => r.docType === 'assignment' || (!r.docType && !r.practicalNo && (!r.title || !r.title.toLowerCase().includes('practical')))).length;
+  const practicalCount = all.filter(r => r.docType === 'practical' || r.practicalNo || (r.title && r.title.toLowerCase().includes('practical'))).length;
+  const contribCount = all.filter(r => r.userType === 'contributor' || (r.userId && !r.userId.startsWith('guest_'))).length;
+  const guestCount = all.filter(r => r.userType === 'guest' || (r.userId && r.userId.startsWith('guest_'))).length;
+  const totalCount = all.length;
+
+  if (document.getElementById('countAssignment')) document.getElementById('countAssignment').textContent = assignmentCount;
+  if (document.getElementById('countPractical')) document.getElementById('countPractical').textContent = practicalCount;
+  if (document.getElementById('statAssignmentCount')) document.getElementById('statAssignmentCount').textContent = assignmentCount;
+  if (document.getElementById('statPracticalCount')) document.getElementById('statPracticalCount').textContent = practicalCount;
+  if (document.getElementById('countCoverTotal')) document.getElementById('countCoverTotal').textContent = totalCount;
+  if (document.getElementById('countCoverContrib')) document.getElementById('countCoverContrib').textContent = contribCount;
+  if (document.getElementById('countCoverGuest')) document.getElementById('countCoverGuest').textContent = guestCount;
+  if (document.getElementById('statCoverPages')) document.getElementById('statCoverPages').textContent = totalCount;
+}
+
 window.loadCoverPagesAdmin = async function(forceRefresh = false) {
   const tbody = document.getElementById('coverTableBody');
   if (!tbody) return;
   if (!forceRefresh && coverPagesCache.length > 0) {
+    updateCoverAnalyticsUI();
     filterCoverPages();
     return;
   }
@@ -3881,6 +3902,7 @@ window.loadCoverPagesAdmin = async function(forceRefresh = false) {
     const data = await res.json();
     if (res.ok && data.success) {
       coverPagesCache = data.records || [];
+      updateCoverAnalyticsUI();
       filterCoverPages();
     } else {
       tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-danger);">Failed to load cover pages: ${data.error || 'Unauthorized or server error'}</td></tr>`;
@@ -3928,11 +3950,12 @@ window.filterCoverPages = function() {
       const sId = (r.studentId || r.rollNo || '').toLowerCase();
       const subName = (r.subjectName || '').toLowerCase();
       const subCode = (r.subjectCode || '').toLowerCase();
-      const course = (r.course || '').toLowerCase();
-      const teacher = (r.teacherName || '').toLowerCase();
+      const course = (r.courseSection || r.course || '').toLowerCase();
+      const teacher = (r.profName || r.teacherName || '').toLowerCase();
+      const dept = (r.department || '').toLowerCase();
       const id = (r.id || '').toLowerCase();
       return sName.includes(searchVal) || sId.includes(searchVal) || subName.includes(searchVal) ||
-             subCode.includes(searchVal) || course.includes(searchVal) || teacher.includes(searchVal) || id.includes(searchVal);
+             subCode.includes(searchVal) || course.includes(searchVal) || teacher.includes(searchVal) || dept.includes(searchVal) || id.includes(searchVal);
     });
   }
 
@@ -3986,12 +4009,12 @@ function renderCoverTableRows(list) {
           <div style="font-size:0.75rem; color:#38bdf8; font-family:monospace;">${escapeAdminHtml(r.subjectCode || '-')}</div>
         </td>
         <td style="padding:0.6rem; font-size:0.82rem; color:#cbd5e1;">
-          <div>${escapeAdminHtml(r.course || '-')}</div>
-          <div style="font-size:0.75rem; color:#64748b;">Sec: ${escapeAdminHtml(r.section || '-')} / Sem: ${escapeAdminHtml(r.semester || '-')}</div>
+          <div><strong style="color:#e2e8f0;">${escapeAdminHtml(r.courseSection || r.course || '-')}</strong></div>
+          <div style="font-size:0.75rem; color:#94a3b8;">${escapeAdminHtml(r.department || r.degreeName || '-')}</div>
         </td>
         <td style="padding:0.6rem; font-size:0.8rem; color:#94a3b8;">
           <div>${displayDate}</div>
-          <div style="font-size:0.72rem; color:#64748b;">${escapeAdminHtml(r.sessionYear || '-')}</div>
+          <div style="font-size:0.72rem; color:#64748b;">Prof: ${escapeAdminHtml(r.profName || r.teacherName || '-')}</div>
         </td>
         <td style="text-align:center; padding:0.6rem; white-space:nowrap;">
           <div style="display:inline-flex; gap:6px;">
@@ -4142,7 +4165,7 @@ window.viewCoverPageDetails = function(id) {
 
   if (titleEl) {
     const isPractical = r.docType === 'practical' || (r.practicalNo ? true : false);
-    titleEl.textContent = isPractical ? `Practical #${r.practicalNo || 1} Details` : `Assignment #${r.assignmentNo || 1} Details`;
+    titleEl.textContent = isPractical ? `Practical Cover Details` : `Assignment #${r.assignmentNo || 1} Details`;
   }
 
   if (contentEl) {
@@ -4165,27 +4188,35 @@ window.viewCoverPageDetails = function(id) {
           <strong style="color:#38bdf8; font-family:monospace;">${escapeAdminHtml(r.subjectCode || '-')}</strong>
         </div>
         <div>
-          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Course & Branch</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.course || '-')}</span>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Course & Section</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.courseSection || r.course || '-')}</span>
         </div>
         <div>
-          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Semester & Section</span>
-          <span style="color:#cbd5e1;">Sem ${escapeAdminHtml(r.semester || '-')} / Sec ${escapeAdminHtml(r.section || '-')}</span>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Department</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.department || '-')}</span>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Degree Name</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.degreeName || '-')}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Submitted To (Faculty)</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.teacherName || '-')}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.profName || r.teacherName || '-')} (${escapeAdminHtml(r.designation || 'Faculty')})</span>
         </div>
         <div>
-          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Session Year</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.sessionYear || '-')}</span>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Father Name</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.relation || 'S/O')} ${escapeAdminHtml(r.fatherName || '-')}</span>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Session</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.session || r.sessionYear || '-')}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Submission Date</span>
           <span style="color:#cbd5e1;">${escapeAdminHtml(r.date || (r.createdAt ? r.createdAt.split('T')[0] : '-'))}</span>
         </div>
         <div>
-          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Day / Session</span>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Day</span>
           <span style="color:#cbd5e1;">${escapeAdminHtml(r.day || '-')}</span>
         </div>
       </div>
@@ -4215,21 +4246,21 @@ window.downloadAdminCoverPdf = async function(id) {
   try {
     const payload = {
       studentName: r.studentName || '',
-      rollNo: r.studentId || r.rollNo || '',
       studentId: r.studentId || r.rollNo || '',
       subjectName: r.subjectName || '',
       subjectCode: r.subjectCode || '',
-      course: r.course || '',
-      semester: r.semester || '',
-      section: r.section || '',
-      teacherName: r.teacherName || '',
-      sessionYear: r.sessionYear || '',
+      courseSection: r.courseSection || r.course || '',
+      profName: r.profName || r.teacherName || '',
+      designation: r.designation || 'ASSISTANT PROFESSOR',
+      department: r.department || 'COMPUTER SCIENCE & APPLICATIONS',
+      degreeName: r.degreeName || '',
+      fatherName: r.fatherName || '',
+      relation: r.relation || 'S/O',
+      session: r.session || r.sessionYear || '2025-2026',
       date: r.date || (r.createdAt ? r.createdAt.split('T')[0] : ''),
       day: r.day || '',
       assignmentNo: r.assignmentNo || '1',
-      practicalNo: r.practicalNo || '1',
-      docType: r.docType || (r.practicalNo ? 'practical' : 'assignment'),
-      layout: r.layout || 1
+      docType: r.docType || (r.practicalNo ? 'practical' : 'assignment')
     };
 
     const res = await fetch(`${API_URL}/assignment/export-pdf`, {
@@ -4244,17 +4275,25 @@ window.downloadAdminCoverPdf = async function(id) {
       const a = document.createElement('a');
       a.href = url;
       const isPrac = payload.docType === 'practical';
-      a.download = `${isPrac ? 'Practical' : 'Assignment'}_${isPrac ? payload.practicalNo : payload.assignmentNo}_${payload.subjectCode || 'Cover'}.pdf`;
+      a.download = `${isPrac ? 'Practical' : 'Assignment'}_${isPrac ? 'Cover' : payload.assignmentNo}_${payload.subjectCode || 'Page'}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
     } else {
-      alert("Failed to generate PDF from server.");
+      if (typeof window.customAlert === 'function') {
+        await window.customAlert("Failed to generate PDF from server.", { title: "Error", isDanger: true });
+      } else {
+        alert("Failed to generate PDF from server.");
+      }
     }
   } catch (err) {
     console.error("downloadAdminCoverPdf error:", err);
-    alert("Network error while downloading PDF.");
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Network error while downloading PDF.", { title: "Network Error", isDanger: true });
+    } else {
+      alert("Network error while downloading PDF.");
+    }
   }
 };
 
