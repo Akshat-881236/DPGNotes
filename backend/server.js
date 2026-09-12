@@ -6688,7 +6688,8 @@ app.post('/api/assignment/save', async (req, res) => {
       studentId,
       date,
       day,
-      userType
+      userType,
+      docType
     } = req.body;
 
     const uid = String(userId || 'guest_default').trim();
@@ -6698,6 +6699,7 @@ app.post('/api/assignment/save', async (req, res) => {
       id: aid,
       userId: uid,
       userType: userType || (uid.startsWith('guest_') ? 'guest' : 'contributor'),
+      docType: String(docType || (aid.startsWith('pract_') || !assignmentNo ? 'practical' : 'assignment')).trim().toLowerCase(),
       assignmentNo: String(assignmentNo || '1').trim(),
       subjectName: String(subjectName || '').trim(),
       subjectCode: String(subjectCode || '').trim(),
@@ -6726,7 +6728,7 @@ app.post('/api/assignment/save', async (req, res) => {
       success: true,
       id: aid,
       detail: recordData,
-      message: "Assignment cover page saved successfully"
+      message: "Cover page record saved successfully"
     });
   } catch (err) {
     console.error("Assignment save error:", err);
@@ -6780,11 +6782,118 @@ app.delete('/api/assignment/:userId/:assignmentId', async (req, res) => {
 
     res.json({
       success: true,
-      message: `Assignment ${aid} deleted successfully from Firestore`
+      message: `Record ${aid} deleted successfully from Firestore`
     });
   } catch (err) {
     console.error("Assignment delete error:", err);
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3b. Admin List All Cover Pages across all Guests & Contributors
+app.get('/api/admin/cover-pages/list', verifyAdmin, async (req, res) => {
+  try {
+    let records = [];
+    if (db) {
+      const snap = await db.collectionGroup('records').get();
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const parentUser = docSnap.ref.parent && docSnap.ref.parent.parent ? docSnap.ref.parent.parent.id : '';
+        const uid = d.userId || parentUser || 'guest_unknown';
+        const docId = docSnap.id;
+        const inferredType = d.docType || (docId.startsWith('pract_') || !d.assignmentNo ? 'practical' : 'assignment');
+
+        records.push({
+          id: docId,
+          userId: uid,
+          userType: d.userType || (uid.startsWith('guest_') ? 'guest' : 'contributor'),
+          docType: inferredType,
+          assignmentNo: d.assignmentNo || '1',
+          subjectName: d.subjectName || 'Untitled',
+          subjectCode: d.subjectCode || '—',
+          courseSection: d.courseSection || '—',
+          degreeName: d.degreeName || '—',
+          session: d.session || '—',
+          profName: d.profName || '—',
+          designation: d.designation || '—',
+          department: d.department || '—',
+          studentName: d.studentName || '—',
+          fatherName: d.fatherName || '—',
+          relation: d.relation || 'S/O',
+          studentId: d.studentId || '—',
+          date: d.date || '—',
+          day: d.day || '—',
+          createdAt: d.createdAt || d.updatedAt || new Date().toISOString()
+        });
+      });
+
+      // Sort newest first
+      records.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+
+    res.json({
+      success: true,
+      count: records.length,
+      records
+    });
+  } catch (err) {
+    console.error("Admin cover pages list error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3c. Admin Batch Delete Cover Pages
+app.post('/api/admin/cover-pages/delete', verifyAdmin, async (req, res) => {
+  try {
+    const { items } = req.body; // Array of { userId, id }
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, error: "items array is required" });
+    }
+
+    if (db) {
+      const batch = db.batch();
+      items.forEach(item => {
+        if (item.userId && item.id) {
+          const ref = db.collection('Assignment').doc(String(item.userId)).collection('records').doc(String(item.id));
+          batch.delete(ref);
+        }
+      });
+      await batch.commit();
+    }
+
+    res.json({
+      success: true,
+      message: `${items.length} cover page record(s) deleted successfully from Firestore`
+    });
+  } catch (err) {
+    console.error("Admin cover pages batch delete error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3d. Cover Page Quota Cleanup (Delete old records from cover_page_quotas)
+app.post('/api/cover-page/quota-cleanup', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    let deletedCount = 0;
+    if (db) {
+      const snap = await db.collection('cover_page_quotas').get();
+      const batch = db.batch();
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        if (d.date && d.date < today) {
+          batch.delete(docSnap.ref);
+          deletedCount++;
+        }
+      });
+      if (deletedCount > 0) {
+        await batch.commit();
+      }
+    }
+    res.json({ success: true, deleted: deletedCount });
+  } catch (err) {
+    console.warn("Quota cleanup warning:", err.message);
+    res.json({ success: false, error: err.message });
   }
 });
 

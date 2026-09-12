@@ -581,10 +581,18 @@ body {
   top: var(--header-height);
   bottom: 0;
   right: max(0px, calc((100vw - 1440px) / 2));
-  padding: 2.5rem 1.5rem;
+  padding: 2.5rem 1.25rem;
   overflow-y: auto;
-  border-left: 1px solid var(--border-color);
+  border-left: none !important; /* Removed vertical RHS grid line bug */
   z-index: 80;
+}
+
+@media (min-width: 1201px) {
+  .legal-layout:has(.legal-toc) .legal-content,
+  .legal-content.has-toc {
+    margin-right: var(--toc-width) !important;
+    width: calc(100% - var(--sidebar-width) - var(--toc-width)) !important;
+  }
 }
 
 .toc-sticky-box {

@@ -10,7 +10,7 @@
   <!-- Global Config & Native Ads Engine -->
   <script src="../config.js"></script>
   <script src="../custom-dialogs.js"></script>
-  <script src="../native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
 
   <!-- Google Fonts & Remix Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Tinos:wght@700&family=Merriweather:wght@700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
   <!-- Firebase Modular SDK for Direct Client Firestore Operations -->
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const cfg = {
       apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -39,9 +39,17 @@
     window.collection = collection;
     window.doc = doc;
     window.setDoc = setDoc;
+    window.getDoc = getDoc;
     window.getDocs = getDocs;
     window.deleteDoc = deleteDoc;
+    window.updateDoc = updateDoc;
+    window.query = query;
+    window.where = where;
     window.serverTimestamp = serverTimestamp;
+
+    if (typeof window.initQuotaAndCleanup === 'function') {
+      window.initQuotaAndCleanup();
+    }
 
     if (typeof window.loadUserAssignments === 'function') {
       window.loadUserAssignments();
@@ -417,27 +425,33 @@
       transform: scale(1.04);
     }
 
-    /* Ad Modal */
-    .ad-modal-overlay {
+    /* Quota Lockdown Full Overlay */
+    .quota-lock-overlay {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
-      z-index: 10000;
+      inset: 0;
+      background: rgba(11, 15, 25, 0.96);
+      backdrop-filter: blur(16px);
+      z-index: 99999;
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 1.5rem;
+      overflow-y: auto;
     }
-    .ad-modal-box {
-      background: #111827;
-      border: 1px solid rgba(139, 92, 246, 0.4);
-      border-radius: 16px;
-      max-width: 540px;
+    .quota-lock-card {
+      background: #131728;
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: 20px;
+      padding: 2.2rem;
+      max-width: 680px;
       width: 100%;
-      padding: 1.8rem;
       text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+      animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     @media (max-width: 960px) {
@@ -446,6 +460,30 @@
       }
       .preview-card {
         position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 0.8rem !important;
+      }
+      .top-navbar {
+        padding: 0.8rem 1rem !important;
+        flex-wrap: wrap !important;
+        gap: 0.6rem !important;
+      }
+      .generator-container {
+        padding: 1rem 0.8rem 2rem 0.8rem !important;
+      }
+      .form-card, .preview-card {
+        padding: 1.2rem !important;
+      }
+      .preview-container {
+        padding: 0.4rem !important;
+      }
+      .quota-lock-card {
+        padding: 1.5rem 1rem !important;
       }
     }
   </style>
@@ -459,13 +497,10 @@
       <span>DPGNotes <span style="color:#a855f7;">Cover Page</span></span>
     </a>
     <div class="nav-actions">
-      <div class="token-badge" id="tokenDisplay" title="Daily Generation Tokens remaining">
+      <div class="token-badge" id="tokenDisplay" title="Daily Generation Tokens remaining (Strict Firestore Quota Policy)">
         <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
         <span id="tokenCountText">Tokens: 1 / 1</span>
       </div>
-      <button class="btn-restore-tokens" id="btnRestoreTokens" onclick="openRestoreTokensModal()">
-        <i class="ri-movie-line"></i> Watch Ads to Restore
-      </button>
       <a href="../legal/index.html" style="color:#94a3b8; font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
         <i class="ri-scales-line"></i> Legal
       </a>
@@ -698,28 +733,55 @@
     </div>
   </section>
 
-  <!-- Watch Ads to Restore Tokens Modal -->
-  <div class="ad-modal-overlay" id="adModal">
-    <div class="ad-modal-box">
-      <h3 style="font-family:'Outfit', sans-serif; font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">
-        <i class="ri-movie-line" style="color:#ec4899;"></i> Restore Generation Tokens
-      </h3>
-      <p id="adModalSubtitle" style="font-size:0.85rem; color:#94a3b8; margin-bottom:1.2rem;">
-        Watch verified learning sponsor ads to restore your daily cover page tokens.
+  <!-- Quota Lockdown & Automated Sponsor Ads Overlay -->
+  <div class="quota-lock-overlay" id="quotaLockOverlay">
+    <div class="quota-lock-card">
+      <div style="width:68px; height:68px; border-radius:50%; background:rgba(236,72,153,0.12); border:1px solid rgba(236,72,153,0.3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.2rem;">
+        <i class="ri-shield-keyhole-line" style="font-size:2.2rem; color:#f472b6;"></i>
+      </div>
+      <h2 style="font-family:'Outfit', sans-serif; font-size:1.6rem; font-weight:800; color:#fff; margin-bottom:0.5rem;">
+        Daily Generation Quota Reached
+      </h2>
+      <p id="quotaLockSubtitle" style="color:#94a3b8; font-size:0.9rem; line-height:1.6; max-width:540px; margin:0 auto 1.5rem auto;">
+        You have reached your daily quota limit for cover page generation. To prevent system abuse, quotas are strictly enforced via cloud security.
       </p>
 
-      <div style="background:rgba(0,0,0,0.4); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:1.2rem; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-bottom:1rem;">
-        <div id="adCountdownBadge" style="background:rgba(236,72,153,0.2); color:#f472b6; border:1px solid rgba(236,72,153,0.4); padding:4px 12px; border-radius:999px; font-size:0.8rem; font-weight:700; margin-bottom:0.8rem;">
-          Ad 1 of 3 (10s remaining...)
+      <!-- Automated Ad Playback Mode -->
+      <div id="adPlaybackSection">
+        <div id="adCountdownBadge" style="display:inline-flex; align-items:center; gap:8px; background:rgba(139,92,246,0.18); color:#c084fc; border:1px solid rgba(139,92,246,0.35); padding:6px 16px; border-radius:999px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
+          <i class="ri-loader-4-line spin-icon"></i> <span id="adStatusText">Viewing Sponsor Ad 1 of 3 (10s remaining...)</span>
         </div>
-        <div id="adModalContent" style="font-size:0.9rem; color:#e2e8f0; line-height:1.5;">
-          <strong>DPGNotes Verified Learning Partner:</strong><br>
-          Explore interactive revision cheat-sheets, mock viva voce questions, and semester syllabus companions.
+
+        <div style="width:100%; max-width:580px; height:6px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; margin:0 auto 1rem auto;">
+          <div id="adProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #ec4899, #8b5cf6); transition:width 1s linear;"></div>
+        </div>
+
+        <p style="font-size:0.82rem; color:#64748b; margin-bottom:0.5rem;">
+          <i class="ri-information-line"></i> Please watch learning sponsor ads to restore generation tokens. Ads play automatically (manual triggering disabled).
+        </p>
+
+        <!-- Native Ads Container (exact markup specified by user) -->
+        <div style="display:flex; justify-content:center; width:100%;">
+          <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.5rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
         </div>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button type="button" class="btn-sub" onclick="closeRestoreTokensModal()">Cancel</button>
+      <!-- Lockout in Absence of Adsense/Ads -->
+      <div id="adBlockedLockoutSection" style="display:none; margin-top:1rem;">
+        <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:14px; padding:1.5rem; max-width:540px; margin:0 auto;">
+          <i class="ri-time-line" style="font-size:2.4rem; color:#f87171; display:block; margin-bottom:0.6rem;"></i>
+          <h3 style="color:#f87171; font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Sponsor Ads Blocked or Unavailable</h3>
+          <p style="color:#cbd5e1; font-size:0.88rem; line-height:1.6; margin-bottom:1.2rem;">
+            Google AdSense / Native Ads cannot be loaded (possibly blocked by an ad-blocker or offline). In the absence of ads, manual ad triggers are disabled and your daily generation quota will automatically reset tomorrow at midnight (00:00 AM).
+          </p>
+          <div style="font-size:0.78rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.4rem; font-weight:600;">Time Remaining Until Midnight Reset</div>
+          <div id="midnightCountdownText" style="font-size:2.2rem; font-weight:800; font-family:monospace; color:#38bdf8; letter-spacing:2px;">--:--:--</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.8rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1.2rem; display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:#64748b;">
+        <span>Cloud Quota Protection Active</span>
+        <a href="../legal/index.html" style="color:#a855f7; text-decoration:none;"><i class="ri-scales-line"></i> Advertising Policy</a>
       </div>
     </div>
   </div>
@@ -742,55 +804,340 @@
     headerImg.onload = onImgLoad;
     centerLogoImg.onload = onImgLoad;
 
-    // Retrieve or initialize user identity
-    function getActiveUserId() {
-      const authUid = localStorage.getItem("dpgActiveUserUid");
-      if (authUid) return authUid;
-      let guestId = localStorage.getItem("dpg_guest_id");
-      if (!guestId) {
-        guestId = "guest_" + Math.random().toString(36).substring(2, 9) + "_" + Date.now().toString(36);
-        localStorage.setItem("dpg_guest_id", guestId);
+    // ==========================================
+    // DETERMINISTIC HARDWARE FINGERPRINT & QUOTA
+    // ==========================================
+    let currentDeviceFingerprint = null;
+    let currentQuotaTokens = 1;
+    let currentMaxQuota = 1;
+    let adWatchTimer = null;
+    let midnightTimer = null;
+    let adsRequiredTotal = 3;
+    let adsRemainingToWatch = 3;
+    let currentAdSecondsLeft = 10;
+    const AD_DURATION_SEC = 10;
+
+    async function getDeviceFingerprint() {
+      if (currentDeviceFingerprint) return currentDeviceFingerprint;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 240;
+        canvas.height = 60;
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '15px Arial, sans-serif';
+        ctx.fillStyle = '#f60';
+        ctx.fillRect(120, 1, 60, 25);
+        ctx.fillStyle = '#069';
+        ctx.fillText('DPGNotes,CoverPage<fp>~!', 4, 18);
+        ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+        ctx.fillText('DPGNotes,CoverPage<fp>~!', 6, 20);
+        const dataUrl = canvas.toDataURL();
+
+        const screenInfo = `${screen.width}x${screen.height}x${screen.colorDepth}`;
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const lang = navigator.language || '';
+        const platform = navigator.platform || '';
+        const raw = `${dataUrl}___${screenInfo}___${tz}___${lang}___${platform}`;
+
+        let h1 = 0xdeadbeef, h2 = 0x41c64e6d;
+        for (let i = 0; i < raw.length; i++) {
+          const ch = raw.charCodeAt(i);
+          h1 = Math.imul(h1 ^ ch, 2654435761);
+          h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+        h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+        h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        const hash = 4294967296 * (2097151 & h2) + (h1 >>> 0);
+        currentDeviceFingerprint = 'fp_' + hash.toString(36);
+      } catch (e) {
+        currentDeviceFingerprint = 'fp_dev_' + Math.abs(navigator.userAgent.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)).toString(36);
       }
-      return guestId;
+      return currentDeviceFingerprint;
     }
 
     function isContributor() {
       return !!localStorage.getItem("dpgActiveUserUid");
     }
 
-    // Token Management Logic
-    function getDailyTokens() {
-      const today = new Date().toISOString().split('T')[0];
-      const savedDate = localStorage.getItem('dpg_assign_tokens_date');
-      const isContrib = isContributor();
-      const defaultMax = isContrib ? 3 : 1;
-
-      if (savedDate !== today) {
-        localStorage.setItem('dpg_assign_tokens_date', today);
-        localStorage.setItem('dpg_assign_tokens_count', String(defaultMax));
-        return defaultMax;
+    function getActiveUserId() {
+      const authUid = localStorage.getItem("dpgActiveUserUid");
+      if (authUid) return authUid;
+      if (currentDeviceFingerprint) return `guest_${currentDeviceFingerprint}`;
+      let guestId = localStorage.getItem("dpg_guest_id");
+      if (!guestId) {
+        guestId = "guest_" + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem("dpg_guest_id", guestId);
       }
-      return parseInt(localStorage.getItem('dpg_assign_tokens_count') || String(defaultMax), 10);
+      return guestId;
     }
 
-    function decrementToken() {
-      let tokens = getDailyTokens();
-      if (tokens > 0) {
-        tokens--;
-        localStorage.setItem('dpg_assign_tokens_count', String(tokens));
-        updateTokenBadge();
+    function getTodayDateStr() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    async function getQuotaDocId() {
+      const fp = await getDeviceFingerprint();
+      const isContrib = isContributor();
+      const prefix = isContrib ? `user_${localStorage.getItem("dpgActiveUserUid")}` : `guest_${fp}`;
+      return `${prefix}_${getTodayDateStr()}`;
+    }
+
+    // Auto Clean-up old records in cover_page_quotas where date < today
+    async function cleanupOldQuotaRecords() {
+      const today = getTodayDateStr();
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        fetch(`${apiBase}/api/cover-page/quota-cleanup`, { method: 'POST' }).catch(() => {});
+      } catch (e) {}
+
+      try {
+        if (window.dpgDb && window.collection && window.getDocs && window.query && window.where && window.deleteDoc) {
+          const q = window.query(window.collection(window.dpgDb, "cover_page_quotas"), window.where("date", "<", today));
+          const snap = await window.getDocs(q);
+          snap.forEach(d => {
+            window.deleteDoc(d.ref).catch(() => {});
+          });
+        }
+      } catch (e) {
+        console.warn("Client quota cleanup error:", e);
       }
     }
 
-    function updateTokenBadge() {
+    // Synchronize Quota from Firestore (Strict Anti-Bypass)
+    async function syncQuotaFromFirestore() {
       const isContrib = isContributor();
-      const maxTokens = isContrib ? 3 : 1;
-      const current = getDailyTokens();
+      currentMaxQuota = isContrib ? 3 : 1;
+      const today = getTodayDateStr();
+      const quotaId = await getQuotaDocId();
+
+      try {
+        if (window.dpgDb && window.doc && window.getDoc) {
+          const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
+          const snap = await window.getDoc(quotaRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            currentQuotaTokens = typeof data.tokensRemaining === 'number' ? data.tokensRemaining : 0;
+          } else {
+            currentQuotaTokens = currentMaxQuota;
+            await window.setDoc(quotaRef, {
+              id: quotaId,
+              userType: isContrib ? 'contributor' : 'guest',
+              userId: getActiveUserId(),
+              date: today,
+              tokensRemaining: currentQuotaTokens,
+              maxTokens: currentMaxQuota,
+              createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date().toISOString()
+            });
+          }
+        } else {
+          currentQuotaTokens = currentMaxQuota;
+        }
+      } catch (err) {
+        console.warn("Firestore quota sync error:", err);
+      }
+
+      updateTokenBadgeUI();
+
+      if (currentQuotaTokens <= 0) {
+        enterQuotaLockdown();
+      } else {
+        exitQuotaLockdown();
+      }
+      return currentQuotaTokens;
+    }
+
+    function updateTokenBadgeUI() {
       const badge = document.getElementById('tokenCountText');
       if (badge) {
-        badge.textContent = `Tokens: ${current} / ${maxTokens}`;
+        badge.textContent = `Tokens: ${currentQuotaTokens} / ${currentMaxQuota}`;
       }
     }
+
+    async function consumeOneToken() {
+      const quotaId = await getQuotaDocId();
+      currentQuotaTokens = Math.max(0, currentQuotaTokens - 1);
+      updateTokenBadgeUI();
+
+      try {
+        if (window.dpgDb && window.doc && window.setDoc) {
+          const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
+          await window.setDoc(quotaRef, {
+            tokensRemaining: currentQuotaTokens,
+            lastUsedAt: window.serverTimestamp ? window.serverTimestamp() : new Date().toISOString()
+          }, { merge: true });
+        }
+      } catch (err) {
+        console.warn("Failed to persist consumed quota:", err);
+      }
+
+      if (currentQuotaTokens <= 0) {
+        enterQuotaLockdown();
+      }
+    }
+
+    // Quota Lockdown State
+    function enterQuotaLockdown() {
+      const genContainer = document.querySelector('.generator-container');
+      const logsSec = document.querySelector('.saved-logs-section');
+      if (genContainer) genContainer.style.setProperty('display', 'none', 'important');
+      if (logsSec) logsSec.style.setProperty('display', 'none', 'important');
+
+      const overlay = document.getElementById('quotaLockOverlay');
+      if (overlay) overlay.style.display = 'flex';
+
+      startQuotaAdFlow();
+    }
+
+    function exitQuotaLockdown() {
+      const overlay = document.getElementById('quotaLockOverlay');
+      if (overlay) overlay.style.display = 'none';
+
+      const genContainer = document.querySelector('.generator-container');
+      const logsSec = document.querySelector('.saved-logs-section');
+      if (genContainer) genContainer.style.removeProperty('display');
+      if (logsSec) logsSec.style.removeProperty('display');
+
+      if (adWatchTimer) clearInterval(adWatchTimer);
+      if (midnightTimer) clearInterval(midnightTimer);
+    }
+
+    // Automated Ads playback or Midnight Lockout
+    function startQuotaAdFlow() {
+      if (adWatchTimer) clearInterval(adWatchTimer);
+      if (midnightTimer) clearInterval(midnightTimer);
+
+      const isContrib = isContributor();
+      adsRequiredTotal = isContrib ? 2 : 3;
+      adsRemainingToWatch = adsRequiredTotal;
+      currentAdSecondsLeft = AD_DURATION_SEC;
+
+      const adPlaybackSec = document.getElementById('adPlaybackSection');
+      const adBlockedSec = document.getElementById('adBlockedLockoutSection');
+      const adContainer = document.getElementById('native-ads');
+
+      const hasAdsCapability = (typeof window.renderNativeDPGAds === 'function') || (typeof window.adsbygoogle !== 'undefined');
+
+      if (!hasAdsCapability || !navigator.onLine) {
+        showMidnightLockout();
+        return;
+      }
+
+      if (adPlaybackSec) adPlaybackSec.style.display = 'block';
+      if (adBlockedSec) adBlockedSec.style.display = 'none';
+
+      if (adContainer && typeof window.renderNativeDPGAds === 'function') {
+        delete adContainer.dataset.adInjected;
+        adContainer.innerHTML = '';
+        window.renderNativeDPGAds();
+      }
+
+      runAdPlaybackTimer();
+    }
+
+    function showMidnightLockout() {
+      const adPlaybackSec = document.getElementById('adPlaybackSection');
+      const adBlockedSec = document.getElementById('adBlockedLockoutSection');
+      if (adPlaybackSec) adPlaybackSec.style.display = 'none';
+      if (adBlockedSec) adBlockedSec.style.display = 'block';
+
+      updateMidnightCountdown();
+      midnightTimer = setInterval(updateMidnightCountdown, 1000);
+    }
+
+    function updateMidnightCountdown() {
+      const countdownEl = document.getElementById('midnightCountdownText');
+      if (!countdownEl) return;
+
+      const now = new Date();
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      const diffMs = midnight - now;
+
+      if (diffMs <= 0) {
+        if (midnightTimer) clearInterval(midnightTimer);
+        syncQuotaFromFirestore();
+        return;
+      }
+
+      const totalSec = Math.floor(diffMs / 1000);
+      const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+      const s = String(totalSec % 60).padStart(2, '0');
+      countdownEl.textContent = `${h}:${m}:${s}`;
+    }
+
+    function runAdPlaybackTimer() {
+      const statusEl = document.getElementById('adStatusText');
+      const barEl = document.getElementById('adProgressBar');
+
+      const updateProgress = () => {
+        const currentAdIndex = (adsRequiredTotal - adsRemainingToWatch) + 1;
+        if (statusEl) {
+          statusEl.textContent = `Viewing Sponsor Ad ${currentAdIndex} of ${adsRequiredTotal} (${currentAdSecondsLeft}s remaining...)`;
+        }
+        if (barEl) {
+          const pct = Math.round(((AD_DURATION_SEC - currentAdSecondsLeft) / AD_DURATION_SEC) * 100);
+          barEl.style.width = `${pct}%`;
+        }
+      };
+
+      updateProgress();
+
+      adWatchTimer = setInterval(async () => {
+        currentAdSecondsLeft--;
+        updateProgress();
+
+        if (currentAdSecondsLeft <= 0) {
+          adsRemainingToWatch--;
+          if (adsRemainingToWatch > 0) {
+            currentAdSecondsLeft = AD_DURATION_SEC;
+            const adContainer = document.getElementById('native-ads');
+            if (adContainer && typeof window.renderNativeDPGAds === 'function') {
+              delete adContainer.dataset.adInjected;
+              adContainer.innerHTML = '';
+              window.renderNativeDPGAds();
+            }
+            updateProgress();
+          } else {
+            clearInterval(adWatchTimer);
+            await restoreQuotaTokens();
+          }
+        }
+      }, 1000);
+    }
+
+    async function restoreQuotaTokens() {
+      const quotaId = await getQuotaDocId();
+      currentQuotaTokens = currentMaxQuota;
+      updateTokenBadgeUI();
+
+      try {
+        if (window.dpgDb && window.doc && window.setDoc) {
+          const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
+          await window.setDoc(quotaRef, {
+            tokensRemaining: currentQuotaTokens,
+            restoredAt: window.serverTimestamp ? window.serverTimestamp() : new Date().toISOString()
+          }, { merge: true });
+        }
+      } catch (e) {
+        console.warn("Failed to update restored tokens:", e);
+      }
+
+      exitQuotaLockdown();
+      if (typeof window.customAlert === 'function') {
+        await window.customAlert("🎉 Thank you for supporting DPGNotes! Your daily generation tokens have been restored. You may now create and download your cover page.", { title: "Tokens Restored" });
+      } else {
+        alert("🎉 Thank you! Your daily tokens have been restored.");
+      }
+    }
+
+    window.initQuotaAndCleanup = async function() {
+      await getDeviceFingerprint();
+      await cleanupOldQuotaRecords();
+      await syncQuotaFromFirestore();
+    };
 
     // Degree Name Inference Helper
     function getDegreeFromCourse(courseStr) {
@@ -1061,18 +1408,18 @@
       const d = getFormData();
 
       if (!validateCourseSection(d.courseSection)) {
-        alert("Invalid Course & Section format! Please follow the rule: {Course}-{Section}, e.g. BCA-5A, BBA-3A, MCA-1B.");
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Invalid Course & Section format! Please follow the rule: {Course}-{Section}, e.g. BCA-5A, BBA-3A, MCA-1B.", { title: "Format Rule", isDanger: true });
+        } else {
+          alert("Invalid Course & Section format! Please follow the rule: {Course}-{Section}, e.g. BCA-5A, BBA-3A, MCA-1B.");
+        }
         document.getElementById('inpCourseSec')?.focus();
         return;
       }
 
-      // Check token
-      const tokens = getDailyTokens();
-      if (tokens <= 0) {
-        const isContrib = isContributor();
-        const adsNeeded = isContrib ? 2 : 3;
-        alert(`You have used all your daily tokens! Please watch ${adsNeeded} Native Ads to restore your generation tokens.`);
-        openRestoreTokensModal();
+      // Check strict cloud quota
+      if (currentQuotaTokens <= 0) {
+        enterQuotaLockdown();
         return;
       }
 
@@ -1089,6 +1436,7 @@
         const payload = {
           userId: uid,
           userType: isContrib ? 'contributor' : 'guest',
+          docType: 'assignment',
           ...d
         };
 
@@ -1100,9 +1448,13 @@
 
         const resData = await res.json();
         if (res.ok && resData.success) {
-          // Decrement token
-          decrementToken();
-          alert("Cover page generated and saved to your cloud records successfully!");
+          // Decrement cloud token
+          await consumeOneToken();
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert("Cover page generated and saved to your cloud records successfully!", { title: "Success" });
+          } else {
+            alert("Cover page generated and saved to your cloud records successfully!");
+          }
           // Trigger instant client download
           downloadClientPdf();
           // Reload history list
@@ -1117,11 +1469,15 @@
           if (window.dpgDb && window.collection && window.setDoc && window.doc) {
             const aid = `assign_${Date.now()}`;
             const ref = window.doc(window.dpgDb, "Assignment", uid, "records", aid);
-            await window.setDoc(ref, { id: aid, userId: uid, ...d, createdAt: new Date().toISOString() });
-            decrementToken();
+            await window.setDoc(ref, { id: aid, userId: uid, docType: 'assignment', ...d, createdAt: new Date().toISOString() });
+            await consumeOneToken();
             downloadClientPdf();
             await loadUserAssignments();
-            alert("Saved successfully to your cloud records!");
+            if (typeof window.customAlert === 'function') {
+              await window.customAlert("Saved successfully to your cloud records!", { title: "Success" });
+            } else {
+              alert("Saved successfully to your cloud records!");
+            }
           } else {
             // If offline, still download client PDF
             downloadClientPdf();
@@ -1314,7 +1670,13 @@
     };
 
     window.deleteSavedAssignment = async function(aid) {
-      if (!confirm("Are you sure you want to permanently delete this cover page from your records?")) return;
+      let confirmed = false;
+      if (typeof window.customConfirm === 'function') {
+        confirmed = await window.customConfirm("Are you sure you want to permanently delete this cover page from your records?", { title: "Confirm Delete", isDanger: true });
+      } else {
+        confirmed = confirm("Are you sure you want to permanently delete this cover page from your records?");
+      }
+      if (!confirmed) return;
       const uid = getActiveUserId();
 
       try {
@@ -1326,7 +1688,11 @@
         if (res.ok) {
           const card = document.getElementById(`card-${aid}`);
           if (card) card.remove();
-          alert("Cover page removed from your records successfully.");
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert("Cover page removed from your records successfully.", { title: "Deleted" });
+          } else {
+            alert("Cover page removed from your records successfully.");
+          }
         } else {
           throw new Error("API delete failed");
         }
@@ -1337,78 +1703,21 @@
             await window.deleteDoc(window.doc(window.dpgDb, "Assignment", uid, "records", aid));
             const card = document.getElementById(`card-${aid}`);
             if (card) card.remove();
-            alert("Removed from your records successfully!");
+            if (typeof window.customAlert === 'function') {
+              await window.customAlert("Removed from your records successfully!", { title: "Deleted" });
+            } else {
+              alert("Removed from your records successfully!");
+            }
           }
         } catch (e) {
-          alert("Error deleting record: " + e.message);
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert("Error deleting record: " + e.message, { title: "Error", isDanger: true });
+          } else {
+            alert("Error deleting record: " + e.message);
+          }
         }
       }
     };
-
-    // Watch Native Ads to Restore Tokens Flow
-    let adWatchInterval = null;
-    let adsRemaining = 3;
-    let secondsLeft = 8;
-
-    function openRestoreTokensModal() {
-      const modal = document.getElementById('adModal');
-      const isContrib = isContributor();
-      adsRemaining = isContrib ? 2 : 3;
-      secondsLeft = 8;
-
-      const sub = document.getElementById('adModalSubtitle');
-      if (sub) {
-        sub.innerHTML = isContrib 
-          ? `<strong>Contributor Pass:</strong> Watch <strong>2 Native Ads</strong> to restore your generation tokens.`
-          : `<strong>Guest Pass:</strong> Watch <strong>3 Native Ads</strong> to restore your generation token.`;
-      }
-
-      if (modal) modal.style.display = 'flex';
-      startAdCycle();
-    }
-
-    function closeRestoreTokensModal() {
-      const modal = document.getElementById('adModal');
-      if (modal) modal.style.display = 'none';
-      if (adWatchInterval) clearInterval(adWatchInterval);
-    }
-
-    function startAdCycle() {
-      const badge = document.getElementById('adCountdownBadge');
-      const isContrib = isContributor();
-      const totalAds = isContrib ? 2 : 3;
-
-      if (adWatchInterval) clearInterval(adWatchInterval);
-
-      adWatchInterval = setInterval(() => {
-        secondsLeft--;
-        const currentAdIndex = (totalAds - adsRemaining) + 1;
-        if (badge) {
-          badge.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Ad ${currentAdIndex} of ${totalAds} (${secondsLeft}s remaining...)`;
-        }
-
-        if (secondsLeft <= 0) {
-          adsRemaining--;
-          if (adsRemaining > 0) {
-            secondsLeft = 8;
-            // Swap next ad
-            const content = document.getElementById('adModalContent');
-            if (content) {
-              content.innerHTML = `<strong>DPGNotes Academic Partner #${currentAdIndex + 1}:</strong><br>Check out student notes, syllabus formula repositories, and engineering lab guides on DPGNotes.`;
-            }
-          } else {
-            // Completed all ads!
-            clearInterval(adWatchInterval);
-            closeRestoreTokensModal();
-            // Restore token!
-            const defaultMax = isContrib ? 3 : 1;
-            localStorage.setItem('dpg_assign_tokens_count', String(defaultMax));
-            updateTokenBadge();
-            alert("🎉 Thank you! Your assignment generation tokens have been restored!");
-          }
-        }
-      }, 1000);
-    }
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -1416,9 +1725,9 @@
     }
 
     // Initialization
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       initDefaultDate();
-      updateTokenBadge();
+      await initQuotaAndCleanup();
       loadUserAssignments();
       renderLiveCanvas();
     });

@@ -3826,3 +3826,435 @@ window.loadWebAnalyticsAdmin = async function() {
     console.warn("loadWebAnalyticsAdmin error:", e);
   }
 };
+
+// ==========================================
+// ADMIN: COVER PAGES MANAGEMENT SUITE
+// ==========================================
+function escapeAdminHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+let coverPagesCache = [];
+let currentCoverSubTab = 'assignment';
+
+window.switchCoverSubTab = function(subTab) {
+  currentCoverSubTab = subTab;
+  const btnAssign = document.getElementById('subtab-cover-assignment');
+  const btnPrac = document.getElementById('subtab-cover-practical');
+  if (btnAssign && btnPrac) {
+    if (subTab === 'assignment') {
+      btnAssign.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
+      btnAssign.style.color = '#fff';
+      btnPrac.style.background = 'rgba(255,255,255,0.06)';
+      btnPrac.style.color = 'var(--admin-muted)';
+    } else {
+      btnPrac.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
+      btnPrac.style.color = '#fff';
+      btnAssign.style.background = 'rgba(255,255,255,0.06)';
+      btnAssign.style.color = 'var(--admin-muted)';
+    }
+  }
+  filterCoverPages();
+};
+
+window.loadCoverPagesAdmin = async function(forceRefresh = false) {
+  const tbody = document.getElementById('coverTableBody');
+  if (!tbody) return;
+  if (!forceRefresh && coverPagesCache.length > 0) {
+    filterCoverPages();
+    return;
+  }
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-muted);"><i class="ri-loader-4-line ri-spin" style="font-size:1.5rem;"></i><div style="margin-top:0.5rem;">Loading cover pages from database...</div></td></tr>`;
+  
+  try {
+    const res = await fetch(`${API_URL}/admin/cover-pages/list`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      }
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      coverPagesCache = data.records || [];
+      filterCoverPages();
+    } else {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-danger);">Failed to load cover pages: ${data.error || 'Unauthorized or server error'}</td></tr>`;
+    }
+  } catch (err) {
+    console.error("loadCoverPagesAdmin error:", err);
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-danger);">Network or server error while fetching cover pages.</td></tr>`;
+  }
+};
+
+window.filterCoverPages = function() {
+  const tbody = document.getElementById('coverTableBody');
+  if (!tbody) return;
+
+  const searchVal = (document.getElementById('coverSearchInput')?.value || '').toLowerCase().trim();
+  const userTypeVal = (document.getElementById('coverUserTypeFilter')?.value || 'all').toLowerCase();
+  const dateVal = document.getElementById('coverDateFilter')?.value || '';
+
+  // 1. Filter by subtab (assignment vs practical)
+  let list = coverPagesCache.filter(r => {
+    const isPractical = r.docType === 'practical' || (r.docType !== 'assignment' && (r.practicalNo || (r.title && r.title.toLowerCase().includes('practical'))));
+    return currentCoverSubTab === 'practical' ? isPractical : !isPractical;
+  });
+
+  // 2. Filter by user type
+  if (userTypeVal !== 'all') {
+    list = list.filter(r => {
+      const uType = (r.userType || (r.userId && r.userId.startsWith('guest_') ? 'guest' : 'contributor')).toLowerCase();
+      return uType === userTypeVal;
+    });
+  }
+
+  // 3. Filter by date
+  if (dateVal) {
+    list = list.filter(r => {
+      const dStr = r.date || (r.createdAt ? r.createdAt.split('T')[0] : '');
+      return dStr === dateVal;
+    });
+  }
+
+  // 4. Search keyword
+  if (searchVal) {
+    list = list.filter(r => {
+      const sName = (r.studentName || '').toLowerCase();
+      const sId = (r.studentId || r.rollNo || '').toLowerCase();
+      const subName = (r.subjectName || '').toLowerCase();
+      const subCode = (r.subjectCode || '').toLowerCase();
+      const course = (r.course || '').toLowerCase();
+      const teacher = (r.teacherName || '').toLowerCase();
+      const id = (r.id || '').toLowerCase();
+      return sName.includes(searchVal) || sId.includes(searchVal) || subName.includes(searchVal) ||
+             subCode.includes(searchVal) || course.includes(searchVal) || teacher.includes(searchVal) || id.includes(searchVal);
+    });
+  }
+
+  renderCoverTableRows(list);
+  updateCoverSelectionBar();
+};
+
+window.resetCoverFilters = function() {
+  if (document.getElementById('coverSearchInput')) document.getElementById('coverSearchInput').value = '';
+  if (document.getElementById('coverUserTypeFilter')) document.getElementById('coverUserTypeFilter').value = 'all';
+  if (document.getElementById('coverDateFilter')) document.getElementById('coverDateFilter').value = '';
+  filterCoverPages();
+};
+
+function renderCoverTableRows(list) {
+  const tbody = document.getElementById('coverTableBody');
+  if (!tbody) return;
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-muted);">No cover pages found matching your filters.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(r => {
+    const isGuest = (r.userType === 'guest' || (r.userId && r.userId.startsWith('guest_')));
+    const typeBadge = isGuest
+      ? `<span class="badge" style="background:rgba(148,163,184,0.12); color:#cbd5e1; border:1px solid rgba(148,163,184,0.25);">Guest</span>`
+      : `<span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25);">Contributor</span>`;
+
+    const docNum = currentCoverSubTab === 'practical' ? (r.practicalNo ? `Prac #${r.practicalNo}` : 'Practical') : (r.assignmentNo ? `Assign #${r.assignmentNo}` : 'Assignment');
+    const displayDate = r.date || (r.createdAt ? r.createdAt.split('T')[0] : 'N/A');
+    const escapedId = r.id || '';
+    const escapedUserId = r.userId || '';
+
+    return `
+      <tr>
+        <td style="text-align:center; padding:0.6rem;">
+          <input type="checkbox" class="cover-row-check" data-id="${escapedId}" data-userid="${escapedUserId}" onchange="updateCoverSelectionBar()">
+        </td>
+        <td style="padding:0.6rem; font-family:monospace; font-size:0.75rem; color:#94a3b8;">
+          #${escapedId.slice(0, 8)}...
+          <div style="font-size:0.7rem; color:#64748b;">${docNum}</div>
+        </td>
+        <td style="padding:0.6rem;">${typeBadge}</td>
+        <td style="padding:0.6rem;">
+          <strong style="color:white; font-size:0.88rem;">${escapeAdminHtml(r.studentName || 'Unnamed')}</strong>
+          <div style="font-size:0.75rem; color:#94a3b8;">Roll: ${escapeAdminHtml(r.studentId || r.rollNo || '-')}</div>
+        </td>
+        <td style="padding:0.6rem;">
+          <div style="color:#e2e8f0; font-size:0.84rem; font-weight:600;">${escapeAdminHtml(r.subjectName || '-')}</div>
+          <div style="font-size:0.75rem; color:#38bdf8; font-family:monospace;">${escapeAdminHtml(r.subjectCode || '-')}</div>
+        </td>
+        <td style="padding:0.6rem; font-size:0.82rem; color:#cbd5e1;">
+          <div>${escapeAdminHtml(r.course || '-')}</div>
+          <div style="font-size:0.75rem; color:#64748b;">Sec: ${escapeAdminHtml(r.section || '-')} / Sem: ${escapeAdminHtml(r.semester || '-')}</div>
+        </td>
+        <td style="padding:0.6rem; font-size:0.8rem; color:#94a3b8;">
+          <div>${displayDate}</div>
+          <div style="font-size:0.72rem; color:#64748b;">${escapeAdminHtml(r.sessionYear || '-')}</div>
+        </td>
+        <td style="text-align:center; padding:0.6rem; white-space:nowrap;">
+          <div style="display:inline-flex; gap:6px;">
+            <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.85rem;" onclick="viewCoverPageDetails('${escapedId}')" title="View Details">
+              <i class="ri-eye-line"></i>
+            </button>
+            <button type="button" class="btn-action primary" style="padding:4px 8px; font-size:0.85rem;" onclick="downloadAdminCoverPdf('${escapedId}')" title="Download PDF">
+              <i class="ri-download-line"></i>
+            </button>
+            <button type="button" class="btn-action danger" style="padding:4px 8px; font-size:0.85rem;" onclick="deleteSingleCoverPage('${escapedUserId}', '${escapedId}')" title="Delete">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.toggleAllCoverRows = function(masterCb) {
+  const checkboxes = document.querySelectorAll('.cover-row-check');
+  checkboxes.forEach(cb => { cb.checked = masterCb.checked; });
+  updateCoverSelectionBar();
+};
+
+window.updateCoverSelectionBar = function() {
+  const checked = document.querySelectorAll('.cover-row-check:checked');
+  const bar = document.getElementById('coverSelectionBar');
+  const countEl = document.getElementById('selectedCoverCount');
+  if (bar && countEl) {
+    if (checked.length > 0) {
+      bar.style.display = 'flex';
+      countEl.textContent = `${checked.length} selected`;
+    } else {
+      bar.style.display = 'none';
+      const masterCb = document.getElementById('selectAllCoverRows');
+      if (masterCb) masterCb.checked = false;
+    }
+  }
+};
+
+window.deleteSelectedCoverPages = async function() {
+  const checked = Array.from(document.querySelectorAll('.cover-row-check:checked'));
+  if (checked.length === 0) return;
+
+  const items = checked.map(cb => ({
+    userId: cb.dataset.userid,
+    id: cb.dataset.id
+  }));
+
+  let confirmed = false;
+  if (typeof window.customConfirm === 'function') {
+    confirmed = await window.customConfirm(`Are you sure you want to permanently delete these ${items.length} cover page records? This action cannot be undone.`, { title: "Bulk Deletion", isDanger: true });
+  } else {
+    confirmed = confirm(`Are you sure you want to permanently delete these ${items.length} cover page records? This action cannot be undone.`);
+  }
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`${API_URL}/admin/cover-pages/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      },
+      body: JSON.stringify({ items })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const deletedIds = new Set(items.map(i => i.id));
+      coverPagesCache = coverPagesCache.filter(r => !deletedIds.has(r.id));
+      filterCoverPages();
+      if (typeof window.customAlert === 'function') {
+        await window.customAlert(`Successfully deleted ${data.deletedCount || items.length} cover page records.`, { title: "Deleted Successfully" });
+      } else {
+        alert(`Successfully deleted ${data.deletedCount || items.length} cover page records.`);
+      }
+    } else {
+      if (typeof window.customAlert === 'function') {
+        await window.customAlert(`Deletion failed: ${data.error || 'Server error'}`, { title: "Error", isDanger: true });
+      } else {
+        alert(`Deletion failed: ${data.error || 'Server error'}`);
+      }
+    }
+  } catch (err) {
+    console.error("deleteSelectedCoverPages error:", err);
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Network or server error during deletion.", { title: "Network Error", isDanger: true });
+    } else {
+      alert("Network or server error during deletion.");
+    }
+  }
+};
+
+window.deleteSingleCoverPage = async function(userId, id) {
+  if (!id) return;
+  let confirmed = false;
+  if (typeof window.customConfirm === 'function') {
+    confirmed = await window.customConfirm("Are you sure you want to permanently delete this cover page record?", { title: "Delete Record", isDanger: true });
+  } else {
+    confirmed = confirm("Are you sure you want to permanently delete this cover page record?");
+  }
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`${API_URL}/admin/cover-pages/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      },
+      body: JSON.stringify({ items: [{ userId, id }] })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      coverPagesCache = coverPagesCache.filter(r => r.id !== id);
+      filterCoverPages();
+      if (typeof window.customAlert === 'function') {
+        await window.customAlert("Cover page record deleted successfully.", { title: "Deleted" });
+      } else {
+        alert("Cover page record deleted successfully.");
+      }
+    } else {
+      if (typeof window.customAlert === 'function') {
+        await window.customAlert(`Delete failed: ${data.error || 'Server error'}`, { title: "Error", isDanger: true });
+      } else {
+        alert(`Delete failed: ${data.error || 'Server error'}`);
+      }
+    }
+  } catch (err) {
+    console.error("deleteSingleCoverPage error:", err);
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Network error during deletion.", { title: "Network Error", isDanger: true });
+    } else {
+      alert("Network error during deletion.");
+    }
+  }
+};
+
+window.viewCoverPageDetails = function(id) {
+  const r = coverPagesCache.find(item => item.id === id);
+  if (!r) return;
+
+  const modal = document.getElementById('coverViewModal');
+  const titleEl = document.getElementById('coverModalDocTitle');
+  const contentEl = document.getElementById('coverModalContent');
+  const dlBtn = document.getElementById('coverModalDownloadBtn');
+
+  if (titleEl) {
+    const isPractical = r.docType === 'practical' || (r.practicalNo ? true : false);
+    titleEl.textContent = isPractical ? `Practical #${r.practicalNo || 1} Details` : `Assignment #${r.assignmentNo || 1} Details`;
+  }
+
+  if (contentEl) {
+    contentEl.innerHTML = `
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:8px; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Student Name</span>
+          <strong style="color:white;">${escapeAdminHtml(r.studentName || '-')}</strong>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Roll / Student ID</span>
+          <strong style="color:white;">${escapeAdminHtml(r.studentId || r.rollNo || '-')}</strong>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Subject Name</span>
+          <strong style="color:white;">${escapeAdminHtml(r.subjectName || '-')}</strong>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Subject Code</span>
+          <strong style="color:#38bdf8; font-family:monospace;">${escapeAdminHtml(r.subjectCode || '-')}</strong>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Course & Branch</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.course || '-')}</span>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Semester & Section</span>
+          <span style="color:#cbd5e1;">Sem ${escapeAdminHtml(r.semester || '-')} / Sec ${escapeAdminHtml(r.section || '-')}</span>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Submitted To (Faculty)</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.teacherName || '-')}</span>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Session Year</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.sessionYear || '-')}</span>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Submission Date</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.date || (r.createdAt ? r.createdAt.split('T')[0] : '-'))}</span>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Day / Session</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(r.day || '-')}</span>
+        </div>
+      </div>
+      <div style="font-size:0.8rem; color:var(--admin-muted); margin-top:6px; display:flex; justify-content:space-between;">
+        <span>User ID: <code style="color:#94a3b8;">${escapeAdminHtml(r.userId || 'Guest')}</code></span>
+        <span>Record ID: <code style="color:#94a3b8;">${escapeAdminHtml(r.id)}</code></span>
+      </div>
+    `;
+  }
+
+  if (dlBtn) {
+    dlBtn.onclick = () => window.downloadAdminCoverPdf(r.id);
+  }
+
+  if (modal) modal.classList.add('active');
+};
+
+window.closeCoverViewModal = function() {
+  const modal = document.getElementById('coverViewModal');
+  if (modal) modal.classList.remove('active');
+};
+
+window.downloadAdminCoverPdf = async function(id) {
+  const r = coverPagesCache.find(item => item.id === id);
+  if (!r) return;
+
+  try {
+    const payload = {
+      studentName: r.studentName || '',
+      rollNo: r.studentId || r.rollNo || '',
+      studentId: r.studentId || r.rollNo || '',
+      subjectName: r.subjectName || '',
+      subjectCode: r.subjectCode || '',
+      course: r.course || '',
+      semester: r.semester || '',
+      section: r.section || '',
+      teacherName: r.teacherName || '',
+      sessionYear: r.sessionYear || '',
+      date: r.date || (r.createdAt ? r.createdAt.split('T')[0] : ''),
+      day: r.day || '',
+      assignmentNo: r.assignmentNo || '1',
+      practicalNo: r.practicalNo || '1',
+      docType: r.docType || (r.practicalNo ? 'practical' : 'assignment'),
+      layout: r.layout || 1
+    };
+
+    const res = await fetch(`${API_URL}/assignment/export-pdf`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const isPrac = payload.docType === 'practical';
+      a.download = `${isPrac ? 'Practical' : 'Assignment'}_${isPrac ? payload.practicalNo : payload.assignmentNo}_${payload.subjectCode || 'Cover'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } else {
+      alert("Failed to generate PDF from server.");
+    }
+  } catch (err) {
+    console.error("downloadAdminCoverPdf error:", err);
+    alert("Network error while downloading PDF.");
+  }
+};
+

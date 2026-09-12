@@ -481,6 +481,9 @@
         <a class="nav-link" onclick="switchTab('web-analytics'); if(window.loadWebAnalyticsAdmin) window.loadWebAnalyticsAdmin();">
           <i class="ri-global-line" style="color:#38bdf8;"></i> Web Analytics
         </a>
+        <a class="nav-link" onclick="switchTab('cover-pages'); if(window.loadCoverPagesAdmin) window.loadCoverPagesAdmin();">
+          <i class="ri-file-copy-2-line" style="color:#ec4899;"></i> Cover Pages
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -1657,6 +1660,84 @@
             </table>
           </div>
         </div>
+      <!-- VIEW: COVER PAGES -->
+      <section id="view-cover-pages" class="view-section">
+        <div class="section-card">
+          <div class="section-header" style="flex-wrap:wrap; gap:12px; align-items:center;">
+            <div>
+              <h2 class="section-title"><i class="ri-file-copy-2-line" style="color:#ec4899; vertical-align:middle; margin-right:6px;"></i> Cover Page Management</h2>
+              <p style="color:var(--admin-muted); font-size:0.85rem; margin:4px 0 0 0;">Audit, preview, download, and moderate Assignment and Practical cover pages across all Guests and Contributors.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-action" onclick="if(window.loadCoverPagesAdmin) window.loadCoverPagesAdmin(true)" title="Refresh records" style="background:rgba(255,255,255,0.06); color:var(--admin-text); padding:6px 12px; border-radius:8px; border:1px solid var(--admin-border); cursor:pointer;">
+                <i class="ri-refresh-line"></i> Refresh
+              </button>
+            </div>
+          </div>
+
+          <!-- Sub-tabs: Assignment vs Practical -->
+          <div style="display:flex; gap:8px; margin:1.2rem 0; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
+            <button type="button" class="admin-subtab-btn active" id="subtabAssignmentBtn" onclick="switchCoverSubTab('assignment')" style="background:rgba(99,102,241,0.18); color:#818cf8; border:1px solid rgba(99,102,241,0.35); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+              <i class="ri-file-list-3-line"></i> Assignment Cover Pages (<span id="countAssignment">0</span>)
+            </button>
+            <button type="button" class="admin-subtab-btn" id="subtabPracticalBtn" onclick="switchCoverSubTab('practical')" style="background:rgba(255,255,255,0.04); color:var(--admin-muted); border:1px solid var(--admin-border); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+              <i class="ri-flask-line"></i> Practical File Cover Pages (<span id="countPractical">0</span>)
+            </button>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:1.2rem; background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:12px; border:1px solid var(--admin-border);">
+            <div style="flex:1; min-width:200px;">
+              <input type="text" id="coverSearchInput" class="admin-input" style="width:100%; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem;" placeholder="Search by student, ID, subject, code, course..." oninput="filterCoverPages()">
+            </div>
+            <div>
+              <select id="coverUserTypeFilter" class="admin-input" style="width:150px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterCoverPages()">
+                <option value="all">All User Types</option>
+                <option value="contributor">Contributor</option>
+                <option value="guest">Guest</option>
+              </select>
+            </div>
+            <div>
+              <input type="date" id="coverDateFilter" class="admin-input" style="width:160px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem;" onchange="filterCoverPages()" title="Filter by date">
+            </div>
+            <div>
+              <button type="button" class="btn-action" onclick="resetCoverFilters()" style="background:rgba(255,255,255,0.06); color:var(--admin-muted); border:1px solid var(--admin-border); padding:6px 12px; border-radius:8px; font-size:0.84rem; cursor:pointer;">
+                <i class="ri-filter-off-line"></i> Reset
+              </button>
+            </div>
+
+            <!-- Group Selection Actions Bar -->
+            <div id="coverSelectionBar" style="display:none; align-items:center; gap:10px; margin-left:auto; background:rgba(239,68,68,0.1); padding:4px 12px; border-radius:8px; border:1px solid rgba(239,68,68,0.25);">
+              <span id="selectedCoverCount" style="color:#fca5a5; font-size:0.84rem; font-weight:600;">0 selected</span>
+              <button type="button" id="deleteSelectedCoverBtn" class="btn-action" style="background:rgba(239,68,68,0.25); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:4px 10px; border-radius:6px; font-size:0.82rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="deleteSelectedCoverPages()">
+                <i class="ri-delete-bin-line"></i> Delete Selected
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabular View -->
+          <div style="overflow-x:auto;">
+            <table class="data-table" id="coverDataTable">
+              <thead>
+                <tr>
+                  <th style="width:36px; text-align:center;">
+                    <input type="checkbox" id="selectAllCoverRows" onchange="toggleAllCoverRows(this)" title="Select all visible">
+                  </th>
+                  <th>ID / Ref</th>
+                  <th>Type</th>
+                  <th>Student Info</th>
+                  <th>Subject &amp; Code</th>
+                  <th>Course &amp; Sec</th>
+                  <th>Date &amp; Session</th>
+                  <th style="text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="coverTableBody">
+                <tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading cover pages...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </main>
   </div>
@@ -1675,6 +1756,27 @@
           <button type="submit" class="admin-btn" style="background:var(--admin-danger);" id="confirmDeleteBtn">Execute Deletion</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- COVER PAGE VIEW DETAIL MODAL -->
+  <div class="modal-overlay" id="coverViewModal">
+    <div class="auth-card" style="max-width:580px; text-align:left; padding:2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
+        <h2 style="margin:0; font-size:1.3rem; color:var(--admin-text); display:flex; align-items:center; gap:8px;">
+          <i class="ri-file-text-line" style="color:#ec4899;"></i> <span id="coverModalDocTitle">Cover Page Details</span>
+        </h2>
+        <button type="button" class="btn-action" onclick="closeCoverViewModal()" style="background:none; border:none; color:var(--admin-muted); font-size:1.4rem; cursor:pointer;">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div id="coverModalContent" style="display:flex; flex-direction:column; gap:10px; font-size:0.9rem; color:var(--admin-text); max-height:60vh; overflow-y:auto;">
+        <!-- Filled dynamically -->
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1.5rem; border-top:1px solid var(--admin-border); padding-top:1rem;">
+        <button type="button" class="admin-btn" style="background:rgba(255,255,255,0.08); color:var(--admin-text);" onclick="closeCoverViewModal()">Close</button>
+        <button type="button" class="admin-btn" id="coverModalDownloadBtn" style="background:linear-gradient(135deg, #8b5cf6, #6366f1);"><i class="ri-download-line"></i> Download PDF</button>
+      </div>
     </div>
   </div>
   <script type="module">
@@ -1720,6 +1822,8 @@
         window.loadResourceAnalyticsAdmin();
       } else if (tabId === 'shares' && typeof window.loadShares === 'function') {
         window.loadShares();
+      } else if (tabId === 'cover-pages' && typeof window.loadCoverPagesAdmin === 'function') {
+        window.loadCoverPagesAdmin();
       }
     }
     window.switchTab = switchTab;

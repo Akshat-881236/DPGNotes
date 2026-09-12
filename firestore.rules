@@ -176,8 +176,13 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    /* ---------- ASSIGNMENT COVER PAGES & LOGS ---------- */
+    /* ---------- ASSIGNMENT & PRACTICAL COVER PAGES & LOGS ---------- */
     match /Assignment/{userId}/{document=**} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- COVER PAGE QUOTAS & ANTI-BYPASS TRACKING ---------- */
+    match /cover_page_quotas/{quotaId} {
       allow read, write, delete: if true;
     }
     /* ---------- VALIDATION ---------- */

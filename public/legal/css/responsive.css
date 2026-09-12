@@ -1,11 +1,14 @@
 /* Responsive Breakpoints */
 @media (max-width: 1200px) {
-  .legal-content {
-    margin-right: 0;
+  .legal-content,
+  .legal-content.has-toc,
+  .legal-main {
+    margin-right: 0 !important;
     padding: 2rem;
+    width: calc(100% - var(--sidebar-width)) !important;
   }
   .legal-toc {
-    display: none;
+    display: none !important;
   }
 }
 
