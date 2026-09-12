@@ -406,6 +406,74 @@
         <h4 style="font-size:0.84rem; font-weight:700; color:white; margin-bottom:4px; line-height:1.2; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.title || 'Promoted Content'}</h4>
         <a href="${finalTargetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
+    } else if (variant === "cover_video" || variant === "cover_image") {
+      // Cover Page Native Ad Variant: Disabled close icon and 'i' info icon.
+      // Has skip button enabled after 30s (video) or 15s (image).
+      const isVid = (variant === "cover_video" || !!vidId);
+      const skipSec = isVid ? 30 : 15;
+      card.style.cssText = `
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        background: rgba(15, 23, 42, 0.98);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        border-radius: 14px;
+        padding: 1.1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        margin: 1rem auto;
+        box-sizing: border-box;
+        color: white;
+        font-family: inherit;
+        overflow: hidden;
+      `;
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          ${getProfileLinkHtml('26px', '0.78rem')}
+          ${getPlatformBadgeHtml(ad.platform, ad.adCategory)}
+        </div>
+
+        <div class="ad-media-box" id="adMediaBox_${containerId}" style="position:relative; width:100%; height:180px; border-radius:10px; overflow:hidden; margin-bottom:8px; background:#000; cursor:pointer;">
+          <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;">
+          ${vidId ? `<div id="adPlayBtn_${containerId}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; z-index:2; cursor:pointer;"><i class="ri-play-fill"></i></div>` : ''}
+          <div id="adWaitOverlay_${containerId}" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.85); color:#f59e0b; font-size:0.78rem; font-weight:700; align-items:center; justify-content:center; gap:6px; z-index:3;"><i class="ri-loader-4-line spin-icon"></i> <span id="adWaitText_${containerId}">Please wait...</span></div>
+          <div id="adPlayerDiv_${containerId}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+        </div>
+
+        <h4 style="font-size:0.92rem; font-weight:700; color:white; margin-bottom:4px; line-height:1.3;">${ad.title || 'Promoted Content'}</h4>
+        <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.description || ''}</p>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px;">
+          <a href="${finalTargetLink}" target="_blank" style="flex:1; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
+          <button type="button" id="adSkipBtn_${containerId}" disabled style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#94a3b8; padding:8px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:not-allowed; display:inline-flex; align-items:center; gap:6px; transition:all 0.3s ease; white-space:nowrap;">
+            <span id="adSkipText_${containerId}">Skip in ${skipSec}s</span>
+          </button>
+        </div>
+      `;
+
+      let remainingSkipSec = skipSec;
+      const skipInterval = setInterval(() => {
+        remainingSkipSec--;
+        const skipTextEl = card.querySelector(`#adSkipText_${containerId}`);
+        const skipBtnEl = card.querySelector(`#adSkipBtn_${containerId}`);
+        if (skipTextEl && remainingSkipSec > 0) {
+          skipTextEl.textContent = `Skip in ${remainingSkipSec}s`;
+        }
+        if (remainingSkipSec <= 0) {
+          clearInterval(skipInterval);
+          if (skipBtnEl && skipTextEl) {
+            skipBtnEl.disabled = false;
+            skipBtnEl.style.cssText = "background:linear-gradient(135deg,#10b981,#059669); border:none; color:white; padding:8px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(16,185,129,0.4); white-space:nowrap;";
+            skipTextEl.innerHTML = 'Skip Ad <i class="ri-skip-forward-line"></i>';
+            skipBtnEl.onclick = (e) => {
+              e.stopPropagation();
+              cleanupTimers();
+              if (typeof window.onCoverAdWatched === 'function') {
+                window.onCoverAdWatched();
+              }
+            };
+          }
+        }
+      }, 1000);
     } else {
       // Default / Feed Variant
       card.style.cssText = `
@@ -441,14 +509,16 @@
       `;
     }
 
-    // Attach Ad Controls (i info icon & ✕ close button) with instant ad swap
-    const controls = createAdHeaderControls(() => {
-      swapToNextAd();
-    });
-    card.appendChild(controls);
+    // Attach Ad Controls (i info icon & ✕ close button) for standard variants (disabled for cover variants)
+    if (variant !== "cover_video" && variant !== "cover_image") {
+      const controls = createAdHeaderControls(() => {
+        swapToNextAd();
+      });
+      card.appendChild(controls);
+    }
 
     // Smart Rotation & Video Lifecycle Engine
-    const isVideoMediaVariant = (variant === "feed" || variant === "sidebar" || variant === "main") && !!vidId;
+    const isVideoMediaVariant = (variant === "feed" || variant === "sidebar" || variant === "main" || variant === "cover_video") && !!vidId;
 
     if (isVideoMediaVariant) {
       const mediaBox = card.querySelector(`#adMediaBox_${containerId}`);
@@ -589,6 +659,12 @@
         const thumbAds = candidates.filter(a => a.thumbnailUrl);
         priorityPool = thumbAds.length > 0 ? thumbAds : candidates;
       }
+    } else if (variant === "cover_video") {
+      const videoAds = candidates.filter(a => a.videoUrl && extractYouTubeId(a.videoUrl));
+      priorityPool = videoAds.length > 0 ? videoAds : candidates;
+    } else if (variant === "cover_image") {
+      const imageAds = candidates.filter(a => !a.videoUrl || !extractYouTubeId(a.videoUrl));
+      priorityPool = imageAds.length > 0 ? imageAds : candidates;
     } else {
       priorityPool = candidates;
     }

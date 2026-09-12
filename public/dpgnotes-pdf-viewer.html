@@ -437,15 +437,16 @@ function adSlot(n) {
   d.id = `ad-${n}`;
   d.style.cssText = "width:100%; max-width:100%; overflow:hidden; margin:1.5rem 0;";
 
-  // Alternate pattern: Odd gap (1,3,5) -> Google AdSense, Even gap (2,4,6) -> Native DPGNotes Ad Card
+  // Alternating pattern every 3 pages: 
+  // slot 1 (Page 3) -> AdSense, slot 2 (Page 6) -> Native Ads, slot 3 (Page 9) -> AdSense, slot 4 (Page 12) -> Native Ads, slot 5 (Page 15) -> AdSense...
   if (n % 2 !== 0) {
     d.innerHTML = `<div style="width:100%;text-align:center;padding:.5rem;">
       <ins class="adsbygoogle"
-           style="display:block"
+           style="display:block; text-align:center;"
+           data-ad-layout="in-article"
+           data-ad-format="fluid"
            data-ad-client="ca-pub-5515547448097504"
-           data-ad-slot="2895051790"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
+           data-ad-slot="6070257271"></ins>
     </div>`;
   } else {
     d.innerHTML = `<div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>`;

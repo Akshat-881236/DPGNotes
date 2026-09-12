@@ -10,7 +10,8 @@
   <!-- Global Config & Native Ads Engine -->
   <script src="../config.js"></script>
   <script src="../custom-dialogs.js"></script>
-  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
+  <script src="../native-dpgnotes-ads.js?v=2.6.0"></script>
 
   <!-- Google Fonts & Remix Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Tinos:wght@700&family=Merriweather:wght@700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -743,13 +744,42 @@
         Daily Generation Quota Reached
       </h2>
       <p id="quotaLockSubtitle" style="color:#94a3b8; font-size:0.9rem; line-height:1.6; max-width:540px; margin:0 auto 1.5rem auto;">
-        You have reached your daily quota limit for cover page generation. To prevent system abuse, quotas are strictly enforced via cloud security.
+        You have reached your daily quota limit for cover page generation. Choose how you would like to proceed:
       </p>
 
+      <!-- Confirmation / Selection Mode: Watch Ads vs Sign In with Google -->
+      <div id="quotaChoiceSection" style="display:flex; flex-direction:column; gap:1rem; max-width:540px; margin:0 auto 1.5rem auto;">
+        <!-- Option 1: Watch Ads -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(236,72,153,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; color:#f472b6; font-weight:700; font-size:1rem;">
+            <i class="ri-play-circle-line" style="font-size:1.3rem;"></i> Option 1: Watch Learning Sponsor Ads
+          </div>
+          <p style="color:#cbd5e1; font-size:0.84rem; line-height:1.5; margin:0;">
+            Watch verified learning sponsor ads (AdSense / Native) to immediately restore your daily generation tokens without creating an account.
+          </p>
+          <button type="button" onclick="startQuotaAdFlow()" class="btn-generate" style="margin-top:6px; background:linear-gradient(135deg, #ec4899, #8b5cf6); padding:0.75rem 1.2rem; font-size:0.9rem;">
+            <i class="ri-advertisement-line"></i> Watch Ads to Restore Tokens
+          </button>
+        </div>
+
+        <!-- Option 2: Sign Up / Sign In with Google -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; color:#818cf8; font-weight:700; font-size:1rem;">
+            <i class="ri-google-fill" style="font-size:1.3rem;"></i> Option 2: Sign Up / Sign In with Google
+          </div>
+          <p style="color:#cbd5e1; font-size:0.84rem; line-height:1.5; margin:0;">
+            Sign in with your Google account to upgrade to <strong>Verified Contributor</strong>. You receive <strong>2x daily generation quota</strong>, permanent cloud storage with 1-click re-download and editing, and priority PDF rendering.
+          </p>
+          <button type="button" onclick="signInWithGoogleForCoverQuota()" class="btn-generate" style="margin-top:6px; background:linear-gradient(135deg, #6366f1, #3b82f6); padding:0.75rem 1.2rem; font-size:0.9rem;">
+            <i class="ri-google-fill"></i> Sign In with Google (Double Quota)
+          </button>
+        </div>
+      </div>
+
       <!-- Automated Ad Playback Mode -->
-      <div id="adPlaybackSection">
+      <div id="adPlaybackSection" style="display:none;">
         <div id="adCountdownBadge" style="display:inline-flex; align-items:center; gap:8px; background:rgba(139,92,246,0.18); color:#c084fc; border:1px solid rgba(139,92,246,0.35); padding:6px 16px; border-radius:999px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
-          <i class="ri-loader-4-line spin-icon"></i> <span id="adStatusText">Viewing Sponsor Ad 1 of 3 (10s remaining...)</span>
+          <i class="ri-loader-4-line spin-icon"></i> <span id="adStatusText">Checking Google AdSense availability (15s timeout)...</span>
         </div>
 
         <div style="width:100%; max-width:580px; height:6px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; margin:0 auto 1rem auto;">
@@ -757,12 +787,15 @@
         </div>
 
         <p style="font-size:0.82rem; color:#64748b; margin-bottom:0.5rem;">
-          <i class="ri-information-line"></i> Please watch learning sponsor ads to restore generation tokens. Ads play automatically (manual triggering disabled).
+          <i class="ri-information-line"></i> Priority given to Google AdSense with 15s connection check. After 15s, smoothly falls back to Native Ads.
         </p>
 
-        <!-- Native Ads Container (exact markup specified by user) -->
-        <div style="display:flex; justify-content:center; width:100%;">
-          <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.5rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
+        <!-- AdSense Slot Container -->
+        <div id="adsenseContainer" style="width:100%; max-width:600px; margin:1rem auto; display:none;"></div>
+
+        <!-- Native Ads Container -->
+        <div id="nativeAdsContainer" style="display:flex; justify-content:center; width:100%; display:none;">
+          <div class="native-ads" id="native-ads" data-ad-variant="cover_video" data-ad-count="1" style="margin-top:1rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
         </div>
       </div>
 
@@ -772,7 +805,7 @@
           <i class="ri-time-line" style="font-size:2.4rem; color:#f87171; display:block; margin-bottom:0.6rem;"></i>
           <h3 style="color:#f87171; font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">Sponsor Ads Blocked or Unavailable</h3>
           <p style="color:#cbd5e1; font-size:0.88rem; line-height:1.6; margin-bottom:1.2rem;">
-            Google AdSense / Native Ads cannot be loaded (possibly blocked by an ad-blocker or offline). In the absence of ads, manual ad triggers are disabled and your daily generation quota will automatically reset tomorrow at midnight (00:00 AM).
+            Google AdSense / Native Ads cannot be loaded (possibly blocked by an ad-blocker or offline). In the absence of ads, your daily generation quota will automatically reset tomorrow at midnight (00:00 AM).
           </p>
           <div style="font-size:0.78rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.4rem; font-weight:600;">Time Remaining Until Midnight Reset</div>
           <div id="midnightCountdownText" style="font-size:2.2rem; font-weight:800; font-family:monospace; color:#38bdf8; letter-spacing:2px;">--:--:--</div>
@@ -978,17 +1011,23 @@
       }
     }
 
-    // Quota Lockdown State
+    // Quota Lockdown State: first shows Choice Screen
     function enterQuotaLockdown() {
       const genContainer = document.querySelector('.generator-container');
-      const logsSec = document.querySelector('.saved-logs-section');
+      const logsSec = document.querySelector('.saved-logs-section') || document.querySelector('.logs-section');
       if (genContainer) genContainer.style.setProperty('display', 'none', 'important');
       if (logsSec) logsSec.style.setProperty('display', 'none', 'important');
 
       const overlay = document.getElementById('quotaLockOverlay');
       if (overlay) overlay.style.display = 'flex';
 
-      startQuotaAdFlow();
+      const choiceSec = document.getElementById('quotaChoiceSection');
+      const adPlaybackSec = document.getElementById('adPlaybackSection');
+      const adBlockedSec = document.getElementById('adBlockedLockoutSection');
+
+      if (choiceSec) choiceSec.style.display = 'flex';
+      if (adPlaybackSec) adPlaybackSec.style.display = 'none';
+      if (adBlockedSec) adBlockedSec.style.display = 'none';
     }
 
     function exitQuotaLockdown() {
@@ -996,50 +1035,225 @@
       if (overlay) overlay.style.display = 'none';
 
       const genContainer = document.querySelector('.generator-container');
-      const logsSec = document.querySelector('.saved-logs-section');
+      const logsSec = document.querySelector('.saved-logs-section') || document.querySelector('.logs-section');
       if (genContainer) genContainer.style.removeProperty('display');
       if (logsSec) logsSec.style.removeProperty('display');
 
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (midnightTimer) clearInterval(midnightTimer);
+      if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
     }
 
-    // Automated Ads playback or Midnight Lockout
+    // Google Sign Up / Sign In helper for Cover Pages
+    window.signInWithGoogleForCoverQuota = async function() {
+      const btn = event?.currentTarget;
+      if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Connecting to Google...';
+      try {
+        const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js");
+        const { getAuth, signInWithPopup, GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js");
+
+        const cfg = {
+          apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+          authDomain: "dpgnotes.firebaseapp.com",
+          projectId: "dpgnotes",
+          storageBucket: "dpgnotes.firebasestorage.app",
+          messagingSenderId: "910494426039",
+          appId: "1:910494426039:web:adeae5315caaf846c43e32"
+        };
+
+        const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const res = await signInWithPopup(auth, provider);
+        if (res && res.user) {
+          localStorage.setItem("dpgActiveUserUid", res.user.uid);
+          localStorage.setItem("dpgActiveUser", JSON.stringify({
+            uid: res.user.uid,
+            email: res.user.email,
+            name: res.user.displayName,
+            avatar: res.user.photoURL,
+            role: 'contributor'
+          }));
+
+          currentMaxQuota = 2;
+          currentQuotaTokens = 2;
+          updateTokenBadgeUI();
+
+          const quotaId = await getQuotaDocId();
+          if (window.dpgDb && window.doc && window.setDoc) {
+            const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
+            await window.setDoc(quotaRef, {
+              userId: res.user.uid,
+              userType: 'contributor',
+              tokensRemaining: 2,
+              maxTokens: 2,
+              date: new Date().toISOString().split('T')[0]
+            }, { merge: true });
+          }
+
+          exitQuotaLockdown();
+          if (typeof window.loadUserAssignments === 'function') window.loadUserAssignments();
+
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert("🎉 Welcome Contributor! Your daily cover page quota has been doubled (2 tokens) and permanent cloud storage enabled.", { title: "Signed In Successfully" });
+          } else {
+            alert("🎉 Welcome! Your quota has been doubled (2 tokens).");
+          }
+        }
+      } catch (err) {
+        console.error("Google sign in error:", err);
+        if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In with Google (Double Quota)';
+        alert("Sign in error: " + (err.message || err));
+      }
+    };
+
+    // Callback when cover ad completes/skipped
+    window.onCoverAdWatched = async function() {
+      adsRemainingToWatch--;
+      if (adsRemainingToWatch > 0) {
+        startNextCoverAd();
+      } else {
+        if (adWatchTimer) clearInterval(adWatchTimer);
+        await restoreQuotaTokens();
+      }
+    };
+
+    let adsenseCheckTimer = null;
+
+    // Start Ad Flow after User Confirmation
     function startQuotaAdFlow() {
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (midnightTimer) clearInterval(midnightTimer);
+      if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
 
       const isContrib = isContributor();
       adsRequiredTotal = isContrib ? 2 : 3;
       adsRemainingToWatch = adsRequiredTotal;
-      currentAdSecondsLeft = AD_DURATION_SEC;
 
+      const choiceSec = document.getElementById('quotaChoiceSection');
       const adPlaybackSec = document.getElementById('adPlaybackSection');
       const adBlockedSec = document.getElementById('adBlockedLockoutSection');
-      const adContainer = document.getElementById('native-ads');
 
-      const hasAdsCapability = (typeof window.renderNativeDPGAds === 'function') || (typeof window.adsbygoogle !== 'undefined');
-
-      if (!hasAdsCapability || !navigator.onLine) {
+      if (!navigator.onLine) {
         showMidnightLockout();
         return;
       }
 
-      if (adPlaybackSec) adPlaybackSec.style.display = 'block';
+      if (choiceSec) choiceSec.style.display = 'none';
       if (adBlockedSec) adBlockedSec.style.display = 'none';
+      if (adPlaybackSec) adPlaybackSec.style.display = 'block';
 
-      if (adContainer && typeof window.renderNativeDPGAds === 'function') {
-        delete adContainer.dataset.adInjected;
-        adContainer.innerHTML = '';
+      startNextCoverAd();
+    }
+
+    function startNextCoverAd() {
+      if (adWatchTimer) clearInterval(adWatchTimer);
+      if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+
+      const currentAdIndex = (adsRequiredTotal - adsRemainingToWatch) + 1;
+      const statusEl = document.getElementById('adStatusText');
+      const barEl = document.getElementById('adProgressBar');
+      const adsenseBox = document.getElementById('adsenseContainer');
+      const nativeBox = document.getElementById('nativeAdsContainer');
+
+      if (statusEl) statusEl.textContent = `Sponsor Ad ${currentAdIndex} of ${adsRequiredTotal}: Connecting to Google AdSense...`;
+      if (barEl) barEl.style.width = '0%';
+
+      // 1. Try Google AdSense Priority
+      if (adsenseBox) {
+        adsenseBox.style.display = 'block';
+        adsenseBox.innerHTML = `
+          <ins class="adsbygoogle"
+               style="display:block; text-align:center;"
+               data-ad-layout="in-article"
+               data-ad-format="fluid"
+               data-ad-client="ca-pub-5515547448097504"
+               data-ad-slot="6070257271"></ins>
+        `;
+        try {
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        } catch(e) {}
+      }
+      if (nativeBox) nativeBox.style.display = 'none';
+
+      let adsenseElapsedSec = 0;
+      let adsenseFilled = false;
+
+      // 15-second timer checking for AdSense fill & connection
+      adsenseCheckTimer = setInterval(() => {
+        adsenseElapsedSec++;
+        if (statusEl && !adsenseFilled) {
+          statusEl.textContent = `Connecting to Google AdSense... (${15 - adsenseElapsedSec}s check)`;
+        }
+        if (barEl && !adsenseFilled) {
+          barEl.style.width = `${Math.round((adsenseElapsedSec / 15) * 50)}%`;
+        }
+
+        const ins = adsenseBox ? adsenseBox.querySelector('ins.adsbygoogle') : null;
+        if (ins) {
+          const status = ins.getAttribute('data-ad-status');
+          const iframes = ins.getElementsByTagName('iframe');
+          if (status === 'filled' || (iframes.length > 0 && ins.offsetHeight > 40)) {
+            adsenseFilled = true;
+            clearInterval(adsenseCheckTimer);
+            playAdsenseDuration(currentAdIndex);
+            return;
+          }
+        }
+
+        if (adsenseElapsedSec >= 15) {
+          clearInterval(adsenseCheckTimer);
+          if (!adsenseFilled) {
+            // Fallback to Native Ads
+            fallbackToNativeCoverAd(currentAdIndex);
+          }
+        }
+      }, 1000);
+    }
+
+    function playAdsenseDuration(currentAdIndex) {
+      const statusEl = document.getElementById('adStatusText');
+      const barEl = document.getElementById('adProgressBar');
+      let adSec = 15;
+      if (statusEl) statusEl.textContent = `Viewing Google AdSense ${currentAdIndex} of ${adsRequiredTotal} (${adSec}s remaining...)`;
+
+      adWatchTimer = setInterval(() => {
+        adSec--;
+        if (statusEl) statusEl.textContent = `Viewing Google AdSense ${currentAdIndex} of ${adsRequiredTotal} (${adSec}s remaining...)`;
+        if (barEl) barEl.style.width = `${Math.round(((15 - adSec) / 15) * 100)}%`;
+
+        if (adSec <= 0) {
+          clearInterval(adWatchTimer);
+          window.onCoverAdWatched();
+        }
+      }, 1000);
+    }
+
+    function fallbackToNativeCoverAd(currentAdIndex) {
+      const statusEl = document.getElementById('adStatusText');
+      const adsenseBox = document.getElementById('adsenseContainer');
+      const nativeBox = document.getElementById('nativeAdsContainer');
+      const adNativeInner = document.getElementById('native-ads');
+
+      if (adsenseBox) adsenseBox.style.display = 'none';
+      if (nativeBox) nativeBox.style.display = 'flex';
+      if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal}`;
+
+      if (adNativeInner && typeof window.renderNativeDPGAds === 'function') {
+        const hasVideo = (window.DPG_APPROVED_ADS || []).some(a => a.videoUrl && a.videoUrl.trim() !== '');
+        adNativeInner.dataset.adVariant = hasVideo ? "cover_video" : "cover_image";
+        delete adNativeInner.dataset.adInjected;
+        adNativeInner.innerHTML = '';
         window.renderNativeDPGAds();
       }
-
-      runAdPlaybackTimer();
     }
 
     function showMidnightLockout() {
+      const choiceSec = document.getElementById('quotaChoiceSection');
       const adPlaybackSec = document.getElementById('adPlaybackSection');
       const adBlockedSec = document.getElementById('adBlockedLockoutSection');
+      if (choiceSec) choiceSec.style.display = 'none';
       if (adPlaybackSec) adPlaybackSec.style.display = 'none';
       if (adBlockedSec) adBlockedSec.style.display = 'block';
 
@@ -1066,46 +1280,6 @@
       const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
       const s = String(totalSec % 60).padStart(2, '0');
       countdownEl.textContent = `${h}:${m}:${s}`;
-    }
-
-    function runAdPlaybackTimer() {
-      const statusEl = document.getElementById('adStatusText');
-      const barEl = document.getElementById('adProgressBar');
-
-      const updateProgress = () => {
-        const currentAdIndex = (adsRequiredTotal - adsRemainingToWatch) + 1;
-        if (statusEl) {
-          statusEl.textContent = `Viewing Sponsor Ad ${currentAdIndex} of ${adsRequiredTotal} (${currentAdSecondsLeft}s remaining...)`;
-        }
-        if (barEl) {
-          const pct = Math.round(((AD_DURATION_SEC - currentAdSecondsLeft) / AD_DURATION_SEC) * 100);
-          barEl.style.width = `${pct}%`;
-        }
-      };
-
-      updateProgress();
-
-      adWatchTimer = setInterval(async () => {
-        currentAdSecondsLeft--;
-        updateProgress();
-
-        if (currentAdSecondsLeft <= 0) {
-          adsRemainingToWatch--;
-          if (adsRemainingToWatch > 0) {
-            currentAdSecondsLeft = AD_DURATION_SEC;
-            const adContainer = document.getElementById('native-ads');
-            if (adContainer && typeof window.renderNativeDPGAds === 'function') {
-              delete adContainer.dataset.adInjected;
-              adContainer.innerHTML = '';
-              window.renderNativeDPGAds();
-            }
-            updateProgress();
-          } else {
-            clearInterval(adWatchTimer);
-            await restoreQuotaTokens();
-          }
-        }
-      }, 1000);
     }
 
     async function restoreQuotaTokens() {
