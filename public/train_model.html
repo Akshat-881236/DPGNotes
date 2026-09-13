@@ -1258,7 +1258,7 @@
           await window.customAlert(warnMsg, { title: "AdSense Restriction", isDanger: true });
           return;
         }
-        const adSnippet = `\n<div class="note-adsense-unit" style="max-width:100%; margin:0.8rem auto; text-align:center;">\n  <ins class="adsbygoogle"\n       style="display:block; text-align:center;"\n       data-ad-layout="in-article"\n       data-ad-format="fluid"\n       data-ad-client="ca-pub-5515547448097504"\n       data-ad-slot="6070257271"></ins>\n  <script>\n       (adsbygoogle = window.adsbygoogle || []).push({});\n  </script>\n</div>\n`;
+        const adSnippet = `\n<div class="note-adsense-unit" style="max-width:100%; margin:0.8rem auto; text-align:center;">\n  <ins class="adsbygoogle"\n       style="display:block; text-align:center;"\n       data-ad-layout="in-article"\n       data-ad-format="fluid"\n       data-ad-client="ca-pub-5515547448097504"\n       data-ad-slot="6070257271"></ins>\n  <` + `script>\n       (adsbygoogle = window.adsbygoogle || []).push({});\n  <` + `/script>\n</div>\n`;
         wrapOrInsert(textarea, '', '', adSnippet);
       } else if (type === 'a') {
         let url = 'https://';
