@@ -55,7 +55,7 @@
 
           <div class="sol-sandbox-body-area" id="sandboxBodyArea">
             <div id="sandboxIframeWrapper" style="width:100%; height:100%; display:flex; justify-content:center; background:#f8fafc; transition:all 0.25s ease;">
-              <iframe id="advancedSandboxIframe" class="sol-sandbox-iframe-pane" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+              <iframe id="advancedSandboxIframe" class="sol-sandbox-iframe-pane" sandbox="allow-scripts allow-modals"></iframe>
             </div>
             <div id="advancedSandboxConsole" class="sol-sandbox-console-pane">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(255,255,255,0.1);">

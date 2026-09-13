@@ -185,6 +185,65 @@ service cloud.firestore {
     match /cover_page_quotas/{quotaId} {
       allow read, write, delete: if true;
     }
+
+    /* ---------- PRACTICAL COVER PAGES & RECORDS ---------- */
+    match /Practical/{userId}/{document=**} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- COLLECTION GROUP: RECORDS (Admin Cover Pages Telemetry) ---------- */
+    match /{path=**}/records/{recordId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- ASSIGNMENT SOLUTIONS (Academic Solutions Suite) ---------- */
+    match /assignment_solutions/{contributorUid} {
+      allow read, write: if true;
+
+      match /solutions/{solutionId} {
+        // Public/student read access (zero-knowledge encryption decrypts client-side)
+        allow read: if true;
+        // Contributors publish solutions
+        allow create: if true;
+        // Telemetry tracking (views, screentime, likes) and contributor updates
+        allow update: if true;
+        // Authoring contributor or administrator can delete
+        allow delete: if true;
+      }
+    }
+
+    /* ---------- PRACTICAL SOLUTIONS (Academic Solutions Suite) ---------- */
+    match /practical_solutions/{contributorUid} {
+      allow read, write: if true;
+
+      match /solutions/{solutionId} {
+        // Public/student read access (zero-knowledge encryption decrypts client-side)
+        allow read: if true;
+        // Contributors publish solutions
+        allow create: if true;
+        // Telemetry tracking (views, screentime, likes) and contributor updates
+        allow update: if true;
+        // Authoring contributor or administrator can delete
+        allow delete: if true;
+      }
+    }
+
+    /* ---------- COLLECTION GROUP: SOLUTIONS (Admin Management & Metrics) ---------- */
+    match /{path=**}/solutions/{solutionId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    /* ---------- TOP-LEVEL SOLUTIONS FALLBACK ---------- */
+    match /solutions/{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    /* ---------- SEARCH CTR TELEMETRY ---------- */
+    match /search_ctr_telemetry/{id} {
+      allow read, write: if true;
+    }
     /* ---------- VALIDATION ---------- */
 
     function validateDocument() {

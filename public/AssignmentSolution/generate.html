@@ -210,7 +210,7 @@
 
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const cfg = {
@@ -233,6 +233,23 @@
     window.solServerTimestamp = serverTimestamp;
     window.GoogleAuthProvider = GoogleAuthProvider;
     window.signInWithPopup = signInWithPopup;
+    window.onAuthStateChanged = onAuthStateChanged;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUser", JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName,
+          avatar: user.photoURL,
+          role: 'contributor'
+        }));
+        if (typeof window.checkAuthentication === 'function') {
+          window.checkAuthentication();
+        }
+      }
+    });
   </script>
 
   <script>
@@ -261,6 +278,7 @@
       updateLivePreview();
     });
 
+    window.checkAuthentication = checkAuthentication;
     function checkAuthentication() {
       const uid = localStorage.getItem("dpgActiveUserUid");
       const userRaw = localStorage.getItem("dpgActiveUser");
