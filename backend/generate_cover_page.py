@@ -194,6 +194,7 @@ def generate_pdf(data, output_path, assets_dir=None):
 
     # Typography setup
     font_bold = "Times-Bold"
+    font_regular = "Times-Roman"
     font_size_main = 10.5
 
     # 2. Heading & Subject Info (Centered)
@@ -206,29 +207,38 @@ def generate_pdf(data, output_path, assets_dir=None):
     session = str(data.get("session", "")).strip().upper()
     degree_name = str(data.get("degreeName") or get_degree_name(course_sec)).strip().upper()
 
-    c.setFont(font_bold, font_size_main)
-
     if doc_type == "practical":
         # Matches PracticalCoverPageTemplate.pdf - 'A' positioned at 130 to avoid touching header
+        c.setFont(font_regular, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (130.0 * scale_y), "A")
+        c.setFont(font_bold, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (149.0 * scale_y), "PRACTICAL FILE")
+        c.setFont(font_regular, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (168.0 * scale_y), "OF")
+        c.setFont(font_bold, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (188.0 * scale_y), sub_name)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (208.0 * scale_y), sub_code)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (228.0 * scale_y), course_sec)
         fulfillment_prefix = "IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF"
+        c.setFont(font_regular, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (249.0 * scale_y), fulfillment_prefix)
+        c.setFont(font_bold, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (268.0 * scale_y), degree_name)
     else:
         # Matches FrontpageTemplate.pdf
         assign_line = f"ASSIGNMENT -> {num_val}"
+        c.setFont(font_bold, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (131.0 * scale_y), assign_line)
+        c.setFont(font_regular, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (155.0 * scale_y), "OF")
+        c.setFont(font_bold, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (179.0 * scale_y), sub_name)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (203.0 * scale_y), sub_code)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (226.0 * scale_y), course_sec)
         fulfillment_prefix = "IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF"
+        c.setFont(font_regular, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (250.0 * scale_y), fulfillment_prefix)
+        c.setFont(font_bold, font_size_main)
         c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (267.0 * scale_y), degree_name)
 
     # 3. Center Logo (MDU Emblem)
@@ -240,7 +250,7 @@ def generate_pdf(data, output_path, assets_dir=None):
     if os.path.exists(center_logo_path):
         c.drawImage(center_logo_path, logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True, mask='auto')
 
-    # 4. Session
+    # 4. Session (Bold)
     c.setFont(font_bold, font_size_main)
     c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (414.0 * scale_y), f"SESSION: {session}")
 
@@ -263,16 +273,17 @@ def generate_pdf(data, output_path, assets_dir=None):
     row5_y = PAGE_HEIGHT - (558.0 * scale_y)
     row6_y = PAGE_HEIGHT - (582.0 * scale_y)
 
-    # Row 1: Headers
+    # Row 1: Headers (Bold)
     c.setFont(font_bold, font_size_main)
     c.drawString(left_x, row1_y, "SUBMITTED TO")
     c.drawString(right_x, row1_y, "SUBMITTED BY")
 
-    # Row 2: Names
+    # Row 2: Names (Bold)
     c.drawString(left_x, row2_y, prof_name)
     c.drawString(right_x, row2_y, stu_name)
 
-    # Row 3: Designation / Father
+    # Row 3: Designation / Father (Regular)
+    c.setFont(font_regular, font_size_main)
     c.drawString(left_x, row3_y, designation)
     c.drawString(right_x, row3_y, f"{relation} {father_name}")
 
@@ -280,32 +291,36 @@ def generate_pdf(data, output_path, assets_dir=None):
     dept_line1, dept_line2 = split_department_text(dept)
     if dept_line2:
         # When department character count crosses 17:
-        # Row 4: Left = Department Part 1, Right = Student ID
+        # Row 4: Left = Department Part 1 (Regular), Right = Student ID (Regular)
+        c.setFont(font_regular, font_size_main)
         c.drawString(left_x, row4_y, dept_line1)
         c.drawString(right_x, row4_y, f"STUDENT ID: {stu_id}")
 
-        # Row 5: in place of DPG STM, write the rest part! Right = Course & Section
+        # Row 5: in place of DPG STM, write the rest part! (Regular), Right = Course & Section (Bold)
         c.drawString(left_x, row5_y, dept_line2)
+        c.setFont(font_bold, font_size_main)
         c.drawString(right_x, row5_y, course_sec)
 
-        # Row 6: DPG STM moves to the next line just below!
+        # Row 6: DPG STM moves to the next line just below! (Bold)
         c.drawString(left_x, row6_y, "DPG STM")
     else:
         # Standard <= 17 characters
+        c.setFont(font_regular, font_size_main)
         c.drawString(left_x, row4_y, dept_line1)
         c.drawString(right_x, row4_y, f"STUDENT ID: {stu_id}")
 
+        c.setFont(font_bold, font_size_main)
         c.drawString(left_x, row5_y, "DPG STM")
         c.drawString(right_x, row5_y, course_sec)
 
-    # 6. Footer Section (Centered - All Bold)
+    # 6. Footer Section (Centered - Regular)
     date_val = str(data.get("date", "")).strip().upper()
     day_val = str(data.get("day", "")).strip().upper()
     
     footer_row1 = f"SUBMITTED ON {date_val} ({day_val})" if day_val else f"SUBMITTED ON {date_val}"
     footer_row2 = "MDU ROHTAK, HARYANA"
 
-    c.setFont(font_bold, font_size_main)
+    c.setFont(font_regular, font_size_main)
     c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (701.0 * scale_y), footer_row1)
     c.drawCentredString(PAGE_WIDTH / 2.0, PAGE_HEIGHT - (725.0 * scale_y), footer_row2)
 

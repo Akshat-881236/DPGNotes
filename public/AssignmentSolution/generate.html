@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assignment Solution Generator | DPGNotes Contributor Suite</title>
+  <link rel="icon" href="../ANH.png" type="image/png">
+  <link rel="stylesheet" href="solutions-style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="../config.js"></script>
+  <script src="../custom-dialogs.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="sol-navbar">
+    <a href="../index.html" class="sol-brand">
+      <i class="ri-file-text-fill"></i>
+      <span>DPGNotes <span style="color:var(--sol-primary);">Assignment Generator</span></span>
+    </a>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="sol-badge" id="contributorBadge">
+        <i class="ri-user-star-fill"></i> <span id="contributorNameText">Contributor Session</span>
+      </span>
+      <a href="../Dashboard.html" class="sol-btn sol-btn-secondary sol-btn-sm">
+        <i class="ri-dashboard-line"></i> Dashboard
+      </a>
+    </div>
+  </nav>
+
+  <!-- Access Barrier Overlay for Non-Authenticated Users -->
+  <div id="authBarrierOverlay" class="sol-modal-overlay" style="display:none;">
+    <div class="sol-modal-card" style="text-align:center;">
+      <div style="width:68px; height:68px; border-radius:50%; background:rgba(139,92,246,0.15); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
+        <i class="ri-shield-user-fill" style="font-size:2.2rem; color:var(--sol-primary);"></i>
+      </div>
+      <h2 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.5rem;">Verified Contributor Access Only</h2>
+      <p style="color:var(--sol-text-muted); font-size:0.9rem; line-height:1.6; margin-bottom:1.5rem;">
+        The Assignment Solution Generator is restricted to active authenticated contributors. Please sign in with your Google account to proceed.
+      </p>
+      <button type="button" id="googleSignInBtn" class="sol-btn sol-btn-primary" style="width:100%; padding:0.9rem;" onclick="handleContributorLogin()">
+        <i class="ri-google-fill"></i> Sign In with Google
+      </button>
+      <div style="margin-top:1.2rem;">
+        <a href="../index.html" style="color:var(--sol-text-muted); font-size:0.82rem; text-decoration:none;">
+          <i class="ri-arrow-left-line"></i> Back to Homepage
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Generator Container -->
+  <main class="sol-container">
+    
+    <header style="margin-bottom:2rem;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.4rem;">
+        <span class="sol-badge sol-badge-teal"><i class="ri-code-s-slash-line"></i> Contributor Authoring Hub</span>
+        <span class="sol-badge" id="telemetryBadge"><i class="ri-map-pin-line"></i> Fetching Telemetry...</span>
+      </div>
+      <h1 class="sol-title">
+        <i class="ri-file-add-line" style="color:var(--sol-primary);"></i> Create Assignment Solution
+      </h1>
+      <p class="sol-subtitle">
+        Author comprehensive multi-question assignment guides with formatted answers, syntax code containers, strategic sponsor placement, and optional zero-knowledge encryption.
+      </p>
+    </header>
+
+    <form id="assignmentForm" onsubmit="event.preventDefault(); handlePublishSolution();">
+      
+      <!-- Academic Document Details Card -->
+      <section class="sol-card">
+        <h2 style="font-size:1.15rem; font-weight:700; color:white; margin-bottom:1.2rem; display:flex; align-items:center; gap:8px;">
+          <i class="ri-profile-line" style="color:var(--sol-primary);"></i> 1. Academic &amp; Student Information
+        </h2>
+
+        <div class="sol-form-grid">
+          <div class="sol-form-group">
+            <label class="sol-label">Subject Name <span class="req">*</span></label>
+            <input type="text" id="inpSubjectName" class="sol-input" placeholder="e.g. Data Structures & Algorithms" required oninput="updateLivePreview()">
+          </div>
+          <div class="sol-form-group">
+            <label class="sol-label">Subject Code <span class="req">*</span></label>
+            <input type="text" id="inpSubjectCode" class="sol-input" placeholder="e.g. BCA-301" required oninput="updateLivePreview()">
+          </div>
+        </div>
+
+        <div class="sol-form-grid">
+          <div class="sol-form-group">
+            <label class="sol-label">Student Name <span class="req">*</span></label>
+            <input type="text" id="inpStudentName" class="sol-input" placeholder="e.g. Aman Sharma" required oninput="updateLivePreview()">
+          </div>
+          <div class="sol-form-group">
+            <label class="sol-label">Student ID / Roll No <span class="req">*</span></label>
+            <input type="text" id="inpStudentId" class="sol-input" placeholder="e.g. 2112345678" required oninput="updateLivePreview()">
+          </div>
+          <div class="sol-form-group">
+            <label class="sol-label">Submitted To (Professor / Faculty) <span class="req">*</span></label>
+            <input type="text" id="inpSubmittedTo" class="sol-input" placeholder="e.g. Dr. Rajesh Kumar" required oninput="updateLivePreview()">
+          </div>
+        </div>
+      </section>
+
+      <!-- Zero-Knowledge Encryption Security Card -->
+      <section class="sol-security-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+          <div style="max-width:700px;">
+            <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#f87171; font-size:1rem; margin-bottom:4px;">
+              <i class="ri-shield-keyhole-line" style="font-size:1.25rem;"></i> End-to-End Zero-Knowledge Encryption
+            </div>
+            <p style="color:#cbd5e1; font-size:0.85rem; line-height:1.5; margin:0;">
+              Optionally protect this solution with an authorized password. If enabled, the questions and solutions are encrypted locally in your browser using <strong>AES-GCM 256-bit</strong> before cloud transmission. Neither administrators nor database logs can read the solution without your password.
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <input type="checkbox" id="chkEnableEncryption" style="width:18px; height:18px; cursor:pointer;" onchange="toggleEncryptionFields()">
+            <label for="chkEnableEncryption" style="font-size:0.88rem; font-weight:700; color:white; cursor:pointer;">
+              Enable Password Protection
+            </label>
+          </div>
+        </div>
+
+        <div id="encryptionInputs" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(239,68,68,0.2);">
+          <div class="sol-form-grid">
+            <div class="sol-form-group">
+              <label class="sol-label">Encryption Passphrase <span class="req">*</span></label>
+              <input type="password" id="inpEncPassword" class="sol-input" placeholder="Enter strong password">
+            </div>
+            <div class="sol-form-group">
+              <label class="sol-label">Confirm Passphrase <span class="req">*</span></label>
+              <input type="password" id="inpEncPasswordConfirm" class="sol-input" placeholder="Re-type password">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dynamic Questions Section -->
+      <section class="sol-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+          <h2 style="font-size:1.15rem; font-weight:700; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+            <i class="ri-question-answer-line" style="color:var(--sol-primary);"></i> 2. Questions &amp; Detailed Solutions
+          </h2>
+          <button type="button" class="sol-btn sol-btn-primary sol-btn-sm" onclick="addNewQuestion()">
+            <i class="ri-add-line"></i> Add Question
+          </button>
+        </div>
+
+        <div id="questionsContainer">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div style="text-align:center; margin-top:1rem;">
+          <button type="button" class="sol-btn sol-btn-secondary" onclick="addNewQuestion()">
+            <i class="ri-add-circle-line"></i> Add Another Question
+          </button>
+        </div>
+      </section>
+
+      <!-- Live Dynamic Preview Section -->
+      <section class="sol-card">
+        <h2 style="font-size:1.15rem; font-weight:700; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+          <i class="ri-eye-line" style="color:#38bdf8;"></i> Live Assignment Preview
+        </h2>
+        <div id="livePreviewContainer" style="background:rgba(15,23,42,0.6); border:1px solid var(--sol-border); border-radius:var(--sol-radius); padding:1.5rem; min-height:120px;">
+          <div style="color:var(--sol-text-muted); text-align:center;">
+            Fill in the subject and questions above to view the formatted live academic preview.
+          </div>
+        </div>
+      </section>
+
+      <!-- Submit / Publish Action -->
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:1.5rem;">
+        <a href="../Dashboard.html" class="sol-btn sol-btn-secondary">Cancel</a>
+        <button type="submit" id="btnPublishSolution" class="sol-btn sol-btn-primary" style="padding:0.9rem 2rem; font-size:1rem;">
+          <i class="ri-send-plane-fill"></i> Publish Assignment Solution
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- Publish Success Modal -->
+  <div id="publishSuccessModal" class="sol-modal-overlay" style="display:none;">
+    <div class="sol-modal-card" style="text-align:center;">
+      <div style="width:68px; height:68px; border-radius:50%; background:rgba(16,185,129,0.15); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
+        <i class="ri-checkbox-circle-fill" style="font-size:2.2rem; color:var(--sol-success);"></i>
+      </div>
+      <h2 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.4rem;">Solution Published!</h2>
+      <p style="color:var(--sol-text-muted); font-size:0.88rem; line-height:1.5; margin-bottom:1.2rem;">
+        Your assignment solution has been published and permanently stored in cloud records. Students can now access it using the secure share link below:
+      </p>
+
+      <div style="background:rgba(0,0,0,0.4); border:1px solid var(--sol-border); border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:1.5rem;">
+        <input type="text" id="shareUrlInput" readonly style="background:none; border:none; color:#38bdf8; font-family:monospace; font-size:0.82rem; width:100%; outline:none;">
+        <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="copyShareUrl()">
+          <i class="ri-file-copy-line"></i> Copy
+        </button>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button type="button" class="sol-btn sol-btn-secondary" onclick="location.reload()">
+          <i class="ri-add-line"></i> Create Another
+        </button>
+        <a id="btnViewPublished" href="#" class="sol-btn sol-btn-primary" target="_blank">
+          <i class="ri-external-link-line"></i> View Solution
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const cfg = {
+      apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.solAuth = auth;
+    window.solDb = db;
+    window.solDoc = doc;
+    window.solSetDoc = setDoc;
+    window.solServerTimestamp = serverTimestamp;
+    window.GoogleAuthProvider = GoogleAuthProvider;
+    window.signInWithPopup = signInWithPopup;
+  </script>
+
+  <script>
+    // Contributor & Telemetry State
+    let contributorProfile = null;
+    let telemetryData = {
+      ip: '127.0.0.1',
+      geo: 'India',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata',
+      gmt: new Date().toTimeString().split(' ')[1] || 'GMT+0530'
+    };
+
+    let questionsList = [
+      {
+        id: 'q_1',
+        title: 'Question 1: Explain the difference between Linear and Non-Linear Data Structures with examples.',
+        answer: '<p>A <strong>linear data structure</strong> organizes elements sequentially where each element has a unique predecessor and successor (except the first and last).</p>\n<ul>\n  <li><strong>Array:</strong> Fixed-size contiguous block.</li>\n  <li><strong>Linked List:</strong> Dynamic nodes connected via pointers.</li>\n</ul>\n\n<p>A <strong>non-linear data structure</strong> organizes elements hierarchically or interconnectedly without single-level sequence.</p>\n<pre><code>// Example Tree Node Definition in C++\nstruct TreeNode {\n    int val;\n    TreeNode* left;\n    TreeNode* right;\n};\n</code></pre>'
+      }
+    ];
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', async () => {
+      checkAuthentication();
+      fetchTelemetry();
+      renderQuestionsList();
+      updateLivePreview();
+    });
+
+    function checkAuthentication() {
+      const uid = localStorage.getItem("dpgActiveUserUid");
+      const userRaw = localStorage.getItem("dpgActiveUser");
+      if (!uid) {
+        document.getElementById('authBarrierOverlay').style.display = 'flex';
+        return false;
+      }
+      try {
+        contributorProfile = userRaw ? JSON.parse(userRaw) : { uid, name: 'Contributor', email: 'contributor@dpgnotes.com' };
+        if (contributorProfile.name) {
+          document.getElementById('contributorNameText').textContent = contributorProfile.name;
+        }
+      } catch (e) {
+        contributorProfile = { uid, name: 'Contributor' };
+      }
+      document.getElementById('authBarrierOverlay').style.display = 'none';
+      return true;
+    }
+
+    async function handleContributorLogin() {
+      const btn = document.getElementById('googleSignInBtn');
+      if (btn) btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Connecting to Google...';
+      try {
+        const provider = new window.GoogleAuthProvider();
+        const res = await window.signInWithPopup(window.solAuth, provider);
+        if (res && res.user) {
+          localStorage.setItem("dpgActiveUserUid", res.user.uid);
+          localStorage.setItem("dpgActiveUser", JSON.stringify({
+            uid: res.user.uid,
+            email: res.user.email,
+            name: res.user.displayName,
+            avatar: res.user.photoURL,
+            role: 'contributor'
+          }));
+          checkAuthentication();
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert("Welcome, Contributor! You now have authoring privileges.", { title: "Authenticated" });
+          }
+        }
+      } catch (err) {
+        console.error("Contributor login error:", err);
+        if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In with Google';
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Authentication failed: " + err.message, { title: "Error", isDanger: true });
+        } else {
+          alert("Authentication failed: " + err.message);
+        }
+      }
+    }
+
+    async function fetchTelemetry() {
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json').then(r => r.json()).catch(() => ({ ip: '127.0.0.1' }));
+        telemetryData.ip = ipRes.ip || '127.0.0.1';
+
+        const geoRes = await fetch(`https://ipapi.co/${telemetryData.ip}/json/`).then(r => r.json()).catch(() => ({}));
+        const city = geoRes.city || '';
+        const country = geoRes.country_name || 'India';
+        telemetryData.geo = city ? `${city}, ${country}` : country;
+
+        const badge = document.getElementById('telemetryBadge');
+        if (badge) {
+          badge.innerHTML = `<i class="ri-map-pin-line"></i> ${telemetryData.geo} (${telemetryData.timezone})`;
+        }
+      } catch (e) {
+        console.warn("Telemetry fetch error:", e);
+      }
+    }
+
+    // Toggle Encryption inputs
+    window.toggleEncryptionFields = function() {
+      const isChecked = document.getElementById('chkEnableEncryption').checked;
+      const box = document.getElementById('encryptionInputs');
+      if (box) box.style.display = isChecked ? 'block' : 'none';
+      if (isChecked) {
+        document.getElementById('inpEncPassword').required = true;
+      } else {
+        document.getElementById('inpEncPassword').required = false;
+      }
+    };
+
+    // Render Dynamic Questions
+    window.renderQuestionsList = function() {
+      const container = document.getElementById('questionsContainer');
+      if (!container) return;
+
+      container.innerHTML = questionsList.map((q, idx) => `
+        <div class="sol-item-card" id="card_${q.id}">
+          <div class="sol-item-header">
+            <span class="sol-item-num">
+              <i class="ri-question-line"></i> Question #${idx + 1}
+            </span>
+            ${questionsList.length > 1 ? `
+              <button type="button" class="sol-btn sol-btn-danger sol-btn-sm" onclick="removeQuestion('${q.id}')">
+                <i class="ri-delete-bin-line"></i> Remove
+              </button>
+            ` : ''}
+          </div>
+
+          <div class="sol-form-group" style="margin-bottom:1rem;">
+            <label class="sol-label">Question Title / Prompt <span class="req">*</span></label>
+            <input type="text" class="sol-input" id="title_${q.id}" value="${escapeAttr(q.title)}" placeholder="e.g. Question 1: What is..." oninput="updateQuestionData('${q.id}')" required>
+          </div>
+
+          <div class="sol-form-group">
+            <label class="sol-label">
+              <span>Formatted Answer &amp; Code <span class="req">*</span></span>
+              <span style="font-size:0.75rem; color:#94a3b8;">Use quick tools below or type HTML/Markdown</span>
+            </label>
+
+            <div class="sol-editor-box">
+              <div class="sol-palette">
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<h1>', '</h1>')">h1</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<h2>', '</h2>')">h2</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<h3>', '</h3>')">h3</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<p>', '</p>')">p</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<strong>', '</strong>')">bold</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<a href=&quot;https://...&quot; target=&quot;_blank&quot;>', '</a>')">link</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<ol>\\n  <li>', '</li>\\n</ol>')">ol</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<ul>\\n  <li>', '</li>\\n</ul>')">ul</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<code>', '</code>')">code</button>
+                <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<pre><code>', '</code></pre>')">pre</button>
+                <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${q.id}', '<div class=&quot;adsense-slot-wrapper&quot;><!-- AdSense In-Article Slot --></div>\\n', '')">adsense-ad</button>
+                <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${q.id}', '<div class=&quot;native-ad-wrapper&quot;><!-- Native Learning Ad --></div>\\n', '')">native-ad</button>
+              </div>
+              <textarea class="sol-textarea" id="ans_${q.id}" oninput="updateQuestionData('${q.id}')" placeholder="Type solution explanation, code examples, lists..." required>${escapeText(q.answer)}</textarea>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    window.addNewQuestion = function() {
+      const nextNum = questionsList.length + 1;
+      const newId = 'q_' + Date.now();
+      questionsList.push({
+        id: newId,
+        title: `Question ${nextNum}: `,
+        answer: ''
+      });
+      renderQuestionsList();
+      updateLivePreview();
+      const newCard = document.getElementById(`title_${newId}`);
+      if (newCard) newCard.focus();
+    };
+
+    window.removeQuestion = function(id) {
+      if (questionsList.length <= 1) return;
+      questionsList = questionsList.filter(q => q.id !== id);
+      renderQuestionsList();
+      updateLivePreview();
+    };
+
+    window.updateQuestionData = function(id) {
+      const q = questionsList.find(item => item.id === id);
+      if (!q) return;
+      const titleInput = document.getElementById(`title_${id}`);
+      const ansInput = document.getElementById(`ans_${id}`);
+      if (titleInput) q.title = titleInput.value;
+      if (ansInput) q.answer = ansInput.value;
+      updateLivePreview();
+    };
+
+    window.insertTag = function(qid, openTag, closeTag) {
+      const el = document.getElementById(`ans_${qid}`);
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const val = el.value;
+      const selected = val.substring(start, end) || 'Text here';
+      const replacement = openTag + selected + closeTag;
+      el.value = val.substring(0, start) + replacement + val.substring(end);
+      el.focus();
+      el.selectionStart = start + openTag.length;
+      el.selectionEnd = start + openTag.length + selected.length;
+      updateQuestionData(qid);
+    };
+
+    window.updateLivePreview = function() {
+      const preview = document.getElementById('livePreviewContainer');
+      if (!preview) return;
+
+      const subName = document.getElementById('inpSubjectName')?.value || 'Subject Name';
+      const subCode = document.getElementById('inpSubjectCode')?.value || 'Code';
+      const stuName = document.getElementById('inpStudentName')?.value || 'Student Name';
+      const stuId = document.getElementById('inpStudentId')?.value || 'Roll No';
+      const prof = document.getElementById('inpSubmittedTo')?.value || 'Faculty Name';
+
+      preview.innerHTML = `
+        <div style="border-bottom:1px solid var(--sol-border); padding-bottom:1rem; margin-bottom:1.5rem;">
+          <h2 style="color:#38bdf8; font-size:1.4rem; font-weight:800; margin-bottom:4px;">${escapeAdminHtml(subName)} (${escapeAdminHtml(subCode)})</h2>
+          <div style="font-size:0.84rem; color:var(--sol-text-muted); display:flex; flex-wrap:wrap; gap:16px;">
+            <span>Student: <strong style="color:white;">${escapeAdminHtml(stuName)}</strong> (${escapeAdminHtml(stuId)})</span>
+            <span>Submitted To: <strong style="color:white;">${escapeAdminHtml(prof)}</strong></span>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+          ${questionsList.map((q, idx) => `
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--sol-border); border-radius:10px; padding:1.2rem;">
+              <h3 style="color:#a5b4fc; font-size:1.05rem; font-weight:700; margin-bottom:0.8rem;">
+                ${escapeAdminHtml(q.title || `Question #${idx+1}`)}
+              </h3>
+              <div class="sol-answer-content">
+                ${q.answer || '<em style="color:#64748b;">No answer written yet...</em>'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    };
+
+    // Web Crypto Zero-Knowledge AES-GCM Encryptor
+    async function encryptPayload(dataObj, password) {
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const saltBase64 = btoa(String.fromCharCode.apply(null, salt));
+
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt']
+      );
+
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encodedData = enc.encode(JSON.stringify(dataObj));
+      const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encodedData);
+
+      // Concat IV + Ciphertext
+      const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+      combined.set(iv, 0);
+      combined.set(new Uint8Array(ciphertext), iv.length);
+
+      let binary = '';
+      for (let i = 0; i < combined.byteLength; i++) {
+        binary += String.fromCharCode(combined[i]);
+      }
+      const encryptedData = btoa(binary);
+
+      // Fast salted verification hash (SHA-256) so user knows instantly if pass is right
+      const passHashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(password + saltBase64));
+      const hashArray = Array.from(new Uint8Array(passHashBuffer));
+      const passHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      return { encryptedData, salt: saltBase64, passHash };
+    }
+
+    // Publish Handler
+    window.handlePublishSolution = async function() {
+      if (!checkAuthentication()) return;
+
+      const subName = document.getElementById('inpSubjectName').value.trim();
+      const subCode = document.getElementById('inpSubjectCode').value.trim();
+      const stuName = document.getElementById('inpStudentName').value.trim();
+      const stuId = document.getElementById('inpStudentId').value.trim();
+      const prof = document.getElementById('inpSubmittedTo').value.trim();
+
+      const isEnc = document.getElementById('chkEnableEncryption').checked;
+      let encPassword = '';
+
+      if (isEnc) {
+        encPassword = document.getElementById('inpEncPassword').value;
+        const confirmPass = document.getElementById('inpEncPasswordConfirm').value;
+        if (!encPassword || encPassword.length < 4) {
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert("Please enter a secure encryption password of at least 4 characters.", { title: "Password Too Short", isDanger: true });
+          } else {
+            alert("Please enter a secure password of at least 4 characters.");
+          }
+          return;
+        }
+        if (encPassword !== confirmPass) {
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert("Encryption passwords do not match! Please verify.", { title: "Mismatch", isDanger: true });
+          } else {
+            alert("Encryption passwords do not match!");
+          }
+          return;
+        }
+      }
+
+      const publishBtn = document.getElementById('btnPublishSolution');
+      if (publishBtn) {
+        publishBtn.disabled = true;
+        publishBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Encrypting &amp; Publishing...';
+      }
+
+      try {
+        const solutionId = 'assign_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        const contribUid = contributorProfile.uid;
+
+        let payloadToStore = {
+          id: solutionId,
+          type: 'assignment',
+          subjectName: subName,
+          subjectCode: subCode,
+          studentName: stuName,
+          studentId: stuId,
+          profName: prof,
+          contributorUid: contribUid,
+          contributorName: contributorProfile.name || 'Verified Contributor',
+          contributorEmail: contributorProfile.email || '',
+          contributorIp: telemetryData.ip,
+          contributorGeo: telemetryData.geo,
+          timezone: telemetryData.timezone,
+          gmt: telemetryData.gmt,
+          isEncrypted: isEnc,
+          views: 0,
+          likes: 0,
+          likedBy: [],
+          totalScreentimeSec: 0,
+          createdAt: new Date().toISOString()
+        };
+
+        if (isEnc) {
+          // Zero-knowledge encryption: questions array is encrypted with Contributor's password
+          const { encryptedData, salt, passHash } = await encryptPayload({ questions: questionsList }, encPassword);
+          payloadToStore.encryptedData = encryptedData;
+          payloadToStore.salt = salt;
+          payloadToStore.passHash = passHash;
+          // Notice: plaintext questions are completely omitted!
+        } else {
+          payloadToStore.questions = questionsList;
+        }
+
+        // Save directly to Firestore path: solutions/assignments/{contributorUid}/solutions/{solutionId}
+        const docRef = window.solDoc(window.solDb, "solutions", "assignments", contribUid, "solutions", solutionId);
+        await window.solSetDoc(docRef, payloadToStore);
+
+        // Also record an activity log in Firestore
+        try {
+          const logRef = window.solDoc(window.solDb, "activity_logs", `log_${Date.now()}`);
+          await window.solSetDoc(logRef, {
+            identity: contributorProfile.email || contribUid,
+            action: isEnc ? "PUBLISH_ENCRYPTED_ASSIGNMENT_SOLUTION" : "PUBLISH_ASSIGNMENT_SOLUTION",
+            metadata: `${subCode} - ${subName} (${questionsList.length} Questions)`,
+            timestamp: new Date().toISOString()
+          });
+        } catch (e) {}
+
+        // Construct share URL
+        const shareUrl = `${window.location.origin}/AssignmentSolution/index.html?id=${solutionId}&contributor=${contribUid}`;
+        document.getElementById('shareUrlInput').value = shareUrl;
+        document.getElementById('btnViewPublished').href = shareUrl;
+        document.getElementById('publishSuccessModal').style.display = 'flex';
+
+      } catch (err) {
+        console.error("Publish error:", err);
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Failed to publish solution: " + err.message, { title: "Publish Error", isDanger: true });
+        } else {
+          alert("Failed to publish solution: " + err.message);
+        }
+      } finally {
+        if (publishBtn) {
+          publishBtn.disabled = false;
+          publishBtn.innerHTML = '<i class="ri-send-plane-fill"></i> Publish Assignment Solution';
+        }
+      }
+    };
+
+    window.copyShareUrl = function() {
+      const input = document.getElementById('shareUrlInput');
+      if (input) {
+        input.select();
+        navigator.clipboard.writeText(input.value).then(() => {
+          if (typeof window.customAlert === 'function') {
+            window.customAlert("Share link copied to clipboard!", { title: "Copied" });
+          } else {
+            alert("Share link copied to clipboard!");
+          }
+        });
+      }
+    };
+
+    function escapeAttr(s) {
+      return (s || '').replace(/"/g, '&quot;');
+    }
+    function escapeText(s) {
+      return (s || '');
+    }
+    function escapeAdminHtml(s) {
+      return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

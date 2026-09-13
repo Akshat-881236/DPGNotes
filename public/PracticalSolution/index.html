@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practical Solution Viewer | DPGNotes</title>
+  <link rel="icon" href="../ANH.png" type="image/png">
+  <link rel="stylesheet" href="solutions-style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="../config.js"></script>
+  <script src="../custom-dialogs.js"></script>
+  <script src="../native-dpgnotes-ads.js"></script>
+  <!-- Google AdSense SDK -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="sol-navbar">
+    <a href="../index.html" class="sol-brand">
+      <i class="ri-flask-fill" style="color:var(--sol-teal);"></i>
+      <span>DPGNotes <span style="color:var(--sol-teal);">Practical Viewer</span></span>
+    </a>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="handleShareSolution()">
+        <i class="ri-share-forward-line"></i> Share
+      </button>
+      <button type="button" id="btnLikeSolution" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="handleLikeSolution()">
+        <i class="ri-heart-line" id="likeIcon"></i> <span id="likeCountText">0</span>
+      </button>
+      <a href="../study-hub.html" class="sol-btn sol-btn-secondary sol-btn-sm">
+        <i class="ri-book-open-line"></i> Study Hub
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Practical Solution Viewer Container -->
+  <main class="sol-container">
+
+    <!-- Loading State -->
+    <div id="loadingState" style="text-align:center; padding:5rem 1rem;">
+      <i class="ri-loader-4-line" style="font-size:2.5rem; color:var(--sol-teal); animation:spin 1s linear infinite;"></i>
+      <h3 style="margin-top:1rem; color:white; font-size:1.2rem;">Loading Practical Solution...</h3>
+      <p style="color:var(--sol-text-muted); font-size:0.85rem;">Retrieving laboratory experiments and resources from cloud database.</p>
+    </div>
+
+    <!-- Error / Not Found State -->
+    <div id="errorState" style="display:none; text-align:center; padding:5rem 1rem;">
+      <div style="width:72px; height:72px; border-radius:50%; background:rgba(239,68,68,0.15); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
+        <i class="ri-file-damage-line" style="font-size:2.5rem; color:var(--sol-danger);"></i>
+      </div>
+      <h2 style="color:white; font-size:1.5rem; margin-bottom:0.5rem;" id="errorTitle">Practical Solution Not Found</h2>
+      <p style="color:var(--sol-text-muted); font-size:0.9rem; max-width:480px; margin:0 auto 1.5rem auto;" id="errorMsg">
+        The requested practical laboratory solution does not exist or the link may have expired.
+      </p>
+      <a href="../index.html" class="sol-btn sol-btn-teal">Return to Homepage</a>
+    </div>
+
+    <!-- Active Solution Viewport -->
+    <div id="solutionViewport" style="display:none;">
+
+      <!-- Academic Header Card -->
+      <section class="sol-view-header">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <span class="sol-badge sol-badge-teal" id="viewSubjectCodeBadge">BCA-301P</span>
+              <span class="sol-badge" id="viewSecurityBadge">🔒 E2E Encrypted</span>
+            </div>
+            <h1 class="sol-title" id="viewSubjectName" style="font-size:2rem; margin-bottom:0.5rem;">
+              Practical Lab Name
+            </h1>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="window.print()">
+              <i class="ri-printer-line"></i> Print / Save PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="sol-meta-row">
+          <div class="sol-meta-item">
+            <i class="ri-user-3-line" style="color:#38bdf8;"></i>
+            <span>Student: <strong id="viewStudentName">Student Name</strong> (<span id="viewStudentId">ID</span>)</span>
+          </div>
+          <div class="sol-meta-item">
+            <i class="ri-user-star-line" style="color:#f59e0b;"></i>
+            <span>Instructor: <strong id="viewProfName">Lab Faculty</strong></span>
+          </div>
+          <div class="sol-meta-item">
+            <i class="ri-shield-check-line" style="color:#10b981;"></i>
+            <span>Contributor: <strong id="viewContributorName">Verified Contributor</strong></span>
+          </div>
+          <div class="sol-meta-item">
+            <i class="ri-calendar-line" style="color:#c084fc;"></i>
+            <span>Published: <strong id="viewPublishDate">Date</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Attached Practical PDF Lab Manual Card (Hidden if no PDF or encrypted until unlocked) -->
+      <section id="pdfAttachmentCard" class="sol-card" style="display:none; margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(30,41,59,0.7), rgba(15,23,42,0.8)); border:1px solid rgba(20,184,166,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:46px; height:46px; border-radius:10px; background:rgba(239,68,68,0.15); display:flex; align-items:center; justify-content:center;">
+              <i class="ri-file-pdf-fill" style="font-size:1.8rem; color:#ef4444;"></i>
+            </div>
+            <div>
+              <h4 style="margin:0 0 2px 0; color:white; font-size:1rem; font-weight:700;">Official Lab Manual &amp; Practical PDF</h4>
+              <p style="margin:0; color:var(--sol-text-muted); font-size:0.8rem;">Contributor uploaded verified laboratory document</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <a id="btnDownloadPdf" href="#" target="_blank" class="sol-btn sol-btn-teal sol-btn-sm" download>
+              <i class="ri-download-2-line"></i> Download PDF
+            </a>
+            <a id="btnViewPdf" href="#" target="_blank" class="sol-btn sol-btn-secondary sol-btn-sm">
+              <i class="ri-external-link-line"></i> Open in New Tab
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOP AD BANNER (AdSense with Fallback) -->
+      <div class="ad-slot-wrapper" id="topAdSlot" style="margin-bottom:2rem; text-align:center;">
+        <ins class="adsbygoogle"
+             style="display:block; text-align:center;"
+             data-ad-layout="in-article"
+             data-ad-format="fluid"
+             data-ad-client="ca-pub-5515547448097504"
+             data-ad-slot="6070257271"></ins>
+        <script>
+          try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
+        </script>
+      </div>
+
+      <!-- Zero-Knowledge Password Protection Barrier -->
+      <div id="passwordLockOverlay" class="sol-card" style="display:none; text-align:center; padding:3.5rem 1.5rem; background:linear-gradient(135deg, rgba(20,24,39,0.95), rgba(15,23,42,0.98)); border-color:rgba(239,68,68,0.35);">
+        <div style="width:76px; height:76px; border-radius:50%; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.2rem;">
+          <i class="ri-shield-keyhole-line" style="font-size:2.6rem; color:#f87171;"></i>
+        </div>
+        <h2 style="font-size:1.75rem; font-weight:800; color:white; margin-bottom:0.5rem;">
+          Protected Laboratory Solution
+        </h2>
+        <p style="color:var(--sol-text-muted); font-size:0.92rem; max-width:540px; margin:0 auto 1.5rem auto; line-height:1.6;">
+          This practical solution and its associated lab manual were encrypted by the Contributor using client-side zero-knowledge security. Please enter the authorized decryption passphrase to view the experiments and code.
+        </p>
+
+        <form id="unlockForm" onsubmit="event.preventDefault(); handleUnlockSolution();" style="max-width:380px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">
+          <input type="password" id="inpUnlockPassword" class="sol-input" placeholder="Enter practical passphrase" required autofocus style="text-align:center; font-size:1rem; letter-spacing:1px; padding:0.85rem;">
+          <div id="unlockErrorMsg" style="display:none; color:#f87171; font-size:0.82rem; font-weight:600;">
+            <i class="ri-error-warning-line"></i> Incorrect password. Please check and try again.
+          </div>
+          <button type="submit" id="btnUnlockSubmit" class="sol-btn sol-btn-teal" style="padding:0.85rem; font-size:1rem;">
+            <i class="ri-lock-unlock-line"></i> Unlock &amp; Decrypt Solution
+          </button>
+        </form>
+      </div>
+
+      <!-- Decrypted Practical Experiments Container -->
+      <div id="solutionPracticalsContainer" style="display:none;">
+        <!-- Filled dynamically with rendered practical experiments -->
+      </div>
+
+      <!-- Engagement & Screentime Footer Bar -->
+      <div class="sol-engagement-bar">
+        <div class="sol-screentime-tracker">
+          <div class="pulse-dot"></div>
+          <span>Active Reading Time: <strong id="screentimeDisplay" style="color:white;">0s</strong></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px; font-size:0.85rem; color:var(--sol-text-muted);">
+          <span><i class="ri-eye-line" style="color:#38bdf8;"></i> <span id="totalViewsText">0</span> views</span>
+          <span><i class="ri-heart-line" style="color:#f472b6;"></i> <span id="totalLikesText">0</span> likes</span>
+          <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="handleShareSolution()">
+            <i class="ri-share-forward-line"></i> Share Link
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Interactive HTML Code Sandbox Modal -->
+  <div id="sandboxModal" class="sol-modal-overlay" style="display:none;">
+    <div class="sol-modal-card" style="max-width:850px; width:95%; padding:1.5rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--sol-border); padding-bottom:0.8rem;">
+        <h3 style="color:#38bdf8; font-size:1.15rem; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">
+          <i class="ri-play-circle-line"></i> Interactive Live Code Sandbox
+        </h3>
+        <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="closeSandboxModal()">
+          <i class="ri-close-line"></i> Close Sandbox
+        </button>
+      </div>
+      <div class="sol-sandbox-wrapper">
+        <div class="sol-sandbox-header">
+          <span><i class="ri-terminal-line"></i> Sandbox Output</span>
+          <span style="font-size:0.75rem; color:#94a3b8;">Isolated Browser Execution</span>
+        </div>
+        <iframe id="sandboxIframe" class="sol-sandbox-iframe" sandbox="allow-scripts allow-modals"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .shake-animation { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const cfg = {
+      apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
+    const db = getFirestore(app);
+
+    window.solDb = db;
+    window.solDoc = doc;
+    window.solGetDoc = getDoc;
+    window.solUpdateDoc = updateDoc;
+    window.solIncrement = increment;
+    window.solArrayUnion = arrayUnion;
+
+    // Trigger practical fetch once Firebase module loads
+    window.initPracticalFetch();
+  </script>
+
+  <script>
+    // Practical State
+    let currentSolutionData = null;
+    let currentSolutionDocRef = null;
+    let isEncryptedDoc = false;
+    let decryptedPracticals = [];
+    let decryptedPdfUrl = null;
+
+    // Screentime tracker variables
+    let engagedSeconds = 0;
+    let lastActiveTimestamp = Date.now();
+    let screentimeInterval = null;
+    let pendingSecondsToSync = 0;
+
+    window.initPracticalFetch = async function() {
+      const params = new URLSearchParams(window.location.search);
+      const solutionId = params.get('id');
+      const contributorUid = params.get('contributor');
+
+      if (!solutionId || !contributorUid) {
+        showError("Invalid Link", "Missing practical solution ID or contributor identification parameter in the URL.");
+        return;
+      }
+
+      try {
+        const docRef = window.solDoc(window.solDb, "solutions", "practicals", contributorUid, "solutions", solutionId);
+        currentSolutionDocRef = docRef;
+        const snap = await window.solGetDoc(docRef);
+
+        if (!snap.exists()) {
+          showError("Solution Not Found", "The requested practical laboratory solution does not exist or has been removed by the contributor.");
+          return;
+        }
+
+        currentSolutionData = snap.data();
+        renderSolutionShell(currentSolutionData);
+
+        // Record 1 View increment in Firestore
+        try {
+          await window.solUpdateDoc(docRef, {
+            views: window.solIncrement(1),
+            lastViewedAt: new Date().toISOString()
+          });
+        } catch (e) {}
+
+        // Start active screentime tracking
+        startEngagedScreentimeTracking();
+
+      } catch (err) {
+        console.error("Failed to load practical solution:", err);
+        showError("Loading Error", "Failed to retrieve the practical laboratory solution: " + err.message);
+      }
+    };
+
+    function showError(title, msg) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('solutionViewport').style.display = 'none';
+      const errBox = document.getElementById('errorState');
+      errBox.style.display = 'block';
+      document.getElementById('errorTitle').textContent = title;
+      document.getElementById('errorMsg').textContent = msg;
+    }
+
+    function renderSolutionShell(data) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('solutionViewport').style.display = 'block';
+
+      // Academic Header Details
+      document.title = `${data.subjectCode || 'Practical'} - ${data.subjectName || 'Lab Solution'} | DPGNotes`;
+      document.getElementById('viewSubjectName').textContent = data.subjectName || 'Practical Solution';
+      document.getElementById('viewSubjectCodeBadge').textContent = data.subjectCode || 'LAB-SOLUTION';
+      document.getElementById('viewStudentName').textContent = data.studentName || 'Student';
+      document.getElementById('viewStudentId').textContent = data.studentId || '-';
+      document.getElementById('viewProfName').textContent = data.profName || '-';
+      document.getElementById('viewContributorName').textContent = data.contributorName || 'Verified Contributor';
+      document.getElementById('viewPublishDate').textContent = data.createdAt ? (typeof data.createdAt === 'string' ? data.createdAt.split('T')[0] : 'Recently') : 'N/A';
+
+      const views = (Number(data.views) || 0) + 1;
+      document.getElementById('totalViewsText').textContent = views.toLocaleString();
+      const likes = Number(data.likes) || (Array.isArray(data.likedBy) ? data.likedBy.length : 0);
+      document.getElementById('totalLikesText').textContent = likes;
+
+      // Check user liked state
+      const currentUid = localStorage.getItem("dpgActiveUserUid");
+      if (currentUid && Array.isArray(data.likedBy) && data.likedBy.includes(currentUid)) {
+        const likeIcon = document.getElementById('likeIcon');
+        likeIcon.className = 'ri-heart-fill';
+        likeIcon.style.color = '#f472b6';
+      }
+
+      isEncryptedDoc = !!data.isEncrypted;
+      const secBadge = document.getElementById('viewSecurityBadge');
+
+      if (isEncryptedDoc) {
+        secBadge.className = 'sol-badge sol-badge-red';
+        secBadge.innerHTML = '<i class="ri-lock-2-fill"></i> 🔒 Zero-Knowledge Encrypted';
+        // Strictly hide password overlay and practical experiments / PDF
+        document.getElementById('passwordLockOverlay').style.display = 'block';
+        document.getElementById('solutionPracticalsContainer').style.display = 'none';
+        document.getElementById('pdfAttachmentCard').style.display = 'none';
+      } else {
+        secBadge.className = 'sol-badge sol-badge-teal';
+        secBadge.innerHTML = '<i class="ri-global-line"></i> Public Laboratory Access';
+        // Render PDF link if present
+        if (data.pdfUrl) {
+          showPdfAttachment(data.pdfUrl);
+        }
+        // Directly render practical experiments
+        document.getElementById('passwordLockOverlay').style.display = 'none';
+        document.getElementById('solutionPracticalsContainer').style.display = 'block';
+        decryptedPracticals = data.practicals || [];
+        renderPracticalExperiments(decryptedPracticals);
+      }
+    }
+
+    function showPdfAttachment(url) {
+      if (!url) return;
+      const card = document.getElementById('pdfAttachmentCard');
+      const downloadBtn = document.getElementById('btnDownloadPdf');
+      const viewBtn = document.getElementById('btnViewPdf');
+      if (card && downloadBtn && viewBtn) {
+        card.style.display = 'block';
+        downloadBtn.href = url;
+        viewBtn.href = url;
+      }
+    }
+
+    // Client-side Zero-Knowledge Decryption Handler
+    window.handleUnlockSolution = async function() {
+      const pwdInput = document.getElementById('inpUnlockPassword');
+      const errEl = document.getElementById('unlockErrorMsg');
+      const submitBtn = document.getElementById('btnUnlockSubmit');
+      const pwd = pwdInput ? pwdInput.value : '';
+
+      if (!pwd) return;
+      if (errEl) errEl.style.display = 'none';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite;"></i> Decrypting In-Memory...';
+      }
+
+      try {
+        const encryptedData = currentSolutionData.encryptedData;
+        const saltBase64 = currentSolutionData.salt;
+
+        const rawCipher = atob(encryptedData);
+        const cipherBytes = new Uint8Array(rawCipher.length);
+        for (let i = 0; i < rawCipher.length; i++) {
+          cipherBytes[i] = rawCipher.charCodeAt(i);
+        }
+
+        const iv = cipherBytes.slice(0, 12);
+        const dataBytes = cipherBytes.slice(12);
+
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(pwd), { name: 'PBKDF2' }, false, ['deriveKey']);
+        const salt = new Uint8Array(atob(saltBase64).split('').map(c => c.charCodeAt(0)));
+
+        const key = await crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+          keyMaterial,
+          { name: 'AES-GCM', length: 256 },
+          false,
+          ['decrypt']
+        );
+
+        const decryptedBuffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
+        const decryptedStr = new TextDecoder().decode(decryptedBuffer);
+        const parsed = JSON.parse(decryptedStr);
+
+        decryptedPracticals = parsed.practicals || [];
+        decryptedPdfUrl = parsed.pdfUrl || null;
+
+        // Display PDF attachment if present in decrypted payload
+        if (decryptedPdfUrl) {
+          showPdfAttachment(decryptedPdfUrl);
+        }
+
+        // Hide lock screen and render practical experiments
+        document.getElementById('passwordLockOverlay').style.display = 'none';
+        document.getElementById('solutionPracticalsContainer').style.display = 'block';
+        renderPracticalExperiments(decryptedPracticals);
+
+      } catch (err) {
+        console.warn("Practical decryption failed:", err);
+        if (errEl) errEl.style.display = 'block';
+        if (pwdInput) {
+          pwdInput.classList.add('shake-animation');
+          setTimeout(() => pwdInput.classList.remove('shake-animation'), 500);
+          pwdInput.focus();
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="ri-lock-unlock-line"></i> Unlock &amp; Decrypt Solution';
+        }
+      }
+    };
+
+    // Render practical experiments with alternating AdSense and Native Ads
+    function renderPracticalExperiments(practicals) {
+      const container = document.getElementById('solutionPracticalsContainer');
+      if (!container) return;
+
+      if (!practicals || practicals.length === 0) {
+        container.innerHTML = `
+          <div class="sol-card" style="text-align:center; color:var(--sol-text-muted);">
+            No laboratory experiments documented for this practical solution.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = practicals.map((p, idx) => {
+        // Interspersed ad slot after every 2 experiments
+        const shouldInjectAd = (idx > 0 && idx % 2 === 0);
+        const isAdSenseTurn = (Math.floor(idx / 2) % 2 === 1);
+
+        let adHtml = '';
+        if (shouldInjectAd) {
+          if (isAdSenseTurn) {
+            adHtml = `
+              <div class="ad-slot-wrapper" style="margin:2rem 0; text-align:center;">
+                <ins class="adsbygoogle"
+                     style="display:block; text-align:center;"
+                     data-ad-layout="in-article"
+                     data-ad-format="fluid"
+                     data-ad-client="ca-pub-5515547448097504"
+                     data-ad-slot="6070257271"></ins>
+              </div>
+            `;
+          } else {
+            adHtml = `
+              <div class="native-ads" id="native-ad-slot-${idx}" data-ad-variant="in_article" data-ad-count="1" style="margin:2rem 0;"></div>
+            `;
+          }
+        }
+
+        return `
+          <article class="sol-block" id="experiment_${idx+1}">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+              <h2 class="sol-q-title" style="margin:0;">
+                <span class="sol-badge sol-badge-teal" style="font-size:0.8rem; padding:4px 10px;">
+                  Exp #${idx + 1}
+                </span>
+                <span>${escapeHtml(p.title || `Experiment #${idx+1}`)}</span>
+              </h2>
+              <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="runPracticalSandbox(${idx})">
+                <i class="ri-play-line" style="color:#38bdf8;"></i> Run &amp; Test Code Sandbox
+              </button>
+            </div>
+
+            <div class="sol-answer-content">
+              ${p.code || ''}
+            </div>
+          </article>
+          ${adHtml}
+        `;
+      }).join('');
+
+      // Push AdSense slots
+      try {
+        const ads = container.querySelectorAll('.adsbygoogle');
+        ads.forEach(() => {
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        });
+      } catch (e) {}
+
+      // Trigger Native Ads injection
+      if (typeof window.renderNativeDPGAds === 'function') {
+        window.renderNativeDPGAds();
+      }
+    }
+
+    // Live HTML Code Sandbox Execution Modal
+    window.runPracticalSandbox = function(idx) {
+      const p = decryptedPracticals[idx];
+      if (!p || !p.code) {
+        if (typeof window.customAlert === 'function') {
+          window.customAlert("This experiment does not contain executable code.", { title: "No Code" });
+        } else {
+          alert("This experiment does not contain executable code.");
+        }
+        return;
+      }
+
+      const iframe = document.getElementById('sandboxIframe');
+      const modal = document.getElementById('sandboxModal');
+      if (iframe && modal) {
+        modal.style.display = 'flex';
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${escapeHtml(p.title || 'Sandbox Output')}</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 1.5rem; color: #1e293b; background: #ffffff; }
+              pre { background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; overflow-x: auto; }
+              code { font-family: monospace; }
+            </style>
+          </head>
+          <body>
+            ${p.code}
+          </body>
+          </html>
+        `);
+        doc.close();
+      }
+    };
+
+    window.closeSandboxModal = function() {
+      const modal = document.getElementById('sandboxModal');
+      if (modal) modal.style.display = 'none';
+      const iframe = document.getElementById('sandboxIframe');
+      if (iframe) iframe.src = 'about:blank';
+    };
+
+    // Engaged Screentime Tracker (Tracks actual active reading/testing)
+    function startEngagedScreentimeTracking() {
+      const recordActive = () => { lastActiveTimestamp = Date.now(); };
+      ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(evt => {
+        window.addEventListener(evt, recordActive, { passive: true });
+      });
+
+      screentimeInterval = setInterval(() => {
+        const isVisible = document.visibilityState === 'visible';
+        const isRecentlyActive = (Date.now() - lastActiveTimestamp) < 30000;
+
+        if (isVisible && isRecentlyActive) {
+          engagedSeconds++;
+          pendingSecondsToSync++;
+          updateScreentimeDisplay();
+
+          // Every 30 seconds of active screentime, sync to Firestore
+          if (pendingSecondsToSync >= 30) {
+            syncScreentimeToFirestore();
+          }
+        }
+      }, 1000);
+
+      window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && pendingSecondsToSync > 0) {
+          syncScreentimeToFirestore();
+        }
+      });
+      window.addEventListener('beforeunload', () => {
+        if (pendingSecondsToSync > 0) {
+          syncScreentimeToFirestore();
+        }
+      });
+    }
+
+    function updateScreentimeDisplay() {
+      const el = document.getElementById('screentimeDisplay');
+      if (!el) return;
+      if (engagedSeconds >= 60) {
+        const m = Math.floor(engagedSeconds / 60);
+        const s = engagedSeconds % 60;
+        el.textContent = `${m}m ${s}s`;
+      } else {
+        el.textContent = `${engagedSeconds}s`;
+      }
+    }
+
+    async function syncScreentimeToFirestore() {
+      if (!currentSolutionDocRef || pendingSecondsToSync <= 0) return;
+      const secondsToAdd = pendingSecondsToSync;
+      pendingSecondsToSync = 0;
+      try {
+        await window.solUpdateDoc(currentSolutionDocRef, {
+          totalScreentimeSec: window.solIncrement(secondsToAdd)
+        });
+      } catch (e) {
+        pendingSecondsToSync += secondsToAdd;
+      }
+    }
+
+    // 1-Like Per Contributor Hierarchy
+    window.handleLikeSolution = async function() {
+      const currentUid = localStorage.getItem("dpgActiveUserUid");
+      if (!currentUid) {
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Please sign in with your Google account to appreciate and like this practical solution.", { title: "Sign In Required" });
+        } else {
+          alert("Please sign in to like this solution.");
+        }
+        return;
+      }
+
+      if (!currentSolutionData || !currentSolutionDocRef) return;
+      const likedBy = currentSolutionData.likedBy || [];
+      if (likedBy.includes(currentUid)) {
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("You have already appreciated this practical solution! (Limit: 1 like per verified user)", { title: "Already Liked" });
+        } else {
+          alert("You have already liked this solution!");
+        }
+        return;
+      }
+
+      try {
+        const icon = document.getElementById('likeIcon');
+        const countEl = document.getElementById('likeCountText');
+
+        await window.solUpdateDoc(currentSolutionDocRef, {
+          likes: window.solIncrement(1),
+          likedBy: window.solArrayUnion(currentUid)
+        });
+
+        likedBy.push(currentUid);
+        currentSolutionData.likedBy = likedBy;
+        currentSolutionData.likes = (Number(currentSolutionData.likes) || 0) + 1;
+
+        if (icon) {
+          icon.className = 'ri-heart-fill';
+          icon.style.color = '#f472b6';
+        }
+        if (countEl) {
+          countEl.textContent = currentSolutionData.likes;
+        }
+
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Thank you for your appreciation! Your like has been registered.", { title: "Appreciated" });
+        }
+      } catch (err) {
+        console.warn("Like update failed:", err);
+      }
+    };
+
+    // Web Share Handler
+    window.handleShareSolution = function() {
+      const token = Math.random().toString(36).substring(2, 9);
+      const url = new URL(window.location.href);
+      url.searchParams.set('share_token', token);
+      const shareUrl = url.toString();
+      const shareTitle = `${currentSolutionData?.subjectCode || 'Solution'}: ${currentSolutionData?.subjectName || 'Practical'} - DPGNotes`;
+
+      if (navigator.share) {
+        navigator.share({
+          title: shareTitle,
+          text: `Check out the practical laboratory solution for ${currentSolutionData?.subjectName || 'this subject'} on DPGNotes!`,
+          url: shareUrl
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          if (typeof window.customAlert === 'function') {
+            window.customAlert("Practical solution link copied to clipboard!", { title: "Link Copied" });
+          } else {
+            alert("Practical solution link copied to clipboard!");
+          }
+        });
+      }
+    };
+
+    function escapeHtml(s) {
+      return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

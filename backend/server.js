@@ -6897,6 +6897,60 @@ app.post('/api/cover-page/quota-cleanup', async (req, res) => {
   }
 });
 
+// 3e. Admin Solutions List (Assignments & Practicals)
+app.get('/api/admin/solutions/list', verifyAdmin, async (req, res) => {
+  try {
+    let solutions = [];
+    if (db) {
+      const snap = await db.collectionGroup('solutions').limit(300).get();
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const p = docSnap.ref.path.split('/');
+        const type = (p[1] === 'practicals' || d.type === 'practical') ? 'practical' : 'assignment';
+        const contributorUid = p[2] || d.contributorUid || d.userId || '';
+        solutions.push({
+          id: docSnap.id,
+          type,
+          contributorUid,
+          path: docSnap.ref.path,
+          ...d
+        });
+      });
+    }
+    res.json({ success: true, solutions });
+  } catch (err) {
+    console.error("Admin solutions list error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3f. Admin Solutions Delete
+app.post('/api/admin/solutions/delete', verifyAdmin, async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, error: "items array is required" });
+    }
+    if (db) {
+      const batch = db.batch();
+      items.forEach(item => {
+        if (item.path) {
+          batch.delete(db.doc(item.path));
+        } else if (item.id && item.contributorUid) {
+          const col = item.type === 'practical' ? 'practicals' : 'assignments';
+          const fallbackRef = db.collection('solutions').doc(col).collection(String(item.contributorUid)).collection('solutions').doc(String(item.id));
+          batch.delete(fallbackRef);
+        }
+      });
+      await batch.commit();
+    }
+    res.json({ success: true, message: `${items.length} solution(s) deleted` });
+  } catch (err) {
+    console.error("Admin solutions delete error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 4. Export High-Quality Vector A4 PDF via Python Engine (with pdf-lib fallback)
 app.post('/api/assignment/export-pdf', async (req, res) => {
   const tmpDir = path.join(__dirname, 'tmp');

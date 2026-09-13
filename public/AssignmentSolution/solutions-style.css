@@ -1,0 +1,556 @@
+/* =========================================================
+   DPGNotes Academic Solutions Suite Stylesheet
+   Shared class-based styling for Assignment & Practical Solutions
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
+
+:root {
+  --sol-bg: #0b0f19;
+  --sol-surface: #111827;
+  --sol-surface-elevated: #1a2236;
+  --sol-border: rgba(255, 255, 255, 0.08);
+  --sol-border-hover: rgba(139, 92, 246, 0.4);
+  --sol-primary: #8b5cf6;
+  --sol-primary-hover: #7c3aed;
+  --sol-accent: #06b6d4;
+  --sol-teal: #14b8a6;
+  --sol-success: #10b981;
+  --sol-warning: #f59e0b;
+  --sol-danger: #ef4444;
+  --sol-text: #f8fafc;
+  --sol-text-muted: #94a3b8;
+  --sol-code-bg: #0d1117;
+  --sol-radius: 12px;
+  --sol-radius-lg: 18px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--sol-bg);
+  color: var(--sol-text);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* NAVBAR */
+.sol-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--sol-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.sol-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.sol-brand i {
+  color: var(--sol-primary);
+  font-size: 1.5rem;
+}
+
+.sol-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(139, 92, 246, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.sol-badge-teal {
+  background: rgba(20, 184, 166, 0.15);
+  color: #2dd4bf;
+  border-color: rgba(20, 184, 166, 0.3);
+}
+
+.sol-badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.sol-badge-green {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* CONTAINER */
+.sol-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* CARDS */
+.sol-card {
+  background: var(--sol-surface);
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius-lg);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease;
+}
+
+.sol-card:hover {
+  border-color: var(--sol-border-hover);
+}
+
+/* HEADINGS */
+.sol-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sol-subtitle {
+  color: var(--sol-text-muted);
+  font-size: 0.92rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* FORM ELEMENTS */
+.sol-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.sol-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sol-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sol-label span.req {
+  color: var(--sol-danger);
+}
+
+.sol-input, .sol-select, .sol-textarea {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius);
+  color: white;
+  font-family: inherit;
+  font-size: 0.92rem;
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.sol-input:focus, .sol-select:focus, .sol-textarea:focus {
+  border-color: var(--sol-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.sol-textarea {
+  resize: vertical;
+  min-height: 140px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* BUTTONS */
+.sol-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.75rem 1.4rem;
+  border-radius: var(--sol-radius);
+  font-weight: 600;
+  font-size: 0.92rem;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.sol-btn-primary {
+  background: linear-gradient(135deg, var(--sol-primary), #6366f1);
+  color: white;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
+}
+
+.sol-btn-primary:hover {
+  background: linear-gradient(135deg, var(--sol-primary-hover), #4f46e5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
+}
+
+.sol-btn-teal {
+  background: linear-gradient(135deg, var(--sol-teal), var(--sol-accent));
+  color: white;
+  box-shadow: 0 4px 15px rgba(20, 184, 166, 0.35);
+}
+
+.sol-btn-teal:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.45);
+}
+
+.sol-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sol-border);
+  color: #e2e8f0;
+}
+
+.sol-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sol-btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.sol-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.sol-btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+/* QUICK TOOLS PALETTE */
+.sol-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--sol-border);
+  border-bottom: none;
+  padding: 6px 10px;
+  border-top-left-radius: var(--sol-radius);
+  border-top-right-radius: var(--sol-radius);
+}
+
+.sol-palette-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.76rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sol-palette-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  color: #c084fc;
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.sol-palette-btn.ad-btn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.sol-palette-btn.ad-btn:hover {
+  background: rgba(245, 158, 11, 0.25);
+}
+
+/* CODE / ANSWER CONTAINER */
+.sol-editor-box {
+  position: relative;
+}
+
+.sol-editor-box .sol-textarea {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* QUESTION / PRACTICAL CARD */
+.sol-item-card {
+  background: var(--sol-surface-elevated);
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius);
+  padding: 1.4rem;
+  margin-bottom: 1.2rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.sol-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sol-item-num {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--sol-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* SECURITY / ENCRYPTION CARD */
+.sol-security-card {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--sol-radius);
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* VIEWER STYLES */
+.sol-view-header {
+  background: var(--sol-surface);
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.sol-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sol-border);
+  color: var(--sol-text-muted);
+  font-size: 0.85rem;
+}
+
+.sol-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sol-meta-item strong {
+  color: white;
+}
+
+/* Q&A / PRACTICAL RENDERED BLOCK */
+.sol-block {
+  background: var(--sol-surface);
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.sol-q-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.sol-answer-content {
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.sol-answer-content h1, .sol-answer-content h2, .sol-answer-content h3 {
+  color: white;
+  margin: 1.2rem 0 0.6rem 0;
+}
+
+.sol-answer-content p {
+  margin-bottom: 0.9rem;
+}
+
+.sol-answer-content ul, .sol-answer-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sol-answer-content li {
+  margin-bottom: 0.3rem;
+}
+
+.sol-answer-content pre {
+  background: var(--sol-code-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.86rem;
+  margin: 1rem 0;
+  color: #a5f3fc;
+}
+
+.sol-answer-content code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.86rem;
+  color: #f472b6;
+}
+
+/* LIVE HTML EXECUTION SANDBOX */
+.sol-sandbox-wrapper {
+  margin-top: 1rem;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: var(--sol-radius);
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.sol-sandbox-header {
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 8px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.sol-sandbox-iframe {
+  width: 100%;
+  min-height: 280px;
+  border: none;
+  background: #ffffff;
+  display: block;
+}
+
+/* ENGAGEMENT FOOTER BAR */
+.sol-engagement-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--sol-surface);
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius);
+  padding: 1rem 1.5rem;
+  margin-top: 2rem;
+}
+
+.sol-screentime-tracker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--sol-text-muted);
+}
+
+.sol-screentime-tracker .pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseAnimation 2s infinite;
+}
+
+@keyframes pulseAnimation {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* MODAL OVERLAY */
+.sol-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 999;
+}
+
+.sol-modal-card {
+  background: var(--sol-surface);
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius-lg);
+  padding: 2rem;
+  width: 100%;
+  max-width: 540px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sol-navbar {
+    padding: 0.8rem 1rem;
+  }
+  .sol-container {
+    padding: 1rem 0.8rem;
+  }
+  .sol-card, .sol-view-header, .sol-block {
+    padding: 1.2rem;
+  }
+  .sol-title {
+    font-size: 1.35rem;
+  }
+  .sol-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

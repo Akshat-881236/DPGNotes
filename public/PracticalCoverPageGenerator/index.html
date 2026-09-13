@@ -758,7 +758,7 @@
         </div>
 
         <!-- Option 2: Sign Up / Sign In with Google -->
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
+        <div id="quotaGoogleSignInOption" style="background:rgba(255,255,255,0.03); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; color:#818cf8; font-weight:700; font-size:1rem;">
             <i class="ri-google-fill" style="font-size:1.3rem;"></i> Option 2: Sign Up / Sign In with Google
           </div>
@@ -1024,6 +1024,21 @@
       if (choiceSec) choiceSec.style.display = 'flex';
       if (adPlaybackSec) adPlaybackSec.style.display = 'none';
       if (adBlockedSec) adBlockedSec.style.display = 'none';
+
+      // Smart Quota lockdown check: if user is already a contributor, hide Sign Up/Sign In with Google
+      const googleOption = document.getElementById('quotaGoogleSignInOption');
+      const subtitle = document.getElementById('quotaLockSubtitle');
+      if (isContributor()) {
+        if (googleOption) googleOption.style.display = 'none';
+        if (subtitle) {
+          subtitle.textContent = "You have used your Contributor daily quota tokens. Watch verified learning sponsor ads below to immediately restore your tokens, or wait for midnight automatic reset.";
+        }
+      } else {
+        if (googleOption) googleOption.style.display = 'flex';
+        if (subtitle) {
+          subtitle.textContent = "You have reached your daily quota limit for practical cover page generation. Choose how you would like to proceed:";
+        }
+      }
     }
 
     function exitQuotaLockdown() {
@@ -1551,17 +1566,30 @@
         ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
       }
 
-      // Font styling: Crisp, authentic BOLD Times New Roman typography
+      // Font styling: Crisp Times New Roman typography matching official template
       const fontTitleSize = Math.round(13.17 * scaleY);
       const fontBold = `bold ${fontTitleSize}px 'Times New Roman', 'Tinos', Times, Georgia, serif`;
+      const fontRegular = `normal ${fontTitleSize}px 'Times New Roman', 'Tinos', Times, Georgia, serif`;
 
-      // Helper function to render authentic, sharp BOLD text without unnatural outline bloat
+      // Helper function to render sharp BOLD text
       function drawBoldText(text, x, y, align = 'center') {
         if (!text) return;
         ctx.save();
         ctx.textAlign = align;
         ctx.textBaseline = 'alphabetic';
         ctx.font = fontBold;
+        ctx.fillStyle = '#000000';
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      // Helper function to render lightweight / REGULAR text
+      function drawRegularText(text, x, y, align = 'center') {
+        if (!text) return;
+        ctx.save();
+        ctx.textAlign = align;
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = fontRegular;
         ctx.fillStyle = '#000000';
         ctx.fillText(text, x, y);
         ctx.restore();
@@ -1602,15 +1630,15 @@
         }
       }
 
-      // 2. Headings (Centered - All Bold) - "A" shifted to 130.0 to prevent touching header logo
-      drawBoldText("A", W / 2.0, 130.0 * scaleY, 'center');
+      // 2. Headings (Centered - Balanced bold and regular per template)
+      drawRegularText("A", W / 2.0, 130.0 * scaleY, 'center');
       drawBoldText("PRACTICAL FILE", W / 2.0, 149.0 * scaleY, 'center');
-      drawBoldText("OF", W / 2.0, 168.0 * scaleY, 'center');
+      drawRegularText("OF", W / 2.0, 168.0 * scaleY, 'center');
       drawBoldText(d.subjectName.toUpperCase(), W / 2.0, 188.0 * scaleY, 'center');
       drawBoldText(d.subjectCode.toUpperCase(), W / 2.0, 208.0 * scaleY, 'center');
       drawBoldText(d.courseSection.toUpperCase(), W / 2.0, 228.0 * scaleY, 'center');
 
-      drawBoldText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 249.0 * scaleY, 'center');
+      drawRegularText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 249.0 * scaleY, 'center');
       drawBoldText(d.degreeName.toUpperCase(), W / 2.0, 268.0 * scaleY, 'center');
 
       // 3. Center Logo (MDU Emblem)
@@ -1623,52 +1651,52 @@
         ctx.drawImage(centerLogoImg, logoX, logoY, logoW, logoH);
       }
 
-      // 4. Session (All Bold)
+      // 4. Session (Bold)
       drawBoldText(`SESSION: ${d.session.toUpperCase()}`, W / 2.0, 414.0 * scaleY, 'center');
 
-      // 5. Two Columns (Submitted To on Left, Submitted By on Right - All Bold)
+      // 5. Two Columns (Submitted To on Left, Submitted By on Right)
       const leftColX = 59.76 * scaleX;
       const rightColX = 364.25 * scaleX;
 
-      // Row 1: Headers
+      // Row 1: Headers (Bold)
       drawBoldText("SUBMITTED TO", leftColX, 462.0 * scaleY, 'left');
       drawBoldText("SUBMITTED BY", rightColX, 462.0 * scaleY, 'left');
 
-      // Row 2: Names
+      // Row 2: Names (Bold)
       drawBoldText(d.profName.toUpperCase(), leftColX, 486.0 * scaleY, 'left');
       drawBoldText(d.studentName.toUpperCase(), rightColX, 486.0 * scaleY, 'left');
 
-      // Row 3: Designation / Father
-      drawBoldText(d.designation.toUpperCase(), leftColX, 510.0 * scaleY, 'left');
-      drawBoldText(`${d.relation.toUpperCase()} ${d.fatherName.toUpperCase()}`, rightColX, 510.0 * scaleY, 'left');
+      // Row 3: Designation / Father (Regular)
+      drawRegularText(d.designation.toUpperCase(), leftColX, 510.0 * scaleY, 'left');
+      drawRegularText(`${d.relation.toUpperCase()} ${d.fatherName.toUpperCase()}`, rightColX, 510.0 * scaleY, 'left');
 
       // Row 4, 5, 6: Department / Student ID / DPG STM / Course & Section
       const deptParsed = splitDepartmentText(d.department);
       if (deptParsed.line2) {
         // When department character count crosses 17:
-        // Row 4: Left = Department Part 1, Right = Student ID
-        drawBoldText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
-        drawBoldText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY, 'left');
+        // Row 4: Left = Department Part 1 (Regular), Right = Student ID (Regular)
+        drawRegularText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
+        drawRegularText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY, 'left');
 
-        // Row 5: in place of DPG STM, write the rest part! Right = Course & Section
-        drawBoldText(deptParsed.line2, leftColX, 558.0 * scaleY, 'left');
+        // Row 5: in place of DPG STM, write the rest part! (Regular), Right = Course & Section (Bold)
+        drawRegularText(deptParsed.line2, leftColX, 558.0 * scaleY, 'left');
         drawBoldText(d.courseSection.toUpperCase(), rightColX, 558.0 * scaleY, 'left');
 
-        // Row 6: DPG STM moves to the next line just below!
+        // Row 6: DPG STM moves to the next line just below! (Bold)
         drawBoldText("DPG STM", leftColX, 582.0 * scaleY, 'left');
       } else {
         // Standard <= 17 characters
-        drawBoldText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
-        drawBoldText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY, 'left');
+        drawRegularText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
+        drawRegularText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY, 'left');
 
         drawBoldText("DPG STM", leftColX, 558.0 * scaleY, 'left');
         drawBoldText(d.courseSection.toUpperCase(), rightColX, 558.0 * scaleY, 'left');
       }
 
-      // 6. Footer Section (Centered - All Bold)
+      // 6. Footer Section (Centered - Regular)
       const dayText = d.day ? ` (${d.day.toUpperCase()})` : '';
-      drawBoldText(`SUBMITTED ON ${d.date.toUpperCase()}${dayText}`, W / 2.0, 701.0 * scaleY, 'center');
-      drawBoldText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY, 'center');
+      drawRegularText(`SUBMITTED ON ${d.date.toUpperCase()}${dayText}`, W / 2.0, 701.0 * scaleY, 'center');
+      drawRegularText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY, 'center');
     }
 
     // Validation rule: Course & Section format {Course}-{Section}
