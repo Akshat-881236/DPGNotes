@@ -44,6 +44,13 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+img, iframe, video, object, embed {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Scrollbar Customization */
@@ -935,3 +942,201 @@ body {
   font-size: 1.2rem;
   color: var(--primary);
 }
+
+/* =========================================================
+   Responsive Tables & Matrices
+   ========================================================= */
+.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  box-sizing: border-box;
+}
+
+.table-responsive table {
+  margin: 0 !important;
+  border: none !important;
+}
+
+table,
+.ad-matrix-table,
+.telemetry-table,
+.drasa-tier-table,
+.whitelist-table,
+.retention-table,
+.security-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  min-width: 520px;
+}
+
+table th,
+.ad-matrix-table th,
+.telemetry-table th,
+.drasa-tier-table th,
+.whitelist-table th,
+.retention-table th,
+.security-matrix-table th {
+  background: var(--primary-light);
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+}
+
+table td,
+.ad-matrix-table td,
+.telemetry-table td,
+.drasa-tier-table td,
+.whitelist-table td,
+.retention-table td,
+.security-matrix-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+table tr:last-child td,
+.ad-matrix-table tr:last-child td,
+.telemetry-table tr:last-child td,
+.drasa-tier-table tr:last-child td,
+.whitelist-table tr:last-child td,
+.retention-table tr:last-child td,
+.security-matrix-table tr:last-child td {
+  border-bottom: none;
+}
+
+table tr:nth-child(even),
+.ad-matrix-table tr:nth-child(even),
+.telemetry-table tr:nth-child(even),
+.drasa-tier-table tr:nth-child(even),
+.whitelist-table tr:nth-child(even),
+.retention-table tr:nth-child(even),
+.security-matrix-table tr:nth-child(even) {
+  background: var(--bg-active);
+}
+
+table tr:hover,
+.ad-matrix-table tr:hover,
+.telemetry-table tr:hover,
+.drasa-tier-table tr:hover,
+.whitelist-table tr:hover,
+.retention-table tr:hover,
+.security-matrix-table tr:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+/* =========================================================
+   AdSense & Native Ads Container
+   ========================================================= */
+.legal-adsense-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.75rem auto;
+  text-align: center;
+  clear: both;
+  overflow: hidden;
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: all var(--transition-normal);
+}
+
+.legal-adsense-container:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.legal-adsense-container:has(ins[data-ad-status="unfilled"]:not(:has(.native-ads))),
+.legal-adsense-container.ad-unfilled:not(:has(.native-ads)) {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.legal-adsense-container:has(ins[data-ad-status="filled"]) {
+  padding: 1rem;
+  background: var(--bg-active);
+  border: 1px solid var(--border-color);
+}
+
+/* =========================================================
+   Legal Article Typography & Callouts
+   ========================================================= */
+.legal-article {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.legal-article h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--text-primary);
+  margin-top: 2.2rem;
+  margin-bottom: 0.9rem;
+  letter-spacing: -0.01em;
+}
+
+.legal-article h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.18rem;
+  color: var(--text-primary);
+  margin-top: 1.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.legal-article p {
+  margin-bottom: 1.2rem;
+}
+
+.legal-article ul, .legal-article ol {
+  margin: 1rem 0 1.4rem 1.5rem;
+}
+
+.legal-article li {
+  margin-bottom: 0.5rem;
+}
+
+.legal-article code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85em;
+  background: var(--bg-active);
+  color: var(--primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  word-break: break-all;
+}
+
+/* Grievance & Legal Contact Cards */
+.legal-contact-card {
+  background: var(--bg-active);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.8rem 0;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.legal-contact-card h4, 
+.legal-contact-card p strong,
+.legal-contact-card strong {
+  color: var(--text-primary);
+}
+

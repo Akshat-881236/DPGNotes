@@ -69,3 +69,75 @@
     background-color: var(--primary-light);
   }
 }
+
+/* Dark Mode Table & Component Styles */
+.theme-dark .table-responsive,
+body.theme-dark .table-responsive {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(17, 24, 39, 0.6);
+}
+
+.theme-dark th,
+body.theme-dark th {
+  background: rgba(99, 102, 241, 0.18);
+  color: #f8fafc;
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+.theme-dark td,
+body.theme-dark td {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+.theme-dark table tr:nth-child(even),
+body.theme-dark table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.theme-dark table tr:hover,
+body.theme-dark table tr:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.theme-dark .legal-adsense-container:has(ins[data-ad-status="filled"]),
+body.theme-dark .legal-adsense-container:has(ins[data-ad-status="filled"]) {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .legal-contact-card,
+body.theme-dark .legal-contact-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-auto .table-responsive {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(17, 24, 39, 0.6);
+  }
+  .theme-auto th {
+    background: rgba(99, 102, 241, 0.18);
+    color: #f8fafc;
+    border-bottom-color: rgba(255, 255, 255, 0.15);
+  }
+  .theme-auto td {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+  }
+  .theme-auto table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.025);
+  }
+  .theme-auto table tr:hover {
+    background: rgba(99, 102, 241, 0.08);
+  }
+  .theme-auto .legal-adsense-container:has(ins[data-ad-status="filled"]) {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .theme-auto .legal-contact-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}

@@ -678,19 +678,24 @@
   }
 
   function collapseUnfilledAdSenseSlots() {
-    document.querySelectorAll('.ad-banner-section, ins.adsbygoogle').forEach(unit => {
+    document.querySelectorAll('.ad-banner-section, .legal-adsense-container, ins.adsbygoogle').forEach(unit => {
       const ins = unit.tagName.toLowerCase() === 'ins' ? unit : unit.querySelector('ins.adsbygoogle');
       if (ins) {
         const status = ins.getAttribute('data-ad-status');
-        const hasIframe = ins.getElementsByTagName('iframe').length > 0;
-        if (status === 'unfilled' || (!hasIframe && status !== 'filled')) {
+        const isCollapsed = ins.style.display === 'none';
+        const isUnfilled = status === 'unfilled' || isCollapsed;
+        if (isUnfilled) {
           if (unit.tagName.toLowerCase() === 'ins') {
             unit.style.display = 'none';
-            if (unit.parentElement && unit.parentElement.classList.contains('ad-banner-section')) {
-              unit.parentElement.style.display = 'none';
+            if (unit.parentElement && (unit.parentElement.classList.contains('ad-banner-section') || unit.parentElement.classList.contains('legal-adsense-container'))) {
+              if (!unit.parentElement.querySelector('.native-ads')) {
+                unit.parentElement.style.display = 'none';
+              }
             }
           } else {
-            unit.style.display = 'none';
+            if (!unit.querySelector('.native-ads')) {
+              unit.style.display = 'none';
+            }
           }
         }
       }

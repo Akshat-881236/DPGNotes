@@ -1038,6 +1038,7 @@
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (midnightTimer) clearInterval(midnightTimer);
       if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+      if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
     }
 
     // Google Sign Up / Sign In helper for Cover Pages
@@ -1112,12 +1113,14 @@
     };
 
     let adsenseCheckTimer = null;
+    let coverAdObserver = null;
 
     // Start Ad Flow after User Confirmation
     function startQuotaAdFlow() {
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (midnightTimer) clearInterval(midnightTimer);
       if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+      if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
 
       const isContrib = isContributor();
       adsRequiredTotal = isContrib ? 2 : 3;
@@ -1142,6 +1145,7 @@
     function startNextCoverAd() {
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+      if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
 
       const currentAdIndex = (adsRequiredTotal - adsRemainingToWatch) + 1;
       const statusEl = document.getElementById('adStatusText');
@@ -1149,10 +1153,16 @@
       const adsenseBox = document.getElementById('adsenseContainer');
       const nativeBox = document.getElementById('nativeAdsContainer');
 
-      if (statusEl) statusEl.textContent = `Sponsor Ad ${currentAdIndex} of ${adsRequiredTotal}: Connecting to Google AdSense...`;
+      if (statusEl) statusEl.textContent = `Sponsor Ad ${currentAdIndex} of ${adsRequiredTotal}: Checking Google AdSense availability...`;
       if (barEl) barEl.style.width = '0%';
 
-      // 1. Try Google AdSense Priority
+      // If offline or AdSense library absent, fallback immediately to Native Ads
+      if (!navigator.onLine) {
+        fallbackToNativeCoverAd(currentAdIndex);
+        return;
+      }
+
+      // 1. Mount Google AdSense container
       if (adsenseBox) {
         adsenseBox.style.display = 'block';
         adsenseBox.innerHTML = `
@@ -1163,45 +1173,89 @@
                data-ad-client="ca-pub-5515547448097504"
                data-ad-slot="6070257271"></ins>
         `;
-        try {
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        } catch(e) {}
       }
       if (nativeBox) nativeBox.style.display = 'none';
 
-      let adsenseElapsedSec = 0;
-      let adsenseFilled = false;
+      try {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      } catch(e) {
+        console.warn("AdSense push failed, falling back to Native Ad:", e);
+        fallbackToNativeCoverAd(currentAdIndex);
+        return;
+      }
 
-      // 15-second timer checking for AdSense fill & connection
+      const ins = adsenseBox ? adsenseBox.querySelector('ins.adsbygoogle') : null;
+      if (!ins) {
+        fallbackToNativeCoverAd(currentAdIndex);
+        return;
+      }
+
+      let adResolved = false;
+      let checkElapsed = 0;
+
+      const onAdsenseAbsent = () => {
+        if (adResolved) return;
+        adResolved = true;
+        if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+        if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+        fallbackToNativeCoverAd(currentAdIndex);
+      };
+
+      const onAdsenseFilled = () => {
+        if (adResolved) return;
+        adResolved = true;
+        if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+        if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+        playAdsenseDuration(currentAdIndex);
+      };
+
+      // Real-time DOM attribute observer to detect AdSense absence or fill immediately
+      coverAdObserver = new MutationObserver(() => {
+        const status = ins.getAttribute('data-ad-status');
+        const isCollapsed = ins.style.display === 'none';
+
+        // Definitively unfilled by AdSense (e.g. unapproved account, empty bid, no inventory)
+        if (status === 'unfilled' || (isCollapsed && checkElapsed > 500)) {
+          onAdsenseAbsent();
+          return;
+        }
+
+        // Definitively filled with actual visible creative
+        if (status === 'filled' && ins.offsetHeight > 50 && !isCollapsed) {
+          onAdsenseFilled();
+        }
+      });
+      coverAdObserver.observe(ins, { attributes: true, attributeFilter: ['data-ad-status', 'style', 'class'] });
+
+      // Fast check every 250ms with 3.5-second total timeout
       adsenseCheckTimer = setInterval(() => {
-        adsenseElapsedSec++;
-        if (statusEl && !adsenseFilled) {
-          statusEl.textContent = `Connecting to Google AdSense... (${15 - adsenseElapsedSec}s check)`;
-        }
-        if (barEl && !adsenseFilled) {
-          barEl.style.width = `${Math.round((adsenseElapsedSec / 15) * 50)}%`;
+        checkElapsed += 250;
+        const status = ins.getAttribute('data-ad-status');
+        const isCollapsed = ins.style.display === 'none';
+
+        if (status === 'unfilled' || isCollapsed) {
+          onAdsenseAbsent();
+          return;
         }
 
-        const ins = adsenseBox ? adsenseBox.querySelector('ins.adsbygoogle') : null;
-        if (ins) {
-          const status = ins.getAttribute('data-ad-status');
-          const iframes = ins.getElementsByTagName('iframe');
-          if (status === 'filled' || (iframes.length > 0 && ins.offsetHeight > 40)) {
-            adsenseFilled = true;
-            clearInterval(adsenseCheckTimer);
-            playAdsenseDuration(currentAdIndex);
-            return;
-          }
+        if (status === 'filled' && ins.offsetHeight > 50 && !isCollapsed) {
+          onAdsenseFilled();
+          return;
         }
 
-        if (adsenseElapsedSec >= 15) {
-          clearInterval(adsenseCheckTimer);
-          if (!adsenseFilled) {
-            // Fallback to Native Ads
-            fallbackToNativeCoverAd(currentAdIndex);
-          }
+        const secLeft = Math.max(0, ((3500 - checkElapsed) / 1000).toFixed(1));
+        if (statusEl && !adResolved) {
+          statusEl.textContent = `Connecting to Google AdSense... (${secLeft}s)`;
         }
-      }, 1000);
+        if (barEl && !adResolved) {
+          barEl.style.width = `${Math.round((checkElapsed / 3500) * 40)}%`;
+        }
+
+        // If after 3.5s AdSense has not explicitly confirmed 'filled', detect as absent and fallback to Native Ads
+        if (checkElapsed >= 3500) {
+          onAdsenseAbsent();
+        }
+      }, 250);
     }
 
     function playAdsenseDuration(currentAdIndex) {
@@ -1223,14 +1277,26 @@
     }
 
     function fallbackToNativeCoverAd(currentAdIndex) {
+      if (adWatchTimer) clearInterval(adWatchTimer);
+      if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+      if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+
       const statusEl = document.getElementById('adStatusText');
+      const barEl = document.getElementById('adProgressBar');
       const adsenseBox = document.getElementById('adsenseContainer');
       const nativeBox = document.getElementById('nativeAdsContainer');
       const adNativeInner = document.getElementById('native-ads');
 
-      if (adsenseBox) adsenseBox.style.display = 'none';
+      // 1. Hide and clear AdSense container completely
+      if (adsenseBox) {
+        adsenseBox.style.display = 'none';
+        adsenseBox.innerHTML = '';
+      }
+
+      // 2. Reveal and render Native Ad
       if (nativeBox) nativeBox.style.display = 'flex';
       if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal}`;
+      if (barEl) barEl.style.width = '0%';
 
       if (adNativeInner && typeof window.renderNativeDPGAds === 'function') {
         const hasVideo = (window.DPG_APPROVED_ADS || []).some(a => a.videoUrl && a.videoUrl.trim() !== '');
