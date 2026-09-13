@@ -573,12 +573,25 @@
       const publishBtn = document.getElementById('btnPublishSolution');
       if (publishBtn) {
         publishBtn.disabled = true;
-        publishBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Encrypting &amp; Publishing...';
+        publishBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Minifying &amp; Publishing...';
       }
 
       try {
         const solutionId = 'assign_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
         const contribUid = contributorProfile.uid;
+
+        // Auto Minify questions and content before encryption and storage
+        if (typeof window.autoMinifySolutionPayload === 'function') {
+          const minResult = window.autoMinifySolutionPayload({
+            questions: questionsList,
+            subjectName: subName,
+            subjectCode: subCode,
+            studentName: stuName,
+            studentId: stuId,
+            profName: prof
+          });
+          console.log("[Auto-Minify Applied]", minResult.stats);
+        }
 
         let payloadToStore = {
           id: solutionId,
@@ -614,8 +627,8 @@
           payloadToStore.questions = questionsList;
         }
 
-        // Save directly to Firestore path: solutions/assignments/{contributorUid}/solutions/{solutionId}
-        const docRef = window.solDoc(window.solDb, "solutions", "assignments", contribUid, "solutions", solutionId);
+        // Save directly to Firestore path: assignment_solutions/{contributorUid}/solutions/{solutionId} (4 segments)
+        const docRef = window.solDoc(window.solDb, "assignment_solutions", contribUid, "solutions", solutionId);
         await window.solSetDoc(docRef, payloadToStore);
 
         // Also record an activity log in Firestore

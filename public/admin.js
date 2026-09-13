@@ -4428,8 +4428,8 @@ window.loadSolutionsMetricsAdmin = async function(forceRefresh = false) {
         snap.forEach(docSnap => {
           const d = docSnap.data();
           const p = docSnap.ref.path.split('/');
-          const type = (p[1] === 'practicals' || d.type === 'practical') ? 'practical' : 'assignment';
-          const contributorUid = p[2] || d.contributorUid || d.userId || '';
+          const type = (p[0] === 'practical_solutions' || p[1] === 'practicals' || d.type === 'practical') ? 'practical' : 'assignment';
+          const contributorUid = p[1] || d.contributorUid || d.userId || '';
           fbItems.push({
             id: docSnap.id,
             type,
@@ -4630,8 +4630,8 @@ window.deleteSelectedSolutions = async function() {
       // Fallback: direct Firestore deletion
       for (const it of items) {
         try {
-          const colName = it.type === 'practical' ? 'practicals' : 'assignments';
-          await deleteDoc(doc(db, "solutions", colName, it.contributorUid, "solutions", it.id));
+          const colPrefix = it.type === 'practical' ? 'practical_solutions' : 'assignment_solutions';
+          await deleteDoc(doc(db, colPrefix, it.contributorUid, "solutions", it.id));
         } catch (delErr) {}
       }
       const deletedIds = new Set(items.map(i => i.id));
@@ -4684,8 +4684,8 @@ window.deleteSingleSolution = async function(id, type, contributorUid) {
     } else {
       // Direct Firestore fallback
       try {
-        const colName = type === 'practical' ? 'practicals' : 'assignments';
-        await deleteDoc(doc(db, "solutions", colName, contributorUid, "solutions", id));
+        const colPrefix = type === 'practical' ? 'practical_solutions' : 'assignment_solutions';
+        await deleteDoc(doc(db, colPrefix, contributorUid, "solutions", id));
         solutionsCache = solutionsCache.filter(s => s.id !== id);
         updateSolutionsMetricsUI();
         filterSolutionsList();

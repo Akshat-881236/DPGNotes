@@ -247,7 +247,7 @@
       }
 
       try {
-        const docRef = window.solDoc(window.solDb, "solutions", "practicals", contributorUid, "solutions", solutionId);
+        const docRef = window.solDoc(window.solDb, "practical_solutions", contributorUid, "solutions", solutionId);
         currentSolutionDocRef = docRef;
         const snap = await window.solGetDoc(docRef);
 

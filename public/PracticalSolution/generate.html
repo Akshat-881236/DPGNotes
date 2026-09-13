@@ -623,12 +623,25 @@
       const publishBtn = document.getElementById('btnPublishPractical');
       if (publishBtn) {
         publishBtn.disabled = true;
-        publishBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Encrypting &amp; Publishing...';
+        publishBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Minifying &amp; Publishing...';
       }
 
       try {
         const solutionId = 'prac_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
         const contribUid = contributorProfile.uid;
+
+        // Auto Minify practical experiments and content before encryption and storage
+        if (typeof window.autoMinifySolutionPayload === 'function') {
+          const minResult = window.autoMinifySolutionPayload({
+            practicals: practicalsList,
+            subjectName: subName,
+            subjectCode: subCode,
+            studentName: stuName,
+            studentId: stuId,
+            profName: prof
+          });
+          console.log("[Auto-Minify Applied - Practicals]", minResult.stats);
+        }
 
         let payloadToStore = {
           id: solutionId,
@@ -668,7 +681,8 @@
           if (pdfUrl) payloadToStore.pdfUrl = pdfUrl;
         }
 
-        const docRef = window.solDoc(window.solDb, "solutions", "practicals", contribUid, "solutions", solutionId);
+        // Save directly to Firestore path: practical_solutions/{contributorUid}/solutions/{solutionId} (4 segments)
+        const docRef = window.solDoc(window.solDb, "practical_solutions", contribUid, "solutions", solutionId);
         await window.solSetDoc(docRef, payloadToStore);
 
         // Record activity log

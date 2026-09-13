@@ -504,6 +504,92 @@
       .replace(/"/g, '&quot;');
   }
 
+  // ==========================================
+  // AUTO MINIFY ENGINE FOR SOLUTIONS
+  // Automatically optimizes HTML, CSS, JS and text before publishing
+  // ==========================================
+  window.autoMinifySolutionContent = function(rawContent) {
+    if (!rawContent || typeof rawContent !== 'string') return rawContent;
+
+    // Protect <pre><code> blocks so code indentations/formatting are strictly preserved
+    const protectedBlocks = [];
+    let counter = 0;
+
+    let text = rawContent.replace(/<pre\b[^>]*>[\s\S]*?<\/pre>/gi, function(match) {
+      const token = `___DPG_PRE_BLOCK_${counter++}___`;
+      // Within pre, safely trim trailing whitespace from lines
+      const cleaned = match.replace(/[ \t]+$/gm, '');
+      protectedBlocks.push({ token: token, content: cleaned });
+      return token;
+    });
+
+    // 1. Remove HTML comments (except conditional comments)
+    text = text.replace(/<!--(?!\[if)[\s\S]*?-->/g, '');
+
+    // 2. Collapse multi-spaces outside pre tags
+    text = text.replace(/[ \t]+/g, ' ');
+
+    // 3. Remove spaces around tag boundaries where safe
+    text = text.replace(/>\s+</g, '><');
+
+    // 4. Remove empty paragraph tags <p></p> or <p>&nbsp;</p>
+    text = text.replace(/<p>\s*(?:&nbsp;)?\s*<\/p>/gi, '');
+
+    // 5. Restore protected <pre><code> blocks
+    protectedBlocks.forEach(function(item) {
+      text = text.replace(item.token, item.content);
+    });
+
+    return text.trim();
+  };
+
+  window.autoMinifySolutionPayload = function(payload) {
+    if (!payload || typeof payload !== 'object') return { payload: payload, stats: {} };
+
+    const rawStr = JSON.stringify(payload);
+    const originalSize = rawStr.length;
+
+    // Minify questions if assignment
+    if (Array.isArray(payload.questions)) {
+      payload.questions.forEach(function(q) {
+        if (q.title) q.title = q.title.trim().replace(/\s+/g, ' ');
+        if (q.answer) q.answer = window.autoMinifySolutionContent(q.answer);
+      });
+    }
+
+    // Minify practicals if practical solution
+    if (Array.isArray(payload.practicals)) {
+      payload.practicals.forEach(function(p) {
+        if (p.title) p.title = p.title.trim().replace(/\s+/g, ' ');
+        if (p.code) p.code = window.autoMinifySolutionContent(p.code);
+      });
+    }
+
+    // Minify metadata fields
+    ['subjectName', 'subjectCode', 'studentName', 'studentId', 'profName'].forEach(function(key) {
+      if (payload[key] && typeof payload[key] === 'string') {
+        payload[key] = payload[key].trim().replace(/\s+/g, ' ');
+      }
+    });
+
+    const minStr = JSON.stringify(payload);
+    const minifiedSize = minStr.length;
+    const savedBytes = originalSize - minifiedSize;
+    const percent = originalSize > 0 ? ((savedBytes / originalSize) * 100).toFixed(1) : '0';
+
+    console.log(`[DPG Auto-Minify] Original: ${originalSize}B | Minified: ${minifiedSize}B | Saved: ${savedBytes}B (${percent}%)`);
+
+    return {
+      payload: payload,
+      stats: {
+        originalBytes: originalSize,
+        minifiedBytes: minifiedSize,
+        savedBytes: savedBytes,
+        percentSaved: percent
+      }
+    };
+  };
+
   // Auto-init modal when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', ensureSandboxModalInDom);

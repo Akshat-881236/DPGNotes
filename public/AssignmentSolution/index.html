@@ -222,7 +222,7 @@
       }
 
       try {
-        const docRef = window.solDoc(window.solDb, "solutions", "assignments", contributorUid, "solutions", solutionId);
+        const docRef = window.solDoc(window.solDb, "assignment_solutions", contributorUid, "solutions", solutionId);
         currentSolutionDocRef = docRef;
         const snap = await window.solGetDoc(docRef);
 
