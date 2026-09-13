@@ -9,6 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="../config.js"></script>
   <script src="../custom-dialogs.js"></script>
+  <script src="../solutions-sandbox-engine.js"></script>
 </head>
 <body>
 
@@ -382,12 +383,30 @@
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<ul>\\n  <li>', '</li>\\n</ul>')">ul</button>
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<code>', '</code>')">code</button>
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${q.id}', '<pre><code>', '</code></pre>')">pre</button>
+                <button type="button" class="sol-palette-btn" style="color:#f97316; border-color:rgba(249,115,22,0.3);" onclick="window.insertSandboxSnippet('ans_${q.id}', 'html', '${q.id}')"><i class="ri-html5-fill"></i> html-box</button>
+                <button type="button" class="sol-palette-btn" style="color:#38bdf8; border-color:rgba(56,189,248,0.3);" onclick="window.insertSandboxSnippet('ans_${q.id}', 'css', '${q.id}')"><i class="ri-css3-fill"></i> css-box</button>
+                <button type="button" class="sol-palette-btn" style="color:#facc15; border-color:rgba(250,204,21,0.3);" onclick="window.insertSandboxSnippet('ans_${q.id}', 'js', '${q.id}')"><i class="ri-javascript-fill"></i> js-box</button>
+                <button type="button" class="sol-palette-btn" style="background:rgba(16,185,129,0.15); color:#34d399; border-color:rgba(16,185,129,0.3);" onclick="window.insertSandboxSnippet('ans_${q.id}', 'all', '${q.id}')"><i class="ri-play-circle-fill"></i> html-css-js-sandbox</button>
                 <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${q.id}', '<div class=&quot;adsense-slot-wrapper&quot;><!-- AdSense In-Article Slot --></div>\\n', '')">adsense-ad</button>
                 <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${q.id}', '<div class=&quot;native-ad-wrapper&quot;><!-- Native Learning Ad --></div>\\n', '')">native-ad</button>
               </div>
               <textarea class="sol-textarea" id="ans_${q.id}" oninput="updateQuestionData('${q.id}')" placeholder="Type solution explanation, code examples, lists..." required>${escapeText(q.answer)}</textarea>
             </div>
           </div>
+
+          <!-- Per-Question Live Interactive Preview Box -->
+          <div class="sol-q-preview-box" id="preview_box_${q.id}">
+            <div class="sol-q-preview-header">
+              <span class="sol-q-preview-badge">
+                <i class="ri-eye-fill"></i> Live Preview: Question #${idx + 1}
+              </span>
+              <span style="font-size:0.75rem; color:#94a3b8;">Real-time interactive preview</span>
+            </div>
+            <div class="sol-q-preview-content" id="preview_content_${q.id}">
+              ${window.formatSolutionContent ? window.formatSolutionContent(q.answer || '<em style="color:#64748b;">Formatted answer, math, and interactive code containers will render here in real time...</em>', q.id) : (q.answer || '')}
+            </div>
+          </div>
+
         </div>
       `).join('');
     };
@@ -420,6 +439,13 @@
       const ansInput = document.getElementById(`ans_${id}`);
       if (titleInput) q.title = titleInput.value;
       if (ansInput) q.answer = ansInput.value;
+
+      // Real-time update for the specific question's live preview container
+      const qPreviewEl = document.getElementById(`preview_content_${id}`);
+      if (qPreviewEl && typeof window.formatSolutionContent === 'function') {
+        qPreviewEl.innerHTML = window.formatSolutionContent(q.answer || '<em style="color:#64748b;">Formatted answer, math, and interactive code containers will render here in real time...</em>', id);
+      }
+
       updateLivePreview();
     };
 
@@ -464,7 +490,7 @@
                 ${escapeAdminHtml(q.title || `Question #${idx+1}`)}
               </h3>
               <div class="sol-answer-content">
-                ${q.answer || '<em style="color:#64748b;">No answer written yet...</em>'}
+                ${window.formatSolutionContent ? window.formatSolutionContent(q.answer || '<em style="color:#64748b;">No answer written yet...</em>', q.id) : (q.answer || '<em style="color:#64748b;">No answer written yet...</em>')}
               </div>
             </div>
           `).join('')}

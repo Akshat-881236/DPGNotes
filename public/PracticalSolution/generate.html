@@ -9,6 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="../config.js"></script>
   <script src="../custom-dialogs.js"></script>
+  <script src="../solutions-sandbox-engine.js"></script>
 </head>
 <body>
 
@@ -202,26 +203,6 @@
     </form>
   </main>
 
-  <!-- Interactive HTML Code Sandbox Modal -->
-  <div id="sandboxModal" class="sol-modal-overlay" style="display:none;">
-    <div class="sol-modal-card" style="max-width:850px; width:95%; padding:1.5rem;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--sol-border); padding-bottom:0.8rem;">
-        <h3 style="color:#38bdf8; font-size:1.15rem; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">
-          <i class="ri-play-circle-line"></i> Interactive Live Code Sandbox
-        </h3>
-        <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="closeSandboxModal()">
-          <i class="ri-close-line"></i> Close Sandbox
-        </button>
-      </div>
-      <div class="sol-sandbox-wrapper">
-        <div class="sol-sandbox-header">
-          <span><i class="ri-terminal-line"></i> Sandbox Output</span>
-          <span style="font-size:0.75rem; color:#94a3b8;">Isolated Browser Execution</span>
-        </div>
-        <iframe id="sandboxIframe" class="sol-sandbox-iframe" sandbox="allow-scripts allow-modals"></iframe>
-      </div>
-    </div>
-  </div>
 
   <!-- Publish Success Modal -->
   <div id="publishSuccessModal" class="sol-modal-overlay" style="display:none;">
@@ -474,12 +455,30 @@
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${p.id}', '<ul>\\n  <li>', '</li>\\n</ul>')">ul</button>
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${p.id}', '<code>', '</code>')">code</button>
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${p.id}', '<pre><code>', '</code></pre>')">pre</button>
+                <button type="button" class="sol-palette-btn" style="color:#f97316; border-color:rgba(249,115,22,0.3);" onclick="window.insertSandboxSnippet('code_${p.id}', 'html', '${p.id}')"><i class="ri-html5-fill"></i> html-box</button>
+                <button type="button" class="sol-palette-btn" style="color:#38bdf8; border-color:rgba(56,189,248,0.3);" onclick="window.insertSandboxSnippet('code_${p.id}', 'css', '${p.id}')"><i class="ri-css3-fill"></i> css-box</button>
+                <button type="button" class="sol-palette-btn" style="color:#facc15; border-color:rgba(250,204,21,0.3);" onclick="window.insertSandboxSnippet('code_${p.id}', 'js', '${p.id}')"><i class="ri-javascript-fill"></i> js-box</button>
+                <button type="button" class="sol-palette-btn" style="background:rgba(20,184,166,0.15); color:#2dd4bf; border-color:rgba(20,184,166,0.3);" onclick="window.insertSandboxSnippet('code_${p.id}', 'all', '${p.id}')"><i class="ri-play-circle-fill"></i> html-css-js-sandbox</button>
                 <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${p.id}', '<div class=&quot;adsense-slot-wrapper&quot;><!-- AdSense In-Article Slot --></div>\\n', '')">adsense-ad</button>
                 <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${p.id}', '<div class=&quot;native-ad-wrapper&quot;><!-- Native Learning Ad --></div>\\n', '')">native-ad</button>
               </div>
               <textarea class="sol-textarea" id="code_${p.id}" oninput="updatePracticalData('${p.id}')" placeholder="Type or paste practical implementation, code, and expected output..." required>${escapeText(p.code)}</textarea>
             </div>
           </div>
+
+          <!-- Per-Experiment Live Interactive Preview Box -->
+          <div class="sol-q-preview-box" id="preview_box_${p.id}">
+            <div class="sol-q-preview-header">
+              <span class="sol-q-preview-badge">
+                <i class="ri-eye-fill"></i> Live Preview: Experiment #${idx + 1}
+              </span>
+              <span style="font-size:0.75rem; color:#94a3b8;">Real-time interactive preview</span>
+            </div>
+            <div class="sol-q-preview-content" id="preview_content_${p.id}">
+              ${window.formatSolutionContent ? window.formatSolutionContent(p.code || '<em style="color:#64748b;">Formatted experiment, algorithm, and interactive code containers will render here in real time...</em>', p.id) : (p.code || '')}
+            </div>
+          </div>
+
         </div>
       `).join('');
     };
@@ -510,6 +509,12 @@
       const codeInput = document.getElementById(`code_${id}`);
       if (titleInput) p.title = titleInput.value;
       if (codeInput) p.code = codeInput.value;
+
+      // Real-time update for the specific experiment's live preview container
+      const pPreviewEl = document.getElementById(`preview_content_${id}`);
+      if (pPreviewEl && typeof window.formatSolutionContent === 'function') {
+        pPreviewEl.innerHTML = window.formatSolutionContent(p.code || '<em style="color:#64748b;">Formatted experiment, algorithm, and interactive code containers will render here in real time...</em>', id);
+      }
     };
 
     window.insertTag = function(pid, openTag, closeTag) {
@@ -532,43 +537,16 @@
       const p = practicalsList.find(item => item.id === pid);
       if (!p || !p.code) {
         if (typeof window.customAlert === 'function') {
-          window.customAlert("Please type some code into the solution container to execute.", { title: "Code Empty" });
+          window.customAlert("Please type or paste some code into the solution container to execute.", { title: "Code Empty" });
         } else {
           alert("Please type some code first.");
         }
         return;
       }
 
-      const iframe = document.getElementById('sandboxIframe');
-      const modal = document.getElementById('sandboxModal');
-      if (iframe && modal) {
-        modal.style.display = 'flex';
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        doc.open();
-        doc.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <style>
-              body { font-family: sans-serif; padding: 1.5rem; color: #1e293b; }
-              pre { background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; }
-            </style>
-          </head>
-          <body>
-            ${p.code}
-          </body>
-          </html>
-        `);
-        doc.close();
+      if (typeof window.runSandboxFromGroup === 'function') {
+        window.runSandboxFromGroup(pid, p.title || 'Experiment Preview');
       }
-    };
-
-    window.closeSandboxModal = function() {
-      const modal = document.getElementById('sandboxModal');
-      if (modal) modal.style.display = 'none';
-      const iframe = document.getElementById('sandboxIframe');
-      if (iframe) iframe.src = 'about:blank';
     };
 
     // Zero-Knowledge AES-GCM Encryptor

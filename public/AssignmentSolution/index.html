@@ -10,6 +10,7 @@
   <script src="../config.js"></script>
   <script src="../custom-dialogs.js"></script>
   <script src="../native-dpgnotes-ads.js"></script>
+  <script src="../solutions-sandbox-engine.js"></script>
   <!-- Google AdSense SDK -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
 </head>
@@ -420,7 +421,7 @@
             </h2>
 
             <div class="sol-answer-content">
-              ${q.answer || ''}
+              ${window.formatSolutionContent ? window.formatSolutionContent(q.answer || '', q.id) : (q.answer || '')}
             </div>
           </article>
           ${adHtml}

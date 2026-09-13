@@ -554,3 +554,287 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================
+   INTERACTIVE CODE CONTAINERS & LINKED SANDBOX
+   ========================================== */
+.sol-code-block-container {
+  margin: 1.25rem 0;
+  border-radius: var(--sol-radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0d1117;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.sol-code-block-header {
+  background: #161b22;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sol-code-block-lang {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.sol-code-block-lang.lang-html { color: #f97316; }
+.sol-code-block-lang.lang-css { color: #38bdf8; }
+.sol-code-block-lang.lang-js { color: #facc15; }
+
+.sol-code-block-id-tag {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-family: 'Fira Code', monospace;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.sol-code-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sol-code-run-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+}
+
+.sol-code-run-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.sol-code-copy-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.74rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.sol-code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+}
+
+.sol-code-block-body {
+  padding: 1rem 1.25rem;
+  margin: 0;
+  overflow-x: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #e2e8f0;
+  background: transparent;
+  border: none;
+}
+
+/* PER-QUESTION / PER-EXPERIMENT LIVE PREVIEW BOX */
+.sol-q-preview-box {
+  margin-top: 1rem;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--sol-radius);
+  padding: 1.25rem;
+  position: relative;
+}
+
+.sol-q-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sol-q-preview-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #38bdf8;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sol-q-preview-content {
+  color: #e2e8f0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+/* ADVANCED SANDBOX MODAL */
+.sol-sandbox-modal-card {
+  background: #0b1120;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--sol-radius-lg);
+  width: 96%;
+  max-width: 980px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  height: 88vh;
+  max-height: 820px;
+  overflow: hidden;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sol-sandbox-topbar {
+  background: #111827;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sol-sandbox-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sol-sandbox-title {
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sol-sandbox-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sol-sandbox-tab-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.sol-sandbox-tab-btn.active {
+  background: #1e293b;
+  color: #38bdf8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.sol-sandbox-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sol-sandbox-body-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.sol-sandbox-iframe-pane {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+  display: block;
+}
+
+.sol-sandbox-console-pane {
+  position: absolute;
+  inset: 0;
+  background: #0d1117;
+  color: #e2e8f0;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  padding: 1rem;
+  overflow-y: auto;
+  display: none;
+  z-index: 5;
+}
+
+.sol-console-item {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.sol-console-item .timestamp {
+  color: #64748b;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.sol-console-item.log-info { color: #38bdf8; }
+.sol-console-item.log-warn { color: #f59e0b; }
+.sol-console-item.log-error { color: #ef4444; }
+.sol-console-item.log-success { color: #10b981; }
+
+.sol-sandbox-statusbar {
+  background: #0f172a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
