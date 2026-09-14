@@ -114,11 +114,7 @@
     let pendingUrl = '';
 
     function getLegalLinksPolicyUrl() {
-      const isSubdir = window.location.pathname.includes('/legal/') || 
-                       window.location.pathname.includes('/AssignmentCoverPageGenerator/') ||
-                       window.location.pathname.includes('/PracticalCoverPageGenerator/') ||
-                       window.location.pathname.includes('/Docs/');
-      return isSubdir ? '../legal/index.html#links-policy' : 'legal/index.html#links-policy';
+      return 'https://dpgnotes.web.app/legal/index.html#links-policy';
     }
 
     const learnMoreEl = document.getElementById('redirectLearnMoreLink');
@@ -165,7 +161,9 @@
           '127.0.0.1',
           'github.io',
           'digiindia-student-platform.onrender.com',
-          'digiindia'
+          'digiindia',
+          'akshat-881236.github.io',
+          'akshat-145609.github.io'
         ];
         
         // If it is external (not in trusted internal hosts)
@@ -271,14 +269,15 @@
         sessionStorage.setItem("dpg_quota_locked", "true");
         setCookie("dpg_quota_locked", "true");
 
-        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && !window.location.pathname.endsWith('/public/')) {
-          window.location.href = "index.html?quotaReached=true";
+        const isRootHome = window.location.pathname === '/' || window.location.pathname === '/index.html' || window.location.pathname.endsWith('/public/') || window.location.pathname.endsWith('/public/index.html');
+        if (!isRootHome) {
+          window.location.href = "https://dpgnotes.web.app/index.html?quotaReached=true";
           return;
         }
 
         // Lock URL parameter silently if missing
         if (!window.location.search.includes('quotaReached=true')) {
-          try { history.replaceState(null, '', 'index.html?quotaReached=true'); } catch(e){}
+          try { history.replaceState(null, '', '/index.html?quotaReached=true'); } catch(e){}
         }
 
         // 1. Immediately inject hard CSS override into head so no other DOM elements can ever render
@@ -332,7 +331,7 @@
 
               if (btn) btn.innerHTML = '<i class="ri-checkbox-circle-fill" style="color:#4ade80;"></i> Success! Redirecting...';
               setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "https://dpgnotes.web.app/index.html";
               }, 400);
             }
           } catch (err) {
@@ -398,17 +397,17 @@
                   <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
                     <div style="font-size:0.78rem; color:#64748b; font-weight:600; margin-bottom:0.6rem;">DPGNotes Legal Center Policies:</div>
                     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px 12px; font-size:0.8rem;">
-                      <a href="legal/index.html#privacy" target="_blank" style="color:#a78bfa; text-decoration:none;">Privacy Policy</a>
+                      <a href="https://dpgnotes.web.app/legal/index.html#privacy" target="_blank" style="color:#a78bfa; text-decoration:none;">Privacy Policy</a>
                       <span style="color:#334155;">•</span>
-                      <a href="legal/index.html#terms" target="_blank" style="color:#a78bfa; text-decoration:none;">Terms of Use</a>
+                      <a href="https://dpgnotes.web.app/legal/index.html#terms" target="_blank" style="color:#a78bfa; text-decoration:none;">Terms of Use</a>
                       <span style="color:#334155;">•</span>
-                      <a href="legal/index.html#drasa" target="_blank" style="color:#a78bfa; text-decoration:none;">DRASA Regulations</a>
+                      <a href="https://dpgnotes.web.app/legal/index.html#drasa" target="_blank" style="color:#a78bfa; text-decoration:none;">DRASA Regulations</a>
                       <span style="color:#334155;">•</span>
-                      <a href="legal/index.html#copyright" target="_blank" style="color:#a78bfa; text-decoration:none;">Copyright Policy</a>
+                      <a href="https://dpgnotes.web.app/legal/index.html#copyright" target="_blank" style="color:#a78bfa; text-decoration:none;">Copyright Policy</a>
                       <span style="color:#334155;">•</span>
-                      <a href="legal/index.html#disclaimer" target="_blank" style="color:#a78bfa; text-decoration:none;">Disclaimer</a>
+                      <a href="https://dpgnotes.web.app/legal/index.html#disclaimer" target="_blank" style="color:#a78bfa; text-decoration:none;">Disclaimer</a>
                       <span style="color:#334155;">•</span>
-                      <a href="legal/index.html#faq" target="_blank" style="color:#a78bfa; text-decoration:none;">Legal FAQ</a>
+                      <a href="https://dpgnotes.web.app/legal/index.html#faq" target="_blank" style="color:#a78bfa; text-decoration:none;">Legal FAQ</a>
                     </div>
                   </div>
                 </div>
@@ -467,7 +466,7 @@
             localStorage.removeItem("dpg_quota_locked");
             sessionStorage.removeItem("dpg_quota_locked");
             clearCookie("dpg_quota_locked");
-            window.location.href = "index.html";
+            window.location.href = "https://dpgnotes.web.app/index.html";
             return;
           }
 
@@ -499,7 +498,7 @@
       fetch((window.API_BASE_URL || '') + '/api/guest-quota', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ guestId, action })
+        body: JSON.stringify({ guestId, action: currentAction })
       }).then(res => res.json()).then(data => {
         if (data && data.allowed === false) {
           triggerQuotaReachedPhase();

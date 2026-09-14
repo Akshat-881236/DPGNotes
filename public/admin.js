@@ -39,12 +39,7 @@ auth.authStateReady().then(() => {
       authLayer.style.display = "none";
       dashboardLayer.style.display = "flex";
       loadUsers();
-      loadActivityLogs();
       loadPermanentBlocks();
-      if (typeof loadShares === 'function') loadShares();
-      if (typeof loadAdminNotifications === 'function') loadAdminNotifications();
-      if (typeof loadEngagementTelemetry === 'function') loadEngagementTelemetry();
-      if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
     } else {
       // Firebase auth missing but backend token exists. Needs re-login.
       localStorage.removeItem("adminToken");
@@ -100,11 +95,7 @@ otpForm.addEventListener("submit", async (e) => {
       authLayer.style.display = "none";
       dashboardLayer.style.display = "flex";
       loadUsers();
-      loadActivityLogs();
-      if (typeof loadShares === 'function') loadShares();
-      if (typeof loadAdminNotifications === 'function') loadAdminNotifications();
-      if (typeof loadEngagementTelemetry === 'function') loadEngagementTelemetry();
-      if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
+      loadPermanentBlocks();
     } else {
       alert(data.error);
     }
@@ -201,8 +192,10 @@ deleteDocForm.addEventListener("submit", async (e) => {
 
 async function loadUsers() {
   try {
-    const snap = await getDocs(collection(db, "users"));
-    const docSnap = await getDocs(collection(db, "documents"));
+    const [snap, docSnap] = await Promise.all([
+      getDocs(collection(db, "users")),
+      getDocs(collection(db, "documents"))
+    ]);
     
     const usersMap = {};
     
@@ -483,39 +476,102 @@ async function loadActivityLogs() {
   const table = document.getElementById("activityLogsTableBody");
   if (!table) return;
   
+  table.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-muted);"><i class="ri-loader-4-line ri-spin" style="font-size:1.3rem;"></i><div style="margin-top:4px;">Loading system activity logs...</div></td></tr>`;
+
   try {
-    const q = query(collection(db, "activity_logs"), orderBy("timestamp", "desc"), limit(200));
-    const snap = await getDocs(q);
-    
+    let docs = [];
+
+    // Attempt 1: Direct Firestore with orderBy timestamp desc
+    try {
+      const q = query(collection(db, "activity_logs"), orderBy("timestamp", "desc"), limit(200));
+      const snap = await getDocs(q);
+      snap.forEach(docSnap => {
+        docs.push({ id: docSnap.id, ...docSnap.data() });
+      });
+    } catch (orderErr) {
+      console.warn("orderBy query failed, falling back to unordered query:", orderErr);
+      try {
+        const qFallback = query(collection(db, "activity_logs"), limit(200));
+        const snap = await getDocs(qFallback);
+        snap.forEach(docSnap => {
+          docs.push({ id: docSnap.id, ...docSnap.data() });
+        });
+      } catch (fbErr) {
+        console.warn("Direct Firestore fallback failed:", fbErr);
+      }
+    }
+
+    // Attempt 2: If Firestore returned 0 docs or failed, try backend API
+    if (docs.length === 0) {
+      try {
+        const res = await fetch(`${API_URL}/admin/activity-logs`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+        });
+        const resData = await res.json();
+        if (res.ok && Array.isArray(resData.logs)) {
+          docs = resData.logs;
+        }
+      } catch (apiErr) {
+        console.warn("Backend activity logs fetch error:", apiErr);
+      }
+    }
+
     table.innerHTML = "";
-    if (snap.empty) {
-      table.innerHTML = `<tr><td colspan="6" style="text-align:center;">No activity yet.</td></tr>`;
+    if (docs.length === 0) {
+      table.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:2rem;">No system activity recorded yet.</td></tr>`;
       return;
     }
-    
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
-      const docId = docSnap.id;
-      const timeStr = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : "Just now";
-      
+
+    // Sort descending by timestamp in memory
+    docs.sort((a, b) => {
+      const getTime = (val) => {
+        if (!val) return 0;
+        if (typeof val.toDate === 'function') return val.toDate().getTime();
+        if (typeof val.toMillis === 'function') return val.toMillis();
+        if (val.seconds) return val.seconds * 1000;
+        const ms = new Date(val).getTime();
+        return isNaN(ms) ? 0 : ms;
+      };
+      return getTime(b.timestamp) - getTime(a.timestamp);
+    });
+
+    docs.forEach(data => {
+      const docId = data.id;
+      let timeStr = "Just now";
+      if (data.timestamp) {
+        if (typeof data.timestamp.toDate === 'function') {
+          timeStr = data.timestamp.toDate().toLocaleString();
+        } else if (data.timestamp.seconds) {
+          timeStr = new Date(data.timestamp.seconds * 1000).toLocaleString();
+        } else {
+          const d = new Date(data.timestamp);
+          timeStr = isNaN(d.getTime()) ? String(data.timestamp) : d.toLocaleString();
+        }
+      }
+
+      const identity = data.identity || data.name || data.email || data.userId || 'System / Contributor';
+      const action = data.action || 'ACTIVITY';
+      const details = data.details || data.metadata || data.reason || '';
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td style="padding:0.5rem 0.75rem; text-align:center;">
-          <input type="checkbox" class="log-row-check" data-id="${docId}" style="cursor:pointer; width:16px; height:16px;" onchange="updateLogSelectionBar()">
+        <td style="padding:0.6rem 0.75rem; text-align:center;">
+          <input type="checkbox" class="log-row-check" data-id="${escapeAdminHtml(docId)}" style="cursor:pointer; width:16px; height:16px;" onchange="updateLogSelectionBar()">
         </td>
-        <td style="color:var(--admin-muted); font-size:0.85rem;">${timeStr}</td>
-        <td>${data.name || data.userId || 'N/A'}</td>
-        <td><span style="background:var(--admin-primary); color:white; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:600;">${data.action || 'N/A'}</span></td>
-        <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.details || ''}">${data.details || ""}</td>
-        <td><button onclick="deleteSingleLog('${docId}')" style="padding:4px 10px; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:600;" title="Delete this log"><i class="ri-delete-bin-line"></i></button></td>
+        <td style="color:var(--admin-muted); font-size:0.82rem; white-space:nowrap;">${escapeAdminHtml(timeStr)}</td>
+        <td style="font-weight:600; color:#cbd5e1; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeAdminHtml(identity)}">${escapeAdminHtml(identity)}</td>
+        <td><span style="background:var(--admin-primary); color:white; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:600; white-space:nowrap; display:inline-block;">${escapeAdminHtml(action)}</span></td>
+        <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#94a3b8; font-size:0.85rem;" title="${escapeAdminHtml(details)}">${escapeAdminHtml(details)}</td>
+        <td style="text-align:center;"><button type="button" onclick="deleteSingleLog('${escapeAdminHtml(docId)}')" style="padding:5px 10px; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; font-size:0.82rem; font-weight:600; transition:all 0.2s;" title="Delete this log"><i class="ri-delete-bin-line"></i></button></td>
       `;
       table.appendChild(tr);
     });
   } catch (error) {
     console.error("Failed to load activity logs", error);
-    table.innerHTML = `<tr><td colspan="6" style="color:#ef4444; text-align:center;">Failed to load logs.</td></tr>`;
+    table.innerHTML = `<tr><td colspan="6" style="color:#ef4444; text-align:center; padding:1.5rem;">Failed to load logs: ${error.message}</td></tr>`;
   }
 }
+window.loadActivityLogs = loadActivityLogs;
 
 // Add real-time text filter to notifications log
 setTimeout(() => {
@@ -578,6 +634,7 @@ async function loadShares() {
     adminSharesCache = [];
     let docShares = 0;
     let noteShares = 0;
+    let solShares = 0;
     let totalClicks = 0;
 
     snap.forEach(doc => {
@@ -587,6 +644,8 @@ async function loadShares() {
 
       if (item.type === 'note') {
         noteShares++;
+      } else if (item.type === 'solution' || item.type === 'assignment_solution' || item.type === 'practical_solution') {
+        solShares++;
       } else {
         docShares++;
       }
@@ -606,6 +665,9 @@ async function loadShares() {
     const statNoteSharesCount = document.getElementById("statNoteSharesCount");
     if (statNoteSharesCount) statNoteSharesCount.innerText = noteShares;
 
+    const statSolSharesCount = document.getElementById("statSolSharesCount");
+    if (statSolSharesCount) statSolSharesCount.innerText = solShares;
+
     const statTotalShareClicks = document.getElementById("statTotalShareClicks");
     if (statTotalShareClicks) statTotalShareClicks.innerText = totalClicks.toLocaleString();
     
@@ -619,7 +681,7 @@ window.loadShares = loadShares;
 
 window.filterSharesByType = function(type, btnEl) {
   window.currentSharesFilter = type;
-  const buttons = ['shareFilterAll', 'shareFilterDoc', 'shareFilterNote'];
+  const buttons = ['shareFilterAll', 'shareFilterDoc', 'shareFilterNote', 'shareFilterSolution'];
   buttons.forEach(bId => {
     const b = document.getElementById(bId);
     if (b) {
@@ -636,9 +698,11 @@ function applySharesFilterAndRender() {
   let list = adminSharesCache;
 
   if (window.currentSharesFilter === 'document') {
-    list = list.filter(l => l.type !== 'note');
+    list = list.filter(l => l.type !== 'note' && l.type !== 'solution' && l.type !== 'assignment_solution' && l.type !== 'practical_solution');
   } else if (window.currentSharesFilter === 'note') {
     list = list.filter(l => l.type === 'note');
+  } else if (window.currentSharesFilter === 'solution') {
+    list = list.filter(l => l.type === 'solution' || l.type === 'assignment_solution' || l.type === 'practical_solution');
   }
 
   if (queryStr) {
@@ -646,6 +710,7 @@ function applySharesFilterAndRender() {
       (link.token && link.token.toLowerCase().includes(queryStr)) ||
       (link.title && link.title.toLowerCase().includes(queryStr)) ||
       (link.uploader && link.uploader.toLowerCase().includes(queryStr)) ||
+      (link.course && link.course.toLowerCase().includes(queryStr)) ||
       (link.elementId && link.elementId.toLowerCase().includes(queryStr))
     );
   }
@@ -665,15 +730,32 @@ function renderSharesTable(shares) {
   
   shares.forEach(link => {
     const isNote = link.type === 'note';
-    const typeBadge = isNote
-      ? `<span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📝 NOTE (Pg ${link.pageNumber || 1} ${link.rendering || 'after'})</span>`
-      : `<span style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📄 DOC</span>`;
+    const isSolution = link.type === 'solution' || link.type === 'assignment_solution' || link.type === 'practical_solution';
+
+    let typeBadge = '';
+    if (isNote) {
+      typeBadge = `<span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📝 NOTE (Pg ${link.pageNumber || 1})</span>`;
+    } else if (isSolution) {
+      const isPrac = link.subType === 'practical' || link.type === 'practical_solution';
+      const label = isPrac ? '🔬 PRACTICAL' : '🎓 ASSIGNMENT';
+      const courseStr = (link.course || link.courseSec) ? ` [${escapeAdminHtml(link.course || link.courseSec)}]` : '';
+      typeBadge = `<span style="background:rgba(20,184,166,0.2); color:#14b8a6; border:1px solid rgba(20,184,166,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">${label}${courseStr}</span>`;
+    } else {
+      typeBadge = `<span style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📄 DOC</span>`;
+    }
 
     const targetDocId = link.docId || link.id || '';
     const noteParam = link.elementId ? `&note=${encodeURIComponent(link.elementId)}#note-${encodeURIComponent(link.elementId)}` : '';
-    const directViewerLink = isNote
-      ? `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetDocId)}&share=${encodeURIComponent(link.token)}${noteParam}`
-      : `dashboard.html?share=${encodeURIComponent(link.token)}`;
+    let directViewerLink = '';
+    if (isNote) {
+      directViewerLink = `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetDocId)}&share=${encodeURIComponent(link.token)}${noteParam}`;
+    } else if (isSolution) {
+      const folder = (link.subType === 'practical' || link.type === 'practical_solution') ? 'PracticalSolution' : 'AssignmentSolution';
+      const contrib = link.contributorUid || link.uploaderUid || '';
+      directViewerLink = `${folder}/index.html?id=${encodeURIComponent(link.docId || link.solutionId || targetDocId)}&contributor=${encodeURIComponent(contrib)}&share_token=${encodeURIComponent(link.token)}`;
+    } else {
+      directViewerLink = `dashboard.html?share=${encodeURIComponent(link.token)}`;
+    }
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -681,10 +763,10 @@ function renderSharesTable(shares) {
       <td>
         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           ${typeBadge}
-          <span style="font-weight:500; color:#f8fafc;">${link.title || "Untitled"}</span>
+          <span style="font-weight:500; color:#f8fafc;">${escapeAdminHtml(link.title || "Untitled")}</span>
         </div>
       </td>
-      <td style="color:var(--admin-muted); font-size:0.82rem;">${link.uploader || link.generatedBy || "Unknown"}</td>
+      <td style="color:var(--admin-muted); font-size:0.82rem;">${escapeAdminHtml(link.uploader || link.generatedBy || "Unknown")}</td>
       <td><strong style="color:#10b981;">${link.clicks || 0}</strong> clicks</td>
       <td>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
@@ -754,16 +836,37 @@ window.switchTab = function(tabId) {
   }
   
   if (tabId === 'shares') {
-    loadShares();
+    if (typeof loadShares === 'function') loadShares();
   } else if (tabId === 'notes-analytics') {
-    if (typeof window.loadNotesAnalyticsAdmin === 'function') {
-      window.loadNotesAnalyticsAdmin();
-    }
+    if (typeof window.loadNotesAnalyticsAdmin === 'function') window.loadNotesAnalyticsAdmin();
   } else if (tabId === 'users') {
     loadUsers();
+    loadPermanentBlocks();
   } else if (tabId === 'logs') {
     loadActivityLogs();
-    loadAdminNotifications();
+    if (typeof loadAdminNotifications === 'function') loadAdminNotifications();
+  } else if (tabId === 'engagement') {
+    if (typeof loadEngagementTelemetry === 'function') loadEngagementTelemetry();
+  } else if (tabId === 'support-requests') {
+    if (typeof loadSupportRequestsAdmin === 'function') loadSupportRequestsAdmin();
+  } else if (tabId === 'referrers') {
+    if (typeof loadReferrerAnalysis === 'function') loadReferrerAnalysis();
+  } else if (tabId === 'device-logs') {
+    if (typeof loadDeviceLogsAdmin === 'function') loadDeviceLogsAdmin();
+  } else if (tabId === 'violation-logs') {
+    if (typeof loadViolationLogsAdmin === 'function') loadViolationLogsAdmin();
+  } else if (tabId === 'ads') {
+    if (typeof window.loadAdsAdmin === 'function') window.loadAdsAdmin();
+  } else if (tabId === 'ads-analytics') {
+    if (typeof window.loadAdsAnalyticsAdmin === 'function') window.loadAdsAnalyticsAdmin();
+  } else if (tabId === 'resource-analytics') {
+    if (typeof window.loadResourceAnalyticsAdmin === 'function') window.loadResourceAnalyticsAdmin();
+  } else if (tabId === 'web-analytics') {
+    if (typeof window.loadWebAnalyticsAdmin === 'function') window.loadWebAnalyticsAdmin();
+  } else if (tabId === 'cover-pages') {
+    if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
+  } else if (tabId === 'solutions-metrics') {
+    if (typeof window.loadSolutionsMetricsAdmin === 'function') window.loadSolutionsMetricsAdmin();
   }
 };
 
@@ -1494,6 +1597,15 @@ async function loadViolationLogsAdmin() {
           <td style="font-family:monospace; font-size:0.82rem; color:#cbd5e1;">${d.userId || 'Guest'}</td>
           <td>
             <div style="display:flex; gap:6px; align-items:center;">
+              ${d.adminAcknowledged ? `
+                <span title="Acknowledged by Administrator" style="background:rgba(16,185,129,0.2); color:#34d399; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:3px;">
+                  <i class="ri-check-line"></i> Ack
+                </span>
+              ` : `
+                <button class="btn-action" onclick="acknowledgeUnauthorizedAction('${d.id}')" title="Mark Acknowledged by Admin" style="background:rgba(245,158,11,0.2); color:#f59e0b;">
+                  <i class="ri-checkbox-circle-line"></i>
+                </button>
+              `}
               <button class="btn-action" onclick="suggestViolationPunishmentAI('unauthorized_action', '${d.id}')" title="Generate AI Summary & Penalty" style="background:rgba(168,85,247,0.2); color:#c084fc;">
                 <i class="ri-information-line"></i>
               </button>
@@ -1629,6 +1741,16 @@ window.deleteUnauthorizedAction = async function(docId) {
     await deleteDoc(doc(db, "authorized_access_violations", docId));
     loadViolationLogsAdmin();
   } catch(e) { alert("Delete failed: " + e.message); }
+};
+
+window.acknowledgeUnauthorizedAction = async function(docId) {
+  try {
+    await updateDoc(doc(db, "authorized_access_violations", docId), {
+      adminAcknowledged: true,
+      acknowledgedAt: serverTimestamp()
+    });
+    loadViolationLogsAdmin();
+  } catch(e) { alert("Acknowledgement failed: " + e.message); }
 };
 
 window.toggleAllUserViolations = function(masterCb) {
@@ -3841,9 +3963,61 @@ function escapeAdminHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+window.escapeAdminHtml = escapeAdminHtml;
+
+function cleanCoverVal(val) {
+  if (val === null || val === undefined) return '';
+  const s = String(val).trim();
+  if (s === '—' || s === '-' || s === '–' || s.toLowerCase() === 'n/a' || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') {
+    return '';
+  }
+  return s;
+}
+
+function getDegreeFromCourse(courseSec) {
+  const c = String(courseSec || '').toUpperCase();
+  if (c.includes('BCA')) return "BACHELOR OF COMPUTER APPLICATION";
+  if (c.includes('MCA')) return "MASTER OF COMPUTER APPLICATION";
+  if (c.includes('BBA')) return "BACHELOR OF BUSINESS ADMINISTRATION";
+  if (c.includes('MBA')) return "MASTER OF BUSINESS ADMINISTRATION";
+  if (c.includes('B.TECH') || c.includes('BTECH') || c.includes('CSE') || c.includes('ECE') || c.includes('MECH') || c.includes('CIVIL')) return "BACHELOR OF TECHNOLOGY";
+  if (c.includes('M.TECH') || c.includes('MTECH')) return "MASTER OF TECHNOLOGY";
+  if (c.includes('BSC') || c.includes('B.SC')) return "BACHELOR OF SCIENCE";
+  if (c.includes('MSC') || c.includes('M.SC')) return "MASTER OF SCIENCE";
+  if (c.includes('BCOM') || c.includes('B.COM')) return "BACHELOR OF COMMERCE";
+  if (c.includes('MCOM') || c.includes('M.COM')) return "MASTER OF COMMERCE";
+  if (c.includes('BA') || c.includes('B.A')) return "BACHELOR OF ARTS";
+  if (c.includes('MA') || c.includes('M.A')) return "MASTER OF ARTS";
+  if (c.includes('BPHARM') || c.includes('B.PHARM')) return "BACHELOR OF PHARMACY";
+  if (c.includes('DPHARM') || c.includes('D.PHARM')) return "DIPLOMA IN PHARMACY";
+  if (c.includes('BED') || c.includes('B.ED')) return "BACHELOR OF EDUCATION";
+  if (c.includes('MED') || c.includes('M.ED')) return "MASTER OF EDUCATION";
+  if (c.includes('LLB') || c.includes('LL.B')) return "BACHELOR OF LAWS (LL.B)";
+  if (c.includes('LLM') || c.includes('LL.M')) return "MASTER OF LAWS (LL.M)";
+  if (c.includes('BHMCT') || c.includes('HOTEL')) return "BACHELOR OF HOTEL MANAGEMENT & CATERING TECHNOLOGY";
+  if (c.includes('BTTM') || c.includes('TOURISM')) return "BACHELOR OF TOURISM & TRAVEL MANAGEMENT";
+  if (c.includes('BJMC') || c.includes('JOURNALISM')) return "BACHELOR OF JOURNALISM & MASS COMMUNICATION";
+  if (c.includes('MJMC')) return "MASTER OF JOURNALISM & MASS COMMUNICATION";
+  if (c.includes('DIPLOMA') || c.includes('POLYTECHNIC')) return "DIPLOMA IN ENGINEERING & TECHNOLOGY";
+  return "BACHELOR OF COMPUTER APPLICATION";
+}
 
 let coverPagesCache = [];
 let currentCoverSubTab = 'assignment';
+
+function isCoverPracticalRecord(r) {
+  if (!r) return false;
+  const docType = String(r.docType || '').toLowerCase().trim();
+  if (docType === 'practical') return true;
+  if (docType === 'assignment') return false;
+  const id = String(r.id || '').toLowerCase().trim();
+  if (id.startsWith('pract')) return true;
+  if (Boolean(r.practicalNo)) return true;
+  const sub = String(r.subjectName || '').toLowerCase();
+  const title = String(r.title || '').toLowerCase();
+  if (sub.includes('practical') || title.includes('practical') || sub.includes('lab') || title.includes('lab')) return true;
+  return false;
+}
 
 window.switchCoverSubTab = function(subTab) {
   currentCoverSubTab = subTab;
@@ -3851,6 +4025,8 @@ window.switchCoverSubTab = function(subTab) {
   const btnPrac = document.getElementById('subtabPracticalBtn') || document.getElementById('subtab-cover-practical');
   if (btnAssign && btnPrac) {
     if (subTab === 'assignment') {
+      btnAssign.classList.add('active');
+      btnPrac.classList.remove('active');
       btnAssign.style.background = 'rgba(99,102,241,0.18)';
       btnAssign.style.color = '#818cf8';
       btnAssign.style.border = '1px solid rgba(99,102,241,0.35)';
@@ -3858,6 +4034,8 @@ window.switchCoverSubTab = function(subTab) {
       btnPrac.style.color = 'var(--admin-muted)';
       btnPrac.style.border = '1px solid var(--admin-border)';
     } else {
+      btnPrac.classList.add('active');
+      btnAssign.classList.remove('active');
       btnPrac.style.background = 'rgba(16,185,129,0.18)';
       btnPrac.style.color = '#10b981';
       btnPrac.style.border = '1px solid rgba(16,185,129,0.35)';
@@ -3871,8 +4049,8 @@ window.switchCoverSubTab = function(subTab) {
 
 function updateCoverAnalyticsUI() {
   const all = coverPagesCache || [];
-  const assignmentCount = all.filter(r => r.docType === 'assignment' || (!r.docType && !r.practicalNo && (!r.title || !r.title.toLowerCase().includes('practical')))).length;
-  const practicalCount = all.filter(r => r.docType === 'practical' || r.practicalNo || (r.title && r.title.toLowerCase().includes('practical'))).length;
+  const assignmentCount = all.filter(r => !isCoverPracticalRecord(r)).length;
+  const practicalCount = all.filter(r => isCoverPracticalRecord(r)).length;
   const contribCount = all.filter(r => r.userType === 'contributor' || (r.userId && !r.userId.startsWith('guest_'))).length;
   const guestCount = all.filter(r => r.userType === 'guest' || (r.userId && r.userId.startsWith('guest_'))).length;
   const totalCount = all.length;
@@ -3898,42 +4076,79 @@ window.loadCoverPagesAdmin = async function(forceRefresh = false) {
   tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-muted);"><i class="ri-loader-4-line ri-spin" style="font-size:1.5rem;"></i><div style="margin-top:0.5rem;">Loading cover pages from database...</div></td></tr>`;
   
   try {
-    let records = [];
-    try {
-      const res = await fetch(`${API_URL}/admin/cover-pages/list`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
-      });
-      const data = await res.json();
-      if (res.ok && data.success && Array.isArray(data.records)) {
-        records = data.records;
-      }
-    } catch (apiErr) {
-      console.warn("Cover pages backend API error, attempting direct Firestore query:", apiErr);
-    }
+    let rawList = [];
 
-    if (records.length === 0) {
-      // Direct Firestore fallback
-      try {
-        const q = query(collectionGroup(db, 'records'), limit(250));
+    // 1. Direct Firestore collectionGroup first (instant, untruncated documents)
+    try {
+      if (typeof collectionGroup === 'function' && typeof getDocs === 'function' && typeof query === 'function' && db) {
+        const q = query(collectionGroup(db, 'records'), limit(300));
         const snap = await getDocs(q);
         const fbRecords = [];
-        snap.forEach(d => {
-          const item = d.data();
-          if (item.docType === 'assignment' || item.docType === 'practical' || item.assignmentNo || item.practicalNo || item.subjectCode) {
-            fbRecords.push({ id: d.id, ...item });
-          }
+        snap.forEach(docSnap => {
+          const item = docSnap.data();
+          const p = docSnap.ref.path.split('/');
+          const parentUid = (p.length >= 2 ? p[1] : '') || '';
+          fbRecords.push({ id: docSnap.id, parentUid, ...item });
         });
         if (fbRecords.length > 0) {
-          records = fbRecords;
+          rawList = fbRecords;
         }
-      } catch (fbErr) {
-        console.warn("Direct Firestore fallback error for cover pages:", fbErr);
+      }
+    } catch (fbErr) {
+      console.warn("Direct Firestore records collectionGroup fetch error, trying backend API:", fbErr);
+    }
+
+    // 2. Fallback to backend API
+    if (rawList.length === 0) {
+      try {
+        const res = await fetch(`${API_URL}/admin/cover-pages/list`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          }
+        });
+        const data = await res.json();
+        if (res.ok && data.success && Array.isArray(data.records)) {
+          rawList = data.records;
+        }
+      } catch (apiErr) {
+        console.warn("Cover pages backend API error:", apiErr);
       }
     }
 
-    coverPagesCache = records;
+    // 3. Normalize all records with cleanCoverVal and full alias resolution
+    const normalized = rawList.map(d => {
+      const isPractical = isCoverPracticalRecord(d);
+      const uid = d.userId || d.parentUid || 'guest_unknown';
+      const courseSec = cleanCoverVal(d.courseSection) || cleanCoverVal(d.course) || cleanCoverVal(d.courseSec) || '';
+      return {
+        ...d,
+        id: d.id,
+        userId: uid,
+        userType: d.userType || (uid.startsWith('guest_') ? 'guest' : 'contributor'),
+        docType: isPractical ? 'practical' : 'assignment',
+        assignmentNo: isPractical ? '' : (cleanCoverVal(d.assignmentNo) || cleanCoverVal(d.assignNo) || '1'),
+        practicalNo: isPractical ? (cleanCoverVal(d.practicalNo) || cleanCoverVal(d.pracNo) || cleanCoverVal(d.assignmentNo) || '1') : '',
+        subjectName: cleanCoverVal(d.subjectName) || cleanCoverVal(d.subject) || cleanCoverVal(d.title) || 'Untitled',
+        subjectCode: cleanCoverVal(d.subjectCode) || cleanCoverVal(d.subCode) || cleanCoverVal(d.code) || '',
+        courseSection: courseSec,
+        degreeName: cleanCoverVal(d.degreeName) || cleanCoverVal(d.degree) || getDegreeFromCourse(courseSec),
+        session: cleanCoverVal(d.session) || cleanCoverVal(d.sessionYear) || '2025-2026',
+        profName: cleanCoverVal(d.profName) || cleanCoverVal(d.teacherName) || cleanCoverVal(d.faculty) || '',
+        designation: cleanCoverVal(d.designation) || 'ASSISTANT PROFESSOR',
+        department: cleanCoverVal(d.department) || cleanCoverVal(d.dept) || 'COMPUTER SCIENCE & APPLICATIONS',
+        studentName: cleanCoverVal(d.studentName) || cleanCoverVal(d.name) || cleanCoverVal(d.stuName) || 'Student',
+        fatherName: cleanCoverVal(d.fatherName) || cleanCoverVal(d.father_name) || '',
+        relation: cleanCoverVal(d.relation) || 'S/O',
+        studentId: cleanCoverVal(d.studentId) || cleanCoverVal(d.rollNo) || cleanCoverVal(d.roll_no) || cleanCoverVal(d.stuId) || '',
+        date: cleanCoverVal(d.date) || (d.createdAt ? String(d.createdAt).split('T')[0] : ''),
+        day: cleanCoverVal(d.day) || '',
+        createdAt: d.createdAt || d.updatedAt || new Date().toISOString()
+      };
+    });
+
+    normalized.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    coverPagesCache = normalized;
     updateCoverAnalyticsUI();
     filterCoverPages();
   } catch (err) {
@@ -3952,7 +4167,7 @@ window.filterCoverPages = function() {
 
   // 1. Filter by subtab (assignment vs practical)
   let list = coverPagesCache.filter(r => {
-    const isPractical = r.docType === 'practical' || (r.docType !== 'assignment' && (r.practicalNo || (r.title && r.title.toLowerCase().includes('practical'))));
+    const isPractical = isCoverPracticalRecord(r);
     return currentCoverSubTab === 'practical' ? isPractical : !isPractical;
   });
 
@@ -4014,7 +4229,8 @@ function renderCoverTableRows(list) {
       ? `<span class="badge" style="background:rgba(148,163,184,0.12); color:#cbd5e1; border:1px solid rgba(148,163,184,0.25);">Guest</span>`
       : `<span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25);">Contributor</span>`;
 
-    const docNum = currentCoverSubTab === 'practical' ? (r.practicalNo ? `Prac #${r.practicalNo}` : 'Practical') : (r.assignmentNo ? `Assign #${r.assignmentNo}` : 'Assignment');
+    const isPrac = isCoverPracticalRecord(r);
+    const docNum = isPrac ? (r.practicalNo ? `Prac #${r.practicalNo}` : 'Practical') : (r.assignmentNo ? `Assign #${r.assignmentNo}` : 'Assignment');
     const displayDate = r.date || (r.createdAt ? r.createdAt.split('T')[0] : 'N/A');
     const escapedId = r.id || '';
     const escapedUserId = r.userId || '';
@@ -4030,20 +4246,20 @@ function renderCoverTableRows(list) {
         </td>
         <td style="padding:0.6rem;">${typeBadge}</td>
         <td style="padding:0.6rem;">
-          <strong style="color:white; font-size:0.88rem;">${escapeAdminHtml(r.studentName || 'Unnamed')}</strong>
-          <div style="font-size:0.75rem; color:#94a3b8;">Roll: ${escapeAdminHtml(r.studentId || r.rollNo || '-')}</div>
+          <strong style="color:white; font-size:0.88rem;">${escapeAdminHtml(cleanCoverVal(r.studentName) || 'Unnamed')}</strong>
+          <div style="font-size:0.75rem; color:#94a3b8;">Roll: ${escapeAdminHtml(cleanCoverVal(r.studentId) || cleanCoverVal(r.rollNo) || '-')}</div>
         </td>
         <td style="padding:0.6rem;">
-          <div style="color:#e2e8f0; font-size:0.84rem; font-weight:600;">${escapeAdminHtml(r.subjectName || '-')}</div>
-          <div style="font-size:0.75rem; color:#38bdf8; font-family:monospace;">${escapeAdminHtml(r.subjectCode || '-')}</div>
+          <div style="color:#e2e8f0; font-size:0.84rem; font-weight:600;">${escapeAdminHtml(cleanCoverVal(r.subjectName) || '-')}</div>
+          <div style="font-size:0.75rem; color:#38bdf8; font-family:monospace;">${escapeAdminHtml(cleanCoverVal(r.subjectCode) || '-')}</div>
         </td>
         <td style="padding:0.6rem; font-size:0.82rem; color:#cbd5e1;">
-          <div><strong style="color:#e2e8f0;">${escapeAdminHtml(r.courseSection || r.course || '-')}</strong></div>
-          <div style="font-size:0.75rem; color:#94a3b8;">${escapeAdminHtml(r.department || r.degreeName || '-')}</div>
+          <div><strong style="color:#e2e8f0;">${escapeAdminHtml(cleanCoverVal(r.courseSection) || cleanCoverVal(r.course) || '-')}</strong></div>
+          <div style="font-size:0.75rem; color:#94a3b8;">${escapeAdminHtml(cleanCoverVal(r.department) || cleanCoverVal(r.degreeName) || '-')}</div>
         </td>
         <td style="padding:0.6rem; font-size:0.8rem; color:#94a3b8;">
-          <div>${displayDate}</div>
-          <div style="font-size:0.72rem; color:#64748b;">Prof: ${escapeAdminHtml(r.profName || r.teacherName || '-')}</div>
+          <div>${cleanCoverVal(r.date) || (r.createdAt ? String(r.createdAt).split('T')[0] : 'N/A')}</div>
+          <div style="font-size:0.72rem; color:#64748b;">Prof: ${escapeAdminHtml(cleanCoverVal(r.profName) || cleanCoverVal(r.teacherName) || '-')}</div>
         </td>
         <td style="text-align:center; padding:0.6rem; white-space:nowrap;">
           <div style="display:inline-flex; gap:6px;">
@@ -4198,55 +4414,70 @@ window.viewCoverPageDetails = function(id) {
   }
 
   if (contentEl) {
+    const sName = cleanCoverVal(r.studentName) || cleanCoverVal(r.name) || cleanCoverVal(r.stuName) || '-';
+    const sId = cleanCoverVal(r.studentId) || cleanCoverVal(r.rollNo) || '-';
+    const subName = cleanCoverVal(r.subjectName) || cleanCoverVal(r.subject) || cleanCoverVal(r.title) || '-';
+    const subCode = cleanCoverVal(r.subjectCode) || cleanCoverVal(r.subCode) || cleanCoverVal(r.code) || '-';
+    const courseSec = cleanCoverVal(r.courseSection) || cleanCoverVal(r.course) || '-';
+    const dept = cleanCoverVal(r.department) || cleanCoverVal(r.dept) || 'COMPUTER SCIENCE & APPLICATIONS';
+    const degree = cleanCoverVal(r.degreeName) || cleanCoverVal(r.degree) || getDegreeFromCourse(courseSec);
+    const prof = cleanCoverVal(r.profName) || cleanCoverVal(r.teacherName) || '-';
+    const desig = cleanCoverVal(r.designation) || 'Faculty';
+    const father = cleanCoverVal(r.fatherName) || cleanCoverVal(r.father_name) || '-';
+    const relation = cleanCoverVal(r.relation) || 'S/O';
+    const session = cleanCoverVal(r.session) || cleanCoverVal(r.sessionYear) || '-';
+    const dateStr = cleanCoverVal(r.date) || (r.createdAt ? String(r.createdAt).split('T')[0] : '-');
+    const dayStr = cleanCoverVal(r.day) || '-';
+
     contentEl.innerHTML = `
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:8px; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Student Name</span>
-          <strong style="color:white;">${escapeAdminHtml(r.studentName || '-')}</strong>
+          <strong style="color:white;">${escapeAdminHtml(sName)}</strong>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Roll / Student ID</span>
-          <strong style="color:white;">${escapeAdminHtml(r.studentId || r.rollNo || '-')}</strong>
+          <strong style="color:white;">${escapeAdminHtml(sId)}</strong>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Subject Name</span>
-          <strong style="color:white;">${escapeAdminHtml(r.subjectName || '-')}</strong>
+          <strong style="color:white;">${escapeAdminHtml(subName)}</strong>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Subject Code</span>
-          <strong style="color:#38bdf8; font-family:monospace;">${escapeAdminHtml(r.subjectCode || '-')}</strong>
+          <strong style="color:#38bdf8; font-family:monospace;">${escapeAdminHtml(subCode)}</strong>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Course & Section</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.courseSection || r.course || '-')}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(courseSec)}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Department</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.department || '-')}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(dept)}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Degree Name</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.degreeName || '-')}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(degree)}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Submitted To (Faculty)</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.profName || r.teacherName || '-')} (${escapeAdminHtml(r.designation || 'Faculty')})</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(prof)} (${escapeAdminHtml(desig)})</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Father Name</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.relation || 'S/O')} ${escapeAdminHtml(r.fatherName || '-')}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(relation)} ${escapeAdminHtml(father)}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Session</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.session || r.sessionYear || '-')}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(session)}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Submission Date</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.date || (r.createdAt ? r.createdAt.split('T')[0] : '-'))}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(dateStr)}</span>
         </div>
         <div>
           <span style="font-size:0.75rem; color:var(--admin-muted); display:block;">Day</span>
-          <span style="color:#cbd5e1;">${escapeAdminHtml(r.day || '-')}</span>
+          <span style="color:#cbd5e1;">${escapeAdminHtml(dayStr)}</span>
         </div>
       </div>
       <div style="font-size:0.8rem; color:var(--admin-muted); margin-top:6px; display:flex; justify-content:space-between;">
@@ -4268,28 +4499,271 @@ window.closeCoverViewModal = function() {
   if (modal) modal.classList.remove('active');
 };
 
+async function renderCoverPageToCanvas(d) {
+  const canvas = document.createElement('canvas');
+  const W = 2480;
+  const H = 3508;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Fill White Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  const scaleX = W / 612.0;
+  const scaleY = H / 792.0;
+  const isPractical = isCoverPracticalRecord(d);
+
+  // Load Header Banner & Center Logo safely without tainting canvas
+  const folder = isPractical ? 'PracticalCoverPageGenerator' : 'AssignmentCoverPageGenerator';
+  const headerUrl = `/${folder}/Header_Image.jpg`;
+  const logoUrl = `/${folder}/Center_Logo.jpg`;
+
+  async function loadSafeImg(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = objUrl;
+      });
+    } catch (e) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = url;
+      });
+    }
+  }
+
+  const [headerImg, centerLogoImg] = await Promise.all([loadSafeImg(headerUrl), loadSafeImg(logoUrl)]);
+
+  // 1. Header Banner Image
+  const headerW = 507.48 * scaleX;
+  const headerH = 77.88 * scaleY;
+  const headerX = (W - headerW) / 2.0;
+  const headerY = 33.84 * scaleY;
+  if (headerImg && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
+    ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
+  }
+
+  // Typography
+  const fontTitleSize = Math.round(13.17 * scaleY);
+  const fontBold = `bold ${fontTitleSize}px 'Times New Roman', 'Tinos', Times, Georgia, serif`;
+  const fontRegular = `normal ${fontTitleSize}px 'Times New Roman', 'Tinos', Times, Georgia, serif`;
+
+  function drawBoldText(text, x, y, align = 'center') {
+    if (!text) return;
+    ctx.save();
+    ctx.textAlign = align;
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = fontBold;
+    ctx.fillStyle = '#000000';
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function drawRegularText(text, x, y, align = 'center') {
+    if (!text) return;
+    ctx.save();
+    ctx.textAlign = align;
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = fontRegular;
+    ctx.fillStyle = '#000000';
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function splitDepartmentText(rawDept) {
+    let text = cleanCoverVal(rawDept);
+    if (/^department\s+of\s+/i.test(text)) {
+      text = text.replace(/^department\s+of\s+/i, '').trim();
+    }
+    if (text.length <= 17) {
+      return {
+        line1: `DEPARTMENT OF ${text.toUpperCase()}`,
+        line2: null
+      };
+    }
+    let splitIdx = -1;
+    const maxFirstLineLen = 19;
+    for (let i = Math.min(text.length - 1, maxFirstLineLen); i >= 8; i--) {
+      if (text[i] === ' ' || text[i] === '-') {
+        splitIdx = i;
+        break;
+      }
+    }
+    if (splitIdx === -1) splitIdx = text.indexOf(' ');
+    if (splitIdx > 0 && splitIdx < text.length) {
+      return {
+        line1: `DEPARTMENT OF ${text.substring(0, splitIdx).trim().toUpperCase()}`,
+        line2: text.substring(splitIdx).trim().toUpperCase()
+      };
+    } else {
+      return {
+        line1: `DEPARTMENT OF ${text.substring(0, 17).trim().toUpperCase()}`,
+        line2: text.substring(17).trim().toUpperCase()
+      };
+    }
+  }
+
+  // Safe extraction with cleanCoverVal and full alias resolution
+  const subName = (cleanCoverVal(d.subjectName) || cleanCoverVal(d.subject) || cleanCoverVal(d.title) || cleanCoverVal(d.subName)).toUpperCase();
+  const subCode = (cleanCoverVal(d.subjectCode) || cleanCoverVal(d.subCode) || cleanCoverVal(d.code)).toUpperCase();
+  const courseSection = (cleanCoverVal(d.courseSection) || cleanCoverVal(d.course) || cleanCoverVal(d.courseSec) || cleanCoverVal(d.section)).toUpperCase();
+  const degreeName = (cleanCoverVal(d.degreeName) || cleanCoverVal(d.degree) || getDegreeFromCourse(courseSection)).toUpperCase();
+  const session = (cleanCoverVal(d.session) || cleanCoverVal(d.sessionYear) || cleanCoverVal(d.academicYear) || '2025-2026').toUpperCase();
+  const profName = (cleanCoverVal(d.profName) || cleanCoverVal(d.teacherName) || cleanCoverVal(d.faculty) || cleanCoverVal(d.submittedTo)).toUpperCase();
+  const desig = (cleanCoverVal(d.designation) || cleanCoverVal(d.desig) || 'ASSISTANT PROFESSOR').toUpperCase();
+  const dept = (cleanCoverVal(d.department) || cleanCoverVal(d.dept) || 'COMPUTER SCIENCE & APPLICATIONS').toUpperCase();
+  const studentName = (cleanCoverVal(d.studentName) || cleanCoverVal(d.name) || cleanCoverVal(d.stuName) || cleanCoverVal(d.student) || 'STUDENT').toUpperCase();
+  const relation = (cleanCoverVal(d.relation) || 'S/O').toUpperCase();
+  const fatherName = (cleanCoverVal(d.fatherName) || cleanCoverVal(d.father_name) || cleanCoverVal(d.father)).toUpperCase();
+  const studentId = (cleanCoverVal(d.studentId) || cleanCoverVal(d.rollNo) || cleanCoverVal(d.roll_no) || cleanCoverVal(d.stuId)).toUpperCase();
+  const rawDate = cleanCoverVal(d.date) || (d.createdAt ? String(d.createdAt).split('T')[0] : '');
+  const dateStr = rawDate.toUpperCase();
+  const rawDay = cleanCoverVal(d.day);
+  const dayStr = rawDay ? ` (${rawDay.toUpperCase()})` : '';
+
+  // 2. Headings
+  if (isPractical) {
+    drawRegularText("A", W / 2.0, 130.0 * scaleY, 'center');
+    drawBoldText("PRACTICAL FILE", W / 2.0, 149.0 * scaleY, 'center');
+    drawRegularText("OF", W / 2.0, 168.0 * scaleY, 'center');
+    if (subName) drawBoldText(subName, W / 2.0, 188.0 * scaleY, 'center');
+    if (subCode) drawBoldText(subCode, W / 2.0, 208.0 * scaleY, 'center');
+    if (courseSection) drawBoldText(courseSection, W / 2.0, 228.0 * scaleY, 'center');
+    drawRegularText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 249.0 * scaleY, 'center');
+    drawBoldText(degreeName, W / 2.0, 268.0 * scaleY, 'center');
+  } else {
+    const numVal = (cleanCoverVal(d.assignmentNo) || cleanCoverVal(d.assignNo) || '1').toUpperCase();
+    drawBoldText(`ASSIGNMENT ➔ ${numVal}`, W / 2.0, 131.0 * scaleY, 'center');
+    drawRegularText("OF", W / 2.0, 155.0 * scaleY, 'center');
+    if (subName) drawBoldText(subName, W / 2.0, 179.0 * scaleY, 'center');
+    if (subCode) drawBoldText(subCode, W / 2.0, 203.0 * scaleY, 'center');
+    if (courseSection) drawBoldText(courseSection, W / 2.0, 226.0 * scaleY, 'center');
+    drawRegularText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 250.0 * scaleY, 'center');
+    drawBoldText(degreeName, W / 2.0, 267.0 * scaleY, 'center');
+  }
+
+  // 3. Center Logo
+  const logoW = 134.76 * scaleX;
+  const logoH = 114.84 * scaleY;
+  const logoX = (W - logoW) / 2.0;
+  const logoY = 280.0 * scaleY;
+  if (centerLogoImg && (centerLogoImg.naturalWidth > 0 || centerLogoImg.width > 0)) {
+    ctx.drawImage(centerLogoImg, logoX, logoY, logoW, logoH);
+  }
+
+  // 4. Session
+  drawBoldText(`SESSION: ${session}`, W / 2.0, 414.0 * scaleY, 'center');
+
+  // 5. Two Columns
+  const leftColX = 59.76 * scaleX;
+  const rightColX = 364.25 * scaleX;
+
+  drawBoldText("SUBMITTED TO", leftColX, 462.0 * scaleY, 'left');
+  drawBoldText("SUBMITTED BY", rightColX, 462.0 * scaleY, 'left');
+
+  if (profName) drawBoldText(profName, leftColX, 486.0 * scaleY, 'left');
+  drawBoldText(studentName, rightColX, 486.0 * scaleY, 'left');
+
+  drawRegularText(desig, leftColX, 510.0 * scaleY, 'left');
+  if (fatherName) {
+    drawRegularText(`${relation} ${fatherName}`, rightColX, 510.0 * scaleY, 'left');
+  }
+
+  const deptParsed = splitDepartmentText(dept);
+  if (deptParsed.line2) {
+    drawRegularText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
+    if (studentId) drawRegularText(`STUDENT ID: ${studentId}`, rightColX, 534.0 * scaleY, 'left');
+    drawRegularText(deptParsed.line2, leftColX, 558.0 * scaleY, 'left');
+    if (courseSection) drawBoldText(courseSection, rightColX, 558.0 * scaleY, 'left');
+    drawBoldText("DPG STM", leftColX, 582.0 * scaleY, 'left');
+  } else {
+    drawRegularText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
+    if (studentId) drawRegularText(`STUDENT ID: ${studentId}`, rightColX, 534.0 * scaleY, 'left');
+    drawBoldText("DPG STM", leftColX, 558.0 * scaleY, 'left');
+    if (courseSection) drawBoldText(courseSection, rightColX, 558.0 * scaleY, 'left');
+  }
+
+  // 6. Footer
+  const submitText = dateStr ? `SUBMITTED ON ${dateStr}${dayStr}` : 'SUBMITTED TO DPG STM';
+  drawRegularText(submitText, W / 2.0, 701.0 * scaleY, 'center');
+  drawRegularText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY, 'center');
+
+  return canvas;
+}
+
 window.downloadAdminCoverPdf = async function(id) {
   const r = coverPagesCache.find(item => item.id === id);
   if (!r) return;
 
+  // Find the exact button that triggered the click
+  let activeBtn = null;
+  if (window.event && window.event.currentTarget) {
+    activeBtn = window.event.currentTarget;
+  }
+  if (!activeBtn) {
+    activeBtn = document.getElementById('coverModalDownloadBtn');
+  }
+  const originalHtml = activeBtn ? activeBtn.innerHTML : '';
+  if (activeBtn) {
+    activeBtn.disabled = true;
+    activeBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Rendering PDF...';
+  }
+
+  const isPrac = isCoverPracticalRecord(r);
+  const sCode = cleanCoverVal(r.subjectCode) || cleanCoverVal(r.subCode) || cleanCoverVal(r.code) || 'Cover';
+  const sName = cleanCoverVal(r.studentName) || cleanCoverVal(r.name) || cleanCoverVal(r.stuName) || 'Student';
+  const cleanCode = sCode.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const cleanName = sName.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const aNo = cleanCoverVal(r.assignmentNo) || cleanCoverVal(r.assignNo) || '1';
+  const filename = isPrac
+    ? `Practical_Cover_${cleanCode}_${cleanName}.pdf`
+    : `Assignment_${aNo}_${cleanCode}_${cleanName}.pdf`;
+
   try {
+    // 1. Client-Side High-Res 300 DPI Canvas Rendering via jsPDF
+    if (window.jspdf && window.jspdf.jsPDF) {
+      const canvas = await renderCoverPageToCanvas(r);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.96);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+      pdf.save(filename);
+      return;
+    }
+
+    // 2. Server-Side Fallback via /api/assignment/export-pdf
     const payload = {
-      studentName: r.studentName || '',
-      studentId: r.studentId || r.rollNo || '',
-      subjectName: r.subjectName || '',
-      subjectCode: r.subjectCode || '',
-      courseSection: r.courseSection || r.course || '',
-      profName: r.profName || r.teacherName || '',
-      designation: r.designation || 'ASSISTANT PROFESSOR',
-      department: r.department || 'COMPUTER SCIENCE & APPLICATIONS',
-      degreeName: r.degreeName || '',
-      fatherName: r.fatherName || '',
-      relation: r.relation || 'S/O',
-      session: r.session || r.sessionYear || '2025-2026',
-      date: r.date || (r.createdAt ? r.createdAt.split('T')[0] : ''),
-      day: r.day || '',
-      assignmentNo: r.assignmentNo || '1',
-      docType: r.docType || (r.practicalNo ? 'practical' : 'assignment')
+      studentName: sName,
+      studentId: cleanCoverVal(r.studentId) || cleanCoverVal(r.rollNo) || '',
+      subjectName: cleanCoverVal(r.subjectName) || cleanCoverVal(r.subject) || cleanCoverVal(r.title) || '',
+      subjectCode: sCode,
+      courseSection: cleanCoverVal(r.courseSection) || cleanCoverVal(r.course) || '',
+      profName: cleanCoverVal(r.profName) || cleanCoverVal(r.teacherName) || '',
+      designation: cleanCoverVal(r.designation) || 'ASSISTANT PROFESSOR',
+      department: cleanCoverVal(r.department) || 'COMPUTER SCIENCE & APPLICATIONS',
+      degreeName: cleanCoverVal(r.degreeName) || getDegreeFromCourse(r.courseSection || r.course),
+      fatherName: cleanCoverVal(r.fatherName) || '',
+      relation: cleanCoverVal(r.relation) || 'S/O',
+      session: cleanCoverVal(r.session) || cleanCoverVal(r.sessionYear) || '2025-2026',
+      date: cleanCoverVal(r.date) || (r.createdAt ? String(r.createdAt).split('T')[0] : ''),
+      day: cleanCoverVal(r.day) || '',
+      assignmentNo: aNo,
+      docType: isPrac ? 'practical' : 'assignment'
     };
 
     const res = await fetch(`${API_URL}/assignment/export-pdf`, {
@@ -4303,25 +4777,25 @@ window.downloadAdminCoverPdf = async function(id) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const isPrac = payload.docType === 'practical';
-      a.download = `${isPrac ? 'Practical' : 'Assignment'}_${isPrac ? 'Cover' : payload.assignmentNo}_${payload.subjectCode || 'Page'}.pdf`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
     } else {
-      if (typeof window.customAlert === 'function') {
-        await window.customAlert("Failed to generate PDF from server.", { title: "Error", isDanger: true });
-      } else {
-        alert("Failed to generate PDF from server.");
-      }
+      throw new Error("Server PDF export returned status " + res.status);
     }
   } catch (err) {
     console.error("downloadAdminCoverPdf error:", err);
     if (typeof window.customAlert === 'function') {
-      await window.customAlert("Network error while downloading PDF.", { title: "Network Error", isDanger: true });
+      await window.customAlert("Failed to download cover page PDF: " + err.message, { title: "Export Error", isDanger: true });
     } else {
-      alert("Network error while downloading PDF.");
+      alert("Failed to download cover page PDF: " + err.message);
+    }
+  } finally {
+    if (activeBtn) {
+      activeBtn.disabled = false;
+      activeBtn.innerHTML = originalHtml;
     }
   }
 };
@@ -4331,29 +4805,58 @@ window.downloadAdminCoverPdf = async function(id) {
 // ==========================================
 let solutionsCache = [];
 let currentSolutionsSubTab = 'assignment';
+let testCasesCache = [];
+let currentAdminTcActiveLang = 'html';
 
 window.switchSolutionsSubTab = function(subTab) {
   currentSolutionsSubTab = subTab;
   const btnAssign = document.getElementById('subtabSolAssignBtn');
   const btnPrac = document.getElementById('subtabSolPracBtn');
-  if (btnAssign && btnPrac) {
-    if (subTab === 'assignment') {
+  const btnTestCases = document.getElementById('subtabSolTestCasesBtn');
+  const solArea = document.getElementById('solMainContentArea');
+  const tcSection = document.getElementById('solTestCasesSection');
+
+  // Reset inactive button styles
+  [btnAssign, btnPrac, btnTestCases].forEach(btn => {
+    if (btn) {
+      btn.style.background = 'rgba(255,255,255,0.04)';
+      btn.style.color = 'var(--admin-muted)';
+      btn.style.border = '1px solid var(--admin-border)';
+    }
+  });
+
+  if (subTab === 'assignment') {
+    if (btnAssign) {
       btnAssign.style.background = 'rgba(20,184,166,0.18)';
       btnAssign.style.color = '#14b8a6';
       btnAssign.style.border = '1px solid rgba(20,184,166,0.35)';
-      btnPrac.style.background = 'rgba(255,255,255,0.04)';
-      btnPrac.style.color = 'var(--admin-muted)';
-      btnPrac.style.border = '1px solid var(--admin-border)';
-    } else {
+    }
+    if (solArea) solArea.style.display = 'block';
+    if (tcSection) tcSection.style.display = 'none';
+    filterSolutionsList();
+  } else if (subTab === 'practical') {
+    if (btnPrac) {
       btnPrac.style.background = 'rgba(168,85,247,0.18)';
       btnPrac.style.color = '#c084fc';
       btnPrac.style.border = '1px solid rgba(168,85,247,0.35)';
-      btnAssign.style.background = 'rgba(255,255,255,0.04)';
-      btnAssign.style.color = 'var(--admin-muted)';
-      btnAssign.style.border = '1px solid var(--admin-border)';
+    }
+    if (solArea) solArea.style.display = 'block';
+    if (tcSection) tcSection.style.display = 'none';
+    filterSolutionsList();
+  } else if (subTab === 'test-cases') {
+    if (btnTestCases) {
+      btnTestCases.style.background = 'rgba(99,102,241,0.2)';
+      btnTestCases.style.color = '#818cf8';
+      btnTestCases.style.border = '1px solid rgba(99,102,241,0.4)';
+    }
+    if (solArea) solArea.style.display = 'none';
+    if (tcSection) tcSection.style.display = 'block';
+    if (testCasesCache.length === 0) {
+      if (window.loadSolutionsTestCasesAdmin) window.loadSolutionsTestCasesAdmin();
+    } else {
+      if (window.filterSolTestCasesList) window.filterSolTestCasesList();
     }
   }
-  filterSolutionsList();
 };
 
 function updateSolutionsMetricsUI() {
@@ -4362,6 +4865,9 @@ function updateSolutionsMetricsUI() {
   const pracCount = all.filter(s => s.type === 'practical').length;
   const encCount = all.filter(s => s.isEncrypted).length;
   const totalViews = all.reduce((sum, s) => sum + (Number(s.views) || 0), 0);
+  const totalLikes = all.reduce((sum, s) => sum + (Number(s.likes) || (Array.isArray(s.likedBy) ? s.likedBy.length : 0)), 0);
+  const totalShares = all.reduce((sum, s) => sum + (Number(s.shares || s.shareClicks) || 0), 0);
+  const totalRuns = all.reduce((sum, s) => sum + (Number(s.runs || s.codeRuns) || 0), 0);
   const totalScreentimeSec = all.reduce((sum, s) => sum + (Number(s.totalScreentimeSec) || 0), 0);
   const avgScreentimeSec = all.length > 0 ? Math.round(totalScreentimeSec / all.length) : 0;
 
@@ -4371,6 +4877,12 @@ function updateSolutionsMetricsUI() {
   const countPracEl = document.getElementById('countSolPractical');
   if (countPracEl) countPracEl.textContent = pracCount;
 
+  const countTestCasesEl = document.getElementById('countSolTestCases');
+  if (countTestCasesEl) countTestCasesEl.textContent = testCasesCache.length;
+
+  const statTestCasesEl = document.getElementById('statTotalTestCasesCount');
+  if (statTestCasesEl) statTestCasesEl.textContent = testCasesCache.length;
+
   const statTotalEl = document.getElementById('statTotalSolutionsCount');
   if (statTotalEl) statTotalEl.textContent = all.length;
 
@@ -4379,6 +4891,15 @@ function updateSolutionsMetricsUI() {
 
   const statViewsEl = document.getElementById('statTotalSolutionViews');
   if (statViewsEl) statViewsEl.textContent = totalViews.toLocaleString();
+
+  const statLikesEl = document.getElementById('statTotalSolutionLikes');
+  if (statLikesEl) statLikesEl.textContent = totalLikes.toLocaleString();
+
+  const statSharesEl = document.getElementById('statTotalSolutionShares');
+  if (statSharesEl) statSharesEl.textContent = totalShares.toLocaleString();
+
+  const statRunsEl = document.getElementById('statTotalSolutionRuns');
+  if (statRunsEl) statRunsEl.textContent = totalRuns.toLocaleString();
 
   const statScreenEl = document.getElementById('statAvgSolutionScreentime');
   if (statScreenEl) {
@@ -4396,6 +4917,11 @@ window.loadSolutionsMetricsAdmin = async function(forceRefresh = false) {
   const tbody = document.getElementById('solutionsTableBody');
   if (!tbody) return;
 
+  // Also load test cases count and dataset
+  if (typeof window.loadSolutionsTestCasesAdmin === 'function') {
+    window.loadSolutionsTestCasesAdmin(forceRefresh);
+  }
+
   if (!forceRefresh && solutionsCache.length > 0) {
     updateSolutionsMetricsUI();
     filterSolutionsList();
@@ -4406,41 +4932,41 @@ window.loadSolutionsMetricsAdmin = async function(forceRefresh = false) {
 
   try {
     let items = [];
-    // 1. Try Backend API
+    // 1. Direct Firestore collectionGroup (Fastest & Realtime)
     try {
-      const res = await fetch(`${API_URL}/admin/solutions/list`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+      const q = query(collectionGroup(db, 'solutions'), limit(300));
+      const snap = await getDocs(q);
+      const fbItems = [];
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const p = docSnap.ref.path.split('/');
+        const type = (p[0] === 'practical_solutions' || p[1] === 'practicals' || d.type === 'practical') ? 'practical' : 'assignment';
+        const contributorUid = p[1] || d.contributorUid || d.userId || '';
+        fbItems.push({
+          id: docSnap.id,
+          type,
+          contributorUid,
+          path: docSnap.ref.path,
+          ...d
+        });
       });
-      const data = await res.json();
-      if (res.ok && data.success && Array.isArray(data.solutions)) {
-        items = data.solutions;
-      }
-    } catch (e) {
-      console.warn("Backend solutions list failed, trying direct Firestore collectionGroup:", e);
+      if (fbItems.length > 0) items = fbItems;
+    } catch (fbErr) {
+      console.warn("Firestore collectionGroup solutions error:", fbErr);
     }
 
-    // 2. Direct Firestore Fallback
+    // 2. Fallback to Backend API if direct Firestore returned 0 items
     if (items.length === 0) {
       try {
-        const q = query(collectionGroup(db, 'solutions'), limit(300));
-        const snap = await getDocs(q);
-        const fbItems = [];
-        snap.forEach(docSnap => {
-          const d = docSnap.data();
-          const p = docSnap.ref.path.split('/');
-          const type = (p[0] === 'practical_solutions' || p[1] === 'practicals' || d.type === 'practical') ? 'practical' : 'assignment';
-          const contributorUid = p[1] || d.contributorUid || d.userId || '';
-          fbItems.push({
-            id: docSnap.id,
-            type,
-            contributorUid,
-            path: docSnap.ref.path,
-            ...d
-          });
+        const res = await fetch(`${API_URL}/admin/solutions/list`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
         });
-        if (fbItems.length > 0) items = fbItems;
-      } catch (fbErr) {
-        console.warn("Firestore collectionGroup solutions error:", fbErr);
+        const data = await res.json();
+        if (res.ok && data.success && Array.isArray(data.solutions)) {
+          items = data.solutions;
+        }
+      } catch (e) {
+        console.warn("Backend solutions list failed:", e);
       }
     }
 
@@ -4509,6 +5035,8 @@ function renderSolutionsTableRows(list) {
 
     const views = Number(s.views) || 0;
     const likes = Number(s.likes) || (Array.isArray(s.likedBy) ? s.likedBy.length : 0);
+    const shares = Number(s.shares || s.shareClicks || 0);
+    const runs = Number(s.runs || s.codeRuns || 0);
     const screenSec = Number(s.totalScreentimeSec) || 0;
     const screenFormatted = screenSec >= 60 ? `${Math.floor(screenSec/60)}m ${screenSec%60}s` : `${screenSec}s`;
 
@@ -4530,7 +5058,10 @@ function renderSolutionsTableRows(list) {
         </td>
         <td style="padding:0.6rem;">
           <strong style="color:white; font-size:0.88rem;">${escapeAdminHtml(s.subjectName || '-')}</strong>
-          <div style="font-family:monospace; color:#38bdf8; font-size:0.75rem;">${escapeAdminHtml(s.subjectCode || '-')}</div>
+          <div style="display:flex; gap:6px; align-items:center; margin-top:2px; flex-wrap:wrap;">
+            <span style="font-family:monospace; color:#38bdf8; font-size:0.75rem;">${escapeAdminHtml(s.subjectCode || '-')}</span>
+            ${(s.course || s.courseSec) ? `<span style="background:rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35); font-size:0.7rem; padding:1px 6px; border-radius:4px; font-weight:700;">${escapeAdminHtml(s.course || s.courseSec)}</span>` : ''}
+          </div>
           <div style="color:#94a3b8; font-size:0.72rem;">Items: ${qCount}</div>
         </td>
         <td style="padding:0.6rem; font-size:0.82rem;">
@@ -4546,12 +5077,17 @@ function renderSolutionsTableRows(list) {
         <td style="padding:0.6rem; font-size:0.8rem;">
           <div style="color:#38bdf8;"><i class="ri-eye-line"></i> ${views} views</div>
           <div style="color:#f472b6;"><i class="ri-heart-line"></i> ${likes} likes</div>
+          <div style="color:#10b981;"><i class="ri-play-circle-line"></i> ${runs} runs</div>
+          <div style="color:#c084fc;"><i class="ri-share-forward-line"></i> ${shares} shares</div>
           <div style="color:#f59e0b; font-size:0.72rem;"><i class="ri-time-line"></i> ${screenFormatted}</div>
         </td>
         <td style="text-align:center; padding:0.6rem; white-space:nowrap;">
           <div style="display:inline-flex; gap:6px;">
+            <a href="${escapedType === 'practical' ? 'PracticalSolution' : 'AssignmentSolution'}/generate.html?id=${encodeURIComponent(escapedId)}&contributor=${encodeURIComponent(escapedContrib)}&edit=true" target="_blank" class="btn-action warn" style="padding:4px 8px; font-size:0.82rem; text-decoration:none;" title="Edit Solution in Generator">
+              <i class="ri-edit-line"></i>
+            </a>
             <button type="button" class="btn-action" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:4px 8px; font-size:0.82rem;" onclick="openSolutionAiAnalysis('${escapedId}')" title="Run AI Safety & Integrity Audit">
-              <i class="ri-brain-line"></i> AI Audit
+              <i class="ri-brain-line"></i>
             </button>
             <button type="button" class="btn-action primary" style="padding:4px 8px; font-size:0.82rem;" onclick="viewSolutionDetails('${escapedId}')" title="View Details">
               <i class="ri-eye-line"></i>
@@ -4841,7 +5377,7 @@ window.closeSolutionAiModal = function() {
   if (modal) modal.classList.remove('active');
 };
 
-// View Details Modal (with Zero-Knowledge Protected Mode)
+// View Details Modal (with Zero-Knowledge Protected Mode & Decrypted Content Viewer)
 window.viewSolutionDetails = function(id) {
   const s = solutionsCache.find(item => item.id === id);
   if (!s) return;
@@ -4856,14 +5392,16 @@ window.viewSolutionDetails = function(id) {
   }
 
   const isEnc = !!s.isEncrypted;
+  const isUnlocked = isEnc && !!s.decryptedContent;
 
-  if (isEnc) {
+  if (isEnc && !isUnlocked) {
+    // Encrypted & Still Locked: Show authorized decryption challenge
     contentEl.innerHTML = `
       <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:1.2rem; text-align:center;">
         <i class="ri-lock-2-line" style="font-size:2.6rem; color:#f87171; display:block; margin-bottom:8px;"></i>
         <h3 style="color:#f87171; font-size:1.15rem; font-weight:700; margin:0 0 6px 0;">🔒 Zero-Knowledge End-to-End Encrypted</h3>
         <p style="color:#cbd5e1; font-size:0.86rem; line-height:1.6; max-width:540px; margin:0 auto 1rem auto;">
-          This academic solution is protected with client-side AES-GCM encryption by the Contributor. The database does not possess the encryption password, and administrators are strictly debarred from seeing raw answers or original Cloudinary URLs without the contributor's password.
+          This academic solution is protected with client-side AES-GCM encryption by the Contributor. The database does not possess the encryption password, and administrators cannot access raw answers without the contributor's authorized password.
         </p>
         <div style="display:inline-flex; gap:10px; background:rgba(0,0,0,0.35); padding:6px 14px; border-radius:8px; font-size:0.78rem; color:#94a3b8; font-family:monospace;">
           <span>Ciphertext: ${s.encryptedData ? s.encryptedData.length : 0} bytes</span>
@@ -4872,66 +5410,110 @@ window.viewSolutionDetails = function(id) {
         </div>
       </div>
 
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:8px; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.84rem;">
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:8px; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.84rem; margin-top:10px;">
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Subject Name</span><strong style="color:white;">${escapeAdminHtml(s.subjectName || '-')}</strong></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Subject Code</span><strong style="color:#38bdf8;">${escapeAdminHtml(s.subjectCode || '-')}</strong></div>
+        <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Course &amp; Section</span><strong style="color:#c084fc;">${escapeAdminHtml(s.course || s.courseSec || 'Not Specified')}</strong></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Student Name</span><span style="color:#cbd5e1;">${escapeAdminHtml(s.studentName || '-')}</span></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Student ID</span><span style="color:#cbd5e1;">${escapeAdminHtml(s.studentId || '-')}</span></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Submitted To</span><span style="color:#cbd5e1;">${escapeAdminHtml(s.profName || s.submittedTo || '-')}</span></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Contributor Email</span><span style="color:#a855f7;">${escapeAdminHtml(s.contributorEmail || '-')}</span></div>
       </div>
 
+      <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+        <a href="${s.type === 'practical' ? 'PracticalSolution' : 'AssignmentSolution'}/generate.html?id=${encodeURIComponent(s.id)}&contributor=${encodeURIComponent(s.contributorUid || '')}&edit=true" target="_blank" class="btn-action warn" style="text-decoration:none; padding:6px 14px; font-size:0.82rem; display:inline-flex; align-items:center; gap:6px;">
+          <i class="ri-edit-line"></i> Open in Generator &amp; Edit
+        </a>
+      </div>
+
       <!-- Test Passphrase Locally -->
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:10px; padding:12px;">
-        <label style="color:#e2e8f0; font-size:0.82rem; font-weight:600; display:block; margin-bottom:6px;">
-          <i class="ri-key-line"></i> Authorized Decryption Challenge (Optional)
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:10px; padding:14px; margin-top:10px;">
+        <label style="color:#e2e8f0; font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">
+          <i class="ri-key-line" style="color:#f59e0b;"></i> Authorized Decryption Challenge
         </label>
-        <p style="color:#94a3b8; font-size:0.78rem; margin:0 0 8px 0;">If you possess the contributor's authorized password, you can decrypt the payload locally in memory:</p>
+        <p style="color:#94a3b8; font-size:0.78rem; margin:0 0 8px 0;">Enter the solution's password to decrypt in-memory and view the questions, answers, and documents:</p>
         <div style="display:flex; gap:8px;">
-          <input type="password" id="adminSolDecryptInput" class="admin-input" style="flex:1; margin:0; padding:6px 10px; font-size:0.84rem;" placeholder="Enter solution password...">
-          <button type="button" class="btn-action primary" style="padding:6px 14px; font-size:0.82rem; font-weight:600;" onclick="adminAttemptSolutionDecrypt('${s.id}')">
-            Decrypt
+          <input type="password" id="adminSolDecryptInput" class="admin-input" style="flex:1; margin:0; padding:8px 12px; font-size:0.85rem;" placeholder="Enter solution password..." onkeydown="if(event.key==='Enter') adminAttemptSolutionDecrypt('${s.id}')">
+          <button type="button" id="adminSolDecryptBtn" class="btn-action primary" style="padding:8px 18px; font-size:0.84rem; font-weight:600;" onclick="adminAttemptSolutionDecrypt('${s.id}')">
+            <i class="ri-lock-unlock-line"></i> Decrypt
           </button>
         </div>
-        <div id="adminDecryptedResult" style="display:none; margin-top:10px; font-size:0.84rem; background:rgba(0,0,0,0.4); padding:10px; border-radius:8px; max-height:220px; overflow-y:auto;"></div>
+        <div id="adminDecryptedResult" style="display:none; margin-top:10px; font-size:0.84rem;"></div>
       </div>
     `;
   } else {
-    // Public / Unencrypted
-    const items = s.type === 'practical' ? (s.practicals || []) : (s.questions || []);
+    // Unlocked / Public / Decrypted Content View
+    const dec = s.decryptedContent || {};
+    const items = s.type === 'practical' 
+      ? (dec.practicals || s.practicals || (Array.isArray(dec) ? dec : []))
+      : (dec.questions || s.questions || (Array.isArray(dec) ? dec : []));
+    const pdfUrl = dec.pdfUrl || s.pdfUrl || null;
+
     contentEl.innerHTML = `
+      ${isUnlocked ? `
+        <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); border-radius:12px; padding:1rem; text-align:center; margin-bottom:12px;">
+          <i class="ri-lock-unlock-line" style="font-size:2.2rem; color:#10b981; display:block; margin-bottom:4px;"></i>
+          <h4 style="color:#10b981; font-size:1.05rem; font-weight:700; margin:0 0 4px 0;">🔓 Decrypted In-Memory (Zero-Knowledge Verified)</h4>
+          <p style="color:#cbd5e1; font-size:0.8rem; margin:0 0 8px 0;">
+            Decrypted successfully using client-side AES-GCM-256 with the verified contributor passphrase. Content is rendered live in memory.
+          </p>
+          <button type="button" class="btn-action" style="padding:4px 12px; font-size:0.75rem; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); border-radius:6px; cursor:pointer;" onclick="adminLockSolutionAgain('${s.id}')">
+            <i class="ri-lock-line"></i> Re-lock Solution
+          </button>
+        </div>
+      ` : ''}
+
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:8px; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.84rem;">
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Subject Name</span><strong style="color:white;">${escapeAdminHtml(s.subjectName || '-')}</strong></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Subject Code</span><strong style="color:#38bdf8;">${escapeAdminHtml(s.subjectCode || '-')}</strong></div>
+        <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Course &amp; Section</span><strong style="color:#c084fc;">${escapeAdminHtml(s.course || s.courseSec || 'Not Specified')}</strong></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Student Name</span><span style="color:#cbd5e1;">${escapeAdminHtml(s.studentName || '-')}</span></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Student ID</span><span style="color:#cbd5e1;">${escapeAdminHtml(s.studentId || '-')}</span></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Submitted To</span><span style="color:#cbd5e1;">${escapeAdminHtml(s.profName || s.submittedTo || '-')}</span></div>
         <div><span style="color:var(--admin-muted); display:block; font-size:0.75rem;">Contributor</span><span style="color:#a855f7;">${escapeAdminHtml(s.contributorName || s.contributorEmail || '-')}</span></div>
       </div>
 
-      <div style="font-weight:700; color:#e2e8f0; font-size:0.88rem; margin-top:6px;">
-        ${s.type === 'practical' ? 'Practicals Content' : 'Questions & Answers'} (${items.length})
+      <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="font-weight:700; color:#e2e8f0; font-size:0.9rem;">
+          ${s.type === 'practical' ? 'Practicals Content' : 'Questions & Answers'} (${items.length})
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          ${pdfUrl ? `
+            <a href="${escapeAdminHtml(pdfUrl)}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:5px 12px; font-size:0.8rem; display:inline-flex; align-items:center; gap:5px;">
+              <i class="ri-file-pdf-line"></i> View Cloudinary PDF
+            </a>
+          ` : ''}
+          <a href="${s.type === 'practical' ? 'PracticalSolution' : 'AssignmentSolution'}/generate.html?id=${encodeURIComponent(s.id)}&contributor=${encodeURIComponent(s.contributorUid || '')}&edit=true" target="_blank" class="btn-action warn" style="text-decoration:none; padding:5px 12px; font-size:0.8rem; display:inline-flex; align-items:center; gap:5px;">
+            <i class="ri-edit-line"></i> Edit in Generator
+          </a>
+        </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:10px; max-height:350px; overflow-y:auto;">
-        ${items.map((it, idx) => `
-          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--admin-border); border-radius:8px; padding:10px;">
-            <div style="font-weight:600; color:#38bdf8; font-size:0.84rem; margin-bottom:4px;">
+      <div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; margin-top:10px;">
+        ${items.length === 0 ? `
+          <div style="text-align:center; padding:1.5rem; color:var(--admin-muted); font-size:0.84rem;">No individual items found in this solution.</div>
+        ` : items.map((it, idx) => `
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--admin-border); border-radius:8px; padding:12px;">
+            <div style="font-weight:600; color:#38bdf8; font-size:0.86rem; margin-bottom:6px;">
               #${idx + 1}: ${escapeAdminHtml(it.title || it.question || `Item ${idx+1}`)}
             </div>
-            <div style="color:#cbd5e1; font-size:0.8rem; white-space:pre-wrap; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; font-family:monospace; max-height:120px; overflow-y:auto;">
-              ${escapeAdminHtml(it.content || it.answer || it.code || '')}
-            </div>
+            ${it.aim ? `<div style="margin-bottom:6px; font-size:0.8rem; color:#cbd5e1;"><strong style="color:#94a3b8;">Aim:</strong> ${escapeAdminHtml(it.aim)}</div>` : ''}
+            ${it.procedure ? `<div style="margin-bottom:6px; font-size:0.8rem; color:#cbd5e1;"><strong style="color:#94a3b8;">Procedure:</strong> ${escapeAdminHtml(it.procedure)}</div>` : ''}
+            ${(it.answer || it.content || it.code) ? `
+              <div style="color:#cbd5e1; font-size:0.82rem; white-space:pre-wrap; background:rgba(0,0,0,0.35); padding:10px; border-radius:6px; font-family:monospace; max-height:180px; overflow-y:auto; line-height:1.45;">
+                ${escapeAdminHtml(it.answer || it.content || it.code || '')}
+              </div>
+            ` : ''}
+            ${it.output ? `<div style="margin-top:6px; font-size:0.8rem; color:#10b981;"><strong style="color:#34d399;">Output:</strong> ${escapeAdminHtml(it.output)}</div>` : ''}
           </div>
         `).join('')}
       </div>
 
-      ${s.pdfUrl ? `
-        <div style="margin-top:6px; display:flex; justify-content:flex-end;">
-          <a href="${s.pdfUrl}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:6px 14px; font-size:0.82rem; display:inline-flex; align-items:center; gap:6px;">
-            <i class="ri-file-pdf-line"></i> View Cloudinary PDF
-          </a>
-        </div>
+      ${isUnlocked ? `
+        <details style="margin-top:12px; background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:8px; padding:8px 12px; font-size:0.75rem;">
+          <summary style="cursor:pointer; color:#94a3b8; font-weight:600;">Inspect Raw Decrypted JSON</summary>
+          <pre style="margin:8px 0 0 0; color:#cbd5e1; max-height:160px; overflow-y:auto; white-space:pre-wrap; font-size:0.72rem;">${escapeAdminHtml(JSON.stringify(s.decryptedContent, null, 2))}</pre>
+        </details>
       ` : ''}
     `;
   }
@@ -4944,21 +5526,39 @@ window.closeSolutionViewModal = function() {
   if (modal) modal.classList.remove('active');
 };
 
+// Re-lock decrypted solution in memory
+window.adminLockSolutionAgain = function(id) {
+  const s = solutionsCache.find(item => item.id === id);
+  if (s) {
+    delete s.decryptedContent;
+    delete s.isDecryptedInMemory;
+    viewSolutionDetails(id);
+  }
+};
+
 // Client-side local decryption for Admin challenge
 window.adminAttemptSolutionDecrypt = async function(id) {
   const s = solutionsCache.find(item => item.id === id);
   if (!s || !s.encryptedData) return;
   const pwdInput = document.getElementById('adminSolDecryptInput');
   const resultEl = document.getElementById('adminDecryptedResult');
-  const pwd = pwdInput ? pwdInput.value : '';
+  const decryptBtn = document.getElementById('adminSolDecryptBtn');
+  const pwd = pwdInput ? pwdInput.value.trim() : '';
 
   if (!pwd) {
     if (typeof window.customAlert === 'function') {
-      await window.customAlert("Please enter a password to test decryption.", { title: "Password Required" });
+      await window.customAlert("Please enter the solution password to decrypt.", { title: "Password Required" });
     } else {
-      alert("Please enter a password.");
+      alert("Please enter the solution password to decrypt.");
     }
+    if (pwdInput) pwdInput.focus();
     return;
+  }
+
+  const originalBtnHtml = decryptBtn ? decryptBtn.innerHTML : 'Decrypt';
+  if (decryptBtn) {
+    decryptBtn.disabled = true;
+    decryptBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Decrypting...';
   }
 
   try {
@@ -4971,7 +5571,14 @@ window.adminAttemptSolutionDecrypt = async function(id) {
 
     const enc = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(pwd), { name: 'PBKDF2' }, false, ['deriveKey']);
-    const salt = enc.encode(s.salt || 'dpgnotes_salt');
+
+    let salt;
+    try {
+      salt = new Uint8Array(atob(s.salt).split('').map(c => c.charCodeAt(0)));
+    } catch (e) {
+      salt = enc.encode(s.salt || 'dpgnotes_salt');
+    }
+
     const key = await crypto.subtle.deriveKey(
       { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
       keyMaterial,
@@ -4980,22 +5587,447 @@ window.adminAttemptSolutionDecrypt = async function(id) {
       ['decrypt']
     );
 
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
-    const decStr = new TextDecoder().decode(decrypted);
+    const decryptedBuffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
+    const decStr = new TextDecoder().decode(decryptedBuffer);
     const parsed = JSON.parse(decStr);
 
-    if (resultEl) {
-      resultEl.style.display = 'block';
-      resultEl.innerHTML = `
-        <div style="color:#10b981; font-weight:700; margin-bottom:6px;"><i class="ri-checkbox-circle-fill"></i> Successfully Decrypted In-Memory:</div>
-        <pre style="margin:0; color:#cbd5e1; font-size:0.75rem; white-space:pre-wrap;">${JSON.stringify(parsed, null, 2)}</pre>
-      `;
-    }
+    // Save decrypted content onto cache object
+    s.decryptedContent = parsed;
+    s.isDecryptedInMemory = true;
+
+    // Immediately re-render modal with decrypted content visible!
+    viewSolutionDetails(id);
+
   } catch (err) {
+    console.warn("adminAttemptSolutionDecrypt failed:", err);
     if (resultEl) {
       resultEl.style.display = 'block';
-      resultEl.innerHTML = `<div style="color:#f87171; font-weight:600;"><i class="ri-error-warning-line"></i> Decryption failed: Invalid password or corrupted ciphertext.</div>`;
+      resultEl.innerHTML = `<div style="color:#f87171; font-weight:600; padding:6px; background:rgba(239,68,68,0.1); border-radius:6px; border:1px solid rgba(239,68,68,0.25);"><i class="ri-error-warning-line"></i> Decryption failed: Incorrect password or corrupted ciphertext.</div>`;
+    }
+    if (pwdInput) {
+      pwdInput.style.borderColor = '#ef4444';
+      pwdInput.focus();
+    }
+  } finally {
+    if (decryptBtn) {
+      decryptBtn.disabled = false;
+      decryptBtn.innerHTML = originalBtnHtml;
     }
   }
 };
+
+// ==========================================
+// SOLUTIONS TEST CASES MANAGEMENT (PUBLIC & PRIVATE ENCRYPTED)
+// ==========================================
+
+window.loadSolutionsTestCasesAdmin = async function(forceRefresh = false) {
+  const tbody = document.getElementById('solTestCasesTableBody');
+  if (!tbody) return;
+
+  if (!forceRefresh && testCasesCache.length > 0) {
+    updateSolutionsMetricsUI();
+    filterSolTestCasesList();
+    return;
+  }
+
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-muted);"><i class="ri-loader-4-line ri-spin" style="font-size:1.5rem;"></i><div style="margin-top:0.5rem;">Loading test cases across solutions...</div></td></tr>`;
+
+  try {
+    const itemsMap = new Map();
+
+    // 1. Direct Firestore top-level collection query
+    try {
+      const tcColRef = collection(db, "solution_test_cases");
+      let snap;
+      try {
+        const q = query(tcColRef, orderBy("createdAt", "desc"), limit(300));
+        snap = await getDocs(q);
+      } catch (orderErr) {
+        snap = await getDocs(query(tcColRef, limit(300)));
+      }
+
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        itemsMap.set(docSnap.id, {
+          id: docSnap.id,
+          draftId: d.draftId || docSnap.id,
+          ...d
+        });
+      });
+    } catch (fbErr) {
+      console.warn("Firestore solution_test_cases fetch notice:", fbErr);
+    }
+
+    // 2. Scan localStorage for locally saved or offline test cases (dpg_testcases_*)
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('dpg_testcases_')) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(tc => {
+                const draftId = tc.draftId || tc.id;
+                if (draftId && !itemsMap.has(draftId)) {
+                  itemsMap.set(draftId, { id: draftId, ...tc });
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (lsErr) {}
+
+    let items = Array.from(itemsMap.values());
+
+    // Sort by createdAt descending
+    items.sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.updatedAt || 0).getTime();
+      const timeB = new Date(b.createdAt || b.updatedAt || 0).getTime();
+      return timeB - timeA;
+    });
+
+    testCasesCache = items;
+    updateSolutionsMetricsUI();
+    filterSolTestCasesList();
+  } catch (err) {
+    console.error("loadSolutionsTestCasesAdmin error:", err);
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-danger);">Failed to load test cases: ${escapeAdminHtml(err.message)}</td></tr>`;
+  }
+};
+
+window.filterSolTestCasesList = function() {
+  const tbody = document.getElementById('solTestCasesTableBody');
+  if (!tbody) return;
+
+  const searchVal = (document.getElementById('solTestCaseSearchInput')?.value || '').toLowerCase().trim();
+  const typeFilter = (document.getElementById('solTestCaseTypeFilter')?.value || 'all').toLowerCase();
+  const modeFilter = (document.getElementById('solTestCaseModeFilter')?.value || 'all').toLowerCase();
+
+  let list = testCasesCache.slice();
+
+  // Filter by solution type (assignment vs practical)
+  if (typeFilter !== 'all') {
+    list = list.filter(tc => (tc.solutionType || '').toLowerCase() === typeFilter);
+  }
+
+  // Filter by mode (public vs private encrypted mode)
+  if (modeFilter === 'public') {
+    list = list.filter(tc => tc.mode === 'public' || !tc.isEncrypted);
+  } else if (modeFilter === 'private') {
+    list = list.filter(tc => tc.mode === 'private' || !!tc.isEncrypted);
+  }
+
+  // Filter by search query (title, solution ID, group ID, draft ID, contributor name/email/uid)
+  if (searchVal) {
+    list = list.filter(tc => {
+      const title = (tc.title || '').toLowerCase();
+      const solId = (tc.solutionId || '').toLowerCase();
+      const grpId = (tc.groupId || '').toLowerCase();
+      const dId = (tc.draftId || tc.id || '').toLowerCase();
+      const cName = (tc.contributorName || '').toLowerCase();
+      const cEmail = (tc.contributorEmail || '').toLowerCase();
+      const cUid = (tc.contributorUid || '').toLowerCase();
+      return title.includes(searchVal) || solId.includes(searchVal) || grpId.includes(searchVal) ||
+             dId.includes(searchVal) || cName.includes(searchVal) || cEmail.includes(searchVal) || cUid.includes(searchVal);
+    });
+  }
+
+  renderTestCasesTableRows(list);
+};
+
+window.resetSolTestCaseFilters = function() {
+  const searchInput = document.getElementById('solTestCaseSearchInput');
+  const typeSelect = document.getElementById('solTestCaseTypeFilter');
+  const modeSelect = document.getElementById('solTestCaseModeFilter');
+  if (searchInput) searchInput.value = '';
+  if (typeSelect) typeSelect.value = 'all';
+  if (modeSelect) modeSelect.value = 'all';
+  filterSolTestCasesList();
+};
+
+function renderTestCasesTableRows(list) {
+  const tbody = document.getElementById('solTestCasesTableBody');
+  if (!tbody) return;
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2.5rem; color:var(--admin-muted);">No test cases match current filter criteria.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(tc => {
+    const isPrivateEnc = (tc.mode === 'private' || !!tc.isEncrypted);
+    const secBadge = isPrivateEnc
+      ? `<span class="badge" style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); font-weight:600;"><i class="ri-lock-2-line"></i> Private (Encrypted)</span>`
+      : `<span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); font-weight:600;"><i class="ri-global-line"></i> Public (Community)</span>`;
+
+    const solTypeBadge = (tc.solutionType === 'practical')
+      ? `<span class="badge" style="background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3);"><i class="ri-code-s-slash-line"></i> Practical</span>`
+      : `<span class="badge" style="background:rgba(20,184,166,0.15); color:#14b8a6; border:1px solid rgba(20,184,166,0.3);"><i class="ri-file-text-line"></i> Assignment</span>`;
+
+    const solUrl = tc.solutionType === 'practical'
+      ? `PracticalSolution/index.html?id=${encodeURIComponent(tc.solutionId || '')}`
+      : `AssignmentSolution/index.html?id=${encodeURIComponent(tc.solutionId || '')}`;
+
+    const dateStr = tc.createdAt ? (typeof tc.createdAt === 'string' ? tc.createdAt.split('T')[0] : 'Recent') : 'Recent';
+    const draftId = tc.draftId || tc.id;
+
+    const htmlLen = (tc.htmlCode || '').length;
+    const cssLen = (tc.cssCode || '').length;
+    const jsLen = (tc.jsCode || '').length;
+    const tcRuns = Number(tc.runs || 0);
+    const tcLikes = Number(tc.likes || 0);
+    const tcShares = Number(tc.shares || 0);
+
+    return `
+      <tr>
+        <td>${secBadge}</td>
+        <td>
+          <div style="font-weight:600; color:white; font-size:0.9rem;">${escapeAdminHtml(tc.title || 'Untitled Test Case')}</div>
+          <div style="font-size:0.75rem; color:var(--admin-muted); font-family:monospace; margin-top:2px;">${escapeAdminHtml(draftId)}</div>
+        </td>
+        <td>
+          ${solTypeBadge}
+          <a href="${solUrl}" target="_blank" style="color:#38bdf8; text-decoration:none; font-size:0.78rem; display:block; margin-top:4px;" title="Open solution in new tab">
+            <i class="ri-external-link-line"></i> ${escapeAdminHtml(tc.solutionId || 'N/A')}
+          </a>
+        </td>
+        <td>
+          <code style="background:rgba(255,255,255,0.06); color:#facc15; padding:3px 8px; border-radius:6px; font-size:0.78rem; font-family:monospace; border:1px solid rgba(255,255,255,0.08);">${escapeAdminHtml(tc.groupId || '-')}</code>
+        </td>
+        <td>
+          <div style="font-weight:600; color:#e2e8f0; font-size:0.84rem;">${escapeAdminHtml(tc.contributorName || 'Contributor')}</div>
+          <div style="font-size:0.75rem; color:var(--admin-muted); margin-top:2px;">${escapeAdminHtml(tc.contributorEmail || tc.contributorUid || '-')}</div>
+        </td>
+        <td>
+          <div style="display:flex; flex-direction:column; gap:2px; font-size:0.74rem;">
+            <span style="color:#fb923c;"><i class="ri-html5-fill"></i> HTML: ${htmlLen}B</span>
+            <span style="color:#38bdf8;"><i class="ri-css3-fill"></i> CSS: ${cssLen}B</span>
+            <span style="color:#facc15;"><i class="ri-javascript-fill"></i> JS: ${jsLen}B</span>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:4px; font-size:0.72rem; padding-top:2px; border-top:1px solid rgba(255,255,255,0.05);">
+            <span style="color:#10b981;" title="Code runs"><i class="ri-play-circle-line"></i> ${tcRuns}</span>
+            <span style="color:#f472b6;" title="Likes"><i class="ri-heart-line"></i> ${tcLikes}</span>
+            <span style="color:#818cf8;" title="Shares"><i class="ri-share-forward-line"></i> ${tcShares}</span>
+          </div>
+        </td>
+        <td style="color:var(--admin-muted); font-size:0.82rem; white-space:nowrap;">${escapeAdminHtml(dateStr)}</td>
+        <td style="text-align:center;">
+          <div style="display:flex; gap:6px; justify-content:center; align-items:center;">
+            <button type="button" class="btn-action" onclick="openAdminTestCaseModal('${escapeAdminHtml(draftId)}')" title="Inspect Code & Live Sandbox Runner" style="background:rgba(99,102,241,0.18); color:#818cf8; border:1px solid rgba(99,102,241,0.35); padding:5px 10px; font-size:0.8rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+              <i class="ri-play-circle-line"></i> Inspect &amp; Run
+            </button>
+            <button type="button" class="btn-action" onclick="deleteSingleTestCase('${escapeAdminHtml(draftId)}', '${escapeAdminHtml(tc.groupId || '')}')" title="Delete Test Case" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:5px 8px; font-size:0.8rem; border-radius:8px; cursor:pointer;">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.openAdminTestCaseModal = function(draftId) {
+  const tc = testCasesCache.find(item => (item.draftId === draftId || item.id === draftId));
+  if (!tc) return;
+
+  const modal = document.getElementById('adminTestCaseModal');
+  const titleEl = document.getElementById('adminTestCaseModalTitle');
+  const metaBanner = document.getElementById('adminTestCaseMetaBanner');
+  if (!modal) return;
+
+  if (titleEl) {
+    titleEl.textContent = `Test Case: ${tc.title || 'Sandbox Test'}`;
+  }
+
+  const isPrivateEnc = (tc.mode === 'private' || !!tc.isEncrypted);
+  const secBadge = isPrivateEnc
+    ? `<span class="badge" style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); padding:4px 8px;"><i class="ri-lock-2-line"></i> Private (Encrypted Mode)</span>`
+    : `<span class="badge" style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:4px 8px;"><i class="ri-global-line"></i> Public (Community)</span>`;
+
+  const solTypeBadge = (tc.solutionType === 'practical')
+    ? `<span class="badge" style="background:rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35); padding:4px 8px;"><i class="ri-code-s-slash-line"></i> Practical Solution</span>`
+    : `<span class="badge" style="background:rgba(20,184,166,0.18); color:#14b8a6; border:1px solid rgba(20,184,166,0.35); padding:4px 8px;"><i class="ri-file-text-line"></i> Assignment Solution</span>`;
+
+  if (metaBanner) {
+    metaBanner.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        ${secBadge}
+        ${solTypeBadge}
+        <span style="color:#94a3b8;">Group: <code style="color:#facc15; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;">${escapeAdminHtml(tc.groupId || '-')}</code></span>
+        <span style="color:#94a3b8;">Solution ID: <strong style="color:#38bdf8;">${escapeAdminHtml(tc.solutionId || '-')}</strong></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; color:#cbd5e1; font-size:0.8rem;">
+        <span><i class="ri-user-3-line" style="color:#38bdf8;"></i> <strong>${escapeAdminHtml(tc.contributorName || 'Contributor')}</strong> (${escapeAdminHtml(tc.contributorEmail || tc.contributorUid || 'Recorded')})</span>
+        <span><i class="ri-calendar-line"></i> ${escapeAdminHtml(tc.createdAt ? String(tc.createdAt).substring(0, 19).replace('T', ' ') : 'Recent')}</span>
+      </div>
+    `;
+  }
+
+  // Populate Editor Textareas
+  const edHtml = document.getElementById('adminTcEditorHtml');
+  const edCss = document.getElementById('adminTcEditorCss');
+  const edJs = document.getElementById('adminTcEditorJs');
+  if (edHtml) edHtml.value = tc.htmlCode || '';
+  if (edCss) edCss.value = tc.cssCode || '';
+  if (edJs) edJs.value = tc.jsCode || '';
+
+  switchAdminTcTab('html');
+  runAdminTestCaseSandbox();
+
+  modal.classList.add('active');
+};
+
+window.closeAdminTestCaseModal = function() {
+  const modal = document.getElementById('adminTestCaseModal');
+  if (modal) modal.classList.remove('active');
+  const iframe = document.getElementById('adminTcSandboxIframe');
+  if (iframe) iframe.srcdoc = '';
+};
+
+window.switchAdminTcTab = function(lang) {
+  currentAdminTcActiveLang = lang;
+  const btnHtml = document.getElementById('adminTcTabHtmlBtn');
+  const btnCss = document.getElementById('adminTcTabCssBtn');
+  const btnJs = document.getElementById('adminTcTabJsBtn');
+  const edHtml = document.getElementById('adminTcEditorHtml');
+  const edCss = document.getElementById('adminTcEditorCss');
+  const edJs = document.getElementById('adminTcEditorJs');
+
+  [btnHtml, btnCss, btnJs].forEach(b => {
+    if (b) {
+      b.style.background = 'transparent';
+      b.style.color = 'var(--admin-muted)';
+      b.style.border = '1px solid transparent';
+    }
+  });
+  [edHtml, edCss, edJs].forEach(e => { if (e) e.style.display = 'none'; });
+
+  if (lang === 'html') {
+    if (btnHtml) {
+      btnHtml.style.background = 'rgba(249,115,22,0.25)';
+      btnHtml.style.color = '#fb923c';
+      btnHtml.style.border = '1px solid rgba(249,115,22,0.4)';
+    }
+    if (edHtml) { edHtml.style.display = 'block'; edHtml.focus(); }
+  } else if (lang === 'css') {
+    if (btnCss) {
+      btnCss.style.background = 'rgba(56,189,248,0.25)';
+      btnCss.style.color = '#38bdf8';
+      btnCss.style.border = '1px solid rgba(56,189,248,0.4)';
+    }
+    if (edCss) { edCss.style.display = 'block'; edCss.focus(); }
+  } else if (lang === 'js') {
+    if (btnJs) {
+      btnJs.style.background = 'rgba(250,204,21,0.25)';
+      btnJs.style.color = '#facc15';
+      btnJs.style.border = '1px solid rgba(250,204,21,0.4)';
+    }
+    if (edJs) { edJs.style.display = 'block'; edJs.focus(); }
+  }
+};
+
+window.runAdminTestCaseSandbox = function() {
+  const html = document.getElementById('adminTcEditorHtml')?.value || '';
+  const css = document.getElementById('adminTcEditorCss')?.value || '';
+  const js = document.getElementById('adminTcEditorJs')?.value || '';
+  const iframe = document.getElementById('adminTcSandboxIframe');
+  if (!iframe) return;
+
+  const doc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b; background-color: #ffffff; line-height: 1.5;
+    }
+    ${css}
+  </style>
+  <script>
+    window.onerror = function(msg, url, line) {
+      console.error("Sandbox Error: " + msg + " (Line " + line + ")");
+      return true;
+    };
+  <\/script>
+</head>
+<body>
+  ${html || '<div style="color:#94a3b8; font-style:italic;">No HTML markup provided for this test case.</div>'}
+  <script id="admin-tc-script" type="text/plain">${encodeURIComponent(js)}<\/script>
+  <script>
+    (function() {
+      try {
+        var raw = document.getElementById('admin-tc-script').textContent;
+        if (raw && raw.trim()) {
+          var code = decodeURIComponent(raw);
+          var s = document.createElement('script');
+          s.textContent = code;
+          document.body.appendChild(s);
+        }
+      } catch (err) {
+        console.error("Execution Error: " + err.message);
+      }
+    })();
+  <\/script>
+</body>
+</html>`;
+
+  iframe.srcdoc = doc;
+};
+
+window.deleteSingleTestCase = async function(draftId, groupId) {
+  if (!draftId) return;
+
+  let confirmed = false;
+  if (typeof window.customConfirm === 'function') {
+    confirmed = await window.customConfirm("Are you sure you want to permanently delete this test case from the platform records?", { title: "Delete Test Case", isDanger: true });
+  } else {
+    confirmed = confirm("Are you sure you want to delete this test case?");
+  }
+  if (!confirmed) return;
+
+  try {
+    // 1. Delete from Firestore top-level collection
+    try {
+      await deleteDoc(doc(db, "solution_test_cases", draftId));
+    } catch (fbErr) {
+      console.warn("Firestore delete notice:", fbErr);
+    }
+
+    // 2. Remove from local storage cache
+    if (groupId) {
+      try {
+        const storageKey = 'dpg_testcases_' + groupId;
+        const list = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const updated = list.filter(item => item.draftId !== draftId && item.id !== draftId);
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+      } catch (e) {}
+    }
+
+    // 3. Remove from in-memory cache
+    testCasesCache = testCasesCache.filter(tc => tc.draftId !== draftId && tc.id !== draftId);
+    updateSolutionsMetricsUI();
+    filterSolTestCasesList();
+
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Test case deleted successfully.", { title: "Deleted" });
+    } else {
+      alert("Test case deleted successfully.");
+    }
+  } catch (err) {
+    console.error("deleteSingleTestCase error:", err);
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Failed to delete test case: " + err.message, { title: "Error", isDanger: true });
+    } else {
+      alert("Failed to delete test case: " + err.message);
+    }
+  }
+};
+
 

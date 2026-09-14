@@ -43,8 +43,7 @@ service cloud.firestore {
 
     /* ---------- SHARE LINKS ---------- */
     match /share_links/{tokenId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if true;
     }
 
     /* ---------- SHARE ENGAGEMENTS ---------- */
@@ -242,6 +241,15 @@ service cloud.firestore {
 
     /* ---------- SEARCH CTR TELEMETRY ---------- */
     match /search_ctr_telemetry/{id} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SOLUTION TEST CASES & SANDBOX CODE BLOCKS ---------- */
+    match /solution_test_cases/{testCaseId} {
+      allow read, write: if true;
+    }
+
+    match /code-blocks/{document=**} {
       allow read, write: if true;
     }
     /* ---------- VALIDATION ---------- */

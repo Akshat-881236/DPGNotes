@@ -45,39 +45,20 @@
     ],
 
     "headers": [
-
       {
-
-        "source":
-        "**/*.pdf",
-
+        "source": "**/*.@(pdf|jpg|jpeg|png|webp|svg)",
         "headers": [
-
           {
-
-            "key":
-            "Access-Control-Allow-Origin",
-
-            "value":
-            "*"
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
           },
-
           {
-
-            "key":
-            "Access-Control-Allow-Methods",
-
-            "value":
-            "GET, OPTIONS"
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET, OPTIONS"
           },
-
           {
-
-            "key":
-            "Access-Control-Allow-Headers",
-
-            "value":
-            "*"
+            "key": "Access-Control-Allow-Headers",
+            "value": "*"
           }
         ]
       }

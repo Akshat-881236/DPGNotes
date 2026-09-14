@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const cors = require('cors');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
@@ -52,6 +53,7 @@ function runPythonAnalyticsScript(scriptRelativePath, inputData) {
 // ==========================================
 const app = express();
 app.set('trust proxy', 1);
+app.use(compression());
 
 const corsOptions = {
   origin: true,
@@ -2031,6 +2033,31 @@ app.post('/api/admin/delete-logs', verifyAdmin, async (req, res) => {
     res.status(500).json({ error: "Failed to delete logs" });
   }
 });
+
+// Fetch activity log entries for Admin
+const getActivityLogsHandler = async (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: "Firestore DB not initialized" });
+    let logs = [];
+    try {
+      const snap = await db.collection("activity_logs").orderBy("timestamp", "desc").limit(200).get();
+      snap.forEach(docSnap => {
+        logs.push({ id: docSnap.id, ...docSnap.data() });
+      });
+    } catch (orderErr) {
+      const snapFallback = await db.collection("activity_logs").limit(200).get();
+      snapFallback.forEach(docSnap => {
+        logs.push({ id: docSnap.id, ...docSnap.data() });
+      });
+    }
+    res.json({ success: true, logs });
+  } catch (err) {
+    console.error("Fetch activity logs failed:", err);
+    res.status(500).json({ error: "Failed to fetch activity logs" });
+  }
+};
+app.get('/api/admin/activity-logs', verifyAdmin, getActivityLogsHandler);
+app.get('/admin/activity-logs', verifyAdmin, getActivityLogsHandler);
 
 app.post('/api/admin/send-delete-key', verifyAdmin, async (req, res) => {
   const { contributorId, contributorEmail } = req.body;
@@ -6801,28 +6828,58 @@ app.get('/api/admin/cover-pages/list', verifyAdmin, async (req, res) => {
         const parentUser = docSnap.ref.parent && docSnap.ref.parent.parent ? docSnap.ref.parent.parent.id : '';
         const uid = d.userId || parentUser || 'guest_unknown';
         const docId = docSnap.id;
-        const inferredType = d.docType || (docId.startsWith('pract_') || !d.assignmentNo ? 'practical' : 'assignment');
+        const isPractical = (d.docType && String(d.docType).toLowerCase() === 'practical') ||
+                            docId.startsWith('pract') ||
+                            Boolean(d.practicalNo) ||
+                            (d.subjectName && d.subjectName.toLowerCase().includes('practical')) ||
+                            (d.title && d.title.toLowerCase().includes('practical'));
+        const inferredType = isPractical ? 'practical' : 'assignment';
+
+        const cleanVal = (v) => {
+          if (v === undefined || v === null) return '';
+          const s = String(v).trim();
+          return (s === '—' || s === '-' || s === '–' || s.toLowerCase() === 'n/a' || s.toLowerCase() === 'null') ? '' : s;
+        };
+
+        const studentName = cleanVal(d.studentName) || cleanVal(d.name) || cleanVal(d.stuName) || '';
+        const studentId = cleanVal(d.studentId) || cleanVal(d.rollNo) || cleanVal(d.roll_no) || cleanVal(d.stuId) || '';
+        const subjectName = cleanVal(d.subjectName) || cleanVal(d.subject) || cleanVal(d.title) || '';
+        const subjectCode = cleanVal(d.subjectCode) || cleanVal(d.subCode) || cleanVal(d.code) || '';
+        const courseSection = cleanVal(d.courseSection) || cleanVal(d.course) || cleanVal(d.courseSec) || '';
+        const profName = cleanVal(d.profName) || cleanVal(d.teacherName) || cleanVal(d.faculty) || cleanVal(d.submittedTo) || '';
+        const designation = cleanVal(d.designation) || 'ASSISTANT PROFESSOR';
+        const department = cleanVal(d.department) || cleanVal(d.dept) || 'COMPUTER SCIENCE & APPLICATIONS';
+        const degreeName = cleanVal(d.degreeName) || cleanVal(d.degree) || '';
+        const fatherName = cleanVal(d.fatherName) || cleanVal(d.father_name) || '';
+        const relation = cleanVal(d.relation) || 'S/O';
+        const session = cleanVal(d.session) || cleanVal(d.sessionYear) || '2025-2026';
+        const assignmentNo = isPractical ? '' : (cleanVal(d.assignmentNo) || '1');
+        const practicalNo = isPractical ? (cleanVal(d.practicalNo) || cleanVal(d.assignmentNo) || '1') : '';
+        const date = cleanVal(d.date) || (d.createdAt ? String(d.createdAt).split('T')[0] : '');
+        const day = cleanVal(d.day) || '';
 
         records.push({
+          ...d,
           id: docId,
           userId: uid,
           userType: d.userType || (uid.startsWith('guest_') ? 'guest' : 'contributor'),
           docType: inferredType,
-          assignmentNo: d.assignmentNo || '1',
-          subjectName: d.subjectName || 'Untitled',
-          subjectCode: d.subjectCode || '—',
-          courseSection: d.courseSection || '—',
-          degreeName: d.degreeName || '—',
-          session: d.session || '—',
-          profName: d.profName || '—',
-          designation: d.designation || '—',
-          department: d.department || '—',
-          studentName: d.studentName || '—',
-          fatherName: d.fatherName || '—',
-          relation: d.relation || 'S/O',
-          studentId: d.studentId || '—',
-          date: d.date || '—',
-          day: d.day || '—',
+          assignmentNo,
+          practicalNo,
+          subjectName: subjectName || 'Untitled',
+          subjectCode,
+          courseSection,
+          degreeName,
+          session,
+          profName,
+          designation,
+          department,
+          studentName,
+          fatherName,
+          relation,
+          studentId,
+          date,
+          day,
           createdAt: d.createdAt || d.updatedAt || new Date().toISOString()
         });
       });
@@ -6898,7 +6955,7 @@ app.post('/api/cover-page/quota-cleanup', async (req, res) => {
 });
 
 // 3e. Admin Solutions List (Assignments & Practicals)
-app.get('/api/admin/solutions/list', verifyAdmin, async (req, res) => {
+app.get(['/api/admin/solutions/list', '/admin/solutions/list', '/api/solutions/list', '/solutions/list'], verifyAdmin, async (req, res) => {
   try {
     let solutions = [];
     if (db) {
@@ -6906,8 +6963,8 @@ app.get('/api/admin/solutions/list', verifyAdmin, async (req, res) => {
       snap.forEach(docSnap => {
         const d = docSnap.data();
         const p = docSnap.ref.path.split('/');
-        const type = (p[1] === 'practicals' || d.type === 'practical') ? 'practical' : 'assignment';
-        const contributorUid = p[2] || d.contributorUid || d.userId || '';
+        const type = (p[0] === 'practical_solutions' || p[1] === 'practicals' || d.type === 'practical') ? 'practical' : 'assignment';
+        const contributorUid = (p.length === 4 ? p[1] : (p[2] || '')) || d.contributorUid || d.userId || '';
         solutions.push({
           id: docSnap.id,
           type,
@@ -6925,7 +6982,7 @@ app.get('/api/admin/solutions/list', verifyAdmin, async (req, res) => {
 });
 
 // 3f. Admin Solutions Delete
-app.post('/api/admin/solutions/delete', verifyAdmin, async (req, res) => {
+app.post(['/api/admin/solutions/delete', '/admin/solutions/delete', '/api/solutions/delete', '/solutions/delete'], verifyAdmin, async (req, res) => {
   try {
     const { items } = req.body;
     if (!Array.isArray(items) || items.length === 0) {
@@ -6937,9 +6994,9 @@ app.post('/api/admin/solutions/delete', verifyAdmin, async (req, res) => {
         if (item.path) {
           batch.delete(db.doc(item.path));
         } else if (item.id && item.contributorUid) {
-          const col = item.type === 'practical' ? 'practicals' : 'assignments';
-          const fallbackRef = db.collection('solutions').doc(col).collection(String(item.contributorUid)).collection('solutions').doc(String(item.id));
-          batch.delete(fallbackRef);
+          const col = item.type === 'practical' ? 'practical_solutions' : 'assignment_solutions';
+          const directRef = db.collection(col).doc(String(item.contributorUid)).collection('solutions').doc(String(item.id));
+          batch.delete(directRef);
         }
       });
       await batch.commit();
@@ -6983,9 +7040,14 @@ app.post('/api/assignment/export-pdf', async (req, res) => {
       console.warn("Python PDF engine execution failed, attempting fallback:", pyErr.message);
     }
 
+    const isPractical = (req.body.docType === 'practical') || (req.body.assignmentId && String(req.body.assignmentId).startsWith('pract'));
+    const downloadFilename = isPractical
+      ? `Practical_Cover_${req.body.subjectCode || 'Page'}.pdf`
+      : `Assignment_${req.body.assignmentNo || 'Cover'}_Page.pdf`;
+
     if (pdfGenerated) {
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="Assignment_${req.body.assignmentNo || 'Cover'}_Page.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
       const fileStream = fs.createReadStream(outFile);
       fileStream.pipe(res);
       fileStream.on('close', () => {
@@ -6994,21 +7056,159 @@ app.post('/api/assignment/export-pdf', async (req, res) => {
       return;
     }
 
-    // Fallback: Use pdf-lib in Node.js to stamp exact template or create A4
+    // Fallback: Use pdf-lib in Node.js to generate pixel-perfect A4 PDF with exact student data
     const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
-    const templatePath = path.join(__dirname, '..', 'public', 'AssignmentCoverPageGenerator', 'FrontpageTemplate.pdf');
-    let pdfDoc;
-    if (fs.existsSync(templatePath)) {
-      const templateBytes = fs.readFileSync(templatePath);
-      pdfDoc = await PDFDocument.load(templateBytes);
-    } else {
-      pdfDoc = await PDFDocument.create();
-      pdfDoc.addPage([595.28, 841.89]);
+    const folder = isPractical ? 'PracticalCoverPageGenerator' : 'AssignmentCoverPageGenerator';
+    const headerPath = path.join(__dirname, '..', 'public', folder, 'Header_Image.jpg');
+    const logoPath = path.join(__dirname, '..', 'public', folder, 'Center_Logo.jpg');
+
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595.28, 841.89]);
+    const { width, height } = page.getSize();
+    const scaleX = width / 612.0;
+    const scaleY = height / 792.0;
+
+    // Embed Header Banner
+    if (fs.existsSync(headerPath)) {
+      try {
+        const headerImg = await pdfDoc.embedJpg(fs.readFileSync(headerPath));
+        const hw = 507.48 * scaleX;
+        const hh = 77.88 * scaleY;
+        page.drawImage(headerImg, {
+          x: (width - hw) / 2.0,
+          y: height - (33.84 * scaleY) - hh,
+          width: hw,
+          height: hh
+        });
+      } catch (e) {
+        console.warn("Could not embed header image in pdf-lib:", e.message);
+      }
     }
+
+    // Embed Center Logo
+    if (fs.existsSync(logoPath)) {
+      try {
+        const logoImg = await pdfDoc.embedJpg(fs.readFileSync(logoPath));
+        const lw = 134.76 * scaleX;
+        const lh = 114.84 * scaleY;
+        page.drawImage(logoImg, {
+          x: (width - lw) / 2.0,
+          y: height - (280.0 * scaleY) - lh,
+          width: lw,
+          height: lh
+        });
+      } catch (e) {
+        console.warn("Could not embed center logo image in pdf-lib:", e.message);
+      }
+    }
+
+    const fontBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+    const fontRegular = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+    const fontSize = 10.5;
+
+    const drawCenter = (text, yFromTop, font = fontBold) => {
+      if (!text) return;
+      const t = String(text).toUpperCase().trim();
+      const textWidth = font.widthOfTextAtSize(t, fontSize);
+      page.drawText(t, {
+        x: (width - textWidth) / 2.0,
+        y: height - (yFromTop * scaleY),
+        size: fontSize,
+        font: font,
+        color: rgb(0, 0, 0)
+      });
+    };
+
+    const drawText = (text, x, yFromTop, font = fontRegular) => {
+      if (!text) return;
+      const t = String(text).toUpperCase().trim();
+      page.drawText(t, {
+        x: x,
+        y: height - (yFromTop * scaleY),
+        size: fontSize,
+        font: font,
+        color: rgb(0, 0, 0)
+      });
+    };
+
+    const cleanReqVal = (v) => {
+      if (v === undefined || v === null) return '';
+      const s = String(v).trim();
+      return (s === '—' || s === '-' || s === '–' || s.toLowerCase() === 'n/a' || s.toLowerCase() === 'null') ? '' : s;
+    };
+
+    const subName = cleanReqVal(req.body.subjectName) || cleanReqVal(req.body.subject) || cleanReqVal(req.body.title) || '';
+    const subCode = cleanReqVal(req.body.subjectCode) || cleanReqVal(req.body.subCode) || cleanReqVal(req.body.code) || '';
+    const courseSec = cleanReqVal(req.body.courseSection) || cleanReqVal(req.body.course) || '';
+    const degreeName = cleanReqVal(req.body.degreeName) || '';
+    const session = cleanReqVal(req.body.session) || cleanReqVal(req.body.sessionYear) || '2025-2026';
+    const profName = cleanReqVal(req.body.profName) || cleanReqVal(req.body.teacherName) || cleanReqVal(req.body.faculty) || '';
+    const desig = cleanReqVal(req.body.designation) || 'ASSISTANT PROFESSOR';
+    const dept = cleanReqVal(req.body.department) || cleanReqVal(req.body.dept) || 'COMPUTER SCIENCE & APPLICATIONS';
+    const stuName = cleanReqVal(req.body.studentName) || cleanReqVal(req.body.name) || cleanReqVal(req.body.stuName) || 'Student';
+    const fatherName = cleanReqVal(req.body.fatherName) || cleanReqVal(req.body.father_name) || '';
+    const relation = cleanReqVal(req.body.relation) || 'S/O';
+    const stuId = cleanReqVal(req.body.studentId) || cleanReqVal(req.body.rollNo) || '';
+    const dateStr = cleanReqVal(req.body.date) || '';
+    const rawDay = cleanReqVal(req.body.day);
+    const dayStr = rawDay ? ` (${rawDay})` : '';
+
+    if (isPractical) {
+      drawCenter("A", 130.0, fontRegular);
+      drawCenter("PRACTICAL FILE", 149.0, fontBold);
+      drawCenter("OF", 168.0, fontRegular);
+      if (subName) drawCenter(subName, 188.0, fontBold);
+      if (subCode) drawCenter(subCode, 208.0, fontBold);
+      if (courseSec) drawCenter(courseSec, 228.0, fontBold);
+      drawCenter("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", 249.0, fontRegular);
+      drawCenter(degreeName || "BACHELOR OF COMPUTER APPLICATION", 268.0, fontBold);
+    } else {
+      const aNo = cleanReqVal(req.body.assignmentNo) || '1';
+      drawCenter(`ASSIGNMENT ➔ ${aNo}`, 131.0, fontBold);
+      drawCenter("OF", 155.0, fontRegular);
+      if (subName) drawCenter(subName, 179.0, fontBold);
+      if (subCode) drawCenter(subCode, 203.0, fontBold);
+      if (courseSec) drawCenter(courseSec, 226.0, fontBold);
+      drawCenter("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", 250.0, fontRegular);
+      drawCenter(degreeName || "BACHELOR OF COMPUTER APPLICATION", 267.0, fontBold);
+    }
+
+    drawCenter(`SESSION: ${session}`, 414.0, fontBold);
+
+    const leftX = 60.0;
+    const rightX = 364.0;
+    drawText("SUBMITTED TO", leftX, 462.0, fontBold);
+    drawText("SUBMITTED BY", rightX, 462.0, fontBold);
+
+    if (profName) drawText(profName, leftX, 486.0, fontBold);
+    drawText(stuName, rightX, 486.0, fontBold);
+
+    drawText(desig, leftX, 510.0, fontRegular);
+    if (fatherName) {
+      drawText(`${relation} ${fatherName}`, rightX, 510.0, fontRegular);
+    }
+
+    let deptText = dept.replace(/^DEPARTMENT\s+OF\s+/i, '').trim();
+    if (deptText.length <= 17) {
+      drawText(`DEPARTMENT OF ${deptText}`, leftX, 534.0, fontRegular);
+      if (stuId) drawText(`STUDENT ID: ${stuId}`, rightX, 534.0, fontRegular);
+      drawText("DPG STM", leftX, 558.0, fontBold);
+      if (courseSec) drawText(courseSec, rightX, 558.0, fontBold);
+    } else {
+      const splitIdx = Math.min(17, deptText.lastIndexOf(' ', 17) > 0 ? deptText.lastIndexOf(' ', 17) : 17);
+      drawText(`DEPARTMENT OF ${deptText.substring(0, splitIdx).trim()}`, leftX, 534.0, fontRegular);
+      if (stuId) drawText(`STUDENT ID: ${stuId}`, rightX, 534.0, fontRegular);
+      drawText(deptText.substring(splitIdx).trim(), leftX, 558.0, fontRegular);
+      if (courseSec) drawText(courseSec, rightX, 558.0, fontBold);
+      drawText("DPG STM", leftX, 582.0, fontBold);
+    }
+
+    drawCenter(`SUBMITTED ON ${dateStr}${dayStr}`, 701.0, fontRegular);
+    drawCenter("MDU ROHTAK, HARYANA", 725.0, fontRegular);
 
     const pdfBytes = await pdfDoc.save();
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="Assignment_${req.body.assignmentNo || 'Cover'}_Page.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (err) {
     console.error("Assignment export-pdf error:", err);

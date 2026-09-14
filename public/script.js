@@ -253,6 +253,7 @@ let currentUser = null;
 
 let allDocuments = [];
 let usersCache = {};
+window.usersCache = usersCache;
 
 /* =========================================
    ACTIVITY LOGGING
@@ -919,15 +920,11 @@ function createCard(data){
     </p>
 
     <div class="tags">
-
-      ${data.tags.map(tag => `
-
+      ${(Array.isArray(data.tags) ? data.tags : (typeof data.tags === 'string' ? data.tags.split(',') : [])).map(tag => `
         <span>
-          #${tag.trim()}
+          #${String(tag).trim()}
         </span>
-
       `).join("")}
-
     </div>
 
     <div class="card-stats">
@@ -1000,81 +997,46 @@ window.handleShare = async function(docId, title, category, discipline, uploader
 ========================================= */
 
 function renderResources(data){
-
-  latestResources.innerHTML = "";
-
-  examResources.innerHTML = "";
-
-  learningResources.innerHTML = "";
-
-  placementResources.innerHTML = "";
+  let latestHtml = "";
+  let examHtml = "";
+  let learningHtml = "";
+  let placementHtml = "";
 
   data.forEach((doc)=>{
-
-    const card =
-    createCard(doc);
+    const card = createCard(doc);
 
     // HOME
-
-    latestResources.innerHTML +=
-    card;
+    latestHtml += card;
 
     // EXAMS
-
     if(
-
-      doc.category === "SE"
-
-      ||
-
-      doc.category === "SP"
-
-      ||
-
-      doc.category === "UE"
-
-      ||
-
+      doc.category === "SE" ||
+      doc.category === "SP" ||
+      doc.category === "UE" ||
       doc.category === "EV"
-
     ){
-
-      examResources.innerHTML +=
-      card;
+      examHtml += card;
     }
 
     // LEARNING
-
-    if(
-
-      doc.category === "T&N"
-
-    ){
-
-      learningResources.innerHTML +=
-      card;
+    if(doc.category === "T&N"){
+      learningHtml += card;
     }
 
     // PLACEMENT
-
     if(
-
-      doc.category === "IQ"
-
-      ||
-
-      doc.category === "A&LR"
-
-      ||
-
+      doc.category === "IQ" ||
+      doc.category === "A&LR" ||
       doc.category === "PQ"
-
     ){
-
-      placementResources.innerHTML +=
-      card;
+      placementHtml += card;
     }
   });
+
+  if (latestResources) latestResources.innerHTML = latestHtml;
+  if (examResources) examResources.innerHTML = examHtml;
+  if (learningResources) learningResources.innerHTML = learningHtml;
+  if (placementResources) placementResources.innerHTML = placementHtml;
 }
 
 /* =========================================
@@ -1082,53 +1044,75 @@ function renderResources(data){
 ========================================= */
 
 async function fetchDocuments(){
-  try{
-    // PRELOAD USERS CACHE
-    try {
-      const uSnap = await getDocs(collection(db, "users"));
-      uSnap.forEach(uDoc => {
-        usersCache[uDoc.id] = uDoc.data();
-      });
-    } catch (e) {
-      console.warn("Could not preload users cache:", e);
+  // 1. FAST CACHE HYDRATION (Stale-While-Revalidate: 0ms perceived load)
+  try {
+    const cachedUsersRaw = sessionStorage.getItem("dpg_users_cache");
+    const cachedDocsRaw = sessionStorage.getItem("dpg_docs_cache");
+    if (cachedUsersRaw) {
+      usersCache = JSON.parse(cachedUsersRaw);
+      window.usersCache = usersCache;
     }
+    if (cachedDocsRaw) {
+      const parsedDocs = JSON.parse(cachedDocsRaw);
+      if (Array.isArray(parsedDocs) && parsedDocs.length > 0) {
+        allDocuments = parsedDocs;
+        applyURLFilters();
+        renderLeaderboard();
+      }
+    }
+  } catch (cacheErr) {
+    console.warn("Session cache read error:", cacheErr);
+  }
 
+  // 2. CONCURRENT FIRESTORE NETWORK FETCH
+  try {
     const q = query(
-
-      collection(
-        db,
-        "documents"
-      ),
-
-      orderBy(
-        "createdAt",
-        "desc"
-      ),
-
+      collection(db, "documents"),
+      orderBy("createdAt", "desc"),
       limit(50)
     );
 
-    const snapshot =
-    await getDocs(q);
+    const [uSnapSettled, docSnapSettled] = await Promise.allSettled([
+      getDocs(collection(db, "users")),
+      getDocs(q)
+    ]);
 
-    allDocuments = [];
-
-    snapshot.forEach((doc)=>{
-
-      allDocuments.push({
-
-        id:doc.id,
-
-        ...doc.data()
+    if (uSnapSettled.status === "fulfilled") {
+      uSnapSettled.value.forEach(uDoc => {
+        usersCache[uDoc.id] = uDoc.data();
       });
-    });
+      window.usersCache = usersCache;
+      try {
+        sessionStorage.setItem("dpg_users_cache", JSON.stringify(usersCache));
+      } catch (e) {}
+    }
 
-    applyURLFilters();
-    renderLeaderboard();
+    if (docSnapSettled.status === "fulfilled") {
+      const freshDocs = [];
+      docSnapSettled.value.forEach((doc) => {
+        const dData = doc.data();
+        const createdMillis = dData.createdAt?.toMillis ? dData.createdAt.toMillis() : (typeof dData.createdAt === 'number' ? dData.createdAt : Date.now());
+        freshDocs.push({
+          id: doc.id,
+          ...dData,
+          _createdMillis: createdMillis
+        });
+      });
 
-  }catch(error){
+      allDocuments = freshDocs;
+      try {
+        // Cache stripped docs without Firestore timestamp functions
+        sessionStorage.setItem("dpg_docs_cache", JSON.stringify(freshDocs.map(d => {
+          const { createdAt, ...rest } = d;
+          return { ...rest, _createdMillis: d._createdMillis };
+        })));
+      } catch (e) {}
 
-    console.log(error);
+      applyURLFilters();
+      renderLeaderboard();
+    }
+  } catch(error){
+    console.error("fetchDocuments error:", error);
   }
 }
 
@@ -1157,41 +1141,30 @@ async function renderLeaderboard() {
     return;
   }
   
-  list.innerHTML = "";
+  let listHtml = "";
+  const badges = ["🥇", "🥈", "🥉"];
+
   for (let i = 0; i < sortedUsers.length; i++) {
     const user = sortedUsers[i];
-    const badges = ["🥇", "🥈", "🥉"];
+    const uData = (window.usersCache && window.usersCache[user.uid]) || usersCache[user.uid] || {};
     
-    // Fetch profile photo from users collection
     let photoHtml = `<div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;">👤</div>`;
-    try {
-      // NOTE: getDoc is not imported by default in script.js, we need to make sure we have access to it or skip photo.
-      // Since script.js doesn't import getDoc from firestore, I'll fallback to initial if we can't get it.
-      // I'll add the getDoc import to script.js shortly.
-      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
-      const uDoc = await getDoc(doc(db, "users", user.uid));
-      if (uDoc.exists() && uDoc.data().photoURL) {
-         photoHtml = `<img src="${uDoc.data().photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
-      }
-    } catch(e) {}
+    if (uData.photoURL || uData.profilePic) {
+      photoHtml = `<img src="${uData.photoURL || uData.profilePic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
+    }
 
-    const li = document.createElement("li");
-    li.style.display = "flex";
-    li.style.alignItems = "center";
-    li.style.gap = "1rem";
-    li.style.padding = "0.8rem 0";
-    li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-    
-    li.innerHTML = `
-      <div style="font-size:1.5rem;">${badges[i]}</div>
-      ${photoHtml}
-      <div style="flex-grow:1;">
-        <h4 style="margin:0; color:var(--text-light);">${user.name}</h4>
-        <span style="font-size:0.85rem; color:var(--text-muted);">${user.likes} Likes • ${user.uploads} Uploads</span>
-      </div>
+    listHtml += `
+      <li style="display:flex; align-items:center; gap:1rem; padding:0.8rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="font-size:1.5rem;">${badges[i]}</div>
+        ${photoHtml}
+        <div style="flex-grow:1;">
+          <h4 style="margin:0; color:var(--text-light);">${user.name}</h4>
+          <span style="font-size:0.85rem; color:var(--text-muted);">${user.likes} Likes • ${user.uploads} Uploads</span>
+        </div>
+      </li>
     `;
-    list.appendChild(li);
   }
+  list.innerHTML = listHtml;
 }
 
 /* =========================================
@@ -1212,31 +1185,32 @@ function applyURLFilters(){
       window.applyIndexFilters();
     }
   }catch(error){
-
-    console.log(
-      "URL Filter Error:",
-      error
-    );
-
-    renderResources(
-      sortDocuments(allDocuments)
-    );
+    console.log("URL Filter Error:", error);
+    renderResources(sortDocuments(allDocuments));
   }
 }
 
 function sortDocuments(docsArray) {
   const sortVal = document.getElementById("globalSort") ? document.getElementById("globalSort").value : "newest";
   
+  const getMillis = (d) => {
+    if (!d) return 0;
+    if (d._createdMillis) return d._createdMillis;
+    if (d.createdAt && typeof d.createdAt.toMillis === 'function') return d.createdAt.toMillis();
+    if (typeof d.createdAt === 'number') return d.createdAt;
+    return 0;
+  };
+
   return [...docsArray].sort((a, b) => {
     if (sortVal === "oldest") {
-      return (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0);
+      return getMillis(a) - getMillis(b);
     } else if (sortVal === "likes") {
       return (b.likes ? b.likes.length : 0) - (a.likes ? a.likes.length : 0);
     } else if (sortVal === "shares") {
       return (b.shareCount || 0) - (a.shareCount || 0);
     } else {
       // newest
-      return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+      return getMillis(b) - getMillis(a);
     }
   });
 }

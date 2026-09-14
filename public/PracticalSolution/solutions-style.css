@@ -25,7 +25,14 @@
   --sol-radius-lg: 18px;
 }
 
-* {
+html {
+  overflow-x: hidden;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -38,6 +45,9 @@ body {
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
 }
 
 /* NAVBAR */
@@ -507,17 +517,23 @@ body {
   100% { opacity: 0.4; }
 }
 
-/* MODAL OVERLAY */
-.sol-modal-overlay {
+/* MODAL OVERLAYS */
+.sol-modal-overlay,
+.sol-sandbox-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  z-index: 999;
+  z-index: 99999;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .sol-modal-card {
@@ -536,6 +552,24 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* META ROWS */
+.sol-meta-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sol-border);
+}
+
+.sol-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: var(--sol-text-muted);
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .sol-navbar {
@@ -548,10 +582,96 @@ body {
     padding: 1.2rem;
   }
   .sol-title {
-    font-size: 1.35rem;
+    font-size: clamp(1.3rem, 5vw, 1.85rem) !important;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
   .sol-form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .sol-navbar {
+    padding: 0.65rem 0.8rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .sol-brand {
+    font-size: 1rem;
+    gap: 6px;
+  }
+  .sol-navbar-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .sol-navbar-actions .sol-btn-sm {
+    flex: 1;
+    padding: 6px 4px;
+    font-size: 0.76rem;
+    justify-content: center;
+  }
+  .sol-container {
+    padding: 0.85rem 0.6rem;
+  }
+  .sol-card, .sol-view-header, .sol-block {
+    padding: 1rem 0.85rem;
+    border-radius: 14px;
+  }
+  .sol-title {
+    font-size: 1.35rem !important;
+    line-height: 1.3;
+  }
+  .sol-meta-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    font-size: 0.82rem;
+  }
+  #passwordLockOverlay {
+    padding: 1.5rem 0.85rem !important;
+  }
+  #passwordLockOverlay .lock-icon-wrapper {
+    width: 54px !important;
+    height: 54px !important;
+    margin-bottom: 0.8rem !important;
+  }
+  #passwordLockOverlay .lock-icon-wrapper i {
+    font-size: 1.8rem !important;
+  }
+  #passwordLockOverlay h2 {
+    font-size: 1.35rem !important;
+  }
+  #passwordLockOverlay p {
+    font-size: 0.84rem !important;
+    margin-bottom: 1rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .sol-navbar {
+    padding: 0.5rem;
+  }
+  .sol-brand {
+    font-size: 0.92rem;
+  }
+  .sol-navbar-actions .sol-btn-sm {
+    padding: 5px 3px;
+    font-size: 0.72rem;
+  }
+  .sol-container {
+    padding: 0.6rem 0.4rem;
+  }
+  .sol-card, .sol-view-header, .sol-block {
+    padding: 0.85rem 0.65rem;
+  }
+  .sol-title {
+    font-size: 1.2rem !important;
+  }
+  .sol-badge {
+    padding: 3px 6px;
+    font-size: 0.7rem;
   }
 }
 
@@ -565,6 +685,10 @@ body {
   background: #0d1117;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .sol-code-block-header {
@@ -576,6 +700,10 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .sol-code-block-lang {
@@ -586,6 +714,7 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
   color: #cbd5e1;
+  min-width: 0;
 }
 
 .sol-code-block-lang.lang-html { color: #f97316; }
@@ -600,12 +729,17 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 2px 7px;
   border-radius: 4px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sol-code-block-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .sol-code-run-btn {
@@ -623,12 +757,37 @@ body {
   gap: 5px;
   box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .sol-code-run-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(20, 184, 166, 0.5);
   background: linear-gradient(135deg, #0d9488, #0f766e);
+}
+
+.sol-code-try-btn {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sol-code-try-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
 }
 
 .sol-code-copy-btn {
@@ -643,6 +802,7 @@ body {
   align-items: center;
   gap: 4px;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .sol-code-copy-btn:hover {
@@ -654,12 +814,30 @@ body {
   padding: 1rem 1.25rem;
   margin: 0;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   font-family: 'Fira Code', monospace;
   font-size: 0.86rem;
   line-height: 1.55;
   color: #e2e8f0;
   background: transparent;
   border: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: pre;
+  word-break: normal;
+}
+
+.sol-code-block-body code {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  white-space: inherit;
+  word-break: normal;
+  display: inline-block;
+  min-width: 100%;
 }
 
 /* PER-QUESTION / PER-EXPERIMENT LIVE PREVIEW BOX */
@@ -836,5 +1014,260 @@ body {
   align-items: center;
   font-size: 0.75rem;
   color: #94a3b8;
+}
+
+/* ==========================================
+   COMMUNITY TEST CASES & SANDBOX SHOWCASE
+   ========================================== */
+.sol-community-testcases-box {
+  margin: 2.5rem 0 1.5rem 0;
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: var(--sol-radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.sol-community-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sol-community-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sol-testcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sol-testcase-card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--sol-radius);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.sol-testcase-card:hover {
+  border-color: rgba(45, 212, 191, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.sol-tc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sol-tc-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  word-break: break-word;
+}
+
+.sol-tc-meta {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sol-tc-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.76rem;
+  color: #cbd5e1;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+}
+
+.sol-tc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sol-tc-actions button {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* ==========================================
+   TRY IT AUTH PROMPT MODAL
+   ========================================== */
+.sol-auth-prompt-card {
+  background: #0f172a;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  border-radius: var(--sol-radius-lg);
+  padding: 2.2rem 2rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  animation: modalFadeIn 0.25s ease;
+  box-sizing: border-box;
+}
+
+.sol-auth-prompt-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(99, 102, 241, 0.2));
+  border: 1px solid rgba(45, 212, 191, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.2rem auto;
+  font-size: 2rem;
+  color: #2dd4bf;
+}
+
+.sol-auth-prompt-btn-google {
+  background: #ffffff;
+  color: #1e293b;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+  margin-top: 1.2rem;
+}
+
+.sol-auth-prompt-btn-google:hover {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+}
+
+/* ==========================================
+   RESPONSIVE OVERRIDES FOR CODE CONTAINERS & MODALS
+   ========================================== */
+@media (max-width: 768px) {
+  .sol-sandbox-modal-card {
+    width: 98% !important;
+    height: 96vh !important;
+    max-height: 96vh !important;
+    border-radius: 12px !important;
+    margin: auto !important;
+  }
+  .sol-testcase-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 540px) {
+  .sol-code-block-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .sol-code-block-lang {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .sol-code-block-id-tag {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sol-code-block-actions {
+    width: 100%;
+    display: flex;
+    gap: 6px;
+  }
+  .sol-code-block-actions button {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 4px;
+    font-size: 0.74rem;
+  }
+  .sol-code-block-body {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.8rem;
+  }
+  .sol-sandbox-topbar {
+    padding: 8px 10px;
+  }
+  .sol-sandbox-topbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .sol-sandbox-topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .sol-sandbox-topbar-actions button {
+    flex: 1;
+    padding: 5px 4px;
+    font-size: 0.72rem;
+    justify-content: center;
+  }
+  .sol-engagement-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .sol-engagement-bar > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sol-code-block-actions button {
+    font-size: 0.7rem;
+    padding: 5px 2px;
+  }
+  .sol-auth-prompt-card {
+    padding: 1.5rem 1rem;
+  }
 }
 

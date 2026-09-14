@@ -686,20 +686,31 @@
         const isUnfilled = status === 'unfilled' || isCollapsed;
         if (isUnfilled) {
           if (unit.tagName.toLowerCase() === 'ins') {
-            unit.style.display = 'none';
+            if (unit.style.display !== 'none') unit.style.display = 'none';
             if (unit.parentElement && (unit.parentElement.classList.contains('ad-banner-section') || unit.parentElement.classList.contains('legal-adsense-container'))) {
-              if (!unit.parentElement.querySelector('.native-ads')) {
+              if (!unit.parentElement.querySelector('.native-ads') && unit.parentElement.style.display !== 'none') {
                 unit.parentElement.style.display = 'none';
               }
             }
           } else {
-            if (!unit.querySelector('.native-ads')) {
+            if (!unit.querySelector('.native-ads') && unit.style.display !== 'none') {
               unit.style.display = 'none';
             }
           }
         }
       }
     });
+  }
+
+  let collapseCheckCount = 0;
+  function startAdSenseCollapseMonitoring() {
+    const collapseInterval = setInterval(() => {
+      collapseUnfilledAdSenseSlots();
+      collapseCheckCount++;
+      if (collapseCheckCount >= 10) {
+        clearInterval(collapseInterval);
+      }
+    }, 1500);
   }
 
   async function renderAllNativeAds() {
@@ -746,11 +757,11 @@
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(renderAllNativeAds, 400);
       setTimeout(renderAllNativeAds, 2000);
-      setInterval(collapseUnfilledAdSenseSlots, 1500);
+      startAdSenseCollapseMonitoring();
     });
   } else {
     setTimeout(renderAllNativeAds, 400);
     setTimeout(renderAllNativeAds, 2000);
-    setInterval(collapseUnfilledAdSenseSlots, 1500);
+    startAdSenseCollapseMonitoring();
   }
 })();

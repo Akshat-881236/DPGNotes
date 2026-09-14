@@ -3,6 +3,7 @@
 <head>
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
@@ -45,6 +46,9 @@
       --admin-warning: #f59e0b;
       --admin-text: #f8fafc;
       --admin-muted: #94a3b8;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
     }
     
     body {
@@ -185,13 +189,19 @@
     .admin-main {
       flex: 1;
       margin-left: 280px;
-      padding: 2rem 4rem;
+      width: calc(100% - 280px);
+      max-width: calc(100vw - 280px);
+      min-width: 0;
+      padding: 2rem 2.5rem;
+      box-sizing: border-box;
     }
     .admin-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
     .admin-header h1 {
       font-size: 2rem;
@@ -199,63 +209,113 @@
     }
     .stat-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+      width: 100%;
     }
     .stat-card {
       background: var(--admin-surface);
       border: 1px solid var(--admin-border);
-      padding: 1.5rem;
+      padding: 1.25rem 1.5rem;
       border-radius: 16px;
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1.25rem;
+      box-sizing: border-box;
+      min-width: 0;
     }
     .stat-icon {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
       background: rgba(59, 130, 246, 0.1);
       color: var(--admin-primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
+      flex-shrink: 0;
     }
-    .stat-info h3 { margin: 0; font-size: 2rem; }
-    .stat-info p { margin: 0; color: var(--admin-muted); font-size: 0.9rem; }
+    .stat-info {
+      min-width: 0;
+    }
+    .stat-info h3 { margin: 0; font-size: 1.8rem; }
+    .stat-info p { margin: 0; color: var(--admin-muted); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     /* TABLES & FORMS */
     .section-card {
       background: var(--admin-surface);
       border: 1px solid var(--admin-border);
       border-radius: 20px;
-      padding: 2rem;
+      padding: 1.5rem 1.75rem;
       margin-bottom: 2rem;
+      box-sizing: border-box;
+      width: 100%;
+      overflow: hidden;
     }
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
     .section-title {
       font-size: 1.2rem;
       font-weight: 600;
       margin: 0;
     }
-    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .data-table th { 
-      padding: 1rem; 
+    .table-responsive-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--admin-border);
+      background: rgba(15, 17, 26, 0.6);
+      position: relative;
+    }
+    .table-responsive-wrapper::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .table-responsive-wrapper::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    .table-responsive-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 4px;
+    }
+    .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+      background: var(--admin-primary);
+    }
+    .data-table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      text-align: left; 
+    }
+    .data-table thead th { 
+      position: sticky;
+      top: 0;
+      background: #151a28;
+      padding: 0.9rem 1rem; 
       color: var(--admin-muted); 
-      font-weight: 500;
+      font-weight: 600; 
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
       border-bottom: 1px solid var(--admin-border);
+      z-index: 2;
+      white-space: nowrap;
     }
     .data-table td {
-      padding: 1rem;
+      padding: 0.85rem 1rem;
       border-bottom: 1px solid rgba(255,255,255,0.02);
       vertical-align: middle;
+    }
+    .data-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
     }
     .badge {
       padding: 4px 10px;
@@ -354,7 +414,17 @@
     }
     .admin-overlay.active { display: block; opacity: 1; }
     
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
+      .admin-main {
+        padding: 1.5rem 1.5rem;
+      }
+      .stat-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 850px) {
       .admin-sidebar {
         transform: translateX(-100%);
         z-index: 1000;
@@ -365,37 +435,46 @@
       }
       .admin-main {
         margin-left: 0;
+        width: 100%;
+        max-width: 100vw;
         padding: 1rem;
       }
       .admin-header {
-        display: none; /* Hide desktop header on mobile */
+        display: none; /* Hide desktop header on mobile/tablet */
       }
       .admin-mobile-header {
         display: flex;
         margin-bottom: 1rem;
       }
       .stat-cards {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.5rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
       }
       .stat-card {
-        padding: 0.75rem 0.5rem;
-        flex-direction: column;
-        text-align: center;
-        gap: 0.3rem;
+        padding: 0.85rem 0.75rem;
+        gap: 0.75rem;
       }
       .stat-icon {
-        width: 34px;
-        height: 34px;
-        font-size: 1.1rem;
-        border-radius: 8px;
+        width: 38px;
+        height: 38px;
+        font-size: 1.2rem;
+        border-radius: 10px;
       }
       .stat-info h3 {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
       }
       .stat-info p {
-        font-size: 0.65rem;
-        line-height: 1.1;
+        font-size: 0.75rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stat-cards {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+      }
+      .section-card {
+        padding: 1.2rem 1rem;
       }
     }
   </style>
@@ -445,7 +524,7 @@
         <a class="nav-link" onclick="switchTab('content')">
           <i class="ri-folder-shield-2-line"></i> Content Mgmt
         </a>
-        <a class="nav-link" onclick="switchTab('logs')">
+        <a class="nav-link" onclick="switchTab('logs'); if(window.loadActivityLogs) window.loadActivityLogs();">
           <i class="ri-history-line"></i> Activity Logs
         </a>
         <a class="nav-link" onclick="switchTab('shares')">
@@ -635,16 +714,16 @@
               <button id="deleteSelectedLogsBtn" onclick="deleteSelectedLogs()" style="display:none; padding:0.5rem 1.2rem; background:var(--admin-danger); color:white; border:none; border-radius:10px; cursor:pointer; font-family:'Outfit',sans-serif; font-weight:600; font-size:0.9rem;"><i class="ri-delete-bin-line"></i> Delete Selected</button>
             </div>
           </div>
-          <div style="overflow-x:auto; max-height: 500px;">
-            <table class="data-table">
+          <div class="table-responsive-wrapper" style="max-height: 520px;">
+            <table class="data-table" style="min-width: 760px;">
               <thead>
                 <tr>
-                  <th style="width:40px;"><input type="checkbox" id="selectAllLogs" title="Select All" style="cursor:pointer; width:16px; height:16px;" onchange="toggleAllLogs(this)"></th>
-                  <th>Timestamp</th>
-                  <th>Identity</th>
-                  <th>Action</th>
-                  <th>Metadata</th>
-                  <th>Delete</th>
+                  <th style="width:40px; text-align:center;"><input type="checkbox" id="selectAllLogs" title="Select All" style="cursor:pointer; width:16px; height:16px;" onchange="toggleAllLogs(this)"></th>
+                  <th style="width:160px; min-width:140px;">Timestamp</th>
+                  <th style="min-width:180px; max-width:240px;">Identity</th>
+                  <th style="min-width:140px;">Action</th>
+                  <th style="min-width:220px;">Metadata</th>
+                  <th style="width:70px; text-align:center;">Delete</th>
                 </tr>
               </thead>
               <tbody id="activityLogsTableBody">
@@ -663,17 +742,17 @@
               <input type="text" id="notifSearch" class="admin-input" style="width:200px; margin:0; padding:0.5rem 1rem;" placeholder="Search email/title...">
             </div>
           </div>
-          <div style="overflow-x:auto; max-height: 400px;">
-            <table class="data-table">
+          <div class="table-responsive-wrapper" style="max-height: 420px;">
+            <table class="data-table" style="min-width: 760px;">
               <thead>
                 <tr>
                   <th style="width:40px; text-align:center;"><input type="checkbox" id="selectAllNotifs" onclick="toggleAllNotifs(this)"></th>
                   <th style="width:50px; text-align:center;">Keep</th>
-                  <th>Timestamp</th>
-                  <th>Recipient Email</th>
-                  <th>Title</th>
+                  <th style="width:150px;">Timestamp</th>
+                  <th style="width:200px;">Recipient Email</th>
+                  <th style="width:180px;">Title</th>
                   <th>Message</th>
-                  <th>Actions</th>
+                  <th style="width:90px; text-align:center;">Actions</th>
                 </tr>
               </thead>
               <tbody id="adminNotifsTableBody">
@@ -699,7 +778,7 @@
           </div>
 
           <!-- Share Stat Cards -->
-          <div class="stat-cards" style="margin: 1.2rem 0 1.2rem 0; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+          <div class="stat-cards" style="margin: 1.2rem 0 1.2rem 0; display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:1rem;">
             <div class="stat-card" style="padding:1rem;">
               <div class="stat-icon" style="background:rgba(99,102,241,0.15); color:#818cf8;"><i class="ri-share-line"></i></div>
               <div class="stat-info">
@@ -722,6 +801,13 @@
               </div>
             </div>
             <div class="stat-card" style="padding:1rem;">
+              <div class="stat-icon" style="background:rgba(20,184,166,0.15); color:#14b8a6;"><i class="ri-book-open-line"></i></div>
+              <div class="stat-info">
+                <h3 id="statSolSharesCount" style="color:#14b8a6; font-size:1.4rem;">0</h3>
+                <p style="font-size:0.75rem;">Solution Shares</p>
+              </div>
+            </div>
+            <div class="stat-card" style="padding:1rem;">
               <div class="stat-icon" style="background:rgba(16,185,129,0.15); color:#10b981;"><i class="ri-cursor-line"></i></div>
               <div class="stat-info">
                 <h3 id="statTotalShareClicks" style="color:#10b981; font-size:1.4rem;">0</h3>
@@ -736,6 +822,7 @@
             <button type="button" id="shareFilterAll" class="btn-action primary" onclick="window.filterSharesByType('ALL', this)" style="padding:4px 12px; font-size:0.78rem;">All Shares</button>
             <button type="button" id="shareFilterDoc" class="btn-action" onclick="window.filterSharesByType('document', this)" style="padding:4px 12px; font-size:0.78rem;">📄 Document Shares</button>
             <button type="button" id="shareFilterNote" class="btn-action" onclick="window.filterSharesByType('note', this)" style="padding:4px 12px; font-size:0.78rem;">📝 In-Doc Note Shares</button>
+            <button type="button" id="shareFilterSolution" class="btn-action" onclick="window.filterSharesByType('solution', this)" style="padding:4px 12px; font-size:0.78rem;">🎓 Solution Shares</button>
           </div>
 
           <div style="overflow-x:auto;">
@@ -1800,6 +1887,8 @@
             </table>
           </div>
         </div>
+      </section>
+
       <!-- VIEW: SOLUTIONS METRICS -->
       <section id="view-solutions-metrics" class="view-section">
         <div class="section-card">
@@ -1858,65 +1947,166 @@
                 <div id="statAvgSolutionScreentime" style="font-size:1.4rem; font-weight:700; color:#f59e0b;">0s</div>
               </div>
             </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(244,114,182,0.15); display:flex; align-items:center; justify-content:center; color:#f472b6; font-size:1.3rem;">
+                <i class="ri-heart-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Total Likes</div>
+                <div id="statTotalSolutionLikes" style="font-size:1.4rem; font-weight:700; color:#f472b6;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(168,85,247,0.15); display:flex; align-items:center; justify-content:center; color:#c084fc; font-size:1.3rem;">
+                <i class="ri-share-forward-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Total Shares</div>
+                <div id="statTotalSolutionShares" style="font-size:1.4rem; font-weight:700; color:#c084fc;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10b981; font-size:1.3rem;">
+                <i class="ri-play-circle-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Code Runs</div>
+                <div id="statTotalSolutionRuns" style="font-size:1.4rem; font-weight:700; color:#10b981;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(99,102,241,0.15); display:flex; align-items:center; justify-content:center; color:#818cf8; font-size:1.3rem;">
+                <i class="ri-terminal-box-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Test Cases</div>
+                <div id="statTotalTestCasesCount" style="font-size:1.4rem; font-weight:700; color:#818cf8;">0</div>
+              </div>
+            </div>
           </div>
 
-          <!-- Sub-tabs: Assignment Solutions vs Practical Solutions -->
-          <div style="display:flex; gap:8px; margin:1.2rem 0; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
+          <!-- Sub-tabs: Assignment Solutions vs Practical Solutions vs Test Cases -->
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin:1.2rem 0; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
             <button type="button" class="admin-subtab-btn active" id="subtabSolAssignBtn" onclick="switchSolutionsSubTab('assignment')" style="background:rgba(20,184,166,0.18); color:#14b8a6; border:1px solid rgba(20,184,166,0.35); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
               <i class="ri-file-text-line"></i> Assignment Solutions (<span id="countSolAssignment">0</span>)
             </button>
             <button type="button" class="admin-subtab-btn" id="subtabSolPracBtn" onclick="switchSolutionsSubTab('practical')" style="background:rgba(255,255,255,0.04); color:var(--admin-muted); border:1px solid var(--admin-border); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
               <i class="ri-code-s-slash-line"></i> Practical Solutions (<span id="countSolPractical">0</span>)
             </button>
+            <button type="button" class="admin-subtab-btn" id="subtabSolTestCasesBtn" onclick="switchSolutionsSubTab('test-cases')" style="background:rgba(255,255,255,0.04); color:var(--admin-muted); border:1px solid var(--admin-border); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+              <i class="ri-terminal-box-line"></i> Test Cases (<span id="countSolTestCases">0</span>)
+            </button>
           </div>
 
-          <!-- Search & Filter Bar -->
-          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:1.2rem; background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:12px; border:1px solid var(--admin-border);">
-            <div style="flex:1; min-width:200px;">
-              <input type="text" id="solSearchInput" class="admin-input" style="width:100%; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem;" placeholder="Search subject, code, student, contributor..." oninput="filterSolutionsList()">
-            </div>
-            <div>
-              <select id="solEncryptedFilter" class="admin-input" style="width:170px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterSolutionsList()">
-                <option value="all">All Security Levels</option>
-                <option value="encrypted">🔒 Password Encrypted</option>
-                <option value="public">🌐 Public (Open)</option>
-              </select>
-            </div>
-            <div>
-              <button type="button" class="btn-action" onclick="resetSolFilters()" style="background:rgba(255,255,255,0.06); color:var(--admin-muted); border:1px solid var(--admin-border); padding:6px 12px; border-radius:8px; font-size:0.84rem; cursor:pointer;">
-                <i class="ri-filter-off-line"></i> Reset
-              </button>
+          <!-- Main Solutions Content (Assignment / Practical) -->
+          <div id="solMainContentArea">
+            <!-- Search & Filter Bar -->
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:1.2rem; background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:12px; border:1px solid var(--admin-border);">
+              <div style="flex:1; min-width:200px;">
+                <input type="text" id="solSearchInput" class="admin-input" style="width:100%; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem;" placeholder="Search subject, code, student, contributor..." oninput="filterSolutionsList()">
+              </div>
+              <div>
+                <select id="solEncryptedFilter" class="admin-input" style="width:170px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterSolutionsList()">
+                  <option value="all">All Security Levels</option>
+                  <option value="encrypted">🔒 Password Encrypted</option>
+                  <option value="public">🌐 Public (Open)</option>
+                </select>
+              </div>
+              <div>
+                <button type="button" class="btn-action" onclick="resetSolFilters()" style="background:rgba(255,255,255,0.06); color:var(--admin-muted); border:1px solid var(--admin-border); padding:6px 12px; border-radius:8px; font-size:0.84rem; cursor:pointer;">
+                  <i class="ri-filter-off-line"></i> Reset
+                </button>
+              </div>
+
+              <!-- Group Selection Actions Bar -->
+              <div id="solSelectionBar" style="display:none; align-items:center; gap:10px; margin-left:auto; background:rgba(239,68,68,0.1); padding:4px 12px; border-radius:8px; border:1px solid rgba(239,68,68,0.25);">
+                <span id="selectedSolCount" style="color:#fca5a5; font-size:0.84rem; font-weight:600;">0 selected</span>
+                <button type="button" id="deleteSelectedSolBtn" class="btn-action" style="background:rgba(239,68,68,0.25); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:4px 10px; border-radius:6px; font-size:0.82rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="deleteSelectedSolutions()">
+                  <i class="ri-delete-bin-line"></i> Delete Selected
+                </button>
+              </div>
             </div>
 
-            <!-- Group Selection Actions Bar -->
-            <div id="solSelectionBar" style="display:none; align-items:center; gap:10px; margin-left:auto; background:rgba(239,68,68,0.1); padding:4px 12px; border-radius:8px; border:1px solid rgba(239,68,68,0.25);">
-              <span id="selectedSolCount" style="color:#fca5a5; font-size:0.84rem; font-weight:600;">0 selected</span>
-              <button type="button" id="deleteSelectedSolBtn" class="btn-action" style="background:rgba(239,68,68,0.25); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:4px 10px; border-radius:6px; font-size:0.82rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="deleteSelectedSolutions()">
-                <i class="ri-delete-bin-line"></i> Delete Selected
-              </button>
+            <!-- Solutions Table -->
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="solDataTable">
+                <thead>
+                  <tr>
+                    <th style="width:36px; text-align:center;">
+                      <input type="checkbox" id="selectAllSolRows" onchange="toggleAllSolRows(this)" title="Select all visible">
+                    </th>
+                    <th>ID / Security</th>
+                    <th>Subject &amp; Code</th>
+                    <th>Student &amp; Faculty</th>
+                    <th>Contributor Info</th>
+                    <th>Engagement</th>
+                    <th style="text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="solutionsTableBody">
+                  <tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading solutions telemetry...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <!-- Solutions Table -->
-          <div style="overflow-x:auto;">
-            <table class="data-table" id="solDataTable">
-              <thead>
-                <tr>
-                  <th style="width:36px; text-align:center;">
-                    <input type="checkbox" id="selectAllSolRows" onchange="toggleAllSolRows(this)" title="Select all visible">
-                  </th>
-                  <th>ID / Security</th>
-                  <th>Subject &amp; Code</th>
-                  <th>Student &amp; Faculty</th>
-                  <th>Contributor Info</th>
-                  <th>Engagement</th>
-                  <th style="text-align:center;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="solutionsTableBody">
-                <tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading solutions telemetry...</td></tr>
-              </tbody>
-            </table>
+          <!-- Solutions Test Cases Tab Section -->
+          <div id="solTestCasesSection" style="display:none;">
+            <!-- Test Cases Search & Filter Bar -->
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:1.2rem; background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:12px; border:1px solid var(--admin-border);">
+              <div style="flex:1; min-width:220px;">
+                <input type="text" id="solTestCaseSearchInput" class="admin-input" style="width:100%; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem;" placeholder="Search test case title, contributor, solution ID, group ID..." oninput="filterSolTestCasesList()">
+              </div>
+              <div>
+                <select id="solTestCaseTypeFilter" class="admin-input" style="width:180px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterSolTestCasesList()">
+                  <option value="all">All Solution Types</option>
+                  <option value="assignment">Assignment Test Cases</option>
+                  <option value="practical">Practical Test Cases</option>
+                </select>
+              </div>
+              <div>
+                <select id="solTestCaseModeFilter" class="admin-input" style="width:180px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterSolTestCasesList()">
+                  <option value="all">All Visibility Modes</option>
+                  <option value="public">🌐 Public (Community)</option>
+                  <option value="private">🔒 Private (Encrypted Mode)</option>
+                </select>
+              </div>
+              <div>
+                <button type="button" class="btn-action" onclick="resetSolTestCaseFilters()" style="background:rgba(255,255,255,0.06); color:var(--admin-muted); border:1px solid var(--admin-border); padding:6px 12px; border-radius:8px; font-size:0.84rem; cursor:pointer;">
+                  <i class="ri-filter-off-line"></i> Reset
+                </button>
+              </div>
+              <div>
+                <button type="button" class="btn-action" onclick="loadSolutionsTestCasesAdmin(true)" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3); padding:6px 12px; border-radius:8px; font-size:0.84rem; cursor:pointer;">
+                  <i class="ri-refresh-line"></i> Refresh
+                </button>
+              </div>
+            </div>
+
+            <!-- Test Cases Table -->
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="solTestCasesTable">
+                <thead>
+                  <tr>
+                    <th>Mode &amp; Security</th>
+                    <th>Test Case Title &amp; ID</th>
+                    <th>Associated Solution</th>
+                    <th>Group ID</th>
+                    <th>Contributor Details</th>
+                    <th>Code Info</th>
+                    <th>Created At</th>
+                    <th style="text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="solTestCasesTableBody">
+                  <tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading test cases...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -2000,6 +2190,69 @@
       </div>
     </div>
   </div>
+
+  <!-- ADMIN TEST CASE INSPECTION & LIVE SANDBOX RUNNER MODAL -->
+  <div class="modal-overlay" id="adminTestCaseModal">
+    <div class="auth-card" style="max-width:960px; width:95vw; max-height:92vh; text-align:left; padding:1.5rem; display:flex; flex-direction:column; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--admin-border); padding-bottom:0.75rem;">
+        <h2 style="margin:0; font-size:1.25rem; color:var(--admin-text); display:flex; align-items:center; gap:8px;">
+          <i class="ri-terminal-box-line" style="color:#818cf8;"></i> <span id="adminTestCaseModalTitle">Test Case Inspection &amp; Sandbox Runner</span>
+        </h2>
+        <button type="button" class="btn-action" onclick="closeAdminTestCaseModal()" style="background:none; border:none; color:var(--admin-muted); font-size:1.4rem; cursor:pointer;">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <!-- Test Case Metadata Banner -->
+      <div id="adminTestCaseMetaBanner" style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:10px; padding:10px 14px; margin-bottom:1rem; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; font-size:0.83rem;">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Tabbed Code + Preview Playground Area -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; flex:1; min-height:360px; max-height:55vh; overflow:hidden;" id="adminTcGrid">
+        <!-- Left: Code Tabs & Viewer -->
+        <div style="display:flex; flex-direction:column; background:#0b1120; border:1px solid var(--admin-border); border-radius:10px; overflow:hidden; min-height:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between; background:#111827; padding:6px 10px; border-bottom:1px solid var(--admin-border);">
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-action" id="adminTcTabHtmlBtn" onclick="switchAdminTcTab('html')" style="padding:4px 10px; font-size:0.75rem; border-radius:6px; background:rgba(249,115,22,0.25); color:#fb923c; border:1px solid rgba(249,115,22,0.4); font-weight:600; cursor:pointer;">
+                <i class="ri-html5-fill"></i> HTML
+              </button>
+              <button type="button" class="btn-action" id="adminTcTabCssBtn" onclick="switchAdminTcTab('css')" style="padding:4px 10px; font-size:0.75rem; border-radius:6px; background:transparent; color:var(--admin-muted); border:1px solid transparent; font-weight:600; cursor:pointer;">
+                <i class="ri-css3-fill"></i> CSS
+              </button>
+              <button type="button" class="btn-action" id="adminTcTabJsBtn" onclick="switchAdminTcTab('js')" style="padding:4px 10px; font-size:0.75rem; border-radius:6px; background:transparent; color:var(--admin-muted); border:1px solid transparent; font-weight:600; cursor:pointer;">
+                <i class="ri-javascript-fill"></i> JavaScript
+              </button>
+            </div>
+            <button type="button" class="btn-action" onclick="runAdminTestCaseSandbox()" style="padding:4px 12px; font-size:0.75rem; border-radius:6px; background:#10b981; color:white; border:none; display:flex; align-items:center; gap:4px; font-weight:700; cursor:pointer;">
+              <i class="ri-play-fill"></i> Run Sandbox
+            </button>
+          </div>
+          <div style="flex:1; position:relative; min-height:260px;">
+            <textarea id="adminTcEditorHtml" spellcheck="false" style="position:absolute; inset:0; width:100%; height:100%; background:#090d16; color:#f8fafc; font-family:'Fira Code', monospace; font-size:0.8rem; padding:10px; border:none; resize:none; outline:none; line-height:1.45; box-sizing:border-box;" placeholder="<!-- HTML code here -->"></textarea>
+            <textarea id="adminTcEditorCss" spellcheck="false" style="position:absolute; inset:0; width:100%; height:100%; background:#090d16; color:#f8fafc; font-family:'Fira Code', monospace; font-size:0.8rem; padding:10px; border:none; resize:none; outline:none; line-height:1.45; box-sizing:border-box; display:none;" placeholder="/* CSS code here */"></textarea>
+            <textarea id="adminTcEditorJs" spellcheck="false" style="position:absolute; inset:0; width:100%; height:100%; background:#090d16; color:#f8fafc; font-family:'Fira Code', monospace; font-size:0.8rem; padding:10px; border:none; resize:none; outline:none; line-height:1.45; box-sizing:border-box; display:none;" placeholder="// JavaScript code here"></textarea>
+          </div>
+        </div>
+
+        <!-- Right: Live Sandbox Iframe & Output -->
+        <div style="display:flex; flex-direction:column; background:#ffffff; border:1px solid var(--admin-border); border-radius:10px; overflow:hidden; min-height:0;">
+          <div style="background:#111827; color:#94a3b8; font-size:0.72rem; font-weight:700; padding:6px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="ri-layout-masonry-line"></i> LIVE SANDBOX PREVIEW</span>
+            <span style="color:#10b981; display:flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span> Active</span>
+          </div>
+          <div style="flex:1; position:relative; min-height:260px; background:#ffffff;">
+            <iframe id="adminTcSandboxIframe" sandbox="allow-scripts allow-modals allow-forms" style="position:absolute; inset:0; width:100%; height:100%; border:none; background:#ffffff;"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1rem; border-top:1px solid var(--admin-border); padding-top:0.75rem;">
+        <button type="button" class="admin-btn" style="background:rgba(255,255,255,0.08); color:var(--admin-text); width:auto; padding:0.5rem 1.4rem; font-size:0.85rem;" onclick="closeAdminTestCaseModal()">Close</button>
+      </div>
+    </div>
+  </div>
   <script type="module">
       // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
@@ -2047,6 +2300,9 @@
         window.loadCoverPagesAdmin();
       } else if (tabId === 'solutions-metrics' && typeof window.loadSolutionsMetricsAdmin === 'function') {
         window.loadSolutionsMetricsAdmin();
+      } else if (tabId === 'logs') {
+        if (typeof window.loadActivityLogs === 'function') window.loadActivityLogs();
+        if (typeof window.loadAdminNotifications === 'function') window.loadAdminNotifications();
       }
     }
     window.switchTab = switchTab;
@@ -2126,6 +2382,6 @@
       }
     }
   </script>
-  <script type="module" src="admin.js?v=2.8.0"></script>
+  <script type="module" src="admin.js?v=3.5.0"></script>
 </body>
 </html>

@@ -304,7 +304,7 @@
   <script src="config.js"></script>
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -509,30 +509,67 @@
         results.forEach((d, idx) => {
           const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
           const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
-          const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&trackId=${d.trackId || ''}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
+          const isSol = Boolean(d.isSolution);
+          const viewerUrl = isSol
+            ? d.solutionUrl
+            : `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&trackId=${d.trackId || ''}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
 
           const card = document.createElement("article");
           card.className = "result-card";
           card.style.cssText = "background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.25rem 1.5rem; margin-bottom:1rem; transition:all 0.2s;";
-          card.innerHTML = `
-            <div class="result-content">
-              <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.35rem;">
-                <span style="width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.65rem; font-weight:800;">D</span>
-                <span>dpgnotes.web.app › ${d.category || 'notes'} › ${d.discipline || 'academic'}</span>
+
+          if (isSol) {
+            const isPrac = d.solutionType === "practical";
+            const iconLetter = isPrac ? "P" : "A";
+            const iconBg = isPrac ? "linear-gradient(135deg, #06b6d4, #3b82f6)" : "linear-gradient(135deg, #8b5cf6, #ec4899)";
+            const encBadge = d.isEncrypted
+              ? `<span style="background:rgba(239,68,68,0.15); color:#fca5a5; padding:2px 8px; border-radius:12px; font-weight:600;"><i class="ri-lock-2-line"></i> Password Protected</span>`
+              : `<span style="background:rgba(16,185,129,0.15); color:#6ee7b7; padding:2px 8px; border-radius:12px; font-weight:600;"><i class="ri-lock-unlock-line"></i> Public Solution</span>`;
+
+            card.innerHTML = `
+              <div class="result-content" style="width:100%;">
+                <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.35rem; flex-wrap:wrap;">
+                  <span style="width:20px; height:20px; border-radius:6px; background:${iconBg}; display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.72rem; font-weight:800;">${iconLetter}</span>
+                  <span>dpgnotes.web.app › Solutions › ${d.category} › ${d.discipline}</span>
+                  <span style="margin-left:auto;">${encBadge}</span>
+                </div>
+                <h2 class="result-title" style="margin-bottom:0.4rem;">
+                  <a href="${viewerUrl}" style="color:#a5b4fc; text-decoration:none; font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                    ${d.title} <i class="ri-arrow-right-up-line" style="font-size:0.95rem; color:#818cf8;"></i>
+                  </a>
+                </h2>
+                <p class="result-desc" style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">${d.description || "Academic verified solution document."}</p>
+                <div class="result-meta" style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
+                  <span style="background:rgba(99, 102, 241, 0.15); color:#a78bfa; padding:2px 8px; border-radius:12px; font-weight:600;">📁 ${d.category}</span>
+                  <span style="background:rgba(59, 130, 246, 0.15); color:#93c5fd; padding:2px 8px; border-radius:12px; font-weight:600;">🏫 ${d.discipline}</span>
+                  <span>👤 ${d.userName || d.uploader || "Contributor"}</span>
+                  <span>❤️ ${likesCount} Likes</span>
+                  <span>👁️ ${d.views || 0} Views</span>
+                  <span style="color:#f59e0b; font-weight:700;">⭐ SERP Rank ${d.priorityScore || 10}</span>
+                </div>
               </div>
-              <h2 class="result-title" style="margin-bottom:0.4rem;">
-                <a href="${viewerUrl}" style="color:#818cf8; text-decoration:none; font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700;">${d.title}</a>
-              </h2>
-              <p class="result-desc" style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">${d.description || "Sessional notes and academic study resource."}</p>
-              <div class="result-meta" style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
-                <span style="background:rgba(99, 102, 241, 0.15); color:#a78bfa; padding:2px 8px; border-radius:12px; font-weight:600;">📁 ${d.category}</span>
-                <span>📘 ${d.discipline}</span>
-                <span>👤 ${d.userName || d.uploader || "Contributor"}</span>
-                <span>❤️ ${likesCount} Likes</span>
-                <span style="color:#f59e0b; font-weight:700;">⭐ SERP Rank ${d.priorityScore || 10}</span>
+            `;
+          } else {
+            card.innerHTML = `
+              <div class="result-content">
+                <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.35rem;">
+                  <span style="width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.65rem; font-weight:800;">D</span>
+                  <span>dpgnotes.web.app › ${d.category || 'notes'} › ${d.discipline || 'academic'}</span>
+                </div>
+                <h2 class="result-title" style="margin-bottom:0.4rem;">
+                  <a href="${viewerUrl}" style="color:#818cf8; text-decoration:none; font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700;">${d.title}</a>
+                </h2>
+                <p class="result-desc" style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">${d.description || "Sessional notes and academic study resource."}</p>
+                <div class="result-meta" style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
+                  <span style="background:rgba(99, 102, 241, 0.15); color:#a78bfa; padding:2px 8px; border-radius:12px; font-weight:600;">📁 ${d.category}</span>
+                  <span>📘 ${d.discipline}</span>
+                  <span>👤 ${d.userName || d.uploader || "Contributor"}</span>
+                  <span>❤️ ${likesCount} Likes</span>
+                  <span style="color:#f59e0b; font-weight:700;">⭐ SERP Rank ${d.priorityScore || 10}</span>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          }
           list.appendChild(card);
 
           if (idx > 0 && (idx + 1) % 5 === 0) {
@@ -1084,7 +1121,7 @@
       });
     }
 
-    // Multi-Collection Load: documents, resource_knowledge, user_ads
+    // Multi-Collection Load: documents, solutions, resource_knowledge, user_ads
     async function loadDocuments() {
       try {
         const snap = await getDocs(collection(db, "documents"));
@@ -1092,6 +1129,51 @@
         snap.forEach(doc => {
           allDocs.push({ id: doc.id, ...doc.data() });
         });
+
+        // Fetch academic solutions via collectionGroup
+        try {
+          const solSnap = await getDocs(collectionGroup(db, "solutions"));
+          solSnap.forEach(solDoc => {
+            const solData = solDoc.data();
+            const parentPath = solDoc.ref.path || '';
+            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
+            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
+            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
+            const contribUid = solData.contributorUid || "";
+            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+
+            const subName = solData.subjectName || 'Academic Solution';
+            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
+            const course = solData.course || solData.courseSec || "Academic";
+            const author = solData.studentName || solData.contributorName || "Verified Contributor";
+            const isEnc = Boolean(solData.isEncrypted);
+            const likesCount = typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : 0);
+
+            allDocs.push({
+              id: solDoc.id,
+              isSolution: true,
+              solutionType: isPractical ? "practical" : "assignment",
+              solutionUrl: solUrl,
+              title: `${subName}${subCode}`,
+              subjectName: solData.subjectName || '',
+              subjectCode: solData.subjectCode || '',
+              category: solType,
+              discipline: course,
+              description: `${solType} for ${subName}${subCode}. Course: ${course}. Contributor: ${author}. ${isEnc ? '🔐 Password Protected' : '🔓 Public Solution'}.`,
+              userName: author,
+              uploader: author,
+              likes: likesCount,
+              views: solData.views || 0,
+              screentime: solData.totalScreentimeSec || 60,
+              isEncrypted: isEnc,
+              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", course, isEnc ? "protected" : "public"].filter(Boolean),
+              createdAt: solData.createdAt ? (typeof solData.createdAt === 'string' ? { seconds: Math.floor(new Date(solData.createdAt).getTime() / 1000) } : solData.createdAt) : { seconds: Math.floor(Date.now() / 1000) },
+              rawDoc: solData
+            });
+          });
+        } catch (solErr) {
+          console.warn("Solutions collectionGroup fetch error in SERP:", solErr);
+        }
 
         // Fetch resource_knowledge URLs (Image 2)
         window.knowledgeUrlsCache = [];
