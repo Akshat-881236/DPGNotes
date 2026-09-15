@@ -22,15 +22,18 @@
 
   <!-- Top Navigation Bar -->
   <nav class="sol-navbar">
-    <a href="../index.html" class="sol-brand">
+    <a href="index.html" class="sol-brand">
       <i class="ri-flask-fill" style="color:var(--sol-teal);"></i>
-      <span>DPGNotes <span style="color:var(--sol-teal);">Practical Viewer</span></span>
+      <span>DPGNotes <span style="color:var(--sol-teal);">Practicals</span></span>
     </a>
     <div class="sol-navbar-actions">
-      <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="handleShareSolution()">
+      <a href="index.html" class="sol-btn sol-btn-secondary sol-btn-sm" id="navSearchBtn" title="Search all practical laboratory solutions">
+        <i class="ri-search-2-line"></i> Search
+      </a>
+      <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" id="navShareBtn" onclick="handleShareSolution()" style="display:none;">
         <i class="ri-share-forward-line"></i> Share
       </button>
-      <button type="button" id="btnLikeSolution" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="handleLikeSolution()">
+      <button type="button" id="btnLikeSolution" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="handleLikeSolution()" style="display:none;">
         <i class="ri-heart-line" id="likeIcon"></i> <span id="likeCountText">0</span>
       </button>
       <a href="../study-hub.html" class="sol-btn sol-btn-secondary sol-btn-sm">
@@ -41,6 +44,86 @@
 
   <!-- Main Practical Solution Viewer Container -->
   <main class="sol-container">
+
+    <!-- INTERFACE 1: Google-Style Search Homepage -->
+    <section id="solSearchHomeView" style="display:none; max-width:760px; margin:3rem auto 5rem auto; text-align:center; padding:0 1rem;">
+      <!-- Google-Style Brand Title -->
+      <div style="margin-bottom:2rem;">
+        <div style="font-size:3.5rem; font-weight:800; letter-spacing:-1px; display:inline-flex; align-items:center; gap:2px; font-family:'Outfit', sans-serif;">
+          <span style="color:#4285F4;">D</span>
+          <span style="color:#EA4335;">P</span>
+          <span style="color:#FBBC05;">G</span>
+          <span style="color:#34A853;">Notes</span>
+          <span style="color:#cbd5e1; font-weight:300; font-size:2.2rem; margin-left:10px; opacity:0.9;">Practicals</span>
+        </div>
+        <div style="font-size:0.95rem; color:#94a3b8; margin-top:8px; font-weight:500;">
+          <i class="ri-flask-line" style="color:#2dd4bf;"></i> Search verified academic practical lab solutions, experiments, executable code &amp; test suites
+        </div>
+      </div>
+
+      <!-- Google-Style Rounded Search Box -->
+      <div style="max-width:640px; margin:0 auto 1.5rem auto;">
+        <form id="homeSearchForm" onsubmit="event.preventDefault(); window.executePracticalSearch(document.getElementById('homeSearchInput').value.trim());">
+          <div class="sol-google-search-bar">
+            <i class="ri-search-2-line sol-search-bar-icon"></i>
+            <input type="text" id="homeSearchInput" class="sol-google-search-input" placeholder="Search by practical name, subject code (e.g. BCA-306), experiment topic..." autocomplete="off" autofocus oninput="window.toggleSearchClearBtn('homeSearchInput', 'homeSearchClearBtn')">
+            <button type="button" id="homeSearchClearBtn" class="sol-search-clear-btn" style="display:none;" onclick="window.clearSearchInput('homeSearchInput', 'homeSearchClearBtn')"><i class="ri-close-line"></i></button>
+            <button type="submit" class="sol-search-submit-btn" style="background:#14b8a6;" title="Search"><i class="ri-arrow-right-line"></i></button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Google-Style Action Buttons -->
+      <div style="display:flex; justify-content:center; gap:12px; margin-bottom:2.2rem; flex-wrap:wrap;">
+        <button type="button" class="sol-google-btn" onclick="window.executePracticalSearch(document.getElementById('homeSearchInput').value.trim())">
+          <i class="ri-search-line"></i> Search Practicals
+        </button>
+        <button type="button" class="sol-google-btn" onclick="window.executePracticalSearch('')">
+          <i class="ri-sparkling-line" style="color:#f59e0b;"></i> I'm Feeling Lucky / Browse All
+        </button>
+      </div>
+
+      <!-- Popular Topic Chips -->
+      <div style="margin-top:1.5rem;">
+        <span style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700;">Popular Laboratory Subjects:</span>
+        <div class="sol-search-chips-row" id="homePopularChips"></div>
+      </div>
+    </section>
+
+    <!-- INTERFACE 2: Google-Style SERP Page (Search Engine Results Page) -->
+    <section id="solSerpView" style="display:none; max-width:960px; margin:0 auto; padding:1rem 1rem 4rem 1rem;">
+      <!-- Sticky / Top Google Search Header in SERP -->
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:1.25rem; flex-wrap:wrap;">
+        <a href="index.html" class="sol-serp-mini-brand" style="text-decoration:none; display:inline-flex; align-items:center; gap:2px; font-weight:800; font-size:1.4rem;">
+          <span style="color:#4285F4;">D</span><span style="color:#EA4335;">P</span><span style="color:#FBBC05;">G</span><span style="color:#34A853;">Notes</span>
+        </a>
+        <form id="serpSearchForm" onsubmit="event.preventDefault(); window.executePracticalSearch(document.getElementById('serpSearchInput').value.trim());" style="flex:1; min-width:280px;">
+          <div class="sol-google-search-bar" style="height:44px;">
+            <i class="ri-search-2-line sol-search-bar-icon" style="font-size:1.1rem;"></i>
+            <input type="text" id="serpSearchInput" class="sol-google-search-input" placeholder="Search practical lab solutions, experiments, code..." autocomplete="off" oninput="window.toggleSearchClearBtn('serpSearchInput', 'serpSearchClearBtn')">
+            <button type="button" id="serpSearchClearBtn" class="sol-search-clear-btn" style="display:none;" onclick="window.clearSearchInput('serpSearchInput', 'serpSearchClearBtn')"><i class="ri-close-line"></i></button>
+            <button type="submit" class="sol-search-submit-btn" style="height:32px; width:32px; background:#14b8a6;"><i class="ri-search-line"></i></button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="sol-serp-filter-tabs" style="display:flex; gap:8px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.75rem; margin-bottom:1.25rem; overflow-x:auto;">
+        <button type="button" class="sol-serp-tab active" data-filter="all" onclick="window.setSerpFilter('all')"><i class="ri-global-line"></i> All Practicals</button>
+        <button type="button" class="sol-serp-tab" data-filter="public" onclick="window.setSerpFilter('public')"><i class="ri-shield-check-line"></i> Public Access</button>
+        <button type="button" class="sol-serp-tab" data-filter="encrypted" onclick="window.setSerpFilter('encrypted')"><i class="ri-lock-2-line"></i> Zero-Knowledge</button>
+        <button type="button" class="sol-serp-tab" data-filter="views" onclick="window.setSerpFilter('views')"><i class="ri-fire-line"></i> Most Viewed</button>
+        <button type="button" class="sol-serp-tab" data-filter="runs" onclick="window.setSerpFilter('runs')"><i class="ri-play-circle-line"></i> Most Tested</button>
+      </div>
+
+      <!-- SERP Stats Counter -->
+      <div id="serpStatsRow" style="font-size:0.85rem; color:#94a3b8; margin-bottom:1.5rem;">
+        Loading practicals...
+      </div>
+
+      <!-- SERP Results Cards -->
+      <div id="serpResultsList" style="display:flex; flex-direction:column; gap:1.25rem;"></div>
+    </section>
 
     <!-- Loading State -->
     <div id="loadingState" style="text-align:center; padding:5rem 1rem;">
@@ -58,11 +141,19 @@
       <p style="color:var(--sol-text-muted); font-size:0.9rem; max-width:480px; margin:0 auto 1.5rem auto;" id="errorMsg">
         The requested practical laboratory solution does not exist or the link may have expired.
       </p>
-      <a href="../index.html" class="sol-btn sol-btn-teal">Return to Homepage</a>
+      <a href="index.html" class="sol-btn sol-btn-teal">Return to Search</a>
     </div>
 
-    <!-- Active Solution Viewport -->
+    <!-- INTERFACE 3: Active Solution Viewport -->
     <div id="solutionViewport" style="display:none;">
+
+      <!-- Breadcrumb Navigation Bar -->
+      <div style="margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <a href="index.html" style="color:#2dd4bf; text-decoration:none; font-size:0.88rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+          <i class="ri-arrow-left-line"></i> Back to Practical Search
+        </a>
+        <span style="font-size:0.8rem; color:#94a3b8;"><i class="ri-flask-line"></i> Viewing Laboratory Practical</span>
+      </div>
 
       <!-- Academic Header Card -->
       <section class="sol-view-header">
@@ -297,15 +388,329 @@
     let screentimeInterval = null;
     let pendingSecondsToSync = 0;
 
+    // ==========================================
+    // GOOGLE-STYLE PRACTICAL LAB SEARCH & SERP
+    // ==========================================
+    let cachedPracticalsList = [];
+    let currentSerpFilter = 'all';
+    let currentActiveQuery = '';
+
+    const PRACTICAL_POPULAR_TOPICS = [
+      'All Practicals', 'Web Lab', 'Python Lab', 'C++ OOPs Lab', 'Data Structures Lab',
+      'DBMS Lab', 'Shell Scripting', 'Java Programming Lab', 'Computer Networks Lab'
+    ];
+
+    window.toggleSearchClearBtn = function(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      if (input && btn) {
+        btn.style.display = (input.value.trim().length > 0) ? 'flex' : 'none';
+      }
+    };
+
+    window.clearSearchInput = function(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      if (btn) btn.style.display = 'none';
+      if (inputId === 'serpSearchInput') {
+        window.executePracticalSearch('');
+      }
+    };
+
+    window.setSerpFilter = function(filter) {
+      currentSerpFilter = filter;
+      document.querySelectorAll('.sol-serp-tab').forEach(tab => {
+        if (tab.getAttribute('data-filter') === filter) tab.classList.add('active');
+        else tab.classList.remove('active');
+      });
+      renderSerpResults(currentActiveQuery, currentSerpFilter);
+    };
+
+    window.executePracticalSearch = function(qVal) {
+      const queryStr = (qVal === 'All Practicals') ? '' : (qVal !== undefined ? qVal.trim() : '');
+      currentActiveQuery = queryStr;
+
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('id');
+      newUrl.searchParams.delete('contributor');
+      if (queryStr) {
+        newUrl.searchParams.set('q', queryStr);
+      } else {
+        newUrl.searchParams.delete('q');
+      }
+      window.history.pushState(null, '', newUrl.toString());
+
+      showSerpInterface(queryStr);
+    };
+
+    async function loadAllPracticalsForSearch() {
+      if (cachedPracticalsList.length > 0) return cachedPracticalsList;
+
+      try {
+        if (!window.solDb || !window.solCollectionGroup || !window.solGetDocs) return [];
+        const q = window.solQuery(
+          window.solCollectionGroup(window.solDb, "solutions"),
+          window.solLimit(150)
+        );
+        const querySnap = await window.solGetDocs(q);
+        const list = [];
+        querySnap.docs.forEach(docSnap => {
+          if (docSnap.ref.path.includes("practical_solutions")) {
+            const d = docSnap.data();
+            d.id = d.id || docSnap.id;
+            d.docPath = docSnap.ref.path;
+            list.push(d);
+          }
+        });
+
+        list.sort((a, b) => {
+          const vA = Number(a.views) || 0;
+          const vB = Number(b.views) || 0;
+          return vB - vA;
+        });
+
+        cachedPracticalsList = list;
+        return list;
+      } catch (err) {
+        console.warn("loadAllPracticalsForSearch error:", err);
+        return [];
+      }
+    }
+
+    function showSearchHomeInterface() {
+      document.title = "DPGNotes Practical Lab Search Engine | Google-Style Academic Finder";
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('solutionViewport').style.display = 'none';
+      document.getElementById('solSerpView').style.display = 'none';
+      document.getElementById('solSearchHomeView').style.display = 'block';
+
+      const navShare = document.getElementById('navShareBtn');
+      const navLike = document.getElementById('btnLikeSolution');
+      if (navShare) navShare.style.display = 'none';
+      if (navLike) navLike.style.display = 'none';
+
+      // Render Popular Topic Chips
+      const chipsContainer = document.getElementById('homePopularChips');
+      if (chipsContainer) {
+        chipsContainer.innerHTML = PRACTICAL_POPULAR_TOPICS.map(topic => `
+          <button type="button" class="sol-search-chip" onclick="window.executePracticalSearch('${escapeHtml(topic)}')">
+            <i class="ri-flask-line" style="font-size:0.75rem; opacity:0.7;"></i> ${escapeHtml(topic)}
+          </button>
+        `).join('');
+      }
+
+      const input = document.getElementById('homeSearchInput');
+      if (input) {
+        input.value = '';
+        window.toggleSearchClearBtn('homeSearchInput', 'homeSearchClearBtn');
+        input.focus();
+      }
+    }
+
+    function showSerpInterface(queryStr) {
+      document.title = `${queryStr ? queryStr + ' - ' : ''}DPGNotes Practical Search`;
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('solutionViewport').style.display = 'none';
+      document.getElementById('solSearchHomeView').style.display = 'none';
+      document.getElementById('solSerpView').style.display = 'block';
+
+      const navShare = document.getElementById('navShareBtn');
+      const navLike = document.getElementById('btnLikeSolution');
+      if (navShare) navShare.style.display = 'none';
+      if (navLike) navLike.style.display = 'none';
+
+      const serpInput = document.getElementById('serpSearchInput');
+      if (serpInput) {
+        serpInput.value = queryStr || '';
+        window.toggleSearchClearBtn('serpSearchInput', 'serpSearchClearBtn');
+      }
+
+      renderSerpResults(queryStr, currentSerpFilter);
+    }
+
+    function renderSerpResults(queryStr, filterType) {
+      const startTime = performance.now();
+      const qLower = (queryStr || '').toLowerCase().trim();
+      const listContainer = document.getElementById('serpResultsList');
+      const statsRow = document.getElementById('serpStatsRow');
+
+      if (!listContainer || !statsRow) return;
+
+      let results = cachedPracticalsList.slice();
+
+      // 1. Text Query Filter
+      if (qLower) {
+        results = results.filter(item => {
+          const subName = (item.subjectName || '').toLowerCase();
+          const subCode = (item.subjectCode || '').toLowerCase();
+          const course = (item.course || item.courseSec || '').toLowerCase();
+          const student = (item.studentName || '').toLowerCase();
+          const prof = (item.profName || '').toLowerCase();
+          const contrib = (item.contributorName || '').toLowerCase();
+          const pTitles = Array.isArray(item.practicals) ? item.practicals.map(p => (p.title || '').toLowerCase()).join(' ') : '';
+
+          return subName.includes(qLower) || subCode.includes(qLower) || course.includes(qLower) ||
+                 student.includes(qLower) || prof.includes(qLower) || contrib.includes(qLower) ||
+                 pTitles.includes(qLower);
+        });
+      }
+
+      // 2. Filter Tab
+      if (filterType === 'public') {
+        results = results.filter(item => !item.isEncrypted);
+      } else if (filterType === 'encrypted') {
+        results = results.filter(item => !!item.isEncrypted);
+      } else if (filterType === 'views') {
+        results.sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0));
+      } else if (filterType === 'runs') {
+        results.sort((a, b) => (Number(b.runs || b.codeRuns) || 0) - (Number(a.runs || a.codeRuns) || 0));
+      }
+
+      const duration = ((performance.now() - startTime) / 1000).toFixed(3);
+      const displayCount = results.length;
+      statsRow.innerHTML = `About <strong>${displayCount.toLocaleString()}</strong> results (${duration} seconds) ${qLower ? `for <strong>"${escapeHtml(queryStr)}"</strong>` : 'across all laboratory practicals'}`;
+
+      if (results.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align:center; padding:3.5rem 1rem; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:14px;">
+            <i class="ri-flask-line" style="font-size:3rem; color:#64748b;"></i>
+            <h3 style="color:white; margin:1rem 0 0.5rem 0; font-size:1.3rem;">No practical laboratory solutions matched your search</h3>
+            <p style="color:#94a3b8; font-size:0.9rem; max-width:440px; margin:0 auto 1.5rem auto;">
+              Suggestions: Check spelling, use broader keywords, or browse all available laboratory solutions.
+            </p>
+            <button type="button" class="sol-btn sol-btn-teal" onclick="window.executePracticalSearch('')">
+              <i class="ri-sparkling-line"></i> Browse All Practicals
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = results.map(item => {
+        const solutionId = item.id;
+        const contribUid = item.contributorUid || '';
+        const linkUrl = `?id=${encodeURIComponent(solutionId)}&contributor=${encodeURIComponent(contribUid)}`;
+        const views = Number(item.views) || 0;
+        const likes = Number(item.likes) || (Array.isArray(item.likedBy) ? item.likedBy.length : 0);
+        const runs = Number(item.runs || item.codeRuns) || 0;
+        const isEnc = !!item.isEncrypted;
+
+        // Preview practical experiments snippet
+        let pSnippet = '';
+        if (Array.isArray(item.practicals) && item.practicals.length > 0) {
+          const previewTitles = item.practicals.slice(0, 3).map((p, idx) => `Exp #${idx+1}: ${escapeHtml(p.title || 'Experiment')}`).join(' • ');
+          pSnippet = `<div style="font-size:0.84rem; color:#cbd5e1; margin-top:4px; line-height:1.5;">${previewTitles}${item.practicals.length > 3 ? ` <span style="color:#2dd4bf;">+${item.practicals.length - 3} more</span>` : ''}</div>`;
+        }
+
+        return `
+          <article class="sol-serp-card">
+            <div class="sol-serp-breadcrumb">
+              <i class="ri-flask-fill" style="color:#2dd4bf;"></i>
+              <span>dpgnotes.com › practicals › ${escapeHtml(item.subjectCode || 'LAB')} › ${escapeHtml(item.course || item.courseSec || 'Academic')}</span>
+            </div>
+
+            <a href="${linkUrl}" class="sol-serp-title" style="color:#2dd4bf;">
+              ${escapeHtml(item.subjectCode ? item.subjectCode + ': ' : '')}${escapeHtml(item.subjectName || 'Practical Laboratory Solution')}
+            </a>
+
+            <div class="sol-serp-snippet">
+              <div>
+                Faculty: <strong style="color:#f8fafc;">${escapeHtml(item.profName || 'Faculty')}</strong> &bull;
+                Student: <strong style="color:#f8fafc;">${escapeHtml(item.studentName || 'Student')}</strong> &bull;
+                Contributor: <strong style="color:#2dd4bf;">${escapeHtml(item.contributorName || 'Verified Contributor')}</strong>
+              </div>
+              ${pSnippet}
+            </div>
+
+            <div class="sol-serp-meta-row">
+              <span class="sol-badge"><i class="ri-eye-line" style="color:#2dd4bf;"></i> ${views.toLocaleString()} views</span>
+              <span class="sol-badge"><i class="ri-heart-line" style="color:#f472b6;"></i> ${likes.toLocaleString()} likes</span>
+              <span class="sol-badge"><i class="ri-play-circle-line" style="color:#10b981;"></i> ${runs.toLocaleString()} runs</span>
+              <span class="sol-badge ${isEnc ? 'sol-badge-red' : 'sol-badge-teal'}">
+                ${isEnc ? '<i class="ri-lock-2-fill"></i> 🔒 Zero-Knowledge' : '<i class="ri-global-line"></i> 🌐 Public Access'}
+              </span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <a href="${linkUrl}" class="sol-btn sol-btn-teal sol-btn-sm">
+                <i class="ri-article-line"></i> Open Practical
+              </a>
+              <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="window.copySolutionDirectLink('${escapeHtml(solutionId)}', '${escapeHtml(contribUid)}')">
+                <i class="ri-file-copy-line"></i> Copy Link
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    window.copySolutionDirectLink = function(solId, contribUid) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('q');
+      url.searchParams.set('id', solId);
+      if (contribUid) url.searchParams.set('contributor', contribUid);
+      navigator.clipboard.writeText(url.toString()).then(() => {
+        if (typeof window.customAlert === 'function') {
+          window.customAlert("Practical link copied to clipboard!", { title: "Link Copied" });
+        } else {
+          alert("Practical link copied to clipboard!");
+        }
+      });
+    };
+
+    window.addEventListener('popstate', () => {
+      const params = new URLSearchParams(window.location.search);
+      const solId = params.get('id');
+      const qVal = params.get('q');
+      if (solId) {
+        window.initPracticalFetch();
+      } else if (qVal !== null && qVal !== undefined) {
+        showSerpInterface(qVal);
+      } else {
+        showSearchHomeInterface();
+      }
+    });
+
     window.initPracticalFetch = async function() {
       const params = new URLSearchParams(window.location.search);
       const solutionId = params.get('id');
       let contributorUid = params.get('contributor');
+      const queryStr = params.get('q');
 
+      // If solutionId is absent, act as a Google-Style Academic Search Engine
       if (!solutionId) {
-        showError("Invalid Link", "Missing practical solution ID parameter in the URL.");
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('solutionViewport').style.display = 'none';
+
+        // Preload cached practicals for instant search
+        await loadAllPracticalsForSearch();
+
+        if (queryStr !== null && queryStr !== undefined) {
+          showSerpInterface(queryStr);
+        } else {
+          showSearchHomeInterface();
+        }
         return;
       }
+
+      // Hide Search and SERP views when viewing specific solution
+      document.getElementById('solSearchHomeView').style.display = 'none';
+      document.getElementById('solSerpView').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('solutionViewport').style.display = 'none';
+
+      const navShare = document.getElementById('navShareBtn');
+      const navLike = document.getElementById('btnLikeSolution');
+      if (navShare) navShare.style.display = 'inline-flex';
+      if (navLike) navLike.style.display = 'inline-flex';
 
       try {
         let snap = null;
@@ -399,6 +804,8 @@
     };
 
     function showError(title, msg) {
+      document.getElementById('solSearchHomeView').style.display = 'none';
+      document.getElementById('solSerpView').style.display = 'none';
       document.getElementById('loadingState').style.display = 'none';
       document.getElementById('solutionViewport').style.display = 'none';
       const errBox = document.getElementById('errorState');

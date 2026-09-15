@@ -171,8 +171,10 @@ def generate_pdf(data, output_path, assets_dir=None):
         if not os.path.exists(assets_dir):
             assets_dir = os.path.join(base_dir, "public", "AssignmentCoverPageGenerator")
 
-    header_img_path = os.path.join(assets_dir, "Header_Image.jpg")
-    center_logo_path = os.path.join(assets_dir, "Center_Logo.jpg")
+    header_file = "DPGDegreeHeader_Image.jpeg" if data.get("headerLogo") == "DPGDegreeHeader_Image.jpeg" else "Header_Image.jpg"
+    center_logo_file = "DPGDegreeCenter_Logo.jpeg" if data.get("centerLogo") == "DPGDegreeCenter_Logo.jpeg" else "Center_Logo.jpg"
+    header_img_path = os.path.join(assets_dir, header_file)
+    center_logo_path = os.path.join(assets_dir, center_logo_file)
 
     c = canvas.Canvas(output_path, pagesize=A4)
     if doc_type == "practical":

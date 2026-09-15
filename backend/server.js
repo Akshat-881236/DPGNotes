@@ -7059,8 +7059,10 @@ app.post('/api/assignment/export-pdf', async (req, res) => {
     // Fallback: Use pdf-lib in Node.js to generate pixel-perfect A4 PDF with exact student data
     const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
     const folder = isPractical ? 'PracticalCoverPageGenerator' : 'AssignmentCoverPageGenerator';
-    const headerPath = path.join(__dirname, '..', 'public', folder, 'Header_Image.jpg');
-    const logoPath = path.join(__dirname, '..', 'public', folder, 'Center_Logo.jpg');
+    const headerFile = (req.body?.headerLogo === 'DPGDegreeHeader_Image.jpeg' || req.query?.headerLogo === 'DPGDegreeHeader_Image.jpeg') ? 'DPGDegreeHeader_Image.jpeg' : 'Header_Image.jpg';
+    const logoFile = (req.body?.centerLogo === 'DPGDegreeCenter_Logo.jpeg' || req.query?.centerLogo === 'DPGDegreeCenter_Logo.jpeg') ? 'DPGDegreeCenter_Logo.jpeg' : 'Center_Logo.jpg';
+    const headerPath = path.join(__dirname, '..', 'public', folder, headerFile);
+    const logoPath = path.join(__dirname, '..', 'public', folder, logoFile);
 
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595.28, 841.89]);

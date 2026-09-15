@@ -4517,8 +4517,10 @@ async function renderCoverPageToCanvas(d) {
 
   // Load Header Banner & Center Logo safely without tainting canvas
   const folder = isPractical ? 'PracticalCoverPageGenerator' : 'AssignmentCoverPageGenerator';
-  const headerUrl = `/${folder}/Header_Image.jpg`;
-  const logoUrl = `/${folder}/Center_Logo.jpg`;
+  const headerFilename = (d.headerLogo === 'DPGDegreeHeader_Image.jpeg') ? 'DPGDegreeHeader_Image.jpeg' : 'Header_Image.jpg';
+  const logoFilename = (d.centerLogo === 'DPGDegreeCenter_Logo.jpeg') ? 'DPGDegreeCenter_Logo.jpeg' : 'Center_Logo.jpg';
+  const headerUrl = `/${folder}/${headerFilename}`;
+  const logoUrl = `/${folder}/${logoFilename}`;
 
   async function loadSafeImg(url) {
     try {

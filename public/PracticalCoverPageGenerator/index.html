@@ -521,6 +521,27 @@
       </p>
 
       <form id="coverForm" onsubmit="event.preventDefault(); handleGenerateClick();">
+        <div class="form-row" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 12px; margin-bottom:1rem;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="display:flex; align-items:center; gap:6px;">
+              <i class="ri-image-line" style="color:#38bdf8;"></i> Header Banner Logo
+            </label>
+            <select id="selHeaderLogo" class="form-control" onchange="handleLogoChange()">
+              <option value="Header_Image.jpg" selected>DPG STM / Standard Header</option>
+              <option value="DPGDegreeHeader_Image.jpeg">DPG Degree College Header</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="display:flex; align-items:center; gap:6px;">
+              <i class="ri-shield-star-line" style="color:#f59e0b;"></i> Center Emblem Logo
+            </label>
+            <select id="selCenterLogo" class="form-control" onchange="handleLogoChange()">
+              <option value="Center_Logo.jpg" selected>MDU Rohtak Emblem (Standard)</option>
+              <option value="DPGDegreeCenter_Logo.jpeg">DPG Degree College Emblem</option>
+            </select>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Subject Name <span class="req">*</span></label>
@@ -548,6 +569,8 @@
           <option value="BCA-5B">BCA 5th Sem - Section B</option>
           <option value="BCA-CTIS-3A">BCA (Cloud Tech & Info Security) - 3A</option>
           <option value="BCA-DS-3A">BCA (Data Science) - 3A</option>
+          <option value="BCA-FSD-5A">BCA (Full Stack Development) - 5A</option>
+          <option value="BCA-FSD-5B">BCA (Full Stack Development) - 5B</option>
           <option value="MCA-1A">MCA 1st Sem - Section A</option>
           <option value="MCA-3A">MCA 3rd Sem - Section A</option>
           <option value="BBA-1A">BBA 1st Sem - Section A</option>
@@ -816,11 +839,14 @@
 
   <script>
     // Asset image objects
+    let currentHeaderLogo = 'Header_Image.jpg';
+    let currentCenterLogo = 'Center_Logo.jpg';
+
     const headerImg = new Image();
-    headerImg.src = 'Header_Image.jpg';
+    headerImg.src = currentHeaderLogo;
 
     const centerLogoImg = new Image();
-    centerLogoImg.src = 'Center_Logo.jpg';
+    centerLogoImg.src = currentCenterLogo;
 
     let imagesLoaded = 0;
     function onImgLoad() {
@@ -831,6 +857,18 @@
     }
     headerImg.onload = onImgLoad;
     centerLogoImg.onload = onImgLoad;
+
+    function handleLogoChange() {
+      const hVal = document.getElementById('selHeaderLogo')?.value || 'Header_Image.jpg';
+      const cVal = document.getElementById('selCenterLogo')?.value || 'Center_Logo.jpg';
+      currentHeaderLogo = hVal;
+      currentCenterLogo = cVal;
+      headerImg.onload = () => renderLiveCanvas();
+      centerLogoImg.onload = () => renderLiveCanvas();
+      headerImg.src = hVal;
+      centerLogoImg.src = cVal;
+      renderLiveCanvas();
+    }
 
     // Retrieve or initialize user identity
     // ==========================================
@@ -1518,13 +1556,19 @@
         }
       }
 
+      const rawCourseSec = document.getElementById('inpCourseSec')?.value.trim() || 'BCA-3A';
+      // Normalize spaces around hyphens and within section: e.g. "BCA - FSD - 5A" -> "BCA-FSD-5A", "BCA - 3 A" -> "BCA-3A"
+      const normalizedCourseSec = rawCourseSec.split('-').map(p => p.trim().replace(/\s+/g, '')).filter(Boolean).join('-');
+
       return {
         docType: 'practical',
         assignmentNo: '',
         session: document.getElementById('inpSession')?.value.trim() || '2025-2026',
         subjectName: document.getElementById('inpSubName')?.value.trim() || 'DATA STRUCTURES & ALGORITHMS',
         subjectCode: document.getElementById('inpSubCode')?.value.trim() || 'BCA-301',
-        courseSection: document.getElementById('inpCourseSec')?.value.trim() || 'BCA-3A',
+        courseSection: normalizedCourseSec,
+        headerLogo: document.getElementById('selHeaderLogo')?.value || currentHeaderLogo || 'Header_Image.jpg',
+        centerLogo: document.getElementById('selCenterLogo')?.value || currentCenterLogo || 'Center_Logo.jpg',
         degreeName: document.getElementById('inpDegreeName')?.value.trim() || 'BACHELOR OF COMPUTER APPLICATION',
         profName: document.getElementById('inpProfName')?.value.trim() || 'DR. RAJESH KUMAR',
         designation: document.getElementById('inpDesignation')?.value.trim() || 'ASSISTANT PROFESSOR',
@@ -1630,7 +1674,8 @@
         }
       }
 
-      // 2. Headings (Centered - Balanced bold and regular per template)
+      // 2. Headings (Centered - Matches PracticalCoverPageTemplate.pdf)
+      // 'A' placed at 130 pt to comfortably clear header banner
       drawRegularText("A", W / 2.0, 130.0 * scaleY, 'center');
       drawBoldText("PRACTICAL FILE", W / 2.0, 149.0 * scaleY, 'center');
       drawRegularText("OF", W / 2.0, 168.0 * scaleY, 'center');
@@ -1641,7 +1686,7 @@
       drawRegularText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 249.0 * scaleY, 'center');
       drawBoldText(d.degreeName.toUpperCase(), W / 2.0, 268.0 * scaleY, 'center');
 
-      // 3. Center Logo (MDU Emblem)
+      // 3. Center Logo (Emblem)
       const logoW = 134.76 * scaleX;
       const logoH = 114.84 * scaleY;
       const logoX = (W - logoW) / 2.0;
@@ -1699,11 +1744,13 @@
       drawRegularText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY, 'center');
     }
 
-    // Validation rule: Course & Section format {Course}-{Section}
+    // Validation rule: Course & Section format (supports BCA-FSD-5A, BCA - FSD - 5A, BCA-3A, BCA - 3A, BCA - 3 A, BTECH-CSE-3A)
     function validateCourseSection(str) {
-      // Must contain a hyphen and match Course-Section format
-      const re = /^[A-Za-z0-9\.\s]+-[A-Za-z0-9]+$/;
-      return re.test((str || '').trim());
+      if (!str || typeof str !== 'string') return false;
+      const trimmed = str.trim();
+      const parts = trimmed.split('-').map(p => p.trim());
+      if (parts.length < 2) return false;
+      return parts.every(part => /[A-Za-z0-9]/.test(part));
     }
 
     // Submit handler
@@ -1960,6 +2007,9 @@
       if (document.getElementById('inpFatherName')) document.getElementById('inpFatherName').value = r.fatherName || '';
       if (document.getElementById('inpStuId')) document.getElementById('inpStuId').value = r.studentId || '';
       if (document.getElementById('inpDay')) document.getElementById('inpDay').value = r.day || 'FRIDAY';
+      if (r.headerLogo && document.getElementById('selHeaderLogo')) document.getElementById('selHeaderLogo').value = r.headerLogo;
+      if (r.centerLogo && document.getElementById('selCenterLogo')) document.getElementById('selCenterLogo').value = r.centerLogo;
+      handleLogoChange();
 
       renderLiveCanvas();
       window.scrollTo({ top: 0, behavior: 'smooth' });

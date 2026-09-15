@@ -282,11 +282,13 @@
     }
   }
 
-  // Run Sandbox from Linked Group ID
-  window.runSandboxFromGroup = function(groupId, optionalTitle) {
+  // Multi-stage Sandbox Code Extractor: guarantees locating executable code even across prefixed or scoped IDs
+  function extractSandboxCodeForGroup(groupId) {
     let htmlCode = '';
     let cssCode = '';
     let jsCode = '';
+
+    if (!groupId) return { html: '', css: '', js: '' };
 
     // 1. Search for explicit ID elements first
     const htmlEl = document.getElementById('code-html-' + groupId);
@@ -297,21 +299,83 @@
     if (cssEl) cssCode = extractCodeFromElement(cssEl);
     if (jsEl) jsCode = extractCodeFromElement(jsEl);
 
-    // 2. Search by data-sandbox-group or data-code-group
-    const groupContainers = document.querySelectorAll(`[data-sandbox-group="${groupId}"], [data-code-group="${groupId}"]`);
-    groupContainers.forEach(container => {
+    // 2. Exact match on data-sandbox-group or data-code-group
+    const exactGroupContainers = document.querySelectorAll(`[data-sandbox-group="${groupId}"], [data-code-group="${groupId}"]`);
+    exactGroupContainers.forEach(container => {
       const lang = (container.getAttribute('data-lang') || '').toLowerCase();
       const code = extractCodeFromElement(container);
       if (!htmlCode && (lang === 'html' || lang === 'markup')) htmlCode = code;
-      else if (!cssCode && lang === 'css') cssCode = code;
+      else if (!cssCode && (lang === 'css' || lang === 'scss')) cssCode = code;
       else if (!jsCode && (lang === 'js' || lang === 'javascript')) jsCode = code;
     });
 
-    // 3. Fallback: Search any child container matching groupId
-    if (!htmlCode) {
-      const anyHtml = document.querySelector(`.sol-code-block-container[data-sandbox-group="${groupId}"] .sol-code-block-body`);
-      if (anyHtml) htmlCode = extractCodeFromElement(anyHtml);
+    // 3. Prefix match if groupId was indexed (e.g. prac_1 matching prac_1_1, prac_1_2)
+    if (!htmlCode || !cssCode || !jsCode) {
+      const prefixContainers = document.querySelectorAll(`[data-sandbox-group^="${groupId}"], [data-code-group^="${groupId}"]`);
+      prefixContainers.forEach(container => {
+        const lang = (container.getAttribute('data-lang') || '').toLowerCase();
+        const code = extractCodeFromElement(container);
+        if (!htmlCode && (lang === 'html' || lang === 'markup')) htmlCode = code;
+        else if (!cssCode && (lang === 'css' || lang === 'scss')) cssCode = code;
+        else if (!jsCode && (lang === 'js' || lang === 'javascript')) jsCode = code;
+      });
     }
+
+    // 4. Card / Article scope search (e.g., experiment_1, question_1, prac_1)
+    if (!htmlCode && !cssCode && !jsCode) {
+      let scopeEl = document.getElementById(groupId);
+      if (!scopeEl) {
+        const numMatch = groupId.match(/\d+/);
+        if (numMatch) {
+          const num = numMatch[0];
+          scopeEl = document.getElementById('experiment_' + num) ||
+                    document.getElementById('question_' + num) ||
+                    document.getElementById('prac_' + num) ||
+                    document.getElementById('exp_' + num);
+        }
+      }
+
+      if (scopeEl) {
+        const codeNodes = scopeEl.querySelectorAll('.sol-code-block-container, .code-container, pre');
+        codeNodes.forEach(node => {
+          const lang = (node.getAttribute('data-lang') || '').toLowerCase();
+          const code = extractCodeFromElement(node);
+          if (!code) return;
+
+          if (!htmlCode && (lang === 'html' || lang === 'markup' || /<(!DOCTYPE|html|head|body|div|button|p|form|span)/i.test(code))) {
+            htmlCode = code;
+          } else if (!cssCode && (lang === 'css' || lang === 'scss' || (/\{[\s\S]*:[^;]+;/i.test(code) && !code.includes('function')))) {
+            cssCode = code;
+          } else if (!jsCode && (lang === 'js' || lang === 'javascript' || /function\b|console\.log|addEventListener|document\./i.test(code))) {
+            jsCode = code;
+          }
+        });
+      }
+    }
+
+    // 5. Global fallback if only 1 code block exists in active document
+    if (!htmlCode && !cssCode && !jsCode) {
+      const allContainers = document.querySelectorAll('.sol-code-block-container, .code-container');
+      if (allContainers.length === 1) {
+        const singleNode = allContainers[0];
+        const lang = (singleNode.getAttribute('data-lang') || '').toLowerCase();
+        const code = extractCodeFromElement(singleNode);
+        if (lang === 'html' || lang === 'markup') htmlCode = code;
+        else if (lang === 'css') cssCode = code;
+        else jsCode = code;
+      }
+    }
+
+    return { html: htmlCode, css: cssCode, js: jsCode };
+  }
+  window.extractSandboxCodeForGroup = extractSandboxCodeForGroup;
+
+  // Run Sandbox from Linked Group ID
+  window.runSandboxFromGroup = function(groupId, optionalTitle) {
+    const extracted = extractSandboxCodeForGroup(groupId);
+    const htmlCode = extracted.html;
+    const cssCode = extracted.css;
+    const jsCode = extracted.js;
 
     if (!htmlCode && !cssCode && !jsCode) {
       if (typeof window.customAlert === 'function') {
@@ -350,50 +414,292 @@
     });
   };
 
-  // Syntax Highlighter for Clean Code Auto-Formatting in Code Interface
+  // Language Metadata Registry with Official Logos & Colors
+  function getLanguageMeta(lang) {
+    const raw = (lang || '').toLowerCase().trim();
+    let l = raw;
+    if (l === 'c++') l = 'cpp';
+    else if (l === 'c#' || l === 'cs') l = 'csharp';
+    else if (l === 'js') l = 'javascript';
+    else if (l === 'py') l = 'python';
+    else if (l === 'rb') l = 'ruby';
+    else if (l === 'sh' || l === 'shell' || l === 'zsh') l = 'bash';
+    else if (l === 'golang') l = 'go';
+    else if (l === 'rs') l = 'rust';
+    else if (l === 'kt') l = 'kotlin';
+    else if (l === 'markup' || l === 'htm') l = 'html';
+    else if (l === 'scss' || l === 'sass') l = 'css';
+
+    const registry = {
+      html: {
+        canonical: 'html',
+        name: 'HTML',
+        color: '#E44D26',
+        isWeb: true,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M4.2 2.5L5.7 19.5L12 21.3L18.3 19.5L19.8 2.5H4.2Z" fill="#E44D26"/><path d="M12 4.1V19.7L16.9 18.3L18.1 4.1H12Z" fill="#F16529"/><path d="M8.2 7.1H15.8L15.6 9.3H10.6L10.9 12H15.3L14.9 16.5L12 17.3L9.1 16.5L8.9 14.2H10.8L10.9 15.2L12 15.5L13.1 15.2L13.3 13.5H8.7L8.2 7.1Z" fill="#FFFFFF"/></svg>`
+      },
+      css: {
+        canonical: 'css',
+        name: 'CSS',
+        color: '#1572B6',
+        isWeb: true,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M4.2 2.5L5.7 19.5L12 21.3L18.3 19.5L19.8 2.5H4.2Z" fill="#1572B6"/><path d="M12 4.1V19.7L16.9 18.3L18.1 4.1H12Z" fill="#33A9DC"/><path d="M8.2 7.1H15.8L15.6 9.3H10.6L10.9 12H15.3L14.9 16.5L12 17.3L9.1 16.5L8.9 14.2H10.8L10.9 15.2L12 15.5L13.1 15.2L13.3 13.5H8.7L8.2 7.1Z" fill="#FFFFFF"/></svg>`
+      },
+      javascript: {
+        canonical: 'javascript',
+        name: 'JavaScript',
+        color: '#EAB308',
+        isWeb: true,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><rect width="24" height="24" rx="4" fill="#F7DF1E"/><path d="M6 17.5V13.5H8V17.5C8 18.5 7.5 19 6.2 19C5.5 19 4.8 18.7 4.5 18.3L5.3 17C5.5 17.2 5.8 17.4 6.2 17.4C6.6 17.4 6.8 17.2 6.8 16.8V13.5H8.8V17.5C8.8 19.5 7.6 20.5 5.8 20.5C4.6 20.5 3.5 19.8 3 18.9L4.8 17.8C5.1 18.4 5.5 18.7 6 18.7C6.4 18.7 6.6 18.5 6.6 18.2V17.5H6ZM14.5 17.2C15.2 17.2 15.7 16.8 15.7 16.2C15.7 14.5 12.3 14.8 12.3 12.2C12.3 10.7 13.5 9.8 15.2 9.8C16.3 9.8 17.2 10.2 17.8 11L16.2 12.1C15.8 11.6 15.5 11.4 15 11.4C14.5 11.4 14.1 11.7 14.1 12.1C14.1 13.6 17.5 13.3 17.5 16C17.5 17.6 16.2 18.7 14.4 18.7C13 18.7 12 18 11.4 17L13.1 15.9C13.5 16.6 14 17.2 14.5 17.2Z" fill="#000000"/></svg>`
+      },
+      python: {
+        canonical: 'python',
+        name: 'Python',
+        color: '#38BDF8',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M11.9 2C6.9 2 7.2 4.2 7.2 4.2L7.3 6.4H12.1V7.1H5.3C5.3 7.1 2 6.7 2 11.8C2 16.9 4.9 16.6 4.9 16.6H6.5V14.3C6.5 11.6 8.8 11.6 8.8 11.6H13.6C13.6 11.6 15.8 11.6 15.8 9.3V4.4C15.8 4.4 16.3 2 11.9 2ZM9.5 3.7C10.1 3.7 10.5 4.1 10.5 4.7C10.5 5.3 10.1 5.7 9.5 5.7C8.9 5.7 8.5 5.3 8.5 4.7C8.5 4.1 8.9 3.7 9.5 3.7Z" fill="#3776AB"/><path d="M12.1 22C17.1 22 16.8 19.8 16.8 19.8L16.7 17.6H11.9V16.9H18.7C18.7 16.9 22 17.3 22 12.2C22 7.1 19.1 7.4 19.1 7.4H17.5V9.7C17.5 12.4 15.2 12.4 15.2 12.4H10.4C10.4 12.4 8.2 12.4 8.2 14.7V19.6C8.2 19.6 7.7 22 12.1 22ZM14.5 20.3C13.9 20.3 13.5 19.9 13.5 19.3C13.5 18.7 13.9 18.3 14.5 18.3C15.1 18.3 15.5 18.7 15.5 19.3C15.5 19.9 15.1 20.3 14.5 20.3Z" fill="#FFD438"/></svg>`
+      },
+      cpp: {
+        canonical: 'cpp',
+        name: 'C++',
+        color: '#60A5FA',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="#00599C"/><path d="M9.5 15.5C7.6 15.5 6.2 14 6.2 12C6.2 10 7.6 8.5 9.5 8.5C10.6 8.5 11.5 9 12 9.8L10.8 10.8C10.5 10.4 10 10.1 9.5 10.1C8.5 10.1 7.7 10.9 7.7 12C7.7 13.1 8.5 13.9 9.5 13.9C10 13.9 10.5 13.6 10.8 13.2L12 14.2C11.5 15 10.6 15.5 9.5 15.5ZM14.5 11V9.8H15.7V11H16.9V12.2H15.7V13.4H14.5V12.2H13.3V11H14.5ZM18.5 11V9.8H19.7V11H20.9V12.2H19.7V13.4H18.5V12.2H17.3V11H18.5Z" fill="#FFFFFF"/></svg>`
+      },
+      c: {
+        canonical: 'c',
+        name: 'C Language',
+        color: '#93C5FD',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="#659AD2"/><path d="M12 16.5C9.5 16.5 7.5 14.5 7.5 12C7.5 9.5 9.5 7.5 12 7.5C13.5 7.5 14.8 8.2 15.5 9.3L13.8 10.5C13.4 9.9 12.7 9.5 12 9.5C10.6 9.5 9.5 10.6 9.5 12C9.5 13.4 10.6 14.5 12 14.5C12.7 14.5 13.4 14.1 13.8 13.5L15.5 14.7C14.8 15.8 13.5 16.5 12 16.5Z" fill="#FFFFFF"/></svg>`
+      },
+      csharp: {
+        canonical: 'csharp',
+        name: 'C#',
+        color: '#4ADE80',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="#239120"/><path d="M9.5 15.5C7.6 15.5 6.2 14 6.2 12C6.2 10 7.6 8.5 9.5 8.5C10.6 8.5 11.5 9 12 9.8L10.8 10.8C10.5 10.4 10 10.1 9.5 10.1C8.5 10.1 7.7 10.9 7.7 12C7.7 13.1 8.5 13.9 9.5 13.9C10 13.9 10.5 13.6 10.8 13.2L12 14.2C11.5 15 10.6 15.5 9.5 15.5ZM16.5 9.5H15.5L15.2 11H14L13.7 12.2H14.9L14.6 13.5H13.4L13.1 14.7H14.3L14 16H15.2L15.5 14.7H16.7L16.4 16H17.6L17.9 14.7H19.1L19.4 13.5H18.2L18.5 12.2H19.7L20 11H18.8L19.1 9.5H17.9L17.6 11H16.4L16.7 9.5H15.5ZM15.8 13.5L16.1 12.2H17.3L17 13.5H15.8Z" fill="#FFFFFF"/></svg>`
+      },
+      java: {
+        canonical: 'java',
+        name: 'Java',
+        color: '#FB923C',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M7 19C11 20 15 20 19 19C17 18 9 18 7 19ZM6 16C11 17 16 17 20 16C16 15 10 15 6 16ZM12 3C10 6 13 8 13 11C13 13 11 14 10 14C11 14 13 13 13.5 11.5C14 9.5 11.5 7.5 12 3ZM14.5 5C13.5 7.5 15.5 9 15.5 11.5C15.5 13 14 14 13 14C14.5 14 16.5 13 16.5 11C16.5 9 14 7 14.5 5Z" fill="#ED8B00"/></svg>`
+      },
+      dart: {
+        canonical: 'dart',
+        name: 'Dart',
+        color: '#38BDF8',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M12 2L4 10L14 20L20 20L20 14L12 2Z" fill="#0175C2"/><path d="M4 10L12 18L10 20L2 12L4 10Z" fill="#02569B"/><path d="M14 20L20 20L22 14L16 8L14 20Z" fill="#29B6F6"/></svg>`
+      },
+      ruby: {
+        canonical: 'ruby',
+        name: 'Ruby',
+        color: '#F43F5E',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M7 3L2 9L12 21L22 9L17 3H7Z" fill="#CC342D"/><path d="M7 3L12 9L17 3H7ZM2 9L12 9L7 3L2 9ZM12 21L7 9H17L12 21Z" fill="#E53935"/></svg>`
+      },
+      node: {
+        canonical: 'node',
+        name: 'Node.js',
+        color: '#4ADE80',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M12 2L3 7.2V17.5L12 22.8L21 17.5V7.2L12 2Z" fill="#5FA04E"/><path d="M12 4.5L18.5 8.2V15.8L12 19.5L5.5 15.8V8.2L12 4.5Z" fill="#333333"/><path d="M12 7L16 9.3V14.7L12 17L8 14.7V9.3L12 7Z" fill="#5FA04E"/></svg>`
+      },
+      sql: {
+        canonical: 'sql',
+        name: 'SQL',
+        color: '#FBBF24',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M12 3C7.58 3 4 4.34 4 6V18C4 19.66 7.58 21 12 21C16.42 21 20 19.66 20 18V6C20 4.34 16.42 3 12 3ZM12 5C15.87 5 18 6.07 18 6C18 5.93 15.87 7 12 7C8.13 7 6 5.93 6 6C6 6.07 8.13 5 12 5ZM18 10C18 9.93 15.87 11 12 11C8.13 11 6 9.93 6 10V7.87C7.54 8.56 9.68 9 12 9C14.32 9 16.46 8.56 18 7.87V10ZM18 14C18 13.93 15.87 15 12 15C8.13 15 6 13.93 6 14V11.87C7.54 12.56 9.68 13 12 13C14.32 13 16.46 12.56 18 11.87V14ZM18 18C18 17.93 15.87 19 12 19C8.13 19 6 17.93 6 18V15.87C7.54 16.56 9.68 17 12 17C14.32 17 16.46 16.56 18 15.87V18Z" fill="#E38C00"/></svg>`
+      },
+      go: {
+        canonical: 'go',
+        name: 'Go',
+        color: '#38BDF8',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><rect width="24" height="24" rx="4" fill="#00ADD8"/><path d="M5 12C5 9.8 6.8 8 9 8C10.5 8 11.8 8.8 12.4 10.1L10.8 10.9C10.4 10.1 9.8 9.6 9 9.6C7.7 9.6 6.6 10.7 6.6 12C6.6 13.3 7.7 14.4 9 14.4C9.9 14.4 10.6 13.8 10.9 13H9V11.5H12.5V13.3C12.1 14.9 10.7 16 9 16C6.8 16 5 14.2 5 12ZM13.5 12C13.5 9.8 15.3 8 17.5 8C19.7 8 21.5 9.8 21.5 12C21.5 14.2 19.7 16 17.5 16C15.3 16 13.5 14.2 13.5 12ZM15.1 12C15.1 13.3 16.2 14.4 17.5 14.4C18.8 14.4 19.9 13.3 19.9 12C19.9 10.7 18.8 9.6 17.5 9.6C16.2 9.6 15.1 10.7 15.1 12Z" fill="#FFFFFF"/></svg>`
+      },
+      rust: {
+        canonical: 'rust',
+        name: 'Rust',
+        color: '#FDBA74',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><circle cx="12" cy="12" r="10" fill="#DEA584"/><path d="M8 8H13C14.7 8 16 9.3 16 11C16 12.3 15.2 13.3 14 13.8L16.5 17H14.5L12.3 14H10V17H8V8ZM10 10V12H13C13.6 12 14 11.6 14 11C14 10.4 13.6 10 13 10H10Z" fill="#241C1A"/></svg>`
+      },
+      php: {
+        canonical: 'php',
+        name: 'PHP',
+        color: '#A78BFA',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><ellipse cx="12" cy="12" rx="11" ry="8" fill="#777BB4"/><path d="M6 14.5L6.8 10H8.5C9.5 10 10.1 10.5 9.9 11.4C9.7 12.3 8.9 12.8 7.9 12.8H7.1L6.8 14.5H6ZM7.4 11.8H8C8.5 11.8 8.8 11.6 8.9 11.2C9 10.8 8.7 10.6 8.2 10.6H7.6L7.4 11.8ZM11 14.5L11.8 10H12.7L12.4 11.8H13.8L14.1 10H15L14.2 14.5H13.3L13.6 12.7H12.2L11.9 14.5H11ZM16 14.5L16.8 10H18.5C19.5 10 20.1 10.5 19.9 11.4C19.7 12.3 18.9 12.8 17.9 12.8H17.1L16.8 14.5H16ZM17.4 11.8H18C18.5 11.8 18.8 11.6 18.9 11.2C19 10.8 18.7 10.6 18.2 10.6H17.6L17.4 11.8Z" fill="#FFFFFF"/></svg>`
+      },
+      kotlin: {
+        canonical: 'kotlin',
+        name: 'Kotlin',
+        color: '#C084FC',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M22 2H2V22H22L12 12L22 2Z" fill="#7F52FF"/><path d="M2 22L12 12L22 22H2Z" fill="#C711E1"/><path d="M2 2H12L2 12V2Z" fill="#E24462"/></svg>`
+      },
+      swift: {
+        canonical: 'swift',
+        name: 'Swift',
+        color: '#FB923C',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><path d="M20.5 5.5C18.5 8 16 10 12.5 11.5C15 10 17 8 18 5.5C15 8 11.5 10 8 11C11.5 9 14 6 15 3C9 7.5 5.5 13.5 7 19C4 15 4 10 6 7C2 12 3 18 7.5 21C14 24 21 18 21.5 11C21.7 9 21.3 7.2 20.5 5.5Z" fill="#F05138"/></svg>`
+      },
+      bash: {
+        canonical: 'bash',
+        name: 'Bash/Shell',
+        color: '#4ADE80',
+        isWeb: false,
+        svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><rect width="24" height="24" rx="4" fill="#2B303A"/><path d="M5 7L10 12L5 17" stroke="#4EAA25" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="17" x2="19" y2="17" stroke="#4EAA25" stroke-width="2" stroke-linecap="round"/></svg>`
+      }
+    };
+
+    if (registry[l]) return registry[l];
+    return {
+      canonical: l || 'code',
+      name: (l ? l.toUpperCase() : 'CODE'),
+      color: '#94A3B8',
+      isWeb: false,
+      svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><rect width="24" height="24" rx="4" fill="#334155"/><path d="M8 9L5 12L8 15M16 9L19 12L16 15M13 7L11 17" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    };
+  }
+  window.getLanguageMeta = getLanguageMeta;
+
+  // Language Syntax Tokenizer Configuration
+  const LANG_KEYWORD_CONFIGS = {
+    cpp: {
+      keywords: new Set(['public', 'private', 'protected', 'class', 'struct', 'enum', 'static', 'const', 'constexpr', 'return', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'default', 'try', 'catch', 'throw', 'new', 'delete', 'namespace', 'using', 'auto', 'template', 'typename', 'virtual', 'override', 'nullptr', 'friend', 'inline']),
+      types: new Set(['int', 'float', 'double', 'char', 'void', 'bool', 'long', 'short', 'string', 'size_t', 'uint32_t', 'int64_t', 'vector', 'map', 'set', 'pair', 'unordered_map'])
+    },
+    c: {
+      keywords: new Set(['struct', 'enum', 'union', 'static', 'const', 'return', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'default', 'typedef', 'sizeof', 'extern', 'volatile', 'register', 'goto']),
+      types: new Set(['int', 'float', 'double', 'char', 'void', 'long', 'short', 'signed', 'unsigned', 'size_t', 'FILE', 'NULL'])
+    },
+    csharp: {
+      keywords: new Set(['abstract', 'as', 'async', 'await', 'base', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default', 'delegate', 'do', 'else', 'enum', 'event', 'false', 'finally', 'fixed', 'for', 'foreach', 'goto', 'if', 'in', 'interface', 'internal', 'is', 'lock', 'namespace', 'new', 'null', 'operator', 'out', 'override', 'params', 'private', 'protected', 'public', 'readonly', 'record', 'ref', 'return', 'sealed', 'sizeof', 'static', 'struct', 'switch', 'this', 'throw', 'true', 'try', 'typeof', 'using', 'var', 'virtual', 'void', 'while', 'yield']),
+      types: new Set(['bool', 'byte', 'char', 'decimal', 'double', 'float', 'int', 'long', 'object', 'short', 'string', 'uint', 'ulong', 'Task', 'List', 'Dictionary'])
+    },
+    java: {
+      keywords: new Set(['abstract', 'assert', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default', 'do', 'else', 'enum', 'extends', 'final', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'native', 'new', 'package', 'private', 'protected', 'public', 'return', 'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'try', 'void', 'volatile', 'while', 'true', 'false', 'null']),
+      types: new Set(['boolean', 'byte', 'char', 'double', 'float', 'int', 'long', 'short', 'String', 'Integer', 'Double', 'List', 'ArrayList', 'Map', 'HashMap', 'Set', 'HashSet', 'Object'])
+    },
+    python: {
+      keywords: new Set(['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield', 'True', 'False', 'None', 'self', 'cls']),
+      types: new Set(['int', 'float', 'str', 'bool', 'list', 'dict', 'set', 'tuple', 'bytes', 'object'])
+    },
+    dart: {
+      keywords: new Set(['abstract', 'as', 'assert', 'async', 'await', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default', 'do', 'dynamic', 'else', 'enum', 'export', 'extends', 'factory', 'false', 'final', 'finally', 'for', 'get', 'if', 'implements', 'import', 'in', 'is', 'late', 'new', 'null', 'operator', 'return', 'set', 'static', 'super', 'switch', 'this', 'throw', 'true', 'try', 'typedef', 'var', 'void', 'while', 'with', 'yield']),
+      types: new Set(['int', 'double', 'num', 'String', 'bool', 'List', 'Map', 'Set', 'Future', 'Stream', 'Widget'])
+    },
+    ruby: {
+      keywords: new Set(['alias', 'and', 'begin', 'break', 'case', 'class', 'def', 'do', 'else', 'elsif', 'end', 'ensure', 'false', 'for', 'if', 'in', 'module', 'next', 'nil', 'not', 'or', 'redo', 'rescue', 'retry', 'return', 'self', 'super', 'then', 'true', 'unless', 'until', 'when', 'while', 'yield', 'require', 'attr_accessor', 'attr_reader']),
+      types: new Set(['Integer', 'Float', 'String', 'Array', 'Hash', 'Symbol', 'Boolean'])
+    },
+    node: {
+      keywords: new Set(['break', 'case', 'catch', 'class', 'const', 'continue', 'default', 'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield', 'let', 'static', 'await', 'async', 'true', 'false', 'null', 'undefined', 'require', 'module', 'exports', 'process', 'Buffer']),
+      types: new Set(['Promise', 'Array', 'Object', 'String', 'Number', 'Boolean', 'Function', 'Symbol', 'BigInt', 'Error'])
+    },
+    sql: {
+      keywords: new Set(['select', 'from', 'where', 'insert', 'into', 'values', 'update', 'set', 'delete', 'create', 'table', 'drop', 'alter', 'index', 'view', 'join', 'inner', 'left', 'right', 'full', 'outer', 'on', 'group', 'by', 'order', 'having', 'limit', 'offset', 'union', 'all', 'distinct', 'as', 'and', 'or', 'not', 'in', 'between', 'like', 'is', 'null', 'primary', 'key', 'foreign', 'references', 'check', 'count', 'sum', 'avg', 'min', 'max', 'case', 'when', 'then', 'else', 'end', 'exists']),
+      types: new Set(['int', 'integer', 'varchar', 'char', 'text', 'boolean', 'date', 'datetime', 'timestamp', 'decimal', 'numeric', 'float', 'double', 'blob'])
+    },
+    go: {
+      keywords: new Set(['break', 'default', 'func', 'interface', 'select', 'case', 'defer', 'go', 'map', 'struct', 'chan', 'else', 'goto', 'package', 'switch', 'const', 'fallthrough', 'if', 'range', 'type', 'continue', 'for', 'import', 'return', 'var', 'nil', 'true', 'false', 'iota']),
+      types: new Set(['bool', 'string', 'int', 'int8', 'int16', 'int32', 'int64', 'uint', 'uint8', 'uint16', 'uint32', 'uint64', 'byte', 'rune', 'float32', 'float64', 'error'])
+    },
+    rust: {
+      keywords: new Set(['as', 'async', 'await', 'break', 'const', 'continue', 'crate', 'dyn', 'else', 'enum', 'extern', 'false', 'fn', 'for', 'if', 'impl', 'in', 'let', 'loop', 'match', 'mod', 'move', 'mut', 'pub', 'ref', 'return', 'self', 'Self', 'static', 'struct', 'super', 'trait', 'true', 'type', 'unsafe', 'use', 'where', 'while']),
+      types: new Set(['i8', 'i16', 'i32', 'i64', 'u8', 'u16', 'u32', 'u64', 'usize', 'isize', 'f32', 'f64', 'bool', 'char', 'str', 'String', 'Vec', 'Option', 'Result', 'Box', 'Rc', 'Arc'])
+    },
+    php: {
+      keywords: new Set(['abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch', 'class', 'clone', 'const', 'continue', 'declare', 'default', 'die', 'do', 'echo', 'else', 'elseif', 'empty', 'eval', 'exit', 'extends', 'final', 'finally', 'fn', 'for', 'foreach', 'function', 'global', 'if', 'implements', 'include', 'include_once', 'instanceof', 'interface', 'isset', 'list', 'match', 'namespace', 'new', 'or', 'print', 'private', 'protected', 'public', 'readonly', 'require', 'require_once', 'return', 'static', 'switch', 'throw', 'trait', 'try', 'unset', 'use', 'var', 'while']),
+      types: new Set(['int', 'float', 'string', 'bool', 'array', 'object', 'iterable', 'void', 'mixed', 'never'])
+    },
+    kotlin: {
+      keywords: new Set(['as', 'break', 'class', 'continue', 'do', 'else', 'false', 'for', 'fun', 'if', 'in', 'interface', 'is', 'null', 'object', 'package', 'return', 'super', 'this', 'throw', 'true', 'try', 'typealias', 'val', 'var', 'when', 'while', 'by', 'catch', 'finally', 'get', 'import', 'init', 'open', 'operator', 'override', 'private', 'protected', 'public', 'sealed', 'suspend']),
+      types: new Set(['Int', 'Long', 'Short', 'Byte', 'Double', 'Float', 'Boolean', 'Char', 'String', 'Array', 'List', 'Map', 'Set', 'Unit', 'Any'])
+    },
+    swift: {
+      keywords: new Set(['class', 'deinit', 'enum', 'extension', 'fileprivate', 'func', 'import', 'init', 'inout', 'internal', 'let', 'open', 'operator', 'private', 'protocol', 'public', 'static', 'struct', 'subscript', 'typealias', 'var', 'break', 'case', 'catch', 'continue', 'default', 'defer', 'do', 'else', 'fallthrough', 'for', 'guard', 'if', 'in', 'repeat', 'return', 'throw', 'switch', 'where', 'while', 'as', 'false', 'is', 'nil', 'super', 'self', 'Self', 'true', 'try']),
+      types: new Set(['Int', 'Double', 'Float', 'Bool', 'String', 'Character', 'Optional', 'Array', 'Dictionary', 'Set', 'Void'])
+    },
+    bash: {
+      keywords: new Set(['case', 'do', 'done', 'elif', 'else', 'esac', 'fi', 'for', 'function', 'if', 'in', 'select', 'then', 'until', 'while', 'echo', 'printf', 'read', 'cd', 'pwd', 'export', 'local', 'source', 'alias', 'exit', 'return', 'shift', 'test']),
+      types: new Set([])
+    }
+  };
+
+  // Syntax Highlighter for Clean Code Auto-Formatting across All Major Languages
   function highlightCodeSyntax(code, lang) {
     if (!code) return '';
-    const l = (lang || '').toLowerCase();
+    const meta = getLanguageMeta(lang);
+    const l = meta.canonical;
 
-    if (l === 'html' || l === 'markup') {
+    // HTML / XML formatting
+    if (l === 'html' || l === 'xml') {
       let esc = escapeHtml(code);
-      // Comments: &lt;!-- ... --&gt;
       esc = esc.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span style="color:#64748b; font-style:italic;">$1</span>');
-      // Attributes: word=&quot;...&quot; or word=&#39;...&#39;
       esc = esc.replace(/\s([a-zA-Z0-9_-]+)=(&quot;[^&]*&quot;|&#39;[^&#]*&#39;)/g, ' <span style="color:#38bdf8;">$1</span>=<span style="color:#34d399;">$2</span>');
-      // Tag names: &lt;tag or &lt;/tag
       esc = esc.replace(/(&lt;\/?)([a-zA-Z0-9_-]+)/g, '$1<span style="color:#f43f5e; font-weight:600;">$2</span>');
       return esc;
     }
 
+    // CSS / SCSS formatting
     if (l === 'css') {
       let esc = escapeHtml(code);
-      // Comments
       esc = esc.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color:#64748b; font-style:italic;">$1</span>');
-      // Property names: word:
       esc = esc.replace(/([a-zA-Z0-9_-]+)\s*:/g, '<span style="color:#38bdf8;">$1</span>:');
-      // Values: : value;
       esc = esc.replace(/:\s*([^;{}]+);/g, ': <span style="color:#34d399;">$1</span>;');
       return esc;
     }
 
-    if (l === 'js' || l === 'javascript') {
-      let esc = escapeHtml(code);
-      // Single line comments
-      esc = esc.replace(/(\/\/[^\n]*)/g, '<span style="color:#64748b; font-style:italic;">$1</span>');
-      // Multi line comments
-      esc = esc.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color:#64748b; font-style:italic;">$1</span>');
-      // Strings
-      esc = esc.replace(/(&quot;[^&]*&quot;|'[^']*')/g, '<span style="color:#34d399;">$1</span>');
-      // Reserved Keywords
-      esc = esc.replace(/\b(const|let|var|function|return|if|else|for|while|try|catch|new|async|await|this|document|window)\b/g, '<span style="color:#c084fc; font-weight:600;">$1</span>');
-      // Numbers & Booleans
-      esc = esc.replace(/\b(\d+|true|false|null|undefined)\b/g, '<span style="color:#fb923c;">$1</span>');
-      return esc;
-    }
+    const conf = LANG_KEYWORD_CONFIGS[l] || LANG_KEYWORD_CONFIGS[l === 'javascript' ? 'node' : 'cpp'] || LANG_KEYWORD_CONFIGS['cpp'];
+    const keywords = conf.keywords || new Set();
+    const types = conf.types || new Set();
 
-    return escapeHtml(code);
+    // Single-pass atomic token regex
+    const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#[^\n]*|--[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`[\s\S]*?`|\b0x[0-9a-fA-F]+\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b|[^\s\w]+|\s+)/g;
+
+    let out = '';
+    let m;
+    while ((m = re.exec(code)) !== null) {
+      const t = m[0];
+      if (/^\s+$/.test(t)) {
+        out += t;
+      } else if (t.startsWith('//') || t.startsWith('/*')) {
+        out += `<span style="color:#64748b; font-style:italic;">${escapeHtml(t)}</span>`;
+      } else if (t.startsWith('--') && (l === 'sql')) {
+        out += `<span style="color:#64748b; font-style:italic;">${escapeHtml(t)}</span>`;
+      } else if (t.startsWith('#')) {
+        if (l === 'python' || l === 'ruby' || l === 'bash') {
+          out += `<span style="color:#64748b; font-style:italic;">${escapeHtml(t)}</span>`;
+        } else {
+          // Preprocessor directive for C/C++/C# e.g. #include, #define
+          out += `<span style="color:#f472b6; font-weight:600;">${escapeHtml(t)}</span>`;
+        }
+      } else if (t.startsWith('"') || t.startsWith("'") || t.startsWith('`')) {
+        out += `<span style="color:#34d399;">${escapeHtml(t)}</span>`;
+      } else if (/^(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?)$/.test(t)) {
+        out += `<span style="color:#fb923c;">${t}</span>`;
+      } else {
+        const lower = t.toLowerCase();
+        if (types.has(t)) {
+          out += `<span style="color:#38bdf8; font-weight:600;">${escapeHtml(t)}</span>`;
+        } else if (keywords.has(t) || (l === 'sql' && keywords.has(lower))) {
+          out += `<span style="color:#c084fc; font-weight:600;">${escapeHtml(t)}</span>`;
+        } else {
+          out += escapeHtml(t);
+        }
+      }
+    }
+    return out;
   }
+  window.highlightCodeSyntax = highlightCodeSyntax;
 
   // Smart Content Formatter: Transforms raw contributor text into advanced academic HTML with linked code containers
   window.formatSolutionContent = function(rawContent, contextId) {
@@ -401,20 +707,25 @@
 
     let content = rawContent;
 
-    function renderCodeBlock(attrs, extraClasses, codeBody) {
+    function renderCodeBlock(attrs, extraClasses, codeBody, index) {
       const idMatch = (attrs || '').match(/id=["']([^"']+)["']/i);
-      const groupMatch = (attrs || '').match(/data-code-group=["']([^"']+)["']/i);
+      const groupMatch = (attrs || '').match(/data-code-group=["']([^"']+)["']/i) || (attrs || '').match(/data-sandbox-group=["']([^"']+)["']/i);
       const langMatch = (attrs || '').match(/data-lang=["']([^"']+)["']/i);
 
       let lang = (langMatch ? langMatch[1] : (extraClasses || '')).toLowerCase().trim();
       if (!lang) {
-        if (codeBody.includes('<html') || codeBody.includes('<div') || codeBody.includes('<button') || codeBody.includes('<p')) lang = 'html';
+        if (codeBody.includes('<html') || codeBody.includes('<div') || codeBody.includes('<button') || codeBody.includes('<p') || codeBody.includes('<!DOCTYPE')) lang = 'html';
         else if (codeBody.includes('{') && codeBody.includes(':') && codeBody.includes(';')) lang = 'css';
-        else lang = 'js';
+        else if (codeBody.includes('def ') || codeBody.includes('import ') || codeBody.includes('print(')) lang = 'python';
+        else if (codeBody.includes('#include') || codeBody.includes('cout <<') || codeBody.includes('std::')) lang = 'cpp';
+        else if (codeBody.includes('public class ') || codeBody.includes('System.out.')) lang = 'java';
+        else if (codeBody.includes('SELECT ') || codeBody.includes('CREATE TABLE ')) lang = 'sql';
+        else lang = 'javascript';
       }
 
+      const meta = getLanguageMeta(lang);
       const groupId = groupMatch ? groupMatch[1] : (contextId || 'grp_' + Math.random().toString(36).substring(2, 7));
-      const codeId = idMatch ? idMatch[1] : `code-${lang}-${groupId}`;
+      const codeId = idMatch ? idMatch[1] : `code-${meta.canonical}-${groupId}${index > 1 ? '_' + index : ''}`;
 
       // Extract raw code text without stripping HTML tags
       let codeText = codeBody;
@@ -427,82 +738,47 @@
     }
 
     // 1. Transform custom structured code-container blocks with <pre><code>...</code></pre>
+    let containerIndex = 0;
     const codeContainerWithPreRegex = /<div\s+class=["']code-container(?:\s+([^"']*))?["']([^>]*)>\s*<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>\s*<\/div>/gi;
     content = content.replace(codeContainerWithPreRegex, function(match, extraClasses, attrs, innerCode) {
-      return renderCodeBlock(attrs, extraClasses, innerCode);
+      containerIndex++;
+      return renderCodeBlock(attrs, extraClasses, innerCode, containerIndex);
     });
 
     // 1b. Fallback: Transform code-container with <code>...</code> or direct inner content
     const codeContainerRegex = /<div\s+class=["']code-container(?:\s+([^"']*))?["']([^>]*)>([\s\S]*?)<\/div>/gi;
     content = content.replace(codeContainerRegex, function(match, extraClasses, attrs, innerContent) {
-      return renderCodeBlock(attrs, extraClasses, innerContent);
+      containerIndex++;
+      return renderCodeBlock(attrs, extraClasses, innerContent, containerIndex);
     });
 
     // 2. Transform standard <pre><code class="language-xyz"> blocks
-    const preCodeRegex = /<pre><code(?:\s+class=["'](?:language-)?([a-zA-Z0-9_-]+)["'])?>([\s\S]*?)<\/code><\/pre>/gi;
+    const preCodeRegex = /<pre><code(?:\s+class=["'](?:language-)?([a-zA-Z0-9_+-]+)["'])?>([\s\S]*?)<\/code><\/pre>/gi;
     let preIndex = 0;
     content = content.replace(preCodeRegex, function(match, langClass, codeBody) {
       preIndex++;
       const lang = (langClass || '').toLowerCase().trim() || 'code';
-      const isWebLang = (lang === 'html' || lang === 'css' || lang === 'js' || lang === 'javascript');
-      const groupId = `${contextId || 'code'}_${preIndex}`;
-      const codeId = `code-${lang === 'javascript' ? 'js' : lang}-${groupId}`;
+      const meta = getLanguageMeta(lang);
+      const groupId = contextId || 'code';
+      const codeId = `code-${meta.canonical}-${groupId}${preIndex > 1 ? '_' + preIndex : ''}`;
 
-      if (isWebLang) {
-        return buildInteractiveCodeContainerHtml(lang, codeId, groupId, codeBody);
-      }
-
-      // Default syntax pre block with copy button and auto formatting
-      const highlightedCode = highlightCodeSyntax(codeBody.trim(), lang);
-      return `
-        <div class="sol-code-block-container" data-sandbox-group="${groupId}">
-          <div class="sol-code-block-header">
-            <div class="sol-code-block-lang">
-              <i class="ri-code-s-slash-line"></i> ${lang.toUpperCase()}
-            </div>
-            <div class="sol-code-block-actions">
-              <button type="button" class="sol-code-copy-btn" onclick="window.copyCodeFromContainer('${codeId}')">
-                <i class="ri-file-copy-line"></i> Copy
-              </button>
-            </div>
-          </div>
-          <pre class="sol-code-block-body" id="${codeId}"><code>${highlightedCode}</code></pre>
-        </div>
-      `;
+      return buildInteractiveCodeContainerHtml(lang, codeId, groupId, codeBody);
     });
 
     return content;
   };
 
   function buildInteractiveCodeContainerHtml(lang, codeId, groupId, codeText) {
-    const isHtml = (lang === 'html' || lang === 'markup');
-    const isCss = (lang === 'css');
-    const isJs = (lang === 'js' || lang === 'javascript');
+    const meta = getLanguageMeta(lang);
+    const isHtml = (meta.canonical === 'html');
+    const isWeb = meta.isWeb;
 
-    let langIcon = 'ri-code-line';
-    let langLabel = lang.toUpperCase();
-    let langClass = 'lang-html';
-
-    if (isHtml) {
-      langIcon = 'ri-html5-fill';
-      langLabel = 'HTML';
-      langClass = 'lang-html';
-    } else if (isCss) {
-      langIcon = 'ri-css3-fill';
-      langLabel = 'CSS';
-      langClass = 'lang-css';
-    } else if (isJs) {
-      langIcon = 'ri-javascript-fill';
-      langLabel = 'JavaScript';
-      langClass = 'lang-js';
-    }
-
-    // Run and Try It buttons are present in HTML container header (Only shown for HTML as per requirements)
+    // Run and Try It buttons are shown for interactive web languages (Run & Try It on HTML)
     const runButtonHtml = isHtml ? `
-      <button type="button" class="sol-code-run-btn" onclick="window.runSandboxFromGroup('${groupId}', '${langLabel} Demo')" title="Run interactive sandbox preview">
+      <button type="button" class="sol-code-run-btn" onclick="window.runSandboxFromGroup('${groupId}', '${escapeHtml(meta.name)} Demo')" title="Run interactive sandbox preview">
         <i class="ri-play-circle-fill"></i> Run
       </button>
-      <button type="button" class="sol-code-try-btn" onclick="window.openTryItModal('${groupId}', '${langLabel} Demo')" title="Try and edit code in playground">
+      <button type="button" class="sol-code-try-btn" onclick="window.openTryItModal('${groupId}', '${escapeHtml(meta.name)} Demo')" title="Try and edit code in playground">
         <i class="ri-terminal-box-line"></i> Try it
       </button>
     ` : '';
@@ -511,10 +787,11 @@
     const highlightedCode = highlightCodeSyntax(codeText, lang);
 
     return `
-      <div class="sol-code-block-container" data-sandbox-group="${groupId}" data-code-group="${groupId}" data-lang="${lang}">
+      <div class="sol-code-block-container" data-sandbox-group="${groupId}" data-code-group="${groupId}" data-lang="${meta.canonical}">
         <div class="sol-code-block-header">
-          <div class="sol-code-block-lang ${langClass}">
-            <i class="${langIcon}"></i> ${langLabel}
+          <div class="sol-code-block-lang" style="display:flex; align-items:center; gap:8px;">
+            ${meta.svgIcon}
+            <span style="font-weight:700; color:${meta.color};">${meta.name}</span>
             <span class="sol-code-block-id-tag">id="${codeId}"</span>
           </div>
           <div class="sol-code-block-actions">
@@ -1201,24 +1478,10 @@
     if (userLabel) userLabel.textContent = userObj.name || userObj.email || 'Contributor';
 
     // Extract current group code
-    let htmlCode = '', cssCode = '', jsCode = '';
-    const htmlEl = document.getElementById('code-html-' + groupId);
-    const cssEl = document.getElementById('code-css-' + groupId);
-    const jsEl = document.getElementById('code-js-' + groupId);
-
-    if (htmlEl) htmlCode = extractCodeFromElement(htmlEl);
-    if (cssEl) cssCode = extractCodeFromElement(cssEl);
-    if (jsEl) jsCode = extractCodeFromElement(jsEl);
-
-    // Fallback: search by data-code-group
-    const groupContainers = document.querySelectorAll(`[data-code-group="${groupId}"], [data-sandbox-group="${groupId}"]`);
-    groupContainers.forEach(container => {
-      const lang = (container.getAttribute('data-lang') || '').toLowerCase();
-      const code = extractCodeFromElement(container);
-      if (!htmlCode && (lang === 'html' || lang === 'markup')) htmlCode = code;
-      else if (!cssCode && lang === 'css') cssCode = code;
-      else if (!jsCode && (lang === 'js' || lang === 'javascript')) jsCode = code;
-    });
+    const extracted = extractSandboxCodeForGroup(groupId);
+    const htmlCode = extracted.html;
+    const cssCode = extracted.css;
+    const jsCode = extracted.js;
 
     activeTryItOriginal = { html: htmlCode, css: cssCode, js: jsCode };
 
