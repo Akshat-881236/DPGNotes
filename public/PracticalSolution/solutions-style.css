@@ -1407,38 +1407,360 @@ body {
   font-size: 0.78rem;
   color: #94a3b8;
   margin-bottom: 4px;
-  display: flex;
+/* NAVBAR HEADER SEARCH EXPANDER */
+.sol-nav-search-wrapper {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
 }
-.sol-serp-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #38bdf8;
-  text-decoration: none;
-  display: inline-block;
-  margin-bottom: 6px;
-  transition: color 0.15s;
-}
-.sol-serp-title:hover {
-  text-decoration: underline;
-  color: #7dd3fc;
-}
-.sol-serp-snippet {
-  color: #cbd5e1;
-  font-size: 0.88rem;
-  line-height: 1.55;
-  margin-bottom: 12px;
-}
-.sol-serp-meta-row {
-  display: flex;
-  gap: 12px;
+
+.sol-nav-search-bar {
+  display: none;
   align-items: center;
-  flex-wrap: wrap;
-  font-size: 0.78rem;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid rgba(20, 184, 166, 0.5);
+  border-radius: 999px;
+  padding: 4px 8px 4px 14px;
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.25), 0 4px 16px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  gap: 8px;
+  animation: navSearchSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 460px;
+  width: 100%;
+}
+
+.sol-nav-search-bar.active {
+  display: flex;
+}
+
+@keyframes navSearchSlide {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+.sol-nav-search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f8fafc;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  width: 200px;
+  transition: width 0.25s ease;
+}
+
+@media (min-width: 768px) {
+  .sol-nav-search-input {
+    width: 300px;
+  }
+}
+
+.sol-nav-search-input::placeholder {
   color: #94a3b8;
-  margin-bottom: 12px;
+  font-weight: 400;
 }
+
+.sol-nav-search-submit {
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: #042f2e;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sol-nav-search-submit:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(20, 184, 166, 0.6);
+}
+
+.sol-nav-search-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sol-nav-search-close:hover {
+  color: #f87171;
+  transform: scale(1.1);
+}
+
+/* GOOGLE-STYLE ACADEMIC SEARCH HOME */
+.sol-google-search-bar {
+  display: flex !important;
+  align-items: center !important;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.88)) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 999px !important;
+  height: 54px !important;
+  padding: 0 10px 0 1.25rem !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sol-google-search-bar:focus-within,
+.sol-google-search-bar:hover {
+  border-color: #14b8a6 !important;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)) !important;
+  box-shadow: 0 0 24px rgba(20, 184, 166, 0.25), 0 8px 28px rgba(0, 0, 0, 0.45) !important;
+}
+
+.sol-google-search-input {
+  flex: 1 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #f8fafc !important;
+  font-size: 1.05rem !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  font-family: 'Outfit', sans-serif !important;
+  padding: 0 0.75rem !important;
+  min-width: 0 !important;
+}
+
+.sol-google-search-input::placeholder {
+  color: #64748b !important;
+  font-weight: 400 !important;
+}
+
+.sol-search-bar-icon {
+  font-size: 1.3rem !important;
+  color: #14b8a6 !important;
+  flex-shrink: 0 !important;
+}
+
+.sol-search-clear-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  font-size: 1.2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.sol-search-clear-btn:hover {
+  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.sol-search-submit-btn {
+  background: linear-gradient(135deg, #14b8a6, #0d9488) !important;
+  color: #042f2e !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 38px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.sol-search-submit-btn:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 0 16px rgba(20, 184, 166, 0.5) !important;
+}
+
+.sol-google-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 10px 22px !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  font-family: 'Outfit', sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  text-decoration: none !important;
+}
+
+.sol-google-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(20, 184, 166, 0.5) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+.sol-search-chips-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+}
+
+.sol-search-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
+  padding: 7px 16px !important;
+  border-radius: 999px !important;
+  font-size: 0.84rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-decoration: none !important;
+}
+
+.sol-search-chip:hover {
+  background: rgba(20, 184, 166, 0.12) !important;
+  border-color: rgba(20, 184, 166, 0.4) !important;
+  color: #2dd4bf !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2) !important;
+}
+
+/* ELEVATED SERP RESULTS CARD - MATCHING PRACTICAL SOLUTION SUITE */
+.sol-serp-card {
+  background: linear-gradient(135deg, rgba(20, 24, 39, 0.85), rgba(15, 23, 42, 0.95)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 1.4rem 1.6rem !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+.sol-serp-card:hover {
+  border-color: rgba(20, 184, 166, 0.45) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(20, 184, 166, 0.15) !important;
+  transform: translateY(-3px) !important;
+}
+
+.sol-serp-top-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-bottom: 0.6rem !important;
+}
+
+.sol-serp-badges {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.sol-serp-breadcrumb {
+  font-size: 0.78rem !important;
+  color: #94a3b8 !important;
+  font-family: monospace, sans-serif !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.sol-serp-title {
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  margin: 0.4rem 0 0.8rem 0 !important;
+  line-height: 1.35 !important;
+  letter-spacing: -0.2px !important;
+  transition: color 0.15s ease !important;
+}
+
+.sol-serp-title:hover {
+  color: #2dd4bf !important;
+  text-decoration: none !important;
+}
+
+.sol-serp-meta-pills {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  margin: 0.75rem 0 1rem 0 !important;
+  padding: 0.65rem 0.9rem !important;
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 10px !important;
+}
+
+.sol-serp-meta-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 0.84rem !important;
+  color: #cbd5e1 !important;
+  white-space: nowrap !important;
+}
+
+.sol-serp-meta-pill strong {
+  color: #f8fafc !important;
+  margin-left: 2px !important;
+}
+
+.sol-serp-snippet {
+  color: #94a3b8 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.6 !important;
+  margin-bottom: 1rem !important;
+}
+
+.sol-serp-metrics-row {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 1rem !important;
+}
+
+.sol-serp-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  padding-top: 0.8rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
 .sol-serp-tab {
   background: transparent;
   border: none;
@@ -1456,8 +1778,8 @@ body {
 }
 .sol-serp-tab.active,
 .sol-serp-tab:hover {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
+  background: rgba(20, 184, 166, 0.15);
+  color: #2dd4bf;
 }
 
 

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Practical Solution Viewer | DPGNotes</title>
   <link rel="icon" href="../ANH.png" type="image/png">
-  <link rel="stylesheet" href="solutions-style.css">
+  <link rel="stylesheet" href="solutions-style.css?v=2.2.0">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="../config.js"></script>
   <script src="../custom-dialogs.js"></script>
@@ -17,6 +17,36 @@
   <!-- Google AdSense SDK -->
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
+  <style>
+    /* Inline Scoped Guarantee for Search, SERP and Navbar Header Search */
+    .sol-nav-search-wrapper { position: relative; display: inline-flex; align-items: center; }
+    .sol-nav-search-bar { display: none; align-items: center; background: rgba(15, 23, 42, 0.96); border: 1.5px solid rgba(20, 184, 166, 0.5); border-radius: 999px; padding: 4px 8px 4px 14px; box-shadow: 0 0 20px rgba(20, 184, 166, 0.25), 0 4px 16px rgba(0, 0, 0, 0.5); backdrop-filter: blur(16px); gap: 8px; max-width: 460px; width: 100%; }
+    .sol-nav-search-bar.active { display: flex; animation: navSearchSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes navSearchSlide { from { opacity: 0; transform: scale(0.95) translateX(10px); } to { opacity: 1; transform: scale(1) translateX(0); } }
+    .sol-nav-search-input { background: transparent; border: none; outline: none; color: #f8fafc; font-family: 'Outfit', sans-serif; font-size: 0.92rem; font-weight: 500; width: 220px; }
+    @media (min-width: 768px) { .sol-nav-search-input { width: 320px; } }
+    .sol-nav-search-input::placeholder { color: #94a3b8; }
+    .sol-nav-search-submit { background: linear-gradient(135deg, #14b8a6, #0d9488); color: #042f2e; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; flex-shrink: 0; }
+    .sol-nav-search-close { background: transparent; border: none; color: #94a3b8; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0; }
+    .sol-nav-search-close:hover { color: #f87171; }
+
+    .sol-google-search-bar { display: flex !important; align-items: center !important; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.88)) !important; border: 1.5px solid rgba(255, 255, 255, 0.14) !important; border-radius: 999px !important; height: 54px !important; padding: 0 10px 0 1.25rem !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important; }
+    .sol-google-search-bar:focus-within, .sol-google-search-bar:hover { border-color: #14b8a6 !important; background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)) !important; box-shadow: 0 0 24px rgba(20, 184, 166, 0.25), 0 8px 28px rgba(0, 0, 0, 0.45) !important; }
+    .sol-google-search-input { flex: 1 !important; background: transparent !important; border: none !important; color: #f8fafc !important; font-size: 1.05rem !important; font-weight: 500 !important; outline: none !important; font-family: 'Outfit', sans-serif !important; padding: 0 0.75rem !important; }
+    .sol-google-btn { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important; color: #e2e8f0 !important; border-radius: 10px !important; padding: 10px 22px !important; font-size: 0.92rem !important; font-weight: 600 !important; font-family: 'Outfit', sans-serif !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; }
+    .sol-google-btn:hover { background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(20, 184, 166, 0.5) !important; color: #ffffff !important; transform: translateY(-2px) !important; }
+    .sol-search-chips-row { display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 8px !important; margin-top: 14px !important; }
+    .sol-search-chip { display: inline-flex !important; align-items: center !important; gap: 6px !important; background: rgba(255, 255, 255, 0.04) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; color: #cbd5e1 !important; padding: 7px 16px !important; border-radius: 999px !important; font-size: 0.84rem !important; cursor: pointer !important; text-decoration: none !important; }
+    .sol-search-chip:hover { background: rgba(20, 184, 166, 0.12) !important; border-color: rgba(20, 184, 166, 0.4) !important; color: #2dd4bf !important; }
+
+    .sol-serp-card { background: linear-gradient(135deg, rgba(20, 24, 39, 0.85), rgba(15, 23, 42, 0.95)) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; border-radius: 16px !important; padding: 1.4rem 1.6rem !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important; margin-bottom: 1.25rem !important; }
+    .sol-serp-card:hover { border-color: rgba(20, 184, 166, 0.45) !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(20, 184, 166, 0.15) !important; transform: translateY(-3px) !important; }
+    .sol-serp-title { font-size: 1.35rem !important; font-weight: 700 !important; color: #ffffff !important; text-decoration: none !important; display: block !important; margin: 0.4rem 0 0.8rem 0 !important; }
+    .sol-serp-title:hover { color: #2dd4bf !important; }
+    .sol-serp-meta-pills { display: flex !important; flex-wrap: wrap !important; gap: 16px !important; margin: 0.75rem 0 1rem 0 !important; padding: 0.65rem 0.9rem !important; background: rgba(0, 0, 0, 0.25) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; border-radius: 10px !important; }
+    .sol-serp-meta-pill { display: inline-flex !important; align-items: center !important; gap: 6px !important; font-size: 0.84rem !important; color: #cbd5e1 !important; white-space: nowrap !important; }
+    .sol-serp-meta-pill strong { color: #f8fafc !important; }
+  </style>
 </head>
 <body>
 
@@ -27,9 +57,18 @@
       <span>DPGNotes <span style="color:var(--sol-teal);">Practicals</span></span>
     </a>
     <div class="sol-navbar-actions">
-      <a href="index.html" class="sol-btn sol-btn-secondary sol-btn-sm" id="navSearchBtn" title="Search all practical laboratory solutions">
-        <i class="ri-search-2-line"></i> Search
-      </a>
+      <!-- Interactive Header Search Bar Expander -->
+      <div class="sol-nav-search-wrapper" id="navSearchWrapper">
+        <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" id="navSearchToggleBtn" onclick="window.toggleNavSearch()" title="Search practical solutions">
+          <i class="ri-search-2-line"></i> Search
+        </button>
+        <form class="sol-nav-search-bar" id="navSearchBar" onsubmit="event.preventDefault(); window.submitNavSearch();">
+          <i class="ri-search-2-line" style="color:#14b8a6; font-size:1.05rem;"></i>
+          <input type="text" id="navSearchInput" class="sol-nav-search-input" placeholder="Type query &amp; press Enter..." autocomplete="off">
+          <button type="submit" class="sol-nav-search-submit" title="Search"><i class="ri-arrow-right-line"></i></button>
+          <button type="button" class="sol-nav-search-close" onclick="window.closeNavSearch()" title="Close search"><i class="ri-close-line"></i></button>
+        </form>
+      </div>
       <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" id="navShareBtn" onclick="handleShareSolution()" style="display:none;">
         <i class="ri-share-forward-line"></i> Share
       </button>
@@ -600,45 +639,73 @@
         const likes = Number(item.likes) || (Array.isArray(item.likedBy) ? item.likedBy.length : 0);
         const runs = Number(item.runs || item.codeRuns) || 0;
         const isEnc = !!item.isEncrypted;
+        const publishDate = item.createdAt ? (typeof item.createdAt === 'string' ? item.createdAt.split('T')[0] : 'Recent') : 'Recent';
 
         // Preview practical experiments snippet
         let pSnippet = '';
         if (Array.isArray(item.practicals) && item.practicals.length > 0) {
           const previewTitles = item.practicals.slice(0, 3).map((p, idx) => `Exp #${idx+1}: ${escapeHtml(p.title || 'Experiment')}`).join(' • ');
-          pSnippet = `<div style="font-size:0.84rem; color:#cbd5e1; margin-top:4px; line-height:1.5;">${previewTitles}${item.practicals.length > 3 ? ` <span style="color:#2dd4bf;">+${item.practicals.length - 3} more</span>` : ''}</div>`;
+          pSnippet = `<div class="sol-serp-snippet"><i class="ri-flask-line" style="color:#2dd4bf; margin-right:5px;"></i>${previewTitles}${item.practicals.length > 3 ? ` <span style="color:#2dd4bf; font-weight:600;">+${item.practicals.length - 3} more practicals</span>` : ''}</div>`;
         }
 
         return `
           <article class="sol-serp-card">
-            <div class="sol-serp-breadcrumb">
-              <i class="ri-flask-fill" style="color:#2dd4bf;"></i>
-              <span>dpgnotes.com › practicals › ${escapeHtml(item.subjectCode || 'LAB')} › ${escapeHtml(item.course || item.courseSec || 'Academic')}</span>
+            <!-- Top Badges & Breadcrumb Row -->
+            <div class="sol-serp-top-row">
+              <div class="sol-serp-badges">
+                ${item.subjectCode ? `<span class="sol-badge" style="background:rgba(20,184,166,0.15); color:#2dd4bf; border:1px solid rgba(20,184,166,0.3); font-weight:700;">${escapeHtml(item.subjectCode)}</span>` : ''}
+                ${(item.course || item.courseSec) ? `<span class="sol-badge" style="background:rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35); font-weight:700;">${escapeHtml(item.course || item.courseSec)}</span>` : ''}
+                <span class="sol-badge ${isEnc ? 'sol-badge-red' : 'sol-badge-teal'}">
+                  ${isEnc ? '<i class="ri-lock-2-fill"></i> 🔒 Zero-Knowledge' : '<i class="ri-global-line"></i> 🌐 Public Access'}
+                </span>
+              </div>
+              <div class="sol-serp-breadcrumb">
+                <i class="ri-flask-fill" style="color:#2dd4bf;"></i>
+                <span>dpgnotes.com › practicals › ${escapeHtml(item.subjectCode || 'LAB')}</span>
+              </div>
             </div>
 
-            <a href="${linkUrl}" class="sol-serp-title" style="color:#2dd4bf;">
-              ${escapeHtml(item.subjectCode ? item.subjectCode + ': ' : '')}${escapeHtml(item.subjectName || 'Practical Laboratory Solution')}
+            <!-- Title Link -->
+            <a href="${linkUrl}" class="sol-serp-title">
+              ${escapeHtml(item.subjectName || 'Practical Laboratory Solution')}
             </a>
 
-            <div class="sol-serp-snippet">
-              <div>
-                Faculty: <strong style="color:#f8fafc;">${escapeHtml(item.profName || 'Faculty')}</strong> &bull;
-                Student: <strong style="color:#f8fafc;">${escapeHtml(item.studentName || 'Student')}</strong> &bull;
-                Contributor: <strong style="color:#2dd4bf;">${escapeHtml(item.contributorName || 'Verified Contributor')}</strong>
+            <!-- Metadata Items with Generous Spacing and Colored Icons -->
+            <div class="sol-serp-meta-pills">
+              <div class="sol-serp-meta-pill">
+                <i class="ri-user-star-line" style="color:#f59e0b; font-size:1rem;"></i>
+                <span style="color:#94a3b8;">Faculty:</span>
+                <strong>${escapeHtml(item.profName || 'Faculty')}</strong>
               </div>
-              ${pSnippet}
+              <div class="sol-serp-meta-pill">
+                <i class="ri-user-3-line" style="color:#38bdf8; font-size:1rem;"></i>
+                <span style="color:#94a3b8;">Student:</span>
+                <strong>${escapeHtml(item.studentName || 'Student')}</strong>
+              </div>
+              <div class="sol-serp-meta-pill">
+                <i class="ri-shield-check-line" style="color:#10b981; font-size:1rem;"></i>
+                <span style="color:#94a3b8;">Contributor:</span>
+                <strong style="color:#2dd4bf;">${escapeHtml(item.contributorName || 'Verified Contributor')}</strong>
+              </div>
+              <div class="sol-serp-meta-pill">
+                <i class="ri-calendar-line" style="color:#c084fc; font-size:1rem;"></i>
+                <span style="color:#94a3b8;">Published:</span>
+                <strong>${escapeHtml(publishDate)}</strong>
+              </div>
             </div>
 
-            <div class="sol-serp-meta-row">
-              <span class="sol-badge"><i class="ri-eye-line" style="color:#2dd4bf;"></i> ${views.toLocaleString()} views</span>
-              <span class="sol-badge"><i class="ri-heart-line" style="color:#f472b6;"></i> ${likes.toLocaleString()} likes</span>
-              <span class="sol-badge"><i class="ri-play-circle-line" style="color:#10b981;"></i> ${runs.toLocaleString()} runs</span>
-              <span class="sol-badge ${isEnc ? 'sol-badge-red' : 'sol-badge-teal'}">
-                ${isEnc ? '<i class="ri-lock-2-fill"></i> 🔒 Zero-Knowledge' : '<i class="ri-global-line"></i> 🌐 Public Access'}
-              </span>
+            ${pSnippet}
+
+            <!-- Metrics Badges Row -->
+            <div class="sol-serp-metrics-row">
+              <span class="sol-badge" style="background:rgba(20,184,166,0.1); color:#2dd4bf; border:1px solid rgba(20,184,166,0.25);"><i class="ri-eye-line"></i> ${views.toLocaleString()} views</span>
+              <span class="sol-badge" style="background:rgba(244,114,182,0.1); color:#f472b6; border:1px solid rgba(244,114,182,0.25);"><i class="ri-heart-line"></i> ${likes.toLocaleString()} likes</span>
+              <span class="sol-badge" style="background:rgba(16,185,129,0.1); color:#34d399; border:1px solid rgba(16,185,129,0.25);"><i class="ri-play-circle-line"></i> ${runs.toLocaleString()} runs</span>
             </div>
 
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <a href="${linkUrl}" class="sol-btn sol-btn-teal sol-btn-sm">
+            <!-- Action Buttons -->
+            <div class="sol-serp-actions">
+              <a href="${linkUrl}" class="sol-btn sol-btn-teal sol-btn-sm" style="text-decoration:none;">
                 <i class="ri-article-line"></i> Open Practical
               </a>
               <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="window.copySolutionDirectLink('${escapeHtml(solutionId)}', '${escapeHtml(contribUid)}')">
@@ -649,6 +716,57 @@
         `;
       }).join('');
     }
+
+    // Interactive Navbar Header Search Methods
+    window.toggleNavSearch = function() {
+      const toggleBtn = document.getElementById('navSearchToggleBtn');
+      const bar = document.getElementById('navSearchBar');
+      const input = document.getElementById('navSearchInput');
+      if (!bar) return;
+      if (bar.classList.contains('active')) {
+        window.closeNavSearch();
+      } else {
+        if (toggleBtn) toggleBtn.style.display = 'none';
+        bar.classList.add('active');
+        if (input) {
+          const curQ = new URLSearchParams(window.location.search).get('q') || '';
+          if (curQ) input.value = curQ;
+          setTimeout(() => input.focus(), 50);
+        }
+      }
+    };
+
+    window.closeNavSearch = function() {
+      const toggleBtn = document.getElementById('navSearchToggleBtn');
+      const bar = document.getElementById('navSearchBar');
+      if (bar) bar.classList.remove('active');
+      if (toggleBtn) toggleBtn.style.display = 'inline-flex';
+    };
+
+    window.submitNavSearch = function() {
+      const input = document.getElementById('navSearchInput');
+      const q = input ? input.value.trim() : '';
+      const url = new URL('index.html', window.location.href);
+      if (q) {
+        url.searchParams.set('q', q);
+      }
+      url.searchParams.delete('id');
+      url.searchParams.delete('contributor');
+      window.location.href = url.toString();
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        window.closeNavSearch();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const wrapper = document.getElementById('navSearchWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        window.closeNavSearch();
+      }
+    });
 
     window.copySolutionDirectLink = function(solId, contribUid) {
       const url = new URL(window.location.href);
@@ -727,24 +845,49 @@
 
         // 2. If contributor is missing in URL or direct fetch didn't locate, query collectionGroup 'solutions'
         if (!snap) {
-          const q = window.solQuery(
-            window.solCollectionGroup(window.solDb, "solutions"),
-            window.solWhere("id", "==", solutionId)
-          );
-          const querySnap = await window.solGetDocs(q);
-          if (!querySnap.empty) {
-            for (const d of querySnap.docs) {
-              if (d.ref.path.includes("practical_solutions")) {
-                snap = d;
-                docRef = d.ref;
-                contributorUid = d.data().contributorUid;
-                break;
+          try {
+            const q = window.solQuery(
+              window.solCollectionGroup(window.solDb, "solutions"),
+              window.solWhere("id", "==", solutionId)
+            );
+            const querySnap = await window.solGetDocs(q);
+            if (!querySnap.empty) {
+              for (const d of querySnap.docs) {
+                if (d.ref.path.includes("practical_solutions")) {
+                  snap = d;
+                  docRef = d.ref;
+                  contributorUid = d.data().contributorUid;
+                  break;
+                }
+              }
+              if (!snap) {
+                snap = querySnap.docs[0];
+                docRef = snap.ref;
+                contributorUid = snap.data().contributorUid;
               }
             }
-            if (!snap) {
-              snap = querySnap.docs[0];
-              docRef = snap.ref;
-              contributorUid = snap.data().contributorUid;
+          } catch (cgErr) {
+            console.warn("Direct collectionGroup where filter failed, falling back to broad doc scan:", cgErr);
+            // Resilient fallback query: collectionGroup without 'where' clause requires NO custom index exemption!
+            try {
+              const broadQ = window.solQuery(
+                window.solCollectionGroup(window.solDb, "solutions"),
+                window.solLimit(150)
+              );
+              const broadSnap = await window.solGetDocs(broadQ);
+              if (!broadSnap.empty) {
+                for (const d of broadSnap.docs) {
+                  const dData = d.data() || {};
+                  if (d.id === solutionId || dData.id === solutionId) {
+                    snap = d;
+                    docRef = d.ref;
+                    contributorUid = dData.contributorUid;
+                    break;
+                  }
+                }
+              }
+            } catch (scanErr) {
+              console.warn("Broad collectionGroup scan failed:", scanErr);
             }
           }
         }

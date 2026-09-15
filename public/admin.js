@@ -4491,6 +4491,23 @@ window.viewCoverPageDetails = function(id) {
     dlBtn.onclick = () => window.downloadAdminCoverPdf(r.id);
   }
 
+  // Render frontpage preview canvas asynchronously
+  const previewBox = document.getElementById('coverModalPreviewContainer');
+  if (previewBox) {
+    previewBox.innerHTML = '<div style="color:#64748b; font-size:0.85rem;"><i class="ri-loader-4-line ri-spin"></i> Rendering canvas...</div>';
+    renderCoverPageToCanvas(r).then(canvas => {
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.objectFit = 'contain';
+      canvas.style.display = 'block';
+      previewBox.innerHTML = '';
+      previewBox.appendChild(canvas);
+    }).catch(err => {
+      console.warn("Cover canvas preview error:", err);
+      previewBox.innerHTML = `<div style="color:#f87171; font-size:0.8rem; padding:10px; text-align:center;"><i class="ri-error-warning-line"></i> Preview render error: ${escapeAdminHtml(err.message)}</div>`;
+    });
+  }
+
   if (modal) modal.classList.add('active');
 };
 
@@ -4517,35 +4534,74 @@ async function renderCoverPageToCanvas(d) {
 
   // Load Header Banner & Center Logo safely without tainting canvas
   const folder = isPractical ? 'PracticalCoverPageGenerator' : 'AssignmentCoverPageGenerator';
-  const headerFilename = (d.headerLogo === 'DPGDegreeHeader_Image.jpeg') ? 'DPGDegreeHeader_Image.jpeg' : 'Header_Image.jpg';
-  const logoFilename = (d.centerLogo === 'DPGDegreeCenter_Logo.jpeg') ? 'DPGDegreeCenter_Logo.jpeg' : 'Center_Logo.jpg';
-  const headerUrl = `/${folder}/${headerFilename}`;
-  const logoUrl = `/${folder}/${logoFilename}`;
+  const isDegreeHeader = d.headerLogo && (
+    d.headerLogo.includes('DPGDegreeHeader') || 
+    d.headerLogo.includes('Degree') || 
+    d.headerLogo === 'DPGDegreeHeader_Image.jpeg'
+  );
+  const isDegreeCenter = d.centerLogo && (
+    d.centerLogo.includes('DPGDegreeCenter') || 
+    d.centerLogo.includes('Degree') || 
+    d.centerLogo === 'DPGDegreeCenter_Logo.jpeg'
+  );
+  const headerFilename = isDegreeHeader ? 'DPGDegreeHeader_Image.jpeg' : 'Header_Image.jpg';
+  const logoFilename = isDegreeCenter ? 'DPGDegreeCenter_Logo.jpeg' : 'Center_Logo.jpg';
 
-  async function loadSafeImg(url) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Fetch failed: ' + res.status);
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
-      return new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = objUrl;
-      });
-    } catch (e) {
-      return new Promise(resolve => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = url;
-      });
+  async function loadSafeImg(filename) {
+    const altFolder = isPractical ? 'AssignmentCoverPageGenerator' : 'PracticalCoverPageGenerator';
+    const candidateUrls = [
+      `/${folder}/${filename}`,
+      `./${folder}/${filename}`,
+      `${folder}/${filename}`,
+      `/${altFolder}/${filename}`,
+      `./${altFolder}/${filename}`,
+      `../${folder}/${filename}`,
+      filename
+    ];
+
+    // Try blob fetch first (guarantees non-tainted canvas)
+    for (const url of candidateUrls) {
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          const blob = await res.blob();
+          const objUrl = URL.createObjectURL(blob);
+          const img = await new Promise(resolve => {
+            const i = new Image();
+            i.onload = () => resolve(i);
+            i.onerror = () => resolve(null);
+            i.src = objUrl;
+          });
+          if (img && (img.naturalWidth > 0 || img.width > 0)) return img;
+        }
+      } catch (e) {
+        // try next candidate
+      }
     }
+
+    // Fallback: regular image loader with anonymous crossOrigin
+    for (const url of candidateUrls) {
+      try {
+        const img = await new Promise(resolve => {
+          const i = new Image();
+          i.crossOrigin = 'anonymous';
+          i.onload = () => resolve(i);
+          i.onerror = () => resolve(null);
+          i.src = url;
+        });
+        if (img && (img.naturalWidth > 0 || img.width > 0)) return img;
+      } catch (e) {
+        // try next candidate
+      }
+    }
+
+    return null;
   }
 
-  const [headerImg, centerLogoImg] = await Promise.all([loadSafeImg(headerUrl), loadSafeImg(logoUrl)]);
+  const [headerImg, centerLogoImg] = await Promise.all([
+    loadSafeImg(headerFilename),
+    loadSafeImg(logoFilename)
+  ]);
 
   // 1. Header Banner Image
   const headerW = 507.48 * scaleX;
@@ -4748,6 +4804,19 @@ window.downloadAdminCoverPdf = async function(id) {
       return;
     }
 
+    const isDegreeH = r.headerLogo && (
+      r.headerLogo.includes('DPGDegreeHeader') || 
+      r.headerLogo.includes('Degree') || 
+      r.headerLogo === 'DPGDegreeHeader_Image.jpeg'
+    );
+    const isDegreeC = r.centerLogo && (
+      r.centerLogo.includes('DPGDegreeCenter') || 
+      r.centerLogo.includes('Degree') || 
+      r.centerLogo === 'DPGDegreeCenter_Logo.jpeg'
+    );
+    const selHeaderLogo = isDegreeH ? 'DPGDegreeHeader_Image.jpeg' : 'Header_Image.jpg';
+    const selCenterLogo = isDegreeC ? 'DPGDegreeCenter_Logo.jpeg' : 'Center_Logo.jpg';
+
     // 2. Server-Side Fallback via /api/assignment/export-pdf
     const payload = {
       studentName: sName,
@@ -4765,6 +4834,8 @@ window.downloadAdminCoverPdf = async function(id) {
       date: cleanCoverVal(r.date) || (r.createdAt ? String(r.createdAt).split('T')[0] : ''),
       day: cleanCoverVal(r.day) || '',
       assignmentNo: aNo,
+      headerLogo: selHeaderLogo,
+      centerLogo: selCenterLogo,
       docType: isPrac ? 'practical' : 'assignment'
     };
 
@@ -5768,9 +5839,9 @@ function renderTestCasesTableRows(list) {
       ? `<span class="badge" style="background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3);"><i class="ri-code-s-slash-line"></i> Practical</span>`
       : `<span class="badge" style="background:rgba(20,184,166,0.15); color:#14b8a6; border:1px solid rgba(20,184,166,0.3);"><i class="ri-file-text-line"></i> Assignment</span>`;
 
-    const solUrl = tc.solutionType === 'practical'
-      ? `PracticalSolution/index.html?id=${encodeURIComponent(tc.solutionId || '')}`
-      : `AssignmentSolution/index.html?id=${encodeURIComponent(tc.solutionId || '')}`;
+    const contribParam = tc.contributorUid || tc.authorUid || '';
+    const solUrl = (tc.solutionType === 'practical' ? 'PracticalSolution/index.html' : 'AssignmentSolution/index.html') +
+      `?id=${encodeURIComponent(tc.solutionId || '')}${contribParam ? `&contributor=${encodeURIComponent(contribParam)}` : ''}`;
 
     const dateStr = tc.createdAt ? (typeof tc.createdAt === 'string' ? tc.createdAt.split('T')[0] : 'Recent') : 'Recent';
     const draftId = tc.draftId || tc.id;
@@ -5853,12 +5924,16 @@ window.openAdminTestCaseModal = function(draftId) {
     : `<span class="badge" style="background:rgba(20,184,166,0.18); color:#14b8a6; border:1px solid rgba(20,184,166,0.35); padding:4px 8px;"><i class="ri-file-text-line"></i> Assignment Solution</span>`;
 
   if (metaBanner) {
+    const modalContrib = tc.contributorUid || tc.authorUid || '';
+    const modalSolUrl = (tc.solutionType === 'practical' ? 'PracticalSolution/index.html' : 'AssignmentSolution/index.html') +
+      `?id=${encodeURIComponent(tc.solutionId || '')}${modalContrib ? `&contributor=${encodeURIComponent(modalContrib)}` : ''}`;
+
     metaBanner.innerHTML = `
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         ${secBadge}
         ${solTypeBadge}
         <span style="color:#94a3b8;">Group: <code style="color:#facc15; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;">${escapeAdminHtml(tc.groupId || '-')}</code></span>
-        <span style="color:#94a3b8;">Solution ID: <strong style="color:#38bdf8;">${escapeAdminHtml(tc.solutionId || '-')}</strong></span>
+        <span style="color:#94a3b8;">Solution ID: <a href="${modalSolUrl}" target="_blank" style="color:#38bdf8; text-decoration:underline; font-weight:600;" title="Open solution in new tab">${escapeAdminHtml(tc.solutionId || '-')} <i class="ri-external-link-line"></i></a></span>
       </div>
       <div style="display:flex; align-items:center; gap:12px; color:#cbd5e1; font-size:0.8rem;">
         <span><i class="ri-user-3-line" style="color:#38bdf8;"></i> <strong>${escapeAdminHtml(tc.contributorName || 'Contributor')}</strong> (${escapeAdminHtml(tc.contributorEmail || tc.contributorUid || 'Recorded')})</span>

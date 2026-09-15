@@ -2132,7 +2132,7 @@
 
   <!-- COVER PAGE VIEW DETAIL MODAL -->
   <div class="modal-overlay" id="coverViewModal">
-    <div class="auth-card" style="max-width:580px; text-align:left; padding:2rem;">
+    <div class="auth-card" style="max-width:880px; width:95%; text-align:left; padding:1.75rem;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
         <h2 style="margin:0; font-size:1.3rem; color:var(--admin-text); display:flex; align-items:center; gap:8px;">
           <i class="ri-file-text-line" style="color:#ec4899;"></i> <span id="coverModalDocTitle">Cover Page Details</span>
@@ -2141,9 +2141,24 @@
           <i class="ri-close-line"></i>
         </button>
       </div>
-      <div id="coverModalContent" style="display:flex; flex-direction:column; gap:10px; font-size:0.9rem; color:var(--admin-text); max-height:60vh; overflow-y:auto;">
-        <!-- Filled dynamically -->
+      
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem; max-height:68vh; overflow-y:auto; padding-right:4px;">
+        <!-- Live Frontpage Canvas Preview -->
+        <div style="display:flex; flex-direction:column; align-items:center; background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:10px; padding:12px;">
+          <div style="font-size:0.82rem; color:var(--admin-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px; font-weight:600;">
+            <i class="ri-image-line" style="color:#38bdf8;"></i> Frontpage Canvas Preview
+          </div>
+          <div id="coverModalPreviewContainer" style="width:100%; max-width:320px; aspect-ratio:1/1.414; background:#ffffff; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,0.5);">
+            <div style="color:#64748b; font-size:0.85rem;"><i class="ri-loader-4-line ri-spin"></i> Rendering canvas...</div>
+          </div>
+        </div>
+
+        <!-- Document Details -->
+        <div id="coverModalContent" style="display:flex; flex-direction:column; gap:10px; font-size:0.9rem; color:var(--admin-text);">
+          <!-- Filled dynamically -->
+        </div>
       </div>
+
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1.5rem; border-top:1px solid var(--admin-border); padding-top:1rem;">
         <button type="button" class="admin-btn" style="background:rgba(255,255,255,0.08); color:var(--admin-text);" onclick="closeCoverViewModal()">Close</button>
         <button type="button" class="admin-btn" id="coverModalDownloadBtn" style="background:linear-gradient(135deg, #8b5cf6, #6366f1);"><i class="ri-download-line"></i> Download PDF</button>
