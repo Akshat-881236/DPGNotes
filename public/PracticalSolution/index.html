@@ -13,6 +13,7 @@
   <!-- Native DPGNotes Ads SDK -->
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
   <script src="../solutions-sandbox-engine.js?v=2.0.0"></script>
+  <script src="../solutions-nlp-search.js?v=1.0.0"></script>
   <script src="../redirect.js"></script>
   <!-- Google AdSense SDK -->
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
@@ -154,6 +155,9 @@
         <button type="button" class="sol-serp-tab" data-filter="views" onclick="window.setSerpFilter('views')"><i class="ri-fire-line"></i> Most Viewed</button>
         <button type="button" class="sol-serp-tab" data-filter="runs" onclick="window.setSerpFilter('runs')"><i class="ri-play-circle-line"></i> Most Tested</button>
       </div>
+
+      <!-- Gemini AI Semantic Overview Card -->
+      <div id="serpAiOverviewBox" style="display:none; margin-bottom:1.25rem;"></div>
 
       <!-- SERP Stats Counter -->
       <div id="serpStatsRow" style="font-size:0.85rem; color:#94a3b8; margin-bottom:1.5rem;">
@@ -573,31 +577,40 @@
       renderSerpResults(queryStr, currentSerpFilter);
     }
 
+    let currentAiSearchToken = 0;
+
     function renderSerpResults(queryStr, filterType) {
       const startTime = performance.now();
-      const qLower = (queryStr || '').toLowerCase().trim();
+      const qTrimmed = (queryStr || '').trim();
       const listContainer = document.getElementById('serpResultsList');
       const statsRow = document.getElementById('serpStatsRow');
+      const aiOverviewBox = document.getElementById('serpAiOverviewBox');
 
       if (!listContainer || !statsRow) return;
 
+      const searchToken = ++currentAiSearchToken;
       let results = cachedPracticalsList.slice();
 
-      // 1. Text Query Filter
-      if (qLower) {
-        results = results.filter(item => {
-          const subName = (item.subjectName || '').toLowerCase();
-          const subCode = (item.subjectCode || '').toLowerCase();
-          const course = (item.course || item.courseSec || '').toLowerCase();
-          const student = (item.studentName || '').toLowerCase();
-          const prof = (item.profName || '').toLowerCase();
-          const contrib = (item.contributorName || '').toLowerCase();
-          const pTitles = Array.isArray(item.practicals) ? item.practicals.map(p => (p.title || '').toLowerCase()).join(' ') : '';
+      // 1. NLP Semantic Search Filter (Order, typo, case & delimiter independent)
+      if (qTrimmed) {
+        if (window.DPGNotesAI && typeof window.DPGNotesAI.executeNlpSearch === 'function') {
+          results = window.DPGNotesAI.executeNlpSearch(qTrimmed, cachedPracticalsList);
+        } else {
+          const qLower = qTrimmed.toLowerCase();
+          results = results.filter(item => {
+            const subName = (item.subjectName || '').toLowerCase();
+            const subCode = (item.subjectCode || '').toLowerCase();
+            const course = (item.course || item.courseSec || '').toLowerCase();
+            const student = (item.studentName || '').toLowerCase();
+            const prof = (item.profName || '').toLowerCase();
+            const contrib = (item.contributorName || '').toLowerCase();
+            const pTitles = Array.isArray(item.practicals) ? item.practicals.map(p => (p.title || '').toLowerCase()).join(' ') : '';
 
-          return subName.includes(qLower) || subCode.includes(qLower) || course.includes(qLower) ||
-                 student.includes(qLower) || prof.includes(qLower) || contrib.includes(qLower) ||
-                 pTitles.includes(qLower);
-        });
+            return subName.includes(qLower) || subCode.includes(qLower) || course.includes(qLower) ||
+                   student.includes(qLower) || prof.includes(qLower) || contrib.includes(qLower) ||
+                   pTitles.includes(qLower);
+          });
+        }
       }
 
       // 2. Filter Tab
@@ -613,7 +626,30 @@
 
       const duration = ((performance.now() - startTime) / 1000).toFixed(3);
       const displayCount = results.length;
-      statsRow.innerHTML = `About <strong>${displayCount.toLocaleString()}</strong> results (${duration} seconds) ${qLower ? `for <strong>"${escapeHtml(queryStr)}"</strong>` : 'across all laboratory practicals'}`;
+      statsRow.innerHTML = `About <strong>${displayCount.toLocaleString()}</strong> results (${duration} seconds) ${qTrimmed ? `for <strong>"${escapeHtml(queryStr)}"</strong> <span style="color:#2dd4bf; font-weight:600; font-size:0.8rem; margin-left:6px; background:rgba(20,184,166,0.12); padding:2px 8px; border-radius:999px; border:1px solid rgba(20,184,166,0.3);"><i class="ri-sparkling-fill"></i> AI &amp; NLP Ranked</span>` : 'across all laboratory practicals'}`;
+
+      // 3. Trigger Gemini AI Sense Overview Asynchronously
+      if (aiOverviewBox) {
+        if (qTrimmed && window.DPGNotesAI) {
+          window.DPGNotesAI.renderAiOverview(aiOverviewBox, qTrimmed, null, true);
+
+          window.DPGNotesAI.fetchGeminiAiSense(qTrimmed, results, 'practical')
+            .then(aiData => {
+              if (searchToken === currentAiSearchToken && aiData) {
+                window.DPGNotesAI.renderAiOverview(aiOverviewBox, qTrimmed, aiData, false);
+              }
+            })
+            .catch(err => {
+              console.warn('Gemini AI Sense resolution error:', err);
+              if (searchToken === currentAiSearchToken) {
+                aiOverviewBox.style.display = 'none';
+              }
+            });
+        } else {
+          aiOverviewBox.style.display = 'none';
+          aiOverviewBox.innerHTML = '';
+        }
+      }
 
       if (results.length === 0) {
         listContainer.innerHTML = `
@@ -621,7 +657,7 @@
             <i class="ri-flask-line" style="font-size:3rem; color:#64748b;"></i>
             <h3 style="color:white; margin:1rem 0 0.5rem 0; font-size:1.3rem;">No practical laboratory solutions matched your search</h3>
             <p style="color:#94a3b8; font-size:0.9rem; max-width:440px; margin:0 auto 1.5rem auto;">
-              Suggestions: Check spelling, use broader keywords, or browse all available laboratory solutions.
+              Suggestions: Try broader keywords, check course codes (e.g. BCA-301), or browse all available laboratory solutions.
             </p>
             <button type="button" class="sol-btn sol-btn-teal" onclick="window.executePracticalSearch('')">
               <i class="ri-sparkling-line"></i> Browse All Practicals
@@ -640,6 +676,8 @@
         const runs = Number(item.runs || item.codeRuns) || 0;
         const isEnc = !!item.isEncrypted;
         const publishDate = item.createdAt ? (typeof item.createdAt === 'string' ? item.createdAt.split('T')[0] : 'Recent') : 'Recent';
+        const matchPct = item._matchPercentage;
+        const matchedConcepts = Array.isArray(item._matchedConcepts) ? item._matchedConcepts : [];
 
         // Preview practical experiments snippet
         let pSnippet = '';
@@ -655,6 +693,11 @@
               <div class="sol-serp-badges">
                 ${item.subjectCode ? `<span class="sol-badge" style="background:rgba(20,184,166,0.15); color:#2dd4bf; border:1px solid rgba(20,184,166,0.3); font-weight:700;">${escapeHtml(item.subjectCode)}</span>` : ''}
                 ${(item.course || item.courseSec) ? `<span class="sol-badge" style="background:rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35); font-weight:700;">${escapeHtml(item.course || item.courseSec)}</span>` : ''}
+                ${matchPct ? `
+                  <span class="sol-badge" style="background:${matchPct >= 80 ? 'rgba(16,185,129,0.18)' : 'rgba(20,184,166,0.18)'}; color:${matchPct >= 80 ? '#34d399' : '#2dd4bf'}; border:1px solid ${matchPct >= 80 ? 'rgba(16,185,129,0.35)' : 'rgba(20,184,166,0.35)'}; font-weight:600;">
+                    <i class="ri-sparkling-fill"></i> ${matchPct}% Sense Match
+                  </span>
+                ` : ''}
                 <span class="sol-badge ${isEnc ? 'sol-badge-red' : 'sol-badge-teal'}">
                   ${isEnc ? '<i class="ri-lock-2-fill"></i> 🔒 Zero-Knowledge' : '<i class="ri-global-line"></i> 🌐 Public Access'}
                 </span>
@@ -669,6 +712,14 @@
             <a href="${linkUrl}" class="sol-serp-title">
               ${escapeHtml(item.subjectName || 'Practical Laboratory Solution')}
             </a>
+
+            <!-- Matched Concept Tags if Available -->
+            ${matchedConcepts.length > 0 ? `
+              <div style="display:flex; gap:6px; flex-wrap:wrap; margin:0.2rem 0 0.8rem 0;">
+                <span style="font-size:0.75rem; color:#94a3b8; display:inline-flex; align-items:center; gap:3px;"><i class="ri-brain-line" style="color:#a855f7;"></i> Sense concepts:</span>
+                ${matchedConcepts.map(c => `<span style="font-size:0.74rem; color:#cbd5e1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:2px 8px; border-radius:999px;">${escapeHtml(c)}</span>`).join('')}
+              </div>
+            ` : ''}
 
             <!-- Metadata Items with Generous Spacing and Colored Icons -->
             <div class="sol-serp-meta-pills">
