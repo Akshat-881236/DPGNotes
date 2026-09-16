@@ -1,6 +1,6 @@
 // ============================================================================
 // DPGNotes - Modern Academic & Examination Hub
-// Homepage Client Script (v3.0.0)
+// Homepage Client Script (v3.1.0)
 // ============================================================================
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -147,14 +147,19 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function updateNavbarAuth(user) {
-  const guestArea = document.getElementById("navGuestArea");
-  const userArea = document.getElementById("navUserArea");
+  const guestAreaDesktop = document.getElementById("navGuestArea");
+  const userAreaDesktop = document.getElementById("navUserArea");
+  const guestAreaMobile = document.getElementById("navGuestAreaMobile");
+  const userAreaMobile = document.getElementById("navUserAreaMobile");
   const userNameEl = document.getElementById("navUserName");
   const userAvatarEl = document.getElementById("navUserAvatar");
 
   if (user) {
-    if (guestArea) guestArea.style.display = "none";
-    if (userArea) userArea.style.display = "flex";
+    if (guestAreaDesktop) guestAreaDesktop.style.display = "none";
+    if (userAreaDesktop) userAreaDesktop.style.display = "flex";
+    if (guestAreaMobile) guestAreaMobile.style.display = "none";
+    if (userAreaMobile) userAreaMobile.style.display = "flex";
+    
     if (userNameEl) userNameEl.innerText = user.displayName || user.email.split('@')[0];
     if (userAvatarEl) {
       if (user.photoURL) {
@@ -165,8 +170,10 @@ function updateNavbarAuth(user) {
       }
     }
   } else {
-    if (guestArea) guestArea.style.display = "flex";
-    if (userArea) userArea.style.display = "none";
+    if (guestAreaDesktop) guestAreaDesktop.style.display = "flex";
+    if (userAreaDesktop) userAreaDesktop.style.display = "none";
+    if (guestAreaMobile) guestAreaMobile.style.display = "flex";
+    if (userAreaMobile) userAreaMobile.style.display = "none";
   }
 }
 
@@ -191,7 +198,6 @@ async function handlePostOAuthLogin(user) {
     }
 
     if (!isComplete) {
-      // Force user to Settings Tab to fill User Type and ID
       window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
     } else {
       window.location.href = "dashboard.html";
@@ -487,8 +493,18 @@ window.openSignInModal = function() {
     if (fpModal) fpModal.hide();
   }
   // Reset steps
-  document.getElementById("signInFormStep").style.display = "block";
-  document.getElementById("twoFactorStep").style.display = "none";
+  const step1 = document.getElementById("signInFormStep");
+  const step2 = document.getElementById("twoFactorStep");
+  if (step1) step1.style.display = "block";
+  if (step2) step2.style.display = "none";
+  
+  // Close mobile drawer if open
+  const drawer = document.getElementById("mobileNavDrawer");
+  if (drawer && window.bootstrap) {
+    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
+    if (offcanvas) offcanvas.hide();
+  }
+
   const siModal = new bootstrap.Modal(document.getElementById("signInModal"));
   siModal.show();
 };
@@ -499,6 +515,13 @@ window.openSignUpModal = function() {
     const siModal = bootstrap.Modal.getInstance(siEl);
     if (siModal) siModal.hide();
   }
+
+  const drawer = document.getElementById("mobileNavDrawer");
+  if (drawer && window.bootstrap) {
+    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
+    if (offcanvas) offcanvas.hide();
+  }
+
   const suModal = new bootstrap.Modal(document.getElementById("signUpModal"));
   suModal.show();
 };
@@ -546,6 +569,7 @@ window.toggleDocCard = function(id) {
 
 // ============================================================================
 // 8 VERTICAL RESOURCE GRIDS ENGINE (R3.1 & R3.2)
+// NOTE: Download feature is completely removed per user instruction.
 // ============================================================================
 async function loadAcademicResources() {
   const statusEl = document.getElementById("resourceLoadingStatus");
@@ -606,14 +630,11 @@ async function loadAcademicResources() {
                 <h4 class="res-card-title">${title}</h4>
                 <div class="res-card-meta">
                   <span><i class="ri-user-line"></i> ${uploader}</span>
-                  <span><i class="ri-time-line"></i> ${date}</span>
+                  <span><i class="ri-calendar-line"></i> ${date}</span>
                 </div>
                 <div class="res-card-actions">
                   <a href="${viewerUrl}" class="btn-res-view">
-                    <i class="ri-eye-line"></i> Read PDF
-                  </a>
-                  <a href="${pdfUrl}" target="_blank" download class="btn-res-download" title="Direct Download">
-                    <i class="ri-download-2-line"></i>
+                    <i class="ri-book-read-line"></i> Read &amp; View Notes
                   </a>
                 </div>
               </div>
@@ -639,7 +660,7 @@ async function loadAcademicResources() {
 // Global search submit
 window.handleHomeSearch = function(e) {
   e.preventDefault();
-  const q = document.getElementById("homeSearchInput")?.value.trim();
+  const q = document.getElementById("homeSearchInput")?.value.trim() || document.getElementById("drawerSearchInput")?.value.trim();
   if (q) {
     window.location.href = `dpgnotes-serp.html?query=${encodeURIComponent(q)}`;
   }
@@ -652,6 +673,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchForm = document.getElementById("homeSearchForm");
   if (searchForm) searchForm.addEventListener("submit", window.handleHomeSearch);
 
+  const drawerSearchForm = document.getElementById("drawerSearchForm");
+  if (drawerSearchForm) drawerSearchForm.addEventListener("submit", window.handleHomeSearch);
+
   const signUpForm = document.getElementById("formSignUp");
   if (signUpForm) signUpForm.addEventListener("submit", window.handleEmailSignUp);
 
@@ -660,4 +684,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const recoveryForm = document.getElementById("formRecovery");
   if (recoveryForm) recoveryForm.addEventListener("submit", window.handlePasswordRecovery);
+
+  // Close offcanvas menu when any in-page link is clicked
+  document.querySelectorAll("#mobileNavDrawer a[href^='#']").forEach(link => {
+    link.addEventListener("click", () => {
+      const drawer = document.getElementById("mobileNavDrawer");
+      if (drawer && window.bootstrap) {
+        const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
+        if (offcanvas) offcanvas.hide();
+      }
+    });
+  });
 });
