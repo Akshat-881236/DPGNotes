@@ -263,20 +263,28 @@
       btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Authenticating...`;
 
       try {
-        const res = await fetch(`${API_URL}/admin/verify-otp`, {
+        let res = await fetch(`${API_URL}/admin/verify`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: adminEmailGlobal, otp })
         });
+        if (!res.ok && res.status === 404) {
+          res = await fetch(`${API_URL}/admin/verify-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: adminEmailGlobal, otp })
+          });
+        }
         const data = await res.json();
 
         if (res.ok) {
           localStorage.setItem("adminToken", data.token);
 
           // Sign in to Firebase Auth with Custom Token
-          if (data.firebaseCustomToken) {
+          const fbToken = data.firebaseCustomToken || data.firebaseToken;
+          if (fbToken) {
             try {
-              await signInWithCustomToken(auth, data.firebaseCustomToken);
+              await signInWithCustomToken(auth, fbToken);
             } catch (fbErr) {
               console.error("Firebase custom token login failed:", fbErr);
             }

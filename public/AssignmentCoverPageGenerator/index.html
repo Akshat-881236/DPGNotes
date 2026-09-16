@@ -16,6 +16,7 @@
   <!-- Google Fonts & Remix Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Tinos:wght@700&family=Merriweather:wght@700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="/auth-component.css">
 
   <!-- PDF-Lib & JSPDF for Client-Side A4 Vector Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -784,17 +785,29 @@
           </button>
         </div>
 
-        <!-- Option 2: Sign Up / Sign In with Google -->
+        <!-- Option 2: Sign In / Create Contributor Account -->
         <div id="quotaGoogleSignInOption" style="background:rgba(255,255,255,0.03); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; color:#818cf8; font-weight:700; font-size:1rem;">
-            <i class="ri-google-fill" style="font-size:1.3rem;"></i> Option 2: Sign Up / Sign In with Google
+            <i class="ri-shield-user-fill" style="font-size:1.3rem;"></i> Option 2: Sign In / Create Contributor Account
           </div>
           <p style="color:#cbd5e1; font-size:0.84rem; line-height:1.5; margin:0;">
-            Sign in with your Google account to upgrade to <strong>Verified Contributor</strong>. You receive <strong>2x daily generation quota</strong>, permanent cloud storage with 1-click re-download and editing, and priority PDF rendering.
+            Sign in with any contributor method (Google, GitHub, or Student ID/Email + Password) to upgrade to <strong>Verified Contributor</strong>. You receive <strong>2x daily generation quota</strong>, permanent cloud storage with 1-click re-download and editing, and priority PDF rendering.
           </p>
-          <button type="button" onclick="signInWithGoogleForCoverQuota()" class="btn-generate" style="margin-top:6px; background:linear-gradient(135deg, #6366f1, #3b82f6); padding:0.75rem 1.2rem; font-size:0.9rem;">
-            <i class="ri-google-fill"></i> Sign In with Google (Double Quota)
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+            <button type="button" onclick="signInWithGoogleForCoverQuota()" class="btn-generate" style="background:linear-gradient(135deg, #6366f1, #3b82f6); padding:0.75rem 1rem; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <i class="ri-google-fill"></i> Google
+            </button>
+            <button type="button" onclick="window.dpgLoginGithub ? window.dpgLoginGithub() : (window.openSignInModal && window.openSignInModal())" class="btn-generate" style="background:#24292e; border:1px solid rgba(255,255,255,0.15); padding:0.75rem 1rem; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <i class="ri-github-fill"></i> GitHub
+            </button>
+          </div>
+          <button type="button" onclick="window.openSignInModal ? window.openSignInModal() : (window.location.href='/index.html?action=signin')" class="btn-generate" style="margin-top:4px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); padding:0.75rem 1.2rem; font-size:0.88rem; color:#f8fafc; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <i class="ri-id-card-line"></i> Student ID / Email + Password
           </button>
+          <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:0.82rem;">
+            <a href="javascript:void(0)" onclick="window.openSignUpModal ? window.openSignUpModal() : (window.location.href='/index.html?action=signup')" style="color:#818cf8; font-weight:600; text-decoration:none;">Create Free Account</a>
+            <a href="javascript:void(0)" onclick="window.openForgotPasswordModal ? window.openForgotPasswordModal() : (window.location.href='/index.html?action=signin')" style="color:#94a3b8; text-decoration:none;">Forgot Password?</a>
+          </div>
         </div>
       </div>
 
@@ -2077,6 +2090,15 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    // Re-verify quota when signed in via shared auth component
+    window.addEventListener('dpg-auth-success', async (e) => {
+      currentMaxQuota = 2;
+      currentQuotaTokens = 2;
+      updateTokenBadgeUI();
+      exitQuotaLockdown();
+      await loadUserAssignments();
+    });
+
     // Initialization
     window.addEventListener('DOMContentLoaded', async () => {
       initDefaultDate();
@@ -2085,6 +2107,7 @@
       renderLiveCanvas();
     });
   </script>
+  <script type="module" src="/auth-component.js"></script>
   <script src="../redirect.js"></script>
 </body>
 </html>

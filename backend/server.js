@@ -1981,7 +1981,7 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
-app.post('/api/admin/verify', async (req, res) => {
+const handleAdminVerify = async (req, res) => {
   const { email, otp } = req.body;
   const record = otpStore.get(email);
   if (record && record.otp === otp && record.expires > Date.now()) {
@@ -1990,7 +1990,7 @@ app.post('/api/admin/verify', async (req, res) => {
       // Generate JWT valid for 3 days
       const token = jwt.sign({ role: 'admin', email }, process.env.JWT_SECRET, { expiresIn: '3d' });
       const firebaseToken = await admin.auth().createCustomToken(email, { admin: true });
-      res.json({ token, firebaseToken, message: "Login successful" });
+      res.json({ token, firebaseToken, firebaseCustomToken: firebaseToken, message: "Login successful" });
     } catch (error) {
       console.error("Custom token error:", error);
       res.status(500).json({ error: "Failed to authenticate with Firebase" });
@@ -1998,7 +1998,11 @@ app.post('/api/admin/verify', async (req, res) => {
   } else {
     res.status(401).json({ error: "Invalid or expired OTP" });
   }
-});
+};
+
+app.post('/api/admin/verify', handleAdminVerify);
+app.post('/api/admin/verify-otp', handleAdminVerify);
+
 
 // ==========================================
 // USER AUTH: IDENTIFIER RESOLUTION & OTP 2FA / RECOVERY

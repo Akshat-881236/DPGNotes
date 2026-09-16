@@ -127,36 +127,43 @@ const delDocSelect = document.getElementById("delDocSelect");
 const deleteDocBtn = document.getElementById("deleteDocBtn");
 const delReasonInput = document.getElementById("delReason");
 
-delContributorSelect.addEventListener("change", () => {
-  const uid = delContributorSelect.value;
-  delDocSelect.innerHTML = '<option value="">-- Choose Document --</option>';
-  if (!uid) {
-    delDocSelect.disabled = true;
-    deleteDocBtn.disabled = true;
-    return;
-  }
-  
-  const userDocs = adminDocsCache.filter(d => d.userId === uid);
-  userDocs.forEach(d => {
-    const opt = document.createElement("option");
-    opt.value = d.id;
-    opt.innerText = d.title;
-    delDocSelect.appendChild(opt);
+if (delContributorSelect) {
+  delContributorSelect.addEventListener("change", () => {
+    const uid = delContributorSelect.value;
+    if (!delDocSelect) return;
+    delDocSelect.innerHTML = '<option value="">-- Choose Document --</option>';
+    if (!uid) {
+      delDocSelect.disabled = true;
+      if (deleteDocBtn) deleteDocBtn.disabled = true;
+      return;
+    }
+    
+    const userDocs = adminDocsCache.filter(d => d.userId === uid);
+    userDocs.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = d.id;
+      opt.innerText = d.title;
+      delDocSelect.appendChild(opt);
+    });
+    
+    delDocSelect.disabled = false;
+    if (deleteDocBtn) deleteDocBtn.disabled = true;
   });
-  
-  delDocSelect.disabled = false;
-  deleteDocBtn.disabled = true;
-});
+}
 
-delDocSelect.addEventListener("change", () => {
-  deleteDocBtn.disabled = !delDocSelect.value;
-});
+if (delDocSelect) {
+  delDocSelect.addEventListener("change", () => {
+    if (deleteDocBtn) deleteDocBtn.disabled = !delDocSelect.value;
+  });
+}
 
-deleteDocForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const docId = delDocSelect.value;
-  const uid = delContributorSelect.value;
-  if (!docId || !uid) return;
+if (deleteDocForm) {
+  deleteDocForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const docId = delDocSelect ? delDocSelect.value : "";
+    const uid = delContributorSelect ? delContributorSelect.value : "";
+    if (!docId || !uid) return;
+
   
   const user = adminUsersCache.find(u => u.id === uid);
   const docItem = adminDocsCache.find(d => d.id === docId);

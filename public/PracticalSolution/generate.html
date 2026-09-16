@@ -16,6 +16,9 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
   <!-- Native DPGNotes Ads SDK -->
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
+  <!-- DPGNotes Unified Shared Auth Component -->
+  <link rel="stylesheet" href="/auth-component.css">
+  <script type="module" src="/auth-component.js"></script>
 </head>
 <body>
 
@@ -37,18 +40,34 @@
 
   <!-- Access Barrier Overlay for Non-Authenticated Users -->
   <div id="authBarrierOverlay" class="sol-modal-overlay" style="display:none;">
-    <div class="sol-modal-card" style="text-align:center;">
+    <div class="sol-modal-card" style="text-align:center; max-width:480px;">
       <div style="width:68px; height:68px; border-radius:50%; background:rgba(20,184,166,0.15); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
         <i class="ri-shield-user-fill" style="font-size:2.2rem; color:var(--sol-teal);"></i>
       </div>
       <h2 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.5rem;">Verified Contributor Access Only</h2>
-      <p style="color:var(--sol-text-muted); font-size:0.9rem; line-height:1.6; margin-bottom:1.5rem;">
-        The Practical Solution Generator is reserved for authenticated contributors. Sign in with your Google account to access laboratory authoring tools.
+      <p style="color:var(--sol-text-muted); font-size:0.9rem; line-height:1.6; margin-bottom:1.4rem;">
+        The Practical Solution Generator is reserved for active authenticated contributors. Please sign in with any contributor method to access laboratory authoring tools.
       </p>
-      <button type="button" id="googleSignInBtn" class="sol-btn sol-btn-teal" style="width:100%; padding:0.9rem;" onclick="handleContributorLogin()">
-        <i class="ri-google-fill"></i> Sign In with Google
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <button type="button" id="googleSignInBtn" class="sol-btn sol-btn-secondary" style="width:100%; padding:0.85rem; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="window.dpgLoginGoogle ? window.dpgLoginGoogle() : handleContributorLogin()">
+          <i class="ri-google-fill" style="color:#ea4335; font-size:1.1rem;"></i> Google
+        </button>
+        <button type="button" class="sol-btn sol-btn-secondary" style="width:100%; padding:0.85rem; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="window.dpgLoginGithub ? window.dpgLoginGithub() : (window.openSignInModal && window.openSignInModal())">
+          <i class="ri-github-fill" style="font-size:1.1rem;"></i> GitHub
+        </button>
+      </div>
+
+      <button type="button" class="sol-btn sol-btn-teal" style="width:100%; padding:0.9rem; margin-bottom:1rem;" onclick="window.openSignInModal ? window.openSignInModal() : handleContributorLogin()">
+        <i class="ri-id-card-line"></i> Sign In with Student ID / Email + Password
       </button>
-      <div style="margin-top:1.2rem;">
+
+      <div style="display:flex; justify-content:space-between; margin-top:0.8rem; font-size:0.84rem;">
+        <a href="javascript:void(0)" onclick="window.openSignUpModal ? window.openSignUpModal() : (window.location.href='../index.html?action=signup')" style="color:#14b8a6; text-decoration:none; font-weight:600;">Create Free Account</a>
+        <a href="javascript:void(0)" onclick="window.openForgotPasswordModal ? window.openForgotPasswordModal() : (window.location.href='../index.html?action=signin')" style="color:#94a3b8; text-decoration:none;">Forgot Password?</a>
+      </div>
+
+      <div style="margin-top:1.2rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.8rem;">
         <a href="../index.html" style="color:var(--sol-text-muted); font-size:0.82rem; text-decoration:none;">
           <i class="ri-arrow-left-line"></i> Back to Homepage
         </a>
@@ -463,6 +482,7 @@
     });
 
     window.checkAuthentication = checkAuthentication;
+    window.addEventListener('dpg-auth-success', () => checkAuthentication());
     function checkAuthentication() {
       const uid = localStorage.getItem("dpgActiveUserUid");
       const userRaw = localStorage.getItem("dpgActiveUser");

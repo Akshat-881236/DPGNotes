@@ -186,8 +186,18 @@
       const activeUid = localStorage.getItem("dpgActiveUserUid");
       if (activeUid) return;
 
-      // 2. Legal Policy Pages are strictly Exempt
-      if (window.location.pathname.includes('/legal') || window.location.href.includes('legal/index.html')) return;
+      // 2. Legal Policy Pages and Contributor Creator Studios are strictly Exempt from Guest Quota
+      if (window.location.pathname.includes('/legal') || 
+          window.location.href.includes('legal/index.html') ||
+          window.location.pathname.includes('AssignmentSolution/generate') ||
+          window.location.pathname.includes('AssignmentSolution/generator') ||
+          window.location.pathname.includes('PracticalSolution/generate') ||
+          window.location.pathname.includes('PracticalSolution/generator') ||
+          window.location.pathname.includes('admin') ||
+          window.location.pathname.includes('dashboard') ||
+          window.location.pathname.includes('train_model')) {
+        return;
+      }
 
       // 3. Retrieve or initialize Anonymous Guest ID
       let guestId = localStorage.getItem("dpg_guest_id");
@@ -269,6 +279,12 @@
         sessionStorage.setItem("dpg_quota_locked", "true");
         setCookie("dpg_quota_locked", "true");
 
+        // If shared auth component modal is present on this page, trigger it directly in-place!
+        if (typeof window.showQuotaReachedModal === "function") {
+          window.showQuotaReachedModal();
+          return;
+        }
+
         const isRootHome = window.location.pathname === '/' || window.location.pathname === '/index.html' || window.location.pathname.endsWith('/public/') || window.location.pathname.endsWith('/public/index.html');
         if (!isRootHome) {
           window.location.href = "https://dpgnotes.web.app/index.html?quotaReached=true";
@@ -336,7 +352,7 @@
             }
           } catch (err) {
             console.error("Quota lock Google Sign In error:", err);
-            if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In / Sign Up with Google';
+            if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Continue with Google';
             if (err && (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain')))) {
               if (confirm("Google Auth requires adding 'dpgnotes.vercel.app' to Firebase Authorized Domains.\n\nRedirect to official portal (https://dpgnotes.web.app) for instant Google Auth?")) {
                 window.location.href = "https://dpgnotes.web.app/";
@@ -344,6 +360,47 @@
             } else {
               alert("Sign in failed: " + (err.message || err));
             }
+          }
+        };
+
+        window.signInWithGithubQuota = async function() {
+          const btn = document.getElementById("lockedGithubSignInBtn");
+          if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Opening GitHub...';
+          try {
+            const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
+            const { getAuth, signInWithPopup, GithubAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
+
+            const cfg = {
+              apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+              authDomain: "dpgnotes.firebaseapp.com",
+              projectId: "dpgnotes",
+              storageBucket: "dpgnotes.firebasestorage.app",
+              messagingSenderId: "910494426039",
+              appId: "1:910494426039:web:adeae5315caaf846c43e32"
+            };
+
+            const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(cfg, "dpgnotes");
+            const auth = getAuth(app);
+            const provider = new GithubAuthProvider();
+
+            const res = await signInWithPopup(auth, provider);
+            if (res && res.user) {
+              localStorage.setItem("dpgActiveUserUid", res.user.uid);
+              localStorage.removeItem("dpg_quota_visits");
+              localStorage.removeItem("dpg_quota_pdfs");
+              localStorage.removeItem("dpg_quota_locked");
+              sessionStorage.removeItem("dpg_quota_locked");
+              document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+              if (btn) btn.innerHTML = '<i class="ri-checkbox-circle-fill" style="color:#4ade80;"></i> Success! Redirecting...';
+              setTimeout(() => {
+                window.location.href = "https://dpgnotes.web.app/index.html";
+              }, 400);
+            }
+          } catch (err) {
+            console.error("Quota lock GitHub Sign In error:", err);
+            if (btn) btn.innerHTML = '<i class="ri-github-fill"></i> Continue with GitHub';
+            alert("Sign in failed: " + (err.message || err));
           }
         };
 
@@ -364,31 +421,49 @@
               lockedContainer.style.cssText = 'width:100vw; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:2rem 1rem 3rem 1rem; background:radial-gradient(circle at center, rgba(30,41,59,0.95), #020617 85%); box-sizing:border-box; text-align:center; overflow-y:auto; -webkit-overflow-scrolling:touch; position:fixed; inset:0; z-index:999999;';
 
               lockedContainer.innerHTML = `
-                <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(239,68,68,0.35); border-radius:24px; padding:2rem 1.5rem; max-width:540px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin:auto 0; box-sizing:border-box;">
-                  <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:1rem; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); padding:5px 14px; border-radius:999px; color:#fca5a5; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
-                    <i class="ri-alarm-warning-fill" style="color:#ef4444; font-size:1rem;"></i> Daily Access Limit Reached
+                <div style="background:rgba(15,23,42,0.92); border:1px solid rgba(99,102,241,0.35); border-radius:24px; padding:2.2rem 1.8rem; max-width:540px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin:auto 0; box-sizing:border-box;">
+                  <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:1rem; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.35); padding:6px 16px; border-radius:999px; color:#a5b4fc; font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
+                    <i class="ri-graduation-cap-fill" style="color:#818cf8; font-size:1.05rem;"></i> Welcome to the DPG Academic Community
                   </div>
 
-                  <h1 style="font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:800; color:white; margin-bottom:0.6rem; line-height:1.2;">
-                    Daily Guest Quota Exceeded
+                  <h1 style="font-family:'Outfit',sans-serif; font-size:1.85rem; font-weight:800; color:white; margin-bottom:0.6rem; line-height:1.25;">
+                    Glad You're Finding DPGNotes Helpful!
                   </h1>
 
-                  <p style="color:#94a3b8; font-size:0.9rem; line-height:1.6; margin-bottom:1.2rem;">
-                    You have used all <strong style="color:white;">6 page visits</strong> and <strong style="color:white;">3 PDF reads</strong> allocated for guest viewers today.<br>
-                    Sign in with your Google account to enjoy <strong style="color:#a78bfa;">unlimited free access</strong> to all notes, papers, and AI assistants.
+                  <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.3rem;">
+                    You've reached your free daily preview limit for guest reading. DPGNotes is built for students and educators, and is <strong style="color:white;">completely free for all verified contributors</strong>.<br>
+                    Sign in to your account to enjoy <strong style="color:#818cf8;">unlimited free access</strong> to verified notes, practical manuals, and exam solutions.
                   </p>
 
                   <!-- LIVE RESET COUNTDOWN TIMER -->
-                  <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:0.85rem; margin-bottom:1.5rem; display:flex; flex-direction:column; align-items:center; gap:4px;">
-                    <span style="font-size:0.72rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Quota Resets In</span>
-                    <div id="quotaCountdownTimer" style="font-family:monospace; font-size:1.8rem; font-weight:800; color:#818cf8; letter-spacing:2px;">00:00:00</div>
+                  <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:0.85rem; margin-bottom:1.4rem; display:flex; flex-direction:column; align-items:center; gap:4px;">
+                    <span style="font-size:0.72rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Guest Preview Resets In</span>
+                    <div id="quotaCountdownTimer" style="font-family:monospace; font-size:1.9rem; font-weight:800; color:#818cf8; letter-spacing:2px;">00:00:00</div>
                     <span style="font-size:0.7rem; color:#94a3b8;">(HH : MM : SS until midnight UTC)</span>
                   </div>
 
-                  <!-- SINGLE GOOGLE SIGN IN BUTTON -->
-                  <button id="lockedGoogleSignInBtn" onclick="window.signInWithGoogleQuota()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:1rem 1.5rem; border-radius:12px; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.5); display:inline-flex; align-items:center; gap:10px; width:100%; justify-content:center; transition:all 0.3s ease;">
-                    <i class="ri-google-fill" style="font-size:1.3rem;"></i> Sign In / Sign Up with Google
+                  <!-- MULTI-METHOD SIGN IN ROW -->
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <button id="lockedGoogleSignInBtn" onclick="window.signInWithGoogleQuota()" style="background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.12); color:white; padding:0.85rem 1rem; border-radius:12px; font-weight:700; font-size:0.92rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s ease;">
+                      <i class="ri-google-fill" style="color:#ea4335; font-size:1.15rem;"></i> Google
+                    </button>
+                    <button id="lockedGithubSignInBtn" onclick="window.signInWithGithubQuota()" style="background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.12); color:white; padding:0.85rem 1rem; border-radius:12px; font-weight:700; font-size:0.92rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s ease;">
+                      <i class="ri-github-fill" style="font-size:1.15rem;"></i> GitHub
+                    </button>
+                  </div>
+
+                  <button type="button" onclick="window.openSignInModal ? window.openSignInModal() : (window.location.href='/index.html?action=signin')" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:0.95rem 1.4rem; border-radius:12px; font-weight:800; font-size:0.98rem; cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.45); display:inline-flex; align-items:center; gap:10px; width:100%; justify-content:center; transition:all 0.2s ease; margin-bottom:1rem;">
+                    <i class="ri-id-card-line" style="font-size:1.2rem;"></i> Sign In with Student ID / Contributor Email
                   </button>
+
+                  <div style="font-size:0.86rem; color:#94a3b8; margin-bottom:0.6rem;">
+                    Don't have a contributor account? 
+                    <a href="javascript:void(0)" onclick="window.openSignUpModal ? window.openSignUpModal() : (window.location.href='/index.html?action=signup')" style="color:#818cf8; font-weight:700; text-decoration:none;">Create Free Account</a>
+                  </div>
+
+                  <div style="font-size:0.82rem;">
+                    <a href="javascript:void(0)" onclick="window.openForgotPasswordModal ? window.openForgotPasswordModal() : (window.location.href='/index.html?action=signin')" style="color:#64748b; text-decoration:none;">Forgot Password?</a>
+                  </div>
 
                   <!-- SPONSORED NATIVE AD ON QUOTA LOCK SCREEN -->
                   <div class="native-ads" id="quotaLockAdBox" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.2rem; text-align:left; width:100%;"></div>

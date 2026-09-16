@@ -1,0 +1,286 @@
+/* ==========================================================================
+   DPGNotes Accessible Reading Themes & Contrast Engine
+   Supports Light / Dark / Default DPG Midnight Blue + Font Scaling
+   WCAG AA & AAA Compliance for Differentially Able Students & Readers
+   ========================================================================== */
+
+/* 1. DEFAULT THEME: DPGNotes Midnight Blue */
+:root,
+html[data-theme="default"],
+body[data-theme="default"] {
+  --r-theme-name: "default";
+  --r-bg: #0b0f19;
+  --r-surface: #111827;
+  --r-surface-elevated: #1e293b;
+  --r-border: rgba(255, 255, 255, 0.1);
+  --r-border-strong: rgba(255, 255, 255, 0.2);
+  --r-text: #f8fafc;
+  --r-text-muted: #94a3b8;
+  --r-heading: #ffffff;
+  --r-accent: #6366f1;
+  --r-accent-light: #818cf8;
+  --r-code-bg: #0d1117;
+  --r-pdf-canvas-filter: none;
+  --r-topbar-bg: rgba(17, 24, 39, 0.9);
+}
+
+/* 2. LIGHT THEME: High-Contrast Academic Paper */
+html[data-theme="light"],
+body[data-theme="light"] {
+  --r-theme-name: "light";
+  --r-bg: #f8fafc;
+  --r-surface: #ffffff;
+  --r-surface-elevated: #f1f5f9;
+  --r-border: #cbd5e1;
+  --r-border-strong: #94a3b8;
+  --r-text: #0f172a;           /* Jet Black: 16.2:1 contrast */
+  --r-text-muted: #334155;     /* Dark slate: 7.8:1 contrast */
+  --r-heading: #020617;
+  --r-accent: #4338ca;         /* Deep Indigo: 7.5:1 contrast */
+  --r-accent-light: #4f46e5;
+  --r-code-bg: #f1f5f9;
+  --r-pdf-canvas-filter: none;
+  --r-topbar-bg: rgba(255, 255, 255, 0.95);
+
+  /* Override solution viewers variables */
+  --sol-bg: #f8fafc !important;
+  --sol-surface: #ffffff !important;
+  --sol-surface-elevated: #f1f5f9 !important;
+  --sol-border: #cbd5e1 !important;
+  --sol-text: #0f172a !important;
+  --sol-text-muted: #334155 !important;
+  --sol-code-bg: #f1f5f9 !important;
+  --sol-primary: #4338ca !important;
+
+  /* Override pdf viewer variables */
+  --bg: #f8fafc !important;
+  --sb: #ffffff !important;
+  --surface: #f1f5f9 !important;
+  --bdr: #cbd5e1 !important;
+  --txt: #0f172a !important;
+  --mut: #334155 !important;
+  --pri: #4338ca !important;
+  --pli: #4f46e5 !important;
+}
+
+/* Specific Light Theme DOM Overrides */
+html[data-theme="light"] body {
+  background-color: var(--r-bg) !important;
+  color: var(--r-text) !important;
+}
+
+html[data-theme="light"] .sol-navbar,
+html[data-theme="light"] .topbar {
+  background: var(--r-topbar-bg) !important;
+  border-bottom: 1px solid var(--r-border) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .sol-brand,
+html[data-theme="light"] .topbar .logo {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-btn-secondary,
+html[data-theme="light"] .nbtn {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-btn-secondary:hover,
+html[data-theme="light"] .nbtn:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+html[data-theme="light"] .sol-panel,
+html[data-theme="light"] .scard,
+html[data-theme="light"] .sol-serp-card,
+html[data-theme="light"] .sol-meta-card {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .sol-title,
+html[data-theme="light"] .sol-serp-title,
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-subtext,
+html[data-theme="light"] .mlabel,
+html[data-theme="light"] .mval,
+html[data-theme="light"] p {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .pdfmain {
+  background: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .sidebar {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .ai-out {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] code,
+html[data-theme="light"] pre {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* 3. DARK THEME: Pure OLED Contrast Night */
+html[data-theme="dark"],
+body[data-theme="dark"] {
+  --r-theme-name: "dark";
+  --r-bg: #000000;
+  --r-surface: #121212;
+  --r-surface-elevated: #1a1a1a;
+  --r-border: #27272a;
+  --r-border-strong: #3f3f46;
+  --r-text: #ffffff;           /* 21:1 pure contrast */
+  --r-text-muted: #a1a1aa;
+  --r-heading: #ffffff;
+  --r-accent: #c084fc;
+  --r-accent-light: #d8b4fe;
+  --r-code-bg: #09090b;
+  --r-pdf-canvas-filter: invert(0.92) hue-rotate(180deg);
+  --r-topbar-bg: rgba(0, 0, 0, 0.95);
+
+  /* Override solution viewers variables */
+  --sol-bg: #000000 !important;
+  --sol-surface: #121212 !important;
+  --sol-surface-elevated: #1a1a1a !important;
+  --sol-border: #27272a !important;
+  --sol-text: #ffffff !important;
+  --sol-text-muted: #a1a1aa !important;
+  --sol-code-bg: #09090b !important;
+  --sol-primary: #a855f7 !important;
+
+  /* Override pdf viewer variables */
+  --bg: #000000 !important;
+  --sb: #0a0a0a !important;
+  --surface: #141414 !important;
+  --bdr: #27272a !important;
+  --txt: #ffffff !important;
+  --mut: #a1a1aa !important;
+  --pri: #a855f7 !important;
+  --pli: #c084fc !important;
+}
+
+html[data-theme="dark"] body {
+  background-color: var(--r-bg) !important;
+  color: var(--r-text) !important;
+}
+
+html[data-theme="dark"] .pdfmain {
+  background: #000000 !important;
+}
+
+html[data-theme="dark"] .sidebar {
+  background: #0a0a0a !important;
+  border-color: #27272a !important;
+}
+
+html[data-theme="dark"] .pdfpage canvas {
+  filter: var(--r-pdf-canvas-filter);
+  border: 1px solid #333333;
+}
+
+/* ==========================================================================
+   USER ACCESSIBILITY FONT SIZE SCALING
+   ========================================================================== */
+html[data-font-size="sm"] { font-size: 14px !important; }
+html[data-font-size="md"] { font-size: 16px !important; }
+html[data-font-size="lg"] { font-size: 18px !important; }
+html[data-font-size="xl"] { font-size: 21px !important; } /* Low-vision accessibility */
+
+/* ==========================================================================
+   READER CONTROLS WIDGET UI
+   ========================================================================== */
+.dpg-reader-controls {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 3px 6px;
+  gap: 4px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  user-select: none;
+}
+
+html[data-theme="light"] .dpg-reader-controls {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="dark"] .dpg-reader-controls {
+  background: #121212;
+  border-color: #27272a;
+}
+
+.dpg-rc-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.dpg-rc-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="light"] .dpg-rc-btn:hover {
+  background: #f1f5f9;
+}
+
+.dpg-rc-btn.active {
+  background: var(--r-accent);
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+
+.dpg-rc-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+}
+
+html[data-theme="light"] .dpg-rc-divider {
+  background: #cbd5e1;
+}
+
+/* Floating widget placement when no header slot exists */
+.dpg-reader-controls-floating {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99990;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
