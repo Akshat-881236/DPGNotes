@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="config.js"></script>
+  <script src="custom-dialogs.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="ANH.png" type="image/png" />
+  <title>Admin Authentication Portal | DPGNotes Enterprise</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      --admin-bg: #0f111a;
+      --admin-surface: rgba(20, 24, 39, 0.75);
+      --admin-border: rgba(255, 255, 255, 0.08);
+      --admin-primary: #3b82f6;
+      --admin-success: #10b981;
+      --admin-danger: #ef4444;
+      --admin-text: #f8fafc;
+      --admin-muted: #94a3b8;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      background: var(--admin-bg);
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      color: var(--admin-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+      background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 50%),
+                  radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent 50%),
+                  #0b0e17;
+    }
+    .auth-card {
+      background: var(--admin-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--admin-border);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.7);
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .auth-card h2 {
+      margin: 0 0 0.4rem 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .auth-card p {
+      color: var(--admin-muted);
+      margin-bottom: 1.8rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .admin-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--admin-border);
+      border-radius: 12px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.92rem;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .admin-input:focus {
+      border-color: var(--admin-primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    .admin-btn {
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+    }
+    .admin-btn:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+    .admin-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .step-container {
+      display: none;
+    }
+    .step-container.active {
+      display: flex;
+      flex-direction: column;
+    }
+    .back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 1.5rem;
+      color: var(--admin-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .back-home:hover {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-card">
+    
+    <!-- STEP 1: CREDENTIALS -->
+    <div id="step1" class="step-container active">
+      <i class="ri-shield-keyhole-line" style="font-size: 3.2rem; color: var(--admin-primary); margin-bottom: 0.8rem;"></i>
+      <h2>Enterprise Admin</h2>
+      <p>Authorized personnel only. Enter administrator credentials to request a one-time passcode.</p>
+      
+      <form id="adminLoginForm">
+        <input type="email" id="adminEmail" class="admin-input" placeholder="Admin Email" autocomplete="email" required />
+        <input type="password" id="adminPassword" class="admin-input" placeholder="Password" autocomplete="current-password" required />
+        <button type="submit" id="btnLoginSubmit" class="admin-btn">
+          <i class="ri-mail-send-line"></i> Send OTP Verification Code
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 2: OTP VERIFICATION -->
+    <div id="step2" class="step-container">
+      <i class="ri-mail-check-line" style="font-size: 3.2rem; color: var(--admin-success); margin-bottom: 0.8rem;"></i>
+      <h2>Verify Passcode</h2>
+      <p>A secure 6-digit verification code was dispatched to your email.</p>
+      
+      <form id="adminOtpForm">
+        <input type="text" id="adminOtp" class="admin-input" placeholder="Enter 6-digit OTP code" maxlength="6" style="text-align:center; font-size:1.4rem; letter-spacing:6px; font-weight:700;" required />
+        <button type="submit" id="btnOtpSubmit" class="admin-btn">
+          <i class="ri-shield-check-line"></i> Authenticate Session
+        </button>
+      </form>
+      
+      <div style="margin-top: 1rem;">
+        <button type="button" onclick="returnToStep1()" style="background:none; border:none; color:var(--admin-muted); font-size:0.82rem; cursor:pointer; text-decoration:underline;">
+          ← Back to Credentials
+        </button>
+      </div>
+    </div>
+
+    <a href="index.html" class="back-home"><i class="ri-arrow-left-line"></i> Back to DPGNotes Homepage</a>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
+    const auth = getAuth(app);
+    const API_URL = (window.API_BASE_URL || "") + "/api";
+
+    let adminEmailGlobal = "";
+
+    // If already authenticated with valid token, redirect to dashboard
+    const existingToken = localStorage.getItem("adminToken");
+    auth.authStateReady().then(() => {
+      if (existingToken && auth.currentUser) {
+        window.location.href = "admin.html";
+      }
+    });
+
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const loginForm = document.getElementById("adminLoginForm");
+    const otpForm = document.getElementById("adminOtpForm");
+
+    window.returnToStep1 = function() {
+      step2.classList.remove("active");
+      step1.classList.add("active");
+    };
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPassword").value;
+      const btn = document.getElementById("btnLoginSubmit");
+      
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Verifying Credentials...`;
+
+      try {
+        const res = await fetch(`${API_URL}/admin/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          adminEmailGlobal = email;
+          step1.classList.remove("active");
+          step2.classList.add("active");
+          if (window.customAlert) {
+            await window.customAlert(data.message || "OTP sent to your email.", { title: "Verification Required" });
+          } else {
+            alert(data.message || "OTP sent to your email.");
+          }
+        } else {
+          if (window.customAlert) {
+            await window.customAlert(data.error || "Login failed.", { title: "Error", isDanger: true });
+          } else {
+            alert(data.error || "Login failed.");
+          }
+        }
+      } catch (err) {
+        console.error("Login request error:", err);
+        alert("Server unreachable. Please check backend connection.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-mail-send-line"></i> Send OTP Verification Code`;
+      }
+    });
+
+    otpForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const otp = document.getElementById("adminOtp").value.trim();
+      const btn = document.getElementById("btnOtpSubmit");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Authenticating...`;
+
+      try {
+        const res = await fetch(`${API_URL}/admin/verify-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: adminEmailGlobal, otp })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem("adminToken", data.token);
+
+          // Sign in to Firebase Auth with Custom Token
+          if (data.firebaseCustomToken) {
+            try {
+              await signInWithCustomToken(auth, data.firebaseCustomToken);
+            } catch (fbErr) {
+              console.error("Firebase custom token login failed:", fbErr);
+            }
+          }
+
+          if (window.customAlert) {
+            await window.customAlert("Admin authentication successful! Redirecting to Enterprise Dashboard...", { title: "Success" });
+          }
+          window.location.href = "admin.html";
+        } else {
+          if (window.customAlert) {
+            await window.customAlert(data.error || "OTP verification failed.", { title: "Authentication Failed", isDanger: true });
+          } else {
+            alert(data.error || "OTP verification failed.");
+          }
+        }
+      } catch (err) {
+        console.error("OTP verification request error:", err);
+        alert("Server unreachable during OTP verification.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-shield-check-line"></i> Authenticate Session`;
+      }
+    });
+  </script>
+</body>
+</html>

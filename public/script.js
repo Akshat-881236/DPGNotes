@@ -356,7 +356,27 @@ window.handlePasswordSignIn = async function(e) {
     pendingSignInUser = cred.user;
     pendingSignInEmail = resolvedEmail;
 
-    // Send 2FA OTP
+    // Check if user disabled 2FA in settings
+    try {
+      const userDocRef = doc(db, "users", cred.user.uid);
+      const snap = await getDoc(userDocRef);
+      const userData = snap.exists() ? snap.data() : null;
+
+      if (userData && userData.twoFactorEnabled === false) {
+        // 2FA is explicitly disabled by user: complete sign in directly
+        const isComplete = userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
+        if (!isComplete) {
+          window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
+        } else {
+          window.location.href = "dashboard.html";
+        }
+        return;
+      }
+    } catch(profileErr) {
+      console.warn("User profile check error:", profileErr);
+    }
+
+    // Default: Dispatch 2FA OTP
     try {
       await fetch(apiBase + "/api/auth/send-otp", {
         method: "POST",
@@ -695,4 +715,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // Deep-linked Auth Modals (?action=signin, ?action=signup)
+  const urlParams = new URLSearchParams(window.location.search);
+  const actionParam = urlParams.get("action") || urlParams.get("auth");
+  if (actionParam === "signin" || actionParam === "login") {
+    setTimeout(() => { if (window.openSignInModal) window.openSignInModal(); }, 350);
+  } else if (actionParam === "signup" || actionParam === "register") {
+    setTimeout(() => { if (window.openSignUpModal) window.openSignUpModal(); }, 350);
+  }
 });

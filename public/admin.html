@@ -477,34 +477,53 @@
         padding: 1.2rem 1rem;
       }
     }
+
+    /* AUTH CHECK OVERLAY (Matching report.html & dashboard.html) */
+    #authCheckOverlay {
+      position: fixed;
+      inset: 0;
+      background: var(--admin-bg, #0f111a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      flex-direction: column;
+      padding: 1.5rem;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+    #authCheckOverlay .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--admin-primary, #3b82f6);
+      border-radius: 50%;
+      animation: spinAdminOverlay 0.8s linear infinite;
+      margin-bottom: 1.25rem;
+    }
+    @keyframes spinAdminOverlay {
+      to { transform: rotate(360deg); }
+    }
+    #authCheckOverlay h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.45rem;
+      margin: 0 0 0.4rem 0;
+      color: #f8fafc;
+    }
+    #authCheckOverlay p {
+      color: var(--admin-muted, #94a3b8);
+      font-size: 0.9rem;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
 
-  <!-- AUTH LAYER -->
-  <div class="auth-overlay" id="authLayer">
-    <!-- STEP 1: LOGIN -->
-    <div id="step1" class="auth-card step-container active" style="flex-direction:column;">
-      <i class="ri-shield-keyhole-line" style="font-size: 3rem; color: var(--admin-primary); margin-bottom: 1rem;"></i>
-      <h2>Enterprise Admin</h2>
-      <p>Secure access required.</p>
-      <form id="adminLoginForm">
-        <input type="email" id="adminEmail" class="admin-input" placeholder="Admin Email" required />
-        <input type="password" id="adminPassword" class="admin-input" placeholder="Password" required />
-        <button type="submit" class="admin-btn">Send OTP Request</button>
-      </form>
-    </div>
-
-    <!-- STEP 2: OTP -->
-    <div id="step2" class="auth-card step-container" style="flex-direction:column;">
-      <i class="ri-mail-check-line" style="font-size: 3rem; color: var(--admin-success); margin-bottom: 1rem;"></i>
-      <h2>Verify OTP</h2>
-      <p>A secure code was sent to your email.</p>
-      <form id="adminOtpForm">
-        <input type="text" id="adminOtp" class="admin-input" placeholder="6-digit OTP code" required />
-        <button type="submit" class="admin-btn">Authenticate</button>
-      </form>
-    </div>
+  <!-- AUTH CHECK OVERLAY (Identical to report.html) -->
+  <div id="authCheckOverlay">
+    <div class="spinner"></div>
+    <h2 id="authStatusText">Verifying Enterprise Admin Session...</h2>
+    <p id="authSubText">Ensuring robust administrative security protocols</p>
   </div>
 
   <!-- ADMIN DASHBOARD -->

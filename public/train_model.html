@@ -571,24 +571,253 @@
         gap: 10px;
       }
     }
+
+    /* AUTH OVERLAY & LOGIN PROMPT */
+    .auth-overlay-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 1.25rem;
+    }
+    .auth-card-shell {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 20px;
+      padding: 2.2rem 2rem;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .btn-oauth-provider {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-oauth-provider.google-btn {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+    }
+    .btn-oauth-provider.google-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn-oauth-provider.github-btn {
+      background: #181717;
+      color: #ffffff;
+    }
+    .btn-oauth-provider.github-btn:hover {
+      background: #24292e;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* AUTHORIZED RESOURCES SELECTION HUB */
+    .res-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+    .res-select-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .res-select-card:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .badge-status-trained {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-status-untrained {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
   </style>
 </head>
 <body>
 
   <header class="header-nav">
-    <a href="dashboard.html" class="brand"><i class="ri-cpu-line" style="color:var(--primary-light);"></i> DPGNotes AI Trainer</a>
-    <a href="dashboard.html" style="color:var(--text-muted); text-decoration:none;"><i class="ri-arrow-left-line"></i> Back to Dashboard</a>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <a href="train_model.html" class="brand"><i class="ri-cpu-line" style="color:var(--primary-light);"></i> DPGNotes AI Trainer</a>
+      <a href="train_model.html" id="navAllResourcesLink" style="color:var(--text-muted); text-decoration:none; font-size:0.85rem; display:none;"><i class="ri-folders-line"></i> My Resources</a>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div id="headerUserArea" style="display:none; align-items:center; gap:8px;">
+        <div id="headerUserAvatar" style="width:28px; height:28px; border-radius:50%; background:#6366f1; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:white;">U</div>
+        <span id="headerUserName" style="font-size:0.85rem; color:#f8fafc; font-weight:600;">Contributor</span>
+      </div>
+      <a href="dashboard.html" class="back-link"><i class="ri-dashboard-line"></i> Dashboard</a>
+      <button id="headerLogoutBtn" onclick="window.trainLogout()" style="display:none; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.15rem; padding:4px;" title="Sign Out">
+        <i class="ri-logout-box-r-line"></i>
+      </button>
+    </div>
   </header>
 
+  <!-- ======================================================= -->
+  <!-- AUTH OVERLAY: PROMPT USER WITH ALL POSSIBLE LOGIN MODES -->
+  <!-- ======================================================= -->
+  <div id="trainAuthOverlay" class="auth-overlay-modal" style="display:none;">
+    <div class="auth-card-shell">
+      <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.6rem; color:white;">
+        <i class="ri-cpu-line"></i>
+      </div>
+      <h2 style="font-family:'Outfit',sans-serif; margin:0 0 0.4rem; color:#f8fafc; font-size:1.45rem;">Authentication Required</h2>
+      <p style="color:#94a3b8; font-size:0.86rem; margin-bottom:1.4rem; line-height:1.5;">
+        To train artificial intelligence models and curate in-document academic notes, please authenticate your contributor account.
+      </p>
+
+      <!-- OAuth Login Providers -->
+      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:1.2rem;">
+        <button type="button" class="btn-oauth-provider google-btn" onclick="window.trainLoginWithGoogle()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.7s.1-1.9.4-2.7L1.6 6.4C.6 8.4 0 10.6 0 13s.6 4.6 1.6 6.6l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5.3L1.6 16c1.9 3.8 5.8 7 10.4 7z"/></svg>
+          Continue with Google
+        </button>
+        <button type="button" class="btn-oauth-provider github-btn" onclick="window.trainLoginWithGithub()">
+          <i class="ri-github-fill" style="font-size:1.15rem;"></i>
+          Continue with GitHub
+        </button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:10px; margin:1rem 0; color:#64748b; font-size:0.75rem; text-transform:uppercase;">
+        <div style="flex:1; height:1px; background:rgba(255,255,255,0.08);"></div>
+        <span>or sign in with password</span>
+        <div style="flex:1; height:1px; background:rgba(255,255,255,0.08);"></div>
+      </div>
+
+      <!-- Password / ID Form -->
+      <form id="trainLoginForm" onsubmit="window.handleTrainPasswordLogin(event)" style="text-align:left;">
+        <div id="trainLoginFields">
+          <div style="margin-bottom:0.8rem;">
+            <label style="display:block; font-size:0.78rem; color:#cbd5e1; margin-bottom:4px; font-weight:600;">Student / Employee ID or Email *</label>
+            <input type="text" id="trainLoginId" class="input-field" placeholder="e.g. 2112345678 or name@domain.com" required style="width:100%;" />
+          </div>
+          <div style="margin-bottom:1.1rem;">
+            <label style="display:block; font-size:0.78rem; color:#cbd5e1; margin-bottom:4px; font-weight:600;">Password *</label>
+            <input type="password" id="trainLoginPassword" class="input-field" placeholder="Your password" required style="width:100%;" />
+          </div>
+          <button type="submit" id="btnTrainLoginSubmit" class="btn-primary" style="width:100%; justify-content:center;">
+            <i class="ri-login-box-line"></i> Sign In to Workbench
+          </button>
+        </div>
+
+        <!-- 2FA OTP Container inside modal -->
+        <div id="trainTwoFactorStep" style="display:none; text-align:center;">
+          <div style="font-size:2rem; color:#10b981; margin-bottom:0.4rem;"><i class="ri-shield-check-line"></i></div>
+          <h3 style="font-size:1.1rem; color:#f8fafc; margin:0 0 0.3rem;">Verify 2FA Security Code</h3>
+          <p style="color:#94a3b8; font-size:0.8rem; margin-bottom:1rem;">Enter the 6-digit passcode sent to <strong id="train2faEmailSpan" style="color:#818cf8;"></strong></p>
+          <input type="text" id="train2faOtpInput" class="input-field" maxlength="6" placeholder="000000" style="text-align:center; font-size:1.3rem; letter-spacing:6px; font-weight:700; width:180px; margin:0 auto 1rem; display:block;" />
+          <button type="button" id="btnVerifyTrain2FA" onclick="window.verifyTrain2FA()" class="btn-primary" style="width:100%; justify-content:center;">
+            Verify &amp; Enter Workbench
+          </button>
+        </div>
+      </form>
+
+      <div style="margin-top:1.25rem; font-size:0.82rem; color:#94a3b8;">
+        New contributor? <a href="index.html?action=signup" style="color:#818cf8; text-decoration:underline;">Create Account</a>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
+    <!-- ACCESS DENIED -->
     <div id="accessDeniedBanner" class="denied-banner" style="display:none;">
       <i class="ri-shield-keyhole-line" style="font-size:3.5rem; color:#ef4444;"></i>
       <h2 style="color:#f87171; margin:10px 0;">ACCESS DENIED — OWNERSHIP VIOLATION</h2>
       <p style="color:#fca5a5;">You do not have permission to train AI models for this resource. It belongs to another contributor.</p>
       <p style="font-size:0.85rem; color:var(--text-muted); margin-top:15px;">🚨 Security Alert: This unauthorized access attempt has been logged to DPGNotes Security Telemetry.</p>
+      <div style="margin-top:1.5rem;">
+        <a href="train_model.html" class="btn-secondary"><i class="ri-arrow-left-line"></i> View Your Authorized Resources</a>
+      </div>
     </div>
 
+    <!-- ======================================================= -->
+    <!-- AUTHORIZED RESOURCES SELECTION HUB (WITHOUT PARAMETER)  -->
+    <!-- ======================================================= -->
+    <div id="authorizedResourcesSection" style="display:none;">
+      <div style="margin-bottom:1.75rem; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+        <div>
+          <span style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); padding:3px 10px; border-radius:6px; font-size:0.75rem; font-weight:600;">
+            <i class="ri-shield-user-line"></i> Contributor Workbench
+          </span>
+          <h1 style="font-family:'Outfit',sans-serif; color:white; font-size:1.85rem; margin:8px 0 4px;">Your Authorized Academic Resources</h1>
+          <p style="color:var(--text-muted); font-size:0.88rem; margin:0; max-width:640px;">
+            Select any academic resource you uploaded to train its specialized AI Knowledge Model or embed in-document reference notes.
+          </p>
+        </div>
+        <div id="resourceCountBadge" style="background:rgba(255,255,255,0.06); border:1px solid var(--border); padding:6px 14px; border-radius:20px; font-size:0.82rem; color:#cbd5e1;">
+          Loading resources...
+        </div>
+      </div>
+
+      <!-- Resource List Cards -->
+      <div id="authResourcesList" class="res-selection-grid"></div>
+
+      <!-- Empty State if 0 resources -->
+      <div id="emptyResourcesState" style="display:none; text-align:center; padding:3rem 1.5rem; background:var(--surface); border:1px solid var(--border); border-radius:16px;">
+        <div style="font-size:3.2rem; color:#6366f1; margin-bottom:1rem;"><i class="ri-folder-upload-line"></i></div>
+        <h2 style="font-size:1.35rem; color:white; margin:0 0 0.5rem; font-family:'Outfit',sans-serif;">No Uploaded Resources Found</h2>
+        <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.5rem; line-height:1.6;">
+          You have not uploaded any notes or question papers yet. Under DPGNotes security policy, you can only train AI models for resources that you personally uploaded.
+        </p>
+        <a href="dashboard.html?tab=contributionTab" class="btn-primary" style="display:inline-flex; width:auto;">
+          <i class="ri-upload-cloud-line"></i> Upload Resources to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- TRAINING WORKBENCH CARD (WITH PARAMETER ?id=...)        -->
+    <!-- ======================================================= -->
     <div id="trainCard" class="card" style="display:none;">
+      <div style="margin-bottom:1rem;">
+        <a href="train_model.html" class="back-link" style="color:#818cf8; font-weight:600; font-size:0.85rem;"><i class="ri-arrow-left-line"></i> Back to My Authorized Resources</a>
+      </div>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
         <div>
           <span style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:3px 10px; border-radius:6px; font-size:0.75rem; font-weight:600;" id="resCatBadge">Resource</span>
@@ -889,8 +1118,8 @@
 
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, deleteDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const cfg = {
       apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
@@ -902,10 +1131,136 @@
     const auth = getAuth(fbApp);
 
     const P = new URLSearchParams(location.search);
-    const targetId = P.get('id');
+    const targetId = P.get('id') || P.get('docId');
 
-    const activeUid = localStorage.getItem("dpgActiveUserUid") || "";
+    let currentAuthUser = null;
+    let pendingTrainEmail = "";
+    let pendingTrainUser = null;
     let faqCounter = 1;
+
+    // ====================================================
+    // AUTHENTICATION WORKBENCH HANDLERS
+    // ====================================================
+    window.trainLoginWithGoogle = async function() {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      } catch(err) {
+        console.error("Google sign in failed:", err);
+        if (window.customAlert) await window.customAlert("Google Sign In failed: " + (err.message || err), { title: "Error", isDanger: true });
+        else alert("Google Sign In failed: " + (err.message || err));
+      }
+    };
+
+    window.trainLoginWithGithub = async function() {
+      try {
+        const provider = new GithubAuthProvider();
+        await signInWithPopup(auth, provider);
+      } catch(err) {
+        console.error("GitHub sign in failed:", err);
+        if (window.customAlert) await window.customAlert("GitHub Sign In failed: " + (err.message || err), { title: "Error", isDanger: true });
+        else alert("GitHub Sign In failed: " + (err.message || err));
+      }
+    };
+
+    window.handleTrainPasswordLogin = async function(e) {
+      e.preventDefault();
+      const identifier = document.getElementById("trainLoginId").value.trim();
+      const password = document.getElementById("trainLoginPassword").value;
+      if (!identifier || !password) {
+        return alert("Please enter your Student/Employee ID or Email, and Password.");
+      }
+
+      const btn = document.getElementById("btnTrainLoginSubmit");
+      if (btn) { btn.disabled = true; btn.innerText = "Verifying..."; }
+
+      let resolvedEmail = identifier;
+      if (!identifier.includes('@')) {
+        try {
+          const res = await fetch((window.API_BASE_URL || "") + "/api/auth/resolve-identifier", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identifier })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.found) throw new Error(data.error || "No account found matching this ID.");
+          resolvedEmail = data.email;
+        } catch(resolveErr) {
+          console.warn("Backend resolve fallback:", resolveErr);
+          const qSnap = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", identifier)));
+          if (qSnap.empty) {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ri-login-box-line"></i> Sign In to Workbench'; }
+            return alert("No account found matching Student / Employee ID: " + identifier);
+          }
+          resolvedEmail = qSnap.docs[0].data().email;
+        }
+      }
+
+      try {
+        const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
+        pendingTrainUser = cred.user;
+        pendingTrainEmail = resolvedEmail;
+
+        // Check if user disabled 2FA
+        try {
+          const userDocRef = doc(db, "users", cred.user.uid);
+          const snap = await getDoc(userDocRef);
+          const userData = snap.exists() ? snap.data() : null;
+          if (userData && userData.twoFactorEnabled === false) {
+            // 2FA disabled, proceed directly
+            document.getElementById("trainAuthOverlay").style.display = "none";
+            return;
+          }
+        } catch(profErr) { console.warn("Prof check:", profErr); }
+
+        // Default: Dispatch 2FA OTP
+        try {
+          await fetch((window.API_BASE_URL || "") + "/api/auth/send-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: resolvedEmail, purpose: "2fa" })
+          });
+        } catch(otpErr) { console.warn("2FA send failed:", otpErr); }
+
+        document.getElementById("trainLoginFields").style.display = "none";
+        document.getElementById("trainTwoFactorStep").style.display = "block";
+        document.getElementById("train2faEmailSpan").innerText = resolvedEmail;
+      } catch(err) {
+        console.error("Train sign in error:", err);
+        alert("Sign In Error: " + (err.message || err));
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ri-login-box-line"></i> Sign In to Workbench'; }
+      }
+    };
+
+    window.verifyTrain2FA = async function() {
+      const code = document.getElementById("train2faOtpInput").value.trim();
+      if (code.length !== 6) return alert("Please enter the 6-digit verification code.");
+      const btn = document.getElementById("btnVerifyTrain2FA");
+      if (btn) { btn.disabled = true; btn.innerText = "Verifying..."; }
+
+      try {
+        const res = await fetch((window.API_BASE_URL || "") + "/api/auth/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: pendingTrainEmail, otp: code, purpose: "2fa" })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || "Invalid or expired verification code.");
+
+        document.getElementById("trainAuthOverlay").style.display = "none";
+      } catch(err) {
+        alert("Verification Error: " + err.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerText = "Verify & Enter Workbench"; }
+      }
+    };
+
+    window.trainLogout = async function() {
+      await signOut(auth);
+      localStorage.removeItem("dpgActiveUserUid");
+      window.location.reload();
+    };
 
     // ----------------------------------------------------
     // IN-DOCUMENT NOTES MANAGEMENT & COLLISION VALIDATION
@@ -2108,47 +2463,158 @@
       window.handlePageSlotValidation();
     }
 
-    async function initTrainModel() {
-      if (!targetId) {
-        if (window.customAlert) await window.customAlert("Missing resource ID parameter.", { title: "Error", isDanger: true });
-        else alert("Missing resource ID parameter.");
-        window.location.href = "dashboard.html";
-        return;
-      }
+    // ====================================================
+    // LOAD ALL AUTHORIZED RESOURCES UPLOADED BY CURRENT USER
+    // ====================================================
+    async function loadAuthorizedResources(user) {
+      const listEl = document.getElementById("authResourcesList");
+      const countBadge = document.getElementById("resourceCountBadge");
+      const emptyState = document.getElementById("emptyResourcesState");
+      const section = document.getElementById("authorizedResourcesSection");
 
-      if (!activeUid) {
-        if (window.customAlert) await window.customAlert("Active session required.", { title: "Authentication Required" });
-        else alert("Active session required.");
-        window.location.href = "index.html";
-        return;
-      }
+      section.style.display = "block";
+      listEl.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:3rem 1.5rem; color:var(--text-muted);">
+          <i class="ri-loader-4-line spin-icon" style="font-size:1.8rem; color:#6366f1;"></i>
+          <p style="margin-top:0.8rem; font-size:0.92rem;">Retrieving your authorized academic resources from secure repository...</p>
+        </div>
+      `;
 
       try {
-        let snap = await getDoc(doc(db, "documents", targetId));
-        if (!snap.exists()) snap = await getDoc(doc(db, "pending_approvals", targetId));
+        const docsMap = new Map();
+
+        // Query by registered email
+        if (user.email) {
+          try {
+            const qEmail = query(collection(db, "documents"), where("uploaderEmail", "==", user.email));
+            const sEmail = await getDocs(qEmail);
+            sEmail.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
+          } catch(e) { console.warn("Query by email:", e); }
+        }
+
+        // Query by user ID
+        if (user.uid) {
+          try {
+            const qUid = query(collection(db, "documents"), where("userId", "==", user.uid));
+            const sUid = await getDocs(qUid);
+            sUid.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
+          } catch(e) { console.warn("Query by userId:", e); }
+
+          try {
+            const qUploaderId = query(collection(db, "documents"), where("uploaderId", "==", user.uid));
+            const sUploaderId = await getDocs(qUploaderId);
+            sUploaderId.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
+          } catch(e) { console.warn("Query by uploaderId:", e); }
+        }
+
+        // Check if admin: if user has no personal docs, allow viewing all
+        const isAdmin = user.email === 'its.akshatnetworkhub23@gmail.com';
+        if (isAdmin && docsMap.size === 0) {
+          const qAll = query(collection(db, "documents"));
+          const sAll = await getDocs(qAll);
+          sAll.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
+        }
+
+        const docs = Array.from(docsMap.values());
+
+        if (docs.length === 0) {
+          listEl.style.display = "none";
+          emptyState.style.display = "block";
+          if (countBadge) countBadge.innerText = "0 Resources Found";
+          return;
+        }
+
+        emptyState.style.display = "none";
+        listEl.style.display = "grid";
+        if (countBadge) countBadge.innerText = `${docs.length} Eligible ${docs.length === 1 ? 'Resource' : 'Resources'}`;
+
+        listEl.innerHTML = "";
+        for (const docItem of docs) {
+          let isTrained = false;
+          try {
+            const kSnap = await getDoc(doc(db, "resource_knowledge", docItem.id));
+            if (kSnap.exists()) isTrained = true;
+          } catch(kErr) {}
+
+          const card = document.createElement("div");
+          card.className = "res-select-card";
+          const title = docItem.title || "Academic Resource";
+          const cat = docItem.category || "Resource";
+          const disc = docItem.discipline || "General";
+          const date = docItem.createdAt ? new Date(docItem.createdAt.seconds ? docItem.createdAt.seconds * 1000 : docItem.createdAt).toLocaleDateString() : "Recent";
+          const pages = docItem.totalPages || docItem.pageCount || "PDF";
+
+          card.innerHTML = `
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; gap:8px;">
+                <span style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:600;">
+                  ${cat}
+                </span>
+                <span class="${isTrained ? 'badge-status-trained' : 'badge-status-untrained'}">
+                  <i class="${isTrained ? 'ri-checkbox-circle-fill' : 'ri-time-line'}"></i>
+                  ${isTrained ? 'AI Model Active' : 'Untrained'}
+                </span>
+              </div>
+              <h3 style="font-family:'Outfit',sans-serif; color:white; font-size:1.05rem; line-height:1.4; margin:0 0 0.5rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                ${title}
+              </h3>
+              <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:1.1rem; display:flex; flex-direction:column; gap:3px;">
+                <span><i class="ri-book-2-line"></i> ${disc}</span>
+                <span><i class="ri-calendar-line"></i> Uploaded ${date} • ${pages} Pages</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:auto;">
+              <a href="train_model.html?id=${docItem.id}" class="btn-primary" style="flex:1; justify-content:center; text-decoration:none; padding:7px 12px; font-size:0.84rem;">
+                <i class="ri-cpu-line"></i> Select &amp; Train
+              </a>
+              <a href="dpgnotes-pdf-viewer.html?docid=${docItem.id}" target="_blank" class="btn-secondary" style="text-decoration:none; padding:7px 11px; font-size:0.84rem;" title="View PDF">
+                <i class="ri-eye-line"></i>
+              </a>
+            </div>
+          `;
+          listEl.appendChild(card);
+        }
+      } catch(err) {
+        console.error("Failed to load authorized resources:", err);
+        listEl.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#ef4444;"><p>Error fetching resources: ${err.message}</p></div>`;
+      }
+    }
+
+    // ====================================================
+    // LOAD SINGLE RESOURCE TRAINER WORKBENCH (WITH PARAM)
+    // ====================================================
+    async function loadSingleResourceTrainer(docId, user) {
+      const activeUid = user ? user.uid : "";
+      const userEmail = user ? user.email : "";
+      const isAdmin = userEmail === 'its.akshatnetworkhub23@gmail.com';
+
+      try {
+        let snap = await getDoc(doc(db, "documents", docId));
+        if (!snap.exists()) snap = await getDoc(doc(db, "pending_approvals", docId));
 
         if (!snap.exists()) {
           if (window.customAlert) await window.customAlert("Resource document not found.", { title: "Error", isDanger: true });
           else alert("Resource document not found.");
-          window.location.href = "dashboard.html";
+          window.location.href = "train_model.html";
           return;
         }
 
         const data = snap.data();
         const ownerId = data.userId || data.uploaderId || data.uploader;
+        const ownerEmail = data.uploaderEmail ? data.uploaderEmail.toLowerCase() : "";
 
         // STRICT OWNERSHIP & SECURITY CHECK
-        const currentAuthUser = auth.currentUser;
-        const userEmail = currentAuthUser ? currentAuthUser.email : (localStorage.getItem("dpgUserEmail") || "");
-        const isAdmin = userEmail === 'its.akshatnetworkhub23@gmail.com';
+        const isOwner = (ownerId && ownerId === activeUid) || (ownerEmail && ownerEmail === userEmail.toLowerCase()) || isAdmin;
 
-        if (ownerId && ownerId !== activeUid && !isAdmin) {
+        if (!isOwner) {
           document.getElementById("accessDeniedBanner").style.display = "block";
+          document.getElementById("trainCard").style.display = "none";
+          document.getElementById("authorizedResourcesSection").style.display = "none";
           
-          const caseId = `CASE-AAV-${targetId.slice(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
+          const caseId = `CASE-AAV-${docId.slice(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
           addDoc(collection(db, "authorized_access_violations"), {
             caseId,
-            resourceId: targetId,
+            resourceId: docId,
             resourceTitle: data.title || "Untitled Document",
             userId: activeUid,
             userEmail: userEmail || "unknown",
@@ -2164,15 +2630,16 @@
           } else {
             alert("Security Alert: You do not have authorization to train AI models for resources uploaded by other contributors. This incident has been logged in Security Violations.");
           }
-          window.location.href = "dashboard.html";
           return;
         }
 
         document.getElementById("resTitle").textContent = data.title || "Untitled Document";
         document.getElementById("resCatBadge").textContent = data.category || "Resource";
         document.getElementById("resDisc").textContent = data.discipline || "N/A";
-        document.getElementById("resDocId").textContent = data.documentId || targetId;
+        document.getElementById("resDocId").textContent = data.documentId || docId;
         document.getElementById("trainCard").style.display = "block";
+        document.getElementById("authorizedResourcesSection").style.display = "none";
+        document.getElementById("accessDeniedBanner").style.display = "none";
         window.loadExistingNotes();
 
         // PDF Length Detection
@@ -2278,7 +2745,53 @@
       }
     };
 
-    initTrainModel();
+    // ====================================================
+    // AUTH STATE LISTENER & WORKBENCH ORCHESTRATOR
+    // ====================================================
+    onAuthStateChanged(auth, async (user) => {
+      const authOverlay = document.getElementById("trainAuthOverlay");
+      const userArea = document.getElementById("headerUserArea");
+      const userNameEl = document.getElementById("headerUserName");
+      const userAvatarEl = document.getElementById("headerUserAvatar");
+      const logoutBtn = document.getElementById("headerLogoutBtn");
+      const navAllResourcesLink = document.getElementById("navAllResourcesLink");
+
+      if (!user) {
+        currentAuthUser = null;
+        if (authOverlay) authOverlay.style.display = "flex";
+        if (userArea) userArea.style.display = "none";
+        if (logoutBtn) logoutBtn.style.display = "none";
+        if (navAllResourcesLink) navAllResourcesLink.style.display = "none";
+        document.getElementById("trainCard").style.display = "none";
+        document.getElementById("authorizedResourcesSection").style.display = "none";
+        return;
+      }
+
+      currentAuthUser = user;
+      localStorage.setItem("dpgActiveUserUid", user.uid);
+      localStorage.setItem("dpgUserEmail", user.email || "");
+
+      if (authOverlay) authOverlay.style.display = "none";
+      if (userArea) userArea.style.display = "flex";
+      if (logoutBtn) logoutBtn.style.display = "block";
+      if (userNameEl) userNameEl.innerText = user.displayName || user.email.split('@')[0];
+      if (userAvatarEl) {
+        if (user.photoURL) userAvatarEl.innerHTML = `<img src="${user.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        else userAvatarEl.innerText = (user.displayName || user.email || 'U')[0].toUpperCase();
+      }
+
+      if (!targetId) {
+        // Opened without param: Show all resources uploaded by this user
+        if (navAllResourcesLink) navAllResourcesLink.style.display = "none";
+        document.getElementById("trainCard").style.display = "none";
+        await loadAuthorizedResources(user);
+      } else {
+        // Opened with param: Verify ownership & load workbench
+        if (navAllResourcesLink) navAllResourcesLink.style.display = "inline-flex";
+        document.getElementById("authorizedResourcesSection").style.display = "none";
+        await loadSingleResourceTrainer(targetId, user);
+      }
+    });
   </script>
 
   <!-- AI Verification & Polish Modal (Submit-Time Internet Knowledge Check) -->

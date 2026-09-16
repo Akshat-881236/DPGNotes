@@ -28,81 +28,95 @@ const adminStatus = document.getElementById("adminStatus");
 
 let adminEmailGlobal = "";
 
-const authLayer = document.getElementById("authLayer");
 const dashboardLayer = document.getElementById("dashboardLayer");
+const overlay = document.getElementById("authCheckOverlay");
+const statusTxt = document.getElementById("authStatusText");
+const subTxt = document.getElementById("authSubText");
 const token = localStorage.getItem("adminToken");
 
 // Wait for Firebase Auth to hydrate from IndexedDB before querying
 auth.authStateReady().then(() => {
-  if (token) {
-    if (auth.currentUser) {
-      authLayer.style.display = "none";
-      dashboardLayer.style.display = "flex";
-      loadUsers();
-      loadPermanentBlocks();
-    } else {
-      // Firebase auth missing but backend token exists. Needs re-login.
-      localStorage.removeItem("adminToken");
+  if (token && auth.currentUser) {
+    if (overlay) overlay.style.display = "none";
+    if (dashboardLayer) dashboardLayer.style.display = "flex";
+    loadUsers();
+    loadPermanentBlocks();
+  } else {
+    // Unauthenticated: Show access denied and auto-redirect to admin-login.html
+    if (statusTxt) {
+      statusTxt.innerText = "Access Denied";
+      statusTxt.style.color = "#ef4444";
     }
+    if (subTxt) {
+      subTxt.innerText = "No active admin session found. Redirecting to Admin Portal...";
+    }
+    localStorage.removeItem("adminToken");
+    setTimeout(() => {
+      window.location.href = "admin-login.html";
+    }, 1500);
   }
 });
 
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("adminEmail").value;
-  const password = document.getElementById("adminPassword").value;
-  
-  try {
-    const res = await fetch(`${API_URL}/admin/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("adminEmail").value;
+    const password = document.getElementById("adminPassword").value;
+    
+    try {
+      const res = await fetch(`${API_URL}/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
     
     const data = await res.json();
-    if (res.ok) {
-      adminEmailGlobal = email;
-      document.getElementById("step1").classList.remove("active");
-      document.getElementById("step2").classList.add("active");
-    } else {
-      alert(data.error);
-    }
-  } catch (error) {
-    alert("Server error");
-  }
-});
-
-otpForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const otp = document.getElementById("adminOtp").value;
-  
-  try {
-    const res = await fetch(`${API_URL}/admin/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: adminEmailGlobal, otp })
-    });
-    
-    const data = await res.json();
-    if (res.ok) {
-      try {
-        await signInWithCustomToken(auth, data.firebaseToken);
-      } catch (authError) {
-        console.error("Firebase Auth failed:", authError);
-        alert("Firebase Auth failed. Some actions may be restricted.");
+      if (res.ok) {
+        adminEmailGlobal = email;
+        document.getElementById("step1").classList.remove("active");
+        document.getElementById("step2").classList.add("active");
+      } else {
+        alert(data.error);
       }
-      localStorage.setItem("adminToken", data.token);
-      authLayer.style.display = "none";
-      dashboardLayer.style.display = "flex";
-      loadUsers();
-      loadPermanentBlocks();
-    } else {
-      alert(data.error);
+    } catch (error) {
+      alert("Server error");
     }
-  } catch (error) {
-    alert("Server error");
-  }
-});
+  });
+}
+
+if (otpForm) {
+  otpForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const otp = document.getElementById("adminOtp").value;
+    
+    try {
+      const res = await fetch(`${API_URL}/admin/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: adminEmailGlobal, otp })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        try {
+          await signInWithCustomToken(auth, data.firebaseToken);
+        } catch (authError) {
+          console.error("Firebase Auth failed:", authError);
+          alert("Firebase Auth failed. Some actions may be restricted.");
+        }
+        localStorage.setItem("adminToken", data.token);
+        if (overlay) overlay.style.display = "none";
+        dashboardLayer.style.display = "flex";
+        loadUsers();
+        loadPermanentBlocks();
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      alert("Server error");
+    }
+  });
+}
 
 // Global cache for dropdowns
 let adminUsersCache = [];

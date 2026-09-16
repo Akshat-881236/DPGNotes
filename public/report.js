@@ -12,7 +12,7 @@ async function initReport() {
     statusTxt.innerText = "Access Denied";
     statusTxt.style.color = "var(--report-danger)";
     subTxt.innerText = "No active admin session found. Redirecting to Admin Portal...";
-    setTimeout(() => { window.location.href = "admin.html"; }, 2500);
+    setTimeout(() => { window.location.href = "admin-login.html"; }, 2500);
     return;
   }
   
@@ -42,7 +42,7 @@ async function initReport() {
         statusTxt.style.color = "var(--report-danger)";
         subTxt.innerText = "Your admin session is invalid or expired. Redirecting...";
         localStorage.removeItem("adminToken");
-        setTimeout(() => { window.location.href = "admin.html"; }, 2500);
+        setTimeout(() => { window.location.href = "admin-login.html"; }, 2500);
         return;
       }
       throw new Error("Failed to fetch report data");

@@ -1,4 +1,4 @@
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
@@ -211,6 +211,13 @@ onAuthStateChanged(auth, async (user) => {
     localStorage.setItem("dpgActiveUserEmail", user.email || "");
     localStorage.setItem("dpgActiveUserName", user.displayName || "");
     localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
+
+    // Reveal Dashboard UI & dismiss security overlay
+    const overlay = document.getElementById("authCheckOverlay");
+    if (overlay) overlay.style.display = "none";
+    if (sidebar) sidebar.style.display = "";
+    const mainEl = document.getElementById("dashboardMain");
+    if (mainEl) mainEl.style.display = "";
     
     // Check for active referrer code
     const refCode = sessionStorage.getItem('dpgReferrerCode') || localStorage.getItem('dpgReferrerCode');
@@ -311,7 +318,19 @@ onAuthStateChanged(auth, async (user) => {
     });
     
   } else {
-    window.location.href = "index.html";
+    currentUser = null;
+    const statusTxt = document.getElementById("authStatusText");
+    const subTxt = document.getElementById("authSubText");
+    if (statusTxt) {
+      statusTxt.innerText = "Access Denied";
+      statusTxt.style.color = "#ef4444";
+    }
+    if (subTxt) {
+      subTxt.innerText = "No active contributor session found. Redirecting to Sign In...";
+    }
+    setTimeout(() => {
+      window.location.href = "index.html?action=signin";
+    }, 1200);
   }
 });
 
@@ -439,6 +458,11 @@ async function loadProfile() {
       if (userData.github) {
         document.getElementById("settingGithub").value = userData.github;
         socialLinksContainer.innerHTML += `<a href="${userData.github}" target="_blank" style="color:#fff; font-size:1.5rem; text-decoration:none;" title="GitHub">🐙</a>`;
+      }
+
+      const twoFactorEl = document.getElementById("settingTwoFactorEnabled");
+      if (twoFactorEl) {
+        twoFactorEl.checked = userData.twoFactorEnabled !== false;
       }
     }
 
@@ -1121,6 +1145,50 @@ if(settingsForm) {
       }
       if (bannerUrl) {
         updateData.bannerPic = bannerUrl;
+      }
+
+      // Two-Factor Authentication preference
+      const twoFactorCheckbox = document.getElementById("settingTwoFactorEnabled");
+      const twoFactorEnabled = twoFactorCheckbox ? twoFactorCheckbox.checked : true;
+      updateData.twoFactorEnabled = twoFactorEnabled;
+
+      // Password setup / update for existing & new users
+      const newPassword = document.getElementById("settingNewPassword")?.value || "";
+      const confirmPassword = document.getElementById("settingConfirmPassword")?.value || "";
+      if (newPassword) {
+        if (newPassword.length < 6) {
+          alert("New password must be at least 6 characters.");
+          submitBtn.innerText = "Save Changes";
+          submitBtn.disabled = false;
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          alert("New password and confirm password do not match.");
+          submitBtn.innerText = "Save Changes";
+          submitBtn.disabled = false;
+          return;
+        }
+
+        // Store encrypted / SHA-256 hash in Firestore
+        const msgUint8 = new TextEncoder().encode(newPassword);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        updateData.passwordHash = hashHex;
+
+        // Also update / set Firebase Auth user password
+        try {
+          await updatePassword(currentUser, newPassword);
+          console.log("Firebase Auth password successfully updated/set.");
+        } catch(pwErr) {
+          console.warn("Direct updatePassword error (may require re-authentication):", pwErr);
+        }
+
+        // Clear password fields
+        const np = document.getElementById("settingNewPassword");
+        const cp = document.getElementById("settingConfirmPassword");
+        if (np) np.value = "";
+        if (cp) cp.value = "";
       }
 
       // Update Firestore securely by merging
