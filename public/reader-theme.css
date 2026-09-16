@@ -284,3 +284,24 @@ html[data-theme="light"] .dpg-rc-divider {
   z-index: 99990;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
+
+/* Mobile & Tablet Compact Mode: Icon-only Theme Switches */
+@media (max-width: 768px) {
+  .dpg-reader-controls {
+    padding: 2px 4px !important;
+    gap: 2px !important;
+    max-width: 100% !important;
+  }
+  .dpg-rc-btn {
+    padding: 3px 6px !important;
+    font-size: 0.74rem !important;
+  }
+  .dpg-rc-theme-text {
+    display: none !important;
+  }
+  .dpg-rc-divider {
+    height: 12px !important;
+    margin: 0 1px !important;
+  }
+}
+

@@ -22,6 +22,7 @@ import {
   getDoc,
   setDoc,
   getDocs,
+  getCountFromServer,
   query,
   where,
   orderBy,
@@ -155,10 +156,25 @@ function updateNavbarAuth(user) {
   const userAvatarEl = document.getElementById("navUserAvatar");
 
   if (user) {
-    if (guestAreaDesktop) guestAreaDesktop.style.display = "none";
-    if (userAreaDesktop) userAreaDesktop.style.display = "flex";
-    if (guestAreaMobile) guestAreaMobile.style.display = "none";
-    if (userAreaMobile) userAreaMobile.style.display = "flex";
+    document.documentElement.classList.add("dpg-user-authenticated");
+    if (guestAreaDesktop) {
+      guestAreaDesktop.classList.remove("d-flex");
+      guestAreaDesktop.classList.add("d-none");
+      guestAreaDesktop.style.setProperty("display", "none", "important");
+    }
+    if (userAreaDesktop) {
+      userAreaDesktop.classList.remove("d-none");
+      userAreaDesktop.classList.add("d-flex");
+      userAreaDesktop.style.setProperty("display", "flex", "important");
+    }
+    if (guestAreaMobile) {
+      guestAreaMobile.classList.add("d-none");
+      guestAreaMobile.style.setProperty("display", "none", "important");
+    }
+    if (userAreaMobile) {
+      userAreaMobile.classList.remove("d-none");
+      userAreaMobile.style.setProperty("display", "block", "important");
+    }
     
     if (userNameEl) userNameEl.innerText = user.displayName || user.email.split('@')[0];
     if (userAvatarEl) {
@@ -170,10 +186,25 @@ function updateNavbarAuth(user) {
       }
     }
   } else {
-    if (guestAreaDesktop) guestAreaDesktop.style.display = "flex";
-    if (userAreaDesktop) userAreaDesktop.style.display = "none";
-    if (guestAreaMobile) guestAreaMobile.style.display = "flex";
-    if (userAreaMobile) userAreaMobile.style.display = "none";
+    document.documentElement.classList.remove("dpg-user-authenticated");
+    if (guestAreaDesktop) {
+      guestAreaDesktop.classList.remove("d-none");
+      guestAreaDesktop.classList.add("d-flex");
+      guestAreaDesktop.style.removeProperty("display");
+    }
+    if (userAreaDesktop) {
+      userAreaDesktop.classList.remove("d-flex");
+      userAreaDesktop.classList.add("d-none");
+      userAreaDesktop.style.setProperty("display", "none", "important");
+    }
+    if (guestAreaMobile) {
+      guestAreaMobile.classList.remove("d-none");
+      guestAreaMobile.style.removeProperty("display");
+    }
+    if (userAreaMobile) {
+      userAreaMobile.classList.add("d-none");
+      userAreaMobile.style.setProperty("display", "none", "important");
+    }
   }
 }
 
@@ -270,6 +301,17 @@ window.handleEmailSignUp = async function(e) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
+    // Compute SHA-256 hash of password for security records in Firestore
+    let passwordHash = "";
+    try {
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (hashErr) {
+      console.warn("Password hash computation fallback:", hashErr);
+    }
+
     await setDoc(doc(db, "users", user.uid), {
       uid: user.uid,
       name: name,
@@ -279,6 +321,7 @@ window.handleEmailSignUp = async function(e) {
       contactNumber: contact,
       linkedin: linkedin,
       github: github,
+      passwordHash: passwordHash,
       createdAt: serverTimestamp()
     }, { merge: true });
 
@@ -288,11 +331,10 @@ window.handleEmailSignUp = async function(e) {
       body: JSON.stringify({ email: email, name: name })
     }).catch(console.warn);
 
-    alert("Registration successful! Redirecting to Contributor Dashboard...");
+    alert("Welcome to DPGNotes! Your contributor workspace is ready.");
     window.location.href = "dashboard.html";
   } catch(err) {
-    console.error("Sign up error:", err);
-    alert("Registration Failed: " + (err.message || err));
+    alert(err);
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = "Create Contributor Account"; }
   }
@@ -500,61 +542,90 @@ window.handlePasswordRecovery = async function(e) {
 
 // ============================================================================
 // MODAL SWITCHING HELPERS
+// (Delegates to auth-component overlay when quota is locked or overlay exists)
 // ============================================================================
 window.openSignInModal = function() {
+  // Always prefer the auth-component overlay (dpgSignInModal) if it exists
+  const dpgOverlay = document.getElementById("dpgAuthOverlay");
+  if (dpgOverlay && typeof window.dpgBackToSignInStep1 === "function") {
+    // Close old Bootstrap modals if open
+    ["signUpModal", "forgotPasswordModal", "signInModal"].forEach(mId => {
+      const el = document.getElementById(mId);
+      if (el && window.bootstrap) {
+        const inst = bootstrap.Modal.getInstance(el);
+        if (inst) inst.hide();
+      }
+    });
+    // Show the auth-component sign-in
+    ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (id === "dpgSignInModal") ? "block" : "none";
+    });
+    dpgOverlay.classList.add("active");
+    window.dpgBackToSignInStep1();
+    return;
+  }
+  // Fallback: legacy Bootstrap modal
   const suEl = document.getElementById("signUpModal");
-  if (suEl && window.bootstrap) {
-    const suModal = bootstrap.Modal.getInstance(suEl);
-    if (suModal) suModal.hide();
-  }
+  if (suEl && window.bootstrap) { const suModal = bootstrap.Modal.getInstance(suEl); if (suModal) suModal.hide(); }
   const fpEl = document.getElementById("forgotPasswordModal");
-  if (fpEl && window.bootstrap) {
-    const fpModal = bootstrap.Modal.getInstance(fpEl);
-    if (fpModal) fpModal.hide();
-  }
-  // Reset steps
+  if (fpEl && window.bootstrap) { const fpModal = bootstrap.Modal.getInstance(fpEl); if (fpModal) fpModal.hide(); }
   const step1 = document.getElementById("signInFormStep");
   const step2 = document.getElementById("twoFactorStep");
   if (step1) step1.style.display = "block";
   if (step2) step2.style.display = "none";
-  
-  // Close mobile drawer if open
   const drawer = document.getElementById("mobileNavDrawer");
-  if (drawer && window.bootstrap) {
-    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
-    if (offcanvas) offcanvas.hide();
-  }
-
+  if (drawer && window.bootstrap) { const offcanvas = bootstrap.Offcanvas.getInstance(drawer); if (offcanvas) offcanvas.hide(); }
   const siModal = new bootstrap.Modal(document.getElementById("signInModal"));
   siModal.show();
 };
 
 window.openSignUpModal = function() {
+  // Always prefer the auth-component overlay (dpgSignUpModal) if it exists
+  const dpgOverlay = document.getElementById("dpgAuthOverlay");
+  if (dpgOverlay) {
+    ["signUpModal", "signInModal", "forgotPasswordModal"].forEach(mId => {
+      const el = document.getElementById(mId);
+      if (el && window.bootstrap) { const inst = bootstrap.Modal.getInstance(el); if (inst) inst.hide(); }
+    });
+    ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (id === "dpgSignUpModal") ? "block" : "none";
+    });
+    dpgOverlay.classList.add("active");
+    return;
+  }
+  // Fallback
   const siEl = document.getElementById("signInModal");
-  if (siEl && window.bootstrap) {
-    const siModal = bootstrap.Modal.getInstance(siEl);
-    if (siModal) siModal.hide();
-  }
-
+  if (siEl && window.bootstrap) { const siModal = bootstrap.Modal.getInstance(siEl); if (siModal) siModal.hide(); }
   const drawer = document.getElementById("mobileNavDrawer");
-  if (drawer && window.bootstrap) {
-    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
-    if (offcanvas) offcanvas.hide();
-  }
-
+  if (drawer && window.bootstrap) { const offcanvas = bootstrap.Offcanvas.getInstance(drawer); if (offcanvas) offcanvas.hide(); }
   const suModal = new bootstrap.Modal(document.getElementById("signUpModal"));
   suModal.show();
 };
 
 window.openForgotPasswordModal = function() {
-  const siEl = document.getElementById("signInModal");
-  if (siEl && window.bootstrap) {
-    const siModal = bootstrap.Modal.getInstance(siEl);
-    if (siModal) siModal.hide();
+  // Always prefer the auth-component overlay (dpgForgotPasswordModal) if it exists
+  const dpgOverlay = document.getElementById("dpgAuthOverlay");
+  if (dpgOverlay) {
+    ["signInModal", "signUpModal", "forgotPasswordModal"].forEach(mId => {
+      const el = document.getElementById(mId);
+      if (el && window.bootstrap) { const inst = bootstrap.Modal.getInstance(el); if (inst) inst.hide(); }
+    });
+    ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (id === "dpgForgotPasswordModal") ? "block" : "none";
+    });
+    dpgOverlay.classList.add("active");
+    return;
   }
+  // Fallback
+  const siEl = document.getElementById("signInModal");
+  if (siEl && window.bootstrap) { const siModal = bootstrap.Modal.getInstance(siEl); if (siModal) siModal.hide(); }
   const fpModal = new bootstrap.Modal(document.getElementById("forgotPasswordModal"));
   fpModal.show();
 };
+
 
 // ============================================================================
 // GUEST 2-MINUTE PROMPT (R2)
@@ -611,6 +682,14 @@ async function loadAcademicResources() {
 
     if (statusEl) statusEl.style.display = "none";
 
+    // 1. Fetch user feed weights from IndexedDB & cookies
+    const feedWeights = window.dpgFeed ? await window.dpgFeed.getUserFeedWeights() : { disciplines: {}, categories: {}, keywords: new Set() };
+
+    // 2. Perform daily sync of feed profile & cookies to Firestore
+    if (window.dpgFeed) {
+      window.dpgFeed.dailySyncToFirestore(db, currentUser, setDoc, doc, serverTimestamp);
+    }
+
     let totalRendered = 0;
     ACADEMIC_CATEGORIES.forEach(cat => {
       const container = document.getElementById(`gridContainer_${cat.key}`);
@@ -618,17 +697,27 @@ async function loadAcademicResources() {
       const countBadge = document.getElementById(`countBadge_${cat.key}`);
       const docs = grouped[cat.key] || [];
 
-      // R3.1: Only show vertical grid if Firestore has resources corresponding to it! Otherwise clean grid.
-      if (docs.length === 0) {
+      // Requirement: For only 2 or less resources for any category, do NOT show them on index.html directly!
+      if (docs.length <= 2) {
         if (container) container.style.display = "none";
       } else {
         totalRendered++;
         if (container) container.style.display = "block";
         if (countBadge) countBadge.innerText = `${docs.length} Items`;
 
+        // Rank resources by user feed relevance (PDF visits, SERP searches, and cookies)
+        const rankedDocs = [...docs].sort((a, b) => {
+          const scoreA = window.dpgFeed ? window.dpgFeed.scoreResource(a, feedWeights) : 0;
+          const scoreB = window.dpgFeed ? window.dpgFeed.scoreResource(b, feedWeights) : 0;
+          return scoreB - scoreA;
+        });
+
+        // Strictly show only 3 resources per grid
+        const displayDocs = rankedDocs.slice(0, 3);
+
         if (cardsWrapper) {
           cardsWrapper.innerHTML = "";
-          docs.forEach(item => {
+          displayDocs.forEach(item => {
             const card = document.createElement("div");
             card.className = "col-12 col-md-6 col-lg-4";
             
@@ -686,9 +775,72 @@ window.handleHomeSearch = function(e) {
   }
 };
 
+// ============================================================================
+// LIVE STATS FROM FIRESTORE (Image 2 Data Cards)
+// ============================================================================
+
+async function loadLiveStats() {
+  const resourceEl = document.getElementById("statResourceCount");
+  const streamEl   = document.getElementById("statStreamCount");
+
+  try {
+    // 1. Total academic resource count from 'documents' collection
+    let totalDocs = 0;
+    try {
+      const countSnap = await getCountFromServer(collection(db, "documents"));
+      totalDocs = countSnap.data().count;
+    } catch (countErr) {
+      // Fallback: full getDocs (for environments where getCountFromServer is unavailable)
+      const snap = await getDocs(collection(db, "documents"));
+      totalDocs = snap.size;
+    }
+
+    // Format: show exact count if < 1000, else "N+" rounded to nearest 50
+    let resourceLabel;
+    if (totalDocs >= 1000) {
+      resourceLabel = Math.floor(totalDocs / 100) * 100 + "+";
+    } else if (totalDocs >= 100) {
+      resourceLabel = Math.floor(totalDocs / 50) * 50 + "+";
+    } else if (totalDocs >= 10) {
+      resourceLabel = Math.floor(totalDocs / 10) * 10 + "+";
+    } else {
+      resourceLabel = String(totalDocs);
+    }
+
+    if (resourceEl) resourceEl.textContent = resourceLabel;
+
+    // 2. Count active streams (categories with ≥ 3 resources)
+    // Re-use documents already loaded by loadAcademicResources if available, else query
+    let activeStreams = 0;
+    try {
+      const docsSnap = await getDocs(query(collection(db, "documents"), limit(500)));
+      const catCounts = {};
+      ACADEMIC_CATEGORIES.forEach(c => { catCounts[c.key] = 0; });
+      docsSnap.forEach(d => {
+        const key = matchCategory(d.data().category);
+        if (key && catCounts[key] !== undefined) catCounts[key]++;
+      });
+      activeStreams = Object.values(catCounts).filter(count => count >= 3).length;
+      // Always at least show 1 stream if documents exist
+      if (activeStreams === 0 && totalDocs > 0) activeStreams = 1;
+    } catch {
+      activeStreams = ACADEMIC_CATEGORIES.length; // fallback: all defined categories
+    }
+
+    if (streamEl) streamEl.textContent = activeStreams + " Stream" + (activeStreams !== 1 ? "s" : "");
+
+  } catch (err) {
+    console.warn("Stats load error:", err);
+    // Graceful fallback values
+    if (resourceEl) resourceEl.textContent = "500+";
+    if (streamEl)   streamEl.textContent = "8 Streams";
+  }
+}
+
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   loadAcademicResources();
+  loadLiveStats(); // Load real Firestore stats for stat pills
 
   const searchForm = document.getElementById("homeSearchForm");
   if (searchForm) searchForm.addEventListener("submit", window.handleHomeSearch);

@@ -585,6 +585,9 @@
         <a class="nav-link" onclick="switchTab('solutions-metrics'); if(window.loadSolutionsMetricsAdmin) window.loadSolutionsMetricsAdmin();">
           <i class="ri-checkbox-multiple-line" style="color:#14b8a6;"></i> Solutions Metrics
         </a>
+        <a class="nav-link" onclick="switchTab('feedback'); if(window.loadFeedbackTabAdmin) window.loadFeedbackTabAdmin();">
+          <i class="ri-sparkling-fill" style="color:#f43f5e;"></i> Feedback Analytics
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -1869,6 +1872,14 @@
               <input type="date" id="coverDateFilter" class="admin-input" style="width:160px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem;" onchange="filterCoverPages()" title="Filter by date">
             </div>
             <div>
+              <select id="coverHeaderLogoFilter" class="admin-input" style="width:170px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterCoverPages()">
+                <option value="all">All Header Logos</option>
+                <option value="DPGSTM-2">DPG STM Style 2 (PNG)</option>
+                <option value="Standard">DPG STM Style 1 (Std)</option>
+                <option value="Degree">DPG Degree Header</option>
+              </select>
+            </div>
+            <div>
               <button type="button" class="btn-action" onclick="resetCoverFilters()" style="background:rgba(255,255,255,0.06); color:var(--admin-muted); border:1px solid var(--admin-border); padding:6px 12px; border-radius:8px; font-size:0.84rem; cursor:pointer;">
                 <i class="ri-filter-off-line"></i> Reset
               </button>
@@ -2129,6 +2140,81 @@
           </div>
         </div>
       </section>
+
+      <!-- VIEW: WEEKLY AI FEEDBACK SYNTHESIS -->
+      <section id="view-feedback" class="view-section">
+        <div class="section-card">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h2 class="section-title" style="display:flex; align-items:center; gap:8px;">
+                <i class="ri-sparkling-fill" style="color:#f43f5e;"></i> Academic Feedback Analysis
+              </h2>
+              <p style="color:var(--admin-muted); font-size:0.82rem; margin-top:2px;">
+                Synthesizing student activity feeds, IndexedDB search habits, curriculum interest, and support inquiries DPGNotes AI Intelligence.
+              </p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <span id="feedbackAiGeneratedAt" style="font-size:0.78rem; color:var(--admin-muted); font-weight:500;"></span>
+              <button type="button" onclick="copyFeedbackReport()" class="btn-action" style="padding:0.5rem 0.9rem; border-radius:10px; font-weight:600; background:rgba(255,255,255,0.06); color:var(--admin-text); border:1px solid var(--admin-border); cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <i class="ri-clipboard-line"></i> Copy Markdown
+              </button>
+              <button type="button" id="btnRefreshFeedbackAi" onclick="loadFeedbackTabAdmin(true)" class="btn-action" style="padding:0.5rem 1rem; border-radius:10px; font-weight:600; background:linear-gradient(135deg, #f43f5e, #e11d48); color:white; border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                <i class="ri-sparkling-fill"></i> Regenerate AI Analysis
+              </button>
+            </div>
+          </div>
+
+          <!-- Top Metric Cards -->
+          <div class="stat-cards" style="margin:1.2rem 0; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(244,63,94,0.15); display:flex; align-items:center; justify-content:center; color:#f43f5e; font-size:1.3rem;">
+                <i class="ri-user-heart-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Tracked Profiles</div>
+                <div id="statFeedbackTotalUsers" style="font-size:1.4rem; font-weight:700; color:#f43f5e;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(59,130,246,0.15); display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.3rem;">
+                <i class="ri-graduation-cap-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Top Demand Branch</div>
+                <div id="statFeedbackTopDiscipline" style="font-size:1.1rem; font-weight:700; color:#3b82f6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">--</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(245,158,11,0.15); display:flex; align-items:center; justify-content:center; color:#f59e0b; font-size:1.3rem;">
+                <i class="ri-search-eye-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Trending Query</div>
+                <div id="statFeedbackTopQuery" style="font-size:1.1rem; font-weight:700; color:#f59e0b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">--</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10b981; font-size:1.3rem;">
+                <i class="ri-customer-service-2-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Support Inquiries</div>
+                <div id="statFeedbackSupportTickets" style="font-size:1.4rem; font-weight:700; color:#10b981;">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Report Body Card -->
+          <div style="background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:14px; padding:1.75rem; margin-top:1.2rem;">
+            <div id="feedbackAiReportContent" style="min-height:280px;">
+              <!-- Filled dynamically by window.loadFeedbackTabAdmin() -->
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -2169,6 +2255,25 @@
           </div>
           <div id="coverModalPreviewContainer" style="width:100%; max-width:320px; aspect-ratio:1/1.414; background:#ffffff; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,0.5);">
             <div style="color:#64748b; font-size:0.85rem;"><i class="ri-loader-4-line ri-spin"></i> Rendering canvas...</div>
+          </div>
+
+          <!-- Live Auto-Adjustable Logo Switcher for Admin Inspection -->
+          <div style="width:100%; max-width:320px; margin-top:10px; display:flex; flex-direction:column; gap:6px; background:rgba(255,255,255,0.02); border:1px solid var(--admin-border); border-radius:8px; padding:8px 10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+              <span style="font-size:0.75rem; color:var(--admin-muted); display:flex; align-items:center; gap:4px;"><i class="ri-image-edit-line"></i> Header:</span>
+              <select id="adminModalHeaderLogoSelect" class="admin-input" style="width:170px; padding:3px 6px; font-size:0.75rem; margin:0;" onchange="window.adminChangeCoverModalLogo()">
+                <option value="Header_Image.jpg">DPG STM Style 1 (Standard)</option>
+                <option value="DPGSTM-2HeaderImage.png">DPG STM Style 2 (PNG)</option>
+                <option value="DPGDegreeHeader_Image.jpeg">DPG Degree Header</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+              <span style="font-size:0.75rem; color:var(--admin-muted); display:flex; align-items:center; gap:4px;"><i class="ri-shield-star-line"></i> Emblem:</span>
+              <select id="adminModalCenterLogoSelect" class="admin-input" style="width:170px; padding:3px 6px; font-size:0.75rem; margin:0;" onchange="window.adminChangeCoverModalLogo()">
+                <option value="Center_Logo.jpg">MDU Rohtak Emblem</option>
+                <option value="DPGDegreeCenter_Logo.jpeg">DPG Degree College Emblem</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -2334,6 +2439,8 @@
         window.loadCoverPagesAdmin();
       } else if (tabId === 'solutions-metrics' && typeof window.loadSolutionsMetricsAdmin === 'function') {
         window.loadSolutionsMetricsAdmin();
+      } else if (tabId === 'feedback' && typeof window.loadFeedbackTabAdmin === 'function') {
+        window.loadFeedbackTabAdmin();
       } else if (tabId === 'logs') {
         if (typeof window.loadActivityLogs === 'function') window.loadActivityLogs();
         if (typeof window.loadAdminNotifications === 'function') window.loadAdminNotifications();
@@ -2416,6 +2523,6 @@
       }
     }
   </script>
-  <script type="module" src="admin.js?v=3.6.0"></script>
+  <script type="module" src="admin.js?v=3.6.2"></script>
 </body>
 </html>

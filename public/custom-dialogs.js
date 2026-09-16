@@ -112,24 +112,74 @@
   `;
   document.head.appendChild(style);
 
+  // Global humanizer converting raw technical/Firebase errors into empathetic student copy
+  window.humanizeErrorMessage = function(err) {
+    if (!err) return "An unexpected event occurred. Please refresh the page and try again.";
+    let msg = typeof err === "string" ? err : (err.message || String(err));
+    
+    // Strip technical wrappers and prefixes
+    msg = msg.replace(/^Firebase:\s*Error\s*\(([^)]+)\)\.?/i, '$1');
+    msg = msg.replace(/^Sign\s*In\s*Error:\s*/i, '');
+    msg = msg.replace(/^Registration\s*Failed:\s*/i, '');
+    msg = msg.replace(/^Registration\s*Error:\s*/i, '');
+    msg = msg.replace(/^Error:\s*/i, '');
+    msg = msg.trim();
+
+    const lower = msg.toLowerCase();
+
+    if (lower.includes("auth/invalid-credential") || lower.includes("auth/wrong-password") || lower.includes("invalid-credential")) {
+      return "The email, Student/Employee ID, or password you entered doesn't match our records. Please verify your details or use 'Forgot Password' if you need to reset it.";
+    }
+    if (lower.includes("auth/user-not-found") || lower.includes("user-not-found")) {
+      return "We couldn't find an active contributor account matching those details. Would you like to create a free account?";
+    }
+    if (lower.includes("auth/email-already-in-use") || lower.includes("email-already-in-use")) {
+      return "An account with this email address is already registered. Please sign in with your password or use 'Forgot Password'.";
+    }
+    if (lower.includes("auth/too-many-requests") || lower.includes("too-many-requests")) {
+      return "Too many recent sign-in attempts detected. For your account security, please wait a moment before trying again.";
+    }
+    if (lower.includes("auth/popup-closed-by-user") || lower.includes("popup-closed-by-user")) {
+      return "The authentication window was closed before signing in. You can try again whenever you're ready.";
+    }
+    if (lower.includes("auth/network-request-failed") || lower.includes("network-request-failed")) {
+      return "Network connection issue detected. Please check your internet connection and retry.";
+    }
+    if (lower.includes("auth/weak-password") || lower.includes("weak-password")) {
+      return "Please choose a stronger password with at least 6 characters.";
+    }
+    if (lower.includes("auth/requires-recent-login") || lower.includes("requires-recent-login")) {
+      return "For your security, please sign out and sign back in before modifying sensitive account settings.";
+    }
+    if (lower.includes("permission-denied") || lower.includes("permission_denied")) {
+      return "You do not currently have authorization to access or modify this resource.";
+    }
+    if (lower.includes("cannot read properties of null") || lower.includes("typeerror")) {
+      return "A temporary interface element could not be loaded. Please refresh the page.";
+    }
+
+    return msg;
+  };
+
   // Helper for alert dialogs (Promise-based)
   window.customAlert = function(message, options = {}) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
       overlay.className = 'dpg-modal-overlay';
       
+      const humanMessage = window.humanizeErrorMessage(message);
       let iconClass = 'ri-notification-3-line';
-      let titleText = options.title || 'Alert';
+      let titleText = options.title || 'Notice';
       const isDanger = options.isDanger || false;
       
-      const msgLower = String(message).toLowerCase();
+      const msgLower = String(humanMessage).toLowerCase();
       if (!options.title) {
         if (msgLower.includes('success') || msgLower.includes('complete') || msgLower.includes('saved') || msgLower.includes('congratulations') || msgLower.includes('welcome') || msgLower.includes('restored')) {
           iconClass = 'ri-checkbox-circle-line';
           titleText = 'Success';
-        } else if (isDanger || msgLower.includes('fail') || msgLower.includes('error') || msgLower.includes('invalid') || msgLower.includes('denied') || msgLower.includes('suspended') || msgLower.includes('blocked') || msgLower.includes('restriction')) {
+        } else if (isDanger || msgLower.includes('fail') || msgLower.includes('error') || msgLower.includes('invalid') || msgLower.includes('record') || msgLower.includes('password') || msgLower.includes('denied') || msgLower.includes('suspended') || msgLower.includes('blocked') || msgLower.includes('restriction')) {
           iconClass = 'ri-error-warning-line';
-          titleText = 'Oops!';
+          titleText = 'Account Notice';
         }
       } else {
         if (isDanger || msgLower.includes('fail') || msgLower.includes('error') || msgLower.includes('restriction') || msgLower.includes('invalid')) {
@@ -139,13 +189,13 @@
         }
       }
       
-      const themeColor = isDanger || titleText === 'Oops!' ? '#ef4444' : (titleText === 'Success' ? '#10b981' : '#8b5cf6');
+      const themeColor = isDanger || titleText === 'Account Notice' || titleText === 'Oops!' ? '#ef4444' : (titleText === 'Success' ? '#10b981' : '#8b5cf6');
       
       overlay.innerHTML = `
         <div class="dpg-modal-box">
           <i class="${iconClass} dpg-modal-icon" style="color: ${themeColor}"></i>
           <h3 class="dpg-modal-title">${titleText}</h3>
-          <p class="dpg-modal-text">${message}</p>
+          <p class="dpg-modal-text">${humanMessage}</p>
           <button class="dpg-modal-btn" id="dpgAlertOkBtn" style="background: linear-gradient(135deg, ${themeColor}, #6366f1); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);">OK</button>
         </div>
       `;
@@ -180,6 +230,7 @@
       const overlay = document.createElement('div');
       overlay.className = 'dpg-modal-overlay';
       
+      const humanMessage = window.humanizeErrorMessage(message);
       const titleText = options.title || 'Are you sure?';
       const isDanger = options.isDanger || false;
       const confirmText = options.confirmText || 'Yes, Proceed';
@@ -189,7 +240,7 @@
         <div class="dpg-modal-box">
           <i class="ri-question-line dpg-modal-icon" style="color: ${isDanger ? '#ef4444' : '#8b5cf6'}"></i>
           <h3 class="dpg-modal-title">${titleText}</h3>
-          <p class="dpg-modal-text">${message}</p>
+          <p class="dpg-modal-text">${humanMessage}</p>
           <div class="dpg-confirm-actions">
             <button class="dpg-modal-btn cancel" id="dpgConfirmCancelBtn">${cancelText}</button>
             <button class="dpg-modal-btn ${isDanger ? 'danger' : ''}" id="dpgConfirmYesBtn">${confirmText}</button>

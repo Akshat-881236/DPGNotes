@@ -528,7 +528,8 @@
               <i class="ri-image-line" style="color:#38bdf8;"></i> Header Banner Logo
             </label>
             <select id="selHeaderLogo" class="form-control" onchange="handleLogoChange()">
-              <option value="Header_Image.jpg" selected>DPG STM / Standard Header</option>
+              <option value="Header_Image.jpg" selected>DPG STM Standard Logo</option>
+              <option value="DPGSTM-2HeaderImage.png">DPG STM Modern Logo</option>
               <option value="DPGDegreeHeader_Image.jpeg">DPG Degree College Header</option>
             </select>
           </div>
@@ -1619,8 +1620,27 @@
       const headerX = (W - headerW) / 2.0;
       const headerY = 33.84 * scaleY;
 
-      if (headerImg.complete && headerImg.naturalWidth > 0) {
-        ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
+      if (headerImg.complete && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
+        const nw = headerImg.naturalWidth || headerImg.width;
+        const nh = headerImg.naturalHeight || headerImg.height;
+        if (nw > 0 && nh > 0) {
+          const targetAspect = headerW / headerH;
+          const imgAspect = nw / nh;
+          let drawW = headerW;
+          let drawH = headerH;
+          let drawX = headerX;
+          let drawY = headerY;
+          if (imgAspect > targetAspect) {
+            drawH = headerW / imgAspect;
+            drawY = headerY + (headerH - drawH) / 2.0;
+          } else {
+            drawW = headerH * imgAspect;
+            drawX = (W - drawW) / 2.0;
+          }
+          ctx.drawImage(headerImg, drawX, drawY, drawW, drawH);
+        } else {
+          ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
+        }
       }
 
       // Font styling: Crisp Times New Roman typography matching official template
@@ -1705,8 +1725,25 @@
       const logoX = (W - logoW) / 2.0;
       const logoY = 280.0 * scaleY;
 
-      if (centerLogoImg.complete && centerLogoImg.naturalWidth > 0) {
-        ctx.drawImage(centerLogoImg, logoX, logoY, logoW, logoH);
+      if (centerLogoImg.complete && (centerLogoImg.naturalWidth > 0 || centerLogoImg.width > 0)) {
+        const cnw = centerLogoImg.naturalWidth || centerLogoImg.width;
+        const cnh = centerLogoImg.naturalHeight || centerLogoImg.height;
+        let cDrawW = logoW;
+        let cDrawH = logoH;
+        let cDrawX = logoX;
+        let cDrawY = logoY;
+        if (cnw > 0 && cnh > 0) {
+          const cTargetAspect = logoW / logoH;
+          const cImgAspect = cnw / cnh;
+          if (cImgAspect > cTargetAspect) {
+            cDrawH = logoW / cImgAspect;
+            cDrawY = logoY + (logoH - cDrawH) / 2.0;
+          } else {
+            cDrawW = logoH * cImgAspect;
+            cDrawX = (W - cDrawW) / 2.0;
+          }
+        }
+        ctx.drawImage(centerLogoImg, cDrawX, cDrawY, cDrawW, cDrawH);
       }
 
       // 4. Session (Bold)
@@ -2020,8 +2057,24 @@
       if (document.getElementById('inpFatherName')) document.getElementById('inpFatherName').value = r.fatherName || '';
       if (document.getElementById('inpStuId')) document.getElementById('inpStuId').value = r.studentId || '';
       if (document.getElementById('inpDay')) document.getElementById('inpDay').value = r.day || 'FRIDAY';
-      if (r.headerLogo && document.getElementById('selHeaderLogo')) document.getElementById('selHeaderLogo').value = r.headerLogo;
-      if (r.centerLogo && document.getElementById('selCenterLogo')) document.getElementById('selCenterLogo').value = r.centerLogo;
+      if (r.headerLogo && document.getElementById('selHeaderLogo')) {
+        const h = String(r.headerLogo);
+        if (h.includes('DPGSTM-2') || h.includes('2Header') || h === 'DPGSTM-2HeaderImage.png') {
+          document.getElementById('selHeaderLogo').value = 'DPGSTM-2HeaderImage.png';
+        } else if (h.includes('DPGDegreeHeader') || h.includes('Degree') || h === 'DPGDegreeHeader_Image.jpeg') {
+          document.getElementById('selHeaderLogo').value = 'DPGDegreeHeader_Image.jpeg';
+        } else {
+          document.getElementById('selHeaderLogo').value = 'Header_Image.jpg';
+        }
+      }
+      if (r.centerLogo && document.getElementById('selCenterLogo')) {
+        const c = String(r.centerLogo);
+        if (c.includes('DPGDegreeCenter') || c.includes('Degree') || c === 'DPGDegreeCenter_Logo.jpeg') {
+          document.getElementById('selCenterLogo').value = 'DPGDegreeCenter_Logo.jpeg';
+        } else {
+          document.getElementById('selCenterLogo').value = 'Center_Logo.jpg';
+        }
+      }
       handleLogoChange();
 
       renderLiveCanvas();

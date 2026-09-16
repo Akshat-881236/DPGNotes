@@ -63,13 +63,13 @@
     wrapper.innerHTML = `
       <!-- Theme Switchers -->
       <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'default' ? 'active' : ''}" data-target-theme="default" onclick="window.setReaderTheme('default')" title="Default DPGNotes Blue Theme">
-        <i class="ri-contrast-2-line"></i> DPG Blue
+        <i class="ri-contrast-2-line"></i> <span class="dpg-rc-theme-text">DPG Blue</span>
       </button>
       <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'light' ? 'active' : ''}" data-target-theme="light" onclick="window.setReaderTheme('light')" title="Light High-Contrast Paper Theme">
-        <i class="ri-sun-line"></i> Light
+        <i class="ri-sun-line"></i> <span class="dpg-rc-theme-text">Light</span>
       </button>
       <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'dark' ? 'active' : ''}" data-target-theme="dark" onclick="window.setReaderTheme('dark')" title="OLED Pure Dark Contrast Theme">
-        <i class="ri-moon-clear-line"></i> Dark
+        <i class="ri-moon-clear-line"></i> <span class="dpg-rc-theme-text">Dark</span>
       </button>
 
       <span class="dpg-rc-divider"></span>

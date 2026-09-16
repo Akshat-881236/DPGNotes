@@ -171,8 +171,19 @@ def generate_pdf(data, output_path, assets_dir=None):
         if not os.path.exists(assets_dir):
             assets_dir = os.path.join(base_dir, "public", "AssignmentCoverPageGenerator")
 
-    header_file = "DPGDegreeHeader_Image.jpeg" if data.get("headerLogo") == "DPGDegreeHeader_Image.jpeg" else "Header_Image.jpg"
-    center_logo_file = "DPGDegreeCenter_Logo.jpeg" if data.get("centerLogo") == "DPGDegreeCenter_Logo.jpeg" else "Center_Logo.jpg"
+    req_header = str(data.get("headerLogo") or "").strip()
+    if "DPGSTM-2" in req_header or "2Header" in req_header or req_header == "DPGSTM-2HeaderImage.png":
+        header_file = "DPGSTM-2HeaderImage.png"
+    elif "DPGDegreeHeader" in req_header or "Degree" in req_header or req_header == "DPGDegreeHeader_Image.jpeg":
+        header_file = "DPGDegreeHeader_Image.jpeg"
+    else:
+        header_file = "Header_Image.jpg"
+
+    req_center = str(data.get("centerLogo") or "").strip()
+    if "DPGDegreeCenter" in req_center or "Degree" in req_center or req_center == "DPGDegreeCenter_Logo.jpeg":
+        center_logo_file = "DPGDegreeCenter_Logo.jpeg"
+    else:
+        center_logo_file = "Center_Logo.jpg"
     header_img_path = os.path.join(assets_dir, header_file)
     center_logo_path = os.path.join(assets_dir, center_logo_file)
 

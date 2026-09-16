@@ -17,6 +17,7 @@
   <!-- DPGNotes Unified Shared Auth & Reader Accessibility System -->
   <link rel="stylesheet" href="/auth-component.css">
   <link rel="stylesheet" href="/reader-theme.css">
+  <script src="/dpg-feed.js"></script>
   <script type="module" src="/auth-component.js"></script>
   <script src="/reader-theme.js"></script>
   <script src="../redirect.js"></script>
@@ -261,16 +262,16 @@
       </div>
       <div class="native-ads" id="topNativeAdSlot" data-ad-variant="feed" data-ad-count="1" style="margin-bottom:2rem; display:none;"></div>
 
-      <!-- Zero-Knowledge Password Protection Barrier -->
+      <!-- Contributor Password Protection Barrier -->
       <div id="passwordLockOverlay" class="sol-card" style="display:none; text-align:center; padding:2rem 1.25rem; background:linear-gradient(135deg, rgba(20,24,39,0.95), rgba(15,23,42,0.98)); border-color:rgba(239,68,68,0.35);">
         <div class="lock-icon-wrapper" style="width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
           <i class="ri-shield-keyhole-line" style="font-size:2.2rem; color:#f87171;"></i>
         </div>
         <h2 style="font-size:1.6rem; font-weight:800; color:white; margin-bottom:0.4rem;">
-          Protected Academic Document
+          Contributor Protected Solution
         </h2>
         <p style="color:var(--sol-text-muted); font-size:0.9rem; max-width:540px; margin:0 auto 1.2rem auto; line-height:1.6;">
-          This assignment solution was encrypted by the Contributor using client-side zero-knowledge security. Please enter the authorized decryption passphrase to view the questions and answers.
+          The author has protected this assignment solution with a private passphrase. If your instructor or peer has shared the access key with you, enter it below to unlock the verified questions, answers, and code.
         </p>
 
         <!-- Document Info & Canonical Resource URL Display -->
@@ -516,14 +517,45 @@
       if (navShare) navShare.style.display = 'none';
       if (navLike) navLike.style.display = 'none';
 
-      // Render Popular Topic Chips
+      // Render Popular Topic Chips (Strictly 3 popular topics, feed prioritized)
       const chipsContainer = document.getElementById('homePopularChips');
       if (chipsContainer) {
-        chipsContainer.innerHTML = ASSIGNMENT_POPULAR_TOPICS.map(topic => `
-          <button type="button" class="sol-search-chip" onclick="window.executeSolutionSearch('${escapeHtml(topic)}')">
-            <i class="ri-search-line" style="font-size:0.75rem; opacity:0.7;"></i> ${escapeHtml(topic)}
-          </button>
-        `).join('');
+        const renderChips = (topics) => {
+          chipsContainer.innerHTML = topics.map(topic => `
+            <button type="button" class="sol-search-chip" onclick="window.executeSolutionSearch('${escapeHtml(topic)}')">
+              <i class="ri-search-line" style="font-size:0.75rem; opacity:0.7;"></i> ${escapeHtml(topic)}
+            </button>
+          `).join('');
+        };
+
+        if (window.dpgFeed) {
+          window.dpgFeed.getUserFeedWeights().then(weights => {
+            let pool = [...ASSIGNMENT_POPULAR_TOPICS];
+            if (weights && (Object.keys(weights.disciplines || {}).length > 0 || (weights.keywords && weights.keywords.size > 0))) {
+              pool.sort((a, b) => {
+                let scoreA = 0, scoreB = 0;
+                const lowerA = a.toLowerCase(), lowerB = b.toLowerCase();
+                for (const d in weights.disciplines) {
+                  if (lowerA.includes(d.toLowerCase())) scoreA += weights.disciplines[d] * 2;
+                  if (lowerB.includes(d.toLowerCase())) scoreB += weights.disciplines[d] * 2;
+                }
+                weights.keywords.forEach(kw => {
+                  if (lowerA.includes(kw)) scoreA += 3;
+                  if (lowerB.includes(kw)) scoreB += 3;
+                });
+                return scoreB - scoreA;
+              });
+            } else {
+              // Predefined / random 3 on first visit
+              pool.sort(() => 0.5 - Math.random());
+            }
+            renderChips(pool.slice(0, 3));
+          }).catch(() => {
+            renderChips(ASSIGNMENT_POPULAR_TOPICS.slice(0, 3));
+          });
+        } else {
+          renderChips(ASSIGNMENT_POPULAR_TOPICS.slice(0, 3));
+        }
       }
 
       const input = document.getElementById('homeSearchInput');

@@ -20,6 +20,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="custom-dialogs.js"></script>
   <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script src="dpg-feed.js"></script>
   
   <style>
     :root {
@@ -400,6 +401,10 @@
     window.applyFilters = function() {
       const q = searchField.value.trim().toLowerCase();
       queryTextSpan.innerText = searchField.value;
+
+      if (q && window.dpgFeed) {
+        window.dpgFeed.logSerpSearch(q);
+      }
 
       const catFilter = document.getElementById("filterCategory").value;
       const discFilter = document.getElementById("filterDiscipline").value;

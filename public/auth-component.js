@@ -62,9 +62,8 @@ function injectAuthDOM() {
   overlay.className = "dpg-auth-overlay";
 
   overlay.innerHTML = `
-    <!-- 1. QUOTA REACHED MODAL -->
+    <!-- 1. QUOTA REACHED MODAL (Strictly locked: no close button) -->
     <div id="dpgQuotaReachModal" class="dpg-auth-dialog" style="display:none;">
-      <button type="button" class="dpg-auth-close-btn" onclick="window.closeAuthModals()" title="Close">&times;</button>
       
       <div style="text-align:center;">
         <div class="dpg-auth-badge dpg-auth-badge-blue">
@@ -287,9 +286,22 @@ function injectAuthDOM() {
 
   document.body.appendChild(overlay);
 
-  // Close on Escape key
+  // Close on Escape key (blocked if quota is locked)
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      if (localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true") {
+        return;
+      }
+      window.closeAuthModals();
+    }
+  });
+
+  // Close on overlay backdrop click (blocked if quota is locked)
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      if (localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true") {
+        return;
+      }
       window.closeAuthModals();
     }
   });
@@ -316,8 +328,12 @@ function startQuotaCountdown() {
   setInterval(update, 1000);
 }
 
-// Modal Visibility Controls
-window.closeAuthModals = function() {
+// Modal Visibility Controls (strictly non-dismissible on quota lock)
+window.closeAuthModals = function(force = false) {
+  if (!force && (localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true")) {
+    window.showQuotaReachedModal();
+    return;
+  }
   const overlay = document.getElementById("dpgAuthOverlay");
   if (overlay) overlay.classList.remove("active");
   ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(id => {
@@ -521,7 +537,7 @@ window.dpgHandleSignIn = async function(e) {
     if (emailTarget) emailTarget.textContent = resolvedEmail;
 
   } catch(authErr) {
-    alert("Sign In Error: " + (authErr.message || authErr));
+    alert(authErr);
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -611,6 +627,17 @@ window.dpgHandleSignUp = async function(e) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
+    // Compute SHA-256 hash of password for security records in Firestore
+    let passwordHash = "";
+    try {
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (hashErr) {
+      console.warn("Password hash computation fallback:", hashErr);
+    }
+
     // Save profile to Firestore
     await setDoc(doc(db, "users", user.uid), {
       uid: user.uid,
@@ -618,6 +645,7 @@ window.dpgHandleSignUp = async function(e) {
       email: email,
       userType: role,
       studentIdOrEmployeeId: studentId,
+      passwordHash: passwordHash,
       createdAt: serverTimestamp()
     }, { merge: true });
 
@@ -630,7 +658,7 @@ window.dpgHandleSignUp = async function(e) {
 
     await completeAuthSuccess(user);
   } catch(err) {
-    alert("Registration Error: " + (err.message || err));
+    alert(err);
   } finally {
     if (btn) {
       btn.disabled = false;
