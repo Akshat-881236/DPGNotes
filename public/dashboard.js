@@ -58,13 +58,30 @@ const tabBtns = document.querySelectorAll(".tab-btn[data-target]");
 const tabs = document.querySelectorAll(".dashboard-tab");
 
 tabBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", (e) => {
+    // Check if profile setup is required
+    if (window.dpgProfileIncomplete && btn.dataset.target !== "settingsTab" && !btn.classList.contains("logout-btn")) {
+      e.preventDefault();
+      e.stopPropagation();
+      alert("Please select your User Type and enter your Student / Employee ID in the Settings tab to activate your Contributor Dashboard features.");
+      const settingsBtn = document.querySelector('.tab-btn[data-target="settingsTab"]');
+      if (settingsBtn) {
+        tabBtns.forEach(b => b.classList.remove("active"));
+        settingsBtn.classList.add("active");
+        tabs.forEach(t => t.classList.remove("active"));
+        const st = document.getElementById("settingsTab");
+        if (st) st.classList.add("active");
+      }
+      return;
+    }
+
     // UI Update
     tabBtns.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     
     tabs.forEach(t => t.classList.remove("active"));
-    document.getElementById(btn.dataset.target).classList.add("active");
+    const targetTab = document.getElementById(btn.dataset.target);
+    if (targetTab) targetTab.classList.add("active");
     
     // Close sidebar on mobile after click
     if (window.innerWidth <= 768) closeSidebar();
@@ -349,8 +366,8 @@ function formatBioContent(bioText) {
 }
 
 async function loadProfile() {
-  document.getElementById("profileName").innerText = currentUser.displayName;
-  document.getElementById("profileEmail").innerText = currentUser.email;
+  document.getElementById("profileName").innerText = currentUser.displayName || "Contributor";
+  document.getElementById("profileEmail").innerText = currentUser.email || "";
   
   const avatarEl = document.getElementById("profileAvatar");
   avatarEl.onclick = () => {
@@ -360,12 +377,43 @@ async function loadProfile() {
   if (currentUser.photoURL) {
     avatarEl.innerHTML = `<img src="${currentUser.photoURL}" alt="Profile">`;
   }
+
+  // Pre-fill email and name from auth
+  const settingNameEl = document.getElementById("settingName");
+  const settingEmailEl = document.getElementById("settingEmail");
+  if (settingNameEl && !settingNameEl.value) settingNameEl.value = currentUser.displayName || "";
+  if (settingEmailEl) settingEmailEl.value = currentUser.email || "";
   
   try {
     const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+    let userData = {};
     if (userDoc.exists()) {
-      const userData = userDoc.data();
+      userData = userDoc.data();
       
+      if (userData.name && settingNameEl) settingNameEl.value = userData.name;
+      if (userData.email && settingEmailEl) settingEmailEl.value = userData.email;
+      
+      const settingUserType = document.getElementById("settingUserType");
+      if (settingUserType && userData.userType) {
+        settingUserType.value = userData.userType;
+      }
+      
+      const settingStudentId = document.getElementById("settingStudentId");
+      if (settingStudentId && (userData.studentIdOrEmployeeId || userData.studentId)) {
+        settingStudentId.value = userData.studentIdOrEmployeeId || userData.studentId;
+      }
+
+      const settingContact = document.getElementById("settingContact");
+      if (settingContact && userData.contactNumber) {
+        settingContact.value = userData.contactNumber;
+      }
+
+      // Update ID label
+      const lblId = document.getElementById("lblSettingId");
+      if (lblId) {
+        lblId.innerText = (userData.userType === "Teacher") ? "Employee ID / Teacher ID*" : "Student ID / Roll No*";
+      }
+
       // Override with Cloudinary Profile Photo if exists
       if (userData.profilePic) {
         document.getElementById("profileAvatar").innerHTML = `<img src="${userData.profilePic}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
@@ -391,6 +439,25 @@ async function loadProfile() {
       if (userData.github) {
         document.getElementById("settingGithub").value = userData.github;
         socialLinksContainer.innerHTML += `<a href="${userData.github}" target="_blank" style="color:#fff; font-size:1.5rem; text-decoration:none;" title="GitHub">🐙</a>`;
+      }
+    }
+
+    // Profile completion validation: User Type and Student/Employee ID are mandatory
+    const isProfileIncomplete = !userData.userType || !(userData.studentIdOrEmployeeId || userData.studentId);
+    window.dpgProfileIncomplete = isProfileIncomplete;
+
+    const alertEl = document.getElementById("profileIncompleteAlert");
+    if (alertEl) alertEl.style.display = isProfileIncomplete ? "block" : "none";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (isProfileIncomplete || urlParams.get("tab") === "settingsTab") {
+      const settingsTabBtn = document.querySelector('.tab-btn[data-target="settingsTab"]');
+      if (settingsTabBtn) {
+        document.querySelectorAll(".tab-btn[data-target]").forEach(b => b.classList.remove("active"));
+        settingsTabBtn.classList.add("active");
+        document.querySelectorAll(".dashboard-tab").forEach(t => t.classList.remove("active"));
+        const st = document.getElementById("settingsTab");
+        if (st) st.classList.add("active");
       }
     }
   } catch(e) { console.error("Error loading user profile", e); }
@@ -956,6 +1023,16 @@ if (contributorDeleteForm) {
 // SETTINGS LOGIC
 // =========================================
 const settingsForm = document.getElementById("settingsForm");
+const settingUserTypeEl = document.getElementById("settingUserType");
+if (settingUserTypeEl) {
+  settingUserTypeEl.addEventListener("change", () => {
+    const lbl = document.getElementById("lblSettingId");
+    if (lbl) {
+      lbl.innerText = (settingUserTypeEl.value === "Teacher") ? "Employee ID / Teacher ID*" : "Student ID / Roll No*";
+    }
+  });
+}
+
 if(settingsForm) {
   settingsForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -966,6 +1043,24 @@ if(settingsForm) {
     submitBtn.disabled = true;
     
     try {
+      const name = document.getElementById("settingName")?.value.trim() || currentUser.displayName || "";
+      const userType = document.getElementById("settingUserType")?.value || "";
+      const studentIdOrEmployeeId = document.getElementById("settingStudentId")?.value.trim() || "";
+      const contactNumber = document.getElementById("settingContact")?.value.trim() || "";
+
+      if (!userType) {
+        alert("Please select your User Type (Student or Teacher).");
+        submitBtn.innerText = "Save Changes";
+        submitBtn.disabled = false;
+        return;
+      }
+      if (!studentIdOrEmployeeId) {
+        alert("Please enter your Student ID or Employee ID.");
+        submitBtn.innerText = "Save Changes";
+        submitBtn.disabled = false;
+        return;
+      }
+
       const bio = document.getElementById("settingBio").value;
       const linkedin = document.getElementById("settingLinkedin").value.trim();
       const github = document.getElementById("settingGithub").value.trim();
@@ -1011,7 +1106,16 @@ if(settingsForm) {
         }
       }
 
-      const updateData = { bio, linkedin, github, theme };
+      const updateData = { 
+        bio, 
+        linkedin, 
+        github, 
+        theme, 
+        name, 
+        userType, 
+        studentIdOrEmployeeId, 
+        contactNumber 
+      };
       if (profileUrl) {
         updateData.profilePic = profileUrl;
       }

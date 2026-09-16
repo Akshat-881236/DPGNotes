@@ -1,1699 +1,663 @@
-// =========================================
-// DPGNotes
-// Production SPA Script
-// =========================================
+// ============================================================================
+// DPGNotes - Modern Academic & Examination Hub
+// Homepage Client Script (v3.0.0)
+// ============================================================================
 
-/* =========================================
-   FIREBASE
-========================================= */
-
-import { initializeApp, getApps, getApp }
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
+  GithubAuthProvider,
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
-  onAuthStateChanged,
-  getAdditionalUserInfo,
-  deleteUser
-}
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
-// =========================================
-// REFERRER SYSTEM INJECTION
-// =========================================
-(async function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const referrer = urlParams.get('referrer');
-  if (referrer) {
-    sessionStorage.setItem('dpgReferrerCode', referrer);
-    localStorage.setItem('dpgReferrerCode', referrer);
-    try {
-      await fetch(window.API_BASE_URL + '/api/invite/view', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ referrerCode: referrer })
-      });
-    } catch(e) { console.error("Referrer view log failed", e); }
-  }
-})();
-
-// =========================================
-// THEME ENGINE (Global Load)
-// =========================================
-const savedTheme = localStorage.getItem("dpgTheme");
-if (savedTheme && savedTheme !== "default") {
-  document.body.classList.add(`theme-${savedTheme}`);
-}
-
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import {
-
   getFirestore,
-
   collection,
-
-  addDoc,
-
-  getDocs,
-
-  query,
-
-  orderBy,
-
-  limit,
-
-  serverTimestamp,
-
-  getDoc,
-
   doc,
-  setDoc
-}
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+  getDoc,
+  setDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-/* =========================================
-   CONFIG
-========================================= */
-
+// Firebase Configuration
 const firebaseConfig = {
-
-  apiKey:
-  "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
-
-  authDomain:
-  "dpgnotes.firebaseapp.com",
-
-  projectId:
-  "dpgnotes",
-
-  storageBucket:
-  "dpgnotes.firebasestorage.app",
-
-  messagingSenderId:
-  "910494426039",
-
-  appId:
-  "1:910494426039:web:adeae5315caaf846c43e32"
+  apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+  authDomain: "dpgnotes.firebaseapp.com",
+  projectId: "dpgnotes",
+  storageBucket: "dpgnotes.firebasestorage.app",
+  messagingSenderId: "910494426039",
+  appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
-
-/* =========================================
-   INIT
-========================================= */
 
 const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
-
-const auth =
-  getAuth(app);
-
-const db =
-  getFirestore(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 window.dpgDb = db;
-window.collection = collection;
-window.getDocs = getDocs;
+window.dpgAuth = auth;
 
-// =========================================
-// COOKIE TRACKING & AI INTEREST SUMMARY ENGINE
-// =========================================
-function setCookie(name, val, days = 365) {
-  const d = new Date();
-  d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-  document.cookie = `${name}=${encodeURIComponent(val)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
-}
+const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
 
-function getCookie(name) {
-  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-  return v ? decodeURIComponent(v[2]) : null;
-}
-
-window.getDPGUserInterests = function() {
-  const raw = getCookie('dpg_user_interests');
-  try {
-    return raw ? JSON.parse(raw) : [];
-  } catch(e) {
-    return [];
+// 8 Academic Classifications Definition (Image 3 Reference)
+const ACADEMIC_CATEGORIES = [
+  {
+    key: "SE",
+    fullName: "Sessional Exam",
+    shortCode: "SE",
+    icon: "ri-file-list-3-line",
+    accent: "#6366f1",
+    desc: "Internal assessment test papers, unit tests, and midterm exam resources."
+  },
+  {
+    key: "SP",
+    fullName: "Sample Paper",
+    shortCode: "SP",
+    icon: "ri-draft-line",
+    accent: "#0ea5e9",
+    desc: "Model question papers, practice test series, and simulated exam files."
+  },
+  {
+    key: "UE",
+    fullName: "University Exam",
+    shortCode: "UE",
+    icon: "ri-bank-line",
+    accent: "#8b5cf6",
+    desc: "Past years university question papers and official final semester exam archives."
+  },
+  {
+    key: "EV",
+    fullName: "Event Material",
+    shortCode: "EV",
+    icon: "ri-calendar-event-line",
+    accent: "#f59e0b",
+    desc: "Hackathons, symposiums, technical seminars, workshop handouts, and tech fest guides."
+  },
+  {
+    key: "TN",
+    fullName: "Tutorial & Notes",
+    shortCode: "T&N",
+    altShortCode: "TN",
+    icon: "ri-book-open-line",
+    accent: "#10b981",
+    desc: "Curated semester lecture notes, subject guides, textbook summaries, and slides."
+  },
+  {
+    key: "IQ",
+    fullName: "Interview Questions",
+    shortCode: "IQ",
+    icon: "ri-question-answer-line",
+    accent: "#ec4899",
+    desc: "Technical interview Q&A, HR rounds preparation, coding problem walk-throughs."
+  },
+  {
+    key: "ALR",
+    fullName: "Aptitude & LR",
+    shortCode: "A&LR",
+    altShortCode: "ALR",
+    icon: "ri-brain-line",
+    accent: "#14b8a6",
+    desc: "Quantitative aptitude, logical reasoning, data interpretation, and verbal formulas."
+  },
+  {
+    key: "PQ",
+    fullName: "Placement Question",
+    shortCode: "PQ",
+    icon: "ri-briefcase-line",
+    accent: "#f97316",
+    desc: "Company-specific recruitment tests, coding assessment challenges, and placement drives."
   }
-};
+];
 
-window.trackUserBehaviorInterest = async function(interestKeyword, category = "General") {
-  if (!interestKeyword) return;
-  let interests = window.getDPGUserInterests();
-  if (!Array.isArray(interests)) interests = [];
-
-  const clean = String(interestKeyword).trim().toLowerCase();
-  if (clean && !interests.includes(clean)) {
-    interests.unshift(clean);
-    if (interests.length > 20) interests.pop();
-    setCookie('dpg_user_interests', JSON.stringify(interests));
-  }
-
-  try {
-    let visitorId = getCookie('dpg_visitor_id');
-    if (!visitorId) {
-      visitorId = 'visitor_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-      setCookie('dpg_visitor_id', visitorId, 365);
+function matchCategory(docCat) {
+  if (!docCat) return null;
+  const clean = String(docCat).trim().toLowerCase();
+  for (const cat of ACADEMIC_CATEGORIES) {
+    if (
+      clean === cat.fullName.toLowerCase() ||
+      clean === cat.shortCode.toLowerCase() ||
+      (cat.altShortCode && clean === cat.altShortCode.toLowerCase())
+    ) {
+      return cat.key;
     }
-
-    const activeUser = auth.currentUser;
-    const userUid = activeUser ? activeUser.uid : visitorId;
-    const userEmail = activeUser ? activeUser.email : "anonymous";
-
-    const summaryMd = `# 📊 DPGNotes User Behavioral & Interest AI Analysis Summary\n\n` +
-      `- **Visitor ID / UID**: \`${userUid}\`\n` +
-      `- **User Email**: \`${userEmail}\`\n` +
-      `- **Last Active Interest**: \`${clean}\`\n` +
-      `- **Active Academic Category**: \`${category}\`\n` +
-      `- **Tracked Interest Keywords**: ${interests.map(i => `\`${i}\``).join(', ')}\n` +
-      `- **Ad Monetization Personalization**: Enabled (Native & AdSense Targeted)\n` +
-      `- **Timestamp**: ${new Date().toISOString()}`;
-
-    await setDoc(doc(db, "user_cookies", userUid), {
-      visitorId,
-      userEmail,
-      interests,
-      category,
-      summaryMd,
-      updatedAt: serverTimestamp()
-    }, { merge: true }).catch(console.warn);
-  } catch(e) {
-    console.warn("Cookie tracking sync failed:", e);
   }
-};
+  return null;
+}
 
-const PDF_VIEWER =
-"https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=";
-
-/* =========================================
-   PROVIDERS
-========================================= */
-
-const googleProvider =
-  new GoogleAuthProvider();
-
-/* =========================================
-   DOM
-========================================= */
-
-const pages =
-  document.querySelectorAll(".spa-page");
-
-const navButtons =
-  document.querySelectorAll(
-    ".bottom-nav button"
-  );
-
-const categoryButtons =
-  document.querySelectorAll(
-    ".category-strip button"
-  );
-
-const uploadForm =
-  document.getElementById(
-    "uploadForm"
-  );
-const googleLogin =
-  document.getElementById(
-    "googleLogin"
-  );
-
-let selectedCategory = "";
-
-const globalSearch =
-  document.getElementById(
-    "globalSearch"
-  );
-
-const latestResources =
-  document.getElementById(
-    "latestResources"
-  );
-
-const examResources =
-  document.getElementById(
-    "examResources"
-  );
-
-const learningResources =
-  document.getElementById(
-    "learningResources"
-  );
-
-const placementResources =
-  document.getElementById(
-    "placementResources"
-  );
-
-/* =========================================
-   STATE
-========================================= */
-
+// Global state
 let currentUser = null;
-
-let allDocuments = [];
-let usersCache = {};
-window.usersCache = usersCache;
-
-/* =========================================
-   ACTIVITY LOGGING
-========================================= */
-async function logActivity(action, details = "") {
-  try {
-    if (!currentUser) return;
-    await addDoc(collection(db, "activity_logs"), {
-      userId: currentUser.uid,
-      name: currentUser.displayName || currentUser.email,
-      action: action,
-      details: details,
-      timestamp: serverTimestamp()
-    });
-  } catch(e) { console.error("Log failed", e); }
-}
-
-window.usersCache = usersCache;
-window.logActivity = logActivity;
-
-/* =========================================
-   URL PARAM ENGINE
-========================================= */
-
-const urlParams =
-new URLSearchParams(
-  window.location.search
-);
-
-/* -----------------------------------------
-   SAFE PARAM
------------------------------------------ */
-
-function getParam(key){
-
-  try{
-
-    return urlParams.get(key);
-
-  }catch(error){
-
-    console.log(
-      "Param Error:",
-      error
-    );
-
-    return null;
-  }
-}
-
-/* -----------------------------------------
-   PARAMS
------------------------------------------ */
-
-const urlTab =
-getParam("tab");
-
-const urlCategory =
-getParam("category");
-
-const urlSearch =
-getParam("search");
-
-const urlPdf =
-getParam("pdf");
-
-const urlRef =
-getParam("ref");
-
-const urlUploader =
-getParam("uploader");
-
-const urlView = getParam("view");
-
-/* -----------------------------------------
-   AUTO-VIEW SHARED PDF
------------------------------------------ */
-if (urlView) {
-  (async () => {
-    try {
-      const docSnap = await getDoc(doc(db, "documents", urlView));
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(Array.isArray(data.tags) ? data.tags.join(", ") : "")}`;
-        
-        // Redirect to viewer
-        window.location.replace(viewerUrl);
-      } else {
-        alert("This shared document is no longer available.");
-        // Remove param from URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    } catch(err) {
-      console.error("Failed to load shared document:", err);
-    }
-  })();
-}
-
-/* -----------------------------------------
-   OPTIONAL DEBUG
------------------------------------------ */
-
-try{
-
-  if(urlRef){
-
-    console.log(
-      "Project Ref:",
-      urlRef
-    );
-  }
-
-  if(urlUploader){
-
-    console.log(
-      "Uploader:",
-      urlUploader
-    );
-  }
-
-}catch(error){
-
-  console.log(
-    "URL Debug Error:",
-    error
-  );
-}
-
-/* =========================================
-   AUTH
-========================================= */
-
-/* =========================================
-   AUTH SYSTEM
-========================================= */
-
-let authMode = "login";
-
-/* GOOGLE */
-
-function showSuspensionModal(suspendedUntil, supportToken) {
-  const modal = document.createElement('div');
-  modal.style.position = 'fixed';
-  modal.style.inset = '0';
-  modal.style.background = 'rgba(15, 17, 26, 0.95)';
-  modal.style.display = 'flex';
-  modal.style.alignItems = 'center';
-  modal.style.justifyContent = 'center';
-  modal.style.zIndex = '10000';
-  modal.style.padding = '20px';
-  modal.style.backdropFilter = 'blur(10px)';
-
-  const box = document.createElement('div');
-  box.style.background = 'rgba(30, 41, 59, 0.95)';
-  box.style.border = '1px solid rgba(239, 68, 68, 0.2)';
-  box.style.borderRadius = '16px';
-  box.style.padding = '30px';
-  box.style.maxWidth = '450px';
-  box.style.width = '100%';
-  box.style.textAlign = 'center';
-  box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-  box.style.color = '#f8fafc';
-  box.style.fontFamily = "'Inter', sans-serif";
-
-  box.innerHTML = `
-    <div style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"><a href="https://dpgnotes.web.app/legal/index.html?from=admin#copyright" target="blank"><i class="ri-alarm-warning-line"></i></a></div>
-    <h2 style="margin: 0 0 10px 0; font-size: 1.5rem;">Account Suspended</h2>
-    <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;">
-      Your contributor account is temporarily suspended under the DPGNotes Regulations & Suspension Act (DRASA).
-    </p>
-    <div style="background: rgba(239,68,68,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-      <span style="font-size: 0.8rem; color: #fca5a5; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Time Remaining</span>
-      <div id="suspensionCountdown" style="font-size: 2rem; font-weight: 700; color: #ef4444; margin-top: 5px; font-family: monospace;">--:--:--</div>
-    </div>
-    ${supportToken ? `<a href="suspension-support-contact-form.html?token=${supportToken}" style="display:block; width:100%; padding: 12px; background: linear-gradient(135deg, #8b5cf6, #6366f1); border-radius: 8px; color: white; text-decoration: none; font-weight: 600; margin-bottom: 12px; box-sizing: border-box;">Contact Support Appeal Form</a>` : ''}
-    <button id="closeSuspensionBtn" style="width:100%; padding: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Acknowledge</button>
-  `;
-
-  modal.appendChild(box);
-  document.body.appendChild(modal);
-
-  const countdownEl = modal.querySelector('#suspensionCountdown');
-  const closeBtn = modal.querySelector('#closeSuspensionBtn');
-
-  const updateCountdown = () => {
-    const diff = suspendedUntil - Date.now();
-    if (diff <= 0) {
-      clearInterval(interval);
-      modal.remove();
-      return;
-    }
-    const totalSecs = Math.floor(diff / 1000);
-    const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
-    const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
-    const secs = String(totalSecs % 60).padStart(2, '0');
-    countdownEl.innerText = `${hrs}:${mins}:${secs}`;
-  };
-
-  updateCountdown();
-  const interval = setInterval(updateCountdown, 1000);
-
-  closeBtn.addEventListener('click', () => {
-    clearInterval(interval);
-    modal.remove();
-  });
-}
-
-function showSignUpModal(confirmCallback, cancelCallback) {
-  const modal = document.createElement('div');
-  modal.style.position = 'fixed';
-  modal.style.inset = '0';
-  modal.style.background = 'rgba(15, 17, 26, 0.95)';
-  modal.style.display = 'flex';
-  modal.style.alignItems = 'center';
-  modal.style.justifyContent = 'center';
-  modal.style.zIndex = '10000';
-  modal.style.padding = '20px';
-  modal.style.backdropFilter = 'blur(10px)';
-
-  const box = document.createElement('div');
-  box.style.background = 'rgba(30, 41, 59, 0.95)';
-  box.style.border = '1px solid rgba(99, 102, 241, 0.2)';
-  box.style.borderRadius = '16px';
-  box.style.padding = '30px';
-  box.style.maxWidth = '480px';
-  box.style.width = '100%';
-  box.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-  box.style.color = '#f8fafc';
-  box.style.fontFamily = "'Inter', sans-serif";
-
-  box.innerHTML = `
-    <div style="font-size: 2.5rem; color: #6366f1; text-align: center; margin-bottom: 15px;"><i class="ri-shield-user-line"></i></div>
-    <h2 style="margin: 0 0 15px 0; font-size: 1.4rem; text-align: center;">DPGNotes Registration Consent</h2>
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 25px; font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
-      <p style="margin: 0 0 10px 0;"><strong>Official Legal Agreement Summary:</strong></p>
-      By continuing with your DPGNotes registration, you explicitly agree that:
-      <ul style="margin: 8px 0; padding-left: 20px; color: #94a3b8; text-align: left;">
-        <li>Your profile information will be stored securely under our <a href="legal/index.html#privacy" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Privacy Policy</a>.</li>
-        <li>All uploads must comply with copyright guidelines listed in our <a href="legal/index.html#copyright" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Copyright Policy</a>.</li>
-        <li>Your account activity and resources are governed strictly by the <a href="legal/index.html#drasa" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Regulations & Suspension Act (DRASA)</a>.</li>
-      </ul>
-      Unauthorized distribution of intellectual property is strictly prohibited.
-    </div>
-    <div style="display: flex; gap: 12px;">
-      <button id="cancelSignUpBtn" style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Cancel</button>
-      <button id="confirmSignUpBtn" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); transition: transform 0.2s;">Accept & Register</button>
-    </div>
-  `;
-
-  modal.appendChild(box);
-  document.body.appendChild(modal);
-
-  const confirmBtn = modal.querySelector('#confirmSignUpBtn');
-  const cancelBtn = modal.querySelector('#cancelSignUpBtn');
-
-  confirmBtn.addEventListener('click', () => {
-    modal.remove();
-    confirmCallback();
-  });
-
-  cancelBtn.addEventListener('click', () => {
-    modal.remove();
-    cancelCallback();
-  });
-}
-
-if (googleLogin) {
-  googleLogin.addEventListener("click", async () => {
-    try {
-      if (currentUser) {
-        await signOut(auth);
-        return;
-      }
-
-      const result = await signInWithPopup(auth, googleProvider);
-
-      const additionalInfo = getAdditionalUserInfo(result);
-      const isNewUser = additionalInfo ? additionalInfo.isNewUser : false;
-
-      if (isNewUser) {
-        showSignUpModal(
-          () => {
-            console.log("New contributor registration consent accepted.");
-          },
-          async () => {
-            try {
-              await deleteUser(result.user);
-            } catch (err) {
-              console.error("Failed to revert user registration", err);
-            }
-            await signOut(auth);
-          }
-        );
-      }
-    } catch (error) {
-      console.error("Google Auth error:", error);
-      if (error && (error.code === 'auth/unauthorized-domain' || (error.message && error.message.includes('unauthorized-domain')))) {
-        if (typeof window.showCustomAlert === 'function') {
-          window.showCustomAlert(
-            "🔒 Domain Auth Notice",
-            "Google Auth requires adding 'dpgnotes.vercel.app' to Firebase Console -> Authentication -> Authorized Domains.\n\nClick below to open official portal (dpgnotes.web.app) for instant Google Auth!",
-            "Go to Official Portal",
-            () => { window.location.href = "https://dpgnotes.web.app/"; }
-          );
-        } else {
-          if (confirm("Google Auth requires adding 'dpgnotes.vercel.app' to Firebase Authorized Domains.\n\nRedirect to official portal (https://dpgnotes.web.app) for instant Google Auth?")) {
-            window.location.href = "https://dpgnotes.web.app/";
-          }
-        }
-      } else {
-        alert("Google Sign-In Error: " + (error.message || error));
-      }
-    }
-  });
-}
-
-/* GITHUB LOGIN REMOVED */
-
-/* AUTH STATE */
-
-onAuthStateChanged(
-  auth,
-  async (user)=>{
-    if(user){
-      try {
-        localStorage.setItem("dpgActiveUserUid", user.uid);
-        localStorage.setItem("dpgActiveUserEmail", user.email || "");
-        localStorage.setItem("dpgActiveUserName", user.displayName || "");
-        localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
-        localStorage.setItem("dpgActiveUser", JSON.stringify({
-          uid: user.uid,
-          email: user.email || "",
-          name: user.displayName || "",
-          photoURL: user.photoURL || ""
-        }));
-        // 1. Check Permanent Blocks Directory
-        const { query, collection, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
-        const blockQ = query(collection(db, "permanent_blocks"), where("block_email", "==", user.email));
-        const blockSnap = await getDocs(blockQ);
-        if (!blockSnap.empty) {
-          const blockData = blockSnap.docs[0].data();
-          const blockMsg = `Your account has been permanently blocked by the Administrator.<br><br><strong>Reason:</strong> ${blockData.Reason || "N/A"}<br><strong>Case Status:</strong> ${blockData.Case_Status || "N/A"}`;
-          if (window.customAlert) {
-            await window.customAlert(blockMsg, { title: "Access Denied" });
-          } else {
-            alert(`Your account has been permanently blocked by the Administrator.\nReason: ${blockData.Reason || "N/A"}\nCase Status: ${blockData.Case_Status || "N/A"}`);
-          }
-          await signOut(auth);
-          return;
-        }
-
-        // 2. Check Standard users collection
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          if (userData.isBlocked) {
-            if (userData.suspendedUntil && userData.suspendedUntil <= Date.now()) {
-              // Suspension expired! Auto-unblock.
-              await updateDoc(userRef, { isBlocked: false, suspendedUntil: null });
-            } else {
-              const diff = userData.suspendedUntil ? (userData.suspendedUntil - Date.now()) : 0;
-              let supportTokenId = "";
-              try {
-                const tokenRef = await addDoc(collection(db, "support_tokens"), {
-                  uid: user.uid,
-                  name: userData.name || user.displayName || user.email.split('@')[0],
-                  email: user.email,
-                  reason: userData.blockReason || "Account Suspended by Administrator under DRASA Policy",
-                  suspendedUntil: userData.suspendedUntil || null,
-                  createdAt: serverTimestamp()
-                });
-                supportTokenId = tokenRef.id;
-              } catch(tokErr) { console.error("Failed creating support token", tokErr); }
-
-              if (diff > 0 && diff <= 4 * 24 * 60 * 60 * 1000) {
-                showSuspensionModal(userData.suspendedUntil, supportTokenId);
-              } else {
-                const msg = (userData.suspendedUntil && userData.suspendedUntil > Date.now()) 
-                  ? `Your account is suspended for ${Math.ceil(diff / 86400000)} more days.`
-                  : "Your account has been permanently blocked by the Administrator.";
-                const formLink = supportTokenId ? `<br><br><a href="suspension-support-contact-form.html?token=${supportTokenId}" style="color:var(--primary-light); text-decoration:underline; font-weight:600;">Click here to Submit Support Appeal Form</a>` : "";
-                if (window.customAlert) {
-                  await window.customAlert(msg + formLink, { title: "Access Denied" });
-                } else {
-                  alert(msg + " Please contact support.");
-                }
-              }
-              await signOut(auth);
-              return;
-            }
-          }
-        }
-      } catch (e) { console.error(e); }
-
-      const isNewLogin = !currentUser;
-      currentUser = user;
-      if (googleLogin) googleLogin.innerHTML = "Logout";
-      
-      if (isNewLogin) {
-        logActivity("LOGIN", "Logged into DPGNotes");
-        
-        // Check for active referrer
-        const refCode = sessionStorage.getItem('dpgReferrerCode') || localStorage.getItem('dpgReferrerCode');
-        if (refCode) {
-          try {
-            await fetch(window.API_BASE_URL + '/api/invite/accept', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ referrerCode: refCode, newUserId: user.uid, newUserEmail: user.email })
-            });
-            sessionStorage.removeItem('dpgReferrerCode');
-            localStorage.removeItem('dpgReferrerCode');
-          } catch(e) { console.error("Referrer accept log failed", e); }
-        }
-      }
-      
-      const isDashboard = window.location.pathname.endsWith("dashboard.html");
-      const isAdmin = window.location.pathname.endsWith("admin.html");
-      if (!isDashboard && !isAdmin) {
-        window.location.href = "dashboard.html" + window.location.search;
-      }
-    }else{
-      if (currentUser) logActivity("LOGOUT", "User logged out");
-      currentUser = null;
-      localStorage.removeItem("dpgActiveUser");
-      localStorage.removeItem("dpgActiveUserUid");
-      localStorage.removeItem("dpgActiveUserEmail");
-      localStorage.removeItem("dpgActiveUserName");
-      localStorage.removeItem("dpgActiveUserPhoto");
-      if (googleLogin) googleLogin.innerHTML = "Google";
-      
-      const isDashboard = window.location.pathname.endsWith("dashboard.html");
-      if (isDashboard) {
-        window.location.href = "index.html";
-      } else {
-        const urlParams = new URLSearchParams(window.location.search);
-        const shareToken = urlParams.get('share');
-        if (shareToken) {
-          document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:var(--primary); font-family:var(--font-heading);'>Opening Shared Document...</h2>";
-          (async () => {
-            try {
-              const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${shareToken}`);
-              const data = await res.json();
-              if (res.ok && data.documentData) {
-                const d = data.documentData;
-                if (d.docId && d.docId.startsWith('legal_')) {
-                  window.location.href = `legal/index.html#${d.docId.replace('legal_', '')}`;
-                  return;
-                }
-                const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
-                window.location.href = viewerUrl;
-              } else {
-                alert("Share link expired or invalid.");
-                window.location.href = "index.html";
-              }
-            } catch (e) {
-              alert("Network error.");
-              window.location.href = "index.html";
-            }
-          })();
-        }
-      }
-    }
-  }
-);
-
-/* =========================================
-   SPA NAVIGATION
-========================================= */
-
-function openPage(pageId){
-
-  pages.forEach((page)=>{
-
-    page.classList.remove(
-      "active"
-    );
-  });
-
-  document
-    .getElementById(pageId)
-    .classList.add("active");
-
-  window.scrollTo({
-
-    top:0,
-
-    behavior:"smooth"
-  });
-
-  navButtons.forEach((button)=>{
-
-    button.classList.remove(
-      "active-nav"
-    );
-
-    if(
-
-      button.dataset.page
-      ===
-      pageId
-
-    ){
-
-      button.classList.add(
-        "active-nav"
-      );
-    }
-  });
-}
-
-/* =========================================
-   NAV BUTTONS
-========================================= */
-
-navButtons.forEach((button)=>{
-
-  button.addEventListener(
-    "click",
-    ()=>{
-
-      openPage(
-        button.dataset.page
-      );
-    }
-  );
+let pendingSignInEmail = null;
+let pendingSignInUser = null;
+
+// ============================================================================
+// AUTH STATE LISTENER
+// ============================================================================
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  updateNavbarAuth(user);
 });
 
-/* =========================================
-   KEYBOARD SHORTCUTS
-========================================= */
+function updateNavbarAuth(user) {
+  const guestArea = document.getElementById("navGuestArea");
+  const userArea = document.getElementById("navUserArea");
+  const userNameEl = document.getElementById("navUserName");
+  const userAvatarEl = document.getElementById("navUserAvatar");
 
-document.addEventListener(
-  "keydown",
-  (e)=>{
-
-    // ALT + 1
-
-    if(
-
-      e.altKey &&
-      e.key === "1"
-
-    ){
-
-      openPage(
-        "resourcesPage"
-      );
-    }
-
-    // ALT + 2
-
-    if(
-
-      e.altKey &&
-      e.key === "2"
-
-    ){
-
-      openPage(
-        "examsPage"
-      );
-    }
-
-    // ALT + 3
-
-    if(
-
-      e.altKey &&
-      e.key === "3"
-
-    ){
-
-      openPage(
-        "learningPage"
-      );
-    }
-
-    // ALT + 4
-
-    if(
-
-      e.altKey &&
-      e.key === "4"
-
-    ){
-
-      openPage(
-        "placementPage"
-      );
-    }
-
-    // ALT + 5
-
-    if(
-
-      e.altKey &&
-      e.key === "5"
-
-    ){
-
-      openPage(
-        "contributionPage"
-      );
-    }
-
-    // CTRL + K
-
-    if(
-
-      e.ctrlKey &&
-      e.key.toLowerCase() === "k"
-
-    ){
-
-      e.preventDefault();
-
-      globalSearch.focus();
-    }
-  }
-);
-
-/* =========================================
-   RESOURCE CARD
-========================================= */
-
-function createCard(data){
-
-  return `
-
-  <article class="resource-card">
-
-    <div class="card-top">
-
-      <span class="category">
-        ${data.category}
-      </span>
-
-      <span class="discipline">
-        ${data.discipline}
-      </span>
-
-    </div>
-
-    <h3>
-      ${data.title}
-    </h3>
-    
-    <div class="card-author">
-      ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].profilePic 
-        ? `<img src="${window.usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` 
-        : (window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].photoURL ? `<img src="${window.usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` : `<div class="author-avatar-fallback" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
+  if (user) {
+    if (guestArea) guestArea.style.display = "none";
+    if (userArea) userArea.style.display = "flex";
+    if (userNameEl) userNameEl.innerText = user.displayName || user.email.split('@')[0];
+    if (userAvatarEl) {
+      if (user.photoURL) {
+        userAvatarEl.innerHTML = `<img src="${user.photoURL}" alt="User" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+      } else {
+        const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+        userAvatarEl.innerText = initial;
       }
-      <span class="author-name" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">By ${data.userName || "Contributor"}</span>
-      <div class="author-socials">
-        ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].linkedin ? `<a href="${window.usersCache[data.userId].linkedin}" target="_blank" title="LinkedIn">🔗</a>` : ""}
-        ${window.usersCache && window.usersCache[data.userId] && window.usersCache[data.userId].github ? `<a href="${window.usersCache[data.userId].github}" target="_blank" title="GitHub">🐙</a>` : ""}
-      </div>
-    </div>
-
-    <p class="card-desc">
-      ${data.description}
-    </p>
-
-    <div class="tags">
-      ${(Array.isArray(data.tags) ? data.tags : (typeof data.tags === 'string' ? data.tags.split(',') : [])).map(tag => `
-        <span>
-          #${String(tag).trim()}
-        </span>
-      `).join("")}
-    </div>
-
-    <div class="card-stats">
-      <span title="Total Likes">🤍 ${data.likes ? data.likes.length : 0}</span>
-      <span title="Total Shares Generated">🔗 ${data.shareCount || 0}</span>
-      <span title="Link Clicks (CTR)">👀 ${data.ctrCount || 0}</span>
-    </div>
-
-    <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${data.id}&pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description)}&tags=${encodeURIComponent(Array.isArray(data.tags) ? data.tags.join(", ") : "")}" target="_blank" class="open-btn" onclick="if(window.logActivity) window.logActivity('VIEW', 'Viewed document: ${data.title}')">Open PDF</a>
-  
-    <div class="card-actions">
-      <button class="action-btn like-action" onclick="event.preventDefault(); event.stopPropagation(); if(window.customAlert){window.customAlert('Please login via Dashboard to like this resource.', {title:'Authentication Required'});}else{alert('Please login via Dashboard to like this resource.');}">🤍 Like</button>
-      <button class="action-btn share-action" onclick="handleShare('${data.id}', '${data.title}', '${data.category}', '${data.discipline}', '${data.userName}', '${data.pdfUrl}', '${data.description}', '${Array.isArray(data.tags) ? data.tags.join(", ") : ""}')">🔗 Share</button>
-    </div>
-  </article>
-
-  `;
+    }
+  } else {
+    if (guestArea) guestArea.style.display = "flex";
+    if (userArea) userArea.style.display = "none";
+  }
 }
 
-// Global Share Handler for Token Engine
-window.handleShare = async function(docId, title, category, discipline, uploader, pdfUrl, description, tags) {
-  const btn = event.currentTarget;
-  const originalText = btn.innerText;
-  btn.innerText = "⏳ Generating...";
+// ============================================================================
+// GOOGLE & GITHUB AUTHENTICATION
+// ============================================================================
+async function handlePostOAuthLogin(user) {
   try {
-    const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
+    const userDocRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userDocRef);
+    const userData = snap.exists() ? snap.data() : null;
+    const isComplete = userData && userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
+
+    if (!snap.exists()) {
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        name: user.displayName || user.email.split('@')[0],
+        email: user.email,
+        photoURL: user.photoURL || '',
+        createdAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    if (!isComplete) {
+      // Force user to Settings Tab to fill User Type and ID
+      window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
+    } else {
+      window.location.href = "dashboard.html";
+    }
+  } catch(e) {
+    console.error("OAuth post-login hook failed:", e);
+    window.location.href = "dashboard.html";
+  }
+}
+
+window.loginWithGoogle = async function() {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    await handlePostOAuthLogin(result.user);
+  } catch(err) {
+    console.error("Google sign-in error:", err);
+    alert("Google Sign-In Error: " + (err.message || err));
+  }
+};
+
+window.loginWithGithub = async function() {
+  const provider = new GithubAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    await handlePostOAuthLogin(result.user);
+  } catch(err) {
+    console.error("GitHub sign-in error:", err);
+    alert("GitHub Sign-In Error: " + (err.message || err));
+  }
+};
+
+window.logoutUser = async function() {
+  try {
+    await signOut(auth);
+    localStorage.removeItem("dpgActiveUser");
+    localStorage.removeItem("dpgActiveUserUid");
+    updateNavbarAuth(null);
+  } catch(err) {
+    console.error("Sign out error:", err);
+  }
+};
+
+// ============================================================================
+// SIGN UP (EMAIL & PASSWORD)
+// ============================================================================
+window.handleEmailSignUp = async function(e) {
+  e.preventDefault();
+  const userType = document.getElementById("signupUserType").value;
+  const name = document.getElementById("signupName").value.trim();
+  const studentId = document.getElementById("signupStudentId").value.trim();
+  const contact = document.getElementById("signupContact").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const linkedin = document.getElementById("signupLinkedin").value.trim();
+  const github = document.getElementById("signupGithub").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const confirmPassword = document.getElementById("signupConfirmPassword").value;
+
+  if (!userType) return alert("Please select User Type (Student or Teacher).");
+  if (!name) return alert("Please enter your Full Name.");
+  if (!studentId) return alert("Please enter your Student ID or Employee ID.");
+  if (!email) return alert("Please enter a valid Email.");
+  if (password.length < 6) return alert("Password must be at least 6 characters.");
+  if (password !== confirmPassword) return alert("Passwords do not match.");
+
+  const btn = document.getElementById("btnSubmitSignUp");
+  if (btn) { btn.disabled = true; btn.innerText = "Creating Account..."; }
+
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const user = cred.user;
+
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      name: name,
+      email: email,
+      userType: userType,
+      studentIdOrEmployeeId: studentId,
+      contactNumber: contact,
+      linkedin: linkedin,
+      github: github,
+      createdAt: serverTimestamp()
+    }, { merge: true });
+
+    fetch(apiBase + "/api/email/welcome", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        docId, 
-        title, 
-        category, 
-        discipline, 
-        uploader, 
-        pdfUrl, 
-        description, 
-        tags,
-        originalUrl: window.location.origin + "/dpgnotes-pdf-viewer.html",
-        uploaderUid: (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.uid : ""
-      })
+      body: JSON.stringify({ email: email, name: name })
+    }).catch(console.warn);
+
+    alert("Registration successful! Redirecting to Contributor Dashboard...");
+    window.location.href = "dashboard.html";
+  } catch(err) {
+    console.error("Sign up error:", err);
+    alert("Registration Failed: " + (err.message || err));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = "Create Contributor Account"; }
+  }
+};
+
+// Dynamic label switch for Sign Up
+const signupUserTypeEl = document.getElementById("signupUserType");
+if (signupUserTypeEl) {
+  signupUserTypeEl.addEventListener("change", () => {
+    const lbl = document.getElementById("lblSignupStudentId");
+    const inp = document.getElementById("signupStudentId");
+    if (signupUserTypeEl.value === "Teacher") {
+      if (lbl) lbl.innerText = "Employee ID / Teacher ID*";
+      if (inp) inp.placeholder = "e.g. EMP1024 or FAC77";
+    } else {
+      if (lbl) lbl.innerText = "Student ID / Roll No*";
+      if (inp) inp.placeholder = "e.g. 2112345678 or 22001";
+    }
+  });
+}
+
+// ============================================================================
+// SIGN IN (STUDENT/EMPLOYEE ID OR EMAIL + 2FA)
+// ============================================================================
+window.handlePasswordSignIn = async function(e) {
+  e.preventDefault();
+  const identifier = document.getElementById("loginIdentifier").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  if (!identifier || !password) return alert("Please enter your Student/Employee ID or Email, and Password.");
+
+  const btn = document.getElementById("btnSubmitSignIn");
+  if (btn) { btn.disabled = true; btn.innerText = "Verifying Credentials..."; }
+
+  let resolvedEmail = identifier;
+  if (!identifier.includes('@')) {
+    try {
+      const res = await fetch(apiBase + "/api/auth/resolve-identifier", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.found) {
+        throw new Error(data.error || "No account found matching this Student / Employee ID.");
+      }
+      resolvedEmail = data.email;
+    } catch(resolveErr) {
+      console.warn("Backend resolve fallback, querying Firestore directly:", resolveErr);
+      const qSnap = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", identifier)));
+      if (qSnap.empty) {
+        if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
+        return alert("No account found matching Student / Employee ID: " + identifier);
+      }
+      resolvedEmail = qSnap.docs[0].data().email;
+    }
+  }
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
+    pendingSignInUser = cred.user;
+    pendingSignInEmail = resolvedEmail;
+
+    // Send 2FA OTP
+    try {
+      await fetch(apiBase + "/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resolvedEmail, purpose: "2fa" })
+      });
+    } catch(otpErr) {
+      console.warn("2FA send failed:", otpErr);
+    }
+
+    // Transition to 2FA view in modal
+    document.getElementById("signInFormStep").style.display = "none";
+    document.getElementById("twoFactorStep").style.display = "block";
+    document.getElementById("twoFactorEmailDisplay").innerText = resolvedEmail;
+  } catch(err) {
+    console.error("Sign in error:", err);
+    alert("Sign In Error: " + (err.message || err));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
+  }
+};
+
+window.verify2FACode = async function() {
+  const code = document.getElementById("twoFactorInput").value.trim();
+  if (code.length !== 6) return alert("Please enter the 6-digit verification code sent to your email.");
+
+  const btn = document.getElementById("btnVerify2FA");
+  if (btn) { btn.disabled = true; btn.innerText = "Verifying..."; }
+
+  try {
+    const res = await fetch(apiBase + "/api/auth/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingSignInEmail, otp: code, purpose: "2fa" })
     });
     const data = await res.json();
-    if (res.ok) {
-      const shareUrl = data.shareUrl;
-      if (navigator.share) {
-        try {
-          await navigator.share({ title: `Check out ${title} on DPGNotes`, url: shareUrl });
-        } catch (shareErr) {
-          if (shareErr.name !== 'AbortError') {
-            alert("Failed to share: " + shareErr.message);
-          }
-        }
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Invalid or expired verification code.");
+    }
+
+    // 2FA Successful! Check profile completion
+    const userDocRef = doc(db, "users", pendingSignInUser.uid);
+    const snap = await getDoc(userDocRef);
+    const userData = snap.exists() ? snap.data() : null;
+    const isComplete = userData && userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
+
+    if (!isComplete) {
+      window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
+    } else {
+      window.location.href = "dashboard.html";
+    }
+  } catch(err) {
+    alert("Verification Error: " + err.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = "Verify & Complete Sign In"; }
+  }
+};
+
+window.resend2FACode = async function() {
+  if (!pendingSignInEmail) return;
+  try {
+    await fetch(apiBase + "/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingSignInEmail, purpose: "2fa" })
+    });
+    alert("New 6-digit code has been dispatched to " + pendingSignInEmail);
+  } catch(e) {
+    alert("Failed to resend code: " + e.message);
+  }
+};
+
+// ============================================================================
+// PASSWORD RECOVERY (FORGOT PASSWORD)
+// ============================================================================
+window.handlePasswordRecovery = async function(e) {
+  e.preventDefault();
+  const rawId = document.getElementById("recoveryIdentifier").value.trim();
+  if (!rawId) return alert("Please enter your Student/Employee ID or Email.");
+
+  const btn = document.getElementById("btnSubmitRecovery");
+  if (btn) { btn.disabled = true; btn.innerText = "Sending Reset Link & OTP..."; }
+
+  let targetEmail = rawId;
+  if (!rawId.includes('@')) {
+    try {
+      const res = await fetch(apiBase + "/api/auth/resolve-identifier", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: rawId })
+      });
+      const data = await res.json();
+      if (!data.found) throw new Error("No account found with this ID.");
+      targetEmail = data.email;
+    } catch(err) {
+      if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
+      return alert("Account lookup failed. Please enter your registered email address.");
+    }
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, targetEmail);
+    fetch(apiBase + "/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: targetEmail, purpose: "recovery" })
+    }).catch(console.warn);
+
+    alert(`Password reset instructions and security code have been dispatched to: ${targetEmail}\n\nPlease check your inbox and follow the link to reset your password.`);
+    const modalEl = document.getElementById("forgotPasswordModal");
+    if (modalEl && window.bootstrap) {
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+  } catch(err) {
+    alert("Recovery failed: " + (err.message || err));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
+  }
+};
+
+// ============================================================================
+// MODAL SWITCHING HELPERS
+// ============================================================================
+window.openSignInModal = function() {
+  const suEl = document.getElementById("signUpModal");
+  if (suEl && window.bootstrap) {
+    const suModal = bootstrap.Modal.getInstance(suEl);
+    if (suModal) suModal.hide();
+  }
+  const fpEl = document.getElementById("forgotPasswordModal");
+  if (fpEl && window.bootstrap) {
+    const fpModal = bootstrap.Modal.getInstance(fpEl);
+    if (fpModal) fpModal.hide();
+  }
+  // Reset steps
+  document.getElementById("signInFormStep").style.display = "block";
+  document.getElementById("twoFactorStep").style.display = "none";
+  const siModal = new bootstrap.Modal(document.getElementById("signInModal"));
+  siModal.show();
+};
+
+window.openSignUpModal = function() {
+  const siEl = document.getElementById("signInModal");
+  if (siEl && window.bootstrap) {
+    const siModal = bootstrap.Modal.getInstance(siEl);
+    if (siModal) siModal.hide();
+  }
+  const suModal = new bootstrap.Modal(document.getElementById("signUpModal"));
+  suModal.show();
+};
+
+window.openForgotPasswordModal = function() {
+  const siEl = document.getElementById("signInModal");
+  if (siEl && window.bootstrap) {
+    const siModal = bootstrap.Modal.getInstance(siEl);
+    if (siModal) siModal.hide();
+  }
+  const fpModal = new bootstrap.Modal(document.getElementById("forgotPasswordModal"));
+  fpModal.show();
+};
+
+// ============================================================================
+// GUEST 2-MINUTE PROMPT (R2)
+// ============================================================================
+setTimeout(() => {
+  if (!auth.currentUser && !localStorage.getItem("dpgActiveUser")) {
+    const el = document.getElementById("guestPromptModal");
+    if (el && window.bootstrap) {
+      const modal = new bootstrap.Modal(el);
+      modal.show();
+    }
+  }
+}, 120000); // 120,000ms = 2 minutes
+
+// ============================================================================
+// BLOGS & DOCUMENTATION EXPANDER (R3)
+// ============================================================================
+window.toggleDocCard = function(id) {
+  const content = document.getElementById(`docDetail_${id}`);
+  const btn = document.getElementById(`docBtn_${id}`);
+  if (!content || !btn) return;
+
+  const isHidden = content.style.display === "none" || !content.style.display;
+  if (isHidden) {
+    content.style.display = "block";
+    btn.innerHTML = `Read Less <i class="ri-arrow-up-s-line"></i>`;
+  } else {
+    content.style.display = "none";
+    btn.innerHTML = `Read More <i class="ri-arrow-down-s-line"></i>`;
+  }
+};
+
+// ============================================================================
+// 8 VERTICAL RESOURCE GRIDS ENGINE (R3.1 & R3.2)
+// ============================================================================
+async function loadAcademicResources() {
+  const statusEl = document.getElementById("resourceLoadingStatus");
+  if (statusEl) statusEl.innerText = "Fetching academic resources...";
+
+  try {
+    const snap = await getDocs(query(collection(db, "documents"), limit(150)));
+    const grouped = {};
+    ACADEMIC_CATEGORIES.forEach(c => { grouped[c.key] = []; });
+
+    snap.forEach(d => {
+      const data = d.data();
+      const docId = d.id;
+      const matchedKey = matchCategory(data.category);
+      if (matchedKey && grouped[matchedKey]) {
+        grouped[matchedKey].push({ id: docId, ...data });
+      }
+    });
+
+    if (statusEl) statusEl.style.display = "none";
+
+    let totalRendered = 0;
+    ACADEMIC_CATEGORIES.forEach(cat => {
+      const container = document.getElementById(`gridContainer_${cat.key}`);
+      const cardsWrapper = document.getElementById(`cardsWrapper_${cat.key}`);
+      const countBadge = document.getElementById(`countBadge_${cat.key}`);
+      const docs = grouped[cat.key] || [];
+
+      // R3.1: Only show vertical grid if Firestore has resources corresponding to it! Otherwise clean grid.
+      if (docs.length === 0) {
+        if (container) container.style.display = "none";
       } else {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("Smart Link copied to clipboard!");
+        totalRendered++;
+        if (container) container.style.display = "block";
+        if (countBadge) countBadge.innerText = `${docs.length} Items`;
+
+        if (cardsWrapper) {
+          cardsWrapper.innerHTML = "";
+          docs.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "col-12 col-md-6 col-lg-4";
+            
+            const title = item.title || "Academic Resource";
+            const discipline = item.discipline || "General Science";
+            const uploader = item.uploader || item.userName || "Verified Contributor";
+            const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
+            const pdfUrl = item.pdfUrl || "#";
+            const viewerUrl = `dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat.fullName)}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(uploader)}&docid=${encodeURIComponent(item.id)}`;
+
+            card.innerHTML = `
+              <div class="academic-res-card">
+                <div class="res-card-top">
+                  <span class="res-badge-cat" style="color:${cat.accent}; border-color:${cat.accent}40; background:${cat.accent}15;">
+                    <i class="${cat.icon}"></i> ${cat.fullName}
+                  </span>
+                  <span class="res-badge-disc">${discipline}</span>
+                </div>
+                <h4 class="res-card-title">${title}</h4>
+                <div class="res-card-meta">
+                  <span><i class="ri-user-line"></i> ${uploader}</span>
+                  <span><i class="ri-time-line"></i> ${date}</span>
+                </div>
+                <div class="res-card-actions">
+                  <a href="${viewerUrl}" class="btn-res-view">
+                    <i class="ri-eye-line"></i> Read PDF
+                  </a>
+                  <a href="${pdfUrl}" target="_blank" download class="btn-res-download" title="Direct Download">
+                    <i class="ri-download-2-line"></i>
+                  </a>
+                </div>
+              </div>
+            `;
+            cardsWrapper.appendChild(card);
+          });
+        }
       }
-      btn.innerText = "✅ Shared";
-    } else {
-      throw new Error();
-    }
-  } catch (e) {
-    alert("Failed to generate share link.");
-    btn.innerText = originalText;
-  }
-  setTimeout(() => btn.innerText = originalText, 3000);
-}
-
-/* =========================================
-   RENDER
-========================================= */
-
-function renderResources(data){
-  let latestHtml = "";
-  let examHtml = "";
-  let learningHtml = "";
-  let placementHtml = "";
-
-  data.forEach((doc)=>{
-    const card = createCard(doc);
-
-    // HOME
-    latestHtml += card;
-
-    // EXAMS
-    if(
-      doc.category === "SE" ||
-      doc.category === "SP" ||
-      doc.category === "UE" ||
-      doc.category === "EV"
-    ){
-      examHtml += card;
-    }
-
-    // LEARNING
-    if(doc.category === "T&N"){
-      learningHtml += card;
-    }
-
-    // PLACEMENT
-    if(
-      doc.category === "IQ" ||
-      doc.category === "A&LR" ||
-      doc.category === "PQ"
-    ){
-      placementHtml += card;
-    }
-  });
-
-  if (latestResources) latestResources.innerHTML = latestHtml;
-  if (examResources) examResources.innerHTML = examHtml;
-  if (learningResources) learningResources.innerHTML = learningHtml;
-  if (placementResources) placementResources.innerHTML = placementHtml;
-}
-
-/* =========================================
-   FETCH FIRESTORE
-========================================= */
-
-async function fetchDocuments(){
-  // 1. FAST CACHE HYDRATION (Stale-While-Revalidate: 0ms perceived load)
-  try {
-    const cachedUsersRaw = sessionStorage.getItem("dpg_users_cache");
-    const cachedDocsRaw = sessionStorage.getItem("dpg_docs_cache");
-    if (cachedUsersRaw) {
-      usersCache = JSON.parse(cachedUsersRaw);
-      window.usersCache = usersCache;
-    }
-    if (cachedDocsRaw) {
-      const parsedDocs = JSON.parse(cachedDocsRaw);
-      if (Array.isArray(parsedDocs) && parsedDocs.length > 0) {
-        allDocuments = parsedDocs;
-        applyURLFilters();
-        renderLeaderboard();
-      }
-    }
-  } catch (cacheErr) {
-    console.warn("Session cache read error:", cacheErr);
-  }
-
-  // 2. CONCURRENT FIRESTORE NETWORK FETCH
-  try {
-    const q = query(
-      collection(db, "documents"),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    );
-
-    const [uSnapSettled, docSnapSettled] = await Promise.allSettled([
-      getDocs(collection(db, "users")),
-      getDocs(q)
-    ]);
-
-    if (uSnapSettled.status === "fulfilled") {
-      uSnapSettled.value.forEach(uDoc => {
-        usersCache[uDoc.id] = uDoc.data();
-      });
-      window.usersCache = usersCache;
-      try {
-        sessionStorage.setItem("dpg_users_cache", JSON.stringify(usersCache));
-      } catch (e) {}
-    }
-
-    if (docSnapSettled.status === "fulfilled") {
-      const freshDocs = [];
-      docSnapSettled.value.forEach((doc) => {
-        const dData = doc.data();
-        const createdMillis = dData.createdAt?.toMillis ? dData.createdAt.toMillis() : (typeof dData.createdAt === 'number' ? dData.createdAt : Date.now());
-        freshDocs.push({
-          id: doc.id,
-          ...dData,
-          _createdMillis: createdMillis
-        });
-      });
-
-      allDocuments = freshDocs;
-      try {
-        // Cache stripped docs without Firestore timestamp functions
-        sessionStorage.setItem("dpg_docs_cache", JSON.stringify(freshDocs.map(d => {
-          const { createdAt, ...rest } = d;
-          return { ...rest, _createdMillis: d._createdMillis };
-        })));
-      } catch (e) {}
-
-      applyURLFilters();
-      renderLeaderboard();
-    }
-  } catch(error){
-    console.error("fetchDocuments error:", error);
-  }
-}
-
-async function renderLeaderboard() {
-  const list = document.getElementById("indexLeaderboardList");
-  if (!list) return;
-  
-  const userStats = {};
-  allDocuments.forEach(doc => {
-    const uid = doc.userId;
-    if (!uid) return;
-    if (!userStats[uid]) {
-      userStats[uid] = { name: doc.userName || "Unknown", likes: 0, uploads: 0 };
-    }
-    userStats[uid].uploads++;
-    if (doc.likes) userStats[uid].likes += doc.likes.length;
-  });
-  
-  const sortedUsers = Object.entries(userStats)
-    .map(([uid, stats]) => ({ uid, ...stats }))
-    .sort((a, b) => b.likes - a.likes || b.uploads - a.uploads)
-    .slice(0, 3);
-    
-  if (sortedUsers.length === 0) {
-    list.innerHTML = `<li style="color:var(--text-muted); text-align:center;">No contributors yet.</li>`;
-    return;
-  }
-  
-  let listHtml = "";
-  const badges = ["🥇", "🥈", "🥉"];
-
-  for (let i = 0; i < sortedUsers.length; i++) {
-    const user = sortedUsers[i];
-    const uData = (window.usersCache && window.usersCache[user.uid]) || usersCache[user.uid] || {};
-    
-    let photoHtml = `<div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;">👤</div>`;
-    if (uData.photoURL || uData.profilePic) {
-      photoHtml = `<img src="${uData.photoURL || uData.profilePic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
-    }
-
-    listHtml += `
-      <li style="display:flex; align-items:center; gap:1rem; padding:0.8rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-        <div style="font-size:1.5rem;">${badges[i]}</div>
-        ${photoHtml}
-        <div style="flex-grow:1;">
-          <h4 style="margin:0; color:var(--text-light);">${user.name}</h4>
-          <span style="font-size:0.85rem; color:var(--text-muted);">${user.likes} Likes • ${user.uploads} Uploads</span>
-        </div>
-      </li>
-    `;
-  }
-  list.innerHTML = listHtml;
-}
-
-/* =========================================
-   URL FILTERS
-========================================= */
-
-function applyURLFilters(){
-  try{
-    if(urlCategory){
-      selectedCategory = urlCategory;
-    }
-    
-    if(urlSearch){
-      globalSearch.value = urlSearch;
-    }
-    
-    if (typeof window.applyIndexFilters === 'function') {
-      window.applyIndexFilters();
-    }
-  }catch(error){
-    console.log("URL Filter Error:", error);
-    renderResources(sortDocuments(allDocuments));
-  }
-}
-
-function sortDocuments(docsArray) {
-  const sortVal = document.getElementById("globalSort") ? document.getElementById("globalSort").value : "newest";
-  
-  const getMillis = (d) => {
-    if (!d) return 0;
-    if (d._createdMillis) return d._createdMillis;
-    if (d.createdAt && typeof d.createdAt.toMillis === 'function') return d.createdAt.toMillis();
-    if (typeof d.createdAt === 'number') return d.createdAt;
-    return 0;
-  };
-
-  return [...docsArray].sort((a, b) => {
-    if (sortVal === "oldest") {
-      return getMillis(a) - getMillis(b);
-    } else if (sortVal === "likes") {
-      return (b.likes ? b.likes.length : 0) - (a.likes ? a.likes.length : 0);
-    } else if (sortVal === "shares") {
-      return (b.shareCount || 0) - (a.shareCount || 0);
-    } else {
-      // newest
-      return getMillis(b) - getMillis(a);
-    }
-  });
-}
-
-/* =========================================
-   SEARCH
-========================================= */
-
-if (globalSearch) {
-  window.applyIndexFilters = function() {
-    const searchValue = globalSearch ? globalSearch.value.toLowerCase().trim() : "";
-    let filtered = [...allDocuments];
-    
-    if (selectedCategory) {
-      filtered = filtered.filter(doc => doc.category === selectedCategory);
-    }
-    
-    if (searchValue) {
-      filtered = filtered.filter(doc => 
-        (doc.title || "").toLowerCase().includes(searchValue) ||
-        (doc.description || "").toLowerCase().includes(searchValue) ||
-        (doc.discipline || "").toLowerCase().includes(searchValue) ||
-        (Array.isArray(doc.tags) ? doc.tags.join(" ") : (doc.tags || "")).toLowerCase().includes(searchValue)
-      );
-    }
-    
-    renderResources(sortDocuments(filtered));
-  };
-
-  const globalSortSelect = document.getElementById("globalSort");
-  if (globalSortSelect) {
-    globalSortSelect.addEventListener("change", () => {
-      window.applyIndexFilters();
     });
-  }
-  
-  if (globalSearch) {
-    globalSearch.addEventListener("input", () => {
-      window.applyIndexFilters();
-    });
+
+    if (totalRendered === 0 && statusEl) {
+      statusEl.style.display = "block";
+      statusEl.innerText = "No academic resources published yet in the database.";
+    }
+  } catch(err) {
+    console.error("Resource load error:", err);
+    if (statusEl) {
+      statusEl.innerText = "Error loading academic resources. Please refresh.";
+    }
   }
 }
 
-/* =========================================
-   CATEGORY FILTER
-========================================= */
+// Global search submit
+window.handleHomeSearch = function(e) {
+  e.preventDefault();
+  const q = document.getElementById("homeSearchInput")?.value.trim();
+  if (q) {
+    window.location.href = `dpgnotes-serp.html?query=${encodeURIComponent(q)}`;
+  }
+};
 
-categoryButtons.forEach((button)=>{
+// Initialize
+document.addEventListener("DOMContentLoaded", () => {
+  loadAcademicResources();
 
-  button.addEventListener(
-    "click",
-    ()=>{
+  const searchForm = document.getElementById("homeSearchForm");
+  if (searchForm) searchForm.addEventListener("submit", window.handleHomeSearch);
 
-      selectedCategory = button.dataset.category;
-      window.applyIndexFilters();
-      openPage("resourcesPage");
-    }
-  );
+  const signUpForm = document.getElementById("formSignUp");
+  if (signUpForm) signUpForm.addEventListener("submit", window.handleEmailSignUp);
+
+  const signInForm = document.getElementById("formSignIn");
+  if (signInForm) signInForm.addEventListener("submit", window.handlePasswordSignIn);
+
+  const recoveryForm = document.getElementById("formRecovery");
+  if (recoveryForm) recoveryForm.addEventListener("submit", window.handlePasswordRecovery);
 });
-
-/* =========================================
-   UPLOAD
-========================================= */
-
-// Upload logic moved to dashboard.js
-
-/* =========================================
-   INIT
-========================================= */
-
-fetchDocuments();
-
-/* -----------------------------------------
-   SAFE TAB OPEN
------------------------------------------ */
-
-try{
-
-  const validTabs = [
-
-    "resourcesPage",
-
-    "examsPage",
-
-    "learningPage",
-
-    "placementPage",
-
-    "leaderboardPage"
-  ];
-
-  if(
-
-    urlTab
-    &&
-    validTabs.includes(urlTab)
-
-  ){
-
-    openPage(urlTab);
-
-  }else{
-
-    openPage(
-      "resourcesPage"
-    );
-  }
-
-}catch(error){
-
-  console.log(
-    "Tab Error:",
-    error
-  );
-
-  openPage(
-    "resourcesPage"
-  );
-}
-
-/* -----------------------------------------
-   DIRECT PDF
------------------------------------------ */
-
-try{
-
-  if(urlPdf){
-
-    window.open(
-
-      `${PDF_VIEWER}${encodeURIComponent(urlPdf)}`,
-
-      "_blank"
-    );
-  }
-
-}catch(error){
-
-  console.log(
-    "PDF Error:",
-    error
-  );
-}
-
-/* =========================================
-   DPG SIMPLE DIAGNOSIS
-========================================= */
-
-(function(){
-
-  const params =
-
-  new URLSearchParams(
-    window.location.search
-  );
-
-  const source =
-
-  params.get(
-    "utm_source"
-  );
-
-  const medium =
-
-  params.get(
-    "utm_medium"
-  );
-
-  const campaign =
-
-  params.get(
-    "utm_campaign"
-  );
-
-  const error =
-
-  params.get(
-    "error"
-  );
-
-  /* ONLY PDF VIEWER */
-
-  if(source !== "pdfviewer"){
-
-    return;
-  }
-
-  console.log({
-
-    source,
-    medium,
-    campaign,
-    error,
-
-    timestamp:
-    new Date().toISOString()
-  });
-
-  /* CARD */
-
-  const card =
-
-  document.createElement(
-    "div"
-  );
-
-  card.style = `
-
-    position:fixed;
-
-    left:1rem;
-    right:1rem;
-    bottom:1rem;
-
-    z-index:999999;
-
-    max-width:560px;
-
-    margin:auto;
-
-    background:
-    linear-gradient(
-      135deg,
-      #0f172a,
-      #111827
-    );
-
-    color:white;
-
-    border:
-    1px solid #1e293b;
-
-    border-radius:24px;
-
-    box-shadow:
-    0 20px 50px rgba(0,0,0,.45);
-
-    overflow:hidden;
-
-    font-family:
-    Arial,sans-serif;
-  `;
-
-  card.innerHTML = `
-
-    <div
-      style="
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:1rem;
-      border-bottom:
-      1px solid #1e293b;
-      "
-    >
-
-      <strong
-        style="
-        color:#60a5fa;
-        font-size:1rem;
-        "
-      >
-
-        DPGNotes Diagnosis
-
-      </strong>
-
-      <button
-        id="dpgClose"
-
-        style="
-        width:40px;
-        height:40px;
-        border:none;
-        border-radius:12px;
-        background:#1e293b;
-        color:white;
-        cursor:pointer;
-        font-size:1rem;
-        "
-      >
-
-        ✕
-
-      </button>
-
-    </div>
-
-    <div
-      style="
-      padding:1rem;
-      "
-    >
-
-      <h2
-        style="
-        margin-bottom:.7rem;
-        "
-      >
-
-        PDF Resource Failed
-
-      </h2>
-
-      <p
-        style="
-        color:#cbd5e1;
-        line-height:1.7;
-        margin-bottom:1rem;
-        "
-      >
-
-        DPGNotes detected that the
-        PDF Viewer redirected here
-        because the requested
-        PDF could not be loaded.
-
-      </p>
-
-      <div
-        style="
-        display:grid;
-        gap:.6rem;
-        "
-      >
-
-        <div
-          style="
-          background:#0f172a;
-          border:1px solid #1e293b;
-          padding:.75rem;
-          border-radius:14px;
-          "
-        >
-
-          <strong>
-            Source:
-          </strong>
-
-          ${source || "N/A"}
-
-        </div>
-
-        <div
-          style="
-          background:#0f172a;
-          border:1px solid #1e293b;
-          padding:.75rem;
-          border-radius:14px;
-          "
-        >
-
-          <strong>
-            Medium:
-          </strong>
-
-          ${medium || "N/A"}
-
-        </div>
-
-        <div
-          style="
-          background:#0f172a;
-          border:1px solid #1e293b;
-          padding:.75rem;
-          border-radius:14px;
-          "
-        >
-
-          <strong>
-            Campaign:
-          </strong>
-
-          ${campaign || "N/A"}
-
-        </div>
-
-        <div
-          style="
-          background:#0f172a;
-          border:1px solid #1e293b;
-          padding:.75rem;
-          border-radius:14px;
-          "
-        >
-
-          <strong>
-            Error:
-          </strong>
-
-          ${error || "Unknown"}
-
-        </div>
-
-      </div>
-
-      <button
-        id="dpgLearn"
-
-        style="
-        margin-top:1rem;
-        width:100%;
-        border:none;
-        padding:1rem;
-        border-radius:16px;
-        background:#2563eb;
-        color:white;
-        font-weight:700;
-        cursor:pointer;
-        "
-      >
-
-        Learn More
-
-      </button>
-
-    </div>
-
-  `;
-
-  document.body.appendChild(
-    card
-  );
-
-  /* CLOSE */
-
-  document.getElementById(
-    "dpgClose"
-  ).onclick = ()=>{
-
-    card.remove();
-  };
-
-  /* LEARN */
-
-  document.getElementById(
-    "dpgLearn"
-  ).onclick = ()=>{
-
-    alert(
-
-`DPGNotes PDF Diagnosis
-
-Possible Reasons:
-
-• Missing PDF URL
-• Invalid Redirect
-• Firebase Hosting Restriction
-• CORS Issue
-• Deleted PDF Resource
-
-Referral Details:
-
-Source:
-${source}
-
-Medium:
-${medium}
-
-Campaign:
-${campaign}
-
-Error:
-${error}
-
-Timestamp:
-${new Date().toISOString()}`
-    );
-  };
-
-  // Live Search & Filtering
-  const gSearch = document.getElementById("globalSearch");
-  if (gSearch) {
-    gSearch.addEventListener("input", (e) => {
-      const query = e.target.value.toLowerCase();
-      const filtered = allDocuments.filter(doc => 
-        (doc.title && doc.title.toLowerCase().includes(query)) ||
-        (doc.description && doc.description.toLowerCase().includes(query)) ||
-        (doc.discipline && doc.discipline.toLowerCase().includes(query)) ||
-        (doc.tags && doc.tags.some(t => t.toLowerCase().includes(query)))
-      );
-      renderResources(filtered);
-    });
-  }
-
-})();

@@ -2000,7 +2000,108 @@ app.post('/api/admin/verify', async (req, res) => {
   }
 });
 
-// Admin Middleware
+// ==========================================
+// USER AUTH: IDENTIFIER RESOLUTION & OTP 2FA / RECOVERY
+// ==========================================
+
+// Resolve Student ID / Employee ID or Email
+app.post('/api/auth/resolve-identifier', async (req, res) => {
+  try {
+    const rawId = String(req.body.identifier || '').trim();
+    if (!rawId) {
+      return res.status(400).json({ found: false, error: "Identifier is required" });
+    }
+
+    if (rawId.includes('@')) {
+      return res.json({ found: true, email: rawId.toLowerCase() });
+    }
+
+    if (!db) {
+      return res.status(500).json({ found: false, error: "Database not connected" });
+    }
+
+    const snap = await db.collection('users').where('studentIdOrEmployeeId', '==', rawId).limit(1).get();
+    if (snap.empty) {
+      // Also check field studentId or employeeId if stored that way
+      const altSnap = await db.collection('users').where('studentId', '==', rawId).limit(1).get();
+      if (!altSnap.empty) {
+        const u = altSnap.docs[0].data();
+        return res.json({ found: true, email: u.email, name: u.name, userType: u.userType || 'Student' });
+      }
+      return res.status(404).json({ found: false, error: "No account registered with this Student / Employee ID." });
+    }
+
+    const userData = snap.docs[0].data();
+    return res.json({ 
+      found: true, 
+      email: userData.email, 
+      name: userData.name, 
+      userType: userData.userType || 'Student' 
+    });
+  } catch (err) {
+    console.error("Resolve identifier error:", err);
+    res.status(500).json({ found: false, error: err.message });
+  }
+});
+
+// Send OTP for 2FA Sign-In or Password Recovery
+app.post('/api/auth/send-otp', async (req, res) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const purpose = String(req.body.purpose || '2fa').trim(); // '2fa' or 'recovery'
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ success: false, error: "Valid email is required" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const storeKey = `user_otp_${email}`;
+    otpStore.set(storeKey, { otp, purpose, expires: Date.now() + 10 * 60 * 1000 }); // 10 min
+
+    const is2FA = purpose === '2fa';
+    const subject = is2FA ? "DPGNotes Security: 2-Factor Authentication Code" : "DPGNotes: Password Recovery Verification Code";
+    const headerTitle = is2FA ? "Two-Factor Verification 🔐" : "Password Recovery 🔑";
+    const messageText = is2FA 
+      ? "You are signing in to your DPGNotes account. Enter the one-time code below to complete your sign-in:"
+      : "We received a request to recover your DPGNotes password. Enter the one-time code below:";
+
+    const html = createTemplate(
+      headerTitle,
+      `<p>${messageText}</p>
+       <div style="margin: 25px 0; text-align: center;">
+         <div style="display:inline-block; background: #0f172a; border: 2px dashed #6366f1; border-radius: 12px; padding: 15px 30px;">
+           <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #818cf8; font-family: monospace;">${otp}</span>
+         </div>
+       </div>
+       <p style="font-size: 13px; color: #94a3b8; text-align: center;">This code is valid for 10 minutes. If you did not request this, please ignore this email.</p>`
+    );
+
+    await sendEmail(email, subject, html);
+    res.json({ success: true, message: "Verification code sent to your email." });
+  } catch (err) {
+    console.error("Auth send OTP error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Verify OTP
+app.post('/api/auth/verify-otp', async (req, res) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const otp = String(req.body.otp || '').trim();
+    const storeKey = `user_otp_${email}`;
+
+    const record = otpStore.get(storeKey);
+    if (record && record.otp === otp && record.expires > Date.now()) {
+      otpStore.delete(storeKey);
+      res.json({ success: true, message: "Code verified successfully." });
+    } else {
+      res.status(400).json({ success: false, error: "Invalid or expired verification code." });
+    }
+  } catch (err) {
+    console.error("Auth verify OTP error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 const verifyAdmin = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: "Unauthorized" });
@@ -6716,7 +6817,9 @@ app.post('/api/assignment/save', async (req, res) => {
       date,
       day,
       userType,
-      docType
+      docType,
+      headerLogo,
+      centerLogo
     } = req.body;
 
     const uid = String(userId || 'guest_default').trim();
@@ -6732,6 +6835,8 @@ app.post('/api/assignment/save', async (req, res) => {
       subjectCode: String(subjectCode || '').trim(),
       courseSection: String(courseSection || '').trim(),
       degreeName: String(degreeName || '').trim(),
+      headerLogo: String(headerLogo || 'Header_Image.jpg').trim(),
+      centerLogo: String(centerLogo || 'Center_Logo.jpg').trim(),
       session: String(session || '').trim(),
       profName: String(profName || '').trim(),
       designation: String(designation || '').trim(),

@@ -776,16 +776,45 @@
         <!-- SETTINGS TAB -->
         <section id="settingsTab" class="dashboard-tab">
           <h2>Settings <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Your configuration data is saved securely in DPGNotes encrypted cloud storage. Click to view Data Retention Policy." onclick="window.open('legal/index.html?from=contributor#retention', '_blank')"></i></h2>
+          
+          <div id="profileIncompleteAlert" style="display:none; background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:10px; padding:15px; margin-bottom:1.5rem; color:#fca5a5;">
+            <div style="font-weight:700; font-size:1rem; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+              <i class="ri-error-warning-fill" style="font-size:1.3rem; color:#ef4444;"></i> Contributor Profile Setup Required
+            </div>
+            <p style="margin:0; font-size:0.88rem; color:#f1f5f9;">
+              Please select your <strong>User Type (Student or Teacher)</strong> and provide your <strong>Student ID / Employee ID</strong> below to activate all dashboard contribution tabs.
+            </p>
+          </div>
+
           <form id="settingsForm" class="upload-form">
             <div class="form-grid">
+              <label>Full Name*</label>
+              <input type="text" id="settingName" placeholder="Your full name" required />
+
+              <label>Registered Email</label>
+              <input type="email" id="settingEmail" readonly style="opacity:0.75; cursor:not-allowed;" />
+
+              <label>User Type*</label>
+              <select id="settingUserType" required style="padding:0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(0,0,0,0.2); color:white;">
+                <option value="">-- Select Role --</option>
+                <option value="Student">Student</option>
+                <option value="Teacher">Teacher / Faculty</option>
+              </select>
+
+              <label id="lblSettingId">Student ID / Employee ID*</label>
+              <input type="text" id="settingStudentId" placeholder="Enter ID (e.g. 2112345678)" required />
+
+              <label>Contact Number (Optional)</label>
+              <input type="tel" id="settingContact" placeholder="+91 98765 43210" />
+
               <label>Profile Photo</label>
               <input type="file" id="settingPhoto" accept="image/*" />
               
               <label>Header / Banner Photo</label>
               <input type="file" id="settingBanner" accept="image/*" />
               
-              <label>Bio</label>
-              <textarea id="settingBio" placeholder="Tell us about yourself"></textarea>
+              <label>Bio (Supports HTML Formatting)</label>
+              <textarea id="settingBio" placeholder="Tell us about yourself (supports basic HTML)"></textarea>
               
               <label>LinkedIn URL</label>
               <input type="url" id="settingLinkedin" placeholder="https://linkedin.com/in/..." />
