@@ -64,6 +64,35 @@ body {
   z-index: 100;
 }
 
+/* Mobile: icon-only nav (mirrors PDF Viewer pattern) */
+@media (max-width: 768px) {
+  .sol-navbar {
+    padding: 0.55rem 0.75rem;
+    gap: 0.3rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sol-navbar .sol-brand span {
+    display: none;
+  }
+  .sol-navbar .sol-navbar-actions {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .sol-navbar .sol-btn-sm {
+    padding: 5px 8px !important;
+    font-size: 0.74rem !important;
+    gap: 3px !important;
+  }
+  .sol-navbar .sol-btn-sm .btn-label {
+    display: none !important;
+  }
+  /* Keep like count visible (it's a number, not a label) */
+  .sol-navbar #likeCountText {
+    display: inline !important;
+  }
+}
+
 .sol-brand {
   display: flex;
   align-items: center;

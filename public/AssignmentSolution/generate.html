@@ -916,14 +916,49 @@
       }
     };
 
-    // Load Specific Solution for Editing
+    // ============================================================
+    // LOAD SOLUTION FOR EDIT — 3-LAYER SECURITY GATE
+    // Layer 1: Active Firebase auth session (must be logged in)
+    // Layer 2: UID + Email must match Firestore contributorUid + contributorEmail
+    // Layer 3: Solution password (AES-GCM decrypt, only reached if L1+L2 pass)
+    // ============================================================
     window.loadSpecificSolutionForEdit = async function(solId, targetContribUid = null) {
       if (!checkAuthentication()) return;
-      const contribUid = targetContribUid || contributorProfile.uid;
+
+      // ─── LAYER 1: Active Firebase Auth Session ───────────────
+      const currentAuthUser = window.solAuth && window.solAuth.currentUser;
+      const currentUid = currentAuthUser
+        ? currentAuthUser.uid
+        : (contributorProfile ? contributorProfile.uid : localStorage.getItem("dpgActiveUserUid"));
+      const userEmail = currentAuthUser
+        ? currentAuthUser.email
+        : (contributorProfile ? contributorProfile.email : (localStorage.getItem("dpgUserEmail") || ""));
+
+      if (!currentAuthUser && !currentUid) {
+        // Not logged in at all — silently redirect to search, no violation log
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("You must be logged in as the solution contributor to edit this document.", { title: "Authentication Required", isDanger: true });
+        }
+        window.location.href = "index.html";
+        return;
+      }
+
+      const contribUid = targetContribUid || contributorProfile?.uid || currentUid;
 
       try {
         const docRef = window.solDoc(window.solDb, "assignment_solutions", contribUid, "solutions", solId);
-        const snap = await window.solGetDoc(docRef);
+        let snap = await window.solGetDoc(docRef);
+
+        // If not found at targetContribUid, search by collection group to find owner
+        if (!snap.exists() && targetContribUid) {
+          // Try current user's own path
+          const ownRef = window.solDoc(window.solDb, "assignment_solutions", currentUid, "solutions", solId);
+          const ownSnap = await window.solGetDoc(ownRef);
+          if (ownSnap.exists()) {
+            snap = ownSnap;
+          }
+        }
+
         if (!snap.exists()) {
           if (typeof window.customAlert === 'function') {
             await window.customAlert("Solution document not found in your authoring repository.", { title: "Not Found", isDanger: true });
@@ -932,6 +967,61 @@
         }
 
         const data = snap.data();
+        const ownerUid = data.contributorUid || contribUid;
+        const ownerEmail = (data.contributorEmail || data.uploaderEmail || "").toLowerCase().trim();
+        const isAdminEmail = userEmail.toLowerCase() === 'its.akshatnetworkhub23@gmail.com';
+
+        // ─── LAYER 2: Identity Match — UID + Email ────────────────
+        // The visiting user MUST be the exact owner (UID match AND email match)
+        // Admin email bypasses identity check but NOT the auth session check
+        const uidMatch = ownerUid && (ownerUid === currentUid);
+        const emailMatch = !ownerEmail || userEmail.toLowerCase() === ownerEmail;
+
+        if (!isAdminEmail && (!uidMatch || !emailMatch)) {
+          // ── LOG UNAUTHORIZED VIOLATION to Firestore ──────────
+          const caseId = `CASE-AAV-${(solId || 'SOL').slice(0, 6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+          const violationData = {
+            caseId: caseId,
+            resourceId: solId || "unknown",
+            resourceTitle: data.subjectName || data.subjectCode || "Assignment Solution",
+            userId: currentUid || "Guest",
+            userEmail: userEmail || "unknown",
+            attemptedAction: "UNAUTHORIZED_SOLUTION_EDIT_ATTEMPT",
+            solutionType: "assignment",
+            ownerUid: ownerUid,
+            ownerEmail: ownerEmail || "unknown",
+            mismatch: !uidMatch ? "UID_MISMATCH" : "EMAIL_MISMATCH",
+            deviceIp: telemetryData.ip || "Recorded",
+            geolocation: telemetryData.geo || "Recorded",
+            country: (telemetryData.geo ? telemetryData.geo.split(',').pop().trim() : "India"),
+            adminAcknowledged: false,
+            severity: "HIGH",
+            details: `Unauthorized user ${userEmail || currentUid} attempted to access edit mode for assignment solution "${data.subjectName || solId}" owned by ${ownerEmail || ownerUid}. Gate: Pre-password identity check (Layer 2). No password was requested.`,
+            timestamp: window.solServerTimestamp ? window.solServerTimestamp() : new Date()
+          };
+
+          try {
+            if (window.solAddDoc && window.solCollection && window.solDb) {
+              await window.solAddDoc(window.solCollection(window.solDb, "authorized_access_violations"), violationData);
+            } else if (window.solSetDoc && window.solDoc && window.solDb) {
+              await window.solSetDoc(window.solDoc(window.solDb, "authorized_access_violations", caseId), violationData);
+            }
+          } catch (logErr) {
+            console.error("Violation logging failed:", logErr);
+          }
+
+          // ── ALERT + REDIRECT ──────────────────────────────────
+          const alertMsg = "Access Denied: This solution belongs to a different contributor. Your attempt has been logged as a Security Violation and will be reviewed by the DPGNotes Admin team.\n\nYou are being redirected to the search interface.";
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert(alertMsg, { title: "Unauthorized Access — Violation Logged", isDanger: true });
+          } else {
+            alert(alertMsg);
+          }
+          window.location.href = "index.html";
+          return;
+        }
+
+        // ─── LAYERS 1 + 2 PASSED — Proceed to load content ────
         isEditMode = true;
         editingSolutionId = solId;
 
@@ -972,7 +1062,7 @@
           window.applyAdsPreferenceToPage(adsPref);
         }
 
-        // Encryption handling & Ownership verification
+        // ─── LAYER 3: Solution Password (only for encrypted solutions) ───
         const encChk = document.getElementById('chkEnableEncryption');
         if (data.isEncrypted) {
           pendingEncryptedDoc = data;
@@ -987,23 +1077,7 @@
             pwdInput.focus();
           }
         } else {
-          // Unencrypted solution: Verify ownership before allowing edit
-          const currentAuthUser = window.solAuth && window.solAuth.currentUser;
-          const currentUid = (currentAuthUser && currentAuthUser.uid) || (contributorProfile ? contributorProfile.uid : localStorage.getItem("dpgActiveUserUid"));
-          const userEmail = (currentAuthUser && currentAuthUser.email) || (contributorProfile ? contributorProfile.email : localStorage.getItem("dpgUserEmail")) || "";
-          const isAdmin = userEmail === 'its.akshatnetworkhub23@gmail.com';
-          const ownerUid = data.contributorUid;
-
-          if (ownerUid && ownerUid !== currentUid && !isAdmin) {
-            if (typeof window.customAlert === 'function') {
-              await window.customAlert("Access Denied: You do not have authorization to edit solutions published by another contributor.", { title: "Unauthorized", isDanger: true });
-            } else {
-              alert("Access Denied: You do not have authorization to edit solutions published by another contributor.");
-            }
-            window.location.href = "generate.html";
-            return;
-          }
-
+          // Unencrypted — owner already verified, open editor directly
           pendingEncryptedDoc = null;
           if (encChk) {
             encChk.checked = false;
@@ -1032,7 +1106,6 @@
           await window.customAlert("Failed to load solution for editing: " + err.message, { title: "Error", isDanger: true });
         }
       }
-    };
 
     // Unlock Encrypted Solution for In-Memory Editing
     window.handleEditUnlockSubmit = async function() {

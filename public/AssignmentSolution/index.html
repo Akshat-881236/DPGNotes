@@ -67,7 +67,7 @@
       <!-- Interactive Header Search Bar Expander -->
       <div class="sol-nav-search-wrapper" id="navSearchWrapper">
         <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" id="navSearchToggleBtn" onclick="window.toggleNavSearch()" title="Search solutions">
-          <i class="ri-search-2-line"></i> Search
+          <i class="ri-search-2-line"></i><span class="btn-label"> Search</span>
         </button>
         <form class="sol-nav-search-bar" id="navSearchBar" onsubmit="event.preventDefault(); window.submitNavSearch();">
           <i class="ri-search-2-line" style="color:#38bdf8; font-size:1.05rem;"></i>
@@ -77,13 +77,13 @@
         </form>
       </div>
       <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" id="navShareBtn" onclick="handleShareSolution()" style="display:none;">
-        <i class="ri-share-forward-line"></i> Share
+        <i class="ri-share-forward-line"></i><span class="btn-label"> Share</span>
       </button>
       <button type="button" id="btnLikeSolution" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="handleLikeSolution()" style="display:none;">
         <i class="ri-heart-line" id="likeIcon"></i> <span id="likeCountText">0</span>
       </button>
       <a href="../study-hub.html" class="sol-btn sol-btn-secondary sol-btn-sm">
-        <i class="ri-book-open-line"></i> Study Hub
+        <i class="ri-book-open-line"></i><span class="btn-label"> Study Hub</span>
       </a>
     </div>
   </nav>
