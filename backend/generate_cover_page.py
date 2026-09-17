@@ -198,13 +198,23 @@ def generate_pdf(data, output_path, assets_dir=None):
         c.setAuthor("DPGNotes Academic Cover Page Generator")
     c.setSubject(f"{data.get('subjectName', '')} ({data.get('subjectCode', '')})")
 
-    # 1. Header Banner Image
-    header_w = 507.48
-    header_h = 77.88
+    # 1. Header Banner Image: Dynamic Banner Width & Aspect Ratio Engine
+    is_h2 = ("DPGSTM-2" in req_header or "2Header" in req_header or req_header == "DPGSTM-2HeaderImage.png")
+    is_h3 = ("DPGDegreeHeader" in req_header or "Degree" in req_header or req_header == "DPGDegreeHeader_Image.jpeg")
+
+    header_w = 522.0 if is_h2 else (515.0 if is_h3 else 507.48)
+    banner_top_y = 23.0 if is_h2 else (27.0 if is_h3 else 33.84)
     header_x = (PAGE_WIDTH - header_w) / 2.0
-    header_y = PAGE_HEIGHT - 34.0 - header_h
 
     if os.path.exists(header_img_path):
+        try:
+            reader = ImageReader(header_img_path)
+            iw, ih = reader.getSize()
+            img_aspect = iw / float(ih) if ih > 0 else (header_w / 77.88)
+        except Exception:
+            img_aspect = header_w / 77.88
+        header_h = header_w / img_aspect
+        header_y = PAGE_HEIGHT - banner_top_y - header_h
         c.drawImage(header_img_path, header_x, header_y, width=header_w, height=header_h, preserveAspectRatio=True, mask='auto')
 
     # Typography setup

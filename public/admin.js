@@ -4807,31 +4807,25 @@ async function renderCoverPageToCanvas(d) {
     loadSafeImg(logoFilename)
   ]);
 
-  // 1. Header Banner Image
-  const headerW = 507.48 * scaleX;
-  const headerH = 77.88 * scaleY;
-  const headerX = (W - headerW) / 2.0;
-  const headerY = 33.84 * scaleY;
+  // 1. Header Banner Image: Dynamic Banner Width & Aspect Ratio Engine
+  const isH2 = headerFilename === 'DPGSTM-2HeaderImage.png' || (d.headerLogo && (String(d.headerLogo).includes('DPGSTM-2') || String(d.headerLogo).includes('2Header')));
+  const isH3 = headerFilename === 'DPGDegreeHeader_Image.jpeg' || (d.headerLogo && (String(d.headerLogo).includes('DPGDegreeHeader') || String(d.headerLogo).includes('Degree')));
+
+  const bannerW = (isH2 ? 522.0 : (isH3 ? 515.0 : 507.48)) * scaleX;
+  const bannerTopY = (isH2 ? 23.0 : (isH3 ? 27.0 : 33.84)) * scaleY;
+
   if (headerImg && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
     const nw = headerImg.naturalWidth || headerImg.width;
     const nh = headerImg.naturalHeight || headerImg.height;
     if (nw > 0 && nh > 0) {
-      const targetAspect = headerW / headerH;
       const imgAspect = nw / nh;
-      let drawW = headerW;
-      let drawH = headerH;
-      let drawX = headerX;
-      let drawY = headerY;
-      if (imgAspect > targetAspect) {
-        drawH = headerW / imgAspect;
-        drawY = headerY + (headerH - drawH) / 2.0;
-      } else {
-        drawW = headerH * imgAspect;
-        drawX = (W - drawW) / 2.0;
-      }
+      const drawW = bannerW;
+      const drawH = drawW / imgAspect;
+      const drawX = (W - drawW) / 2.0;
+      const drawY = bannerTopY;
       ctx.drawImage(headerImg, drawX, drawY, drawW, drawH);
     } else {
-      ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
+      ctx.drawImage(headerImg, (W - bannerW) / 2.0, bannerTopY, bannerW, 77.88 * scaleY);
     }
   }
 

@@ -738,6 +738,22 @@
     if (!ads || ads.length === 0) return;
 
     containers.forEach((box, boxIdx) => {
+      // In Cover Page Generators, strictly prevent ad injection unless Quota reached modal is active and playback section is visible!
+      const isCoverModalAd = box.closest('#quotaLockOverlay') || 
+                             box.closest('.quota-lock-overlay') || 
+                             box.classList.contains('cover-modal-native-ad') ||
+                             box.dataset.adVariant === 'cover_video' || 
+                             box.dataset.adVariant === 'cover_image';
+      if (isCoverModalAd) {
+        const overlay = document.getElementById('quotaLockOverlay') || box.closest('.quota-lock-overlay');
+        const playbackSec = document.getElementById('adPlaybackSection') || (overlay ? overlay.querySelector('#adPlaybackSection') : null);
+        const isOverlayVisible = overlay && (overlay.style.display === 'flex' || overlay.style.display === 'block');
+        const isPlaybackVisible = playbackSec && playbackSec.style.display === 'block';
+        if (!isOverlayVisible || !isPlaybackVisible) {
+          return;
+        }
+      }
+
       if (box.dataset.adInjected) return;
 
       const variant = box.dataset.adVariant || (box.id.includes("header") ? "header" : box.id.includes("footer") ? "footer" : box.id.includes("sidebar") || box.classList.contains("sidebar") ? "sidebar" : "feed");

@@ -7200,11 +7200,18 @@ app.post('/api/assignment/export-pdf', async (req, res) => {
         const headerBytes = fs.readFileSync(headerPath);
         const isPng = headerFile.toLowerCase().endsWith('.png');
         const headerImg = isPng ? await pdfDoc.embedPng(headerBytes) : await pdfDoc.embedJpg(headerBytes);
-        const hw = 507.48 * scaleX;
-        const hh = 77.88 * scaleY;
+        const isH2 = headerFile === 'DPGSTM-2HeaderImage.png' || reqHeader.includes('DPGSTM-2') || reqHeader.includes('2Header');
+        const isH3 = headerFile === 'DPGDegreeHeader_Image.jpeg' || reqHeader.includes('DPGDegreeHeader') || reqHeader.includes('Degree');
+
+        const hw = (isH2 ? 522.0 : (isH3 ? 515.0 : 507.48)) * scaleX;
+        const bannerTopY = (isH2 ? 23.0 : (isH3 ? 27.0 : 33.84)) * scaleY;
+        const imgDims = headerImg.scale(1);
+        const imgAspect = imgDims.width / imgDims.height;
+        const hh = hw / imgAspect;
+
         page.drawImage(headerImg, {
           x: (width - hw) / 2.0,
-          y: height - (33.84 * scaleY) - hh,
+          y: height - bannerTopY - hh,
           width: hw,
           height: hh
         });

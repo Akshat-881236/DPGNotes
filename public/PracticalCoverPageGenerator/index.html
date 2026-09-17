@@ -827,9 +827,9 @@
         <!-- AdSense Slot Container -->
         <div id="adsenseContainer" style="width:100%; max-width:600px; margin:1rem auto; display:none;"></div>
 
-        <!-- Native Ads Container -->
+        <!-- Native Ads Container (Strictly initialized ONLY when Quota Reached and Modal Active) -->
         <div id="nativeAdsContainer" style="display:flex; justify-content:center; width:100%; display:none;">
-          <div class="native-ads" id="native-ads" data-ad-variant="cover_video" data-ad-count="1" style="margin-top:1rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
+          <div id="native-ads" class="cover-modal-native-ad" data-ad-variant="cover_video" data-ad-count="1" style="margin-top:1rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
         </div>
       </div>
 
@@ -1104,10 +1104,25 @@
       if (genContainer) genContainer.style.removeProperty('display');
       if (logsSec) logsSec.style.removeProperty('display');
 
-      if (adWatchTimer) clearInterval(adWatchTimer);
-      if (midnightTimer) clearInterval(midnightTimer);
-      if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+      if (adWatchTimer) { clearInterval(adWatchTimer); adWatchTimer = null; }
+      if (midnightTimer) { clearInterval(midnightTimer); midnightTimer = null; }
+      if (adsenseCheckTimer) { clearInterval(adsenseCheckTimer); adsenseCheckTimer = null; }
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+
+      // Clear all active ad players, iframes, and AdSense DOM
+      const nativeBox = document.getElementById('nativeAdsContainer');
+      const adNativeInner = document.getElementById('native-ads');
+      if (nativeBox) nativeBox.style.display = 'none';
+      if (adNativeInner) {
+        adNativeInner.classList.remove('native-ads');
+        delete adNativeInner.dataset.adInjected;
+        adNativeInner.innerHTML = '';
+      }
+      const adsenseBox = document.getElementById('adsenseContainer');
+      if (adsenseBox) {
+        adsenseBox.style.display = 'none';
+        adsenseBox.innerHTML = '';
+      }
     }
 
     // Google Sign Up / Sign In helper for Cover Pages
@@ -1379,12 +1394,15 @@
       if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal} (${nativeSec}s remaining...)`;
       if (barEl) barEl.style.width = '0%';
 
-      if (adNativeInner && typeof window.renderNativeDPGAds === 'function') {
+      if (adNativeInner) {
+        adNativeInner.classList.add('native-ads');
         const hasVideo = (window.DPG_APPROVED_ADS || []).some(a => a.videoUrl && a.videoUrl.trim() !== '');
         adNativeInner.dataset.adVariant = hasVideo ? "cover_video" : "cover_image";
         delete adNativeInner.dataset.adInjected;
         adNativeInner.innerHTML = '';
-        window.renderNativeDPGAds();
+        if (typeof window.renderNativeDPGAds === 'function') {
+          window.renderNativeDPGAds();
+        }
       }
 
       adWatchTimer = setInterval(() => {
@@ -1640,32 +1658,27 @@
       const scaleX = W / 612.0;
       const scaleY = H / 792.0;
 
-      // 1. Header Banner Image (Image1)
-      const headerW = 507.48 * scaleX;
-      const headerH = 77.88 * scaleY;
-      const headerX = (W - headerW) / 2.0;
-      const headerY = 33.84 * scaleY;
+      // 1. Header Banner Image: Dynamic Banner Width & Aspect Ratio Engine
+      const hStr = String(d.headerLogo || currentHeaderLogo || '');
+      const isHeaderLogo2 = hStr.includes('DPGSTM-2') || hStr.includes('2Header') || hStr === 'DPGSTM-2HeaderImage.png';
+      const isHeaderLogo3 = hStr.includes('DPGDegreeHeader') || hStr.includes('Degree') || hStr === 'DPGDegreeHeader_Image.jpeg';
+
+      // Width allocation: Header Logo 2 requires wider image width (522 pt), Header Logo 3 (515 pt), Header Logo 1 (508 pt)
+      const targetBannerW = (isHeaderLogo2 ? 522.0 : (isHeaderLogo3 ? 515.0 : 507.48)) * scaleX;
+      const targetBannerTopY = (isHeaderLogo2 ? 23.0 : (isHeaderLogo3 ? 27.0 : 33.84)) * scaleY;
 
       if (headerImg.complete && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
         const nw = headerImg.naturalWidth || headerImg.width;
         const nh = headerImg.naturalHeight || headerImg.height;
         if (nw > 0 && nh > 0) {
-          const targetAspect = headerW / headerH;
           const imgAspect = nw / nh;
-          let drawW = headerW;
-          let drawH = headerH;
-          let drawX = headerX;
-          let drawY = headerY;
-          if (imgAspect > targetAspect) {
-            drawH = headerW / imgAspect;
-            drawY = headerY + (headerH - drawH) / 2.0;
-          } else {
-            drawW = headerH * imgAspect;
-            drawX = (W - drawW) / 2.0;
-          }
+          const drawW = targetBannerW;
+          const drawH = drawW / imgAspect;
+          const drawX = (W - drawW) / 2.0;
+          const drawY = targetBannerTopY;
           ctx.drawImage(headerImg, drawX, drawY, drawW, drawH);
         } else {
-          ctx.drawImage(headerImg, headerX, headerY, headerW, headerH);
+          ctx.drawImage(headerImg, (W - targetBannerW) / 2.0, targetBannerTopY, targetBannerW, 77.88 * scaleY);
         }
       }
 
