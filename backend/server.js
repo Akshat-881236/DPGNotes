@@ -7179,7 +7179,9 @@ app.post('/api/assignment/export-pdf', async (req, res) => {
     }
 
     let logoFile = 'Center_Logo.jpg';
-    if (reqLogo.includes('DPGDegreeCenter') || reqLogo.includes('Degree') || reqLogo === 'DPGDegreeCenter_Logo.jpeg') {
+    if (reqLogo.includes('DPGDegreeCenter_Logo2') || reqLogo.includes('Center_Logo2') || reqLogo.includes('Logo 3') || reqLogo === 'DPGDegreeCenter_Logo2.png') {
+      logoFile = 'DPGDegreeCenter_Logo2.png';
+    } else if (reqLogo.includes('DPGDegreeCenter') || reqLogo.includes('Degree') || reqLogo.includes('Logo 2') || reqLogo === 'DPGDegreeCenter_Logo.jpeg') {
       logoFile = 'DPGDegreeCenter_Logo.jpeg';
     }
 

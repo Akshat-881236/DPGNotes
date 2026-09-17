@@ -197,40 +197,47 @@ service cloud.firestore {
 
     /* ---------- ASSIGNMENT SOLUTIONS (Academic Solutions Suite) ---------- */
     match /assignment_solutions/{contributorUid} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == contributorUid;
 
       match /solutions/{solutionId} {
         // Public/student read access (zero-knowledge encryption decrypts client-side)
         allow read: if true;
-        // Contributors publish solutions
-        allow create: if true;
-        // Telemetry tracking (views, screentime, likes) and contributor updates
-        allow update: if true;
-        // Authoring contributor or administrator can delete
-        allow delete: if true;
+        // Contributors publish solutions strictly under their own UID
+        allow create: if request.auth != null && request.auth.uid == contributorUid;
+        // Strict updates: ONLY authoring contributor can update solution content; students can ONLY update telemetry
+        allow update: if (request.auth != null && request.auth.uid == contributorUid)
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
+        // Authoring contributor can delete
+        allow delete: if request.auth != null && request.auth.uid == contributorUid;
       }
     }
 
     /* ---------- PRACTICAL SOLUTIONS (Academic Solutions Suite) ---------- */
     match /practical_solutions/{contributorUid} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == contributorUid;
 
       match /solutions/{solutionId} {
         // Public/student read access (zero-knowledge encryption decrypts client-side)
         allow read: if true;
-        // Contributors publish solutions
-        allow create: if true;
-        // Telemetry tracking (views, screentime, likes) and contributor updates
-        allow update: if true;
-        // Authoring contributor or administrator can delete
-        allow delete: if true;
+        // Contributors publish solutions strictly under their own UID
+        allow create: if request.auth != null && request.auth.uid == contributorUid;
+        // Strict updates: ONLY authoring contributor can update solution content; students can ONLY update telemetry
+        allow update: if (request.auth != null && request.auth.uid == contributorUid)
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
+        // Authoring contributor can delete
+        allow delete: if request.auth != null && request.auth.uid == contributorUid;
       }
     }
 
     /* ---------- COLLECTION GROUP: SOLUTIONS (Admin Management & Metrics) ---------- */
     match /{path=**}/solutions/{solutionId} {
       allow read: if true;
-      allow write: if true;
+      allow create: if request.auth != null && request.resource.data.contributorUid == request.auth.uid;
+      allow update: if (request.auth != null && request.auth.uid == resource.data.contributorUid)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
+      allow delete: if request.auth != null && request.auth.uid == resource.data.contributorUid;
     }
 
     /* ---------- TOP-LEVEL SOLUTIONS FALLBACK ---------- */

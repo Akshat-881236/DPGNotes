@@ -180,7 +180,9 @@ def generate_pdf(data, output_path, assets_dir=None):
         header_file = "Header_Image.jpg"
 
     req_center = str(data.get("centerLogo") or "").strip()
-    if "DPGDegreeCenter" in req_center or "Degree" in req_center or req_center == "DPGDegreeCenter_Logo.jpeg":
+    if "DPGDegreeCenter_Logo2" in req_center or "Center_Logo2" in req_center or "Logo 3" in req_center or req_center == "DPGDegreeCenter_Logo2.png":
+        center_logo_file = "DPGDegreeCenter_Logo2.png"
+    elif "DPGDegreeCenter" in req_center or "Degree" in req_center or "Logo 2" in req_center or req_center == "DPGDegreeCenter_Logo.jpeg":
         center_logo_file = "DPGDegreeCenter_Logo.jpeg"
     else:
         center_logo_file = "Center_Logo.jpg"

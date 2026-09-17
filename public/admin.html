@@ -654,8 +654,15 @@
       <section id="view-users" class="view-section active">
         <div class="section-card">
           <div class="section-header">
-            <h2 class="section-title">Contributor Management <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="All user profiles are governed under our terms & conditions and DRASA suspension parameters. Click to view." onclick="window.open('legal/index.html?from=admin#terms', '_blank')"></i></h2>
-            <input type="text" id="userSearch" class="admin-input" style="width:250px; margin:0; padding:0.5rem 1rem;" placeholder="Search email...">
+            <h2 class="section-title">User & Contributor Directory <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="All user profiles are governed under our terms & conditions and DRASA suspension parameters. Click to view." onclick="window.open('legal/index.html?from=admin#terms', '_blank')"></i></h2>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <select id="userTierFilter" class="admin-input" style="width:180px; margin:0; padding:0.5rem 0.8rem;">
+                <option value="all">All Tiers</option>
+                <option value="contributor">Contributors Only</option>
+                <option value="guest">Guests Only</option>
+              </select>
+              <input type="text" id="userSearch" class="admin-input" style="width:230px; margin:0; padding:0.5rem 1rem;" placeholder="Search name, email, tier...">
+            </div>
           </div>
           <div style="overflow-x:auto;">
             <table class="data-table">
@@ -663,13 +670,14 @@
                 <tr>
                   <th>Identity</th>
                   <th>Email</th>
+                  <th>Account Tier</th>
                   <th>Status</th>
                   <th>Uploads</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="usersTableBody">
-                <tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">Loading infrastructure...</td></tr>
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading infrastructure...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1872,11 +1880,19 @@
               <input type="date" id="coverDateFilter" class="admin-input" style="width:160px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem;" onchange="filterCoverPages()" title="Filter by date">
             </div>
             <div>
-              <select id="coverHeaderLogoFilter" class="admin-input" style="width:170px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterCoverPages()">
+              <select id="coverHeaderLogoFilter" class="admin-input" style="width:175px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterCoverPages()">
                 <option value="all">All Header Logos</option>
-                <option value="DPGSTM-2">DPG STM Style 2 (PNG)</option>
-                <option value="Standard">DPG STM Style 1 (Std)</option>
-                <option value="Degree">DPG Degree Header</option>
+                <option value="Standard">Header Logo 1 (Standard)</option>
+                <option value="DPGSTM-2">Header Logo 2 (Modern PNG)</option>
+                <option value="Degree">Header Logo 3 (Degree Header)</option>
+              </select>
+            </div>
+            <div>
+              <select id="coverCenterLogoFilter" class="admin-input" style="width:175px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterCoverPages()">
+                <option value="all">All Center Logos</option>
+                <option value="Center_Logo">Center Logo 1 (MDU Rohtak)</option>
+                <option value="DPGDegreeCenter_Logo.jpeg">Center Logo 2 (DPG Degree 1)</option>
+                <option value="DPGDegreeCenter_Logo2">Center Logo 3 (DPG Degree 2)</option>
               </select>
             </div>
             <div>
@@ -2261,17 +2277,18 @@
           <div style="width:100%; max-width:320px; margin-top:10px; display:flex; flex-direction:column; gap:6px; background:rgba(255,255,255,0.02); border:1px solid var(--admin-border); border-radius:8px; padding:8px 10px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
               <span style="font-size:0.75rem; color:var(--admin-muted); display:flex; align-items:center; gap:4px;"><i class="ri-image-edit-line"></i> Header:</span>
-              <select id="adminModalHeaderLogoSelect" class="admin-input" style="width:170px; padding:3px 6px; font-size:0.75rem; margin:0;" onchange="window.adminChangeCoverModalLogo()">
-                <option value="Header_Image.jpg">DPG STM Style 1 (Standard)</option>
-                <option value="DPGSTM-2HeaderImage.png">DPG STM Style 2 (PNG)</option>
-                <option value="DPGDegreeHeader_Image.jpeg">DPG Degree Header</option>
+              <select id="adminModalHeaderLogoSelect" class="admin-input" style="width:175px; padding:3px 6px; font-size:0.75rem; margin:0;" onchange="window.adminChangeCoverModalLogo()">
+                <option value="Header_Image.jpg">Header Logo 1 (Standard)</option>
+                <option value="DPGSTM-2HeaderImage.png">Header Logo 2 (Modern PNG)</option>
+                <option value="DPGDegreeHeader_Image.jpeg">Header Logo 3 (Degree Header)</option>
               </select>
             </div>
             <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
-              <span style="font-size:0.75rem; color:var(--admin-muted); display:flex; align-items:center; gap:4px;"><i class="ri-shield-star-line"></i> Emblem:</span>
-              <select id="adminModalCenterLogoSelect" class="admin-input" style="width:170px; padding:3px 6px; font-size:0.75rem; margin:0;" onchange="window.adminChangeCoverModalLogo()">
-                <option value="Center_Logo.jpg">MDU Rohtak Emblem</option>
-                <option value="DPGDegreeCenter_Logo.jpeg">DPG Degree College Emblem</option>
+              <span style="font-size:0.75rem; color:var(--admin-muted); display:flex; align-items:center; gap:4px;"><i class="ri-shield-star-line"></i> Center:</span>
+              <select id="adminModalCenterLogoSelect" class="admin-input" style="width:175px; padding:3px 6px; font-size:0.75rem; margin:0;" onchange="window.adminChangeCoverModalLogo()">
+                <option value="Center_Logo.jpg">Center Logo 1 (MDU Rohtak)</option>
+                <option value="DPGDegreeCenter_Logo.jpeg">Center Logo 2 (DPG Degree 1)</option>
+                <option value="DPGDegreeCenter_Logo2.png">Center Logo 3 (DPG Degree 2)</option>
               </select>
             </div>
           </div>

@@ -97,7 +97,13 @@ html[data-theme="light"] .nbtn:hover {
 html[data-theme="light"] .sol-panel,
 html[data-theme="light"] .scard,
 html[data-theme="light"] .sol-serp-card,
-html[data-theme="light"] .sol-meta-card {
+html[data-theme="light"] .sol-meta-card,
+html[data-theme="light"] .sol-card,
+html[data-theme="light"] .sol-view-header,
+html[data-theme="light"] .sol-block,
+html[data-theme="light"] .sol-item-card,
+html[data-theme="light"] .sol-engagement-bar,
+html[data-theme="light"] .doc-blog-card {
   background: #ffffff !important;
   border-color: #cbd5e1 !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
@@ -105,6 +111,7 @@ html[data-theme="light"] .sol-meta-card {
 
 html[data-theme="light"] .sol-title,
 html[data-theme="light"] .sol-serp-title,
+html[data-theme="light"] .doc-title,
 html[data-theme="light"] h1,
 html[data-theme="light"] h2,
 html[data-theme="light"] h3,
@@ -113,12 +120,151 @@ html[data-theme="light"] h4 {
 }
 
 html[data-theme="light"] .sol-subtext,
+html[data-theme="light"] .doc-summary,
 html[data-theme="light"] .mlabel,
 html[data-theme="light"] .mval,
 html[data-theme="light"] p {
   color: #1e293b !important;
 }
 
+html[data-theme="light"] .doc-full-details {
+  color: #1e293b !important;
+  border-top-color: #e2e8f0 !important;
+}
+
+/* Solution Viewer Metadata & Typography Contrast */
+html[data-theme="light"] .sol-meta-item strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-meta-item {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .sol-meta-row {
+  border-top-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .sol-q-title {
+  color: #0369a1 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-answer-content {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .sol-answer-content h1,
+html[data-theme="light"] .sol-answer-content h2,
+html[data-theme="light"] .sol-answer-content h3,
+html[data-theme="light"] .sol-answer-content h4,
+html[data-theme="light"] .sol-answer-content strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-answer-content pre {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sol-answer-content code {
+  background: #e2e8f0 !important;
+  color: #be185d !important;
+}
+
+/* Light Theme Badges Contrast */
+html[data-theme="light"] .sol-badge {
+  background: #ede9fe !important;
+  color: #5b21b6 !important;
+  border: 1px solid #c4b5fd !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-badge-teal {
+  background: #ccfbf1 !important;
+  color: #0f766e !important;
+  border-color: #5eead4 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-badge-red {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border-color: #fca5a5 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-badge-green {
+  background: #d1fae5 !important;
+  color: #047857 !important;
+  border-color: #6ee7b7 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-badge-orange {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+  border-color: #fdba74 !important;
+  font-weight: 700 !important;
+}
+
+/* Password Lock Overlay in Light Mode */
+html[data-theme="light"] #passwordLockOverlay {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] #passwordLockOverlay h2 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] #passwordLockOverlay p {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .sol-input,
+html[data-theme="light"] .sol-select,
+html[data-theme="light"] .sol-textarea {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-input:focus,
+html[data-theme="light"] .sol-select:focus,
+html[data-theme="light"] .sol-textarea:focus {
+  background: #ffffff !important;
+  border-color: #4338ca !important;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15) !important;
+}
+
+/* Light Theme Screentime / Engagement Bar */
+html[data-theme="light"] .sol-screentime-tracker {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] #screentimeDisplay {
+  color: #0f172a !important;
+}
+
+/* Light Theme SERP Cards */
+html[data-theme="light"] .sol-serp-meta-pills {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sol-serp-meta-pill {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .sol-serp-meta-pill strong {
+  color: #0f172a !important;
+}
+
+/* PDF Viewer Specific Light Theme Styles */
 html[data-theme="light"] .pdfmain {
   background: #e2e8f0 !important;
 }
@@ -132,6 +278,53 @@ html[data-theme="light"] .ai-out {
   background: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
+}
+
+html[data-theme="light"] .ai-out strong {
+  color: #4338ca !important;
+}
+
+html[data-theme="light"] .ai-out h1,
+html[data-theme="light"] .ai-out h2,
+html[data-theme="light"] .ai-out h3 {
+  color: #3730a3 !important;
+}
+
+html[data-theme="light"] .chat-msg.ai {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] #aiChatInput,
+html[data-theme="light"] #sidebarSearchInput {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] #aiChatInput::placeholder,
+html[data-theme="light"] #sidebarSearchInput::placeholder {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .scard details {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] #endPdfRecommendations {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] #endPdfRecommendations h2 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] #endPdfRecommendations h3 {
+  color: #334155 !important;
 }
 
 html[data-theme="light"] code,

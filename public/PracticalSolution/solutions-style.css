@@ -64,25 +64,38 @@ body {
   z-index: 100;
 }
 
-/* Mobile: icon-only nav (mirrors PDF Viewer pattern) */
+/* Mobile: icon-only nav for buttons, keep brand text (mirrors PDF Viewer pattern) */
 @media (max-width: 768px) {
   .sol-navbar {
     padding: 0.55rem 0.75rem;
-    gap: 0.3rem;
+    gap: 0.5rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    justify-content: space-between;
   }
-  .sol-navbar .sol-brand span {
-    display: none;
+  .sol-brand {
+    font-size: 1rem;
+    gap: 6px;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
-  .sol-navbar .sol-navbar-actions {
+  .sol-brand i {
+    font-size: 1.25rem;
+  }
+  .sol-navbar-actions {
     gap: 4px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
   }
   .sol-navbar .sol-btn-sm {
     padding: 5px 8px !important;
     font-size: 0.74rem !important;
     gap: 3px !important;
+    white-space: nowrap;
   }
   .sol-navbar .sol-btn-sm .btn-label {
     display: none !important;
@@ -622,24 +635,31 @@ body {
 
 @media (max-width: 520px) {
   .sol-navbar {
-    padding: 0.65rem 0.8rem;
-    flex-wrap: wrap;
-    gap: 8px;
+    padding: 0.45rem 0.6rem;
+    flex-wrap: nowrap !important;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .sol-brand {
-    font-size: 1rem;
-    gap: 6px;
+    font-size: 0.92rem;
+    gap: 5px;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
   .sol-navbar-actions {
-    width: 100%;
+    width: auto;
     display: flex;
-    justify-content: space-between;
-    gap: 6px;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
   }
   .sol-navbar-actions .sol-btn-sm {
-    flex: 1;
-    padding: 6px 4px;
-    font-size: 0.76rem;
+    flex: initial;
+    padding: 5px 6px;
+    font-size: 0.72rem;
     justify-content: center;
   }
   .sol-container {

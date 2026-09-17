@@ -225,13 +225,20 @@
       if (videoPlaybackTimeout) clearTimeout(videoPlaybackTimeout);
     }
 
+    const isCoverGen = (typeof window !== "undefined" && window.location && window.location.pathname && window.location.pathname.includes("CoverPageGenerator")) ||
+                       variant === "cover_video" ||
+                       variant === "cover_image" ||
+                       (card.closest && !!card.closest("#nativeAdsContainer"));
+
     function dismissAdCard() {
       cleanupTimers();
       const parentBox = card.parentElement;
       const placementKey = variant || "global";
-      try {
-        sessionStorage.setItem("dpg_ad_muted_" + placementKey, (Date.now() + 120000).toString());
-      } catch(e) {}
+      if (!isCoverGen) {
+        try {
+          sessionStorage.setItem("dpg_ad_muted_" + placementKey, (Date.now() + 120000).toString());
+        } catch(e) {}
+      }
 
       card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
       card.style.opacity = "0";
@@ -247,16 +254,23 @@
         }
       }, 350);
 
-      // Re-enable ad placement after 2 minutes (120,000 ms)
+      // Re-enable ad placement: Instant (300ms) for Cover Page Generators, 2 minutes (120,000 ms) for other pages
+      const dismissDelay = isCoverGen ? 300 : 120000;
       setTimeout(async () => {
         if (parentBox) parentBox.style.display = "";
         swapToNextAd();
-      }, 120000);
+      }, dismissDelay);
     }
 
     async function swapToNextAd() {
       cleanupTimers();
       const parentBox = card.parentElement;
+
+      // In Cover Page Generators, notify progress tracking that an ad concluded
+      if (isCoverGen && typeof window.onCoverAdWatched === "function") {
+        try { window.onCoverAdWatched(); } catch(err) { console.warn("Error triggering onCoverAdWatched:", err); }
+      }
+
       card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
       card.style.opacity = "0";
       card.style.transform = "scale(0.95)";
@@ -268,7 +282,8 @@
           if (visibleChildren.length === 0) parentBox.style.display = "none";
         }
 
-        // 2-Minute Gap Engine between ad rotations (120,000 ms)
+        // Ad Rotation Delay: Instant (300ms) for Cover Page Generators, 2-Minute Gap (120,000 ms) for other pages
+        const rotationDelay = isCoverGen ? 300 : 120000;
         setTimeout(async () => {
           if (parentBox) parentBox.style.display = "";
           const approvedAds = await fetchApprovedAds();
@@ -297,7 +312,7 @@
             newCard.style.opacity = "1";
             newCard.style.transform = "scale(1)";
           });
-        }, 120000);
+        }, rotationDelay);
       }, 350);
     }
 
@@ -583,11 +598,11 @@
           }
         };
       }
-    } else {
-      // Non-Video Ads OR Header/Footer Variant Ads -> 30-Second Automatic Rotation
+      // Non-Video Ads OR Header/Footer Variant Ads -> 30-Second Automatic Rotation (15s for Cover Page Generator)
+      const nonVideoInterval = isCoverGen ? 15000 : 30000;
       rotationTimeout = setTimeout(() => {
         swapToNextAd();
-      }, 30000);
+      }, nonVideoInterval);
     }
 
     return card;

@@ -212,18 +212,232 @@ if (deleteDocForm) {
 });
 }
 
+let pendingDeleteUid = null;
+let pendingDeleteEmail = null;
+
+function filterUsersTable() {
+  const queryStr = (document.getElementById("userSearch")?.value || "").toLowerCase().trim();
+  const tierFilter = (document.getElementById("userTierFilter")?.value || "all").toLowerCase();
+
+  let filtered = adminUsersCache || [];
+  if (tierFilter !== 'all') {
+    filtered = filtered.filter(u => u.tier === tierFilter);
+  }
+  if (queryStr) {
+    filtered = filtered.filter(u => 
+      (u.name && u.name.toLowerCase().includes(queryStr)) ||
+      (u.email && u.email.toLowerCase().includes(queryStr)) ||
+      (u.id && u.id.toLowerCase().includes(queryStr)) ||
+      (u.tier && u.tier.toLowerCase().includes(queryStr))
+    );
+  }
+  renderUsersTable(filtered);
+}
+
+function renderUsersTable(usersList) {
+  const tbody = document.getElementById("usersTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (!usersList || usersList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:1.5rem;">No matching accounts found.</td></tr>`;
+    return;
+  }
+
+  usersList.forEach(user => {
+    const isBlocked = user.isBlocked ? true : false;
+    let statusBadge = isBlocked ? '<span class="badge blocked">Blocked</span>' : '<span class="badge active">Active</span>';
+
+    if (user.suspendedUntil && user.suspendedUntil > Date.now()) {
+      const days = Math.ceil((user.suspendedUntil - Date.now()) / (1000 * 60 * 60 * 24));
+      statusBadge = `<span class="badge suspended">Suspended (${days}d)</span>`;
+    }
+
+    const isContributor = user.tier === 'contributor';
+    const tierBadge = isContributor
+      ? `<span class="badge tier-contributor" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-weight:700; font-size:0.75rem; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-check-fill"></i> Contributor</span>`
+      : `<span class="badge tier-guest" style="background:rgba(148,163,184,0.15); color:#94a3b8; border:1px solid rgba(148,163,184,0.3); font-weight:700; font-size:0.75rem; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;"><i class="ri-user-line"></i> Guest</span>`;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-weight:500;">${user.name || (isContributor ? "Unknown Contributor" : "Anonymous Guest")}</td>
+      <td style="color:var(--admin-muted);">${user.email || "N/A"}</td>
+      <td>${tierBadge}</td>
+      <td>${statusBadge}</td>
+      <td>${user.userDocs || 0} docs</td>
+      <td>
+        <div class="action-group">
+          ${isBlocked || (user.suspendedUntil && user.suspendedUntil > Date.now())
+            ? (() => {
+                if (user.suspendedUntil && user.suspendedUntil > Date.now()) {
+                  const suspensionDurationMs = user.suspensionDurationMs || (user.suspendedUntil - (user.suspendedAt || (user.suspendedUntil - 10000)));
+                  const suspendedAt = user.suspendedAt || (user.suspendedUntil - suspensionDurationMs);
+                  const elapsedMs = Date.now() - suspendedAt;
+                  const eligibleForReactivation = elapsedMs >= (suspensionDurationMs * 0.5);
+
+                  if (!eligibleForReactivation) {
+                    const totalSecsRemaining = Math.max(0, Math.ceil(((suspendedAt + (suspensionDurationMs * 0.5)) - Date.now()) / 1000));
+                    const hrs = Math.floor(totalSecsRemaining / 3600);
+                    const mins = Math.floor((totalSecsRemaining % 3600) / 60);
+                    const lockLabel = hrs > 0 ? `${hrs}h ${mins}m left` : `${mins}m left`;
+                    return `<span class="badge suspended" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; border: 1px solid rgba(239, 68, 68, 0.2); cursor:not-allowed; padding:6px 12px; border-radius:6px;" title="Admin can reactivate only after 50% completion of suspension.">🔒 Locked (${lockLabel})</span>`;
+                  }
+                }
+                return `<button class="btn-action success unblock-btn" data-id="${user.id}">Reactivate</button>`;
+              })()
+            : `<button class="btn-action warn block-btn" data-id="${user.id}" data-email="${user.email}">Suspend</button>`
+          }
+          <button class="btn-action danger delete-user-btn" data-id="${user.id}" data-email="${user.email}" data-name="${user.name}">Delete</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Add block/suspend listeners
+  tbody.querySelectorAll(".block-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const uid = btn.dataset.id;
+      const email = btn.dataset.email;
+      
+      const days = await window.customPrompt("Enter days to suspend (0 for permanent block):", "0");
+      if (days === null) return;
+      
+      const reason = await window.customPrompt("Enter reason for suspension/blocking:");
+      if (reason === null) return;
+
+      let caseStatus = "Active";
+      if (parseInt(days) === 0) {
+        caseStatus = await window.customPrompt("Enter Case Status (e.g. Flagged, Under Review, Resolved):", "Active");
+        if (caseStatus === null) return;
+      }
+      
+      btn.innerText = "⏳";
+      try {
+        const userRef = doc(db, "users", uid);
+        const updateData = { isBlocked: true, blockedReason: reason };
+        if (parseInt(days) > 0) {
+          const durationMs = parseInt(days) * 24 * 60 * 60 * 1000;
+          updateData.suspendedUntil = Date.now() + durationMs;
+          updateData.suspendedAt = Date.now();
+          updateData.suspensionDurationMs = durationMs;
+        }
+        
+        try {
+          await updateDoc(userRef, updateData);
+        } catch (e) {
+          const { setDoc } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
+          await setDoc(userRef, { email, name: "User", ...updateData, createdAt: new Date() }, { merge: true });
+        }
+
+        if (parseInt(days) === 0) {
+          const blockActionId = 'BLK-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+          await addDoc(collection(db, "permanent_blocks"), {
+            block_action_id: blockActionId,
+            block_email: email,
+            UID: uid,
+            Permanent_Block_on: serverTimestamp(),
+            Reason: reason,
+            Case_Status: caseStatus
+          });
+        }
+        
+        fetch(`${API_URL}/email/admin-block`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, reason })
+        }).catch(console.error);
+        
+        addDoc(collection(db, "notifications"), {
+          email: email,
+          type: "alert",
+          title: "Account Suspended 🚫",
+          message: `Your account has been suspended by an administrator. Reason: ${reason}`,
+          isRead: false,
+          createdAt: serverTimestamp()
+        }).catch(console.error);
+        
+        loadUsers();
+        loadPermanentBlocks();
+      } catch(e) {
+        alert("Failed to block user.");
+        console.error(e);
+      }
+    });
+  });
+  
+  tbody.querySelectorAll(".unblock-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const uid = btn.dataset.id;
+      btn.innerText = "⏳";
+      try {
+        await updateDoc(doc(db, "users", uid), { 
+          isBlocked: false, 
+          suspendedUntil: null,
+          suspendedAt: null,
+          suspensionDurationMs: null
+        });
+        loadUsers();
+        loadPermanentBlocks();
+      } catch(e) {
+        alert("Failed to unblock user.");
+        console.error(e);
+      }
+    });
+  });
+  
+  tbody.querySelectorAll(".delete-user-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const uid = btn.dataset.id;
+      const email = btn.dataset.email;
+      const name = btn.dataset.name;
+      
+      btn.innerText = "⏳";
+      try {
+        const res = await fetch(`${API_URL}/admin/send-delete-key`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
+          },
+          body: JSON.stringify({ contributorId: uid, contributorEmail: email })
+        });
+        
+        if (res.ok) {
+          pendingDeleteUid = uid;
+          pendingDeleteEmail = email;
+          document.getElementById("delTargetName").innerText = name || email;
+          document.getElementById("deleteModal").classList.add("active");
+          btn.innerText = "Delete";
+        } else {
+          const data = await res.json();
+          alert(data.error || "Failed to send auth key.");
+          btn.innerText = "Delete";
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Server error");
+        btn.innerText = "Delete";
+      }
+    });
+  });
+}
+
 async function loadUsers() {
   try {
-    const [snap, docSnap] = await Promise.all([
+    const [snap, docSnap, guestSnap] = await Promise.all([
       getDocs(collection(db, "users")),
-      getDocs(collection(db, "documents"))
+      getDocs(collection(db, "documents")),
+      getDocs(collection(db, "guest_quotas")).catch(() => ({ forEach: () => {} }))
     ]);
     
     const usersMap = {};
     
     // 1. Populate from 'users' collection
     snap.forEach(d => {
-      usersMap[d.id] = { id: d.id, ...d.data() };
+      const data = d.data();
+      const isExplicitGuest = data.isGuest === true || data.userType === 'guest' || data.userType === 'Anonymous' || d.id.startsWith('guest_');
+      usersMap[d.id] = { id: d.id, tier: isExplicitGuest ? 'guest' : 'contributor', ...data };
     });
     
     // 2. Populate legacy users from 'documents' collection
@@ -234,226 +448,83 @@ async function loadUsers() {
           id: data.userId,
           name: data.userName || "Unknown",
           email: "Legacy Contributor",
+          tier: 'contributor',
           isBlocked: false
         };
       }
     });
-    
-    adminUsersCache = Object.values(usersMap);
+
+    // 3. Populate Anonymous Guest sessions from 'guest_quotas' collection
+    guestSnap.forEach(g => {
+      const gData = g.data();
+      if (!usersMap[g.id]) {
+        const osInfo = gData.os || gData.device || 'Web Device';
+        const browserInfo = gData.browser || 'Browser';
+        usersMap[g.id] = {
+          id: g.id,
+          name: `Guest (${browserInfo} on ${osInfo})`,
+          email: gData.ip ? `IP: ${gData.ip}` : 'Anonymous Guest',
+          tier: 'guest',
+          isGuest: true,
+          isBlocked: gData.isBlocked || false,
+          guestQuotas: gData
+        };
+      }
+    });
     
     // Cache documents
     adminDocsCache = [];
     docSnap.forEach(d => {
       adminDocsCache.push({ id: d.id, ...d.data() });
     });
+
+    // Strict Contributor vs Guest classification
+    adminUsersCache = Object.values(usersMap).map(u => {
+      const userDocs = adminDocsCache.filter(d => d.userId === u.id).length;
+      const isGuest = u.tier === 'guest' || u.isGuest || u.id.startsWith('guest_') || u.userType === 'Anonymous' || u.userType === 'guest' || (!u.email || u.email === 'N/A');
+      const isContributor = !isGuest && (userDocs > 0 || u.role === 'contributor' || u.role === 'Admin' || u.userType === 'Student' || u.userType === 'Teacher' || (u.email && u.email !== 'Legacy Contributor' && !u.email.startsWith('IP:')));
+      return {
+        ...u,
+        tier: isContributor ? 'contributor' : 'guest',
+        userDocs
+      };
+    });
     
     // Update Stats UI
     document.getElementById("statUsers").innerText = adminUsersCache.length;
     document.getElementById("statDocs").innerText = adminDocsCache.length;
-    // We will update statShares later when share tracking is implemented
     
-    // Populate Document Deletion Dropdowns (Content Mgmt Tab)
+    // Populate Document Deletion Dropdowns (Content Mgmt Tab - Contributors only)
     const delContributorSelect = document.getElementById("delContributorSelect");
     if (delContributorSelect) {
       delContributorSelect.innerHTML = '<option value="">-- Choose Contributor --</option>';
-      adminUsersCache.forEach(u => {
+      adminUsersCache.filter(u => u.tier === 'contributor').forEach(u => {
         const opt = document.createElement("option");
         opt.value = u.id;
         opt.innerText = `${u.name || "Unknown"} (${u.email})`;
         delContributorSelect.appendChild(opt);
       });
     }
-    
-    const allUsers = adminUsersCache;
-    
-    const tbody = document.getElementById("usersTableBody");
-    tbody.innerHTML = "";
-    
-    if (allUsers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4">No users found.</td></tr>`;
-      return;
+
+    // Attach search & tier filter handlers
+    const userSearchInput = document.getElementById("userSearch");
+    if (userSearchInput && !userSearchInput.dataset.bound) {
+      userSearchInput.dataset.bound = "true";
+      userSearchInput.addEventListener("input", filterUsersTable);
+    }
+    const userTierSelect = document.getElementById("userTierFilter");
+    if (userTierSelect && !userTierSelect.dataset.bound) {
+      userTierSelect.dataset.bound = "true";
+      userTierSelect.addEventListener("change", filterUsersTable);
     }
     
-    allUsers.forEach(user => {
-      const isBlocked = user.isBlocked ? true : false;
-      let statusBadge = isBlocked ? '<span class="badge blocked">Blocked</span>' : '<span class="badge active">Active</span>';
-      
-      if (user.suspendedUntil && user.suspendedUntil > Date.now()) {
-        const days = Math.ceil((user.suspendedUntil - Date.now()) / (1000 * 60 * 60 * 24));
-        statusBadge = `<span class="badge suspended">Suspended (${days}d)</span>`;
-      }
-      
-      const userDocs = adminDocsCache.filter(d => d.userId === user.id).length;
-      
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="font-weight:500;">${user.name || "Unknown"}</td>
-        <td style="color:var(--admin-muted);">${user.email || "N/A"}</td>
-        <td>${statusBadge}</td>
-        <td>${userDocs} docs</td>
-        <td>
-          <div class="action-group">
-            ${isBlocked || (user.suspendedUntil && user.suspendedUntil > Date.now())
-              ? (() => {
-                  if (user.suspendedUntil && user.suspendedUntil > Date.now()) {
-                    const suspensionDurationMs = user.suspensionDurationMs || (user.suspendedUntil - (user.suspendedAt || (user.suspendedUntil - 10000)));
-                    const suspendedAt = user.suspendedAt || (user.suspendedUntil - suspensionDurationMs);
-                    const elapsedMs = Date.now() - suspendedAt;
-                    const eligibleForReactivation = elapsedMs >= (suspensionDurationMs * 0.5);
-
-                    if (!eligibleForReactivation) {
-                      const totalSecsRemaining = Math.max(0, Math.ceil(((suspendedAt + (suspensionDurationMs * 0.5)) - Date.now()) / 1000));
-                      const hrs = Math.floor(totalSecsRemaining / 3600);
-                      const mins = Math.floor((totalSecsRemaining % 3600) / 60);
-                      const lockLabel = hrs > 0 ? `${hrs}h ${mins}m left` : `${mins}m left`;
-                      return `<span class="badge suspended" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; border: 1px solid rgba(239, 68, 68, 0.2); cursor:not-allowed; padding:6px 12px; border-radius:6px;" title="Admin can reactivate only after 50% completion of suspension.">🔒 Locked (${lockLabel})</span>`;
-                    }
-                  }
-                  return `<button class="btn-action success unblock-btn" data-id="${user.id}">Reactivate</button>`;
-                })()
-              : `<button class="btn-action warn block-btn" data-id="${user.id}" data-email="${user.email}">Suspend</button>`
-            }
-            <button class="btn-action danger delete-user-btn" data-id="${user.id}" data-email="${user.email}" data-name="${user.name}">Delete</button>
-          </div>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-    
-    // Add block/suspend listeners
-    document.querySelectorAll(".block-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const uid = btn.dataset.id;
-        const email = btn.dataset.email;
-        
-        const days = await window.customPrompt("Enter days to suspend (0 for permanent block):", "0");
-        if (days === null) return;
-        
-        const reason = await window.customPrompt("Enter reason for suspension/blocking:");
-        if (reason === null) return;
-
-        let caseStatus = "Active";
-        if (parseInt(days) === 0) {
-          caseStatus = await window.customPrompt("Enter Case Status (e.g. Flagged, Under Review, Resolved):", "Active");
-          if (caseStatus === null) return;
-        }
-        
-        btn.innerText = "⏳";
-        try {
-          // If legacy user, they might not exist in "users" collection yet
-          const userRef = doc(db, "users", uid);
-          const updateData = { isBlocked: true, blockedReason: reason };
-          if (parseInt(days) > 0) {
-            const durationMs = parseInt(days) * 24 * 60 * 60 * 1000;
-            updateData.suspendedUntil = Date.now() + durationMs;
-            updateData.suspendedAt = Date.now();
-            updateData.suspensionDurationMs = durationMs;
-          }
-          
-          try {
-            await updateDoc(userRef, updateData);
-          } catch (e) {
-            // Document might not exist (Legacy User). Create it.
-            const { setDoc } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
-            await setDoc(userRef, { email, name: "Legacy Contributor", ...updateData, createdAt: new Date() });
-          }
-
-          if (parseInt(days) === 0) {
-            const blockActionId = 'BLK-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-            await addDoc(collection(db, "permanent_blocks"), {
-              block_action_id: blockActionId,
-              block_email: email,
-              UID: uid,
-              Permanent_Block_on: serverTimestamp(),
-              Reason: reason,
-              Case_Status: caseStatus
-            });
-          }
-          
-          fetch(`${API_URL}/email/admin-block`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: email, reason })
-          }).catch(console.error);
-          
-          addDoc(collection(db, "notifications"), {
-            email: email,
-            type: "alert",
-            title: "Account Suspended 🚫",
-            message: `Your account has been suspended by an administrator. Reason: ${reason}`,
-            isRead: false,
-            createdAt: serverTimestamp()
-          }).catch(console.error);
-          
-          loadUsers();
-          loadPermanentBlocks();
-
-        } catch(e) {
-          alert("Failed to block user.");
-          console.error(e);
-        }
-      });
-    });
-    
-    document.querySelectorAll(".unblock-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const uid = btn.dataset.id;
-        btn.innerText = "⏳";
-        try {
-          await updateDoc(doc(db, "users", uid), { 
-            isBlocked: false, 
-            suspendedUntil: null,
-            suspendedAt: null,
-            suspensionDurationMs: null
-          });
-          loadUsers();
-          loadPermanentBlocks();
-        } catch(e) {
-          alert("Failed to unblock user.");
-          console.error(e);
-        }
-      });
-    });
-    
-    // Add Delete User Listeners
-    let pendingDeleteUid = null;
-    let pendingDeleteEmail = null;
-    
-    document.querySelectorAll(".delete-user-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const uid = btn.dataset.id;
-        const email = btn.dataset.email;
-        const name = btn.dataset.name;
-        
-        btn.innerText = "⏳";
-        try {
-          const res = await fetch(`${API_URL}/admin/send-delete-key`, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
-            },
-            body: JSON.stringify({ contributorId: uid, contributorEmail: email })
-          });
-          
-          if (res.ok) {
-            pendingDeleteUid = uid;
-            pendingDeleteEmail = email;
-            document.getElementById("delTargetName").innerText = name || email;
-            document.getElementById("deleteModal").classList.add("active");
-            btn.innerText = "Delete";
-          } else {
-            const data = await res.json();
-            alert(data.error || "Failed to send auth key.");
-            btn.innerText = "Delete";
-          }
-        } catch (e) {
-          console.error(e);
-          alert("Server error");
-          btn.innerText = "Delete";
-        }
-      });
-    });
+    filterUsersTable();
+  } catch(err) {
+    console.error("Error loading users:", err);
+    const tbody = document.getElementById("usersTableBody");
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-danger); padding:1.5rem;">Failed to load user records.</td></tr>`;
+  }
+}
     
     document.getElementById("deleteConfirmForm").onsubmit = async (e) => {
       e.preventDefault();
@@ -4221,6 +4292,18 @@ window.filterCoverPages = function() {
     });
   }
 
+  // 4b. Filter by Center Logo Preference
+  const centerLogoFilter = document.getElementById('coverCenterLogoFilter')?.value || 'all';
+  if (centerLogoFilter !== 'all') {
+    list = list.filter(r => {
+      const c = String(r.centerLogo || 'Center_Logo.jpg');
+      if (centerLogoFilter.includes('DPGDegreeCenter_Logo2')) return c.includes('DPGDegreeCenter_Logo2') || c.includes('Center_Logo2') || c.includes('Logo 3');
+      if (centerLogoFilter.includes('DPGDegreeCenter_Logo.jpeg')) return (c.includes('Degree') || c.includes('DPGDegree')) && !c.includes('Logo2');
+      if (centerLogoFilter.includes('Center_Logo')) return c.includes('Center_Logo') && !c.includes('Degree');
+      return true;
+    });
+  }
+
   // 5. Search keyword
   if (searchVal) {
     list = list.filter(r => {
@@ -4246,6 +4329,7 @@ window.resetCoverFilters = function() {
   if (document.getElementById('coverUserTypeFilter')) document.getElementById('coverUserTypeFilter').value = 'all';
   if (document.getElementById('coverDateFilter')) document.getElementById('coverDateFilter').value = '';
   if (document.getElementById('coverHeaderLogoFilter')) document.getElementById('coverHeaderLogoFilter').value = 'all';
+  if (document.getElementById('coverCenterLogoFilter')) document.getElementById('coverCenterLogoFilter').value = 'all';
   filterCoverPages();
 };
 
@@ -4265,11 +4349,19 @@ function renderCoverTableRows(list) {
       : `<span class="badge" style="background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25);">Contributor</span>`;
 
     const hLogo = String(r.headerLogo || 'Header_Image.jpg');
-    let headerBadge = `<span class="badge" style="background:rgba(56,189,248,0.1); color:#38bdf8; border:1px solid rgba(56,189,248,0.25); font-size:0.68rem;">Style 1</span>`;
-    if (hLogo.includes('DPGSTM-2') || hLogo.includes('2Header')) {
-      headerBadge = `<span class="badge" style="background:rgba(236,72,153,0.1); color:#f472b6; border:1px solid rgba(236,72,153,0.25); font-size:0.68rem;">Style 2 (PNG)</span>`;
+    let headerBadge = `<span class="badge" style="background:rgba(56,189,248,0.1); color:#38bdf8; border:1px solid rgba(56,189,248,0.25); font-size:0.68rem;">Header Logo 1</span>`;
+    if (hLogo.includes('DPGSTM-2') || hLogo.includes('2Header') || hLogo === 'DPGSTM-2HeaderImage.png') {
+      headerBadge = `<span class="badge" style="background:rgba(236,72,153,0.1); color:#f472b6; border:1px solid rgba(236,72,153,0.25); font-size:0.68rem;">Header Logo 2</span>`;
     } else if (hLogo.includes('Degree') || hLogo.includes('DPGDegree')) {
-      headerBadge = `<span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; border:1px solid rgba(168,85,247,0.25); font-size:0.68rem;">Degree Header</span>`;
+      headerBadge = `<span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; border:1px solid rgba(168,85,247,0.25); font-size:0.68rem;">Header Logo 3</span>`;
+    }
+
+    const cLogo = String(r.centerLogo || 'Center_Logo.jpg');
+    let centerBadge = `<span class="badge" style="background:rgba(245,158,11,0.1); color:#f59e0b; border:1px solid rgba(245,158,11,0.25); font-size:0.68rem;">Center Logo 1</span>`;
+    if (cLogo.includes('DPGDegreeCenter_Logo2') || cLogo.includes('Center_Logo2') || cLogo.includes('Logo 3') || cLogo === 'DPGDegreeCenter_Logo2.png') {
+      centerBadge = `<span class="badge" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.25); font-size:0.68rem;">Center Logo 3</span>`;
+    } else if (cLogo.includes('Degree') || cLogo.includes('DPGDegree') || cLogo === 'DPGDegreeCenter_Logo.jpeg') {
+      centerBadge = `<span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; border:1px solid rgba(168,85,247,0.25); font-size:0.68rem;">Center Logo 2</span>`;
     }
 
     const isPrac = isCoverPracticalRecord(r);
@@ -4462,21 +4554,24 @@ window.viewCoverPageDetails = function(id) {
   }
 
   const hLogo = String(r.headerLogo || 'Header_Image.jpg');
-  let headerBadgeText = 'DPG STM Style 1 (Standard)';
+  let headerBadgeText = 'Header Logo 1 (DPG STM Standard)';
   let headerSelVal = 'Header_Image.jpg';
   if (hLogo.includes('DPGSTM-2') || hLogo.includes('2Header') || hLogo === 'DPGSTM-2HeaderImage.png') {
-    headerBadgeText = 'DPG STM Style 2 (Modern PNG)';
+    headerBadgeText = 'Header Logo 2 (DPG STM Modern PNG)';
     headerSelVal = 'DPGSTM-2HeaderImage.png';
-  } else if (hLogo.includes('Degree') || hLogo.includes('DPGDegree')) {
-    headerBadgeText = 'DPG Degree College Header';
+  } else if (hLogo.includes('Degree') || hLogo.includes('DPGDegree') || hLogo === 'DPGDegreeHeader_Image.jpeg') {
+    headerBadgeText = 'Header Logo 3 (DPG Degree Header)';
     headerSelVal = 'DPGDegreeHeader_Image.jpeg';
   }
 
   const cLogo = String(r.centerLogo || 'Center_Logo.jpg');
-  let centerBadgeText = 'MDU Rohtak Emblem (Standard)';
+  let centerBadgeText = 'Center Logo 1 (MDU Rohtak Standard)';
   let centerSelVal = 'Center_Logo.jpg';
-  if (cLogo.includes('Degree') || cLogo.includes('DPGDegree') || cLogo === 'DPGDegreeCenter_Logo.jpeg') {
-    centerBadgeText = 'DPG Degree College Emblem';
+  if (cLogo.includes('DPGDegreeCenter_Logo2') || cLogo.includes('Center_Logo2') || cLogo.includes('Logo 3') || cLogo === 'DPGDegreeCenter_Logo2.png') {
+    centerBadgeText = 'Center Logo 3 (DPG Degree Emblem 2)';
+    centerSelVal = 'DPGDegreeCenter_Logo2.png';
+  } else if (cLogo.includes('Degree') || cLogo.includes('DPGDegree') || cLogo.includes('Logo 2') || cLogo === 'DPGDegreeCenter_Logo.jpeg') {
+    centerBadgeText = 'Center Logo 2 (DPG Degree Emblem 1)';
     centerSelVal = 'DPGDegreeCenter_Logo.jpeg';
   }
 
@@ -4649,7 +4744,9 @@ async function renderCoverPageToCanvas(d) {
   let logoFilename = 'Center_Logo.jpg';
   if (d.centerLogo) {
     const c = String(d.centerLogo);
-    if (c.includes('DPGDegreeCenter') || c.includes('Degree') || c === 'DPGDegreeCenter_Logo.jpeg') {
+    if (c.includes('DPGDegreeCenter_Logo2') || c.includes('Center_Logo2') || c.includes('Logo 3') || c === 'DPGDegreeCenter_Logo2.png') {
+      logoFilename = 'DPGDegreeCenter_Logo2.png';
+    } else if (c.includes('DPGDegreeCenter') || c.includes('Degree') || c.includes('Logo 2') || c === 'DPGDegreeCenter_Logo.jpeg') {
       logoFilename = 'DPGDegreeCenter_Logo.jpeg';
     }
   }
@@ -4978,7 +5075,8 @@ window.downloadAdminCoverPdf = async function(id) {
     };
     const resolveCenterLogo = (cl) => {
       if (!cl) return 'Center_Logo.jpg';
-      if (cl.includes('DPGDegreeCenter') || cl.includes('DegreeCent')) return 'DPGDegreeCenter_Logo.jpeg';
+      if (cl.includes('DPGDegreeCenter_Logo2') || cl.includes('Center_Logo2') || cl.includes('Logo 3') || cl === 'DPGDegreeCenter_Logo2.png') return 'DPGDegreeCenter_Logo2.png';
+      if (cl.includes('DPGDegreeCenter') || cl.includes('DegreeCent') || cl.includes('Logo 2') || cl === 'DPGDegreeCenter_Logo.jpeg') return 'DPGDegreeCenter_Logo.jpeg';
       return 'Center_Logo.jpg';
     };
 

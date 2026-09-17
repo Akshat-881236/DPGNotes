@@ -421,6 +421,19 @@
     window.signInWithPopup = signInWithPopup;
     window.onAuthStateChanged = onAuthStateChanged;
 
+    window.getResolvedAuthUser = function() {
+      return new Promise((resolve) => {
+        if (auth.currentUser) {
+          resolve(auth.currentUser);
+          return;
+        }
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          unsubscribe();
+          resolve(user);
+        });
+      });
+    };
+
     onAuthStateChanged(auth, (user) => {
       if (user) {
         localStorage.setItem("dpgActiveUserUid", user.uid);
@@ -956,10 +969,39 @@
     // Check URL parameters for Edit Mode
     window.checkEditModeParam = async function() {
       const urlParams = new URLSearchParams(window.location.search);
+      const isEdit = urlParams.get('edit') === 'true';
       const solId = urlParams.get('id') || urlParams.get('editId');
       const contrib = urlParams.get('contributor');
+
+      if (!isEdit && !solId) {
+        return; // Normal creation mode
+      }
+
+      // ─── LAYER 1: Active Firebase Auth Session ───────────────
+      let activeUser = window.solAuth?.currentUser;
+      if (!activeUser && typeof window.getResolvedAuthUser === 'function') {
+        activeUser = await window.getResolvedAuthUser();
+      }
+
+      if (!activeUser) {
+        // LAYER 1 FAILED: User is not authenticated in Firebase!
+        // Alert "Authentication Required" -> redirect to index.html (no log)
+        const authMsg = "Authentication Required: You must be logged into an active contributor account to edit this practical solution.";
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert(authMsg, { title: "Authentication Required", isDanger: true });
+        } else {
+          alert(authMsg);
+        }
+        window.location.href = "index.html";
+        return;
+      }
+
       if (solId) {
-        await loadSpecificSolutionForEdit(solId, contrib);
+        await loadSpecificSolutionForEdit(solId, contrib, activeUser);
+      } else {
+        if (typeof window.openMySolutionsModal === 'function') {
+          window.openMySolutionsModal();
+        }
       }
     };
 
@@ -969,27 +1011,24 @@
     // Layer 2: UID + Email must match Firestore contributorUid + contributorEmail
     // Layer 3: Solution password (AES-GCM decrypt, only reached if L1+L2 pass)
     // ============================================================
-    window.loadSpecificSolutionForEdit = async function(solId, targetContribUid = null) {
-      if (!checkAuthentication()) return;
+    window.loadSpecificSolutionForEdit = async function(solId, targetContribUid = null, verifiedAuthUser = null) {
+      // ─── LAYER 1: Active Firebase Auth Session Verification ──
+      const activeUser = verifiedAuthUser || window.solAuth?.currentUser || (typeof window.getResolvedAuthUser === 'function' ? await window.getResolvedAuthUser() : null);
 
-      // ─── LAYER 1: Active Firebase Auth Session ───────────────
-      const currentAuthUser = window.solAuth && window.solAuth.currentUser;
-      const currentUid = currentAuthUser
-        ? currentAuthUser.uid
-        : (contributorProfile ? contributorProfile.uid : localStorage.getItem("dpgActiveUserUid"));
-      const userEmail = currentAuthUser
-        ? currentAuthUser.email
-        : (contributorProfile ? contributorProfile.email : (localStorage.getItem("dpgUserEmail") || ""));
-
-      if (!currentAuthUser && !currentUid) {
+      if (!activeUser) {
+        const authMsg = "Authentication Required: You must be logged in as an active contributor to edit this document.";
         if (typeof window.customAlert === 'function') {
-          await window.customAlert("You must be logged in as the solution contributor to edit this document.", { title: "Authentication Required", isDanger: true });
+          await window.customAlert(authMsg, { title: "Authentication Required", isDanger: true });
+        } else {
+          alert(authMsg);
         }
         window.location.href = "index.html";
         return;
       }
 
-      const contribUid = targetContribUid || contributorProfile?.uid || currentUid;
+      const currentUid = activeUser.uid;
+      const userEmail = (activeUser.email || "").toLowerCase().trim();
+      const contribUid = targetContribUid || currentUid;
 
       try {
         const docRef = window.solDoc(window.solDb, "practical_solutions", contribUid, "solutions", solId);
@@ -1014,32 +1053,33 @@
         const data = snap.data();
         const ownerUid = data.contributorUid || contribUid;
         const ownerEmail = (data.contributorEmail || data.uploaderEmail || "").toLowerCase().trim();
-        const isAdminEmail = userEmail.toLowerCase() === 'its.akshatnetworkhub23@gmail.com';
 
-        // ─── LAYER 2: Identity Match — UID + Email ────────────────
-        const uidMatch = ownerUid && (ownerUid === currentUid);
-        const emailMatch = !ownerEmail || userEmail.toLowerCase() === ownerEmail;
+        // ─── LAYER 2: Strict Identity Match — UID + Email ────────
+        // Visiting user MUST match author's UID AND author's Email
+        // ZERO ADMIN BYPASS: Even administrators cannot edit another user's solution directly
+        const uidMatch = !!(ownerUid && ownerUid === currentUid);
+        const emailMatch = !!(ownerEmail && userEmail === ownerEmail);
 
-        if (!isAdminEmail && (!uidMatch || !emailMatch)) {
-          // ── LOG UNAUTHORIZED VIOLATION to Firestore ──────────
+        if (!uidMatch || !emailMatch) {
+          const mismatch = (!uidMatch && !emailMatch) ? "UID_AND_EMAIL_MISMATCH" : (!uidMatch ? "UID_MISMATCH" : "EMAIL_MISMATCH");
           const caseId = `CASE-AAV-${(solId || 'SOL').slice(0, 6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
           const violationData = {
             caseId: caseId,
             resourceId: solId || "unknown",
             resourceTitle: data.subjectName || data.subjectCode || "Practical Solution",
-            userId: currentUid || "Guest",
+            userId: currentUid,
             userEmail: userEmail || "unknown",
             attemptedAction: "UNAUTHORIZED_SOLUTION_EDIT_ATTEMPT",
             solutionType: "practical",
             ownerUid: ownerUid,
             ownerEmail: ownerEmail || "unknown",
-            mismatch: !uidMatch ? "UID_MISMATCH" : "EMAIL_MISMATCH",
-            deviceIp: telemetryData.ip || "Recorded",
-            geolocation: telemetryData.geo || "Recorded",
-            country: (telemetryData.geo ? telemetryData.geo.split(',').pop().trim() : "India"),
+            mismatch: mismatch,
+            deviceIp: (telemetryData && telemetryData.ip) || "Recorded",
+            geolocation: (telemetryData && telemetryData.geo) || "Recorded",
+            country: (telemetryData && telemetryData.geo ? telemetryData.geo.split(',').pop().trim() : "India"),
             adminAcknowledged: false,
             severity: "HIGH",
-            details: `Unauthorized user ${userEmail || currentUid} attempted to access edit mode for practical solution "${data.subjectName || solId}" owned by ${ownerEmail || ownerUid}. Gate: Pre-password identity check (Layer 2). No password was requested.`,
+            details: `Security Alert: Authenticated account ${userEmail} (${currentUid}) attempted unauthorized edit on practical solution "${data.subjectName || solId}" owned by ${ownerEmail} (${ownerUid}). Pre-password identity check failed (${mismatch}). Terminated before password entry.`,
             timestamp: window.solServerTimestamp ? window.solServerTimestamp() : new Date()
           };
 
@@ -1053,9 +1093,9 @@
             console.error("Violation logging failed:", logErr);
           }
 
-          const alertMsg = "Access Denied: This practical solution belongs to a different contributor. Your attempt has been logged as a Security Violation and will be reviewed by the DPGNotes Admin team.\n\nYou are being redirected to the search interface.";
+          const alertMsg = "Access Denied: This practical solution belongs to a different contributor. Your unauthorized edit attempt has been logged as a Security Violation and reported to administrators.\n\nYou are being redirected to the search interface.";
           if (typeof window.customAlert === 'function') {
-            await window.customAlert(alertMsg, { title: "Unauthorized Access — Violation Logged", isDanger: true });
+            await window.customAlert(alertMsg, { title: "Security Violation Logged", isDanger: true });
           } else {
             alert(alertMsg);
           }

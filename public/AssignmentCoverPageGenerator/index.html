@@ -17,6 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Tinos:wght@700&family=Merriweather:wght@700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="/auth-component.css">
+  <script type="module" src="/auth-component.js"></script>
 
   <!-- PDF-Lib & JSPDF for Client-Side A4 Vector Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -528,9 +529,9 @@
               <i class="ri-image-line" style="color:#38bdf8;"></i> Header Banner Logo
             </label>
             <select id="selHeaderLogo" class="form-control" onchange="handleLogoChange()">
-              <option value="Header_Image.jpg" selected>DPG STM Standard Logo</option>
-              <option value="DPGSTM-2HeaderImage.png">DPG STM Modern Logo</option>
-              <option value="DPGDegreeHeader_Image.jpeg">DPG Degree College Header</option>
+              <option value="Header_Image.jpg" selected>Header Logo 1</option>
+              <option value="DPGSTM-2HeaderImage.png">Header Logo 2</option>
+              <option value="DPGDegreeHeader_Image.jpeg">Header Logo 3</option>
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0;">
@@ -538,8 +539,9 @@
               <i class="ri-shield-star-line" style="color:#f59e0b;"></i> Center Emblem Logo
             </label>
             <select id="selCenterLogo" class="form-control" onchange="handleLogoChange()">
-              <option value="Center_Logo.jpg" selected>MDU Rohtak Emblem (Standard)</option>
-              <option value="DPGDegreeCenter_Logo.jpeg">DPG Degree College Emblem</option>
+              <option value="Center_Logo.jpg" selected>Center Logo 1</option>
+              <option value="DPGDegreeCenter_Logo.jpeg">Center Logo 2</option>
+              <option value="DPGDegreeCenter_Logo2.png">Center Logo 3</option>
             </select>
           </div>
         </div>
@@ -795,7 +797,7 @@
             Sign in with any contributor method (Google, GitHub, or Student ID/Email + Password) to upgrade to <strong>Verified Contributor</strong>. You receive <strong>2x daily generation quota</strong>, permanent cloud storage with 1-click re-download and editing, and priority PDF rendering.
           </p>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
-            <button type="button" onclick="signInWithGoogleForCoverQuota()" class="btn-generate" style="background:linear-gradient(135deg, #6366f1, #3b82f6); padding:0.75rem 1rem; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <button type="button" onclick="window.dpgLoginGoogle ? window.dpgLoginGoogle() : signInWithGoogleForCoverQuota()" class="btn-generate" style="background:linear-gradient(135deg, #6366f1, #3b82f6); padding:0.75rem 1rem; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:6px;">
               <i class="ri-google-fill"></i> Google
             </button>
             <button type="button" onclick="window.dpgLoginGithub ? window.dpgLoginGithub() : (window.openSignInModal && window.openSignInModal())" class="btn-generate" style="background:#24292e; border:1px solid rgba(255,255,255,0.15); padding:0.75rem 1rem; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:6px;">
@@ -1170,13 +1172,24 @@
       }
     };
 
+    let adWatchInProgress = false;
+
     // Callback when cover ad completes/skipped
     window.onCoverAdWatched = async function() {
+      if (adWatchInProgress) return;
+      adWatchInProgress = true;
+      if (adWatchTimer) { clearInterval(adWatchTimer); adWatchTimer = null; }
+      if (adsenseCheckTimer) { clearInterval(adsenseCheckTimer); adsenseCheckTimer = null; }
+      if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+
       adsRemainingToWatch--;
       if (adsRemainingToWatch > 0) {
-        startNextCoverAd();
+        setTimeout(() => {
+          adWatchInProgress = false;
+          startNextCoverAd();
+        }, 400);
       } else {
-        if (adWatchTimer) clearInterval(adWatchTimer);
+        adWatchInProgress = false;
         await restoreQuotaTokens();
       }
     };
@@ -1364,7 +1377,8 @@
 
       // 2. Reveal and render Native Ad
       if (nativeBox) nativeBox.style.display = 'flex';
-      if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal}`;
+      let nativeSec = 15;
+      if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal} (${nativeSec}s remaining...)`;
       if (barEl) barEl.style.width = '0%';
 
       if (adNativeInner && typeof window.renderNativeDPGAds === 'function') {
@@ -1374,6 +1388,18 @@
         adNativeInner.innerHTML = '';
         window.renderNativeDPGAds();
       }
+
+      adWatchTimer = setInterval(() => {
+        nativeSec--;
+        if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal} (${nativeSec}s remaining...)`;
+        if (barEl) barEl.style.width = `${Math.round(((15 - nativeSec) / 15) * 100)}%`;
+
+        if (nativeSec <= 0) {
+          clearInterval(adWatchTimer);
+          adWatchTimer = null;
+          window.onCoverAdWatched();
+        }
+      }, 1000);
     }
 
     function showMidnightLockout() {
@@ -2069,7 +2095,9 @@
       }
       if (r.centerLogo && document.getElementById('selCenterLogo')) {
         const c = String(r.centerLogo);
-        if (c.includes('DPGDegreeCenter') || c.includes('Degree') || c === 'DPGDegreeCenter_Logo.jpeg') {
+        if (c.includes('DPGDegreeCenter_Logo2') || c.includes('Center_Logo2') || c.includes('Logo 3') || c === 'DPGDegreeCenter_Logo2.png') {
+          document.getElementById('selCenterLogo').value = 'DPGDegreeCenter_Logo2.png';
+        } else if (c.includes('DPGDegreeCenter') || c.includes('Degree') || c.includes('Logo 2') || c === 'DPGDegreeCenter_Logo.jpeg') {
           document.getElementById('selCenterLogo').value = 'DPGDegreeCenter_Logo.jpeg';
         } else {
           document.getElementById('selCenterLogo').value = 'Center_Logo.jpg';
@@ -2149,6 +2177,24 @@
       currentQuotaTokens = 2;
       updateTokenBadgeUI();
       exitQuotaLockdown();
+
+      try {
+        const uid = (e.detail && e.detail.user && e.detail.user.uid) || getActiveUserId();
+        const quotaId = await getQuotaDocId();
+        if (window.dpgDb && window.doc && window.setDoc) {
+          const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
+          await window.setDoc(quotaRef, {
+            userId: uid,
+            userType: 'contributor',
+            tokensRemaining: 2,
+            maxTokens: 2,
+            date: new Date().toISOString().split('T')[0]
+          }, { merge: true });
+        }
+      } catch (err) {
+        console.warn("Could not sync restored contributor quota to Firestore:", err);
+      }
+
       await loadUserAssignments();
     });
 
