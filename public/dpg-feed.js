@@ -221,6 +221,10 @@
   async function dailySyncToFirestore(firestoreDb, currentUser, setDocFn, docFn, serverTimestampFn) {
     if (!firestoreDb || !setDocFn || !docFn) return;
     try {
+      // Safely skip search crawlers to conserve firestore writes during live inspection tests
+      const isBot = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent);
+      if (isBot) return;
+
       const todayStr = new Date().toISOString().split("T")[0];
       const lastSync = localStorage.getItem("dpg_last_feed_sync");
 
@@ -234,6 +238,15 @@
       // Convert Set to Array for Firestore serialization
       const serializedKeywords = Array.from(feedWeights.keywords || []);
 
+      let attribution = null;
+      try {
+        if (window.dpgAttribution && typeof window.dpgAttribution.get === 'function') {
+          attribution = window.dpgAttribution.get();
+        } else {
+          attribution = JSON.parse(sessionStorage.getItem("dpg_attribution") || localStorage.getItem("dpg_attribution_last") || "null");
+        }
+      } catch(e) {}
+
       const payload = {
         clientId: clientId,
         userId: currentUser ? currentUser.uid : null,
@@ -242,6 +255,7 @@
         categories: feedWeights.categories,
         keywords: serializedKeywords,
         cookiesRaw: document.cookie,
+        attribution: attribution || null,
         lastSyncDate: todayStr,
         updatedAt: serverTimestampFn ? serverTimestampFn() : new Date()
       };

@@ -413,6 +413,15 @@ async function completeAuthSuccess(user) {
   const legacyScreen = document.getElementById("unnegotiableLockedQuotaScreen");
   if (legacyScreen) legacyScreen.remove();
 
+  // Handle post-auth redirect if specified via URL parameters (isSignIn=true&redirect-to=...)
+  const authRedirect = sessionStorage.getItem("dpg_auth_redirect") || localStorage.getItem("dpg_auth_redirect");
+  if (authRedirect) {
+    sessionStorage.removeItem("dpg_auth_redirect");
+    localStorage.removeItem("dpg_auth_redirect");
+    window.location.href = authRedirect;
+    return;
+  }
+
   // Dispatch global event for listeners
   window.dispatchEvent(new CustomEvent("dpg-auth-success", { detail: { user } }));
 
@@ -733,3 +742,6 @@ window.requireContributorAuth = function() {
   window.openSignInModal();
   return false;
 };
+
+// Dispatch readiness event for external handlers (e.g. dpg-params.js)
+window.dispatchEvent(new CustomEvent("dpg-auth-component-ready"));

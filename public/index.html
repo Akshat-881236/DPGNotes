@@ -9,6 +9,7 @@
   <meta name="digiindia-student-innovation-platform" content="8COwXHmA9iO2PTTrzXryJw">
   <meta name="digiindia-student-innovation-platform" content="2kV9BlePhk89XPlAvirJIw">
   <script src="config.js"></script>
+  <script src="dpg-params.js"></script>
   <script src="custom-dialogs.js" defer></script>
   <script src="redirect.js" defer></script>
   <!-- AdSense verification script preserved in head as requested -->
@@ -1047,11 +1048,39 @@
       .brand-tagline { font-size: 0.68rem; }
       .home-search-shell { padding: 5px 6px 5px 12px; }
       .home-search-btn { padding: 8px 14px; font-size: 0.82rem; }
+      .edu-navbar { padding: 0.65rem 1rem; }
+    }
+    @media (max-width: 576px) {
+      .edu-navbar { padding: 0.6rem 0.85rem; }
+      .brand-container { gap: 8px; }
+      .brand-icon { width: 36px; height: 36px; font-size: 1.2rem; border-radius: 10px; }
+      .brand-name { font-size: 1.08rem; }
+      .brand-tagline { font-size: 0.64rem; }
+      .mobile-hamburger-btn { width: 38px; height: 38px; font-size: 1.2rem; border-radius: 9px; }
+      .mobile-quick-signin { padding: 6px 12px; font-size: 0.78rem; border-radius: 9px; }
     }
     @media (max-width: 480px) {
       .hero-title { font-size: 1.85rem; }
       .hero-desc { font-size: 0.92rem; }
       .stat-pill h3 { font-size: 1.4rem; }
+    }
+    @media (max-width: 420px) {
+      .edu-navbar { padding: 0.5rem 0.75rem; }
+      .brand-container { gap: 7px; }
+      .brand-icon { width: 34px; height: 34px; font-size: 1.12rem; border-radius: 8px; }
+      .brand-name { font-size: 1.02rem; }
+      .brand-tagline { font-size: 0.6rem; letter-spacing: 0; }
+      .mobile-hamburger-btn { width: 35px; height: 35px; font-size: 1.15rem; border-radius: 8px; }
+      .mobile-quick-signin { padding: 5px 10px; font-size: 0.75rem; border-radius: 8px; gap: 4px; }
+    }
+    @media (max-width: 360px) {
+      .edu-navbar { padding: 0.45rem 0.55rem; }
+      .brand-container { gap: 6px; }
+      .brand-icon { width: 32px; height: 32px; font-size: 1.05rem; }
+      .brand-name { font-size: 0.95rem; }
+      .brand-tagline { font-size: 0.55rem; max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .mobile-hamburger-btn { width: 32px; height: 32px; font-size: 1.05rem; }
+      .mobile-quick-signin { padding: 4px 8px; font-size: 0.72rem; }
     }
   </style>
 </head>
@@ -1062,7 +1091,7 @@
   <!-- SLEEK NAVBAR              -->
   <!-- ========================= -->
   <header class="edu-navbar">
-    <div class="container-fluid d-flex align-items-center justify-content-between p-0">
+    <div class="container-fluid d-flex flex-nowrap align-items-center justify-content-between p-0">
       
       <!-- Brand Logo & Clean Title -->
       <a href="index.html" class="brand-container">

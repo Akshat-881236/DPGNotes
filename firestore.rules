@@ -175,6 +175,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    /* ---------- USER ACTIVITY FEEDS (Recommendation Engine & Telemetry) ---------- */
+    match /user_activity_feeds/{feedId} {
+      allow read, write: if true;
+    }
+
     /* ---------- ASSIGNMENT & PRACTICAL COVER PAGES & LOGS ---------- */
     match /Assignment/{userId}/{document=**} {
       allow read, write, delete: if true;

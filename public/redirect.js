@@ -563,6 +563,12 @@
         setInterval(updateTimer, 1000);
       }
 
+      // Never lock out search engine crawlers (Googlebot, Bingbot, Lighthouse, Google-InspectionTool, etc.)
+      const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent);
+      if (isCrawler) {
+        return;
+      }
+
       // Check local limit first
       if (pageVisits > 6 || pdfViews > 3 || new URLSearchParams(location.search).get('quotaReached') === 'true') {
         triggerQuotaReachedPhase();
@@ -583,6 +589,9 @@
 
     // Automatically trigger Device Logging for page load (logs once per user per IP per day)
     (function logDeviceTelemetry() {
+      if (/bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent)) {
+        return;
+      }
       const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
       const userType = activeUser.role === 'admin' || activeUser.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : (activeUser.uid ? 'Contributor' : 'Anonymous');
       const userId = activeUser.uid || localStorage.getItem("dpg_guest_id") || "guest_anon";
