@@ -1962,6 +1962,234 @@ Provide:
   }
 });
 
+// ==========================================
+// HIGH-SECURITY EMAIL TEMPLATES & TELEMETRY ENGINE
+// ==========================================
+
+function getClientMetadata(req) {
+  // Client IP resolution (handles reverse proxies, cloudflare, express)
+  const forwarded = req.headers['x-forwarded-for'];
+  let ip = forwarded ? forwarded.split(',')[0].trim() : (req.socket?.remoteAddress || req.ip || '127.0.0.1');
+  if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
+  if (ip === '::1' || ip === '127.0.0.1') ip = '127.0.0.1 (Local Session / Loopback)';
+
+  // User-Agent & Hardware / Platform heuristics
+  const ua = String(req.headers['user-agent'] || 'Unknown Device');
+  let deviceType = 'Desktop PC / Workstation';
+  if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(ua)) {
+    deviceType = 'Mobile Device';
+  } else if (/ipad|tablet/i.test(ua)) {
+    deviceType = 'Tablet Device';
+  }
+
+  let os = 'Unknown OS';
+  if (/windows nt 10/i.test(ua)) os = 'Windows 10/11';
+  else if (/windows nt 6\.3/i.test(ua)) os = 'Windows 8.1';
+  else if (/windows nt/i.test(ua)) os = 'Windows';
+  else if (/macintosh|mac os x/i.test(ua)) os = 'macOS';
+  else if (/android/i.test(ua)) os = 'Android';
+  else if (/iphone/i.test(ua)) os = 'iOS (iPhone)';
+  else if (/ipad/i.test(ua)) os = 'iPadOS';
+  else if (/linux/i.test(ua)) os = 'Linux';
+
+  let browser = 'Web Browser';
+  if (/edg/i.test(ua)) browser = 'Microsoft Edge';
+  else if (/chrome|crios/i.test(ua)) browser = 'Google Chrome';
+  else if (/firefox|fxios/i.test(ua)) browser = 'Mozilla Firefox';
+  else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Apple Safari';
+  else if (/opera|opr/i.test(ua)) browser = 'Opera';
+
+  const fullDevice = `${deviceType} • ${os} (${browser})`;
+
+  // Timezone resolution (from request body, custom header, or default Indian Standard Time)
+  const timezone = req.body?.timezone || req.headers['x-timezone'] || 'Asia/Kolkata (IST)';
+
+  // Geo Location resolution
+  const country = req.headers['cf-ipcountry'] || req.headers['x-country-code'] || 'India';
+  const city = req.headers['cf-ipcity'] || req.headers['x-city'] || '';
+  const geoLocation = city ? `${city}, ${country}` : `${country} (Estimated)`;
+
+  // Formatted timestamp
+  const now = new Date();
+  const timestamp = now.toLocaleString('en-US', {
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'medium',
+    timeStyle: 'medium'
+  }) + ' IST';
+
+  return {
+    ip,
+    device: fullDevice,
+    deviceType,
+    os,
+    browser,
+    timezone,
+    geoLocation,
+    userAgent: ua,
+    timestamp
+  };
+}
+
+function formatSecurityAuditTable(meta, userDetails = {}) {
+  const { name, email, role } = userDetails;
+  const rows = [];
+
+  if (name) {
+    rows.push(`
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500; width: 36%;">Contributor Name</td>
+        <td style="padding: 10px 14px; color: #f8fafc; font-size: 13px; font-weight: 600;">${name}</td>
+      </tr>
+    `);
+  }
+
+  if (email) {
+    rows.push(`
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500;">Account Email</td>
+        <td style="padding: 10px 14px; color: #38bdf8; font-size: 13px; font-family: monospace;">${email}</td>
+      </tr>
+    `);
+  }
+
+  if (role) {
+    rows.push(`
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500;">Security Role</td>
+        <td style="padding: 10px 14px; color: #f8fafc; font-size: 13px; font-weight: 600;">${role}</td>
+      </tr>
+    `);
+  }
+
+  rows.push(`
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+      <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500;">Timezone</td>
+      <td style="padding: 10px 14px; color: #f8fafc; font-size: 13px;">${meta.timezone}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+      <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500;">Geo Location</td>
+      <td style="padding: 10px 14px; color: #f8fafc; font-size: 13px;">${meta.geoLocation}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+      <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500;">IP Address</td>
+      <td style="padding: 10px 14px; color: #e2e8f0; font-size: 13px; font-family: monospace;">${meta.ip}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+      <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500;">Device &amp; Platform</td>
+      <td style="padding: 10px 14px; color: #f8fafc; font-size: 13px;">${meta.device}</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px 14px; color: #94a3b8; font-size: 13px; font-weight: 500;">Session Timestamp</td>
+      <td style="padding: 10px 14px; color: #94a3b8; font-size: 12px; font-family: monospace;">${meta.timestamp}</td>
+    </tr>
+  `);
+
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin: 22px 0 16px 0; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden;">
+      <thead>
+        <tr style="background: rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+          <th colspan="2" style="text-align: left; padding: 11px 14px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em;">
+            SECURITY AUDIT &amp; SESSION REFERENCE
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderOtpBadge(otp, expiryMinutes = 10, accentColor = '#6366f1', glowColor = 'rgba(99, 102, 241, 0.25)') {
+  return `
+    <div style="margin: 28px 0; text-align: center;">
+      <div style="display: inline-block; background: #0b0f19; border: 2px dashed ${accentColor}; border-radius: 14px; padding: 16px 36px; box-shadow: 0 4px 20px ${glowColor};">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: ${accentColor}; margin-bottom: 6px;">ONE-TIME VERIFICATION CODE</div>
+        <span style="font-size: 38px; font-weight: 800; letter-spacing: 10px; color: #ffffff; font-family: 'Courier New', Courier, monospace; display: block; padding-left: 10px;">${otp}</span>
+      </div>
+      <div style="font-size: 12px; color: #94a3b8; margin-top: 10px; font-weight: 500;">
+        ⏱ Valid for the next <strong>${expiryMinutes} minutes</strong>. Single-use authorization only.
+      </div>
+    </div>
+  `;
+}
+
+function createTemplate(title, message, options = {}) {
+  const showBtn = options.showBtn !== false;
+  const btnText = options.btnText || "Go to Dashboard";
+  const btnUrl = options.btnUrl || "https://dpgnotes.web.app/dashboard.html";
+  const badge = options.badge || "DPGNotes Academic & Security Portal";
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #f8fafc;">
+  <div style="background-color: #0b0f19; padding: 36px 12px; min-height: 100%;">
+    <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 620px; width: 100%; margin: 0 auto; background: #131b2e; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.08);">
+      <!-- Brand Header -->
+      <tr>
+        <td style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 30px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div style="display: inline-block; padding: 4px 12px; border-radius: 9999px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); color: #38bdf8; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;">
+            ${badge}
+          </div>
+          <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: -0.02em;">
+            DPG<span style="color: #38bdf8;">Notes</span>
+          </h1>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 4px; letter-spacing: 0.02em;">
+            DPG School of Technology &amp; Management • Academic Network
+          </div>
+        </td>
+      </tr>
+
+      <!-- Body Content -->
+      <tr>
+        <td style="padding: 34px 28px; background: #131b2e;">
+          <h2 style="margin: 0 0 16px 0; color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;">
+            ${title}
+          </h2>
+          <div style="color: #cbd5e1; font-size: 15px; line-height: 1.65;">
+            ${message}
+          </div>
+
+          ${showBtn ? `
+          <div style="margin-top: 30px; text-align: center;">
+            <a href="${btnUrl}" style="background: linear-gradient(135deg, #2563eb, #3b82f6); color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+              ${btnText} &rarr;
+            </a>
+          </div>
+          ` : ''}
+
+          <!-- Legal Disclaimer & DRASA Compliance -->
+          <div style="margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.07); color: #64748b; font-size: 11px; line-height: 1.55;">
+            <strong style="color: #94a3b8;">Security &amp; Legal Compliance Notice:</strong> This automated notification is transmitted pursuant to our verified platform access protocols. All session identifiers, authentication attempts, IP addresses, and contributor activities are systematically logged and validated in immutable audit trails under the <strong>DPGNotes Regulations &amp; Suspension Act (DRASA)</strong> and general Terms of Service.
+          </div>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="background: #0b0f19; padding: 20px 24px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.06); line-height: 1.65;">
+          <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Akshat Network Hub (ANH). All rights reserved.</p>
+          <p style="margin: 0;">
+            <a href="https://dpgnotes.web.app/legal/index.html#privacy" style="color: #94a3b8; text-decoration: underline; margin: 0 6px;">Privacy Policy</a> &bull;
+            <a href="https://dpgnotes.web.app/legal/index.html#terms" style="color: #94a3b8; text-decoration: underline; margin: 0 6px;">Terms &amp; Conditions</a> &bull;
+            <a href="https://dpgnotes.web.app/legal/index.html#security" style="color: #94a3b8; text-decoration: underline; margin: 0 6px;">Security Architecture</a> &bull;
+            <a href="https://dpgnotes.web.app/legal/index.html#drasa" style="color: #94a3b8; text-decoration: underline; margin: 0 6px;">DRASA Regulations</a>
+          </p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
+  `;
+}
+
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -1969,10 +2197,33 @@ app.post('/api/admin/login', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore.set(email, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min expiry
     
+    const meta = getClientMetadata(req);
+    const auditTable = formatSecurityAuditTable(meta, {
+      name: "Root System Administrator",
+      email: email,
+      role: "Global Management & Security Console"
+    });
+    const otpBadge = renderOtpBadge(otp, 5, '#38bdf8', 'rgba(56, 189, 248, 0.3)');
+
+    const html = createTemplate(
+      "Admin Console Authorization 🔒",
+      `<p style="margin: 0 0 14px 0;">An elevated administrative authorization challenge was initiated for the <strong>DPGNotes Central Management Infrastructure</strong>.</p>
+       <p style="margin: 0 0 14px 0;">Please verify the session audit telemetry below and enter the one-time authentication code to authorize your administrative console access:</p>
+       ${otpBadge}
+       ${auditTable}
+       <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 12px 16px; margin-top: 20px; font-size: 12px; color: #fca5a5;">
+         <strong>High-Security Advisory:</strong> If you did not initiate this authentication challenge, an unauthorized actor may be attempting administrative login. Immediate infrastructure lockdown and credential renewal are advised.
+       </div>`,
+      {
+        badge: "Enterprise Administrative Security",
+        showBtn: false
+      }
+    );
+
     await sendEmail(
       email, 
-      "DPGNotes Admin Login OTP", 
-      `<h3>Your OTP for Admin Login is: <span style="color:#2563eb">${otp}</span></h3>`
+      "[Action Required] DPGNotes Security: Admin One-Time Authentication Code", 
+      html
     );
     
     res.json({ message: "OTP sent to admin email" });
@@ -2086,47 +2337,86 @@ app.post('/api/auth/send-otp', async (req, res) => {
       return res.status(400).json({ success: false, error: "Valid email is required" });
     }
 
-    // Verify user exists before sending recovery OTP
-    if (purpose === 'recovery') {
-      let userFound = false;
-      if (db) {
+    // Lookup contributor details from Firestore or Firebase Auth
+    let userFound = false;
+    let contributorName = 'Valued Contributor';
+
+    if (db) {
+      try {
         const snap = await db.collection('users').where('email', '==', email).limit(1).get();
-        if (!snap.empty) userFound = true;
-      }
-      if (!userFound && admin && admin.auth) {
-        try {
-          await admin.auth().getUserByEmail(email);
+        if (!snap.empty) {
           userFound = true;
-        } catch(e) {
-          // not found in auth
+          const uData = snap.docs[0].data();
+          contributorName = uData.name || uData.displayName || contributorName;
         }
+      } catch (e) {
+        console.warn("User lookup error in send-otp:", e);
       }
-      if (!userFound) {
-        return res.status(404).json({ success: false, error: "No registered contributor account found with this email address." });
+    }
+    if (!userFound && admin && admin.auth) {
+      try {
+        const uRec = await admin.auth().getUserByEmail(email);
+        userFound = true;
+        if (uRec.displayName) contributorName = uRec.displayName;
+      } catch(e) {
+        // not found in auth
       }
+    }
+
+    // Verify user exists before sending recovery OTP
+    if (purpose === 'recovery' && !userFound) {
+      return res.status(404).json({ success: false, error: "No registered contributor account found with this email address." });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const storeKey = `user_otp_${email}`;
     otpStore.set(storeKey, { otp, purpose, expires: Date.now() + 10 * 60 * 1000 }); // 10 min
 
-    const is2FA = purpose === '2fa';
-    const subject = is2FA ? "DPGNotes Security: 2-Factor Authentication Code" : "DPGNotes: Password Recovery Verification Code";
-    const headerTitle = is2FA ? "Two-Factor Verification 🔐" : "Password Recovery 🔑";
-    const messageText = is2FA 
-      ? "You are signing in to your DPGNotes account. Enter the one-time code below to complete your sign-in:"
-      : "We received a request to recover your DPGNotes password. Enter the one-time code below:";
+    const meta = getClientMetadata(req);
+    const auditTable = formatSecurityAuditTable(meta, {
+      name: contributorName,
+      email: email,
+      role: "Verified Contributor"
+    });
 
-    const html = createTemplate(
-      headerTitle,
-      `<p>${messageText}</p>
-       <div style="margin: 25px 0; text-align: center;">
-         <div style="display:inline-block; background: #0f172a; border: 2px dashed #6366f1; border-radius: 12px; padding: 15px 30px;">
-           <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #818cf8; font-family: monospace;">${otp}</span>
-         </div>
-       </div>
-       <p style="font-size: 13px; color: #94a3b8; text-align: center;">This code is valid for 10 minutes. If you did not request this, please ignore this email.</p>`
-    );
+    const is2FA = purpose === '2fa';
+    let subject, html;
+
+    if (is2FA) {
+      subject = "DPGNotes Security: Two-Factor Authentication (2FA) Code";
+      const otpBadge = renderOtpBadge(otp, 10, '#818cf8', 'rgba(129, 140, 248, 0.3)');
+      html = createTemplate(
+        "Two-Factor Authentication (2FA) 🔐",
+        `<p style="margin: 0 0 14px 0;">Dear <strong>${contributorName}</strong>,</p>
+         <p style="margin: 0 0 14px 0;">A sign-in attempt to your DPGNotes Contributor Account was initiated. To complete the authentication challenge and safeguard your account against unauthorized access, enter the verification code below:</p>
+         ${otpBadge}
+         ${auditTable}
+         <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 12px 16px; margin-top: 20px; font-size: 12px; color: #cbd5e1;">
+           🔒 <strong>Security Reminder:</strong> DPGNotes administrators will never solicit your verification code. If you did not initiate this authentication request, please review and update your credentials immediately.
+         </div>`,
+        {
+          badge: "Contributor Security • Two-Factor Verification",
+          showBtn: false
+        }
+      );
+    } else {
+      subject = "DPGNotes Security: Contributor Password Recovery Code";
+      const otpBadge = renderOtpBadge(otp, 10, '#f59e0b', 'rgba(245, 158, 11, 0.3)');
+      html = createTemplate(
+        "Contributor Password Recovery 🔑",
+        `<p style="margin: 0 0 14px 0;">Dear <strong>${contributorName}</strong>,</p>
+         <p style="margin: 0 0 14px 0;">We received an official request to reset the password for your DPGNotes Contributor Account. Use the one-time verification code below to authorize identity verification and set a new password:</p>
+         ${otpBadge}
+         ${auditTable}
+         <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 12px 16px; margin-top: 20px; font-size: 12px; color: #fde68a;">
+           ⚠️ <strong>Security Advisory:</strong> If you did not request a password reset, please disregard this email. Your current password remains active and secure, and no changes will be made to your account.
+         </div>`,
+        {
+          badge: "Contributor Security • Password Recovery",
+          showBtn: false
+        }
+      );
+    }
 
     await sendEmail(email, subject, html);
     res.json({ success: true, message: "Verification code sent to your email." });
@@ -2902,39 +3192,7 @@ app.get('/api/admin/share-report/:token', verifyAdmin, async (req, res) => {
   }
 });
 
-// ==========================================
-// BEAUTIFUL EMAIL TEMPLATES
-// ==========================================
-const createTemplate = (title, message) => `
-<div style="font-family: 'Inter', sans-serif; background: #0f172a; padding: 40px 20px; color: #fff;">
-  <div style="max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);">
-    <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 30px; text-align: center;">
-      <h1 style="margin: 0; color: white; font-size: 24px; font-weight: 700;">DPGNotes</h1>
-    </div>
-    <div style="padding: 40px 30px;">
-      <h2 style="margin-top: 0; color: #f8fafc; font-size: 20px;">${title}</h2>
-      <div style="color: #cbd5e1; font-size: 16px; line-height: 1.6;">
-        ${message}
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0;">
-        <span style="font-size: 11px; color: #64748b; display: block; line-height: 1.4;">
-          <strong>Legal & Compliance Notice:</strong> This activity is tracked, validated, and logged in our secure audit trails under our Tracking & Analytics Policy. Contributor profiles, uploads, suspensions, and access privileges are governed strictly in accordance with DPGNotes Regulations & Suspension Act (DRASA) and general Terms & Conditions.
-        </span>
-      </div>
-      <div style="margin-top: 40px; text-align: center;">
-        <a href="https://dpgnotes.web.app/dashboard.html" style="background: #3b82f6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">Go to Dashboard</a>
-      </div>
-    </div>
-    <div style="background: #0f172a; padding: 20px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.05); line-height: 1.6;">
-      <p style="margin: 0 0 8px 0;">© ${new Date().getFullYear()} Akshat Network Hub. All rights reserved.</p>
-      <p style="margin: 0;">
-        <a href="https://dpgnotes.web.app/legal/index.html#privacy" style="color: #64748b; text-decoration: underline; margin: 0 5px;">Privacy Policy</a> | 
-        <a href="https://dpgnotes.web.app/legal/index.html#terms" style="color: #64748b; text-decoration: underline; margin: 0 5px;">Terms & Conditions</a> | 
-        <a href="https://dpgnotes.web.app/legal/index.html#drasa" style="color: #64748b; text-decoration: underline; margin: 0 5px;">DRASA Regulations</a>
-      </p>
-    </div>
-  </div>
-</div>
-`;
+// createTemplate is declared with enhanced formal layout and audit capabilities earlier in the file.
 
 // ==========================================
 // ROUTES: EMAIL HOOKS (Frontend calls these)
@@ -4532,21 +4790,7 @@ async function pruneOldAnalyticsRecords() {
 setTimeout(pruneOldAnalyticsRecords, 10000);
 setInterval(pruneOldAnalyticsRecords, 24 * 60 * 60 * 1000);
 
-// Replace Admin OTP Email
-app.post('/api/admin/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore.set(email, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min expiry
-    
-    const html = createTemplate("Admin Authentication 🔒", `<p>Your secure One-Time Password for the Admin Dashboard is:</p><h2 style="font-size: 32px; letter-spacing: 5px; color: #3b82f6; text-align: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">${otp}</h2><p>This code expires in 5 minutes.</p>`);
-    await sendEmail(email, "DPGNotes Admin OTP", html);
-    
-    res.json({ message: "OTP sent to admin email" });
-  } else {
-    res.status(401).json({ error: "Invalid credentials" });
-  }
-});
+// Admin OTP authentication route is configured at /api/admin/login with security audit telemetry.
 
 // ==========================================
 // HIGH-LEVEL SECURITY & TELEMETRY ENGINE

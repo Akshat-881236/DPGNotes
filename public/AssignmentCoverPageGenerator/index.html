@@ -533,6 +533,7 @@
               <option value="Header_Image.jpg" selected>Header Logo 1</option>
               <option value="DPGSTM-2HeaderImage.png">Header Logo 2</option>
               <option value="DPGDegreeHeader_Image.jpeg">Header Logo 3</option>
+              <option value="DPGDegreeHeader_Image2.jpeg">Header Logo 4</option>
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0;">
@@ -1663,12 +1664,14 @@
 
       // 1. Header Banner Image: Dynamic Banner Width & Aspect Ratio Engine
       const hStr = String(d.headerLogo || currentHeaderLogo || '');
+      const isHeaderLogo4 = hStr.includes('DPGDegreeHeader_Image2') || hStr.includes('Header2') || hStr.includes('Logo 4') || hStr === 'DPGDegreeHeader_Image2.jpeg';
+      const isHeaderLogo3 = !isHeaderLogo4 && (hStr.includes('DPGDegreeHeader') || hStr.includes('Degree') || hStr === 'DPGDegreeHeader_Image.jpeg');
       const isHeaderLogo2 = hStr.includes('DPGSTM-2') || hStr.includes('2Header') || hStr === 'DPGSTM-2HeaderImage.png';
-      const isHeaderLogo3 = hStr.includes('DPGDegreeHeader') || hStr.includes('Degree') || hStr === 'DPGDegreeHeader_Image.jpeg';
 
-      // Width allocation: Header Logo 2 requires wider image width (522 pt), Header Logo 3 (515 pt), Header Logo 1 (508 pt)
-      const targetBannerW = (isHeaderLogo2 ? 522.0 : (isHeaderLogo3 ? 515.0 : 507.48)) * scaleX;
-      const targetBannerTopY = (isHeaderLogo2 ? 23.0 : (isHeaderLogo3 ? 27.0 : 33.84)) * scaleY;
+      // Width allocation: All header logos occupy full available space leaving 0.8 margin from left and right
+      // Total coordinate base = 612.0 pt. Margin = 0.8 in = 57.6 pt. Target width = 612.0 - 2 * 57.6 = 496.8 pt.
+      const targetBannerW = (612.0 - 2 * (0.8 * 72.0)) * scaleX;
+      const targetBannerTopY = isHeaderLogo2 ? (23.0 * scaleY) : ((isHeaderLogo3 || isHeaderLogo4) ? (27.0 * scaleY) : (33.84 * scaleY));
 
       if (headerImg.complete && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
         const nw = headerImg.naturalWidth || headerImg.width;
@@ -2100,7 +2103,9 @@
       if (document.getElementById('inpDay')) document.getElementById('inpDay').value = r.day || 'FRIDAY';
       if (r.headerLogo && document.getElementById('selHeaderLogo')) {
         const h = String(r.headerLogo);
-        if (h.includes('DPGSTM-2') || h.includes('2Header') || h === 'DPGSTM-2HeaderImage.png') {
+        if (h.includes('DPGDegreeHeader_Image2') || h.includes('Header2') || h.includes('Logo 4') || h === 'DPGDegreeHeader_Image2.jpeg') {
+          document.getElementById('selHeaderLogo').value = 'DPGDegreeHeader_Image2.jpeg';
+        } else if (h.includes('DPGSTM-2') || h.includes('2Header') || h === 'DPGSTM-2HeaderImage.png') {
           document.getElementById('selHeaderLogo').value = 'DPGSTM-2HeaderImage.png';
         } else if (h.includes('DPGDegreeHeader') || h.includes('Degree') || h === 'DPGDegreeHeader_Image.jpeg') {
           document.getElementById('selHeaderLogo').value = 'DPGDegreeHeader_Image.jpeg';

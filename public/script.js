@@ -580,7 +580,11 @@ window.handlePasswordSignIn = async function(e) {
       await fetch(apiBase + "/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resolvedEmail, purpose: "2fa" })
+        body: JSON.stringify({
+          email: resolvedEmail,
+          purpose: "2fa",
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        })
       });
     } catch(otpErr) {
       console.warn("2FA send failed:", otpErr);
@@ -644,7 +648,11 @@ window.resend2FACode = async function() {
     await fetch(apiBase + "/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pendingSignInEmail, purpose: "2fa" })
+      body: JSON.stringify({
+        email: pendingSignInEmail,
+        purpose: "2fa",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     });
     alert("New 6-digit code has been dispatched to " + pendingSignInEmail);
   } catch(e) {
@@ -751,7 +759,11 @@ window.handlePasswordRecovery = async function(e) {
     const otpRes = await fetch(apiBase + "/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: targetEmail, purpose: "recovery" })
+      body: JSON.stringify({
+        email: targetEmail,
+        purpose: "recovery",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     });
     const otpData = await otpRes.json().catch(() => ({}));
     if (!otpRes.ok || !otpData.success) {
@@ -841,7 +853,11 @@ window.resendRecoveryOtpScript = async function() {
     const res = await fetch(apiBase + "/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pendingRecoveryEmailScript, purpose: "recovery" })
+      body: JSON.stringify({
+        email: pendingRecoveryEmailScript,
+        purpose: "recovery",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.success) {

@@ -804,7 +804,11 @@ window.dpgHandleSignIn = async function(e) {
       await fetch(`${API_BASE}/api/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resolvedEmail, purpose: "2fa" })
+        body: JSON.stringify({
+          email: resolvedEmail,
+          purpose: "2fa",
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        })
       });
     } catch(otpErr) {
       console.warn("2FA dispatch error:", otpErr);
@@ -879,7 +883,11 @@ window.dpgResend2FA = async function() {
     await fetch(`${API_BASE}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pendingEmail, purpose: "2fa" })
+      body: JSON.stringify({
+        email: pendingEmail,
+        purpose: "2fa",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     });
     alert("A new verification code was sent to " + pendingEmail);
   } catch(err) {
@@ -1083,7 +1091,11 @@ window.dpgHandleRecovery = async function(e) {
     const otpRes = await fetch(`${API_BASE}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: targetEmail, purpose: "recovery" })
+      body: JSON.stringify({
+        email: targetEmail,
+        purpose: "recovery",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     });
     const otpData = await otpRes.json().catch(() => ({}));
     if (!otpRes.ok || !otpData.success) {
@@ -1182,7 +1194,11 @@ window.dpgResendRecoveryOtp = async function() {
     const res = await fetch(`${API_BASE}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pendingRecoveryEmail, purpose: "recovery" })
+      body: JSON.stringify({
+        email: pendingRecoveryEmail,
+        purpose: "recovery",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.success) {

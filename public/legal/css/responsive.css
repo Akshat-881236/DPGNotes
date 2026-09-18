@@ -85,8 +85,12 @@
     overflow-x: hidden;
   }
   
-  .legal-content, .legal-main {
+  .legal-content,
+  .legal-content.has-toc,
+  .legal-layout:has(.legal-toc) .legal-content,
+  .legal-main {
     margin-left: 0 !important;
+    margin-right: 0 !important;
     padding: 1.25rem 1rem !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -97,10 +101,16 @@
   .legal-container,
   .content-wrapper,
   .legal-content-area,
-  .legal-article {
+  .legal-article,
+  .policy-section,
+  .doc-viewer-card {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box;
+  }
+  
+  .legal-breadcrumbs ol {
+    flex-wrap: wrap !important;
   }
   
   .sidebar-backdrop {
@@ -121,19 +131,31 @@
   
   .viewer-actions {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: stretch !important;
+    gap: 0.75rem;
     padding: 1rem;
   }
   
+  .current-policy-title {
+    font-size: 1rem !important;
+    word-break: break-word;
+  }
+
   .btn-group {
-    width: 100%;
-    justify-content: space-between;
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: flex-start;
   }
   
   .action-btn {
-    flex-grow: 1;
+    flex: 1 1 auto !important;
+    min-width: 85px;
+    white-space: nowrap !important;
     justify-content: center;
+    padding: 0.45rem 0.75rem !important;
+    font-size: 0.82rem !important;
   }
   
   .policy-article-container {
@@ -155,6 +177,7 @@
     margin-top: 1.4rem !important;
   }
   
+  .policy-grid,
   .compliance-grid {
     grid-template-columns: 1fr !important;
     gap: 0.9rem !important;
