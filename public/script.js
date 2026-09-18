@@ -138,6 +138,7 @@ function matchCategory(docCat) {
 let currentUser = null;
 let pendingSignInEmail = null;
 let pendingSignInUser = null;
+let pendingRecoveryEmailScript = "";
 
 // ============================================================================
 // AUTH STATE LISTENER
@@ -714,25 +715,150 @@ window.handlePasswordRecovery = async function(e) {
 
   targetEmail = targetEmail.trim().toLowerCase();
 
+  // Rigorous verification of user existence
+  let userFound = false;
   try {
-    await sendPasswordResetEmail(auth, targetEmail);
-    fetch(apiBase + "/api/auth/send-otp", {
+    const qEmail = await getDocs(query(collection(db, "users"), where("email", "==", targetEmail), limit(1)));
+    if (!qEmail.empty) userFound = true;
+  } catch(fsErr) {
+    console.warn("Firestore recovery email check fallback:", fsErr);
+  }
+
+  if (!userFound) {
+    try {
+      const res = await fetch(apiBase + "/api/auth/resolve-identifier", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: targetEmail })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.found) userFound = true;
+      }
+    } catch(apiErr) {
+      console.warn("API resolve check error:", apiErr);
+    }
+  }
+
+  if (!userFound) {
+    if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
+    showScriptAuthError("recoveryErrorAlert", `No registered contributor account found with email "${targetEmail}". Please verify your email or create a free account.`, "recoveryIdentifier");
+    return;
+  }
+
+  // User exists: Dispatch Recovery OTP and transition to Step 2
+  try {
+    const otpRes = await fetch(apiBase + "/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: targetEmail, purpose: "recovery" })
-    }).catch(console.warn);
+    });
+    const otpData = await otpRes.json().catch(() => ({}));
+    if (!otpRes.ok || !otpData.success) {
+      throw new Error(otpData.error || "Failed to dispatch verification code.");
+    }
 
-    alert(`Password reset instructions and security code have been dispatched to: ${targetEmail}\n\nPlease check your inbox and spam folder.`);
-    const modalEl = document.getElementById("forgotPasswordModal");
-    if (modalEl && window.bootstrap) {
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
+    sendPasswordResetEmail(auth, targetEmail).catch(console.warn);
+
+    pendingRecoveryEmailScript = targetEmail;
+
+    const step1 = document.getElementById("recoveryStep1");
+    const step2 = document.getElementById("recoveryStep2");
+    const emailDisp = document.getElementById("recoveryEmailDisplay");
+    if (step1) step1.style.display = "none";
+    if (step2) step2.style.display = "block";
+    if (emailDisp) emailDisp.textContent = targetEmail;
+    clearScriptAuthError("recoveryOtpErrorAlert");
+
+    const otpInp = document.getElementById("recoveryOtpCode");
+    if (otpInp) {
+      otpInp.value = "";
+      setTimeout(() => otpInp.focus(), 150);
     }
   } catch(err) {
     showScriptAuthError("recoveryErrorAlert", getScriptFriendlyAuthError(err), "recoveryIdentifier");
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
   }
+};
+
+window.handleRecoveryOtpSubmit = async function(e) {
+  e.preventDefault();
+  clearScriptAuthError("recoveryOtpErrorAlert");
+
+  const otp = document.getElementById("recoveryOtpCode")?.value.trim() || "";
+  const newPass = document.getElementById("recoveryNewPassword")?.value || "";
+  const confirmPass = document.getElementById("recoveryConfirmPassword")?.value || "";
+  const btn = document.getElementById("btnSubmitRecoveryOtp");
+
+  if (!otp || otp.length !== 6) {
+    showScriptAuthError("recoveryOtpErrorAlert", "Please enter the 6-digit verification code sent to your email.", "recoveryOtpCode");
+    return;
+  }
+  if (!newPass || newPass.length < 6) {
+    showScriptAuthError("recoveryOtpErrorAlert", "Password must be at least 6 characters.", "recoveryNewPassword");
+    return;
+  }
+  if (newPass !== confirmPass) {
+    showScriptAuthError("recoveryOtpErrorAlert", "Passwords do not match. Please re-enter.", "recoveryConfirmPassword");
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.innerText = "Resetting Password..."; }
+
+  try {
+    const res = await fetch(apiBase + "/api/auth/reset-password-with-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingRecoveryEmailScript, otp, newPassword: newPass })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed to reset password. Please check your verification code.");
+    }
+
+    alert("Password reset successful! You can now sign in with your new password.");
+    const fpEl = document.getElementById("forgotPasswordModal");
+    if (fpEl && window.bootstrap) {
+      const inst = bootstrap.Modal.getInstance(fpEl);
+      if (inst) inst.hide();
+    }
+    window.openSignInModal();
+    const loginInp = document.getElementById("loginIdentifier");
+    if (loginInp && pendingRecoveryEmailScript) {
+      loginInp.value = pendingRecoveryEmailScript;
+    }
+  } catch(err) {
+    showScriptAuthError("recoveryOtpErrorAlert", err.message || "Failed to reset password.", "recoveryOtpCode");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = "Reset Password & Sign In"; }
+  }
+};
+
+window.resendRecoveryOtpScript = async function() {
+  if (!pendingRecoveryEmailScript) return;
+  try {
+    const res = await fetch(apiBase + "/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingRecoveryEmailScript, purpose: "recovery" })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      alert(`A fresh 6-digit verification code has been sent to ${pendingRecoveryEmailScript}`);
+    } else {
+      alert(data.error || "Failed to resend code.");
+    }
+  } catch(e) {
+    alert("Failed to resend code: " + e.message);
+  }
+};
+
+window.backToRecoveryStep1Script = function() {
+  const step1 = document.getElementById("recoveryStep1");
+  const step2 = document.getElementById("recoveryStep2");
+  if (step1) step1.style.display = "block";
+  if (step2) step2.style.display = "none";
 };
 
 // ============================================================================
@@ -752,16 +878,18 @@ window.openSignInModal = function() {
     if (gpInst) gpInst.hide();
   }
 
-  // Never show previous log credentials: clean reset of forms and fields
-  ["formSignIn", "formSignUp", "formRecovery"].forEach(fId => {
-    const f = document.getElementById(fId);
-    if (f && typeof f.reset === "function") f.reset();
-  });
-  ["loginIdentifier", "loginPassword", "signupName", "signupStudentId", "signupContact", "signupEmail", "signupLinkedin", "signupGithub", "signupPassword", "signupConfirmPassword", "recoveryIdentifier"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.value = ""; el.classList.remove("dpg-input-error"); }
-  });
-  ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert", "twoFactorErrorAlert"].forEach(id => clearScriptAuthError(id));
+  // Clean reset of forms and fields (unless 2FA is in progress)
+  if (!pendingSignInUser) {
+    ["formSignIn", "formSignUp", "formRecovery"].forEach(fId => {
+      const f = document.getElementById(fId);
+      if (f && typeof f.reset === "function") f.reset();
+    });
+    ["loginIdentifier", "loginPassword", "signupName", "signupStudentId", "signupContact", "signupEmail", "signupLinkedin", "signupGithub", "signupPassword", "signupConfirmPassword", "recoveryIdentifier"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.value = ""; el.classList.remove("dpg-input-error"); }
+    });
+    ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert", "twoFactorErrorAlert"].forEach(id => clearScriptAuthError(id));
+  }
 
   // Always prefer the auth-component overlay (dpgSignInModal) if it exists
   const dpgOverlay = document.getElementById("dpgAuthOverlay");
@@ -778,7 +906,9 @@ window.openSignInModal = function() {
       if (el) el.style.display = (id === "dpgSignInModal") ? "block" : "none";
     });
     dpgOverlay.classList.add("active");
-    window.dpgBackToSignInStep1();
+    if (!pendingSignInUser) {
+      window.dpgBackToSignInStep1();
+    }
     return;
   }
 
@@ -789,8 +919,13 @@ window.openSignInModal = function() {
   if (fpEl && window.bootstrap) { const fpModal = bootstrap.Modal.getInstance(fpEl); if (fpModal) fpModal.hide(); }
   const step1 = document.getElementById("signInFormStep");
   const step2 = document.getElementById("twoFactorStep");
-  if (step1) step1.style.display = "block";
-  if (step2) step2.style.display = "none";
+  if (!pendingSignInUser) {
+    if (step1) step1.style.display = "block";
+    if (step2) step2.style.display = "none";
+  } else {
+    if (step1) step1.style.display = "none";
+    if (step2) step2.style.display = "block";
+  }
   const siModal = new bootstrap.Modal(document.getElementById("signInModal"));
   siModal.show();
 };

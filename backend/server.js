@@ -2017,7 +2017,36 @@ app.post('/api/auth/resolve-identifier', async (req, res) => {
     }
 
     if (rawId.includes('@')) {
-      return res.json({ found: true, email: rawId.toLowerCase() });
+      const emailLower = rawId.toLowerCase();
+      let exists = false;
+      let userData = null;
+      if (db) {
+        const snap = await db.collection('users').where('email', '==', emailLower).limit(1).get();
+        if (!snap.empty) {
+          exists = true;
+          userData = snap.docs[0].data();
+        }
+      }
+      let userRecord = null;
+      if (!exists && admin && admin.auth) {
+        try {
+          userRecord = await admin.auth().getUserByEmail(emailLower);
+          exists = true;
+        } catch(e) {
+          // not found in auth
+        }
+      }
+
+      if (!exists) {
+        return res.status(404).json({ found: false, error: "No registered contributor account found with this email address." });
+      }
+
+      return res.json({ 
+        found: true, 
+        email: emailLower, 
+        name: userData?.name || userRecord?.displayName || emailLower.split('@')[0], 
+        userType: userData?.userType || 'Student' 
+      });
     }
 
     if (!db) {
@@ -2055,6 +2084,26 @@ app.post('/api/auth/send-otp', async (req, res) => {
     const purpose = String(req.body.purpose || '2fa').trim(); // '2fa' or 'recovery'
     if (!email || !email.includes('@')) {
       return res.status(400).json({ success: false, error: "Valid email is required" });
+    }
+
+    // Verify user exists before sending recovery OTP
+    if (purpose === 'recovery') {
+      let userFound = false;
+      if (db) {
+        const snap = await db.collection('users').where('email', '==', email).limit(1).get();
+        if (!snap.empty) userFound = true;
+      }
+      if (!userFound && admin && admin.auth) {
+        try {
+          await admin.auth().getUserByEmail(email);
+          userFound = true;
+        } catch(e) {
+          // not found in auth
+        }
+      }
+      if (!userFound) {
+        return res.status(404).json({ success: false, error: "No registered contributor account found with this email address." });
+      }
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -2103,6 +2152,53 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     }
   } catch (err) {
     console.error("Auth verify OTP error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Reset Password with OTP
+app.post('/api/auth/reset-password-with-otp', async (req, res) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const otp = String(req.body.otp || '').trim();
+    const newPassword = String(req.body.newPassword || '');
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, error: "Email, 6-digit verification code, and new password are required." });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, error: "New password must be at least 6 characters long." });
+    }
+
+    const storeKey = `user_otp_${email}`;
+    const record = otpStore.get(storeKey);
+    if (!record || record.otp !== otp || record.purpose !== 'recovery' || record.expires <= Date.now()) {
+      return res.status(400).json({ success: false, error: "Invalid or expired verification code." });
+    }
+
+    // Verify user in Firebase Admin Auth
+    let userRecord = null;
+    if (admin && admin.auth) {
+      try {
+        userRecord = await admin.auth().getUserByEmail(email);
+      } catch (authLookupErr) {
+        console.warn("Auth lookup failed for password reset:", authLookupErr);
+      }
+    }
+
+    if (!userRecord) {
+      return res.status(404).json({ success: false, error: "No user account registered with this email." });
+    }
+
+    // Update the user's password in Firebase Auth
+    await admin.auth().updateUser(userRecord.uid, { password: newPassword });
+
+    // Clean up OTP
+    otpStore.delete(storeKey);
+
+    res.json({ success: true, message: "Password updated successfully. You can now sign in with your new password." });
+  } catch (err) {
+    console.error("Auth reset password with OTP error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

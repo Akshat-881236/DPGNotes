@@ -43,6 +43,7 @@ const API_BASE = (window.API_BASE_URL || "").replace(/\/+$/, "");
 // State
 let pendingUser = null;
 let pendingEmail = "";
+let pendingRecoveryEmail = "";
 
 // Friendly Firebase Auth Error Translator
 function getFriendlyAuthError(err) {
@@ -359,54 +360,108 @@ function injectAuthDOM() {
       </div>
     </div>
 
-    <!-- 4. FORGOT PASSWORD MODAL -->
+    <!-- 4. FORGOT PASSWORD MODAL (2-Step OTP Password Reset) -->
     <div id="dpgForgotPasswordModal" class="dpg-auth-dialog" style="display:none;">
       <button type="button" class="dpg-auth-close-btn" onclick="window.closeAuthModals()" title="Close">&times;</button>
       
-      <div class="dpg-auth-badge dpg-auth-badge-amber">
-        <i class="ri-key-2-line"></i> Security Recovery
-      </div>
-      <h2 class="dpg-auth-title">Reset Password</h2>
-      <p class="dpg-auth-subtitle">
-        Enter your registered <strong>Student ID, Employee ID, or Email Address</strong>. We will dispatch secure password recovery instructions to your verified email.
-      </p>
-
-      <!-- INLINE ERROR ALERT -->
-      <div id="dpgRecoveryError" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
-
-      <form id="dpgRecoveryForm" onsubmit="window.dpgHandleRecovery(event)" autocomplete="off">
-        <div class="dpg-auth-form-group">
-          <label class="dpg-auth-label">Student ID, Employee ID or Email*</label>
-          <input type="text" id="dpgRecoveryIdentifier" class="dpg-auth-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgRecoveryError', 'dpgRecoveryIdentifier')" />
+      <!-- RECOVERY STEP 1: IDENTIFIER LOOKUP -->
+      <div id="dpgRecoveryStep1">
+        <div class="dpg-auth-badge dpg-auth-badge-amber">
+          <i class="ri-key-2-line"></i> Security Recovery
         </div>
+        <h2 class="dpg-auth-title">Reset Password</h2>
+        <p class="dpg-auth-subtitle">
+          Enter your registered <strong>Student ID, Employee ID, or Email Address</strong>. We will dispatch secure password recovery instructions and a 6-digit verification code.
+        </p>
 
-        <button type="submit" id="dpgBtnRecoverySubmit" class="dpg-auth-btn-primary">
-          <i class="ri-mail-send-line"></i> Send Password Recovery Link
-        </button>
-      </form>
+        <!-- INLINE ERROR ALERT -->
+        <div id="dpgRecoveryError" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
 
-      <div class="dpg-auth-footer">
-        <a class="dpg-auth-link" onclick="window.openSignInModal()">Return to Sign In</a>
+        <form id="dpgRecoveryForm" onsubmit="window.dpgHandleRecovery(event)" autocomplete="off">
+          <div class="dpg-auth-form-group">
+            <label class="dpg-auth-label">Student ID, Employee ID or Email*</label>
+            <input type="text" id="dpgRecoveryIdentifier" class="dpg-auth-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgRecoveryError', 'dpgRecoveryIdentifier')" />
+          </div>
+
+          <button type="submit" id="dpgBtnRecoverySubmit" class="dpg-auth-btn-primary">
+            <i class="ri-mail-send-line"></i> Send Password Recovery Code
+          </button>
+        </form>
+
+        <div class="dpg-auth-footer">
+          <a class="dpg-auth-link" onclick="window.openSignInModal()">Return to Sign In</a>
+        </div>
+      </div>
+
+      <!-- RECOVERY STEP 2: OTP VERIFICATION & NEW PASSWORD -->
+      <div id="dpgRecoveryStep2" style="display:none; text-align:center;">
+        <div style="font-size:2.8rem; color:#f59e0b; margin-bottom:0.6rem;">
+          <i class="ri-lock-password-line"></i>
+        </div>
+        <h3 class="dpg-auth-title" style="font-size:1.4rem;">Enter Verification Code</h3>
+        <p class="dpg-auth-subtitle">
+          We sent a 6-digit recovery code to <strong id="dpgRecoveryEmailTarget" style="color:#ffffff;"></strong>. Enter the code and choose your new password below:
+        </p>
+
+        <!-- INLINE ERROR ALERT FOR STEP 2 -->
+        <div id="dpgRecoveryOtpError" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+        <form id="dpgRecoveryOtpForm" onsubmit="window.dpgSubmitRecoveryOtp(event)" autocomplete="off">
+          <div class="dpg-auth-form-group" style="max-width:240px; margin:0 auto 1.1rem auto;">
+            <label class="dpg-auth-label" style="text-align:center;">6-Digit Recovery Code*</label>
+            <input type="text" id="dpgRecoveryOtpInput" class="dpg-auth-input" placeholder="123456" maxlength="6" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:monospace; font-weight:700;" required autocomplete="off" oninput="window.clearDpgError('dpgRecoveryOtpError', 'dpgRecoveryOtpInput')" />
+          </div>
+
+          <div class="dpg-auth-form-group" style="text-align:left; margin-bottom:0.9rem;">
+            <label class="dpg-auth-label">New Password* (min 6 characters)</label>
+            <input type="password" id="dpgRecoveryNewPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgRecoveryOtpError', 'dpgRecoveryNewPassword')" />
+          </div>
+
+          <div class="dpg-auth-form-group" style="text-align:left; margin-bottom:1.2rem;">
+            <label class="dpg-auth-label">Confirm New Password*</label>
+            <input type="password" id="dpgRecoveryConfirmPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgRecoveryOtpError', 'dpgRecoveryConfirmPassword')" />
+          </div>
+
+          <button type="submit" id="dpgBtnRecoveryOtpSubmit" class="dpg-auth-btn-primary">
+            <i class="ri-checkbox-circle-line"></i> Reset Password &amp; Sign In
+          </button>
+        </form>
+
+        <div style="display:flex; justify-content:space-between; margin-top:1.2rem; font-size:0.84rem;">
+          <a class="dpg-auth-link" onclick="window.dpgResendRecoveryOtp()">Resend Code</a>
+          <a class="dpg-auth-link" onclick="window.dpgBackToRecoveryStep1()" style="color:#94a3b8;">Back</a>
+        </div>
       </div>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  // Close on Escape key (blocked if quota is locked)
+  // Close on Escape key (blocked if quota is locked or in OTP verification step)
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       if (localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true") {
+        return;
+      }
+      const isSignInOtp = document.getElementById("dpgSignInStep2")?.style.display !== "none" && pendingUser;
+      const isRecoveryOtp = document.getElementById("dpgRecoveryStep2")?.style.display !== "none";
+      if (isSignInOtp || isRecoveryOtp) {
         return;
       }
       window.closeAuthModals();
     }
   });
 
-  // Close on overlay backdrop click (blocked if quota is locked)
+  // Close on overlay backdrop click (blocked if quota is locked or during OTP verification)
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
       if (localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true") {
+        return;
+      }
+      const isSignInOtp = document.getElementById("dpgSignInStep2")?.style.display !== "none" && pendingUser;
+      const isRecoveryOtp = document.getElementById("dpgRecoveryStep2")?.style.display !== "none";
+      if (isSignInOtp || isRecoveryOtp) {
+        // User is actively verifying OTP; do NOT dismiss on tab switch or backdrop click!
         return;
       }
       window.closeAuthModals();
@@ -479,18 +534,22 @@ function showModal(id) {
   }
 
   // Never show previous log credentials: clean reset of forms and fields
-  ["dpgSignInForm", "dpgSignUpForm", "dpgRecoveryForm"].forEach(fId => {
+  ["dpgSignInForm", "dpgSignUpForm", "dpgRecoveryForm", "dpgRecoveryOtpForm"].forEach(fId => {
     const f = document.getElementById(fId);
     if (f && typeof f.reset === "function") f.reset();
   });
-  ["dpgLoginIdentifier", "dpgLoginPassword", "dpg2faInput", "dpgSignupName", "dpgSignupId", "dpgSignupEmail", "dpgSignupPassword", "dpgSignupConfirmPassword", "dpgRecoveryIdentifier"].forEach(iId => {
+  ["dpgLoginIdentifier", "dpgLoginPassword", "dpgSignupName", "dpgSignupId", "dpgSignupEmail", "dpgSignupPassword", "dpgSignupConfirmPassword", "dpgRecoveryIdentifier", "dpgRecoveryOtpInput", "dpgRecoveryNewPassword", "dpgRecoveryConfirmPassword"].forEach(iId => {
     const el = document.getElementById(iId);
     if (el) {
       el.value = "";
       el.classList.remove("dpg-input-error");
     }
   });
-  ["dpgSignInError", "dpgSignUpError", "dpgRecoveryError"].forEach(eId => clearDpgError(eId));
+  if (!pendingUser) {
+    const el = document.getElementById("dpg2faInput");
+    if (el) { el.value = ""; el.classList.remove("dpg-input-error"); }
+  }
+  ["dpgSignInError", "dpgSignUpError", "dpgRecoveryError", "dpgRecoveryOtpError"].forEach(eId => clearDpgError(eId));
 
   ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(mId => {
     const el = document.getElementById(mId);
@@ -499,9 +558,19 @@ function showModal(id) {
   if (overlay) overlay.classList.add("active");
 }
 
-window.openSignInModal = function() {
+window.openSignInModal = function(forceReset = false) {
+  const is2FaPending = Boolean(pendingUser && pendingEmail);
   showModal("dpgSignInModal");
-  window.dpgBackToSignInStep1();
+  if (!is2FaPending || forceReset) {
+    window.dpgBackToSignInStep1();
+  } else {
+    const step1 = document.getElementById("dpgSignInStep1");
+    const step2 = document.getElementById("dpgSignInStep2");
+    if (step1) step1.style.display = "none";
+    if (step2) step2.style.display = "block";
+    const emailTarget = document.getElementById("dpg2faEmailTarget");
+    if (emailTarget && pendingEmail) emailTarget.textContent = pendingEmail;
+  }
 };
 
 window.openSignUpModal = function() {
@@ -510,6 +579,7 @@ window.openSignUpModal = function() {
 
 window.openForgotPasswordModal = function() {
   showModal("dpgForgotPasswordModal");
+  window.dpgBackToRecoveryStep1();
 };
 
 window.showQuotaReachedModal = function() {
@@ -517,8 +587,19 @@ window.showQuotaReachedModal = function() {
 };
 
 window.dpgBackToSignInStep1 = function() {
+  pendingUser = null;
+  pendingEmail = "";
   const step1 = document.getElementById("dpgSignInStep1");
   const step2 = document.getElementById("dpgSignInStep2");
+  if (step1) step1.style.display = "block";
+  if (step2) step2.style.display = "none";
+  const inp2fa = document.getElementById("dpg2faInput");
+  if (inp2fa) inp2fa.value = "";
+};
+
+window.dpgBackToRecoveryStep1 = function() {
+  const step1 = document.getElementById("dpgRecoveryStep1");
+  const step2 = document.getElementById("dpgRecoveryStep2");
   if (step1) step1.style.display = "block";
   if (step2) step2.style.display = "none";
 };
@@ -962,24 +1043,155 @@ window.dpgHandleRecovery = async function(e) {
 
   targetEmail = targetEmail.trim().toLowerCase();
 
+  // 1. Rigorous User Existence Verification (Client Firestore + Backend)
+  let userFound = false;
   try {
-    await sendPasswordResetEmail(auth, targetEmail);
-    fetch(`${API_BASE}/api/auth/send-otp`, {
+    const qEmail = await getDocs(query(collection(db, "users"), where("email", "==", targetEmail), limit(1)));
+    if (!qEmail.empty) userFound = true;
+  } catch(fsErr) {
+    console.warn("Firestore recovery email check fallback:", fsErr);
+  }
+
+  if (!userFound) {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/resolve-identifier`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: targetEmail })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.found) userFound = true;
+      }
+    } catch(apiErr) {
+      console.warn("API resolve check error:", apiErr);
+    }
+  }
+
+  // Halt immediately if user account does not exist
+  if (!userFound) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-mail-send-line"></i> Send Password Recovery Code`;
+    }
+    showDpgError("dpgRecoveryError", `No registered contributor account found with email "${targetEmail}". Please check your email or create a free account.`, "dpgRecoveryIdentifier");
+    return;
+  }
+
+  // 2. User exists: Dispatch Recovery OTP and switch to Step 2
+  try {
+    const otpRes = await fetch(`${API_BASE}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: targetEmail, purpose: "recovery" })
-    }).catch(console.warn);
+    });
+    const otpData = await otpRes.json().catch(() => ({}));
+    if (!otpRes.ok || !otpData.success) {
+      throw new Error(otpData.error || "Failed to dispatch verification code.");
+    }
 
-    alert("Password reset instructions have been sent to: " + targetEmail + "\nPlease check your email inbox and spam folder.");
-    window.closeAuthModals();
+    // Also trigger Firebase Password Reset Link as secondary backup
+    sendPasswordResetEmail(auth, targetEmail).catch(console.warn);
+
+    pendingRecoveryEmail = targetEmail;
+
+    // Transition smoothly to Step 2
+    const step1 = document.getElementById("dpgRecoveryStep1");
+    const step2 = document.getElementById("dpgRecoveryStep2");
+    const emailTarget = document.getElementById("dpgRecoveryEmailTarget");
+    if (step1) step1.style.display = "none";
+    if (step2) step2.style.display = "block";
+    if (emailTarget) emailTarget.textContent = targetEmail;
+    clearDpgError("dpgRecoveryOtpError");
+
+    const otpInp = document.getElementById("dpgRecoveryOtpInput");
+    if (otpInp) {
+      otpInp.value = "";
+      setTimeout(() => otpInp.focus(), 150);
+    }
   } catch(err) {
     console.error("Password recovery failed:", err);
     showDpgError("dpgRecoveryError", getFriendlyAuthError(err), "dpgRecoveryIdentifier");
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<i class="ri-mail-send-line"></i> Send Password Recovery Link`;
+      btn.innerHTML = `<i class="ri-mail-send-line"></i> Send Password Recovery Code`;
     }
+  }
+};
+
+// Password Recovery Step 2: OTP Verification & New Password Setter
+window.dpgSubmitRecoveryOtp = async function(e) {
+  e.preventDefault();
+  clearDpgError("dpgRecoveryOtpError");
+
+  const otp = document.getElementById("dpgRecoveryOtpInput")?.value.trim() || "";
+  const newPass = document.getElementById("dpgRecoveryNewPassword")?.value || "";
+  const confirmPass = document.getElementById("dpgRecoveryConfirmPassword")?.value || "";
+  const btn = document.getElementById("dpgBtnRecoveryOtpSubmit");
+
+  if (!otp || otp.length !== 6) {
+    showDpgError("dpgRecoveryOtpError", "Please enter the 6-digit verification code sent to your email.", "dpgRecoveryOtpInput");
+    return;
+  }
+  if (!newPass || newPass.length < 6) {
+    showDpgError("dpgRecoveryOtpError", "Password must be at least 6 characters.", "dpgRecoveryNewPassword");
+    return;
+  }
+  if (newPass !== confirmPass) {
+    showDpgError("dpgRecoveryOtpError", "Passwords do not match. Please re-enter.", "dpgRecoveryConfirmPassword");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Resetting Password...`;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/reset-password-with-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingRecoveryEmail, otp, newPassword: newPass })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed to reset password. Please check your verification code.");
+    }
+
+    alert("Password reset successful! You can now sign in with your new password.");
+    window.openSignInModal(true);
+    const loginIdentifier = document.getElementById("dpgLoginIdentifier");
+    if (loginIdentifier && pendingRecoveryEmail) {
+      loginIdentifier.value = pendingRecoveryEmail;
+    }
+  } catch(err) {
+    console.error("OTP password reset error:", err);
+    showDpgError("dpgRecoveryOtpError", err.message || "Failed to reset password.", "dpgRecoveryOtpInput");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-checkbox-circle-line"></i> Reset Password &amp; Sign In`;
+    }
+  }
+};
+
+window.dpgResendRecoveryOtp = async function() {
+  if (!pendingRecoveryEmail) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingRecoveryEmail, purpose: "recovery" })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      alert(`A fresh 6-digit verification code has been sent to ${pendingRecoveryEmail}`);
+    } else {
+      alert(data.error || "Failed to resend verification code.");
+    }
+  } catch(e) {
+    alert("Failed to resend code: " + e.message);
   }
 };
 

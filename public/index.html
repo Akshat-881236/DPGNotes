@@ -1656,7 +1656,7 @@
   <!-- ======================================================= -->
   <!-- MODAL: SIGN IN (STUDENT/EMP ID OR EMAIL + 2FA) (R1)     -->
   <!-- ======================================================= -->
-  <div class="modal fade edu-modal" id="signInModal" tabindex="-1" aria-hidden="true">
+  <div class="modal fade edu-modal" id="signInModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         
@@ -1854,9 +1854,9 @@
   </div>
 
   <!-- ======================================================= -->
-  <!-- MODAL: FORGOT PASSWORD & RECOVERY                       -->
+  <!-- MODAL: FORGOT PASSWORD & RECOVERY (2-STEP OTP FLOW)      -->
   <!-- ======================================================= -->
-  <div class="modal fade edu-modal" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
+  <div class="modal fade edu-modal" id="forgotPasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         
@@ -1866,24 +1866,60 @@
         </div>
 
         <div class="modal-body">
-          <p style="font-size:0.88rem; color:#94a3b8; margin-bottom:1.2rem;">
-            Enter your registered <strong>Student ID, Employee ID, or Email Address</strong>. We will send a secure password reset link along with a one-time verification code to your registered email.
-          </p>
+          <!-- Step 1: Identifier Entry -->
+          <div id="recoveryStep1">
+            <p style="font-size:0.88rem; color:#94a3b8; margin-bottom:1.2rem;">
+              Enter your registered <strong>Student ID, Employee ID, or Email Address</strong>. We will dispatch secure password recovery instructions and a 6-digit verification code to your verified email.
+            </p>
 
-          <!-- INLINE ERROR ALERT -->
-          <div id="recoveryErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+            <!-- INLINE ERROR ALERT -->
+            <div id="recoveryErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
 
-          <form id="formRecovery" autocomplete="off">
-            <label class="edu-label">Student ID / Employee ID or Email*</label>
-            <input type="text" id="recoveryIdentifier" class="edu-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" />
+            <form id="formRecovery" autocomplete="off">
+              <label class="edu-label">Student ID / Employee ID or Email*</label>
+              <input type="text" id="recoveryIdentifier" class="edu-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" />
 
-            <button type="submit" id="btnSubmitRecovery" class="btn-nav-glow w-100 py-2 mt-2 justify-content-center" style="border-radius:12px;">
-              Send Password Recovery Code
-            </button>
-          </form>
+              <button type="submit" id="btnSubmitRecovery" class="btn-nav-glow w-100 py-2 mt-2 justify-content-center" style="border-radius:12px;">
+                Send Password Recovery Code
+              </button>
+            </form>
 
-          <div class="text-center mt-3" style="font-size:0.85rem;">
-            <a href="javascript:void(0)" onclick="openSignInModal()" style="color:#818cf8; text-decoration:none;">Return to Sign In</a>
+            <div class="text-center mt-3" style="font-size:0.85rem;">
+              <a href="javascript:void(0)" onclick="openSignInModal()" style="color:#818cf8; text-decoration:none;">Return to Sign In</a>
+            </div>
+          </div>
+
+          <!-- Step 2: In-Modal OTP Verification & Password Reset -->
+          <div id="recoveryStep2" style="display:none; text-align:center;">
+            <div style="font-size:2.8rem; color:#f59e0b; margin-bottom:10px;">
+              <i class="ri-lock-password-line"></i>
+            </div>
+            <h4 style="font-family:var(--font-heading); font-weight:700; margin-bottom:6px;">Enter Verification Code</h4>
+            <p style="font-size:0.88rem; color:#94a3b8; margin-bottom:1.2rem;">
+              We sent a 6-digit recovery code to <strong id="recoveryEmailDisplay" style="color:#cbd5e1;"></strong>. Enter the code and choose your new password:
+            </p>
+
+            <div id="recoveryOtpErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+            <form id="formRecoveryOtp" autocomplete="off" onsubmit="window.handleRecoveryOtpSubmit ? window.handleRecoveryOtpSubmit(event) : event.preventDefault()">
+              <label class="edu-label text-center d-block">6-Digit Recovery Code*</label>
+              <input type="text" id="recoveryOtpCode" class="edu-input text-center" placeholder="123456" maxlength="6" required autocomplete="off" style="font-size:1.5rem; letter-spacing:6px; font-family:monospace; margin-bottom:1rem;" />
+
+              <label class="edu-label text-start d-block">New Password* (min 6 characters)</label>
+              <input type="password" id="recoveryNewPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" style="margin-bottom:1rem;" />
+
+              <label class="edu-label text-start d-block">Confirm New Password*</label>
+              <input type="password" id="recoveryConfirmPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" style="margin-bottom:1.2rem;" />
+
+              <button type="submit" id="btnSubmitRecoveryOtp" class="btn-nav-glow w-100 py-2 justify-content-center" style="border-radius:12px;">
+                Reset Password &amp; Sign In
+              </button>
+            </form>
+
+            <div class="d-flex justify-content-between mt-3" style="font-size:0.82rem;">
+              <a href="javascript:void(0)" onclick="window.resendRecoveryOtpScript && window.resendRecoveryOtpScript()" style="color:#818cf8; text-decoration:none;">Resend Code</a>
+              <a href="javascript:void(0)" onclick="window.backToRecoveryStep1Script && window.backToRecoveryStep1Script()" style="color:#94a3b8; text-decoration:none;">Back</a>
+            </div>
           </div>
         </div>
 
