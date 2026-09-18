@@ -23,6 +23,14 @@ const fs = require('fs');
 const path = require('path');
 const Module = require('module');
 const vm = require('vm');
+
+// Ensure environment variables from .env files are loaded into process.env
+try {
+  const dotenv = require('dotenv');
+  dotenv.config({ path: path.join(__dirname, '.env') });
+  dotenv.config({ path: path.join(__dirname, '..', '.env') });
+} catch (e) {}
+
 const vault = require('./security/vault');
 
 const SOURCE_FILE = path.join(__dirname, 'server.source.js');

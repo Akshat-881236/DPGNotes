@@ -20,6 +20,15 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+// Attempt to load .env from backend or root directory if present
+try {
+  const dotenv = require('dotenv');
+  dotenv.config({ path: path.join(__dirname, '..', '.env') });
+  dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
+} catch (e) {
+  // dotenv is optional in minimal environments
+}
+
 const MAGIC = Buffer.from('DPGV', 'utf8');
 const VERSION = 0x01;
 const SALT_LEN = 16;
