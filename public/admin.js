@@ -525,41 +525,39 @@ async function loadUsers() {
     if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-danger); padding:1.5rem;">Failed to load user records.</td></tr>`;
   }
 }
+
+const deleteConfirmFormEl = document.getElementById("deleteConfirmForm");
+if (deleteConfirmFormEl) {
+  deleteConfirmFormEl.onsubmit = async (e) => {
+    e.preventDefault();
+    const key = document.getElementById("deleteAuthKey").value;
+    const confirmBtn = document.getElementById("confirmDeleteBtn");
     
-    document.getElementById("deleteConfirmForm").onsubmit = async (e) => {
-      e.preventDefault();
-      const key = document.getElementById("deleteAuthKey").value;
-      const confirmBtn = document.getElementById("confirmDeleteBtn");
+    if (confirmBtn) confirmBtn.innerText = "Deleting...";
+    try {
+      const res = await fetch(`${API_URL}/admin/delete-contributor`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
+        },
+        body: JSON.stringify({ contributorId: pendingDeleteUid, key })
+      });
       
-      confirmBtn.innerText = "Deleting...";
-      try {
-        const res = await fetch(`${API_URL}/admin/delete-contributor`, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
-          },
-          body: JSON.stringify({ contributorId: pendingDeleteUid, key })
-        });
-        
-        const data = await res.json();
-        if (res.ok) {
-          alert("Contributor and all their data successfully deleted.");
-          document.getElementById("deleteModal").classList.remove("active");
-          document.getElementById("deleteConfirmForm").reset();
-          loadUsers();
-        } else {
-          alert(data.error);
-        }
-      } catch (err) {
-        alert("Server error");
+      const data = await res.json();
+      if (res.ok) {
+        alert("Contributor and all their data successfully deleted.");
+        document.getElementById("deleteModal").classList.remove("active");
+        deleteConfirmFormEl.reset();
+        loadUsers();
+      } else {
+        alert(data.error);
       }
-      confirmBtn.innerText = "Execute Deletion";
-    };
-    
-  } catch (error) {
-    console.error("Failed to load users", error);
-  }
+    } catch (err) {
+      alert("Server error");
+    }
+    if (confirmBtn) confirmBtn.innerText = "Execute Deletion";
+  };
 }
 
 // ==========================================

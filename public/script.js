@@ -154,6 +154,8 @@ function updateNavbarAuth(user) {
   const userAreaMobile = document.getElementById("navUserAreaMobile");
   const userNameEl = document.getElementById("navUserName");
   const userAvatarEl = document.getElementById("navUserAvatar");
+  const userNameMobileEl = document.getElementById("navUserNameMobile");
+  const userAvatarMobileEl = document.getElementById("navUserAvatarMobile");
 
   if (user) {
     document.documentElement.classList.add("dpg-user-authenticated");
@@ -173,16 +175,30 @@ function updateNavbarAuth(user) {
     }
     if (userAreaMobile) {
       userAreaMobile.classList.remove("d-none");
-      userAreaMobile.style.setProperty("display", "block", "important");
+      userAreaMobile.classList.add("d-flex");
+      userAreaMobile.style.setProperty("display", "flex", "important");
     }
     
-    if (userNameEl) userNameEl.innerText = user.displayName || user.email.split('@')[0];
+    const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
+    if (userNameEl) userNameEl.innerText = displayName;
+    if (userNameMobileEl) userNameMobileEl.innerText = displayName;
+
+    const avatarHtml = user.photoURL 
+      ? `<img src="${user.photoURL}" alt="${displayName}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
+      : displayName.charAt(0).toUpperCase();
+
     if (userAvatarEl) {
       if (user.photoURL) {
-        userAvatarEl.innerHTML = `<img src="${user.photoURL}" alt="User" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        userAvatarEl.innerHTML = avatarHtml;
       } else {
-        const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
-        userAvatarEl.innerText = initial;
+        userAvatarEl.innerText = avatarHtml;
+      }
+    }
+    if (userAvatarMobileEl) {
+      if (user.photoURL) {
+        userAvatarMobileEl.innerHTML = avatarHtml;
+      } else {
+        userAvatarMobileEl.innerText = avatarHtml;
       }
     }
   } else {

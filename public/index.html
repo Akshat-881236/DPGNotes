@@ -106,7 +106,74 @@
       display: flex !important;
     }
     html.dpg-user-authenticated #navUserAreaMobile {
-      display: block !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    .mobile-user-profile-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 3px 9px 3px 4px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none !important;
+      color: #f8fafc;
+      transition: all 0.2s;
+      max-width: 135px;
+    }
+    .mobile-user-profile-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+    .mobile-nav-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: #ffffff;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .mobile-nav-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .mobile-nav-user-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 65px;
+    }
+    .mobile-logout-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #f87171;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .mobile-logout-icon-btn:hover {
+      background: rgba(239, 68, 68, 0.22);
+      color: #ffffff;
     }
 
     :root {
@@ -1141,10 +1208,14 @@
             <i class="ri-user-line"></i> Sign In
           </button>
         </div>
-        <div id="navUserAreaMobile" style="display:none;">
-          <a href="dashboard.html" class="mobile-quick-signin text-decoration-none" style="color:#ffffff; background:#6366f1;">
-            <i class="ri-dashboard-line"></i> Dashboard
+        <div id="navUserAreaMobile" style="display:none;" class="align-items-center gap-1">
+          <a href="dashboard.html" class="mobile-user-profile-btn text-decoration-none" title="Contributor Dashboard">
+            <div id="navUserAvatarMobile" class="mobile-nav-avatar">U</div>
+            <span id="navUserNameMobile" class="mobile-nav-user-name">Contributor</span>
           </a>
+          <button type="button" class="mobile-logout-icon-btn" onclick="logoutUser()" title="Sign Out">
+            <i class="ri-logout-box-r-line"></i>
+          </button>
         </div>
         <button class="mobile-hamburger-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavDrawer" aria-controls="mobileNavDrawer" aria-label="Open Navigation">
           <i class="ri-menu-3-line"></i>

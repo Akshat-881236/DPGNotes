@@ -209,7 +209,7 @@
     const card = document.createElement("div");
     card.className = `dpg-native-ad-card dpg-ad-variant-${variant}`;
 
-    const vidId = extractYouTubeId(ad.videoUrl);
+    const vidId = (variant === "image" || variant === "cover_image") ? "" : extractYouTubeId(ad.videoUrl);
     const profileUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
     const profileUrl = profileUid ? `profile.html?uid=${encodeURIComponent(profileUid)}` : "profile.html";
     const trackId = ad.trackId || generateAdTrackId(ad.id);
@@ -390,7 +390,7 @@
         </div>
         <a href="${finalTargetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>
       `;
-    } else if (variant === "sidebar") {
+    } else if (variant === "sidebar" || variant === "image") {
       card.style.cssText = `
         position: relative;
         width: 100%;
@@ -533,7 +533,7 @@
     }
 
     // Smart Rotation & Video Lifecycle Engine
-    const isVideoMediaVariant = (variant === "feed" || variant === "sidebar" || variant === "main" || variant === "cover_video") && !!vidId;
+    const isVideoMediaVariant = variant !== "image" && (variant === "feed" || variant === "sidebar" || variant === "main" || variant === "cover_video") && !!vidId;
 
     if (isVideoMediaVariant) {
       const mediaBox = card.querySelector(`#adMediaBox_${containerId}`);
@@ -663,9 +663,9 @@
     if (variant === "header" || variant === "footer" || variant === "top" || variant === "bottom") {
       const noThumbnailAds = candidates.filter(a => !a.thumbnailUrl || (a.targetPlacement && a.targetPlacement.includes("header")));
       priorityPool = noThumbnailAds.length > 0 ? noThumbnailAds : candidates;
-    } else if (variant === "sidebar") {
-      const sidebarImageAds = candidates.filter(a => a.thumbnailUrl && !a.videoUrl);
-      priorityPool = sidebarImageAds.length > 0 ? sidebarImageAds : candidates;
+    } else if (variant === "sidebar" || variant === "image") {
+      const sidebarImageAds = candidates.filter(a => a.thumbnailUrl && (!a.videoUrl || !extractYouTubeId(a.videoUrl)));
+      priorityPool = sidebarImageAds.length > 0 ? sidebarImageAds : candidates.filter(a => a.thumbnailUrl);
     } else if (variant === "feed" || variant === "main") {
       const richVideoThumbAds = candidates.filter(a => a.thumbnailUrl && a.videoUrl);
       if (richVideoThumbAds.length > 0) {
