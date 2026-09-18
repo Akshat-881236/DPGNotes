@@ -366,3 +366,52 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Inline Error Alert Box */
+.dpg-auth-alert-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.38);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.1rem;
+  color: #fecaca;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  animation: dpgAuthShake 0.35s ease-in-out;
+}
+
+.dpg-auth-alert-error i {
+  font-size: 1.15rem;
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dpg-auth-alert-error.dpg-alert-hidden {
+  display: none !important;
+}
+
+@keyframes dpgAuthShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+/* Input Error State */
+.dpg-auth-input.dpg-input-error {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.06) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Neutralize Browser Autofill Styles */
+.dpg-auth-input:-webkit-autofill,
+.dpg-auth-input:-webkit-autofill:hover, 
+.dpg-auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fafc !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0b1120 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

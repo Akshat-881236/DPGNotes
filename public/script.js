@@ -277,11 +277,80 @@ window.loginWithGithub = async function() {
   }
 };
 
+// Inline Auth Error Helpers for script.js
+function showScriptAuthError(boxId, msg, inputId) {
+  const box = document.getElementById(boxId);
+  if (box) {
+    box.innerHTML = `<i class="ri-error-warning-fill"></i><span>${msg}</span>`;
+    box.classList.remove("dpg-alert-hidden");
+    box.style.display = "flex";
+  }
+  if (inputId) {
+    const inp = document.getElementById(inputId);
+    if (inp) {
+      inp.classList.add("dpg-input-error");
+      inp.focus();
+    }
+  }
+}
+
+function clearScriptAuthError(boxId, inputId) {
+  const box = document.getElementById(boxId);
+  if (box) {
+    box.classList.add("dpg-alert-hidden");
+    box.style.display = "none";
+    box.innerHTML = "";
+  }
+  if (inputId) {
+    const inp = document.getElementById(inputId);
+    if (inp) inp.classList.remove("dpg-input-error");
+  }
+}
+
+function getScriptFriendlyAuthError(err) {
+  if (typeof window.getFriendlyAuthError === "function") {
+    return window.getFriendlyAuthError(err);
+  }
+  if (!err) return "An unexpected error occurred. Please try again.";
+  const code = (err && err.code) || (typeof err === "string" ? err : (err && err.message) || "");
+  if (code.includes("invalid-credential") || code.includes("INVALID_LOGIN_CREDENTIALS")) {
+    return "Incorrect Student/Employee ID, Email, or Password. Please check your credentials and try again.";
+  }
+  if (code.includes("user-not-found") || code.includes("EMAIL_NOT_FOUND")) {
+    return "No contributor account found with this identifier. Please verify your ID or create a free account.";
+  }
+  if (code.includes("wrong-password") || code.includes("INVALID_PASSWORD")) {
+    return "Incorrect password. Please verify your password or use 'Forgot Password' to reset.";
+  }
+  if (code.includes("email-already-in-use") || code.includes("EMAIL_EXISTS")) {
+    return "An account is already registered with this email address. Please sign in instead.";
+  }
+  if (code.includes("weak-password")) {
+    return "Password is too weak. Please use at least 6 characters with mixed letters and numbers.";
+  }
+  if (code.includes("invalid-email")) {
+    return "Please enter a valid, well-formed email address (e.g. name@domain.com).";
+  }
+  if (code.includes("too-many-requests")) {
+    return "Too many failed attempts. For your security, access is temporarily locked. Please wait a few moments.";
+  }
+  if (code.includes("network-request-failed")) {
+    return "Network connection issue. Please check your internet connection and try again.";
+  }
+  return (err && err.message) || "Authentication failed. Please check your details and try again.";
+}
+
 window.logoutUser = async function() {
   try {
     await signOut(auth);
-    localStorage.removeItem("dpgActiveUser");
-    localStorage.removeItem("dpgActiveUserUid");
+    if (typeof window.dpgPurgeCredentials === "function") {
+      window.dpgPurgeCredentials();
+    } else {
+      localStorage.removeItem("dpgActiveUser");
+      localStorage.removeItem("dpgActiveUserUid");
+      sessionStorage.removeItem("dpgActiveUser");
+      sessionStorage.removeItem("dpgActiveUserUid");
+    }
     updateNavbarAuth(null);
   } catch(err) {
     console.error("Sign out error:", err);
@@ -293,22 +362,42 @@ window.logoutUser = async function() {
 // ============================================================================
 window.handleEmailSignUp = async function(e) {
   e.preventDefault();
-  const userType = document.getElementById("signupUserType").value;
-  const name = document.getElementById("signupName").value.trim();
-  const studentId = document.getElementById("signupStudentId").value.trim();
-  const contact = document.getElementById("signupContact").value.trim();
-  const email = document.getElementById("signupEmail").value.trim();
-  const linkedin = document.getElementById("signupLinkedin").value.trim();
-  const github = document.getElementById("signupGithub").value.trim();
-  const password = document.getElementById("signupPassword").value;
-  const confirmPassword = document.getElementById("signupConfirmPassword").value;
+  clearScriptAuthError("signUpErrorAlert");
 
-  if (!userType) return alert("Please select User Type (Student or Teacher).");
-  if (!name) return alert("Please enter your Full Name.");
-  if (!studentId) return alert("Please enter your Student ID or Employee ID.");
-  if (!email) return alert("Please enter a valid Email.");
-  if (password.length < 6) return alert("Password must be at least 6 characters.");
-  if (password !== confirmPassword) return alert("Passwords do not match.");
+  const userType = document.getElementById("signupUserType")?.value || "";
+  const name = document.getElementById("signupName")?.value.trim() || "";
+  const studentId = document.getElementById("signupStudentId")?.value.trim() || "";
+  const contact = document.getElementById("signupContact")?.value.trim() || "";
+  const email = (document.getElementById("signupEmail")?.value.trim() || "").toLowerCase();
+  const linkedin = document.getElementById("signupLinkedin")?.value.trim() || "";
+  const github = document.getElementById("signupGithub")?.value.trim() || "";
+  const password = document.getElementById("signupPassword")?.value || "";
+  const confirmPassword = document.getElementById("signupConfirmPassword")?.value || "";
+
+  if (!userType) {
+    showScriptAuthError("signUpErrorAlert", "Please select your User Role (Student or Teacher).", "signupUserType");
+    return;
+  }
+  if (!name) {
+    showScriptAuthError("signUpErrorAlert", "Please enter your Full Name.", "signupName");
+    return;
+  }
+  if (!studentId) {
+    showScriptAuthError("signUpErrorAlert", "Please enter your Student ID or Employee ID.", "signupStudentId");
+    return;
+  }
+  if (!email || !email.includes("@")) {
+    showScriptAuthError("signUpErrorAlert", "Please enter a valid email address.", "signupEmail");
+    return;
+  }
+  if (password.length < 6) {
+    showScriptAuthError("signUpErrorAlert", "Password must be at least 6 characters long.", "signupPassword");
+    return;
+  }
+  if (password !== confirmPassword) {
+    showScriptAuthError("signUpErrorAlert", "Passwords do not match. Please verify both password fields.", "signupConfirmPassword");
+    return;
+  }
 
   const btn = document.getElementById("btnSubmitSignUp");
   if (btn) { btn.disabled = true; btn.innerText = "Creating Account..."; }
@@ -334,6 +423,7 @@ window.handleEmailSignUp = async function(e) {
       email: email,
       userType: userType,
       studentIdOrEmployeeId: studentId,
+      studentId: studentId,
       contactNumber: contact,
       linkedin: linkedin,
       github: github,
@@ -347,10 +437,17 @@ window.handleEmailSignUp = async function(e) {
       body: JSON.stringify({ email: email, name: name })
     }).catch(console.warn);
 
-    alert("Welcome to DPGNotes! Your contributor workspace is ready.");
+    // Close modal cleanly
+    const suEl = document.getElementById("signUpModal");
+    if (suEl && window.bootstrap) {
+      const suModal = bootstrap.Modal.getInstance(suEl);
+      if (suModal) suModal.hide();
+    }
+
     window.location.href = "dashboard.html";
   } catch(err) {
-    alert(err);
+    console.error("Email sign up error:", err);
+    showScriptAuthError("signUpErrorAlert", getScriptFriendlyAuthError(err), "signupEmail");
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = "Create Contributor Account"; }
   }
@@ -377,37 +474,80 @@ if (signupUserTypeEl) {
 // ============================================================================
 window.handlePasswordSignIn = async function(e) {
   e.preventDefault();
-  const identifier = document.getElementById("loginIdentifier").value.trim();
-  const password = document.getElementById("loginPassword").value;
+  clearScriptAuthError("signInErrorAlert");
 
-  if (!identifier || !password) return alert("Please enter your Student/Employee ID or Email, and Password.");
+  const identifier = document.getElementById("loginIdentifier")?.value.trim() || "";
+  const password = document.getElementById("loginPassword")?.value || "";
+
+  if (!identifier) {
+    showScriptAuthError("signInErrorAlert", "Please enter your Student ID, Employee ID, or Email.", "loginIdentifier");
+    return;
+  }
+  if (!password) {
+    showScriptAuthError("signInErrorAlert", "Please enter your password.", "loginPassword");
+    return;
+  }
 
   const btn = document.getElementById("btnSubmitSignIn");
   if (btn) { btn.disabled = true; btn.innerText = "Verifying Credentials..."; }
 
   let resolvedEmail = identifier;
   if (!identifier.includes('@')) {
+    let resolved = false;
+    // 1. Try backend API with 3.5s timeout
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
       const res = await fetch(apiBase + "/api/auth/resolve-identifier", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier })
+        body: JSON.stringify({ identifier }),
+        signal: controller.signal
       });
-      const data = await res.json();
-      if (!res.ok || !data.found) {
-        throw new Error(data.error || "No account found matching this Student / Employee ID.");
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.found && data.email) {
+          resolvedEmail = data.email;
+          resolved = true;
+        }
       }
-      resolvedEmail = data.email;
     } catch(resolveErr) {
-      console.warn("Backend resolve fallback, querying Firestore directly:", resolveErr);
-      const qSnap = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", identifier)));
-      if (qSnap.empty) {
-        if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
-        return alert("No account found matching Student / Employee ID: " + identifier);
+      console.warn("Backend resolve fallback, querying Firestore directly:", resolveErr.message);
+    }
+
+    // 2. Direct client Firestore query fallback checking both fields & casing
+    if (!resolved) {
+      try {
+        const candidates = [identifier, identifier.toUpperCase(), identifier.toLowerCase()];
+        for (const cand of candidates) {
+          const q1 = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", cand), limit(1)));
+          if (!q1.empty) {
+            resolvedEmail = q1.docs[0].data().email;
+            resolved = true;
+            break;
+          }
+          const q2 = await getDocs(query(collection(db, "users"), where("studentId", "==", cand), limit(1)));
+          if (!q2.empty) {
+            resolvedEmail = q2.docs[0].data().email;
+            resolved = true;
+            break;
+          }
+        }
+      } catch(fsErr) {
+        console.warn("Firestore client identifier lookup error:", fsErr);
       }
-      resolvedEmail = qSnap.docs[0].data().email;
+    }
+
+    if (!resolved) {
+      if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
+      showScriptAuthError("signInErrorAlert", `No account found matching Student/Employee ID "${identifier}". Please check your ID or create a free account.`, "loginIdentifier");
+      return;
     }
   }
+
+  // Normalize email to clean lowercase
+  resolvedEmail = resolvedEmail.trim().toLowerCase();
 
   try {
     const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
@@ -451,15 +591,19 @@ window.handlePasswordSignIn = async function(e) {
     document.getElementById("twoFactorEmailDisplay").innerText = resolvedEmail;
   } catch(err) {
     console.error("Sign in error:", err);
-    alert("Sign In Error: " + (err.message || err));
+    showScriptAuthError("signInErrorAlert", getScriptFriendlyAuthError(err), "loginPassword");
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
   }
 };
 
 window.verify2FACode = async function() {
-  const code = document.getElementById("twoFactorInput").value.trim();
-  if (code.length !== 6) return alert("Please enter the 6-digit verification code sent to your email.");
+  clearScriptAuthError("twoFactorErrorAlert");
+  const code = document.getElementById("twoFactorInput")?.value.trim() || "";
+  if (code.length !== 6) {
+    showScriptAuthError("twoFactorErrorAlert", "Please enter the 6-digit verification code sent to your email.", "twoFactorInput");
+    return;
+  }
 
   const btn = document.getElementById("btnVerify2FA");
   if (btn) { btn.disabled = true; btn.innerText = "Verifying..."; }
@@ -487,7 +631,7 @@ window.verify2FACode = async function() {
       window.location.href = "dashboard.html";
     }
   } catch(err) {
-    alert("Verification Error: " + err.message);
+    showScriptAuthError("twoFactorErrorAlert", err.message || "Verification failed.", "twoFactorInput");
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = "Verify & Complete Sign In"; }
   }
@@ -512,28 +656,63 @@ window.resend2FACode = async function() {
 // ============================================================================
 window.handlePasswordRecovery = async function(e) {
   e.preventDefault();
-  const rawId = document.getElementById("recoveryIdentifier").value.trim();
-  if (!rawId) return alert("Please enter your Student/Employee ID or Email.");
+  clearScriptAuthError("recoveryErrorAlert");
+
+  const rawId = document.getElementById("recoveryIdentifier")?.value.trim() || "";
+  if (!rawId) {
+    showScriptAuthError("recoveryErrorAlert", "Please enter your Student/Employee ID or Email.", "recoveryIdentifier");
+    return;
+  }
 
   const btn = document.getElementById("btnSubmitRecovery");
   if (btn) { btn.disabled = true; btn.innerText = "Sending Reset Link & OTP..."; }
 
   let targetEmail = rawId;
   if (!rawId.includes('@')) {
+    let resolved = false;
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
       const res = await fetch(apiBase + "/api/auth/resolve-identifier", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: rawId })
+        body: JSON.stringify({ identifier: rawId }),
+        signal: controller.signal
       });
-      const data = await res.json();
-      if (!data.found) throw new Error("No account found with this ID.");
-      targetEmail = data.email;
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.found && data.email) {
+          targetEmail = data.email;
+          resolved = true;
+        }
+      }
     } catch(err) {
+      console.warn("Backend recovery resolve fallback:", err.message);
+    }
+
+    if (!resolved) {
+      try {
+        const candidates = [rawId, rawId.toUpperCase(), rawId.toLowerCase()];
+        for (const cand of candidates) {
+          const q1 = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", cand), limit(1)));
+          if (!q1.empty) { targetEmail = q1.docs[0].data().email; resolved = true; break; }
+          const q2 = await getDocs(query(collection(db, "users"), where("studentId", "==", cand), limit(1)));
+          if (!q2.empty) { targetEmail = q2.docs[0].data().email; resolved = true; break; }
+        }
+      } catch(fsErr) {
+        console.warn("Firestore recovery lookup error:", fsErr);
+      }
+    }
+
+    if (!resolved) {
       if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
-      return alert("Account lookup failed. Please enter your registered email address.");
+      showScriptAuthError("recoveryErrorAlert", `Account lookup failed for ID "${rawId}". Please enter your registered email address.`, "recoveryIdentifier");
+      return;
     }
   }
+
+  targetEmail = targetEmail.trim().toLowerCase();
 
   try {
     await sendPasswordResetEmail(auth, targetEmail);
@@ -543,14 +722,14 @@ window.handlePasswordRecovery = async function(e) {
       body: JSON.stringify({ email: targetEmail, purpose: "recovery" })
     }).catch(console.warn);
 
-    alert(`Password reset instructions and security code have been dispatched to: ${targetEmail}\n\nPlease check your inbox and follow the link to reset your password.`);
+    alert(`Password reset instructions and security code have been dispatched to: ${targetEmail}\n\nPlease check your inbox and spam folder.`);
     const modalEl = document.getElementById("forgotPasswordModal");
     if (modalEl && window.bootstrap) {
       const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
     }
   } catch(err) {
-    alert("Recovery failed: " + (err.message || err));
+    showScriptAuthError("recoveryErrorAlert", getScriptFriendlyAuthError(err), "recoveryIdentifier");
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
   }
@@ -561,10 +740,32 @@ window.handlePasswordRecovery = async function(e) {
 // (Delegates to auth-component overlay when quota is locked or overlay exists)
 // ============================================================================
 window.openSignInModal = function() {
+  // Always close mobile offcanvas drawer and guest prompt first
+  const drawer = document.getElementById("mobileNavDrawer");
+  if (drawer && window.bootstrap) {
+    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
+    if (offcanvas) offcanvas.hide();
+  }
+  const guestPromptEl = document.getElementById("guestPromptModal");
+  if (guestPromptEl && window.bootstrap) {
+    const gpInst = bootstrap.Modal.getInstance(guestPromptEl);
+    if (gpInst) gpInst.hide();
+  }
+
+  // Never show previous log credentials: clean reset of forms and fields
+  ["formSignIn", "formSignUp", "formRecovery"].forEach(fId => {
+    const f = document.getElementById(fId);
+    if (f && typeof f.reset === "function") f.reset();
+  });
+  ["loginIdentifier", "loginPassword", "signupName", "signupStudentId", "signupContact", "signupEmail", "signupLinkedin", "signupGithub", "signupPassword", "signupConfirmPassword", "recoveryIdentifier"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ""; el.classList.remove("dpg-input-error"); }
+  });
+  ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert", "twoFactorErrorAlert"].forEach(id => clearScriptAuthError(id));
+
   // Always prefer the auth-component overlay (dpgSignInModal) if it exists
   const dpgOverlay = document.getElementById("dpgAuthOverlay");
   if (dpgOverlay && typeof window.dpgBackToSignInStep1 === "function") {
-    // Close old Bootstrap modals if open
     ["signUpModal", "forgotPasswordModal", "signInModal"].forEach(mId => {
       const el = document.getElementById(mId);
       if (el && window.bootstrap) {
@@ -572,7 +773,6 @@ window.openSignInModal = function() {
         if (inst) inst.hide();
       }
     });
-    // Show the auth-component sign-in
     ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = (id === "dpgSignInModal") ? "block" : "none";
@@ -581,6 +781,7 @@ window.openSignInModal = function() {
     window.dpgBackToSignInStep1();
     return;
   }
+
   // Fallback: legacy Bootstrap modal
   const suEl = document.getElementById("signUpModal");
   if (suEl && window.bootstrap) { const suModal = bootstrap.Modal.getInstance(suEl); if (suModal) suModal.hide(); }
@@ -590,13 +791,33 @@ window.openSignInModal = function() {
   const step2 = document.getElementById("twoFactorStep");
   if (step1) step1.style.display = "block";
   if (step2) step2.style.display = "none";
-  const drawer = document.getElementById("mobileNavDrawer");
-  if (drawer && window.bootstrap) { const offcanvas = bootstrap.Offcanvas.getInstance(drawer); if (offcanvas) offcanvas.hide(); }
   const siModal = new bootstrap.Modal(document.getElementById("signInModal"));
   siModal.show();
 };
 
 window.openSignUpModal = function() {
+  const drawer = document.getElementById("mobileNavDrawer");
+  if (drawer && window.bootstrap) {
+    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
+    if (offcanvas) offcanvas.hide();
+  }
+  const guestPromptEl = document.getElementById("guestPromptModal");
+  if (guestPromptEl && window.bootstrap) {
+    const gpInst = bootstrap.Modal.getInstance(guestPromptEl);
+    if (gpInst) gpInst.hide();
+  }
+
+  // Never show previous log credentials: clean reset
+  ["formSignIn", "formSignUp", "formRecovery"].forEach(fId => {
+    const f = document.getElementById(fId);
+    if (f && typeof f.reset === "function") f.reset();
+  });
+  ["loginIdentifier", "loginPassword", "signupName", "signupStudentId", "signupContact", "signupEmail", "signupLinkedin", "signupGithub", "signupPassword", "signupConfirmPassword", "recoveryIdentifier"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ""; el.classList.remove("dpg-input-error"); }
+  });
+  ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert", "twoFactorErrorAlert"].forEach(id => clearScriptAuthError(id));
+
   // Always prefer the auth-component overlay (dpgSignUpModal) if it exists
   const dpgOverlay = document.getElementById("dpgAuthOverlay");
   if (dpgOverlay) {
@@ -611,16 +832,23 @@ window.openSignUpModal = function() {
     dpgOverlay.classList.add("active");
     return;
   }
+
   // Fallback
   const siEl = document.getElementById("signInModal");
   if (siEl && window.bootstrap) { const siModal = bootstrap.Modal.getInstance(siEl); if (siModal) siModal.hide(); }
-  const drawer = document.getElementById("mobileNavDrawer");
-  if (drawer && window.bootstrap) { const offcanvas = bootstrap.Offcanvas.getInstance(drawer); if (offcanvas) offcanvas.hide(); }
   const suModal = new bootstrap.Modal(document.getElementById("signUpModal"));
   suModal.show();
 };
 
 window.openForgotPasswordModal = function() {
+  const drawer = document.getElementById("mobileNavDrawer");
+  if (drawer && window.bootstrap) {
+    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
+    if (offcanvas) offcanvas.hide();
+  }
+
+  ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert"].forEach(id => clearScriptAuthError(id));
+
   // Always prefer the auth-component overlay (dpgForgotPasswordModal) if it exists
   const dpgOverlay = document.getElementById("dpgAuthOverlay");
   if (dpgOverlay) {
@@ -635,6 +863,7 @@ window.openForgotPasswordModal = function() {
     dpgOverlay.classList.add("active");
     return;
   }
+
   // Fallback
   const siEl = document.getElementById("signInModal");
   if (siEl && window.bootstrap) { const siModal = bootstrap.Modal.getInstance(siEl); if (siModal) siModal.hide(); }
@@ -892,4 +1121,23 @@ document.addEventListener("DOMContentLoaded", () => {
   } else if (actionParam === "signup" || actionParam === "register") {
     setTimeout(() => { if (window.openSignUpModal) window.openSignUpModal(); }, 350);
   }
+
+  // Universal WAI-ARIA modal & offcanvas focus safety listener:
+  // Prevents "Blocked aria-hidden on an element because its descendant retained focus"
+  document.addEventListener("hide.bs.modal", (e) => {
+    if (document.activeElement && e.target && e.target.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  });
+  document.addEventListener("hidden.bs.modal", (e) => {
+    if (document.activeElement && e.target && e.target.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  });
+  document.addEventListener("hide.bs.offcanvas", (e) => {
+    if (document.activeElement && e.target && e.target.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  });
 });
+

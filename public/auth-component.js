@@ -44,6 +44,104 @@ const API_BASE = (window.API_BASE_URL || "").replace(/\/+$/, "");
 let pendingUser = null;
 let pendingEmail = "";
 
+// Friendly Firebase Auth Error Translator
+function getFriendlyAuthError(err) {
+  if (!err) return "An unexpected error occurred. Please try again.";
+  const code = (err && err.code) || (typeof err === "string" ? err : (err && err.message) || "");
+  if (code.includes("invalid-credential") || code.includes("INVALID_LOGIN_CREDENTIALS")) {
+    return "Incorrect Student/Employee ID, Email, or Password. Please check your credentials and try again.";
+  }
+  if (code.includes("user-not-found") || code.includes("EMAIL_NOT_FOUND")) {
+    return "No contributor account found with this identifier. Please verify your ID or create a free account.";
+  }
+  if (code.includes("wrong-password") || code.includes("INVALID_PASSWORD")) {
+    return "Incorrect password. Please verify your password or use 'Forgot Password' to reset.";
+  }
+  if (code.includes("email-already-in-use") || code.includes("EMAIL_EXISTS")) {
+    return "An account is already registered with this email address. Please sign in instead.";
+  }
+  if (code.includes("weak-password")) {
+    return "Password is too weak. Please use at least 6 characters with mixed letters and numbers.";
+  }
+  if (code.includes("invalid-email")) {
+    return "Please enter a valid, well-formed email address (e.g. name@domain.com).";
+  }
+  if (code.includes("too-many-requests")) {
+    return "Too many failed attempts. For your security, access is temporarily locked. Please wait a few moments or reset your password.";
+  }
+  if (code.includes("network-request-failed")) {
+    return "Network connection issue. Please check your internet connection and try again.";
+  }
+  if (code.includes("user-disabled")) {
+    return "This contributor account has been disabled. Please contact the platform Helpdesk.";
+  }
+  return (err && err.message) || "Authentication failed. Please verify your details and try again.";
+}
+window.getFriendlyAuthError = getFriendlyAuthError;
+
+function showDpgError(boxId, msg, inputId) {
+  const box = document.getElementById(boxId);
+  if (box) {
+    box.innerHTML = `<i class="ri-error-warning-fill"></i><span>${msg}</span>`;
+    box.classList.remove("dpg-alert-hidden");
+    box.style.display = "flex";
+  }
+  if (inputId) {
+    const inp = document.getElementById(inputId);
+    if (inp) {
+      inp.classList.add("dpg-input-error");
+      inp.focus();
+    }
+  }
+}
+window.showDpgError = showDpgError;
+
+function clearDpgError(boxId, inputId) {
+  const box = document.getElementById(boxId);
+  if (box) {
+    box.classList.add("dpg-alert-hidden");
+    box.style.display = "none";
+    box.innerHTML = "";
+  }
+  if (inputId) {
+    const inp = document.getElementById(inputId);
+    if (inp) inp.classList.remove("dpg-input-error");
+  }
+}
+window.clearDpgError = clearDpgError;
+
+// Never show previous log credentials: clean purge of cookies, session, and input caches
+window.dpgPurgeCredentials = function() {
+  try {
+    localStorage.removeItem("dpgActiveUser");
+    localStorage.removeItem("dpgActiveUserUid");
+    sessionStorage.removeItem("dpgActiveUser");
+    sessionStorage.removeItem("dpgActiveUserUid");
+
+    // Clear all auth session cookies
+    const cookiesToPurge = ["dpgActiveUser", "dpgActiveUserUid", "dpg_user", "dpg_auth", "dpg_token"];
+    cookiesToPurge.forEach(name => {
+      document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+    });
+
+    // Clear and reset all auth forms and inputs across DOM
+    ["dpgSignInForm", "dpgSignUpForm", "dpgRecoveryForm", "formSignIn", "formSignUp", "formRecovery"].forEach(fId => {
+      const f = document.getElementById(fId);
+      if (f && typeof f.reset === "function") f.reset();
+    });
+
+    ["dpgLoginIdentifier", "dpgLoginPassword", "dpg2faInput", "dpgSignupName", "dpgSignupId", "dpgSignupEmail", "dpgSignupPassword", "dpgSignupConfirmPassword", "dpgRecoveryIdentifier", "loginIdentifier", "loginPassword", "signupName", "signupStudentId", "signupContact", "signupEmail", "signupLinkedin", "signupGithub", "signupPassword", "signupConfirmPassword", "recoveryIdentifier"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = "";
+        el.classList.remove("dpg-input-error");
+      }
+    });
+  } catch(e) {
+    console.warn("dpgPurgeCredentials notice:", e);
+  }
+};
+
 // Ensure CSS stylesheet is injected
 if (!document.getElementById("dpgAuthComponentCss")) {
   const link = document.createElement("link");
@@ -120,6 +218,9 @@ function injectAuthDOM() {
         <h2 class="dpg-auth-title">Sign In to DPGNotes</h2>
         <p class="dpg-auth-subtitle">Access your personal bookmarks, study materials, and unlimited academic suite tools.</p>
 
+        <!-- INLINE ERROR ALERT -->
+        <div id="dpgSignInError" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
         <div class="dpg-auth-oauth-row">
           <button type="button" class="dpg-auth-btn-oauth dpg-auth-btn-google" onclick="window.dpgLoginGoogle()">
             <i class="ri-google-fill" style="color:#ea4335; font-size:1.2rem;"></i> Google
@@ -133,10 +234,10 @@ function injectAuthDOM() {
           <span>Or with Student / Employee ID</span>
         </div>
 
-        <form id="dpgSignInForm" onsubmit="window.dpgHandleSignIn(event)">
+        <form id="dpgSignInForm" onsubmit="window.dpgHandleSignIn(event)" autocomplete="off">
           <div class="dpg-auth-form-group">
             <label class="dpg-auth-label">Student ID, Employee ID or Email*</label>
-            <input type="text" id="dpgLoginIdentifier" class="dpg-auth-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="username" />
+            <input type="text" id="dpgLoginIdentifier" class="dpg-auth-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignInError', 'dpgLoginIdentifier')" />
           </div>
 
           <div class="dpg-auth-form-group">
@@ -144,7 +245,7 @@ function injectAuthDOM() {
               <label class="dpg-auth-label" style="margin:0;">Password*</label>
               <a class="dpg-auth-link" onclick="window.openForgotPasswordModal()" style="font-size:0.8rem;">Forgot Password?</a>
             </div>
-            <input type="password" id="dpgLoginPassword" class="dpg-auth-input" placeholder="••••••••" required autocomplete="current-password" />
+            <input type="password" id="dpgLoginPassword" class="dpg-auth-input" placeholder="••••••••" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgSignInError', 'dpgLoginPassword')" />
           </div>
 
           <button type="submit" id="dpgBtnSignInSubmit" class="dpg-auth-btn-primary">
@@ -195,6 +296,9 @@ function injectAuthDOM() {
       <h2 class="dpg-auth-title">Create Contributor Account</h2>
       <p class="dpg-auth-subtitle">Join thousands of verified students &amp; faculty sharing notes, papers, and lab manuals.</p>
 
+      <!-- INLINE ERROR ALERT -->
+      <div id="dpgSignUpError" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
       <div class="dpg-auth-oauth-row">
         <button type="button" class="dpg-auth-btn-oauth dpg-auth-btn-google" onclick="window.dpgLoginGoogle()">
           <i class="ri-google-fill" style="color:#ea4335; font-size:1.2rem;"></i> Google
@@ -208,7 +312,7 @@ function injectAuthDOM() {
         <span>Or register with academic credentials</span>
       </div>
 
-      <form id="dpgSignUpForm" onsubmit="window.dpgHandleSignUp(event)">
+      <form id="dpgSignUpForm" onsubmit="window.dpgHandleSignUp(event)" autocomplete="off">
         <div class="dpg-auth-grid-2">
           <div class="dpg-auth-form-group">
             <label class="dpg-auth-label">Role / Classification*</label>
@@ -220,27 +324,27 @@ function injectAuthDOM() {
 
           <div class="dpg-auth-form-group">
             <label class="dpg-auth-label">Full Name*</label>
-            <input type="text" id="dpgSignupName" class="dpg-auth-input" placeholder="e.g. Aman Sharma" required />
+            <input type="text" id="dpgSignupName" class="dpg-auth-input" placeholder="e.g. Aman Sharma" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupName')" />
           </div>
 
           <div class="dpg-auth-form-group">
             <label id="dpgSignupIdLabel" class="dpg-auth-label">Student ID / Roll No*</label>
-            <input type="text" id="dpgSignupId" class="dpg-auth-input" placeholder="e.g. 2112345678" required />
+            <input type="text" id="dpgSignupId" class="dpg-auth-input" placeholder="e.g. 2112345678" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupId')" />
           </div>
 
           <div class="dpg-auth-form-group">
             <label class="dpg-auth-label">Email Address*</label>
-            <input type="email" id="dpgSignupEmail" class="dpg-auth-input" placeholder="name@domain.com" required />
+            <input type="email" id="dpgSignupEmail" class="dpg-auth-input" placeholder="name@domain.com" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupEmail')" />
           </div>
 
           <div class="dpg-auth-form-group">
             <label class="dpg-auth-label">Password* (min 6 characters)</label>
-            <input type="password" id="dpgSignupPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" />
+            <input type="password" id="dpgSignupPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupPassword')" />
           </div>
 
           <div class="dpg-auth-form-group">
             <label class="dpg-auth-label">Confirm Password*</label>
-            <input type="password" id="dpgSignupConfirmPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" />
+            <input type="password" id="dpgSignupConfirmPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupConfirmPassword')" />
           </div>
         </div>
 
@@ -267,10 +371,13 @@ function injectAuthDOM() {
         Enter your registered <strong>Student ID, Employee ID, or Email Address</strong>. We will dispatch secure password recovery instructions to your verified email.
       </p>
 
-      <form id="dpgRecoveryForm" onsubmit="window.dpgHandleRecovery(event)">
+      <!-- INLINE ERROR ALERT -->
+      <div id="dpgRecoveryError" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+      <form id="dpgRecoveryForm" onsubmit="window.dpgHandleRecovery(event)" autocomplete="off">
         <div class="dpg-auth-form-group">
           <label class="dpg-auth-label">Student ID, Employee ID or Email*</label>
-          <input type="text" id="dpgRecoveryIdentifier" class="dpg-auth-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required />
+          <input type="text" id="dpgRecoveryIdentifier" class="dpg-auth-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgRecoveryError', 'dpgRecoveryIdentifier')" />
         </div>
 
         <button type="submit" id="dpgBtnRecoverySubmit" class="dpg-auth-btn-primary">
@@ -335,16 +442,56 @@ window.closeAuthModals = function(force = false) {
     return;
   }
   const overlay = document.getElementById("dpgAuthOverlay");
-  if (overlay) overlay.classList.remove("active");
+  if (overlay) {
+    // Release keyboard/browser focus from inside modal to prevent aria-hidden warnings
+    if (document.activeElement && overlay.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+    overlay.classList.remove("active");
+  }
   ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
+  });
+  // Clear entered password fields on modal close
+  ["dpgLoginPassword", "dpgSignupPassword", "dpgSignupConfirmPassword"].forEach(pId => {
+    const pEl = document.getElementById(pId);
+    if (pEl) pEl.value = "";
   });
 };
 
 function showModal(id) {
   injectAuthDOM();
   const overlay = document.getElementById("dpgAuthOverlay");
+
+  // Close any legacy Bootstrap modals or mobile drawers cleanly
+  ["guestPromptModal", "signInModal", "signUpModal", "forgotPasswordModal"].forEach(mId => {
+    const el = document.getElementById(mId);
+    if (el && window.bootstrap) {
+      const inst = bootstrap.Modal.getInstance(el);
+      if (inst) inst.hide();
+    }
+  });
+  const drawer = document.getElementById("mobileNavDrawer");
+  if (drawer && window.bootstrap) {
+    const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
+    if (offcanvas) offcanvas.hide();
+  }
+
+  // Never show previous log credentials: clean reset of forms and fields
+  ["dpgSignInForm", "dpgSignUpForm", "dpgRecoveryForm"].forEach(fId => {
+    const f = document.getElementById(fId);
+    if (f && typeof f.reset === "function") f.reset();
+  });
+  ["dpgLoginIdentifier", "dpgLoginPassword", "dpg2faInput", "dpgSignupName", "dpgSignupId", "dpgSignupEmail", "dpgSignupPassword", "dpgSignupConfirmPassword", "dpgRecoveryIdentifier"].forEach(iId => {
+    const el = document.getElementById(iId);
+    if (el) {
+      el.value = "";
+      el.classList.remove("dpg-input-error");
+    }
+  });
+  ["dpgSignInError", "dpgSignUpError", "dpgRecoveryError"].forEach(eId => clearDpgError(eId));
+
   ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].forEach(mId => {
     const el = document.getElementById(mId);
     if (el) el.style.display = (mId === id) ? "block" : "none";
@@ -465,44 +612,89 @@ window.dpgLoginGithub = async function() {
 // Sign In with Identifier / Email + Password
 window.dpgHandleSignIn = async function(e) {
   e.preventDefault();
-  const identifier = document.getElementById("dpgLoginIdentifier")?.value.trim();
-  const password = document.getElementById("dpgLoginPassword")?.value;
+  clearDpgError("dpgSignInError");
+
+  const rawIdentifier = document.getElementById("dpgLoginIdentifier")?.value.trim() || "";
+  const password = document.getElementById("dpgLoginPassword")?.value || "";
   const btn = document.getElementById("dpgBtnSignInSubmit");
 
-  if (!identifier || !password) return alert("Please enter your identifier and password.");
+  if (!rawIdentifier) {
+    showDpgError("dpgSignInError", "Please enter your Student ID, Employee ID, or registered Email.", "dpgLoginIdentifier");
+    return;
+  }
+  if (!password) {
+    showDpgError("dpgSignInError", "Please enter your password.", "dpgLoginPassword");
+    return;
+  }
 
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Verifying Credentials...`;
   }
 
-  let resolvedEmail = identifier;
-  if (!identifier.includes('@')) {
+  let resolvedEmail = rawIdentifier;
+  if (!rawIdentifier.includes('@')) {
+    let resolved = false;
+    // 1. Try backend API with fast 3.5s timeout
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
       const res = await fetch(`${API_BASE}/api/auth/resolve-identifier`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier })
+        body: JSON.stringify({ identifier: rawIdentifier }),
+        signal: controller.signal
       });
-      const data = await res.json();
-      if (!res.ok || !data.found) {
-        throw new Error(data.error || "No account found matching this Student / Employee ID.");
-      }
-      resolvedEmail = data.email;
-    } catch(err) {
-      // Fallback to client Firestore query
-      try {
-        const snap = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", identifier)));
-        if (snap.empty) {
-          throw new Error("No account found matching ID: " + identifier);
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.found && data.email) {
+          resolvedEmail = data.email;
+          resolved = true;
         }
-        resolvedEmail = snap.docs[0].data().email;
-      } catch(fErr) {
-        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="ri-login-box-line"></i> Sign In to DPGNotes`; }
-        return alert(fErr.message || "Failed to resolve identifier.");
+      }
+    } catch(apiErr) {
+      console.warn("Backend resolve fallback, querying Firestore directly:", apiErr.message);
+    }
+
+    // 2. Direct client Firestore query fallback checking both fields & casing
+    if (!resolved) {
+      try {
+        const candidates = [rawIdentifier, rawIdentifier.toUpperCase(), rawIdentifier.toLowerCase()];
+        let foundEmail = null;
+        for (const cand of candidates) {
+          const q1 = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", cand), limit(1)));
+          if (!q1.empty) {
+            foundEmail = q1.docs[0].data().email;
+            break;
+          }
+          const q2 = await getDocs(query(collection(db, "users"), where("studentId", "==", cand), limit(1)));
+          if (!q2.empty) {
+            foundEmail = q2.docs[0].data().email;
+            break;
+          }
+        }
+        if (foundEmail) {
+          resolvedEmail = foundEmail;
+          resolved = true;
+        }
+      } catch(fsErr) {
+        console.warn("Firestore client identifier lookup error:", fsErr);
       }
     }
+
+    if (!resolved) {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-login-box-line"></i> Sign In to DPGNotes`;
+      }
+      showDpgError("dpgSignInError", `No registered account found matching ID "${rawIdentifier}". Please check your ID or create a free account.`, "dpgLoginIdentifier");
+      return;
+    }
   }
+
+  // Normalize email to clean lowercase
+  resolvedEmail = resolvedEmail.trim().toLowerCase();
 
   try {
     const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
@@ -546,7 +738,9 @@ window.dpgHandleSignIn = async function(e) {
     if (emailTarget) emailTarget.textContent = resolvedEmail;
 
   } catch(authErr) {
-    alert(authErr);
+    console.error("Sign in failed:", authErr);
+    const friendlyMsg = getFriendlyAuthError(authErr);
+    showDpgError("dpgSignInError", friendlyMsg, "dpgLoginPassword");
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -615,17 +809,36 @@ window.dpgResend2FA = async function() {
 // Sign Up Handler
 window.dpgHandleSignUp = async function(e) {
   e.preventDefault();
-  const role = document.getElementById("dpgSignupRole")?.value;
-  const name = document.getElementById("dpgSignupName")?.value.trim();
-  const studentId = document.getElementById("dpgSignupId")?.value.trim();
-  const email = document.getElementById("dpgSignupEmail")?.value.trim();
-  const password = document.getElementById("dpgSignupPassword")?.value;
-  const confirmPassword = document.getElementById("dpgSignupConfirmPassword")?.value;
+  clearDpgError("dpgSignUpError");
+
+  const role = document.getElementById("dpgSignupRole")?.value || "Student";
+  const name = document.getElementById("dpgSignupName")?.value.trim() || "";
+  const studentId = document.getElementById("dpgSignupId")?.value.trim() || "";
+  const email = (document.getElementById("dpgSignupEmail")?.value.trim() || "").toLowerCase();
+  const password = document.getElementById("dpgSignupPassword")?.value || "";
+  const confirmPassword = document.getElementById("dpgSignupConfirmPassword")?.value || "";
   const btn = document.getElementById("dpgBtnSignUpSubmit");
 
-  if (!name || !studentId || !email || !password) return alert("Please fill all required fields.");
-  if (password.length < 6) return alert("Password must be at least 6 characters.");
-  if (password !== confirmPassword) return alert("Passwords do not match.");
+  if (!name) {
+    showDpgError("dpgSignUpError", "Please enter your full name.", "dpgSignupName");
+    return;
+  }
+  if (!studentId) {
+    showDpgError("dpgSignUpError", "Please enter your Student ID or Employee ID.", "dpgSignupId");
+    return;
+  }
+  if (!email || !email.includes("@")) {
+    showDpgError("dpgSignUpError", "Please enter a valid academic email address.", "dpgSignupEmail");
+    return;
+  }
+  if (password.length < 6) {
+    showDpgError("dpgSignUpError", "Password must be at least 6 characters long.", "dpgSignupPassword");
+    return;
+  }
+  if (password !== confirmPassword) {
+    showDpgError("dpgSignUpError", "Passwords do not match. Please re-enter confirm password.", "dpgSignupConfirmPassword");
+    return;
+  }
 
   if (btn) {
     btn.disabled = true;
@@ -647,13 +860,14 @@ window.dpgHandleSignUp = async function(e) {
       console.warn("Password hash computation fallback:", hashErr);
     }
 
-    // Save profile to Firestore
+    // Save profile to Firestore with both studentId and studentIdOrEmployeeId
     await setDoc(doc(db, "users", user.uid), {
       uid: user.uid,
       name: name,
       email: email,
       userType: role,
       studentIdOrEmployeeId: studentId,
+      studentId: studentId,
       passwordHash: passwordHash,
       createdAt: serverTimestamp()
     }, { merge: true });
@@ -667,7 +881,9 @@ window.dpgHandleSignUp = async function(e) {
 
     await completeAuthSuccess(user);
   } catch(err) {
-    alert(err);
+    console.error("Sign up failed:", err);
+    const friendlyMsg = getFriendlyAuthError(err);
+    showDpgError("dpgSignUpError", friendlyMsg, "dpgSignupEmail");
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -679,10 +895,15 @@ window.dpgHandleSignUp = async function(e) {
 // Forgot Password Handler
 window.dpgHandleRecovery = async function(e) {
   e.preventDefault();
-  const rawId = document.getElementById("dpgRecoveryIdentifier")?.value.trim();
+  clearDpgError("dpgRecoveryError");
+
+  const rawId = document.getElementById("dpgRecoveryIdentifier")?.value.trim() || "";
   const btn = document.getElementById("dpgBtnRecoverySubmit");
 
-  if (!rawId) return alert("Please enter your Student ID or Email.");
+  if (!rawId) {
+    showDpgError("dpgRecoveryError", "Please enter your Student ID, Employee ID, or Email.", "dpgRecoveryIdentifier");
+    return;
+  }
 
   if (btn) {
     btn.disabled = true;
@@ -691,20 +912,55 @@ window.dpgHandleRecovery = async function(e) {
 
   let targetEmail = rawId;
   if (!rawId.includes('@')) {
+    let resolved = false;
+    // 1. Try backend API with 3.5s timeout
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
       const res = await fetch(`${API_BASE}/api/auth/resolve-identifier`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: rawId })
+        body: JSON.stringify({ identifier: rawId }),
+        signal: controller.signal
       });
-      const data = await res.json();
-      if (!data.found) throw new Error("No account found with this ID.");
-      targetEmail = data.email;
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.found && data.email) {
+          targetEmail = data.email;
+          resolved = true;
+        }
+      }
     } catch(err) {
-      if (btn) { btn.disabled = false; btn.innerHTML = `<i class="ri-mail-send-line"></i> Send Password Recovery Link`; }
-      return alert("Account lookup failed. Please enter your registered email address.");
+      console.warn("Backend recovery resolve fallback, querying Firestore directly:", err.message);
+    }
+
+    // 2. Direct client Firestore query fallback
+    if (!resolved) {
+      try {
+        const candidates = [rawId, rawId.toUpperCase(), rawId.toLowerCase()];
+        for (const cand of candidates) {
+          const q1 = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", cand), limit(1)));
+          if (!q1.empty) { targetEmail = q1.docs[0].data().email; resolved = true; break; }
+          const q2 = await getDocs(query(collection(db, "users"), where("studentId", "==", cand), limit(1)));
+          if (!q2.empty) { targetEmail = q2.docs[0].data().email; resolved = true; break; }
+        }
+      } catch(fsErr) {
+        console.warn("Firestore recovery lookup error:", fsErr);
+      }
+    }
+
+    if (!resolved) {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-mail-send-line"></i> Send Password Recovery Link`;
+      }
+      showDpgError("dpgRecoveryError", `Account lookup failed for ID "${rawId}". Please enter your registered email address.`, "dpgRecoveryIdentifier");
+      return;
     }
   }
+
+  targetEmail = targetEmail.trim().toLowerCase();
 
   try {
     await sendPasswordResetEmail(auth, targetEmail);
@@ -714,10 +970,11 @@ window.dpgHandleRecovery = async function(e) {
       body: JSON.stringify({ email: targetEmail, purpose: "recovery" })
     }).catch(console.warn);
 
-    alert("Password reset instructions have been sent to: " + targetEmail + "\nPlease check your email inbox.");
+    alert("Password reset instructions have been sent to: " + targetEmail + "\nPlease check your email inbox and spam folder.");
     window.closeAuthModals();
   } catch(err) {
-    alert("Recovery failed: " + (err.message || err));
+    console.error("Password recovery failed:", err);
+    showDpgError("dpgRecoveryError", getFriendlyAuthError(err), "dpgRecoveryIdentifier");
   } finally {
     if (btn) {
       btn.disabled = false;

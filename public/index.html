@@ -1251,10 +1251,10 @@
 
       <!-- Auth Action Links -->
       <div class="d-flex flex-column gap-2 mb-3">
-        <button type="button" class="btn-nav-glow w-100 justify-content-center py-2" onclick="openSignUpModal()">
+        <button type="button" class="btn-nav-glow w-100 justify-content-center py-2" data-bs-dismiss="offcanvas" onclick="if(this) this.blur(); openSignUpModal();">
           <i class="ri-user-add-line"></i> Create Contributor Account
         </button>
-        <button type="button" class="btn-nav-ghost w-100 py-2" onclick="openSignInModal()">
+        <button type="button" class="btn-nav-ghost w-100 py-2" data-bs-dismiss="offcanvas" onclick="if(this) this.blur(); openSignInModal();">
           <i class="ri-login-box-line"></i> Contributor Sign In
         </button>
       </div>
@@ -1682,15 +1682,18 @@
               <span>Or with Student / Employee ID</span>
             </div>
 
-            <form id="formSignIn">
+            <!-- INLINE ERROR ALERT -->
+            <div id="signInErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+            <form id="formSignIn" autocomplete="off">
               <label class="edu-label">Student ID, Employee ID or Email*</label>
-              <input type="text" id="loginIdentifier" class="edu-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required />
+              <input type="text" id="loginIdentifier" class="edu-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" />
 
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <label class="edu-label m-0">Password*</label>
                 <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="font-size:0.78rem; color:#818cf8; text-decoration:none;">Forgot Password?</a>
               </div>
-              <input type="password" id="loginPassword" class="edu-input" placeholder="Enter your password" required />
+              <input type="password" id="loginPassword" class="edu-input" placeholder="Enter your password" required autocomplete="new-password" data-lpignore="true" />
 
               <button type="submit" id="btnSubmitSignIn" class="btn-nav-glow w-100 py-2 mt-2 justify-content-center" style="border-radius:12px; font-size:0.95rem;">
                 Sign In
@@ -1713,7 +1716,9 @@
               We sent a 6-digit security code to <strong id="twoFactorEmailDisplay" style="color:#cbd5e1;"></strong>. Enter it below to complete sign in:
             </p>
 
-            <input type="text" id="twoFactorInput" class="edu-input text-center" placeholder="123456" maxlength="6" style="font-size:1.5rem; letter-spacing:6px; font-family:monospace;" />
+            <div id="twoFactorErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+            <input type="text" id="twoFactorInput" class="edu-input text-center" placeholder="123456" maxlength="6" autocomplete="off" style="font-size:1.5rem; letter-spacing:6px; font-family:monospace;" />
 
             <button type="button" id="btnVerify2FA" class="btn-nav-glow w-100 py-2 mb-2 justify-content-center" onclick="verify2FACode()" style="border-radius:12px;">
               Verify &amp; Complete Sign In
@@ -1762,7 +1767,10 @@
             <span>Or register with academic credentials</span>
           </div>
 
-          <form id="formSignUp">
+          <!-- INLINE ERROR ALERT -->
+          <div id="signUpErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+          <form id="formSignUp" autocomplete="off">
             <div class="row g-3">
               
               <!-- User Type -->
@@ -1778,47 +1786,47 @@
               <!-- Full Name -->
               <div class="col-12 col-md-6">
                 <label class="edu-label">Full Name*</label>
-                <input type="text" id="signupName" class="edu-input" placeholder="e.g. Aman Sharma" required />
+                <input type="text" id="signupName" class="edu-input" placeholder="e.g. Aman Sharma" required autocomplete="off" data-lpignore="true" />
               </div>
 
               <!-- Dynamic ID (Student ID or Employee ID) -->
               <div class="col-12 col-md-6">
                 <label id="lblSignupStudentId" class="edu-label">Student ID / Roll No*</label>
-                <input type="text" id="signupStudentId" class="edu-input" placeholder="e.g. 2112345678" required />
+                <input type="text" id="signupStudentId" class="edu-input" placeholder="e.g. 2112345678" required autocomplete="off" data-lpignore="true" />
               </div>
 
               <!-- Contact Number -->
               <div class="col-12 col-md-6">
                 <label class="edu-label">Contact Number (Optional)</label>
-                <input type="tel" id="signupContact" class="edu-input" placeholder="+91 98765 43210" />
+                <input type="tel" id="signupContact" class="edu-input" placeholder="+91 98765 43210" autocomplete="off" data-lpignore="true" />
               </div>
 
               <!-- Email -->
               <div class="col-12">
                 <label class="edu-label">Valid Email Address*</label>
-                <input type="email" id="signupEmail" class="edu-input" placeholder="name@domain.com" required />
+                <input type="email" id="signupEmail" class="edu-input" placeholder="name@domain.com" required autocomplete="off" data-lpignore="true" />
               </div>
 
               <!-- LinkedIn -->
               <div class="col-12 col-md-6">
                 <label class="edu-label">LinkedIn Profile URL (Optional)</label>
-                <input type="url" id="signupLinkedin" class="edu-input" placeholder="https://linkedin.com/in/username" />
+                <input type="url" id="signupLinkedin" class="edu-input" placeholder="https://linkedin.com/in/username" autocomplete="off" data-lpignore="true" />
               </div>
 
               <!-- GitHub -->
               <div class="col-12 col-md-6">
                 <label class="edu-label">GitHub Profile URL (Optional)</label>
-                <input type="url" id="signupGithub" class="edu-input" placeholder="https://github.com/username" />
+                <input type="url" id="signupGithub" class="edu-input" placeholder="https://github.com/username" autocomplete="off" data-lpignore="true" />
               </div>
 
               <!-- Password & Confirm -->
               <div class="col-12 col-md-6">
                 <label class="edu-label">Password* (min 6 characters)</label>
-                <input type="password" id="signupPassword" class="edu-input" placeholder="••••••••" minlength="6" required />
+                <input type="password" id="signupPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" />
               </div>
               <div class="col-12 col-md-6">
                 <label class="edu-label">Confirm Password*</label>
-                <input type="password" id="signupConfirmPassword" class="edu-input" placeholder="••••••••" minlength="6" required />
+                <input type="password" id="signupConfirmPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" />
               </div>
 
             </div>
@@ -1862,9 +1870,12 @@
             Enter your registered <strong>Student ID, Employee ID, or Email Address</strong>. We will send a secure password reset link along with a one-time verification code to your registered email.
           </p>
 
-          <form id="formRecovery">
+          <!-- INLINE ERROR ALERT -->
+          <div id="recoveryErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+          <form id="formRecovery" autocomplete="off">
             <label class="edu-label">Student ID / Employee ID or Email*</label>
-            <input type="text" id="recoveryIdentifier" class="edu-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required />
+            <input type="text" id="recoveryIdentifier" class="edu-input" placeholder="e.g. 2112345678 or student@dpgnotes.app" required autocomplete="off" data-lpignore="true" />
 
             <button type="submit" id="btnSubmitRecovery" class="btn-nav-glow w-100 py-2 mt-2 justify-content-center" style="border-radius:12px;">
               Send Password Recovery Code
@@ -1901,10 +1912,10 @@
           </p>
 
           <div class="d-flex flex-column gap-2">
-            <button type="button" class="btn-nav-glow w-100 py-2 justify-content-center" onclick="openSignUpModal()" data-bs-dismiss="modal">
+            <button type="button" class="btn-nav-glow w-100 py-2 justify-content-center" onclick="if(this) this.blur(); openSignUpModal();" data-bs-dismiss="modal">
               <i class="ri-user-add-line"></i> Create Free Account
             </button>
-            <button type="button" class="btn-nav-ghost w-100 py-2" data-bs-dismiss="modal">
+            <button type="button" class="btn-nav-ghost w-100 py-2" onclick="if(this) this.blur();" data-bs-dismiss="modal">
               Continue Browsing as Guest
             </button>
           </div>
