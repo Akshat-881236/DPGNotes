@@ -34,6 +34,15 @@ const firebaseConfig = {
   appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
 
+// Guarantee custom modals for alert() and confirm() globally across all environments
+if (typeof window !== 'undefined' && typeof window.customAlert !== 'function' && typeof document !== 'undefined') {
+  if (!document.querySelector('script[src*="custom-dialogs.js"]')) {
+    const s = document.createElement('script');
+    s.src = '/custom-dialogs.js';
+    (document.head || document.documentElement).appendChild(s);
+  }
+}
+
 const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
 const auth = getAuth(app);
 const db = getFirestore(app);

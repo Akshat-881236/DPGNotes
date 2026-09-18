@@ -6,7 +6,11 @@
     "start": "node backend/server.js",
     "serve": "npx http-server public -p 8080 -c-1",
     "serve:all": "npx http-server . -p 8080 -c-1",
-    "test": "node --check backend/server.js && node --check public/redirect.js"
+    "test": "node --check backend/server.js && node --check public/redirect.js && node backend/security/verify-vault.js",
+    "encrypt-backend": "node backend/security/vault.js pack",
+    "decrypt-backend": "node backend/security/vault.js unpack",
+    "vault:status": "node backend/security/vault.js status",
+    "vault:key": "node backend/security/vault.js generate-key"
   },
   "keywords": [
     "dpgnotes",

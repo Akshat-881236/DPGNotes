@@ -68,6 +68,15 @@ node_modules/
 # dotenv environment variables file
 .env
 .serviceAccountKey.json
+backend/serviceAccountKey.json
+serviceAccountKey.json
+
+# DPGNotes Backend Vault Security & Decrypted Sources
+.backend_key
+backend/.backend_key
+backend/server.source.js
+*.backend_key
 
 # dataconnect generated files
 .dataconnect
+

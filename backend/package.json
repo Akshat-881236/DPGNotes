@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --check server.js && node security/verify-vault.js",
+    "encrypt": "node security/vault.js pack",
+    "decrypt": "node security/vault.js unpack",
+    "vault:status": "node security/vault.js status",
+    "vault:key": "node security/vault.js generate-key"
   },
   "keywords": [],
   "author": "",

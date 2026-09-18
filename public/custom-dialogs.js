@@ -161,6 +161,21 @@
     return msg;
   };
 
+  // Safe element attacher supporting pre-DOM execution
+  function attachOverlay(overlay) {
+    const show = () => {
+      if (document.body) {
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('active'), 10);
+      }
+    };
+    if (document.body) {
+      show();
+    } else {
+      document.addEventListener('DOMContentLoaded', show, { once: true });
+    }
+  }
+
   // Helper for alert dialogs (Promise-based)
   window.customAlert = function(message, options = {}) {
     return new Promise((resolve) => {
@@ -200,17 +215,28 @@
         </div>
       `;
       
-      document.body.appendChild(overlay);
+      attachOverlay(overlay);
       
-      setTimeout(() => overlay.classList.add('active'), 10);
-      
-      overlay.querySelector('#dpgAlertOkBtn').addEventListener('click', () => {
+      const okBtn = overlay.querySelector('#dpgAlertOkBtn');
+      const closeAlert = () => {
         overlay.classList.remove('active');
+        document.removeEventListener('keydown', keyHandler);
         setTimeout(() => {
           overlay.remove();
           resolve();
         }, 300);
-      });
+      };
+
+      const keyHandler = (e) => {
+        if (e.key === 'Enter' || e.key === 'Escape') {
+          e.preventDefault();
+          closeAlert();
+        }
+      };
+
+      okBtn.addEventListener('click', closeAlert);
+      document.addEventListener('keydown', keyHandler);
+      setTimeout(() => okBtn.focus(), 50);
     });
   };
 
@@ -222,6 +248,11 @@
   // Overwrite native window.confirm globally with custom modal
   window.confirm = function(message, options) {
     return window.customConfirm(message, options);
+  };
+
+  // Overwrite native window.prompt globally with custom modal
+  window.prompt = function(message, defaultValue) {
+    return window.customPrompt(message, defaultValue);
   };
 
   // Helper for confirm dialogs (Promise-based)
@@ -248,25 +279,34 @@
         </div>
       `;
       
-      document.body.appendChild(overlay);
+      attachOverlay(overlay);
       
-      setTimeout(() => overlay.classList.add('active'), 10);
-      
-      overlay.querySelector('#dpgConfirmCancelBtn').addEventListener('click', () => {
+      const cancelBtn = overlay.querySelector('#dpgConfirmCancelBtn');
+      const yesBtn = overlay.querySelector('#dpgConfirmYesBtn');
+
+      const finish = (result) => {
         overlay.classList.remove('active');
+        document.removeEventListener('keydown', keyHandler);
         setTimeout(() => {
           overlay.remove();
-          resolve(false);
+          resolve(result);
         }, 300);
-      });
-      
-      overlay.querySelector('#dpgConfirmYesBtn').addEventListener('click', () => {
-        overlay.classList.remove('active');
-        setTimeout(() => {
-          overlay.remove();
-          resolve(true);
-        }, 300);
-      });
+      };
+
+      const keyHandler = (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          finish(false);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          finish(true);
+        }
+      };
+
+      cancelBtn.addEventListener('click', () => finish(false));
+      yesBtn.addEventListener('click', () => finish(true));
+      document.addEventListener('keydown', keyHandler);
+      setTimeout(() => yesBtn.focus(), 50);
     });
   };
 
@@ -288,13 +328,13 @@
         </div>
       `;
       
-      document.body.appendChild(overlay);
+      attachOverlay(overlay);
       
       const input = overlay.querySelector('#dpgPromptInput');
-      input.focus();
-      input.select();
-      
-      setTimeout(() => overlay.classList.add('active'), 10);
+      if (input) {
+        input.focus();
+        input.select();
+      }
       
       overlay.querySelector('#dpgPromptCancelBtn').addEventListener('click', () => {
         overlay.classList.remove('active');
