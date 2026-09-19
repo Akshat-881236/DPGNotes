@@ -8,6 +8,7 @@ const CACHE_NAME = "dpgnotes-core-v1.0.0";
 const PRECACHE_ASSETS = [
   "/",
   "/index.html",
+  "/404.html",
   "/ANH.png",
   "/dpg-loader.js",
   "/pwa.js",
