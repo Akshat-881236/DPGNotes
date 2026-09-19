@@ -430,6 +430,17 @@
       background: rgba(15, 23, 42, 0.1) !important;
       color: #0f172a !important;
     }
+    html[data-theme="light"] .desktop-user-profile-btn {
+      background: rgba(15, 23, 42, 0.05) !important;
+      border-color: rgba(15, 23, 42, 0.15) !important;
+    }
+    html[data-theme="light"] .desktop-user-profile-btn:hover {
+      background: rgba(15, 23, 42, 0.09) !important;
+      border-color: rgba(15, 23, 42, 0.25) !important;
+    }
+    html[data-theme="light"] .desktop-user-profile-btn #navUserName {
+      color: #0f172a !important;
+    }
     html[data-theme="light"] .theme-toggle-btn {
       background: rgba(15, 23, 42, 0.05) !important;
       border-color: rgba(15, 23, 42, 0.15) !important;
@@ -817,6 +828,16 @@
     }
     html[data-theme="emerald"] .btn-nav-ghost:hover {
       background: rgba(16, 185, 129, 0.18) !important;
+      color: #ffffff !important;
+    }
+    html[data-theme="emerald"] .desktop-user-profile-btn {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: rgba(16, 185, 129, 0.25) !important;
+    }
+    html[data-theme="emerald"] .desktop-user-profile-btn:hover {
+      background: rgba(16, 185, 129, 0.18) !important;
+    }
+    html[data-theme="emerald"] .desktop-user-profile-btn #navUserName {
       color: #ffffff !important;
     }
     html[data-theme="emerald"] .btn-nav-glow {
@@ -1232,6 +1253,23 @@
     .btn-nav-ghost:hover {
       background: rgba(255, 255, 255, 0.1);
       color: #ffffff;
+    }
+
+    .desktop-user-profile-btn {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 12px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+    .desktop-user-profile-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .desktop-user-profile-btn #navUserName {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #f8fafc;
     }
 
     .btn-nav-glow {
@@ -2115,9 +2153,9 @@
         </div>
 
         <div id="navUserArea" style="display:none;" class="align-items-center gap-2">
-          <a href="dashboard.html" class="d-flex align-items-center gap-2 text-decoration-none" style="background:rgba(255,255,255,0.06); padding:4px 12px; border-radius:30px; border:1px solid rgba(255,255,255,0.1);">
+          <a href="dashboard.html" class="desktop-user-profile-btn d-flex align-items-center gap-2 text-decoration-none">
             <div id="navUserAvatar" style="width:28px; height:28px; border-radius:50%; background:#6366f1; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem; color:white;">U</div>
-            <span id="navUserName" style="font-size:0.85rem; font-weight:600; color:#f8fafc;">Contributor</span>
+            <span id="navUserName">Contributor</span>
           </a>
           <button type="button" class="btn-nav-ghost" onclick="logoutUser()" title="Sign Out">
             <i class="ri-logout-box-r-line"></i>

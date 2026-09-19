@@ -246,7 +246,7 @@
 
     const modalHtml = `
       <div id="dpgUtilityLockOverlay" style="display:none; position:fixed; inset:0; z-index:2147483640; background:rgba(6,9,19,0.92); backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:1rem; overflow-y:auto;">
-        <div style="background:rgba(15,23,42,0.98); border:1px solid rgba(99,102,241,0.35); box-shadow:0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(99,102,241,0.25); border-radius:20px; max-width:540px; width:100%; padding:2rem 1.75rem; color:white; text-align:center; position:relative; box-sizing:border-box;">
+        <div style="background:rgba(15,23,42,0.98); border:1px solid rgba(99,102,241,0.35); box-shadow:0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(99,102,241,0.25); border-radius:20px; max-width:620px; width:100%; padding:2rem 1.75rem; color:white; text-align:center; position:relative; box-sizing:border-box;">
           
           <button type="button" onclick="window.DpgUtilityQuota.exitLockdown()" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#94a3b8; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; cursor:pointer; transition:all 0.2s;" onmouseenter="this.style.color='white'; this.style.borderColor='rgba(255,255,255,0.4)';" onmouseleave="this.style.color='#94a3b8'; this.style.borderColor='rgba(255,255,255,0.15)';">
             <i class="ri-close-line"></i>
@@ -261,7 +261,7 @@
           </h3>
 
           <p id="dpgUtilModalSubtitle" style="font-size:0.88rem; color:#94a3b8; line-height:1.55; margin-bottom:1.5rem;">
-            You have exhausted your daily free token for <strong>\${activeToolName}</strong>. Choose an option below to continue processing:
+            You have exhausted your daily free token for <strong>${activeToolName}</strong>. Choose an option below to continue processing:
           </p>
 
           <!-- Choices Section -->
@@ -275,17 +275,26 @@
             </button>
           </div>
 
-          <!-- Ad Playback Section -->
+          <!-- Ad Playback Section (Standardized Cover Page Generator Architecture) -->
           <div id="dpgUtilAdPlaybackSec" style="display:none; text-align:center;">
-            <div style="font-size:0.85rem; color:#818cf8; font-weight:700; margin-bottom:10px;" id="dpgUtilAdStatusText">
-              Loading Sponsored Partner Ad (15s remaining...)...
+            <div id="dpgUtilAdCountdownBadge" style="display:inline-flex; align-items:center; gap:8px; background:rgba(139,92,246,0.18); color:#c084fc; border:1px solid rgba(139,92,246,0.35); padding:6px 16px; border-radius:999px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
+              <i class="ri-loader-4-line spin-icon"></i> <span id="dpgUtilAdStatusText">Checking Google AdSense availability (15s timeout)...</span>
             </div>
-            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; margin-bottom:15px;">
-              <div id="dpgUtilAdProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg,#6366f1,#10b981); transition:width 0.3s ease;"></div>
+
+            <div style="width:100%; max-width:580px; height:6px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; margin:0 auto 1rem auto;">
+              <div id="dpgUtilAdProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #ec4899, #8b5cf6); transition:width 0.3s ease;"></div>
             </div>
-            
-            <div id="dpgUtilNativeAdContainer" style="width:100%; min-height:200px; display:flex; align-items:center; justify-content:center;">
-              <div id="dpgUtilNativeAdsInner" class="native-ads" data-ad-variant="cover_image" data-ad-count="1" style="width:100%;"></div>
+
+            <p style="font-size:0.82rem; color:#64748b; margin-bottom:0.5rem;">
+              <i class="ri-information-line"></i> Priority given to Google AdSense with connection check. Automatically falls back to DPGNotes Native Ads.
+            </p>
+
+            <!-- AdSense Container -->
+            <div id="dpgUtilAdsenseBox" style="width:100%; max-width:600px; margin:1rem auto; display:none;"></div>
+
+            <!-- Native Ads Container -->
+            <div id="dpgUtilNativeBox" style="display:none; justify-content:center; width:100%;">
+              <div id="native-ads" class="native-ads cover-modal-native-ad" data-ad-variant="cover_image" data-ad-count="1" style="margin-top:0.5rem; width:100%; max-width:600px;"></div>
             </div>
           </div>
 
@@ -309,13 +318,23 @@
     const adSec = document.getElementById("dpgUtilAdPlaybackSec");
     const midSec = document.getElementById("dpgUtilMidnightSec");
     const googleBtn = document.getElementById("dpgUtilBtnGoogleSign");
+    const subtitle = document.getElementById("dpgUtilModalSubtitle");
 
     if (choiceSec) choiceSec.style.display = "flex";
     if (adSec) adSec.style.display = "none";
     if (midSec) midSec.style.display = "none";
 
+    const isContrib = isContributor();
     if (googleBtn) {
-      googleBtn.style.display = isContributor() ? "none" : "flex";
+      googleBtn.style.display = isContrib ? "none" : "flex";
+    }
+
+    if (subtitle) {
+      if (isContrib) {
+        subtitle.innerHTML = `You have used your Contributor daily quota tokens for <strong>${activeToolName}</strong>. Watch verified learning sponsor ads below to immediately restore your token, or wait for midnight automatic reset.`;
+      } else {
+        subtitle.innerHTML = `You have exhausted your daily free token for <strong>${activeToolName}</strong>. Choose how you would like to proceed:`;
+      }
     }
 
     if (overlay) {
@@ -337,11 +356,17 @@
       window.cleanupAllNativeAds();
     }
 
-    const adInner = document.getElementById("dpgUtilNativeAdsInner");
-    if (adInner) {
-      adInner.classList.remove("native-ads");
-      delete adInner.dataset.adInjected;
-      adInner.innerHTML = "";
+    const adsenseBox = document.getElementById("dpgUtilAdsenseBox");
+    if (adsenseBox) {
+      adsenseBox.style.display = "none";
+      adsenseBox.innerHTML = "";
+    }
+
+    const adNativeInner = document.getElementById("native-ads");
+    if (adNativeInner) {
+      adNativeInner.classList.remove("native-ads");
+      delete adNativeInner.dataset.adInjected;
+      adNativeInner.innerHTML = "";
     }
   }
 
@@ -370,9 +395,14 @@
     }
   }
 
+  // Quota Ad Flow: Follows exact Cover Page Generator logic (AdSense priority + silent Native Ads fallback)
   function startAdFlow() {
     if (adWatchInProgress) return;
     adWatchInProgress = true;
+
+    if (adWatchTimer) clearInterval(adWatchTimer);
+    if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+    if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
 
     const choiceSec = document.getElementById("dpgUtilChoiceSec");
     const adSec = document.getElementById("dpgUtilAdPlaybackSec");
@@ -381,29 +411,117 @@
 
     const statusEl = document.getElementById("dpgUtilAdStatusText");
     const barEl = document.getElementById("dpgUtilAdProgressBar");
-    const adInner = document.getElementById("dpgUtilNativeAdsInner");
+    const adsenseBox = document.getElementById("dpgUtilAdsenseBox");
+    const nativeBox = document.getElementById("dpgUtilNativeBox");
 
-    let sec = 15;
-    if (statusEl) statusEl.textContent = `Viewing Sponsored Partner Ad (${sec}s remaining...)`;
+    if (statusEl) statusEl.textContent = "Connecting to Google AdSense... (15s timeout)";
     if (barEl) barEl.style.width = "0%";
 
-    if (adInner) {
-      adInner.classList.add("native-ads");
-      const hasVideo = (window.DPG_APPROVED_ADS || []).some(a => a.videoUrl && a.videoUrl.trim() !== "");
-      adInner.dataset.adVariant = hasVideo ? "cover_video" : "cover_image";
-      delete adInner.dataset.adInjected;
-      adInner.innerHTML = "";
-      if (typeof window.renderNativeDPGAds === "function") {
-        window.renderNativeDPGAds();
-      }
+    if (!navigator.onLine) {
+      fallbackToNativeCoverAd();
+      return;
     }
 
-    adWatchTimer = setInterval(() => {
-      sec--;
-      if (statusEl) statusEl.textContent = `Viewing Sponsored Partner Ad (${sec}s remaining...)`;
-      if (barEl) barEl.style.width = `${Math.round(((15 - sec) / 15) * 100)}%`;
+    // 1. Mount Google AdSense container
+    if (adsenseBox) {
+      adsenseBox.style.display = "block";
+      adsenseBox.innerHTML = `
+        <ins class="adsbygoogle"
+             style="display:block; text-align:center;"
+             data-ad-layout="in-article"
+             data-ad-format="fluid"
+             data-ad-client="ca-pub-5515547448097504"
+             data-ad-slot="6070257271"></ins>
+      `;
+    }
+    if (nativeBox) nativeBox.style.display = "none";
 
-      if (sec <= 0) {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch(e) {
+      console.warn("[DpgUtilityQuota] AdSense push failed, falling back to Native Ad:", e);
+      fallbackToNativeCoverAd();
+      return;
+    }
+
+    const ins = adsenseBox ? adsenseBox.querySelector("ins.adsbygoogle") : null;
+    if (!ins) {
+      fallbackToNativeCoverAd();
+      return;
+    }
+
+    let adResolved = false;
+    let checkElapsed = 0;
+
+    const onAdsenseAbsent = () => {
+      if (adResolved) return;
+      adResolved = true;
+      if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+      if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+      fallbackToNativeCoverAd();
+    };
+
+    const onAdsenseFilled = () => {
+      if (adResolved) return;
+      adResolved = true;
+      if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+      if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+      playAdsenseDuration();
+    };
+
+    coverAdObserver = new MutationObserver(() => {
+      const status = ins.getAttribute("data-ad-status");
+      const isCollapsed = ins.style.display === "none";
+      if (status === "unfilled" || (isCollapsed && checkElapsed > 500)) {
+        onAdsenseAbsent();
+        return;
+      }
+      if (status === "filled" && ins.offsetHeight > 50 && !isCollapsed) {
+        onAdsenseFilled();
+      }
+    });
+    coverAdObserver.observe(ins, { attributes: true, attributeFilter: ["data-ad-status", "style", "class"] });
+
+    adsenseCheckTimer = setInterval(() => {
+      checkElapsed += 250;
+      const status = ins.getAttribute("data-ad-status");
+      const isCollapsed = ins.style.display === "none";
+
+      if (status === "unfilled" || isCollapsed) {
+        onAdsenseAbsent();
+        return;
+      }
+      if (status === "filled" && ins.offsetHeight > 50 && !isCollapsed) {
+        onAdsenseFilled();
+        return;
+      }
+
+      const secLeft = Math.max(0, ((3500 - checkElapsed) / 1000).toFixed(1));
+      if (statusEl && !adResolved) {
+        statusEl.textContent = `Connecting to Google AdSense... (${secLeft}s)`;
+      }
+      if (barEl && !adResolved) {
+        barEl.style.width = `${Math.round((checkElapsed / 3500) * 40)}%`;
+      }
+
+      if (checkElapsed >= 3500) {
+        onAdsenseAbsent();
+      }
+    }, 250);
+  }
+
+  function playAdsenseDuration() {
+    const statusEl = document.getElementById("dpgUtilAdStatusText");
+    const barEl = document.getElementById("dpgUtilAdProgressBar");
+    let adSec = 15;
+    if (statusEl) statusEl.textContent = `Viewing Google AdSense (${adSec}s remaining...)`;
+
+    adWatchTimer = setInterval(() => {
+      adSec--;
+      if (statusEl) statusEl.textContent = `Viewing Google AdSense (${adSec}s remaining...)`;
+      if (barEl) barEl.style.width = `${Math.round(((15 - adSec) / 15) * 100)}%`;
+
+      if (adSec <= 0) {
         clearInterval(adWatchTimer);
         adWatchTimer = null;
         adWatchInProgress = false;
@@ -411,6 +529,62 @@
       }
     }, 1000);
   }
+
+  function fallbackToNativeCoverAd() {
+    if (adWatchTimer) clearInterval(adWatchTimer);
+    if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
+    if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
+
+    const statusEl = document.getElementById("dpgUtilAdStatusText");
+    const barEl = document.getElementById("dpgUtilAdProgressBar");
+    const adsenseBox = document.getElementById("dpgUtilAdsenseBox");
+    const nativeBox = document.getElementById("dpgUtilNativeBox");
+    const adNativeInner = document.getElementById("native-ads") || (nativeBox ? nativeBox.querySelector(".native-ads") : null);
+
+    if (adsenseBox) {
+      adsenseBox.style.display = "none";
+      adsenseBox.innerHTML = "";
+    }
+
+    if (nativeBox) nativeBox.style.display = "flex";
+    let nativeSec = 15;
+    if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad (${nativeSec}s remaining...)`;
+    if (barEl) barEl.style.width = "0%";
+
+    if (adNativeInner) {
+      adNativeInner.classList.add("native-ads");
+      adNativeInner.classList.add("cover-modal-native-ad");
+      const hasVideo = (window.DPG_APPROVED_ADS || []).some(a => a.videoUrl && a.videoUrl.trim() !== "");
+      adNativeInner.dataset.adVariant = hasVideo ? "cover_video" : "cover_image";
+      adNativeInner.dataset.adCount = "1";
+      delete adNativeInner.dataset.adInjected;
+      adNativeInner.innerHTML = "";
+      if (typeof window.renderNativeDPGAds === "function") {
+        window.renderNativeDPGAds();
+      }
+    }
+
+    adWatchTimer = setInterval(() => {
+      nativeSec--;
+      if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad (${nativeSec}s remaining...)`;
+      if (barEl) barEl.style.width = `${Math.round(((15 - nativeSec) / 15) * 100)}%`;
+
+      if (nativeSec <= 0) {
+        clearInterval(adWatchTimer);
+        adWatchTimer = null;
+        adWatchInProgress = false;
+        restoreQuotaToken();
+      }
+    }, 1000);
+  }
+
+  // Bind global cover ad watched callback so native ad skip / complete immediately restores token
+  window.onCoverAdWatched = function() {
+    const overlay = document.getElementById("dpgUtilityLockOverlay");
+    if (overlay && (window.getComputedStyle(overlay).display !== "none")) {
+      restoreQuotaToken();
+    }
+  };
 
   async function signInWithGoogle() {
     const btn = document.getElementById("dpgUtilBtnGoogleSign");

@@ -514,7 +514,7 @@
             skipBtnEl.onclick = (e) => {
               e.stopPropagation();
               cleanupTimers();
-              const overlay = document.getElementById("quotaLockOverlay");
+              const overlay = document.getElementById("quotaLockOverlay") || document.getElementById("dpgUtilityLockOverlay");
               if (overlay && window.getComputedStyle(overlay).display !== "none") {
                 if (typeof window.onCoverAdWatched === 'function') {
                   window.onCoverAdWatched();
@@ -789,17 +789,18 @@
     if (!ads || ads.length === 0) return;
 
     containers.forEach((box, boxIdx) => {
-      // In Cover Page Generators, strictly prevent ad injection unless Quota reached modal is active and playback section is visible!
+      // In Cover Page Generators and Utility Tools, strictly prevent ad injection unless Quota reached modal is active and playback section is visible!
       const isCoverModalAd = box.closest('#quotaLockOverlay') || 
+                             box.closest('#dpgUtilityLockOverlay') || 
                              box.closest('.quota-lock-overlay') || 
                              box.classList.contains('cover-modal-native-ad') ||
                              box.dataset.adVariant === 'cover_video' || 
                              box.dataset.adVariant === 'cover_image';
       if (isCoverModalAd) {
-        const overlay = document.getElementById('quotaLockOverlay') || box.closest('.quota-lock-overlay');
-        const playbackSec = document.getElementById('adPlaybackSection') || (overlay ? overlay.querySelector('#adPlaybackSection') : null);
-        const isOverlayVisible = overlay && (overlay.style.display === 'flex' || overlay.style.display === 'block');
-        const isPlaybackVisible = playbackSec && playbackSec.style.display === 'block';
+        const overlay = document.getElementById('quotaLockOverlay') || document.getElementById('dpgUtilityLockOverlay') || box.closest('.quota-lock-overlay');
+        const playbackSec = document.getElementById('adPlaybackSection') || document.getElementById('dpgUtilAdPlaybackSec') || (overlay ? overlay.querySelector('#adPlaybackSection, #dpgUtilAdPlaybackSec') : null);
+        const isOverlayVisible = overlay && (overlay.style.display === 'flex' || overlay.style.display === 'block' || (window.getComputedStyle(overlay).display !== 'none'));
+        const isPlaybackVisible = playbackSec && (playbackSec.style.display === 'block' || playbackSec.style.display === 'flex' || (window.getComputedStyle(playbackSec).display !== 'none'));
         if (!isOverlayVisible || !isPlaybackVisible) {
           return;
         }
