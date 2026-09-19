@@ -4279,13 +4279,14 @@ window.filterCoverPages = function() {
   }
 
   // 4. Filter by Header Logo Preference
-  const logoFilter = document.getElementById('coverHeaderLogoFilter')?.value || 'all';
-  if (logoFilter !== 'all') {
+  const logoFilter = document.getElementById('coverHeaderLogoFilter')?.value || '';
+  if (logoFilter && logoFilter !== 'all') {
     list = list.filter(r => {
       const h = String(r.headerLogo || 'Header_Image.jpg');
-      if (logoFilter === 'DPGSTM-2') return h.includes('DPGSTM-2') || h.includes('2Header');
-      if (logoFilter === 'Standard') return h.includes('Header_Image') && !h.includes('DPGSTM-2') && !h.includes('Degree');
-      if (logoFilter === 'Degree') return h.includes('Degree') || h.includes('DPGDegree');
+      if (logoFilter === 'DPGDegreeHeader_Image2.jpeg' || logoFilter === 'Degree2') return h.includes('DPGDegreeHeader_Image2') || h.includes('Header2') || h.includes('Logo 4') || h === 'DPGDegreeHeader_Image2.jpeg';
+      if (logoFilter === 'DPGDegreeHeader_Image.jpeg' || logoFilter === 'Degree') return (h.includes('Degree') || h.includes('DPGDegree')) && !h.includes('Image2') && !h.includes('Logo 4');
+      if (logoFilter === 'DPGSTM-2HeaderImage.png' || logoFilter === 'DPGSTM-2') return h.includes('DPGSTM-2') || h.includes('2Header');
+      if (logoFilter === 'Header_Image.jpg' || logoFilter === 'Standard') return h.includes('Header_Image') && !h.includes('DPGSTM-2') && !h.includes('Degree');
       return true;
     });
   }
@@ -4350,8 +4351,10 @@ function renderCoverTableRows(list) {
     let headerBadge = `<span class="badge" style="background:rgba(56,189,248,0.1); color:#38bdf8; border:1px solid rgba(56,189,248,0.25); font-size:0.68rem;">Header Logo 1</span>`;
     if (hLogo.includes('DPGSTM-2') || hLogo.includes('2Header') || hLogo === 'DPGSTM-2HeaderImage.png') {
       headerBadge = `<span class="badge" style="background:rgba(236,72,153,0.1); color:#f472b6; border:1px solid rgba(236,72,153,0.25); font-size:0.68rem;">Header Logo 2</span>`;
-    } else if (hLogo.includes('Degree') || hLogo.includes('DPGDegree')) {
-      headerBadge = `<span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; border:1px solid rgba(168,85,247,0.25); font-size:0.68rem;">Header Logo 3</span>`;
+    } else if (hLogo.includes('DPGDegreeHeader_Image2') || hLogo.includes('DegreeHeader_Image2') || hLogo.includes('Header2') || hLogo.includes('Logo 4') || hLogo === 'DPGDegreeHeader_Image2.jpeg') {
+      headerBadge = `<span class="badge" style="background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3); font-size:0.68rem;">Header Logo 4</span>`;
+    } else if (hLogo.includes('Degree') || hLogo.includes('DPGDegree') || hLogo === 'DPGDegreeHeader_Image.jpeg') {
+      headerBadge = `<span class="badge" style="background:rgba(14,165,233,0.15); color:#38bdf8; border:1px solid rgba(14,165,233,0.3); font-size:0.68rem;">Header Logo 3</span>`;
     }
 
     const cLogo = String(r.centerLogo || 'Center_Logo.jpg');
@@ -4552,13 +4555,16 @@ window.viewCoverPageDetails = function(id) {
   }
 
   const hLogo = String(r.headerLogo || 'Header_Image.jpg');
-  let headerBadgeText = 'Header Logo 1 (DPG STM Standard)';
+  let headerBadgeText = 'Header Logo 1';
   let headerSelVal = 'Header_Image.jpg';
   if (hLogo.includes('DPGSTM-2') || hLogo.includes('2Header') || hLogo === 'DPGSTM-2HeaderImage.png') {
-    headerBadgeText = 'Header Logo 2 (DPG STM Modern PNG)';
+    headerBadgeText = 'Header Logo 2';
     headerSelVal = 'DPGSTM-2HeaderImage.png';
+  } else if (hLogo.includes('DPGDegreeHeader_Image2') || hLogo.includes('DegreeHeader_Image2') || hLogo.includes('Header2') || hLogo.includes('Logo 4') || hLogo === 'DPGDegreeHeader_Image2.jpeg') {
+    headerBadgeText = 'Header Logo 4';
+    headerSelVal = 'DPGDegreeHeader_Image2.jpeg';
   } else if (hLogo.includes('Degree') || hLogo.includes('DPGDegree') || hLogo === 'DPGDegreeHeader_Image.jpeg') {
-    headerBadgeText = 'Header Logo 3 (DPG Degree Header)';
+    headerBadgeText = 'Header Logo 3';
     headerSelVal = 'DPGDegreeHeader_Image.jpeg';
   }
 
@@ -4734,6 +4740,8 @@ async function renderCoverPageToCanvas(d) {
     const h = String(d.headerLogo);
     if (h.includes('DPGSTM-2') || h.includes('2Header') || h === 'DPGSTM-2HeaderImage.png') {
       headerFilename = 'DPGSTM-2HeaderImage.png';
+    } else if (h.includes('DPGDegreeHeader_Image2') || h.includes('DegreeHeader_Image2') || h.includes('Header2') || h.includes('Logo 4') || h === 'DPGDegreeHeader_Image2.jpeg') {
+      headerFilename = 'DPGDegreeHeader_Image2.jpeg';
     } else if (h.includes('DPGDegreeHeader') || h.includes('Degree') || h === 'DPGDegreeHeader_Image.jpeg') {
       headerFilename = 'DPGDegreeHeader_Image.jpeg';
     }
@@ -4806,24 +4814,32 @@ async function renderCoverPageToCanvas(d) {
   ]);
 
   // 1. Header Banner Image: Dynamic Banner Width & Aspect Ratio Engine
-  const isH2 = headerFilename === 'DPGSTM-2HeaderImage.png' || (d.headerLogo && (String(d.headerLogo).includes('DPGSTM-2') || String(d.headerLogo).includes('2Header')));
-  const isH3 = headerFilename === 'DPGDegreeHeader_Image.jpeg' || (d.headerLogo && (String(d.headerLogo).includes('DPGDegreeHeader') || String(d.headerLogo).includes('Degree')));
+  const hStr = String(d.headerLogo || headerFilename || '');
+  const isH4 = headerFilename === 'DPGDegreeHeader_Image2.jpeg' || hStr.includes('DPGDegreeHeader_Image2') || hStr.includes('Header2') || hStr.includes('Logo 4');
+  const isH3 = !isH4 && (headerFilename === 'DPGDegreeHeader_Image.jpeg' || hStr.includes('DPGDegreeHeader') || hStr.includes('Degree'));
+  const isH2 = headerFilename === 'DPGSTM-2HeaderImage.png' || hStr.includes('DPGSTM-2') || hStr.includes('2Header');
 
-  const bannerW = (isH2 ? 522.0 : (isH3 ? 515.0 : 507.48)) * scaleX;
-  const bannerTopY = (isH2 ? 23.0 : (isH3 ? 27.0 : 33.84)) * scaleY;
+  // Standardized 0.5-inch margin formula matching latest cover page generators (540 pt)
+  const targetBannerW = (612.0 - 2 * (0.5 * 72.0)) * scaleX;
+  const bannerTopY = isH2 ? (23.0 * scaleY) : ((isH3 || isH4) ? (27.0 * scaleY) : (33.84 * scaleY));
 
   if (headerImg && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
     const nw = headerImg.naturalWidth || headerImg.width;
     const nh = headerImg.naturalHeight || headerImg.height;
     if (nw > 0 && nh > 0) {
       const imgAspect = nw / nh;
-      const drawW = bannerW;
-      const drawH = drawW / imgAspect;
+      let drawW = targetBannerW;
+      let drawH = drawW / imgAspect;
+      const maxBannerH = (125.0 * scaleY) - bannerTopY;
+      if (drawH > maxBannerH) {
+        drawH = maxBannerH;
+        drawW = drawH * imgAspect;
+      }
       const drawX = (W - drawW) / 2.0;
       const drawY = bannerTopY;
       ctx.drawImage(headerImg, drawX, drawY, drawW, drawH);
     } else {
-      ctx.drawImage(headerImg, (W - bannerW) / 2.0, bannerTopY, bannerW, 77.88 * scaleY);
+      ctx.drawImage(headerImg, (W - targetBannerW) / 2.0, bannerTopY, targetBannerW, 77.88 * scaleY);
     }
   }
 
@@ -5062,7 +5078,8 @@ window.downloadAdminCoverPdf = async function(id) {
     const resolveHeaderLogo = (hl) => {
       if (!hl) return 'Header_Image.jpg';
       if (hl.includes('DPGSTM-2') || hl.includes('2Header')) return 'DPGSTM-2HeaderImage.png';
-      if (hl.includes('DPGDegreeHeader') || hl.includes('DegreeHeader')) return 'DPGDegreeHeader_Image.jpeg';
+      if (hl.includes('DPGDegreeHeader_Image2') || hl.includes('DegreeHeader2') || hl.includes('Header2') || hl.includes('Logo 4') || hl === 'DPGDegreeHeader_Image2.jpeg') return 'DPGDegreeHeader_Image2.jpeg';
+      if (hl.includes('DPGDegreeHeader') || hl.includes('DegreeHeader') || hl.includes('Degree')) return 'DPGDegreeHeader_Image.jpeg';
       return 'Header_Image.jpg';
     };
     const resolveCenterLogo = (cl) => {

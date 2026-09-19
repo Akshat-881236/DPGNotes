@@ -11,7 +11,7 @@
   <meta name="digiindia-student-innovation-platform" content="8COwXHmA9iO2PTTrzXryJw">
   <meta name="digiindia-student-innovation-platform" content="2kV9BlePhk89XPlAvirJIw">
   <script src="config.js"></script>
-  <script src="dpg-params.js"></script>
+  <script src="dpg-params.js" defer></script>
   <script src="custom-dialogs.js"></script>
   <script src="redirect.js" defer></script>
   <!-- AdSense verification script preserved in head as requested -->
@@ -89,8 +89,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
   <link rel="stylesheet" href="/auth-component.css" />
-  <script src="/dpg-feed.js"></script>
+  <script src="/dpg-feed.js" defer></script>
   <script>
+    /* 1. Immediate Auth Display State */
     (function() {
       try {
         if (localStorage.getItem("dpgActiveUserUid")) {
@@ -98,6 +99,50 @@
         }
       } catch(e) {}
     })();
+
+    /* 2. Instant Theme Engine & Global Toggle (Zero Latency) */
+    (function initDpgThemeEarly() {
+      try {
+        var saved = localStorage.getItem("dpg_active_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", saved);
+      } catch(e) {}
+    })();
+
+    window.toggleDpgTheme = function() {
+      var current = document.documentElement.getAttribute("data-theme") || "dark";
+      var next = "dark";
+      var iconClass = "ri-moon-line";
+
+      if (current === "dark") {
+        next = "light";
+        iconClass = "ri-sun-line";
+      } else if (current === "light") {
+        next = "emerald";
+        iconClass = "ri-contrast-2-line";
+      } else {
+        next = "dark";
+        iconClass = "ri-moon-line";
+      }
+
+      document.documentElement.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem("dpg_active_theme", next);
+      } catch(e) {}
+
+      ["themeToggleIconDesktop", "themeToggleIconMobile"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.className = iconClass;
+      });
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+      var current = document.documentElement.getAttribute("data-theme") || "dark";
+      var iconClass = current === "light" ? "ri-sun-line" : (current === "emerald" ? "ri-contrast-2-line" : "ri-moon-line");
+      ["themeToggleIconDesktop", "themeToggleIconMobile"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.className = iconClass;
+      });
+    });
   </script>
 
   <style>
@@ -311,63 +356,122 @@
       color: #ffffff !important;
     }
 
-    /* THEME 1: DEFAULT / DARK NEBULA */
+    /* THEME 1: DEFAULT / DARK NEBULA (HIGH-CONTRAST ACCESSIBILITY) */
     :root, html[data-theme="dark"] {
       --bg-dark: #030712;
       --surface-dark: #0f172a;
-      --surface-card: rgba(15, 23, 42, 0.7);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(99, 102, 241, 0.4);
+      --surface-card: rgba(15, 23, 42, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.12);
+      --border-focus: rgba(99, 102, 241, 0.5);
       --primary: #6366f1;
       --primary-light: #818cf8;
       --emerald: #10b981;
       --cyan: #0ea5e9;
       --amber: #f59e0b;
       --rose: #f43f5e;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --text-main: #ffffff;
+      --text-muted: #cbd5e1;
       --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* THEME 2: LIGHT ACADEMIC */
+    /* THEME 2: LIGHT ACADEMIC (MAXIMUM SUNLIGHT READABILITY) */
     html[data-theme="light"] {
       --bg-dark: #f8fafc;
       --surface-dark: #ffffff;
-      --surface-card: rgba(255, 255, 255, 0.95);
-      --border-subtle: rgba(0, 0, 0, 0.08);
-      --border-focus: rgba(79, 70, 229, 0.4);
-      --primary: #4f46e5;
-      --primary-light: #6366f1;
-      --emerald: #059669;
-      --cyan: #0284c7;
-      --amber: #d97706;
-      --rose: #e11d48;
+      --surface-card: #ffffff;
+      --border-subtle: rgba(15, 23, 42, 0.12);
+      --border-focus: rgba(79, 70, 229, 0.5);
+      --primary: #4338ca;
+      --primary-light: #4f46e5;
+      --emerald: #047857;
+      --cyan: #0369a1;
+      --amber: #b45309;
+      --rose: #be123c;
       --text-main: #0f172a;
-      --text-muted: #475569;
+      --text-muted: #334155;
     }
     html[data-theme="light"] body {
       background-color: #f8fafc;
       background-image: 
-        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
       color: #0f172a;
     }
     html[data-theme="light"] .edu-navbar {
-      background: rgba(255, 255, 255, 0.9) !important;
-      border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+      background: rgba(255, 255, 255, 0.96) !important;
+      border-bottom-color: rgba(15, 23, 42, 0.1) !important;
+    }
+    html[data-theme="light"] .brand-name {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .brand-tagline {
+      color: #475569 !important;
+    }
+    html[data-theme="light"] .nav-pill-link {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .nav-pill-link:hover {
+      color: #0f172a !important;
+      background: rgba(15, 23, 42, 0.06) !important;
+    }
+    html[data-theme="light"] .btn-nav-ghost {
+      background: rgba(15, 23, 42, 0.05) !important;
+      border-color: rgba(15, 23, 42, 0.15) !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .theme-toggle-btn {
+      background: rgba(15, 23, 42, 0.05) !important;
+      border-color: rgba(15, 23, 42, 0.15) !important;
+      color: #0f172a !important;
     }
     html[data-theme="light"] .hero-title {
-      background: linear-gradient(135deg, #0f172a, #334155) !important;
+      background: linear-gradient(135deg, #020617, #1e293b) !important;
       -webkit-background-clip: text !important;
       -webkit-text-fill-color: transparent !important;
     }
+    html[data-theme="light"] .hero-desc {
+      color: #334155 !important;
+    }
     html[data-theme="light"] .home-search-shell {
       background: #ffffff !important;
-      border-color: rgba(0, 0, 0, 0.12) !important;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06) !important;
+      border-color: rgba(15, 23, 42, 0.18) !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
     }
     html[data-theme="light"] .home-search-shell input {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .home-search-shell input::placeholder {
+      color: #64748b !important;
+    }
+    html[data-theme="light"] .category-strip button {
+      background: #ffffff !important;
+      border-color: rgba(15, 23, 42, 0.12) !important;
+      color: #1e293b !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+    }
+    html[data-theme="light"] .resource-card,
+    html[data-theme="light"] .stat-card,
+    html[data-theme="light"] .profile-card,
+    html[data-theme="light"] .seo-card {
+      background: #ffffff !important;
+      border-color: rgba(15, 23, 42, 0.1) !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05) !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .resource-card h3,
+    html[data-theme="light"] .stat-card h4,
+    html[data-theme="light"] .seo-card h3 {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .card-desc,
+    html[data-theme="light"] .seo-card p,
+    html[data-theme="light"] .author-name {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .mobile-hamburger-btn {
+      background: rgba(15, 23, 42, 0.06) !important;
+      border-color: rgba(15, 23, 42, 0.12) !important;
       color: #0f172a !important;
     }
 
@@ -375,23 +479,40 @@
     html[data-theme="emerald"] {
       --bg-dark: #021a13;
       --surface-dark: #062c20;
-      --surface-card: rgba(6, 44, 32, 0.85);
-      --border-subtle: rgba(16, 185, 129, 0.2);
-      --border-focus: rgba(16, 185, 129, 0.5);
+      --surface-card: rgba(6, 44, 32, 0.9);
+      --border-subtle: rgba(16, 185, 129, 0.25);
+      --border-focus: rgba(16, 185, 129, 0.6);
       --primary: #10b981;
       --primary-light: #34d399;
       --emerald: #10b981;
       --cyan: #06b6d4;
       --amber: #f59e0b;
       --rose: #f43f5e;
-      --text-main: #ecfdf5;
-      --text-muted: #a7f3d0;
+      --text-main: #ffffff;
+      --text-muted: #d1fae5;
     }
     html[data-theme="emerald"] body {
       background-color: #021a13;
       background-image: 
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.14) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
+    }
+    html[data-theme="emerald"] .hero-desc {
+      color: #d1fae5 !important;
+    }
+
+    /* Mobile Performance Boost: Defer layout costs for off-screen sections */
+    .edu-stats-section,
+    .curriculum-section,
+    .seo-section,
+    footer {
+      content-visibility: auto;
+      contain-intrinsic-size: 1px 450px;
+    }
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
 
     *, *::before, *::after {
@@ -644,13 +765,13 @@
       line-height: 1.15;
       letter-spacing: -0.03em;
       margin-bottom: 1rem;
-      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      background: linear-gradient(135deg, #ffffff 50%, #cbd5e1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .hero-desc {
       font-size: 1.05rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       max-width: 700px;
       margin: 0 auto 2.2rem;
       line-height: 1.6;

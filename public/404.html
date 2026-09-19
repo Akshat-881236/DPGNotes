@@ -33,16 +33,16 @@
     :root {
       --bg-top: #0f172a;
       --bg-bottom: #020617;
-      --surface: rgba(15, 23, 42, 0.7);
-      --surface-hover: rgba(30, 41, 59, 0.85);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(99, 102, 241, 0.4);
+      --surface: rgba(15, 23, 42, 0.75);
+      --surface-hover: rgba(30, 41, 59, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-focus: rgba(99, 102, 241, 0.5);
       --primary: #6366f1;
-      --primary-light: #8b5cf6;
+      --primary-light: #818cf8;
       --primary-glow: rgba(99, 102, 241, 0.35);
       --emerald: #10b981;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
+      --text: #ffffff;
+      --text-muted: #cbd5e1;
     }
 
     * {
@@ -63,6 +63,7 @@
       padding: 2rem 1.25rem;
       position: relative;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* Ambient background grid */
@@ -80,17 +81,20 @@
     .error-container {
       position: relative;
       z-index: 10;
-      max-width: 680px;
+      max-width: 660px;
       width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 3rem 2.5rem;
+      padding: 3rem 2.2rem;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 40px var(--primary-glow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      animation: cardFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: cardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     @keyframes cardFadeIn {
@@ -104,36 +108,39 @@
       }
     }
 
+    /* Brand badge centered directly above 404 */
     .brand-badge {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 6px 16px;
+      gap: 8px;
+      padding: 6px 14px;
       background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 999px;
       color: #c7d2fe;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 600;
-      letter-spacing: 0.03em;
-      margin-bottom: 1.5rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.25rem;
     }
 
     .brand-badge img {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
     }
 
     .error-code-wrapper {
-      position: relative;
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
       margin-bottom: 0.5rem;
     }
 
     .error-code {
       font-family: 'Outfit', sans-serif;
-      font-size: clamp(5rem, 15vw, 7.5rem);
+      font-size: clamp(4.8rem, 14vw, 7.2rem);
       font-weight: 800;
       line-height: 1;
       letter-spacing: -0.04em;
@@ -145,18 +152,18 @@
 
     .error-title {
       font-family: 'Outfit', sans-serif;
-      font-size: clamp(1.4rem, 4vw, 1.85rem);
+      font-size: clamp(1.4rem, 4.5vw, 1.85rem);
       font-weight: 700;
-      color: #f1f5f9;
-      margin-bottom: 0.8rem;
+      color: #ffffff;
+      margin-bottom: 0.75rem;
     }
 
     .error-desc {
       color: var(--text-muted);
-      font-size: 1rem;
+      font-size: 0.98rem;
       line-height: 1.6;
       max-width: 520px;
-      margin: 0 auto 1.5rem;
+      margin: 0 auto 1.25rem;
     }
 
     .requested-path-box {
@@ -164,13 +171,13 @@
       align-items: center;
       gap: 8px;
       background: rgba(2, 6, 23, 0.7);
-      border: 1px solid rgba(239, 68, 68, 0.25);
+      border: 1px solid rgba(239, 68, 68, 0.3);
       padding: 6px 14px;
       border-radius: 10px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: #fca5a5;
-      margin-bottom: 2rem;
+      margin-bottom: 1.8rem;
       word-break: break-all;
       max-width: 100%;
     }
@@ -180,54 +187,58 @@
       color: #f87171;
     }
 
-    /* Search form */
+    /* Fluid responsive search form */
     .search-section {
-      margin-bottom: 2rem;
+      width: 100%;
+      margin-bottom: 1.8rem;
     }
 
     .search-box {
       display: flex;
       align-items: center;
-      background: rgba(2, 6, 23, 0.6);
+      background: rgba(2, 6, 23, 0.65);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 6px;
+      padding: 5px 6px 5px 14px;
       transition: all 0.3s;
+      width: 100%;
     }
 
     .search-box:focus-within {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
     }
 
     .search-box input {
       flex: 1;
+      min-width: 0; /* Prevents overflow bug on small screens! */
       background: transparent;
       border: none;
       outline: none;
-      padding: 10px 14px;
-      color: #f8fafc;
+      padding: 8px 6px;
+      color: #ffffff;
       font-size: 0.95rem;
-      min-width: 0;
     }
 
     .search-box input::placeholder {
-      color: #64748b;
+      color: #94a3b8;
     }
 
     .search-box button {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: #ffffff;
       border: none;
-      padding: 10px 18px;
+      padding: 9px 18px;
       border-radius: 10px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       cursor: pointer;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
 
     .search-box button:hover {
@@ -235,12 +246,12 @@
       transform: translateY(-1px);
     }
 
-    /* Action buttons */
+    /* Action buttons: Desktop/Tablet 3 columns, Mobile stacked */
     .action-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-top: 1.5rem;
+      width: 100%;
     }
 
     .btn-action {
@@ -248,12 +259,14 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 12px 18px;
+      padding: 11px 16px;
       border-radius: 12px;
       font-weight: 600;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       text-decoration: none;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      min-height: 44px;
     }
 
     .btn-primary {
@@ -265,12 +278,13 @@
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px var(--primary-glow);
+      color: #ffffff;
     }
 
     .btn-secondary {
       background: rgba(30, 41, 59, 0.7);
       border: 1px solid var(--border);
-      color: #e2e8f0;
+      color: #f1f5f9;
     }
 
     .btn-secondary:hover {
@@ -280,22 +294,11 @@
       transform: translateY(-2px);
     }
 
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      color: var(--text-muted);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: #ffffff;
-    }
-
     /* Footer */
     .error-footer {
       margin-top: 2rem;
       text-align: center;
-      color: #64748b;
+      color: #94a3b8;
       font-size: 0.82rem;
       position: relative;
       z-index: 10;
@@ -310,16 +313,28 @@
       text-decoration: underline;
     }
 
-    @media (max-width: 640px) {
+    /* Tablet breakpoint (481px - 768px) */
+    @media (max-width: 768px) {
       .error-container {
-        padding: 2.2rem 1.4rem;
+        padding: 2.5rem 1.8rem;
+      }
+    }
+
+    /* Mobile breakpoint (<= 480px) */
+    @media (max-width: 480px) {
+      .error-container {
+        padding: 2.2rem 1.25rem;
         border-radius: 20px;
       }
       .action-grid {
         grid-template-columns: 1fr;
       }
       .search-box {
-        flex-direction: row;
+        padding: 4px 4px 4px 10px;
+      }
+      .search-box button {
+        padding: 8px 14px;
+        font-size: 0.84rem;
       }
     }
   </style>
@@ -355,7 +370,7 @@
       <form class="search-box" id="errorSearchForm" onsubmit="handleSearch(event)">
         <input type="text" id="errorSearchInput" placeholder="Search syllabus, papers, notes..." autocomplete="off" />
         <button type="submit">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
@@ -382,7 +397,7 @@
         Study Hub
       </a>
 
-      <a href="/legal/index.html" class="btn-action btn-ghost">
+      <a href="/legal/index.html" class="btn-action btn-secondary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
           <line x1="4" y1="22" x2="4" y2="15"></line>
@@ -393,24 +408,35 @@
   </main>
 
   <footer class="error-footer">
-    <p>&copy; DPGNotes &bull; Powered by <a href="https://akshat-881236.github.io/AkshatNetworkHub/" target="_blank" rel="noopener">Akshat Network Hub</a></p>
+    <p>&copy; DPGNotes &bull; Powered by <a href="https://akshat-881236.github.io/portfolio/" target="_blank" rel="noopener">Akshat Network Hub</a></p>
   </footer>
 
   <script>
-    // Safely display broken requested path if available
-    try {
-      const path = window.location.pathname;
-      if (path && path !== '/' && !path.endsWith('/404.html') && !path.endsWith('/404')) {
-        const brokenContainer = document.getElementById('brokenPathContainer');
-        const brokenText = document.getElementById('brokenPathText');
-        if (brokenContainer && brokenText) {
-          brokenText.textContent = 'Missing: ' + path + window.location.search;
-          brokenContainer.style.display = 'inline-flex';
+    // 1. Ensure 404 page runs in its own scope and URL, resolving browser console 404 error
+    (function ensureScopeAndUrl() {
+      try {
+        const path = window.location.pathname;
+        if (path !== '/404.html' && path !== '/404') {
+          // Transition to /404.html URL so page is in its own scope and returns clean HTTP 200
+          window.location.replace('/404.html?missing=' + encodeURIComponent(path + window.location.search));
+          return;
         }
-      }
-    } catch(e) {}
 
-    // Search redirect handler
+        // Display missing path from query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const missingPath = urlParams.get('missing');
+        if (missingPath) {
+          const brokenContainer = document.getElementById('brokenPathContainer');
+          const brokenText = document.getElementById('brokenPathText');
+          if (brokenContainer && brokenText) {
+            brokenText.textContent = 'Missing: ' + missingPath;
+            brokenContainer.style.display = 'inline-flex';
+          }
+        }
+      } catch(e) {}
+    })();
+
+    // 2. Search redirect handler
     function handleSearch(e) {
       e.preventDefault();
       const input = document.getElementById('errorSearchInput');
