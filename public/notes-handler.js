@@ -335,6 +335,120 @@
           font-size: 0.98rem;
         }
       }
+      /* Theme overrides for In-Document Notes */
+      html[data-theme="light"] .added-notes,
+      body[data-theme="light"] .added-notes {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-left: 5px solid #4338ca !important;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(67, 56, 202, 0.06) !important;
+        color: #0f172a !important;
+      }
+      html[data-theme="light"] .added-notes::before,
+      body[data-theme="light"] .added-notes::before {
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%) !important;
+      }
+      html[data-theme="light"] .added-notes-header,
+      body[data-theme="light"] .added-notes-header {
+        border-bottom: 1px solid #e2e8f0 !important;
+      }
+      html[data-theme="light"] .added-notes-title,
+      body[data-theme="light"] .added-notes-title {
+        color: #0f172a !important;
+        text-shadow: none !important;
+      }
+      html[data-theme="light"] .added-notes-tags-label,
+      body[data-theme="light"] .added-notes-tags-label {
+        color: #4338ca !important;
+      }
+      html[data-theme="light"] .added-notes-tag,
+      body[data-theme="light"] .added-notes-tag {
+        background: #eef2ff !important;
+        border: 1px solid #c7d2fe !important;
+        color: #4338ca !important;
+      }
+      html[data-theme="light"] .added-notes-tag:hover,
+      body[data-theme="light"] .added-notes-tag:hover {
+        background: #e0e7ff !important;
+        color: #312e81 !important;
+      }
+      html[data-theme="light"] .note-like-btn,
+      body[data-theme="light"] .note-like-btn {
+        background: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: #334155 !important;
+      }
+      html[data-theme="light"] .note-share-btn,
+      body[data-theme="light"] .note-share-btn {
+        background: #eef2ff !important;
+        border-color: #c7d2fe !important;
+        color: #4338ca !important;
+      }
+      html[data-theme="light"] .added-notes-body,
+      body[data-theme="light"] .added-notes-body {
+        color: #1e293b !important;
+      }
+      html[data-theme="light"] .added-notes-body h1,
+      html[data-theme="light"] .added-notes-body h2,
+      body[data-theme="light"] .added-notes-body h1,
+      body[data-theme="light"] .added-notes-body h2 {
+        color: #0f172a !important;
+      }
+      html[data-theme="light"] .added-notes-body h3,
+      html[data-theme="light"] .added-notes-body h4,
+      body[data-theme="light"] .added-notes-body h3,
+      body[data-theme="light"] .added-notes-body h4 {
+        color: #1e1b4b !important;
+      }
+      html[data-theme="light"] .added-notes-body p,
+      html[data-theme="light"] .added-notes-body li,
+      body[data-theme="light"] .added-notes-body p,
+      body[data-theme="light"] .added-notes-body li {
+        color: #334155 !important;
+      }
+      html[data-theme="light"] .added-notes-body code,
+      body[data-theme="light"] .added-notes-body code {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #be185d !important;
+      }
+      html[data-theme="light"] .dpg-native-ad-block,
+      body[data-theme="light"] .dpg-native-ad-block {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+      html[data-theme="light"] .dpg-native-ad-badge,
+      body[data-theme="light"] .dpg-native-ad-badge {
+        color: #4338ca !important;
+      }
+      /* Dark Theme overrides */
+      html[data-theme="dark"] .added-notes,
+      body[data-theme="dark"] .added-notes {
+        background: linear-gradient(145deg, #05070f 0%, #0d1222 50%, #151a30 100%) !important;
+        border: 1px solid rgba(139, 92, 246, 0.4) !important;
+        border-left: 5px solid #a855f7 !important;
+        color: #f8fafc !important;
+      }
+      html[data-theme="dark"] .added-notes-title,
+      body[data-theme="dark"] .added-notes-title {
+        color: #ffffff !important;
+      }
+      html[data-theme="dark"] .added-notes-body h1,
+      html[data-theme="dark"] .added-notes-body h2,
+      body[data-theme="dark"] .added-notes-body h1,
+      body[data-theme="dark"] .added-notes-body h2 {
+        color: #e0e7ff !important;
+      }
+      html[data-theme="dark"] .added-notes-body h3,
+      body[data-theme="dark"] .added-notes-body h3 {
+        color: #c4b5fd !important;
+      }
+      html[data-theme="dark"] .added-notes-body p,
+      html[data-theme="dark"] .added-notes-body li,
+      body[data-theme="dark"] .added-notes-body p,
+      body[data-theme="dark"] .added-notes-body li {
+        color: #f1f5f9 !important;
+      }
     `;
     document.head.appendChild(style);
   }

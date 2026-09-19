@@ -41,6 +41,7 @@ auth.authStateReady().then(() => {
     if (dashboardLayer) dashboardLayer.style.display = "flex";
     loadUsers();
     loadPermanentBlocks();
+    if (typeof loadTopDashboardMetrics === 'function') loadTopDashboardMetrics();
   } else {
     // Unauthenticated: Show access denied and auto-redirect to admin-login.html
     if (statusTxt) {
@@ -526,6 +527,33 @@ async function loadUsers() {
   }
 }
 
+// Pre-hydrate all 4 top command center stat cards on dashboard load
+async function loadTopDashboardMetrics() {
+  try {
+    // 1. Pre-fetch Total Shares Generated Count
+    getDocs(collection(db, "share_links")).then(snap => {
+      const count = snap.size || 0;
+      const el = document.getElementById("statShares");
+      if (el) el.innerText = count;
+      const totalSharesEl = document.getElementById("statTotalSharesCount");
+      if (totalSharesEl) totalSharesEl.innerText = count;
+    }).catch(e => console.warn("Pre-fetch shares count notice:", e));
+
+    // 2. Pre-fetch Cover Pages Generated Count
+    Promise.all([
+      getDocs(collection(db, "assignment_cover_pages")).catch(() => ({ size: 0 })),
+      getDocs(collection(db, "practical_cover_pages")).catch(() => ({ size: 0 }))
+    ]).then(([assignSnap, practSnap]) => {
+      const totalCover = (assignSnap.size || 0) + (practSnap.size || 0);
+      const el = document.getElementById("statCoverPages");
+      if (el) el.innerText = totalCover;
+    }).catch(e => console.warn("Pre-fetch cover pages count notice:", e));
+  } catch (err) {
+    console.warn("Failed to pre-hydrate top dashboard stats:", err);
+  }
+}
+window.loadTopDashboardMetrics = loadTopDashboardMetrics;
+
 const deleteConfirmFormEl = document.getElementById("deleteConfirmForm");
 if (deleteConfirmFormEl) {
   deleteConfirmFormEl.onsubmit = async (e) => {
@@ -953,6 +981,7 @@ window.switchTab = function(tabId) {
   } else if (tabId === 'resource-analytics') {
     if (typeof window.loadResourceAnalyticsAdmin === 'function') window.loadResourceAnalyticsAdmin();
   } else if (tabId === 'web-analytics') {
+    if (typeof window.loadAdminWebsitesList === 'function') window.loadAdminWebsitesList();
     if (typeof window.loadWebAnalyticsAdmin === 'function') window.loadWebAnalyticsAdmin();
   } else if (tabId === 'cover-pages') {
     if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
@@ -1398,27 +1427,112 @@ window.deleteViewedReferrersGroup = async function() {
 // ==========================================
 let adminDeviceLogsCache = [];
 
+// Calculate user screentime according to the exact mathematical rule:
+// 1. For a new visitor (Day 1): Actual time spent.
+// 2. For same user (Day 2+): Average calculated by Total Screentime (of last 10 days of more than 30 mins presence) / 2.
+function computeUserScreentimeValue(log, userHistoryList) {
+  const today = new Date();
+  const tenDaysAgo = new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000);
+
+  // Group user's logs by calendar date (YYYY-MM-DD)
+  const dayMap = new Map();
+  (userHistoryList || []).forEach(item => {
+    let ts = 0;
+    if (item.timestamp) {
+      if (item.timestamp.toDate) {
+        ts = item.timestamp.toDate().getTime();
+      } else if (item.timestamp._seconds) {
+        ts = item.timestamp._seconds * 1000;
+      } else if (typeof item.timestamp === 'string' || typeof item.timestamp === 'number') {
+        ts = new Date(item.timestamp).getTime();
+      }
+    }
+    if (!ts || isNaN(ts)) ts = Date.now();
+    const dObj = new Date(ts);
+    const dStr = dObj.toISOString().split('T')[0];
+
+    // Determine raw seconds for this entry
+    let rawSecs = Number(item.screentimeSeconds || 0);
+    if (!rawSecs) {
+      if (item.pageVisits || item.pdfViews) {
+        rawSecs = ((item.pageVisits || 1) * 120) + ((item.pdfViews || 0) * 300);
+      } else if (typeof item.screenTime === 'string' && item.screenTime.includes('min') && !item.screenTime.includes('15 min')) {
+        rawSecs = (parseInt(item.screenTime, 10) * 60) || 180;
+      } else {
+        rawSecs = 180; // Baseline session ~3 mins
+      }
+    }
+
+    if (!dayMap.has(dStr)) {
+      dayMap.set(dStr, { date: dObj, totalSecs: 0 });
+    }
+    dayMap.get(dStr).totalSecs += rawSecs;
+  });
+
+  const distinctDays = Array.from(dayMap.values());
+
+  // Determine raw seconds for THIS specific log entry
+  let curSecs = Number(log.screentimeSeconds || 0);
+  if (!curSecs) {
+    if (log.pageVisits || log.pdfViews) {
+      curSecs = ((log.pageVisits || 1) * 120) + ((log.pdfViews || 0) * 300);
+    } else if (typeof log.screenTime === 'string' && log.screenTime.includes('min') && !log.screenTime.includes('15 min')) {
+      curSecs = (parseInt(log.screenTime, 10) * 60) || 180;
+    } else {
+      curSecs = distinctDays.length > 0 ? distinctDays[0].totalSecs : 180;
+    }
+  }
+
+  // Day 1: New Visitor (only 1 distinct calendar day of presence)
+  if (distinctDays.length <= 1) {
+    const mins = Math.max(1, Math.round(curSecs / 60));
+    return `${mins} mins`;
+  }
+
+  // Day 2+: Returning user (2 or more distinct days)
+  // Filter days from the last 10 days where presence was more than 30 minutes (> 1800s)
+  const qualifyingDays = distinctDays.filter(d => d.date >= tenDaysAgo && d.totalSecs > 1800);
+
+  if (qualifyingDays.length > 0) {
+    const totalQualifyingSecs = qualifyingDays.reduce((sum, d) => sum + d.totalSecs, 0);
+    const avgSecs = Math.round(totalQualifyingSecs / 2);
+    const avgMins = Math.max(1, Math.round(avgSecs / 60));
+    return `${avgMins} mins (Day 2 avg)`;
+  } else {
+    // If no single day exceeded 30 mins in the last 10 days, compute mean of active sessions
+    const recentDays = distinctDays.filter(d => d.date >= tenDaysAgo);
+    const sampleDays = recentDays.length > 0 ? recentDays : distinctDays;
+    const totalSecs = sampleDays.reduce((sum, d) => sum + d.totalSecs, 0);
+    const avgSecs = Math.round(totalSecs / Math.max(1, sampleDays.length));
+    const avgMins = Math.max(1, Math.round(avgSecs / 60));
+    return `${avgMins} mins`;
+  }
+}
+
 async function loadDeviceLogsAdmin() {
   const tbody = document.getElementById("deviceLogsTableBody");
   if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading Device Logs...</td></tr>`;
 
   try {
-    const logsSnap = await getDocs(query(collection(db, "device_login_history"), orderBy("timestamp", "desc")));
-    const quotaSnap = await getDocs(query(collection(db, "guest_quotas"), orderBy("updatedAt", "desc")));
+    const [logsSnap, quotaSnap] = await Promise.all([
+      getDocs(query(collection(db, "device_login_history"), orderBy("timestamp", "desc"))),
+      getDocs(query(collection(db, "guest_quotas"), orderBy("updatedAt", "desc")))
+    ]);
 
-    adminDeviceLogsCache = [];
+    const rawLogsList = [];
 
     // Parse Device History logs
     logsSnap.forEach(dSnap => {
       const data = dSnap.data();
-      adminDeviceLogsCache.push({
+      rawLogsList.push({
         id: dSnap.id,
         rawId: data.userId || data.email || 'ADM',
         userType: data.userType || 'Contributor',
         ipAddress: data.ipAddress || '127.0.0.1',
         country: `${data.country || 'Unknown'} (${data.city || 'N/A'})`,
-        screenTime: data.screenTime || '15 mins',
+        screentimeSeconds: data.screentimeSeconds || (data.screenTime && parseInt(data.screenTime, 10) * 60) || 0,
+        screenTime: data.screenTime || null,
         timestamp: data.timestamp
       });
     });
@@ -1426,21 +1540,41 @@ async function loadDeviceLogsAdmin() {
     // Parse Anonymous Guest Quota logs
     quotaSnap.forEach(qSnap => {
       const qData = qSnap.data();
-      adminDeviceLogsCache.push({
+      rawLogsList.push({
         id: qSnap.id,
         rawId: qData.guestId || qSnap.id,
         userType: 'Anonymous',
         ipAddress: qData.clientIp || '127.0.0.1',
         country: 'Guest Client',
-        screenTime: `${qData.pageVisits || 1} Visits / ${qData.pdfViews || 0} PDFs`,
+        pageVisits: qData.pageVisits || 1,
+        pdfViews: qData.pdfViews || 0,
+        screentimeSeconds: qData.screentimeSeconds || 0,
         timestamp: qData.updatedAt
       });
     });
 
-    if (adminDeviceLogsCache.length === 0) {
+    if (rawLogsList.length === 0) {
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">No device logs found.</td></tr>`;
       return;
     }
+
+    // Group logs by user key to evaluate Day 1 vs Day 2+ history
+    const userGroups = new Map();
+    rawLogsList.forEach(log => {
+      const key = log.rawId || log.ipAddress || 'anon';
+      if (!userGroups.has(key)) userGroups.set(key, []);
+      userGroups.get(key).push(log);
+    });
+
+    adminDeviceLogsCache = rawLogsList.map(log => {
+      const userKey = log.rawId || log.ipAddress || 'anon';
+      const history = userGroups.get(userKey) || [log];
+      const calculatedScreentime = computeUserScreentimeValue(log, history);
+      return {
+        ...log,
+        screenTime: calculatedScreentime
+      };
+    });
 
     tbody.innerHTML = "";
     adminDeviceLogsCache.forEach(log => {
@@ -1460,7 +1594,7 @@ async function loadDeviceLogsAdmin() {
         <td>${typeBadge}</td>
         <td style="font-family:monospace;">${log.ipAddress}</td>
         <td>${log.country}</td>
-        <td style="color:#a78bfa; font-size:0.85rem;">${log.screenTime}</td>
+        <td style="color:#a78bfa; font-size:0.85rem; font-weight:600;">${log.screenTime}</td>
         <td>
           <button class="btn-action danger" onclick="deleteDeviceLog('${log.id}', '${log.userType}')" title="Delete Device Log">
             <i class="ri-delete-bin-line"></i>

@@ -92,6 +92,11 @@
     .pdfpage canvas{display:block;width:100%;height:auto;background:white}
     /* AD SLOT */
     .adslot{width:100%;max-width:830px;margin:.5rem 0 1.2rem;border-radius:11px;border:1px dashed rgba(99,102,241,.22);background:#0f1120;min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--mut);font-size:.76rem}
+    /* RECOMMENDATIONS */
+    .end-pdf-recommendations{width:100%;max-width:860px;margin:3rem auto 0;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.08);box-sizing:border-box}
+    .end-pdf-main-title{color:white}
+    .pdf-recommendation-card{background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.08);color:white}
+    .pdf-rec-title{color:white}
     /* SPINNER */
     .spinner{display:flex;flex-direction:column;align-items:center;padding:5rem;color:var(--mut);gap:.8rem}
     .spin-icon{font-size:2.4rem;animation:spin 1s linear infinite;color:var(--pri)}
@@ -274,8 +279,8 @@
     </div>
 
     <!-- END OF PDF RECOMMENDATIONS -->
-    <div id="endPdfRecommendations" style="display:none; margin-top:3rem; padding:2rem 1.5rem; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:20px; backdrop-filter:blur(20px);">
-      <h2 style="font-family:'Outfit',sans-serif; font-size:1.5rem; margin-bottom:1.5rem; color:white; display:flex; align-items:center; gap:10px;"><i class="ri-compass-3-line" style="color:var(--pri);"></i> Continue Exploring Resources</h2>
+    <div id="endPdfRecommendations" class="end-pdf-recommendations" style="display:none; margin-top:3rem; padding:2rem 1.5rem; border-radius:20px; backdrop-filter:blur(20px);">
+      <h2 class="end-pdf-main-title" style="font-family:'Outfit',sans-serif; font-size:1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;"><i class="ri-compass-3-line" style="color:var(--pri);"></i> Continue Exploring Resources</h2>
       
       <!-- 1. RELEVANT RESOURCES -->
       <div style="margin-bottom:2rem;">
@@ -770,9 +775,9 @@ async function loadEndPdfRecommendations() {
       container.innerHTML = docs.map(d => {
         const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
         return `
-          <div style="background:rgba(30,41,59,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:8px;">
-            <div style="font-size:0.7rem; font-weight:700; color:#a5b4fc; text-transform:uppercase;">${d.category || 'Notes'}</div>
-            <div style="font-weight:700; color:white; font-size:0.92rem; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${d.title || 'Untitled'}</div>
+          <div class="pdf-recommendation-card" style="border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:0.7rem; font-weight:700; color:#818cf8; text-transform:uppercase;">${d.category || 'Notes'}</div>
+            <div class="pdf-rec-title" style="font-weight:700; font-size:0.92rem; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${d.title || 'Untitled'}</div>
             <div style="font-size:0.75rem; color:#94a3b8;">Uploaded by ${d.userName || d.uploader || 'Contributor'}</div>
             <a href="${vUrl}" target="_blank" style="margin-top:auto; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700; text-align:center;">Open Resource</a>
           </div>

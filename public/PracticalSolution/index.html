@@ -380,7 +380,7 @@
 
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, arrayUnion, collection, collectionGroup, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, arrayUnion, collection, collectionGroup, query, where, getDocs, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const cfg = {
@@ -410,6 +410,8 @@
     window.solGetDocs = getDocs;
     window.solOrderBy = orderBy;
     window.solLimit = limit;
+    window.solAddDoc = addDoc;
+    window.solServerTimestamp = serverTimestamp;
     window.solAuth = auth;
     window.solSignInWithPopup = signInWithPopup;
     window.GoogleAuthProvider = GoogleAuthProvider;
@@ -1013,18 +1015,53 @@
           });
         } catch (e) {}
 
-        // Increment share clicks if share_token is in query
+        // Increment share clicks and log engagement detail if share_token is in query
         const shareToken = params.get('share_token');
         if (shareToken) {
-          try {
-            const shareRef = window.solDoc(window.solDb, "share_links", shareToken);
-            window.solUpdateDoc(shareRef, {
-              clicks: window.solIncrement(1),
-              lastClickedAt: new Date().toISOString()
-            });
-          } catch (e) {
-            console.warn("Could not increment share clicks:", e);
-          }
+          (async () => {
+            const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL)
+              ? window.API_BASE_URL.replace(/\/+$/, '')
+              : 'https://dpgnotes.onrender.com';
+            let visitorUid = 'Guest';
+            try {
+              visitorUid = localStorage.getItem('dpgActiveUserUid') || localStorage.getItem('dpg_guest_id') || 'Guest';
+            } catch(e) {}
+
+            let apiSuccess = false;
+            try {
+              const res = await fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorUid)}`);
+              if (res.ok) apiSuccess = true;
+            } catch(e) {
+              console.warn("Backend share click endpoint notice:", e);
+            }
+
+            // Client-side Firestore sync / fallback
+            try {
+              if (window.solDb && window.solDoc && window.solUpdateDoc) {
+                const shareRef = window.solDoc(window.solDb, "share_links", shareToken);
+                if (!apiSuccess && window.solIncrement) {
+                  await window.solUpdateDoc(shareRef, {
+                    clicks: window.solIncrement(1),
+                    lastClickedAt: new Date().toISOString()
+                  }).catch(() => {});
+                }
+
+                // If backend didn't log engagement, ensure client Firestore writes engagement record
+                if (!apiSuccess && window.solAddDoc && window.solCollection) {
+                  await window.solAddDoc(window.solCollection(window.solDb, "share_engagements"), {
+                    shareToken: shareToken,
+                    openedBy: visitorUid,
+                    ipAddress: 'Direct Client Open',
+                    userAgent: navigator.userAgent || 'Unknown',
+                    status: 'Usual',
+                    timestamp: window.solServerTimestamp ? window.solServerTimestamp() : new Date()
+                  }).catch(() => {});
+                }
+              }
+            } catch (fsErr) {
+              console.warn("Firestore share engagement sync notice:", fsErr);
+            }
+          })();
         }
 
         // Start active screentime tracking

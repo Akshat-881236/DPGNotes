@@ -227,6 +227,17 @@
       box-sizing: border-box;
       min-width: 0;
     }
+    .stat-card[onclick],
+    .stat-card.interactive {
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stat-card[onclick]:hover,
+    .stat-card.interactive:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
     .stat-icon {
       width: 48px;
       height: 48px;
@@ -578,7 +589,7 @@
         <a class="nav-link" onclick="switchTab('resource-analytics'); if(window.loadResourceAnalyticsAdmin) window.loadResourceAnalyticsAdmin();">
           <i class="ri-bar-chart-2-line" style="color:#6366f1;"></i> Resource Analytics
         </a>
-        <a class="nav-link" onclick="switchTab('web-analytics'); if(window.loadWebAnalyticsAdmin) window.loadWebAnalyticsAdmin();">
+        <a class="nav-link" onclick="switchTab('web-analytics'); if(window.loadAdminWebsitesList) window.loadAdminWebsitesList(); if(window.loadWebAnalyticsAdmin) window.loadWebAnalyticsAdmin();">
           <i class="ri-global-line" style="color:#38bdf8;"></i> Web Analytics
         </a>
         <a class="nav-link" onclick="switchTab('cover-pages'); if(window.loadCoverPagesAdmin) window.loadCoverPagesAdmin();">
@@ -634,19 +645,19 @@
       </div>
 
       <div class="stat-cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer;" onclick="switchTab('users');" title="View Contributors Directory">
           <div class="stat-icon"><i class="ri-user-star-line"></i></div>
           <div class="stat-info"><h3 id="statUsers">0</h3><p>Total Contributors</p></div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer;" onclick="switchTab('content');" title="Manage Hosted Resources">
           <div class="stat-icon" style="color:var(--admin-success); background:rgba(16,185,129,0.1);"><i class="ri-file-pdf-line"></i></div>
           <div class="stat-info"><h3 id="statDocs">0</h3><p>Hosted Resources</p></div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer;" onclick="switchTab('shares');" title="Analyze All Share Links">
           <div class="stat-icon" style="color:var(--admin-warning); background:rgba(245,158,11,0.1);"><i class="ri-share-forward-line"></i></div>
           <div class="stat-info"><h3 id="statShares">0</h3><p>Total Shares Generated</p></div>
         </div>
-        <div class="stat-card" style="cursor:pointer;" onclick="switchTab('cover-pages');">
+        <div class="stat-card" style="cursor:pointer;" onclick="switchTab('cover-pages');" title="Moderate Generated Cover Pages">
           <div class="stat-icon" style="color:#ec4899; background:rgba(236,72,153,0.1);"><i class="ri-file-copy-2-line"></i></div>
           <div class="stat-info"><h3 id="statCoverPages">0</h3><p>Cover Pages Generated</p></div>
         </div>
@@ -1883,6 +1894,7 @@
             </div>
             <div>
               <select id="coverHeaderLogoFilter" class="admin-input" style="width:160px; margin:0; padding:0.5rem 0.8rem; font-size:0.88rem; cursor:pointer;" onchange="filterCoverPages()">
+                <option value="all" selected>All Header Logos</option>
                 <option value="Header_Image.jpg">Header Logo 1</option>
                 <option value="DPGSTM-2HeaderImage.png">Header Logo 2</option>
                 <option value="DPGDegreeHeader_Image.jpeg">Header Logo 3</option>
