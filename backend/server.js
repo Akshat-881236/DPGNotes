@@ -143,17 +143,25 @@ function bootstrap() {
   // Restore companion files if necessary
   ensureCompanionFiles(key);
 
+  let serverCode;
   try {
     const encBuffer = fs.readFileSync(PAYLOAD_FILE);
     const decryptedBuffer = vault.decryptBuffer(encBuffer, key);
-    const serverCode = decryptedBuffer.toString('utf8');
-
+    serverCode = decryptedBuffer.toString('utf8');
     console.log('[DPG Vault] Decrypted backend server into memory (AES-256-GCM verified).');
-    executeInMemory(serverCode, path.join(__dirname, 'server.js'));
   } catch (err) {
     console.error('\n================================================================');
     console.error('[DPG Vault] Fatal Decryption Error:', err.message);
     console.error('Please verify that DPG_BACKEND_KEY matches the encryption key.');
+    console.error('================================================================\n');
+    process.exit(1);
+  }
+
+  try {
+    executeInMemory(serverCode, path.join(__dirname, 'server.js'));
+  } catch (err) {
+    console.error('\n================================================================');
+    console.error('[DPG Server] Fatal Runtime Error during startup:', err);
     console.error('================================================================\n');
     process.exit(1);
   }
