@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <script src="custom-dialogs.js"></script>
+    <script src="/dpg-loader.js"></script>
+    <script src="/dpg-utility-quota.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ANH PDF Meta Adder – Professional offline-first PDF metadata editor. Add metadata, watermarks, logos, QR codes, borders, and archival information while preserving original PDF quality, searchable text, hyperlinks, and vector graphics.">
     <meta name="keywords" content="PDF editor, PDF metadata, watermark, QR code, archival, offline PDF tool, PDF metadata editor, academic archive, ANH, professional PDF">
@@ -24,6 +26,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="canonical" href="https://dpgnotes.web.app/PdfMetaAdder.html">
     <link rel="icon" href="https://dpgnotes.web.app/ANH.png" type="image/png">
+    <link rel="manifest" href="/manifest.json">
+    <script src="/pwa.js" defer></script>
 
     <title>ANH PDF Meta Adder – Professional PDF Metadata & Archive Editor</title>
     <script src="config.js"></script>
@@ -716,6 +720,11 @@
             }
 
             .header-status {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .header-status a {
                 display: none;
             }
 
@@ -845,7 +854,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-title">
-            <div class="logo-icon">📑</div>
+            <img src="ANH.png" alt="DPGNotes Logo" style="width:30px; height:30px; border-radius:8px; object-fit:contain; box-shadow:0 0 10px rgba(0,212,255,0.4);">
             <span>ANH PDF Meta Adder</span>
         </div>
         <div class="header-status">
@@ -1542,6 +1551,11 @@
             if (!AppState.pdfDoc) {
                 showMessage('Please load a PDF first', 'error');
                 return;
+            }
+
+            if (window.DpgUtilityQuota) {
+                const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('PDF Meta Adder');
+                if (!allowed) return;
             }
 
             updateProgress(5, 'Starting PDF processing...');

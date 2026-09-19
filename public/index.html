@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
+  <script src="dpg-loader.js"></script>
   <!-- ========================= -->
   <!-- PRESERVED META & ADSENSE  -->
   <!-- ========================= -->
@@ -18,6 +20,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <link rel="icon" href="ANH.png" type="image/png" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="/pwa.js" defer></script>
   <title>DPGNotes | Academic Notes, Exam PYQs &amp; Placement Hub | By Akshat Network Hub</title>
   <meta name="google-site-verification" content="GcRmUrIPZNUQjc7onJavMmzT2IwIg-9oJ26cr4pNGBI" />
   <meta name="description" content="DPGNotes is a modern educational platform providing university notes, sessional exam question papers, computer science tutorials, physical education practical files, interview preparation, aptitude resources, and placement guides. Maintained by Akshat Network Hub for learners worldwide."/>
@@ -112,21 +116,24 @@
     }
 
     .mobile-user-profile-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 3px 9px 3px 4px;
-      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 2px;
+      border-radius: 50%;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      justify-content: center;
       text-decoration: none !important;
       color: #f8fafc;
-      transition: all 0.2s;
-      max-width: 135px;
+      transition: all 0.2s ease;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
     }
     .mobile-user-profile-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
+      background: rgba(255, 255, 255, 0.18);
+      transform: scale(1.06);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
     }
     .mobile-nav-avatar {
       width: 26px;
@@ -147,14 +154,9 @@
       height: 100%;
       object-fit: cover;
     }
+    /* Strictly hide name on mobile so only profile avatar icon displays */
     .mobile-nav-user-name {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #f8fafc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 65px;
+      display: none !important;
     }
     .mobile-logout-icon-btn {
       width: 32px;
@@ -176,7 +178,141 @@
       color: #ffffff;
     }
 
-    :root {
+    /* Single-Icon Theme Switcher */
+    .theme-toggle-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.15rem;
+      transition: all 0.25s ease;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      transform: scale(1.08);
+      border-color: var(--primary-light);
+    }
+
+    /* Brand Logo Image in place of letter 'D' */
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      padding: 2px;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+    }
+    .brand-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* Distinct Vibrant Styles for Search Chips (without #) */
+    .search-chip {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none !important;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid transparent;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .search-chip:hover {
+      transform: translateY(-2px);
+    }
+    .chip-indigo {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #a5b4fc !important;
+    }
+    .chip-indigo:hover {
+      background: rgba(99, 102, 241, 0.28);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+      color: #ffffff !important;
+    }
+    .chip-rose {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: rgba(244, 63, 94, 0.4);
+      color: #fda4af !important;
+    }
+    .chip-rose:hover {
+      background: rgba(244, 63, 94, 0.28);
+      box-shadow: 0 4px 16px rgba(244, 63, 94, 0.4);
+      color: #ffffff !important;
+    }
+    .chip-emerald {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7 !important;
+    }
+    .chip-emerald:hover {
+      background: rgba(16, 185, 129, 0.28);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+      color: #ffffff !important;
+    }
+    .chip-cyan {
+      background: rgba(14, 165, 233, 0.15);
+      border-color: rgba(14, 165, 233, 0.4);
+      color: #7dd3fc !important;
+    }
+    .chip-cyan:hover {
+      background: rgba(14, 165, 233, 0.28);
+      box-shadow: 0 4px 16px rgba(14, 165, 233, 0.4);
+      color: #ffffff !important;
+    }
+    .chip-amber {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fcd34d !important;
+    }
+    .chip-amber:hover {
+      background: rgba(245, 158, 11, 0.28);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+      color: #ffffff !important;
+    }
+    .chip-violet {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.4);
+      color: #d8b4fe !important;
+    }
+    .chip-violet:hover {
+      background: rgba(168, 85, 247, 0.28);
+      box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
+      color: #ffffff !important;
+    }
+    .chip-teal {
+      background: rgba(20, 184, 166, 0.15);
+      border-color: rgba(20, 184, 166, 0.4);
+      color: #5eead4 !important;
+    }
+    .chip-teal:hover {
+      background: rgba(20, 184, 166, 0.28);
+      box-shadow: 0 4px 16px rgba(20, 184, 166, 0.4);
+      color: #ffffff !important;
+    }
+
+    /* THEME 1: DEFAULT / DARK NEBULA */
+    :root, html[data-theme="dark"] {
       --bg-dark: #030712;
       --surface-dark: #0f172a;
       --surface-card: rgba(15, 23, 42, 0.7);
@@ -192,6 +328,70 @@
       --text-muted: #94a3b8;
       --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* THEME 2: LIGHT ACADEMIC */
+    html[data-theme="light"] {
+      --bg-dark: #f8fafc;
+      --surface-dark: #ffffff;
+      --surface-card: rgba(255, 255, 255, 0.95);
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-focus: rgba(79, 70, 229, 0.4);
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --emerald: #059669;
+      --cyan: #0284c7;
+      --amber: #d97706;
+      --rose: #e11d48;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+    }
+    html[data-theme="light"] body {
+      background-color: #f8fafc;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+      color: #0f172a;
+    }
+    html[data-theme="light"] .edu-navbar {
+      background: rgba(255, 255, 255, 0.9) !important;
+      border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    html[data-theme="light"] .hero-title {
+      background: linear-gradient(135deg, #0f172a, #334155) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+    html[data-theme="light"] .home-search-shell {
+      background: #ffffff !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06) !important;
+    }
+    html[data-theme="light"] .home-search-shell input {
+      color: #0f172a !important;
+    }
+
+    /* THEME 3: MIDNIGHT EMERALD */
+    html[data-theme="emerald"] {
+      --bg-dark: #021a13;
+      --surface-dark: #062c20;
+      --surface-card: rgba(6, 44, 32, 0.85);
+      --border-subtle: rgba(16, 185, 129, 0.2);
+      --border-focus: rgba(16, 185, 129, 0.5);
+      --primary: #10b981;
+      --primary-light: #34d399;
+      --emerald: #10b981;
+      --cyan: #06b6d4;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --text-main: #ecfdf5;
+      --text-muted: #a7f3d0;
+    }
+    html[data-theme="emerald"] body {
+      background-color: #021a13;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
     }
 
     *, *::before, *::after {
@@ -1162,7 +1362,9 @@
       
       <!-- Brand Logo & Clean Title -->
       <a href="index.html" class="brand-container">
-        <div class="brand-icon">D</div>
+        <div class="brand-icon">
+          <img src="ANH.png" alt="DPGNotes Logo" class="brand-logo-img">
+        </div>
         <div class="brand-titles">
           <span class="brand-name">DPGNotes</span>
           <span class="brand-tagline">Academic Knowledge Hub</span>
@@ -1179,8 +1381,12 @@
         <a href="support-contact-form.html" class="nav-pill-link">Support</a>
       </nav>
 
-      <!-- Desktop Auth Controls (Screens >= 992px) -->
+      <!-- Desktop Auth & Theme Controls (Screens >= 992px) -->
       <div class="d-none d-lg-flex align-items-center gap-2">
+        <button type="button" class="theme-toggle-btn" aria-label="Toggle Color Theme" title="Toggle Theme (Dark Nebula / Light / Emerald)" onclick="toggleDpgTheme()">
+          <i class="ri-moon-line" id="themeToggleIconDesktop"></i>
+        </button>
+
         <div id="navGuestArea" class="align-items-center gap-2" style="display:flex;">
           <button type="button" class="btn-nav-ghost" onclick="openSignInModal()">
             <i class="ri-login-box-line"></i> Sign In
@@ -1203,6 +1409,10 @@
 
       <!-- Mobile Navigation Controls (Screens < 992px) -->
       <div class="d-flex d-lg-none align-items-center gap-2">
+        <button type="button" class="theme-toggle-btn" aria-label="Toggle Color Theme" title="Toggle Theme" onclick="toggleDpgTheme()">
+          <i class="ri-moon-line" id="themeToggleIconMobile"></i>
+        </button>
+
         <div id="navGuestAreaMobile">
           <button type="button" class="mobile-quick-signin" onclick="openSignInModal()">
             <i class="ri-user-line"></i> Sign In
@@ -1211,7 +1421,6 @@
         <div id="navUserAreaMobile" style="display:none;" class="align-items-center gap-1">
           <a href="dashboard.html" class="mobile-user-profile-btn text-decoration-none" title="Contributor Dashboard">
             <div id="navUserAvatarMobile" class="mobile-nav-avatar">U</div>
-            <span id="navUserNameMobile" class="mobile-nav-user-name">Contributor</span>
           </a>
           <button type="button" class="mobile-logout-icon-btn" onclick="logoutUser()" title="Sign Out">
             <i class="ri-logout-box-r-line"></i>
@@ -1304,15 +1513,15 @@
           </button>
         </form>
 
-        <!-- Topic Chips -->
+        <!-- Topic Chips (Vibrant, Distinct Backgrounds & Foregrounds) -->
         <div class="search-chips">
-          <a href="dpgnotes-serp.html?query=BCA" class="search-chip">#BCA Semester</a>
-          <a href="dpgnotes-serp.html?tag=Sessional+Exam" class="search-chip">#Sessional Exam PYQs</a>
-          <a href="dpgnotes-serp.html?tag=University+Exam" class="search-chip">#University Past Papers</a>
-          <a href="dpgnotes-serp.html?query=Data+Structures" class="search-chip">#Data Structures</a>
-          <a href="dpgnotes-serp.html?query=Operating+Systems" class="search-chip">#Operating Systems</a>
-          <a href="dpgnotes-serp.html?tag=Aptitude+%26+LR" class="search-chip">#Logical Reasoning</a>
-          <a href="dpgnotes-serp.html?tag=Interview+Questions" class="search-chip">#Interview Prep</a>
+          <a href="dpgnotes-serp.html?query=BCA" class="search-chip chip-indigo">BCA Semester</a>
+          <a href="dpgnotes-serp.html?tag=Sessional+Exam" class="search-chip chip-rose">Sessional Exam PYQs</a>
+          <a href="dpgnotes-serp.html?tag=University+Exam" class="search-chip chip-emerald">University Past Papers</a>
+          <a href="dpgnotes-serp.html?query=Data+Structures" class="search-chip chip-cyan">Data Structures</a>
+          <a href="dpgnotes-serp.html?query=Operating+Systems" class="search-chip chip-amber">Operating Systems</a>
+          <a href="dpgnotes-serp.html?tag=Aptitude+%26+LR" class="search-chip chip-violet">Logical Reasoning</a>
+          <a href="dpgnotes-serp.html?tag=Interview+Questions" class="search-chip chip-teal">Interview Prep</a>
         </div>
 
         <!-- Quick Stats Strip -->
@@ -1948,10 +2157,10 @@
           </p>
 
           <div class="d-flex flex-column gap-2">
-            <button type="button" class="btn-nav-glow w-100 py-2 justify-content-center" onclick="if(this) this.blur(); openSignUpModal();" data-bs-dismiss="modal">
+            <button type="button" class="btn-nav-glow w-100 py-2 justify-content-center" onclick="if(this) this.blur(); sessionStorage.setItem('dpg_guest_prompt_dismissed','true'); openSignUpModal();" data-bs-dismiss="modal">
               <i class="ri-user-add-line"></i> Create Free Account
             </button>
-            <button type="button" class="btn-nav-ghost w-100 py-2" onclick="if(this) this.blur();" data-bs-dismiss="modal">
+            <button type="button" class="btn-nav-ghost w-100 py-2" onclick="if(this) this.blur(); sessionStorage.setItem('dpg_guest_prompt_dismissed','true');" data-bs-dismiss="modal">
               Continue Browsing as Guest
             </button>
           </div>
@@ -1971,7 +2180,7 @@
         <!-- Col 1: Brand & Mission -->
         <div class="col-12 col-lg-3">
           <a href="index.html" class="brand-container mb-3">
-            <div class="brand-icon" style="width:36px; height:36px; font-size:1.2rem;">D</div>
+            <img src="ANH.png" alt="DPGNotes Logo" class="brand-logo-img" style="width:36px; height:36px; object-fit:contain; border-radius:10px; box-shadow:0 0 15px rgba(99,102,241,0.4);">
             <div class="brand-titles">
               <span class="brand-name" style="font-size:1.2rem;">DPGNotes</span>
               <span class="brand-tagline">Academic Knowledge Hub</span>

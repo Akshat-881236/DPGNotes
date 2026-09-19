@@ -4,8 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="../ANH.png" type="image/png" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="/pwa.js" defer></script>
   <title>Assignment Cover Page Generator | DPGNotes</title>
   <meta name="description" content="Generate and download standard A4 assignment cover pages for DPG School of Technology & Management (Affiliated to MDU Rohtak) with real-time canvas preview." />
+
+  <!-- Standalone Universal Preloader Engine -->
+  <script src="/dpg-loader.js"></script>
 
   <!-- Global Config & Native Ads Engine -->
   <script src="../config.js"></script>
@@ -1109,12 +1114,16 @@
       if (genContainer) genContainer.style.removeProperty('display');
       if (logsSec) logsSec.style.removeProperty('display');
 
+      adWatchInProgress = false;
       if (adWatchTimer) { clearInterval(adWatchTimer); adWatchTimer = null; }
       if (midnightTimer) { clearInterval(midnightTimer); midnightTimer = null; }
       if (adsenseCheckTimer) { clearInterval(adsenseCheckTimer); adsenseCheckTimer = null; }
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
 
       // Clear all active ad players, iframes, and AdSense DOM
+      if (typeof window.cleanupAllNativeAds === 'function') {
+        window.cleanupAllNativeAds();
+      }
       const nativeBox = document.getElementById('nativeAdsContainer');
       const adNativeInner = document.getElementById('native-ads');
       if (nativeBox) nativeBox.style.display = 'none';
@@ -1194,6 +1203,11 @@
 
     // Callback when cover ad completes/skipped
     window.onCoverAdWatched = async function() {
+      const overlay = document.getElementById('quotaLockOverlay');
+      if (!overlay || window.getComputedStyle(overlay).display === 'none') {
+        adWatchInProgress = false;
+        return;
+      }
       if (adWatchInProgress) return;
       adWatchInProgress = true;
       if (adWatchTimer) { clearInterval(adWatchTimer); adWatchTimer = null; }
@@ -1668,9 +1682,9 @@
       const isHeaderLogo3 = !isHeaderLogo4 && (hStr.includes('DPGDegreeHeader') || hStr.includes('Degree') || hStr === 'DPGDegreeHeader_Image.jpeg');
       const isHeaderLogo2 = hStr.includes('DPGSTM-2') || hStr.includes('2Header') || hStr === 'DPGSTM-2HeaderImage.png';
 
-      // Width allocation: All header logos occupy full available space leaving 0.8 margin from left and right
-      // Total coordinate base = 612.0 pt. Margin = 0.8 in = 57.6 pt. Target width = 612.0 - 2 * 57.6 = 496.8 pt.
-      const targetBannerW = (612.0 - 2 * (0.8 * 72.0)) * scaleX;
+      // Width allocation: Header logos occupy full available space leaving 0.5 in margin from left and right
+      // Total coordinate base = 612.0 pt. Margin = 0.5 in = 36.0 pt. Target width = 612.0 - 2 * 36.0 = 540.0 pt.
+      const targetBannerW = (612.0 - 2 * (0.5 * 72.0)) * scaleX;
       const targetBannerTopY = isHeaderLogo2 ? (23.0 * scaleY) : ((isHeaderLogo3 || isHeaderLogo4) ? (27.0 * scaleY) : (33.84 * scaleY));
 
       if (headerImg.complete && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
@@ -1678,8 +1692,13 @@
         const nh = headerImg.naturalHeight || headerImg.height;
         if (nw > 0 && nh > 0) {
           const imgAspect = nw / nh;
-          const drawW = targetBannerW;
-          const drawH = drawW / imgAspect;
+          let drawW = targetBannerW;
+          let drawH = drawW / imgAspect;
+          const maxBannerH = (125.0 * scaleY) - targetBannerTopY;
+          if (drawH > maxBannerH) {
+            drawH = maxBannerH;
+            drawW = drawH * imgAspect;
+          }
           const drawX = (W - drawW) / 2.0;
           const drawY = targetBannerTopY;
           ctx.drawImage(headerImg, drawX, drawY, drawW, drawH);

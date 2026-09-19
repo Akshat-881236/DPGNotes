@@ -218,12 +218,29 @@
 
     let rotationTimeout = null;
     let videoPlaybackTimeout = null;
+    let videoWaitTimeout1 = null;
+    let videoWaitTimeout2 = null;
+    let autoPlayTimer = null;
+    let skipInterval = null;
     let videoLifecycleActive = false;
 
     function cleanupTimers() {
-      if (rotationTimeout) clearTimeout(rotationTimeout);
-      if (videoPlaybackTimeout) clearTimeout(videoPlaybackTimeout);
+      if (rotationTimeout) { clearTimeout(rotationTimeout); rotationTimeout = null; }
+      if (videoPlaybackTimeout) { clearTimeout(videoPlaybackTimeout); videoPlaybackTimeout = null; }
+      if (videoWaitTimeout1) { clearTimeout(videoWaitTimeout1); videoWaitTimeout1 = null; }
+      if (videoWaitTimeout2) { clearTimeout(videoWaitTimeout2); videoWaitTimeout2 = null; }
+      if (autoPlayTimer) { clearTimeout(autoPlayTimer); autoPlayTimer = null; }
+      if (skipInterval) { clearInterval(skipInterval); skipInterval = null; }
+      videoLifecycleActive = false;
+      try {
+        const ifr = card.querySelector('iframe');
+        if (ifr) {
+          ifr.src = 'about:blank';
+          ifr.remove();
+        }
+      } catch(e) {}
     }
+    card._cleanupTimers = cleanupTimers;
 
     const isCoverGen = (typeof window !== "undefined" && window.location && window.location.pathname && window.location.pathname.includes("CoverPageGenerator")) ||
                        variant === "cover_video" ||
@@ -256,7 +273,8 @@
 
       // Re-enable ad placement: Instant (300ms) for Cover Page Generators, 2 minutes (120,000 ms) for other pages
       const dismissDelay = isCoverGen ? 300 : 120000;
-      setTimeout(async () => {
+      rotationTimeout = setTimeout(async () => {
+        if (!card.isConnected || card.style.display === "none") return;
         if (parentBox) parentBox.style.display = "";
         swapToNextAd();
       }, dismissDelay);
@@ -264,11 +282,16 @@
 
     async function swapToNextAd() {
       cleanupTimers();
+      if (!card.isConnected || card.style.display === "none") return;
       const parentBox = card.parentElement;
+      if (!parentBox) return;
 
-      // In Cover Page Generators, notify progress tracking that an ad concluded
+      // In Cover Page Generators, notify progress tracking that an ad concluded ONLY if quota lockdown modal is active
       if (isCoverGen && typeof window.onCoverAdWatched === "function") {
-        try { window.onCoverAdWatched(); } catch(err) { console.warn("Error triggering onCoverAdWatched:", err); }
+        const overlay = document.getElementById("quotaLockOverlay");
+        if (overlay && window.getComputedStyle(overlay).display !== "none") {
+          try { window.onCoverAdWatched(); } catch(err) { console.warn("Error triggering onCoverAdWatched:", err); }
+        }
       }
 
       card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
@@ -282,9 +305,12 @@
           if (visibleChildren.length === 0) parentBox.style.display = "none";
         }
 
-        // Ad Rotation Delay: Instant (300ms) for Cover Page Generators, 2-Minute Gap (120,000 ms) for other pages
-        const rotationDelay = isCoverGen ? 300 : 120000;
-        setTimeout(async () => {
+        // For Cover Page Generators, ad progression is orchestrally controlled by startNextCoverAd()
+        if (isCoverGen) return;
+
+        // Ad Rotation Delay: 2-Minute Gap (120,000 ms) for standard content pages
+        rotationTimeout = setTimeout(async () => {
+          if (!card.isConnected || card.style.display === "none") return;
           if (parentBox) parentBox.style.display = "";
           const approvedAds = await fetchApprovedAds();
           if (!approvedAds || approvedAds.length === 0) {
@@ -312,7 +338,7 @@
             newCard.style.opacity = "1";
             newCard.style.transform = "scale(1)";
           });
-        }, rotationDelay);
+        }, 120000);
       }, 350);
     }
 
@@ -466,7 +492,12 @@
       `;
 
       let remainingSkipSec = skipSec;
-      const skipInterval = setInterval(() => {
+      if (skipInterval) clearInterval(skipInterval);
+      skipInterval = setInterval(() => {
+        if (!card.isConnected || card.style.display === "none") {
+          cleanupTimers();
+          return;
+        }
         remainingSkipSec--;
         const skipTextEl = card.querySelector(`#adSkipText_${containerId}`);
         const skipBtnEl = card.querySelector(`#adSkipBtn_${containerId}`);
@@ -475,6 +506,7 @@
         }
         if (remainingSkipSec <= 0) {
           clearInterval(skipInterval);
+          skipInterval = null;
           if (skipBtnEl && skipTextEl) {
             skipBtnEl.disabled = false;
             skipBtnEl.style.cssText = "background:linear-gradient(135deg,#10b981,#059669); border:none; color:white; padding:8px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(16,185,129,0.4); white-space:nowrap;";
@@ -482,8 +514,11 @@
             skipBtnEl.onclick = (e) => {
               e.stopPropagation();
               cleanupTimers();
-              if (typeof window.onCoverAdWatched === 'function') {
-                window.onCoverAdWatched();
+              const overlay = document.getElementById("quotaLockOverlay");
+              if (overlay && window.getComputedStyle(overlay).display !== "none") {
+                if (typeof window.onCoverAdWatched === 'function') {
+                  window.onCoverAdWatched();
+                }
               }
             };
           }
@@ -542,17 +577,20 @@
       const waitOverlay = card.querySelector(`#adWaitOverlay_${containerId}`);
       const waitText = card.querySelector(`#adWaitText_${containerId}`);
 
-      // Fallback 30s timer in case video is never started
-      rotationTimeout = setTimeout(() => {
-        if (!videoLifecycleActive) {
-          swapToNextAd();
-        }
-      }, 30000);
+      if (!isCoverGen) {
+        // Fallback 30s timer in case video is never started
+        rotationTimeout = setTimeout(() => {
+          if (!videoLifecycleActive) {
+            swapToNextAd();
+          }
+        }, 30000);
+      }
 
       function startVideo(muted = true) {
         if (!playerDiv || videoLifecycleActive) return;
         videoLifecycleActive = true;
-        if (rotationTimeout) clearTimeout(rotationTimeout);
+        if (rotationTimeout) { clearTimeout(rotationTimeout); rotationTimeout = null; }
+        if (autoPlayTimer) { clearTimeout(autoPlayTimer); autoPlayTimer = null; }
 
         playerDiv.innerHTML = `<iframe id="ytFrame_${containerId}" src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=${muted ? 1 : 0}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
         playerDiv.style.display = "block";
@@ -560,18 +598,29 @@
 
         // Video playback sequence (20 seconds duration timer)
         videoPlaybackTimeout = setTimeout(() => {
+          if (!card.isConnected || card.style.display === "none") {
+            cleanupTimers();
+            return;
+          }
           // 1. Video completed -> show Wait overlay on video container (2 seconds)
           if (waitOverlay) {
             waitOverlay.style.display = "flex";
             if (waitText) waitText.innerText = "Video Completed. Please wait...";
           }
 
-          setTimeout(() => {
+          videoWaitTimeout1 = setTimeout(() => {
+            if (!card.isConnected || card.style.display === "none") {
+              cleanupTimers();
+              return;
+            }
             // 2. Hide video, restore thumbnail, show thumbnail wait (3 seconds)
-            if (playerDiv) playerDiv.style.display = "none";
+            if (playerDiv) {
+              playerDiv.style.display = "none";
+              playerDiv.innerHTML = "";
+            }
             if (waitText) waitText.innerText = "Loading next sponsored ad...";
 
-            setTimeout(() => {
+            videoWaitTimeout2 = setTimeout(() => {
               // 3. Auto-swap to next unique approved ad
               swapToNextAd();
             }, 3000);
@@ -579,30 +628,32 @@
         }, 20000);
       }
 
-      let autoPlayTimer = setTimeout(() => {
-        if (!videoLifecycleActive) startVideo(true);
+      autoPlayTimer = setTimeout(() => {
+        if (!videoLifecycleActive && card.isConnected && card.style.display !== "none") {
+          startVideo(true);
+        }
       }, 5000);
 
       if (mediaBox) {
         mediaBox.onmouseenter = function() {
           if (!videoLifecycleActive) {
-            clearTimeout(autoPlayTimer);
+            if (autoPlayTimer) { clearTimeout(autoPlayTimer); autoPlayTimer = null; }
             startVideo(true);
           }
         };
         mediaBox.onclick = function(e) {
           e.stopPropagation();
           if (!videoLifecycleActive) {
-            clearTimeout(autoPlayTimer);
+            if (autoPlayTimer) { clearTimeout(autoPlayTimer); autoPlayTimer = null; }
             startVideo(false);
           }
         };
       }
-      // Non-Video Ads OR Header/Footer Variant Ads -> 30-Second Automatic Rotation (15s for Cover Page Generator)
-      const nonVideoInterval = isCoverGen ? 15000 : 30000;
+    } else if (!isCoverGen) {
+      // Non-Video Ads OR Header/Footer Variant Ads -> 30-Second Automatic Rotation (Non-cover only)
       rotationTimeout = setTimeout(() => {
         swapToNextAd();
-      }, nonVideoInterval);
+      }, 30000);
     }
 
     return card;
@@ -780,6 +831,19 @@
       }
     });
   }
+
+  window.cleanupAllNativeAds = function(containerSelector = ".native-ads, #native-ads, #nativeAdsContainer") {
+    try {
+      document.querySelectorAll(containerSelector).forEach(cont => {
+        cont.querySelectorAll(".dpg-native-ad-card").forEach(card => {
+          if (typeof card._cleanupTimers === "function") {
+            card._cleanupTimers();
+          }
+        });
+        cont.innerHTML = "";
+      });
+    } catch(e) {}
+  };
 
   window.renderNativeDPGAds = renderAllNativeAds;
   window.createDPGAdCard = createAdCardElement;

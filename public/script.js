@@ -1024,17 +1024,97 @@ window.openForgotPasswordModal = function() {
 
 
 // ============================================================================
-// GUEST 2-MINUTE PROMPT (R2)
+// THEME SWITCHER ENGINE (Dark Nebula / Light Academic / Midnight Emerald)
 // ============================================================================
-setTimeout(() => {
-  if (!auth.currentUser && !localStorage.getItem("dpgActiveUser")) {
-    const el = document.getElementById("guestPromptModal");
-    if (el && window.bootstrap) {
-      const modal = new bootstrap.Modal(el);
-      modal.show();
-    }
+window.toggleDpgTheme = function() {
+  const current = document.documentElement.getAttribute("data-theme") || "dark";
+  let next = "dark";
+  let iconClass = "ri-moon-line";
+
+  if (current === "dark") {
+    next = "light";
+    iconClass = "ri-sun-line";
+  } else if (current === "light") {
+    next = "emerald";
+    iconClass = "ri-contrast-2-line";
+  } else {
+    next = "dark";
+    iconClass = "ri-moon-line";
   }
-}, 120000); // 120,000ms = 2 minutes
+
+  document.documentElement.setAttribute("data-theme", next);
+  try {
+    localStorage.setItem("dpg_active_theme", next);
+  } catch(e) {}
+
+  ["themeToggleIconDesktop", "themeToggleIconMobile"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = iconClass;
+  });
+};
+
+// Initialize theme icon on load
+(function initThemeIcon() {
+  try {
+    const saved = localStorage.getItem("dpg_active_theme") || "dark";
+    document.documentElement.setAttribute("data-theme", saved);
+    const iconClass = saved === "light" ? "ri-sun-line" : (saved === "emerald" ? "ri-contrast-2-line" : "ri-moon-line");
+    ["themeToggleIconDesktop", "themeToggleIconMobile"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.className = iconClass;
+    });
+  } catch(e) {}
+})();
+
+// ============================================================================
+// SMART & ADVANCED GUEST USER PROMPT (NON-INTRUSIVE)
+// ============================================================================
+let guestPromptRetryCount = 0;
+function tryShowSmartGuestPrompt() {
+  // 1. Is user already a signed-in Contributor?
+  if (auth.currentUser || localStorage.getItem("dpgActiveUser") || localStorage.getItem("dpgActiveUserUid") || document.documentElement.classList.contains("dpg-user-authenticated")) {
+    return;
+  }
+
+  // 2. Has the user already seen/dismissed the prompt in this session?
+  if (sessionStorage.getItem("dpg_guest_prompt_dismissed") === "true") {
+    return;
+  }
+
+  // 3. Is ANY modal (Sign In, Sign Up, Forgot Password, OTP / 2FA, Custom Alert) active?
+  const anyActiveModal = document.querySelector(".modal.show, .dpg-custom-dialog-overlay, [id*='Modal'].show");
+  if (anyActiveModal) {
+    // User is actively authenticating or interacting: retry gracefully in 30 seconds
+    if (guestPromptRetryCount < 3) {
+      guestPromptRetryCount++;
+      setTimeout(tryShowSmartGuestPrompt, 30000);
+    }
+    return;
+  }
+
+  // 4. Is the user currently typing in a search bar or form input?
+  const activeTag = document.activeElement ? document.activeElement.tagName : "";
+  if (activeTag === "INPUT" || activeTag === "TEXTAREA" || activeTag === "SELECT") {
+    if (guestPromptRetryCount < 3) {
+      guestPromptRetryCount++;
+      setTimeout(tryShowSmartGuestPrompt, 20000);
+    }
+    return;
+  }
+
+  // 5. Safe to show prompt gently
+  const el = document.getElementById("guestPromptModal");
+  if (el && window.bootstrap) {
+    const modal = new bootstrap.Modal(el);
+    modal.show();
+
+    // Mark as shown for this session so it never interrupts the user repeatedly
+    sessionStorage.setItem("dpg_guest_prompt_dismissed", "true");
+  }
+}
+
+// Check after 2 minutes of passive browsing
+setTimeout(tryShowSmartGuestPrompt, 120000);
 
 // ============================================================================
 // BLOGS & DOCUMENTATION EXPANDER (R3)

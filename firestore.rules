@@ -190,6 +190,11 @@ service cloud.firestore {
       allow read, write, delete: if true;
     }
 
+    /* ---------- UTILITY TOOL QUOTAS (ImageToPdf, MetaAdder, MetaAnalyzer) ---------- */
+    match /utility_tool_quotas/{quotaId} {
+      allow read, write, delete: if true;
+    }
+
     /* ---------- PRACTICAL COVER PAGES & RECORDS ---------- */
     match /Practical/{userId}/{document=**} {
       allow read, write, delete: if true;

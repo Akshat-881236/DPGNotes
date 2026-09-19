@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <script src="custom-dialogs.js"></script>
+    <script src="/dpg-loader.js"></script>
+    <script src="/dpg-utility-quota.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ANH Advanced PDF Meta Analyzer - Comprehensive PDF metadata extraction, validation, and analysis tool. Verify PDF structure, metadata, security, and compliance.">
     <meta name="keywords" content="PDF analyzer, metadata extractor, PDF validator, PDF security, PDF inspection, ANH PDF analyzer, document analysis">
@@ -24,6 +26,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="canonical" href="https://dpgnotes.web.app/PdfMetaAnalyzer.html">
     <link rel="icon" href="https://dpgnotes.web.app/ANH.png">
+    <link rel="manifest" href="/manifest.json">
+    <script src="/pwa.js" defer></script>
     <title>ANH Advanced PDF Meta Analyzer - PDF Metadata Extraction & Validation</title>
 
     <script src="config.js"></script>
@@ -730,7 +734,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-title">
-            <div class="logo-icon">🔍</div>
+            <img src="ANH.png" alt="DPGNotes Logo" style="width:30px; height:30px; border-radius:8px; object-fit:contain; box-shadow:0 0 10px rgba(0,212,255,0.4);">
             <span>ANH PDF Meta Analyzer</span>
         </div>
         <div class="header-info">
@@ -1101,9 +1105,18 @@
          * Handle PDF upload
          */
         async function handlePDFUpload(file) {
-            if (!file.type === 'application/pdf') {
+            if (!file || (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf'))) {
                 showMessage('Invalid file type. Please upload a PDF.', 'error');
                 return;
+            }
+
+            if (window.DpgUtilityQuota) {
+                const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('PDF Meta Analyzer');
+                if (!allowed) {
+                    const pdfInput = document.getElementById('pdfInput');
+                    if (pdfInput) pdfInput.value = '';
+                    return;
+                }
             }
 
             analyzer.currentFile = file;

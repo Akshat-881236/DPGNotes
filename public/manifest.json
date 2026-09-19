@@ -1,0 +1,30 @@
+{
+  "name": "DPGNotes - Academic Knowledge Hub",
+  "short_name": "DPGNotes",
+  "description": "Student-led academic knowledge hub offering university notes, previous year question papers, and academic utilities.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060913",
+  "theme_color": "#060913",
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/ANH.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ANH.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
