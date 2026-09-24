@@ -366,9 +366,9 @@
   </div>
 
   <script type="module">
-    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const cfg = {
       apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -379,7 +379,7 @@
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
 
-    const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
+    const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
@@ -404,10 +404,20 @@
           resolve(auth.currentUser);
           return;
         }
+        let resolved = false;
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-          unsubscribe();
-          resolve(user);
+          if (!resolved) {
+            resolved = true;
+            try { unsubscribe(); } catch(e) {}
+            resolve(user);
+          }
         });
+        setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            resolve(auth.currentUser || null);
+          }
+        }, 3000);
       });
     };
 
@@ -1403,8 +1413,73 @@
       }
 
       try {
+        // 1. Verify active Firebase Auth session before attempting Firestore write
+        let activeAuthUser = window.solAuth?.currentUser || (typeof window.getResolvedAuthUser === 'function' ? await window.getResolvedAuthUser() : null);
+
+        if (!activeAuthUser) {
+          if (publishBtn) {
+            publishBtn.disabled = false;
+            publishBtn.innerHTML = isEditMode 
+              ? '<i class="ri-save-line"></i> Save &amp; Update Assignment Solution' 
+              : '<i class="ri-send-plane-fill"></i> Publish Assignment Solution';
+          }
+          
+          const confirmSignIn = typeof window.customConfirm === 'function'
+            ? await window.customConfirm("Your Contributor authentication session has expired or requires renewal to publish to Firestore.\n\nSign in with Google now to securely publish your solution?", { title: "Authentication Renewal Required" })
+            : confirm("Your Contributor authentication session has expired or requires renewal to publish to Firestore.\n\nSign in with Google now to securely publish your solution?");
+
+          if (confirmSignIn) {
+            try {
+              if (publishBtn) {
+                publishBtn.disabled = true;
+                publishBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Authenticating...';
+              }
+              const provider = new window.GoogleAuthProvider();
+              const res = await window.signInWithPopup(window.solAuth, provider);
+              activeAuthUser = res.user;
+            } catch (authErr) {
+              console.error("Inline re-authentication error:", authErr);
+              if (typeof window.customAlert === 'function') {
+                await window.customAlert("Authentication was not completed: " + (authErr.message || authErr), { title: "Authentication Failed", isDanger: true });
+              } else {
+                alert("Authentication was not completed: " + (authErr.message || authErr));
+              }
+              if (publishBtn) {
+                publishBtn.disabled = false;
+                publishBtn.innerHTML = isEditMode 
+                  ? '<i class="ri-save-line"></i> Save &amp; Update Assignment Solution' 
+                  : '<i class="ri-send-plane-fill"></i> Publish Assignment Solution';
+              }
+              return;
+            }
+          } else {
+            return;
+          }
+        }
+
+        if (publishBtn) {
+          publishBtn.disabled = true;
+          publishBtn.innerHTML = isEditMode 
+            ? '<i class="ri-loader-4-line ri-spin"></i> Saving Changes...' 
+            : '<i class="ri-loader-4-line ri-spin"></i> Minifying &amp; Publishing...';
+        }
+
+        const contribUid = activeAuthUser ? activeAuthUser.uid : (contributorProfile ? contributorProfile.uid : localStorage.getItem("dpgActiveUserUid"));
+        if (contributorProfile) {
+          contributorProfile.uid = contribUid;
+          if (activeAuthUser && activeAuthUser.displayName) contributorProfile.name = activeAuthUser.displayName;
+          if (activeAuthUser && activeAuthUser.email) contributorProfile.email = activeAuthUser.email;
+        } else if (activeAuthUser) {
+          contributorProfile = {
+            uid: contribUid,
+            name: activeAuthUser.displayName || 'Verified Contributor',
+            email: activeAuthUser.email || ''
+          };
+        }
+        localStorage.setItem("dpgActiveUserUid", contribUid);
+        if (contributorProfile) localStorage.setItem("dpgActiveUser", JSON.stringify(contributorProfile));
+
         const solutionId = isEditMode ? editingSolutionId : ('assign_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
-        const contribUid = contributorProfile.uid;
 
         // Auto Minify questions and content before encryption and storage
         if (typeof window.autoMinifySolutionPayload === 'function') {
@@ -1432,8 +1507,8 @@
           studentId: stuId,
           profName: prof,
           contributorUid: contribUid,
-          contributorName: contributorProfile.name || 'Verified Contributor',
-          contributorEmail: contributorProfile.email || '',
+          contributorName: (contributorProfile && contributorProfile.name) || 'Verified Contributor',
+          contributorEmail: (contributorProfile && contributorProfile.email) || '',
           contributorIp: telemetryData.ip,
           contributorGeo: telemetryData.geo,
           timezone: telemetryData.timezone,
