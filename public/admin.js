@@ -5260,10 +5260,11 @@ window.downloadAdminCoverPdf = async function(id) {
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
+      a.setAttribute('data-bypass-redirect', 'true');
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.URL.revokeObjectURL(url);
+      setTimeout(() => window.URL.revokeObjectURL(url), 40000);
     } else {
       throw new Error("Server PDF export returned status " + res.status);
     }

@@ -811,9 +811,10 @@ if(uploadForm) {
                     a.style.display = "none";
                     a.href = url;
                     a.download = pdfFile.name.replace(".pdf", "_compressed.pdf");
+                    a.setAttribute('data-bypass-redirect', 'true');
                     document.body.appendChild(a);
                     a.click();
-                    window.URL.revokeObjectURL(url);
+                    setTimeout(() => window.URL.revokeObjectURL(url), 40000);
                     document.body.removeChild(a);
                     
                     setTimeout(() => {

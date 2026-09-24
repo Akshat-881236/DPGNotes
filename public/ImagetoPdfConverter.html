@@ -1686,10 +1686,11 @@
             const link = document.createElement('a');
             link.href = url;
             link.download = filename;
+            link.setAttribute('data-bypass-redirect', 'true');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            setTimeout(() => URL.revokeObjectURL(url), 40000);
 
             showMessage(`PDF downloaded as ${filename}`, 'success');
         }

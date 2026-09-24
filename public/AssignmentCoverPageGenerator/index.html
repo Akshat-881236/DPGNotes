@@ -1992,10 +1992,11 @@
           const a = document.createElement('a');
           a.href = url;
           a.download = `Assignment_${d.assignmentNo || '1'}_Cover_Page.pdf`;
+          a.setAttribute('data-bypass-redirect', 'true');
           document.body.appendChild(a);
           a.click();
           a.remove();
-          window.URL.revokeObjectURL(url);
+          setTimeout(() => window.URL.revokeObjectURL(url), 40000);
         } else {
           downloadClientPdf();
         }

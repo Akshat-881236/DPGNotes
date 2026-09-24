@@ -143,16 +143,46 @@
       const anchor = e.target.closest('a');
       if (!anchor) return;
 
+      // 1. Bypass download links, in-memory data exports, or programmatic bypasses
+      if (anchor.hasAttribute('download') || anchor.download || 
+          anchor.getAttribute('data-bypass-redirect') === 'true' || 
+          anchor.closest('[data-bypass-redirect]')) {
+        return;
+      }
+
       const href = anchor.getAttribute('href');
       if (!href) return;
 
-      // Bypass internal anchors, empty links, javascript actions, mailto/tel protocols
-      if (href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || href === '') {
+      // 2. Bypass internal anchors, empty links, javascript actions, mailto/tel protocols, and in-memory local data URLs
+      if (href.startsWith('#') || 
+          href.startsWith('javascript:') || 
+          href.startsWith('mailto:') || 
+          href.startsWith('tel:') || 
+          href.startsWith('blob:') || 
+          href.startsWith('data:') || 
+          href.startsWith('filesystem:') || 
+          href === '') {
         return;
       }
 
       try {
         const url = new URL(href, window.location.href);
+
+        // 3. Only intercept standard web navigations (http and https)
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          return;
+        }
+
+        // 4. Same origin is strictly internal
+        if (url.origin === window.location.origin) {
+          return;
+        }
+
+        // 5. Must have a valid hostname to be considered external
+        if (!url.hostname) {
+          return;
+        }
+
         const internalHosts = [
           window.location.hostname,
           'dpgnotes.web.app', 
@@ -186,9 +216,14 @@
       const activeUid = localStorage.getItem("dpgActiveUserUid");
       if (activeUid) return;
 
-      // 2. Legal Policy Pages and Contributor Creator Studios are strictly Exempt from Guest Quota
+      // 2. Legal Policy Pages, Utilities, and Contributor Creator Studios are strictly Exempt from Guest Quota
       if (window.location.pathname.includes('/legal') || 
           window.location.href.includes('legal/index.html') ||
+          window.location.pathname.includes('ImagetoPdfConverter') ||
+          window.location.pathname.includes('PdfMetaAdder') ||
+          window.location.pathname.includes('PdfMetaAnalyzer') ||
+          window.location.pathname.includes('AssignmentCoverPageGenerator') ||
+          window.location.pathname.includes('PracticalCoverPageGenerator') ||
           window.location.pathname.includes('AssignmentSolution/generate') ||
           window.location.pathname.includes('AssignmentSolution/generator') ||
           window.location.pathname.includes('PracticalSolution/generate') ||
