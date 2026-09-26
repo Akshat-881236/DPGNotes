@@ -218,18 +218,22 @@ let pendingDeleteEmail = null;
 
 function filterUsersTable() {
   const queryStr = (document.getElementById("userSearch")?.value || "").toLowerCase().trim();
-  const tierFilter = (document.getElementById("userTierFilter")?.value || "all").toLowerCase();
+  const filterVal = (document.getElementById("userTierFilter")?.value || "all").toLowerCase();
 
   let filtered = adminUsersCache || [];
-  if (tierFilter !== 'all') {
-    filtered = filtered.filter(u => u.tier === tierFilter);
+  if (filterVal === 'active') {
+    filtered = filtered.filter(u => !u.isBlocked && (!u.suspendedUntil || u.suspendedUntil <= Date.now()));
+  } else if (filterVal === 'suspended') {
+    filtered = filtered.filter(u => u.isBlocked || (u.suspendedUntil && u.suspendedUntil > Date.now()));
   }
+
   if (queryStr) {
     filtered = filtered.filter(u => 
       (u.name && u.name.toLowerCase().includes(queryStr)) ||
       (u.email && u.email.toLowerCase().includes(queryStr)) ||
       (u.id && u.id.toLowerCase().includes(queryStr)) ||
-      (u.tier && u.tier.toLowerCase().includes(queryStr))
+      (u.userType && u.userType.toLowerCase().includes(queryStr)) ||
+      (u.studentId && u.studentId.toLowerCase().includes(queryStr))
     );
   }
   renderUsersTable(filtered);
@@ -426,52 +430,10 @@ function renderUsersTable(usersList) {
 
 async function loadUsers() {
   try {
-    const [snap, docSnap, guestSnap] = await Promise.all([
+    const [snap, docSnap] = await Promise.all([
       getDocs(collection(db, "users")),
-      getDocs(collection(db, "documents")),
-      getDocs(collection(db, "guest_quotas")).catch(() => ({ forEach: () => {} }))
+      getDocs(collection(db, "documents"))
     ]);
-    
-    const usersMap = {};
-    
-    // 1. Populate from 'users' collection
-    snap.forEach(d => {
-      const data = d.data();
-      const isExplicitGuest = data.isGuest === true || data.userType === 'guest' || data.userType === 'Anonymous' || d.id.startsWith('guest_');
-      usersMap[d.id] = { id: d.id, tier: isExplicitGuest ? 'guest' : 'contributor', ...data };
-    });
-    
-    // 2. Populate legacy users from 'documents' collection
-    docSnap.forEach(d => {
-      const data = d.data();
-      if (data.userId && !usersMap[data.userId]) {
-        usersMap[data.userId] = {
-          id: data.userId,
-          name: data.userName || "Unknown",
-          email: "Legacy Contributor",
-          tier: 'contributor',
-          isBlocked: false
-        };
-      }
-    });
-
-    // 3. Populate Anonymous Guest sessions from 'guest_quotas' collection
-    guestSnap.forEach(g => {
-      const gData = g.data();
-      if (!usersMap[g.id]) {
-        const osInfo = gData.os || gData.device || 'Web Device';
-        const browserInfo = gData.browser || 'Browser';
-        usersMap[g.id] = {
-          id: g.id,
-          name: `Guest (${browserInfo} on ${osInfo})`,
-          email: gData.ip ? `IP: ${gData.ip}` : 'Anonymous Guest',
-          tier: 'guest',
-          isGuest: true,
-          isBlocked: gData.isBlocked || false,
-          guestQuotas: gData
-        };
-      }
-    });
     
     // Cache documents
     adminDocsCache = [];
@@ -479,17 +441,35 @@ async function loadUsers() {
       adminDocsCache.push({ id: d.id, ...d.data() });
     });
 
-    // Strict Contributor vs Guest classification
-    adminUsersCache = Object.values(usersMap).map(u => {
-      const userDocs = adminDocsCache.filter(d => d.userId === u.id).length;
-      const isGuest = u.tier === 'guest' || u.isGuest || u.id.startsWith('guest_') || u.userType === 'Anonymous' || u.userType === 'guest' || (!u.email || u.email === 'N/A');
-      const isContributor = !isGuest && (userDocs > 0 || u.role === 'contributor' || u.role === 'Admin' || u.userType === 'Student' || u.userType === 'Teacher' || (u.email && u.email !== 'Legacy Contributor' && !u.email.startsWith('IP:')));
-      return {
-        ...u,
-        tier: isContributor ? 'contributor' : 'guest',
-        userDocs
+    const usersMap = {};
+    
+    // 1. Populate ONLY verified contributors from 'users' collection (Exclude guests & unverified accounts)
+    snap.forEach(d => {
+      const data = d.data();
+      const isExplicitGuest = data.isGuest === true || data.userType === 'guest' || data.userType === 'Anonymous' || d.id.startsWith('guest_') || (data.email && data.email.startsWith('IP:'));
+      if (isExplicitGuest) return; // Completely exclude guests from Contributors tab
+
+      const email = (data.email || '').trim();
+      if (!email || !email.includes('@') || email === 'Legacy Contributor') return;
+
+      const isEmailVerified = data.emailVerified === true || data.isVerified === true || data.verified === true;
+      // Skip accounts explicitly flagged as unverified
+      if (data.status === 'unverified' || data.status === 'unverified_missing_auth' || !isEmailVerified) {
+        return;
+      }
+
+      const userDocs = adminDocsCache.filter(docItem => docItem.userId === d.id).length;
+      usersMap[d.id] = {
+        id: d.id,
+        tier: 'contributor',
+        isVerified: true,
+        userDocs,
+        ...data
       };
     });
+    
+    // Strict Verified Contributors classification
+    adminUsersCache = Object.values(usersMap);
     
     // Update Stats UI
     document.getElementById("statUsers").innerText = adminUsersCache.length;

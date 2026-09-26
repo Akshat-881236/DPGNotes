@@ -722,3 +722,83 @@ html[data-theme="dark"] #highRatedResourcesGrid > div {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
+/* ==========================================================================
+   MINI SEARCH ENGINE ITEMS (Default & Accessible Themes)
+   ========================================================================== */
+.mini-search-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all 0.2s ease;
+}
+.mini-search-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+.mini-search-item-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mini-search-item-meta {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+/* Light Theme Mini Search Engine Overrides (High-Contrast Academic Paper) */
+html[data-theme="light"] .mini-search-item {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+html[data-theme="light"] .mini-search-item:hover {
+  background: #f1f5f9 !important;
+  border-color: #6366f1 !important;
+}
+html[data-theme="light"] .mini-search-item-title {
+  color: #0f172a !important; /* Pure high-contrast Jet Black (16.2:1) */
+}
+html[data-theme="light"] .mini-search-item-meta {
+  color: #475569 !important; /* Slate Gray (7.8:1) */
+}
+
+/* Light Theme Native Ads Card Overrides */
+html[data-theme="light"] .dpg-native-ad-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-native-ad-card h4,
+html[data-theme="light"] .dpg-native-ad-card .dpg-ad-title {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-native-ad-card .dpg-ad-user-name,
+html[data-theme="light"] .dpg-native-ad-card span.dpg-ad-user-name {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-native-ad-card a span {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-native-ad-card .ad-media-box {
+  border: 1px solid #e2e8f0 !important;
+}
+html[data-theme="light"] .dpg-ad-header-controls a,
+html[data-theme="light"] .dpg-ad-header-controls button {
+  background: rgba(241, 245, 249, 0.95) !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+html[data-theme="light"] .dpg-ad-header-controls a:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+

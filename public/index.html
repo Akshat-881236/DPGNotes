@@ -1461,6 +1461,103 @@
       white-space: nowrap;
     }
 
+    /* Live Auto-Suggestions Dropdown for Homepage */
+    .home-suggestions-panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1050;
+      margin-top: 8px;
+      background: rgba(17, 24, 39, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      max-height: 380px;
+      overflow-y: auto;
+      text-align: left;
+      display: none;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      backdrop-filter: blur(24px);
+      box-sizing: border-box;
+    }
+    .home-suggestions-panel.active {
+      display: block !important;
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+    .home-suggestions-panel .suggestion-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.15rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .home-suggestions-panel .suggestion-item:last-child {
+      border-bottom: none;
+    }
+    .home-suggestions-panel .suggestion-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .home-suggestions-panel .suggestion-info {
+      flex: 1;
+      margin-right: 1rem;
+      min-width: 0;
+    }
+    .home-suggestions-panel .suggestion-title {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #ffffff;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .home-suggestions-panel .suggestion-meta {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .home-suggestions-panel .suggestion-arrow {
+      color: #818cf8;
+      font-size: 1.15rem;
+      transition: transform 0.2s;
+    }
+    .home-suggestions-panel .suggestion-item:hover .suggestion-arrow {
+      transform: translateX(4px);
+    }
+    .home-suggestions-panel .no-results-item {
+      padding: 1rem;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.88rem;
+    }
+    /* Light Theme Suggestions Dropdown */
+    html[data-theme="light"] .home-suggestions-panel {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1) !important;
+    }
+    html[data-theme="light"] .home-suggestions-panel .suggestion-item {
+      border-bottom: 1px solid #f1f5f9 !important;
+    }
+    html[data-theme="light"] .home-suggestions-panel .suggestion-item:hover {
+      background: #f8fafc !important;
+    }
+    html[data-theme="light"] .home-suggestions-panel .suggestion-title {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .home-suggestions-panel .suggestion-meta {
+      color: #475569 !important;
+    }
+
     /* Search Chips */
     .search-chips {
       display: flex;
@@ -2260,14 +2357,18 @@
         </p>
 
         <!-- Google-Style Live Search Shell (100% Mobile Safe) -->
-        <form id="homeSearchForm" class="home-search-shell">
-          <i class="ri-search-line" style="color:#818cf8; font-size:1.25rem;"></i>
-          <input type="text" id="homeSearchInput" placeholder="Search across BCA, DBMS, Python, COA PYQs, OS, Aptitude..." autocomplete="off" />
-          <button type="submit" class="home-search-btn">
-            <span>Search</span>
-            <i class="ri-arrow-right-line"></i>
-          </button>
-        </form>
+        <div class="home-search-container" style="position:relative; width:100%; max-width:680px; margin:0 auto 1.5rem auto;">
+          <form id="homeSearchForm" class="home-search-shell" style="margin-bottom:0;">
+            <i class="ri-search-line" style="color:#818cf8; font-size:1.25rem;"></i>
+            <input type="text" id="homeSearchInput" placeholder="Search across BCA, DBMS, Python, COA PYQs, OS, Aptitude..." autocomplete="off" />
+            <button type="submit" class="home-search-btn">
+              <span>Search</span>
+              <i class="ri-arrow-right-line"></i>
+            </button>
+          </form>
+          <!-- Live Auto-suggestions Container -->
+          <div class="home-suggestions-panel suggestions-panel" id="homeSuggestionsPanel"></div>
+        </div>
 
         <!-- Topic Chips (Vibrant, Distinct Backgrounds & Foregrounds) -->
         <div class="search-chips">
@@ -2494,6 +2595,21 @@
 
       <div id="resourceLoadingStatus" style="text-align:center; padding:2rem; color:#94a3b8; font-size:1rem;">
         <i class="ri-loader-4-line spin-icon"></i> Loading academic collections from cloud repository...
+      </div>
+
+      <!-- 0. Assignment & Practical Solutions (SOL) -->
+      <div id="gridContainer_SOL" class="vertical-grid-section" style="display:none;">
+        <div class="grid-header-bar">
+          <div class="grid-header-left">
+            <i class="ri-file-code-line" style="color:#06b6d4;"></i>
+            <h3>Assignment &amp; Practical Solutions</h3>
+            <span id="countBadge_SOL" class="badge-count">0 Items</span>
+          </div>
+          <a href="AssignmentSolution/index.html" class="btn-view-more">
+            Explore All Solutions <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+        <div id="cardsWrapper_SOL" class="row g-3"></div>
       </div>
 
       <!-- 1. Sessional Exam (SE) -->
@@ -2735,82 +2851,115 @@
           <!-- INLINE ERROR ALERT -->
           <div id="signUpErrorAlert" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
 
-          <form id="formSignUp" autocomplete="off">
-            <div class="row g-3">
-              
-              <!-- User Type -->
-              <div class="col-12 col-md-6">
-                <label class="edu-label">User Role / Classification*</label>
-                <select id="signupUserType" class="edu-input" required>
-                  <option value="">-- Select Role --</option>
-                  <option value="Student">Student</option>
-                  <option value="Teacher">Teacher / Faculty</option>
-                </select>
+          <div id="signUpStep1">
+            <form id="formSignUp" autocomplete="off">
+              <div class="row g-3">
+                
+                <!-- User Type -->
+                <div class="col-12 col-md-6">
+                  <label class="edu-label">User Role / Classification*</label>
+                  <select id="signupUserType" class="edu-input" required>
+                    <option value="">-- Select Role --</option>
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher / Faculty</option>
+                  </select>
+                </div>
+
+                <!-- Full Name -->
+                <div class="col-12 col-md-6">
+                  <label class="edu-label">Full Name*</label>
+                  <input type="text" id="signupName" class="edu-input" placeholder="e.g. Aman Sharma" required autocomplete="off" data-lpignore="true" />
+                </div>
+
+                <!-- Dynamic ID (Student ID or Employee ID) -->
+                <div class="col-12 col-md-6">
+                  <label id="lblSignupStudentId" class="edu-label">Student ID / Roll No*</label>
+                  <input type="text" id="signupStudentId" class="edu-input" placeholder="e.g. 2112345678" required autocomplete="off" data-lpignore="true" />
+                </div>
+
+                <!-- Contact Number -->
+                <div class="col-12 col-md-6">
+                  <label class="edu-label">Contact Number (Optional)</label>
+                  <input type="tel" id="signupContact" class="edu-input" placeholder="+91 98765 43210" autocomplete="off" data-lpignore="true" />
+                </div>
+
+                <!-- Email -->
+                <div class="col-12">
+                  <label class="edu-label">Valid Email Address*</label>
+                  <input type="email" id="signupEmail" class="edu-input" placeholder="name@domain.com" required autocomplete="off" data-lpignore="true" />
+                </div>
+
+                <!-- LinkedIn -->
+                <div class="col-12 col-md-6">
+                  <label class="edu-label">LinkedIn Profile URL (Optional)</label>
+                  <input type="url" id="signupLinkedin" class="edu-input" placeholder="https://linkedin.com/in/username" autocomplete="off" data-lpignore="true" />
+                </div>
+
+                <!-- GitHub -->
+                <div class="col-12 col-md-6">
+                  <label class="edu-label">GitHub Profile URL (Optional)</label>
+                  <input type="url" id="signupGithub" class="edu-input" placeholder="https://github.com/username" autocomplete="off" data-lpignore="true" />
+                </div>
+
+                <!-- Password & Confirm -->
+                <div class="col-12 col-md-6">
+                  <label class="edu-label">Password* (min 6 characters)</label>
+                  <input type="password" id="signupPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" />
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="edu-label">Confirm Password*</label>
+                  <input type="password" id="signupConfirmPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" />
+                </div>
+
               </div>
 
-              <!-- Full Name -->
-              <div class="col-12 col-md-6">
-                <label class="edu-label">Full Name*</label>
-                <input type="text" id="signupName" class="edu-input" placeholder="e.g. Aman Sharma" required autocomplete="off" data-lpignore="true" />
-              </div>
+              <p style="font-size:0.75rem; color:#64748b; margin:1rem 0;">
+                By clicking "Create Contributor Account", you acknowledge agreement with our 
+                <a href="legal/index.html#privacy" target="_blank" style="color:#818cf8; text-decoration:underline;">Privacy Policy</a>, 
+                <a href="legal/index.html#terms" target="_blank" style="color:#818cf8; text-decoration:underline;">Terms</a>, and 
+                <a href="legal/index.html#drasa" target="_blank" style="color:#818cf8; text-decoration:underline;">DRASA Regulations</a>.
+              </p>
 
-              <!-- Dynamic ID (Student ID or Employee ID) -->
-              <div class="col-12 col-md-6">
-                <label id="lblSignupStudentId" class="edu-label">Student ID / Roll No*</label>
-                <input type="text" id="signupStudentId" class="edu-input" placeholder="e.g. 2112345678" required autocomplete="off" data-lpignore="true" />
-              </div>
+              <button type="submit" id="btnSubmitSignUp" class="btn-nav-glow w-100 py-2 justify-content-center" style="border-radius:12px; font-size:0.95rem;">
+                Create Contributor Account
+              </button>
+            </form>
 
-              <!-- Contact Number -->
-              <div class="col-12 col-md-6">
-                <label class="edu-label">Contact Number (Optional)</label>
-                <input type="tel" id="signupContact" class="edu-input" placeholder="+91 98765 43210" autocomplete="off" data-lpignore="true" />
-              </div>
-
-              <!-- Email -->
-              <div class="col-12">
-                <label class="edu-label">Valid Email Address*</label>
-                <input type="email" id="signupEmail" class="edu-input" placeholder="name@domain.com" required autocomplete="off" data-lpignore="true" />
-              </div>
-
-              <!-- LinkedIn -->
-              <div class="col-12 col-md-6">
-                <label class="edu-label">LinkedIn Profile URL (Optional)</label>
-                <input type="url" id="signupLinkedin" class="edu-input" placeholder="https://linkedin.com/in/username" autocomplete="off" data-lpignore="true" />
-              </div>
-
-              <!-- GitHub -->
-              <div class="col-12 col-md-6">
-                <label class="edu-label">GitHub Profile URL (Optional)</label>
-                <input type="url" id="signupGithub" class="edu-input" placeholder="https://github.com/username" autocomplete="off" data-lpignore="true" />
-              </div>
-
-              <!-- Password & Confirm -->
-              <div class="col-12 col-md-6">
-                <label class="edu-label">Password* (min 6 characters)</label>
-                <input type="password" id="signupPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" />
-              </div>
-              <div class="col-12 col-md-6">
-                <label class="edu-label">Confirm Password*</label>
-                <input type="password" id="signupConfirmPassword" class="edu-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" />
-              </div>
-
+            <div class="text-center mt-3" style="font-size:0.85rem; color:#94a3b8;">
+              Already registered? 
+              <a href="javascript:void(0)" onclick="openSignInModal()" style="color:#818cf8; font-weight:600; text-decoration:none;">Sign In Here</a>
             </div>
+          </div>
 
-            <p style="font-size:0.75rem; color:#64748b; margin:1rem 0;">
-              By clicking "Create Contributor Account", you acknowledge agreement with our 
-              <a href="legal/index.html#privacy" target="_blank" style="color:#818cf8; text-decoration:underline;">Privacy Policy</a>, 
-              <a href="legal/index.html#terms" target="_blank" style="color:#818cf8; text-decoration:underline;">Terms</a>, and 
-              <a href="legal/index.html#drasa" target="_blank" style="color:#818cf8; text-decoration:underline;">DRASA Regulations</a>.
+          <!-- SIGNUP STEP 2: VERIFICATION PENDING -->
+          <div id="signUpVerificationStep" style="display:none; text-align:center; padding:1rem 0;">
+            <div style="font-size:2.8rem; color:#38bdf8; margin-bottom:0.6rem;">
+              <i class="ri-mail-check-line"></i>
+            </div>
+            <h4 style="color:white; font-weight:700;">Verify Your Contributor Email</h4>
+            <p style="font-size:0.88rem; color:#94a3b8; margin-bottom:1.1rem;">
+              A verification link and 6-digit code has been dispatched to <strong id="signUpVerifyEmailDisplay" style="color:#ffffff;"></strong>.
             </p>
 
-            <button type="submit" id="btnSubmitSignUp" class="btn-nav-glow w-100 py-2 justify-content-center" style="border-radius:12px; font-size:0.95rem;">
-              Create Contributor Account
-            </button>
-          </form>
+            <div id="signUpVerifyAlert" class="dpg-auth-alert-error dpg-alert-hidden mb-3" role="alert"></div>
 
-          <div class="text-center mt-3" style="font-size:0.85rem; color:#94a3b8;">
-            Already registered? 
-            <a href="javascript:void(0)" onclick="openSignInModal()" style="color:#818cf8; font-weight:600; text-decoration:none;">Sign In Here</a>
+            <div style="max-width:240px; margin:0 auto 0.8rem auto;">
+              <label class="edu-label" style="text-align:center; display:block;">Enter 6-Digit Email Code</label>
+              <input type="text" id="signUpOtpInput" class="edu-input text-center" placeholder="123456" maxlength="6" autocomplete="off" style="font-size:1.5rem; letter-spacing:6px; font-family:monospace;" />
+            </div>
+
+            <button type="button" id="btnVerifySignUpOtp" class="btn-nav-glow w-100 py-2 mb-2 justify-content-center" onclick="verifySignUpOtpCode()" style="border-radius:12px;">
+              Verify Code &amp; Activate Account
+            </button>
+
+            <button type="button" id="btnCheckSignUpEmailLink" class="btn-nav-ghost w-100 py-2 mb-2 justify-content-center" onclick="checkSignUpEmailVerified()" style="border-radius:12px;">
+              <i class="ri-refresh-line"></i> I Clicked the Link in My Email
+            </button>
+
+            <div class="d-flex justify-content-between mt-3" style="font-size:0.82rem;">
+              <a href="javascript:void(0)" onclick="resendSignUpVerificationEmail()" style="color:#818cf8; text-decoration:none;">Resend Link &amp; Code</a>
+              <a href="javascript:void(0)" onclick="backToSignUpStep1()" style="color:#94a3b8; text-decoration:none;">Back to Sign Up</a>
+            </div>
           </div>
         </div>
 

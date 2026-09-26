@@ -666,9 +666,9 @@ window.handleSidebarMiniSearch = function(val) {
   container.innerHTML = matches.map(d => {
     const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
     return `
-      <a href="${vUrl}" target="_blank" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:6px 8px; text-decoration:none; display:flex; flex-direction:column; gap:2px;">
-        <span style="font-size:0.75rem; font-weight:700; color:white; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.title || 'Untitled'}</span>
-        <span style="font-size:0.68rem; color:#94a3b8;">${d.category || 'Notes'} • ${d.userName || d.uploader || 'Contributor'}</span>
+      <a href="${vUrl}" target="_blank" class="mini-search-item">
+        <span class="mini-search-item-title">${d.title || 'Untitled'}</span>
+        <span class="mini-search-item-meta">${d.category || 'Notes'} • ${d.userName || d.uploader || 'Contributor'}</span>
       </a>
     `;
   }).join('');

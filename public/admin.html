@@ -667,14 +667,14 @@
       <section id="view-users" class="view-section active">
         <div class="section-card">
           <div class="section-header">
-            <h2 class="section-title">User & Contributor Directory <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="All user profiles are governed under our terms & conditions and DRASA suspension parameters. Click to view." onclick="window.open('legal/index.html?from=admin#terms', '_blank')"></i></h2>
+            <h2 class="section-title">Verified Contributor Directory <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="All user profiles are governed under our terms & conditions and DRASA suspension parameters. Click to view." onclick="window.open('legal/index.html?from=admin#terms', '_blank')"></i></h2>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-              <select id="userTierFilter" class="admin-input" style="width:180px; margin:0; padding:0.5rem 0.8rem;">
-                <option value="all">All Tiers</option>
-                <option value="contributor">Contributors Only</option>
-                <option value="guest">Guests Only</option>
+              <select id="userTierFilter" class="admin-input" style="width:190px; margin:0; padding:0.5rem 0.8rem;">
+                <option value="all">All Verified</option>
+                <option value="active">Active Only</option>
+                <option value="suspended">Suspended Only</option>
               </select>
-              <input type="text" id="userSearch" class="admin-input" style="width:230px; margin:0; padding:0.5rem 1rem;" placeholder="Search name, email, tier...">
+              <input type="text" id="userSearch" class="admin-input" style="width:230px; margin:0; padding:0.5rem 1rem;" placeholder="Search verified contributor...">
             </div>
           </div>
           <div style="overflow-x:auto;">

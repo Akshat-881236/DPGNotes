@@ -11,6 +11,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged
@@ -18,6 +19,7 @@ import {
 import {
   getFirestore,
   collection,
+  collectionGroup,
   doc,
   getDoc,
   setDoc,
@@ -241,7 +243,17 @@ async function handlePostOAuthLogin(user) {
         name: user.displayName || user.email.split('@')[0],
         email: user.email,
         photoURL: user.photoURL || '',
+        isVerified: true,
+        emailVerified: true,
+        status: 'active',
         createdAt: serverTimestamp()
+      }, { merge: true });
+    } else {
+      await setDoc(userDocRef, {
+        isVerified: true,
+        emailVerified: true,
+        status: 'active',
+        lastLoginAt: serverTimestamp()
       }, { merge: true });
     }
 
@@ -404,54 +416,207 @@ window.handleEmailSignUp = async function(e) {
   if (btn) { btn.disabled = true; btn.innerText = "Creating Account..."; }
 
   try {
+    // 1. Create Firebase Auth account (emailVerified starts as false)
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
-    // Compute SHA-256 hash of password for security records in Firestore
-    let passwordHash = "";
+    // 2. Dispatch Firebase verification email
     try {
-      const msgBuffer = new TextEncoder().encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    } catch (hashErr) {
-      console.warn("Password hash computation fallback:", hashErr);
+      await sendEmailVerification(user);
+    } catch (verErr) {
+      console.warn("sendEmailVerification warning:", verErr);
     }
 
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      name: name,
-      email: email,
-      userType: userType,
-      studentIdOrEmployeeId: studentId,
-      studentId: studentId,
-      contactNumber: contact,
-      linkedin: linkedin,
-      github: github,
-      passwordHash: passwordHash,
-      createdAt: serverTimestamp()
-    }, { merge: true });
-
-    fetch(apiBase + "/api/email/welcome", {
+    // 3. Dispatch backend OTP email
+    fetch(apiBase + "/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, name: name })
+      body: JSON.stringify({ email: email, purpose: "signup_verify" })
     }).catch(console.warn);
 
-    // Close modal cleanly
-    const suEl = document.getElementById("signUpModal");
-    if (suEl && window.bootstrap) {
-      const suModal = bootstrap.Modal.getInstance(suEl);
-      if (suModal) suModal.hide();
-    }
+    window._scriptPendingSignup = {
+      user,
+      name,
+      email,
+      userType,
+      studentId,
+      contact,
+      linkedin,
+      github,
+      password
+    };
 
-    window.location.href = "dashboard.html";
+    // Transition to Verification Pending Step
+    const s1 = document.getElementById("signUpStep1");
+    const s2 = document.getElementById("signUpVerificationStep");
+    const emailDisp = document.getElementById("signUpVerifyEmailDisplay");
+    if (emailDisp) emailDisp.textContent = email;
+    if (s1) s1.style.display = "none";
+    if (s2) s2.style.display = "block";
+
+    startScriptSignupPolling();
   } catch(err) {
     console.error("Email sign up error:", err);
     showScriptAuthError("signUpErrorAlert", getScriptFriendlyAuthError(err), "signupEmail");
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = "Create Contributor Account"; }
   }
+};
+
+let scriptSignupPollTimer = null;
+function startScriptSignupPolling() {
+  if (scriptSignupPollTimer) clearInterval(scriptSignupPollTimer);
+  scriptSignupPollTimer = setInterval(async () => {
+    const pending = window._scriptPendingSignup;
+    if (!pending || !pending.user) {
+      clearInterval(scriptSignupPollTimer);
+      return;
+    }
+    try {
+      await pending.user.reload();
+      if (pending.user.emailVerified) {
+        clearInterval(scriptSignupPollTimer);
+        await activateScriptVerifiedProfile(pending.user, pending);
+      }
+    } catch (e) {}
+  }, 3500);
+}
+
+async function activateScriptVerifiedProfile(user, data) {
+  if (scriptSignupPollTimer) {
+    clearInterval(scriptSignupPollTimer);
+    scriptSignupPollTimer = null;
+  }
+
+  // Compute SHA-256 hash of password for security records in Firestore
+  let passwordHash = "";
+  try {
+    const msgBuffer = new TextEncoder().encode(data.password || "");
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (hashErr) {
+    console.warn("Password hash computation fallback:", hashErr);
+  }
+
+  // ONLY save profile to Firestore after emailVerified is confirmed true!
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    name: data.name,
+    email: data.email,
+    userType: data.userType,
+    studentIdOrEmployeeId: data.studentId,
+    studentId: data.studentId,
+    contactNumber: data.contact,
+    linkedin: data.linkedin,
+    github: data.github,
+    isVerified: true,
+    emailVerified: true,
+    status: 'active',
+    passwordHash: passwordHash,
+    createdAt: serverTimestamp(),
+    verifiedAt: serverTimestamp()
+  }, { merge: true });
+
+  fetch(apiBase + "/api/email/welcome", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: data.email, name: data.name })
+  }).catch(console.warn);
+
+  window._scriptPendingSignup = null;
+
+  // Close modal cleanly
+  const suEl = document.getElementById("signUpModal");
+  if (suEl && window.bootstrap) {
+    const suModal = bootstrap.Modal.getInstance(suEl);
+    if (suModal) suModal.hide();
+  }
+
+  window.location.href = "dashboard.html";
+}
+
+window.verifySignUpOtpCode = async function() {
+  clearScriptAuthError("signUpVerifyAlert");
+  const pending = window._scriptPendingSignup;
+  if (!pending || !pending.user) {
+    showScriptAuthError("signUpVerifyAlert", "Session expired. Please start registration again.");
+    return;
+  }
+  const otp = document.getElementById("signUpOtpInput")?.value.trim() || "";
+  if (!otp || otp.length !== 6) {
+    showScriptAuthError("signUpVerifyAlert", "Please enter the 6-digit verification code sent to your email.");
+    return;
+  }
+  const btn = document.getElementById("btnVerifySignUpOtp");
+  if (btn) { btn.disabled = true; btn.innerText = "Verifying Code..."; }
+
+  try {
+    const res = await fetch(apiBase + "/api/auth/verify-signup-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pending.email, otp, uid: pending.user.uid })
+    });
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      throw new Error(result.error || "Invalid or expired verification code.");
+    }
+    await pending.user.reload();
+    await activateScriptVerifiedProfile(pending.user, pending);
+  } catch (err) {
+    showScriptAuthError("signUpVerifyAlert", err.message || "Failed to verify code.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = "Verify Code & Activate Account"; }
+  }
+};
+
+window.checkSignUpEmailVerified = async function() {
+  clearScriptAuthError("signUpVerifyAlert");
+  const pending = window._scriptPendingSignup;
+  if (!pending || !pending.user) {
+    showScriptAuthError("signUpVerifyAlert", "Session expired. Please start registration again.");
+    return;
+  }
+  const btn = document.getElementById("btnCheckSignUpEmailLink");
+  if (btn) { btn.disabled = true; btn.innerText = "Checking Verification..."; }
+
+  try {
+    await pending.user.reload();
+    if (pending.user.emailVerified) {
+      await activateScriptVerifiedProfile(pending.user, pending);
+    } else {
+      showScriptAuthError("signUpVerifyAlert", `Email not verified yet. Please click the link sent to ${pending.email} and try again.`);
+    }
+  } catch (err) {
+    showScriptAuthError("signUpVerifyAlert", "Error checking verification status. Please try again.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = `<i class="ri-refresh-line"></i> I Clicked the Link in My Email`; }
+  }
+};
+
+window.resendSignUpVerificationEmail = async function() {
+  clearScriptAuthError("signUpVerifyAlert");
+  const pending = window._scriptPendingSignup;
+  if (!pending || !pending.user) return;
+  try {
+    await sendEmailVerification(pending.user);
+    fetch(apiBase + "/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pending.email, purpose: "signup_verify" })
+    }).catch(console.warn);
+    alert(`Verification link and code re-sent to ${pending.email}.`);
+  } catch (e) {
+    showScriptAuthError("signUpVerifyAlert", "Failed to resend: " + (e.message || e));
+  }
+};
+
+window.backToSignUpStep1 = function() {
+  if (scriptSignupPollTimer) clearInterval(scriptSignupPollTimer);
+  const s1 = document.getElementById("signUpStep1");
+  const s2 = document.getElementById("signUpVerificationStep");
+  if (s1) s1.style.display = "block";
+  if (s2) s2.style.display = "none";
 };
 
 // Dynamic label switch for Sign Up
@@ -1143,17 +1308,37 @@ async function loadAcademicResources() {
   if (statusEl) statusEl.innerText = "Fetching academic resources...";
 
   try {
-    const snap = await getDocs(query(collection(db, "documents"), limit(150)));
+    const [snap, solutionsSnap] = await Promise.all([
+      getDocs(query(collection(db, "documents"), limit(150))),
+      getDocs(query(collectionGroup(db, "solutions"), limit(100))).catch(err => {
+        console.warn("Solutions fetch warning:", err);
+        return { forEach: () => {} };
+      })
+    ]);
+
     const grouped = {};
     ACADEMIC_CATEGORIES.forEach(c => { grouped[c.key] = []; });
 
+    window._allDocsCache = [];
     snap.forEach(d => {
       const data = d.data();
       const docId = d.id;
+      window._allDocsCache.push({ id: docId, ...data });
       const matchedKey = matchCategory(data.category);
       if (matchedKey && grouped[matchedKey]) {
         grouped[matchedKey].push({ id: docId, ...data });
       }
+    });
+
+    // Populate verified solutions
+    const solutions = [];
+    window._allSolutionsCache = [];
+    solutionsSnap.forEach(d => {
+      const data = d.data();
+      if (data.status === 'unverified' || data.isVerified === false) return;
+      const solObj = { id: d.id, ...data };
+      solutions.push(solObj);
+      window._allSolutionsCache.push(solObj);
     });
 
     if (statusEl) statusEl.style.display = "none";
@@ -1167,6 +1352,65 @@ async function loadAcademicResources() {
     }
 
     let totalRendered = 0;
+
+    // Render 0. Assignment & Practical Solutions (SOL)
+    const solContainer = document.getElementById("gridContainer_SOL");
+    const solCardsWrapper = document.getElementById("cardsWrapper_SOL");
+    const solCountBadge = document.getElementById("countBadge_SOL");
+
+    if (solutions.length > 0) {
+      totalRendered++;
+      if (solContainer) solContainer.style.display = "block";
+      if (solCountBadge) solCountBadge.innerText = `${solutions.length} Items`;
+
+      // Sort solutions by date desc
+      solutions.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      const displaySolutions = solutions.slice(0, 3);
+
+      if (solCardsWrapper) {
+        solCardsWrapper.innerHTML = "";
+        displaySolutions.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "col-12 col-md-6 col-lg-4";
+
+          const title = item.subjectName || item.title || item.subjectCode || "Assignment Solution";
+          const isPractical = item.type === 'practical' || (item.title && item.title.toLowerCase().includes('practical'));
+          const solTypeLabel = isPractical ? "Practical Solution" : "Assignment Solution";
+          const solTypeColor = isPractical ? "#10b981" : "#06b6d4";
+          const solIcon = isPractical ? "ri-flask-line" : "ri-file-code-line";
+          const discipline = item.course || item.discipline || (item.subjectCode ? `Code: ${item.subjectCode}` : "Computer Science");
+          const uploader = item.contributorName || item.userName || "Verified Contributor";
+          const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
+          const viewerUrl = isPractical ? `PracticalSolution/index.html?id=${encodeURIComponent(item.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(item.id)}`;
+
+          card.innerHTML = `
+            <div class="academic-res-card">
+              <div class="res-card-top">
+                <span class="res-badge-cat" style="color:${solTypeColor}; border-color:${solTypeColor}40; background:${solTypeColor}15;">
+                  <i class="${solIcon}"></i> ${solTypeLabel}
+                </span>
+                <span class="res-badge-disc">${discipline}</span>
+              </div>
+              <h4 class="res-card-title">${title}</h4>
+              <div class="res-card-meta">
+                <span><i class="ri-user-line"></i> ${uploader}</span>
+                <span><i class="ri-calendar-line"></i> ${date}</span>
+              </div>
+              <div class="res-card-actions">
+                <a href="${viewerUrl}" class="btn-res-view" style="background:linear-gradient(135deg, ${solTypeColor}, #6366f1); border:none;">
+                  <i class="ri-book-read-line"></i> Read &amp; View Solution
+                </a>
+              </div>
+            </div>
+          `;
+          solCardsWrapper.appendChild(card);
+        });
+      }
+    } else {
+      if (solContainer) solContainer.style.display = "none";
+    }
+
+    // Render other categories
     ACADEMIC_CATEGORIES.forEach(cat => {
       const container = document.getElementById(`gridContainer_${cat.key}`);
       const cardsWrapper = document.getElementById(`cardsWrapper_${cat.key}`);
@@ -1234,12 +1478,116 @@ async function loadAcademicResources() {
       statusEl.style.display = "block";
       statusEl.innerText = "No academic resources published yet in the database.";
     }
+
+    // Initialize homepage live search suggestions
+    setupHomepageLiveSearch();
   } catch(err) {
     console.error("Resource load error:", err);
     if (statusEl) {
       statusEl.innerText = "Error loading academic resources. Please refresh.";
     }
   }
+}
+
+// Setup Homepage Live Search Autocomplete (Feature Parity with dpgnotes-search-engine.html)
+function setupHomepageLiveSearch() {
+  const input = document.getElementById("homeSearchInput");
+  const panel = document.getElementById("homeSuggestionsPanel");
+  if (!input || !panel) return;
+
+  let debounceTimer = null;
+  input.addEventListener("input", (e) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const q = e.target.value.trim().toLowerCase();
+      if (!q) {
+        panel.innerHTML = "";
+        panel.classList.remove("active");
+        return;
+      }
+
+      const docMatches = (window._allDocsCache || []).filter(d => 
+        (d.title && d.title.toLowerCase().includes(q)) ||
+        (d.description && d.description.toLowerCase().includes(q)) ||
+        (d.discipline && d.discipline.toLowerCase().includes(q)) ||
+        (d.category && d.category.toLowerCase().includes(q)) ||
+        (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q)))
+      ).slice(0, 4);
+
+      const solMatches = (window._allSolutionsCache || []).filter(s => 
+        (s.subjectName && s.subjectName.toLowerCase().includes(q)) ||
+        (s.subjectCode && s.subjectCode.toLowerCase().includes(q)) ||
+        (s.title && s.title.toLowerCase().includes(q)) ||
+        (s.course && s.course.toLowerCase().includes(q)) ||
+        (s.contributorName && s.contributorName.toLowerCase().includes(q))
+      ).slice(0, 3);
+
+      const totalMatches = [...docMatches, ...solMatches];
+
+      if (totalMatches.length === 0) {
+        panel.innerHTML = '<div class="no-results-item">No matching documents or solutions found.</div>';
+      } else {
+        panel.innerHTML = "";
+        // Render document matches
+        docMatches.forEach(d => {
+          const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
+          const viewerUrl = `dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}`;
+
+          const item = document.createElement("a");
+          item.className = "suggestion-item";
+          item.href = viewerUrl;
+          item.innerHTML = `
+            <div class="suggestion-info">
+              <div class="suggestion-title">${d.title || 'Untitled Resource'}</div>
+              <div class="suggestion-meta">
+                <span><i class="ri-folder-line"></i> ${d.category || 'Notes'}</span>
+                <span><i class="ri-book-open-line"></i> ${d.discipline || 'General'}</span>
+              </div>
+            </div>
+            <i class="ri-arrow-right-line suggestion-arrow"></i>
+          `;
+          panel.appendChild(item);
+        });
+
+        // Render solution matches
+        solMatches.forEach(s => {
+          const isPractical = s.type === 'practical' || (s.title && s.title.toLowerCase().includes('practical'));
+          const viewerUrl = isPractical ? `PracticalSolution/index.html?id=${encodeURIComponent(s.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(s.id)}`;
+          const title = s.subjectName || s.title || s.subjectCode || "Assignment Solution";
+
+          const item = document.createElement("a");
+          item.className = "suggestion-item";
+          item.href = viewerUrl;
+          item.innerHTML = `
+            <div class="suggestion-info">
+              <div class="suggestion-title">${title}</div>
+              <div class="suggestion-meta">
+                <span style="color:#06b6d4;"><i class="ri-file-code-line"></i> ${isPractical ? 'Practical Solution' : 'Assignment Solution'}</span>
+                <span><i class="ri-user-line"></i> ${s.contributorName || 'Verified Contributor'}</span>
+              </div>
+            </div>
+            <i class="ri-arrow-right-line suggestion-arrow"></i>
+          `;
+          panel.appendChild(item);
+        });
+      }
+      panel.classList.add("active");
+    }, 150);
+  });
+
+  // Close suggestions on outside click
+  document.addEventListener("click", (e) => {
+    if (!input.contains(e.target) && !panel.contains(e.target)) {
+      panel.classList.remove("active");
+    }
+  });
+
+  // Close on Escape
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      panel.classList.remove("active");
+    }
+  });
 }
 
 // Global search submit

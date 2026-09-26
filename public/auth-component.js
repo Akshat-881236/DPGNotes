@@ -8,6 +8,7 @@ import {
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  sendEmailVerification,
   sendPasswordResetEmail,
   GoogleAuthProvider, 
   GithubAuthProvider,
@@ -318,54 +319,93 @@ function injectAuthDOM() {
         </button>
       </div>
 
-      <div class="dpg-auth-divider">
-        <span>Or register with academic credentials</span>
-      </div>
-
-      <form id="dpgSignUpForm" onsubmit="window.dpgHandleSignUp(event)" autocomplete="off">
-        <div class="dpg-auth-grid-2">
-          <div class="dpg-auth-form-group">
-            <label class="dpg-auth-label">Role / Classification*</label>
-            <select id="dpgSignupRole" class="dpg-auth-input" onchange="window.dpgOnRoleChange()" required>
-              <option value="Student">Student</option>
-              <option value="Teacher">Teacher / Faculty</option>
-            </select>
-          </div>
-
-          <div class="dpg-auth-form-group">
-            <label class="dpg-auth-label">Full Name*</label>
-            <input type="text" id="dpgSignupName" class="dpg-auth-input" placeholder="e.g. Aman Sharma" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupName')" />
-          </div>
-
-          <div class="dpg-auth-form-group">
-            <label id="dpgSignupIdLabel" class="dpg-auth-label">Student ID / Roll No*</label>
-            <input type="text" id="dpgSignupId" class="dpg-auth-input" placeholder="e.g. 2112345678" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupId')" />
-          </div>
-
-          <div class="dpg-auth-form-group">
-            <label class="dpg-auth-label">Email Address*</label>
-            <input type="email" id="dpgSignupEmail" class="dpg-auth-input" placeholder="name@domain.com" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupEmail')" />
-          </div>
-
-          <div class="dpg-auth-form-group">
-            <label class="dpg-auth-label">Password* (min 6 characters)</label>
-            <input type="password" id="dpgSignupPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupPassword')" />
-          </div>
-
-          <div class="dpg-auth-form-group">
-            <label class="dpg-auth-label">Confirm Password*</label>
-            <input type="password" id="dpgSignupConfirmPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupConfirmPassword')" />
-          </div>
+      <!-- SIGNUP STEP 1: CREDENTIALS INPUT -->
+      <div id="dpgSignUpStep1">
+        <div class="dpg-auth-divider">
+          <span>Or register with academic credentials</span>
         </div>
 
-        <button type="submit" id="dpgBtnSignUpSubmit" class="dpg-auth-btn-primary" style="margin-top:0.8rem;">
-          <i class="ri-user-follow-line"></i> Create Contributor Account
-        </button>
-      </form>
+        <form id="dpgSignUpForm" onsubmit="window.dpgHandleSignUp(event)" autocomplete="off">
+          <div class="dpg-auth-grid-2">
+            <div class="dpg-auth-form-group">
+              <label class="dpg-auth-label">Role / Classification*</label>
+              <select id="dpgSignupRole" class="dpg-auth-input" onchange="window.dpgOnRoleChange()" required>
+                <option value="Student">Student</option>
+                <option value="Teacher">Teacher / Faculty</option>
+              </select>
+            </div>
 
-      <div class="dpg-auth-footer">
-        Already registered? 
-        <a class="dpg-auth-link" onclick="window.openSignInModal()">Sign In Here</a>
+            <div class="dpg-auth-form-group">
+              <label class="dpg-auth-label">Full Name*</label>
+              <input type="text" id="dpgSignupName" class="dpg-auth-input" placeholder="e.g. Aman Sharma" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupName')" />
+            </div>
+
+            <div class="dpg-auth-form-group">
+              <label id="dpgSignupIdLabel" class="dpg-auth-label">Student ID / Roll No*</label>
+              <input type="text" id="dpgSignupId" class="dpg-auth-input" placeholder="e.g. 2112345678" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupId')" />
+            </div>
+
+            <div class="dpg-auth-form-group">
+              <label class="dpg-auth-label">Email Address*</label>
+              <input type="email" id="dpgSignupEmail" class="dpg-auth-input" placeholder="name@domain.com" required autocomplete="off" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupEmail')" />
+            </div>
+
+            <div class="dpg-auth-form-group">
+              <label class="dpg-auth-label">Password* (min 6 characters)</label>
+              <input type="password" id="dpgSignupPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupPassword')" />
+            </div>
+
+            <div class="dpg-auth-form-group">
+              <label class="dpg-auth-label">Confirm Password*</label>
+              <input type="password" id="dpgSignupConfirmPassword" class="dpg-auth-input" placeholder="••••••••" minlength="6" required autocomplete="new-password" data-lpignore="true" oninput="window.clearDpgError('dpgSignUpError', 'dpgSignupConfirmPassword')" />
+            </div>
+          </div>
+
+          <button type="submit" id="dpgBtnSignUpSubmit" class="dpg-auth-btn-primary" style="margin-top:0.8rem;">
+            <i class="ri-user-follow-line"></i> Create Contributor Account
+          </button>
+        </form>
+
+        <div class="dpg-auth-footer">
+          Already registered? 
+          <a class="dpg-auth-link" onclick="window.openSignInModal()">Sign In Here</a>
+        </div>
+      </div>
+
+      <!-- SIGNUP STEP 2: EMAIL VERIFICATION REQUIRED -->
+      <div id="dpgSignUpStep2" style="display:none; text-align:center; padding-top:0.5rem;">
+        <div style="font-size:2.8rem; color:#38bdf8; margin-bottom:0.5rem;">
+          <i class="ri-mail-check-line"></i>
+        </div>
+        <h3 class="dpg-auth-title" style="font-size:1.35rem;">Verify Your Email</h3>
+        <p class="dpg-auth-subtitle" style="margin-bottom:0.8rem;">
+          A verification link and 6-digit code was dispatched to <strong id="dpgVerifyTargetEmail" style="color:#ffffff;"></strong>.
+        </p>
+        <p style="font-size:0.82rem; color:#94a3b8; margin-bottom:1.1rem; line-height:1.4;">
+          To activate your DPGNotes contributor profile and grant access, verify email ownership using either option below:
+        </p>
+
+        <!-- INLINE ERROR ALERT FOR SIGNUP STEP 2 -->
+        <div id="dpgVerifyError" class="dpg-auth-alert-error dpg-alert-hidden" role="alert"></div>
+
+        <form id="dpgSignupOtpForm" onsubmit="window.dpgSubmitSignupOtp(event)" autocomplete="off">
+          <div class="dpg-auth-form-group" style="max-width:240px; margin:0 auto 0.8rem auto;">
+            <label class="dpg-auth-label" style="text-align:center;">Enter 6-Digit Email Code</label>
+            <input type="text" id="dpgSignupOtpInput" class="dpg-auth-input" placeholder="123456" maxlength="6" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:monospace; font-weight:700;" autocomplete="off" oninput="window.clearDpgError('dpgVerifyError', 'dpgSignupOtpInput')" />
+          </div>
+          <button type="submit" id="dpgBtnSignupOtpSubmit" class="dpg-auth-btn-primary" style="margin-bottom:0.6rem;">
+            <i class="ri-checkbox-circle-line"></i> Verify Code &amp; Activate Account
+          </button>
+        </form>
+
+        <button type="button" id="dpgBtnCheckVerification" class="dpg-auth-btn-secondary" style="width:100%; margin-bottom:0.6rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; padding:9px; border-radius:8px; cursor:pointer; font-size:0.85rem;" onclick="window.dpgCheckVerificationStatus()">
+          <i class="ri-refresh-line"></i> I Clicked the Link in My Email
+        </button>
+
+        <div style="display:flex; justify-content:space-between; margin-top:1rem; font-size:0.84rem;">
+          <a class="dpg-auth-link" onclick="window.dpgResendVerificationEmail()">Resend Verification Link</a>
+          <a class="dpg-auth-link" onclick="window.dpgBackToSignupStep1()" style="color:#94a3b8;">Back to Details</a>
+        </div>
       </div>
     </div>
 
@@ -678,6 +718,20 @@ window.dpgLoginGoogle = async function() {
     const provider = new GoogleAuthProvider();
     const cred = await signInWithPopup(auth, provider);
     if (cred && cred.user) {
+      try {
+        await setDoc(doc(db, "users", cred.user.uid), {
+          uid: cred.user.uid,
+          name: cred.user.displayName || "Google Contributor",
+          email: cred.user.email,
+          userType: "Student",
+          isVerified: true,
+          emailVerified: true,
+          status: 'active',
+          lastLoginAt: serverTimestamp()
+        }, { merge: true });
+      } catch (docErr) {
+        console.warn("Could not save Google profile:", docErr);
+      }
       await completeAuthSuccess(cred.user);
     }
   } catch(err) {
@@ -790,6 +844,28 @@ window.dpgHandleSignIn = async function(e) {
     const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
     pendingUser = cred.user;
     pendingEmail = resolvedEmail;
+
+    // Strict Contributor Verification Gate: emailVerified MUST be true
+    if (!cred.user.emailVerified) {
+      await cred.user.reload();
+      if (!cred.user.emailVerified) {
+        try {
+          await sendEmailVerification(cred.user);
+        } catch(e) {}
+        showDpgError("dpgSignInError", `Your email address is not verified yet. We have re-sent a verification link to ${resolvedEmail}. Please check your inbox and verify before signing in.`);
+        return;
+      }
+    }
+
+    // Ensure Firestore user document has verified status
+    try {
+      await setDoc(doc(db, "users", cred.user.uid), {
+        isVerified: true,
+        emailVerified: true,
+        status: 'active',
+        lastLoginAt: serverTimestamp()
+      }, { merge: true });
+    } catch (e) {}
 
     // Check 2FA preference in Firestore
     let twoFaEnabled = true;
@@ -944,40 +1020,45 @@ window.dpgHandleSignUp = async function(e) {
   }
 
   try {
+    // 1. Create Firebase Auth account (emailVerified starts as false)
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
-    // Compute SHA-256 hash of password for security records in Firestore
-    let passwordHash = "";
+    // 2. Dispatch official Firebase verification email link
     try {
-      const msgBuffer = new TextEncoder().encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    } catch (hashErr) {
-      console.warn("Password hash computation fallback:", hashErr);
+      await sendEmailVerification(user);
+    } catch (verErr) {
+      console.warn("sendEmailVerification warning:", verErr);
     }
 
-    // Save profile to Firestore with both studentId and studentIdOrEmployeeId
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      name: name,
-      email: email,
-      userType: role,
-      studentIdOrEmployeeId: studentId,
-      studentId: studentId,
-      passwordHash: passwordHash,
-      createdAt: serverTimestamp()
-    }, { merge: true });
-
-    // Optional welcome email
-    fetch(`${API_BASE}/api/email/welcome`, {
+    // 3. Dispatch backend OTP email for dual verification flexibility
+    fetch(`${API_BASE}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, name })
+      body: JSON.stringify({ email, purpose: "signup_verify" })
     }).catch(console.warn);
 
-    await completeAuthSuccess(user);
+    // Save pending verification state in memory
+    window._pendingSignup = {
+      user,
+      name,
+      studentId,
+      email,
+      role,
+      password
+    };
+
+    // Transition to Step 2: Verification Pending screen
+    const step1 = document.getElementById("dpgSignUpStep1");
+    const step2 = document.getElementById("dpgSignUpStep2");
+    const targetEmailEl = document.getElementById("dpgVerifyTargetEmail");
+    if (targetEmailEl) targetEmailEl.textContent = email;
+    if (step1) step1.style.display = "none";
+    if (step2) step2.style.display = "block";
+
+    // Auto-poll verification status every 3.5 seconds
+    window.startSignupVerificationPolling();
+
   } catch(err) {
     console.error("Sign up failed:", err);
     const friendlyMsg = getFriendlyAuthError(err);
@@ -988,6 +1069,173 @@ window.dpgHandleSignUp = async function(e) {
       btn.innerHTML = `<i class="ri-user-follow-line"></i> Create Contributor Account`;
     }
   }
+};
+
+let signupPollTimer = null;
+window.startSignupVerificationPolling = function() {
+  if (signupPollTimer) clearInterval(signupPollTimer);
+  signupPollTimer = setInterval(async () => {
+    const pending = window._pendingSignup;
+    if (!pending || !pending.user) {
+      clearInterval(signupPollTimer);
+      return;
+    }
+    try {
+      await pending.user.reload();
+      if (pending.user.emailVerified) {
+        clearInterval(signupPollTimer);
+        await window.activateVerifiedContributor(pending.user, pending);
+      }
+    } catch (e) {
+      // Ignored during passive poll
+    }
+  }, 3500);
+};
+
+window.activateVerifiedContributor = async function(user, data) {
+  if (signupPollTimer) {
+    clearInterval(signupPollTimer);
+    signupPollTimer = null;
+  }
+
+  // Compute SHA-256 hash of password for security records in Firestore
+  let passwordHash = "";
+  try {
+    const msgBuffer = new TextEncoder().encode(data.password || "");
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (hashErr) {
+    console.warn("Password hash computation fallback:", hashErr);
+  }
+
+  // Save profile to Firestore ONLY after emailVerified is confirmed true!
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    name: data.name,
+    email: data.email,
+    userType: data.role,
+    studentIdOrEmployeeId: data.studentId,
+    studentId: data.studentId,
+    isVerified: true,
+    emailVerified: true,
+    status: 'active',
+    passwordHash: passwordHash,
+    createdAt: serverTimestamp(),
+    verifiedAt: serverTimestamp()
+  }, { merge: true });
+
+  // Optional welcome email
+  fetch(`${API_BASE}/api/email/welcome`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: data.email, name: data.name })
+  }).catch(console.warn);
+
+  window._pendingSignup = null;
+  await completeAuthSuccess(user);
+};
+
+window.dpgSubmitSignupOtp = async function(e) {
+  e.preventDefault();
+  clearDpgError("dpgVerifyError");
+  const pending = window._pendingSignup;
+  if (!pending || !pending.user) {
+    showDpgError("dpgVerifyError", "Session expired. Please start registration again.");
+    return;
+  }
+  const otp = document.getElementById("dpgSignupOtpInput")?.value.trim() || "";
+  if (!otp || otp.length !== 6) {
+    showDpgError("dpgVerifyError", "Please enter the 6-digit code sent to your email.", "dpgSignupOtpInput");
+    return;
+  }
+
+  const btn = document.getElementById("dpgBtnSignupOtpSubmit");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Verifying...`;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/verify-signup-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pending.email, otp, uid: pending.user.uid })
+    });
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      throw new Error(result.error || "Invalid or expired verification code.");
+    }
+
+    await pending.user.reload();
+    await window.activateVerifiedContributor(pending.user, pending);
+  } catch (err) {
+    console.error("Signup OTP verify error:", err);
+    showDpgError("dpgVerifyError", err.message || "Failed to verify code.", "dpgSignupOtpInput");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-checkbox-circle-line"></i> Verify Code &amp; Activate Account`;
+    }
+  }
+};
+
+window.dpgCheckVerificationStatus = async function() {
+  clearDpgError("dpgVerifyError");
+  const pending = window._pendingSignup;
+  if (!pending || !pending.user) {
+    showDpgError("dpgVerifyError", "Session expired. Please sign in or register again.");
+    return;
+  }
+  const btn = document.getElementById("dpgBtnCheckVerification");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Checking Verification...`;
+  }
+
+  try {
+    await pending.user.reload();
+    if (pending.user.emailVerified) {
+      await window.activateVerifiedContributor(pending.user, pending);
+    } else {
+      showDpgError("dpgVerifyError", `Email not verified yet. Please click the link sent to ${pending.email} and try again.`);
+    }
+  } catch (err) {
+    console.error("Verification check error:", err);
+    showDpgError("dpgVerifyError", "Error checking verification status. Please try again.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-refresh-line"></i> I Clicked the Link in My Email`;
+    }
+  }
+};
+
+window.dpgResendVerificationEmail = async function() {
+  clearDpgError("dpgVerifyError");
+  const pending = window._pendingSignup;
+  if (!pending || !pending.user) return;
+
+  try {
+    await sendEmailVerification(pending.user);
+    fetch(`${API_BASE}/api/auth/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pending.email, purpose: "signup_verify" })
+    }).catch(console.warn);
+
+    alert(`Verification link and code re-dispatched to ${pending.email}. Please check your inbox and spam folder.`);
+  } catch (e) {
+    showDpgError("dpgVerifyError", "Failed to resend verification email: " + (e.message || e));
+  }
+};
+
+window.dpgBackToSignupStep1 = function() {
+  if (signupPollTimer) clearInterval(signupPollTimer);
+  const step1 = document.getElementById("dpgSignUpStep1");
+  const step2 = document.getElementById("dpgSignUpStep2");
+  if (step1) step1.style.display = "block";
+  if (step2) step2.style.display = "none";
 };
 
 // Forgot Password Handler

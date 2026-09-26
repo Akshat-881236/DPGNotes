@@ -349,7 +349,7 @@
       return `
         <a href="${profileUrl}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:inherit; cursor:pointer;" title="View ${ad.userName || 'Advertiser'}'s Profile">
           <img src="${ad.userAvatar || 'ANH.png'}" style="width:${imgSize}; height:${imgSize}; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.25); flex-shrink:0; transition:transform 0.2s;" onmouseenter="this.style.transform='scale(1.15)'" onmouseleave="this.style.transform='scale(1)'">
-          <span style="font-size:${fontSize}; font-weight:700; color:white; transition:color 0.2s; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" onmouseenter="this.style.color='#a5b4fc'" onmouseleave="this.style.color='white'">${ad.userName || 'Advertiser'}</span>
+          <span class="dpg-ad-user-name" style="font-size:${fontSize}; font-weight:700; transition:color 0.2s; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.userName || 'Advertiser'}</span>
         </a>
       `;
     }    // Apply Area-Specific UI Layout Variants
@@ -417,17 +417,18 @@
         <a href="${finalTargetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>
       `;
     } else if (variant === "sidebar" || variant === "image") {
+      const isLight = typeof document !== 'undefined' && document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
       card.style.cssText = `
         position: relative;
         width: 100%;
-        background: rgba(15, 23, 42, 0.95);
-        border: 1px solid rgba(245, 158, 11, 0.3);
+        background: ${isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.95)'};
+        border: 1px solid ${isLight ? '#cbd5e1' : 'rgba(245, 158, 11, 0.3)'};
         border-radius: 12px;
         padding: 0.75rem;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        box-shadow: ${isLight ? '0 4px 16px rgba(0, 0, 0, 0.06)' : '0 6px 20px rgba(0, 0, 0, 0.5)'};
         margin: 0.75rem 0;
         box-sizing: border-box;
-        color: white;
+        color: ${isLight ? '#0f172a' : 'white'};
         font-family: inherit;
         overflow: hidden;
       `;
@@ -444,7 +445,7 @@
           <div id="adPlayerDiv_${containerId}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
         </div>
 
-        <h4 style="font-size:0.84rem; font-weight:700; color:white; margin-bottom:4px; line-height:1.2; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.title || 'Promoted Content'}</h4>
+        <h4 class="dpg-ad-title" style="font-size:0.84rem; font-weight:700; margin-bottom:4px; line-height:1.2; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.title || 'Promoted Content'}</h4>
         <a href="${finalTargetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
     } else if (variant === "cover_video" || variant === "cover_image") {
