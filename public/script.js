@@ -10,6 +10,7 @@ import {
   GithubAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
+  signInWithCustomToken,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -50,7 +51,9 @@ const db = getFirestore(app);
 window.dpgDb = db;
 window.dpgAuth = auth;
 
-const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined') 
+  ? window.API_BASE_URL 
+  : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://dpgnotes.onrender.com');
 
 // 8 Academic Classifications Definition (Image 3 Reference)
 const ACADEMIC_CATEGORIES = [
@@ -147,6 +150,11 @@ let pendingRecoveryEmailScript = "";
 // AUTH STATE LISTENER
 // ============================================================================
 onAuthStateChanged(auth, async (user) => {
+  if (user && !user.emailVerified) {
+    currentUser = null;
+    updateNavbarAuth(null);
+    return;
+  }
   currentUser = user;
   updateNavbarAuth(user);
 });
@@ -435,29 +443,30 @@ window.handleEmailSignUp = async function(e) {
     console.warn("Pre-signup check error:", chkErr);
   }
 
-  if (btn) { btn.innerText = "Creating Account..."; }
+  if (btn) { btn.innerText = "Validating Email & Account..."; }
 
   try {
-    // 2. Create Firebase Auth account (emailVerified starts as false)
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const user = cred.user;
-
-    // 3. Dispatch Firebase verification email
-    try {
-      await sendEmailVerification(user);
-    } catch (verErr) {
-      console.warn("sendEmailVerification warning:", verErr);
-    }
-
-    // 4. Dispatch backend OTP email with 1-time verification link
-    fetch(apiBase + "/api/auth/send-otp", {
+    // 2. Dispatch backend verification request (Zero-Creation Policy: NO Firebase Auth account created yet!)
+    // Strictly validates email format, blocks disposable burner domains, and verifies live DNS MX records
+    const startRes = await fetch(apiBase + "/api/auth/start-signup-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, purpose: "signup_verify", uid: user.uid })
-    }).catch(console.warn);
+      body: JSON.stringify({
+        name,
+        studentId,
+        role: userType,
+        email,
+        password
+      })
+    });
+    const startData = await startRes.json();
+
+    if (!startRes.ok || !startData.success) {
+      showScriptAuthError("signUpErrorAlert", startData.error || "Failed to start registration verification. Please check your email.", "signupEmail");
+      return;
+    }
 
     window._scriptPendingSignup = {
-      user,
       name,
       email,
       userType,
@@ -476,6 +485,10 @@ window.handleEmailSignUp = async function(e) {
     if (s1) s1.style.display = "none";
     if (s2) s2.style.display = "block";
 
+    // Clear any previous OTP input
+    const otpInput = document.getElementById("signUpOtpInput");
+    if (otpInput) otpInput.value = "";
+
     startScriptSignupPolling();
   } catch(err) {
     console.error("Email sign up error:", err);
@@ -486,100 +499,59 @@ window.handleEmailSignUp = async function(e) {
 };
 
 let scriptSignupPollTimer = null;
-let scriptSignupRealtimeUnsub = null;
 
 function startScriptSignupPolling() {
   if (scriptSignupPollTimer) clearInterval(scriptSignupPollTimer);
-  if (scriptSignupRealtimeUnsub) { scriptSignupRealtimeUnsub(); scriptSignupRealtimeUnsub = null; }
 
   const pending = window._scriptPendingSignup;
-  if (!pending || !pending.user) return;
+  if (!pending || !pending.email) return;
 
-  // Real-time Firestore listener: instantly detects when verification link is clicked
-  try {
-    scriptSignupRealtimeUnsub = onSnapshot(doc(db, "users", pending.user.uid), async (docSnap) => {
-      if (docSnap.exists()) {
-        const uData = docSnap.data();
-        if (uData.emailVerified || uData.isVerified) {
-          if (scriptSignupRealtimeUnsub) { scriptSignupRealtimeUnsub(); scriptSignupRealtimeUnsub = null; }
-          if (scriptSignupPollTimer) { clearInterval(scriptSignupPollTimer); scriptSignupPollTimer = null; }
-          await pending.user.reload();
-          await activateScriptVerifiedProfile(pending.user, pending);
-        }
-      }
-    });
-  } catch (snapErr) {
-    console.warn("Firestore snapshot notice:", snapErr);
-  }
-
-  // Active polling fallback
+  // Real-time backend status polling: instantly detects when verification link is clicked
   scriptSignupPollTimer = setInterval(async () => {
     const p = window._scriptPendingSignup;
-    if (!p || !p.user) {
+    if (!p || !p.email) {
       clearInterval(scriptSignupPollTimer);
       return;
     }
     try {
-      await p.user.reload();
-      if (p.user.emailVerified) {
+      const res = await fetch(apiBase + "/api/auth/check-pending-signup-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: p.email })
+      });
+      const data = await res.json();
+      if (data && data.verified && data.customToken) {
         clearInterval(scriptSignupPollTimer);
-        if (scriptSignupRealtimeUnsub) { scriptSignupRealtimeUnsub(); scriptSignupRealtimeUnsub = null; }
-        await activateScriptVerifiedProfile(p.user, p);
+        scriptSignupPollTimer = null;
+        await activateScriptVerifiedProfile(data.customToken, p);
       }
-    } catch (e) {}
-  }, 3500);
+    } catch (e) {
+      // Passive poll error ignored
+    }
+  }, 3000);
 }
 
-async function activateScriptVerifiedProfile(user, data) {
+async function activateScriptVerifiedProfile(customToken, data) {
   if (scriptSignupPollTimer) {
     clearInterval(scriptSignupPollTimer);
     scriptSignupPollTimer = null;
   }
-  if (scriptSignupRealtimeUnsub) {
-    scriptSignupRealtimeUnsub();
-    scriptSignupRealtimeUnsub = null;
-  }
 
-  // Compute SHA-256 hash of password for security records in Firestore
-  let passwordHash = "";
-  try {
-    const msgBuffer = new TextEncoder().encode(data.password || "");
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  } catch (hashErr) {
-    console.warn("Password hash computation fallback:", hashErr);
+  // Sign in to Firebase Auth using custom token
+  if (customToken) {
+    try {
+      const cred = await signInWithCustomToken(auth, customToken);
+      const user = cred.user;
+      localStorage.setItem("dpgActiveUserUid", user.uid);
+      localStorage.setItem("dpgActiveUser", JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: data.name || (user.email ? user.email.split('@')[0] : 'Contributor')
+      }));
+    } catch (tokErr) {
+      console.warn("Custom token sign-in notice:", tokErr);
+    }
   }
-
-  // ONLY save profile to Firestore after emailVerified is confirmed true!
-  try {
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      name: data.name,
-      email: data.email,
-      userType: data.userType,
-      studentIdOrEmployeeId: data.studentId,
-      studentId: data.studentId,
-      contactNumber: data.contact,
-      linkedin: data.linkedin,
-      github: data.github,
-      isVerified: true,
-      emailVerified: true,
-      isEmailVerified: true,
-      status: 'active',
-      passwordHash: passwordHash,
-      createdAt: serverTimestamp(),
-      verifiedAt: serverTimestamp()
-    }, { merge: true });
-  } catch (docErr) {
-    console.warn("Error creating user profile document:", docErr);
-  }
-
-  fetch(apiBase + "/api/email/welcome", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: data.email, name: data.name })
-  }).catch(console.warn);
 
   window._scriptPendingSignup = null;
 
@@ -589,14 +561,6 @@ async function activateScriptVerifiedProfile(user, data) {
     const suModal = bootstrap.Modal.getInstance(suEl);
     if (suModal) suModal.hide();
   }
-
-  // Save session in localStorage
-  localStorage.setItem("dpgActiveUserUid", user.uid);
-  localStorage.setItem("dpgActiveUser", JSON.stringify({
-    uid: user.uid,
-    email: user.email,
-    displayName: data.name || user.email.split('@')[0]
-  }));
 
   // Clear guest quota locks
   localStorage.removeItem("dpg_quota_locked");
@@ -620,8 +584,8 @@ window.onScriptSignUpOtpInput = function(inp) {
 window.verifySignUpOtpCode = async function() {
   clearScriptAuthError("signUpVerifyAlert");
   const pending = window._scriptPendingSignup;
-  if (!pending || !pending.user) {
-    showScriptAuthError("signUpVerifyAlert", "Session expired. Please start registration again.");
+  if (!pending || !pending.email) {
+    showScriptAuthError("signUpVerifyAlert", "Registration session expired. Please start registration again.");
     return;
   }
   const otp = document.getElementById("signUpOtpInput")?.value.trim() || "";
@@ -633,17 +597,18 @@ window.verifySignUpOtpCode = async function() {
   if (btn) { btn.disabled = true; btn.innerText = "Verifying Code..."; }
 
   try {
-    const res = await fetch(apiBase + "/api/auth/verify-signup-otp", {
+    // Backend verifies 6-digit OTP, creates Firebase Auth user & Firestore profile, and returns customToken
+    const res = await fetch(apiBase + "/api/auth/complete-signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pending.email, otp, uid: pending.user.uid })
+      body: JSON.stringify({ email: pending.email, otp })
     });
     const result = await res.json();
     if (!res.ok || !result.success) {
       throw new Error(result.error || "Invalid or expired verification code.");
     }
-    await pending.user.reload();
-    await activateScriptVerifiedProfile(pending.user, pending);
+
+    await activateScriptVerifiedProfile(result.customToken, pending);
   } catch (err) {
     showScriptAuthError("signUpVerifyAlert", err.message || "Failed to verify code.");
   } finally {
@@ -654,17 +619,22 @@ window.verifySignUpOtpCode = async function() {
 window.checkSignUpEmailVerified = async function() {
   clearScriptAuthError("signUpVerifyAlert");
   const pending = window._scriptPendingSignup;
-  if (!pending || !pending.user) {
-    showScriptAuthError("signUpVerifyAlert", "Session expired. Please start registration again.");
+  if (!pending || !pending.email) {
+    showScriptAuthError("signUpVerifyAlert", "Registration session expired. Please start registration again.");
     return;
   }
   const btn = document.getElementById("btnCheckSignUpEmailLink");
   if (btn) { btn.disabled = true; btn.innerText = "Checking Verification..."; }
 
   try {
-    await pending.user.reload();
-    if (pending.user.emailVerified) {
-      await activateScriptVerifiedProfile(pending.user, pending);
+    const res = await fetch(apiBase + "/api/auth/check-pending-signup-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pending.email })
+    });
+    const result = await res.json();
+    if (result && result.verified && result.customToken) {
+      await activateScriptVerifiedProfile(result.customToken, pending);
     } else {
       showScriptAuthError("signUpVerifyAlert", `Email not verified yet. Please click the link sent to ${pending.email} and try again.`);
     }
@@ -678,14 +648,17 @@ window.checkSignUpEmailVerified = async function() {
 window.resendSignUpVerificationEmail = async function() {
   clearScriptAuthError("signUpVerifyAlert");
   const pending = window._scriptPendingSignup;
-  if (!pending || !pending.user) return;
+  if (!pending || !pending.email) return;
   try {
-    await sendEmailVerification(pending.user);
-    fetch(apiBase + "/api/auth/send-otp", {
+    const res = await fetch(apiBase + "/api/auth/start-signup-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pending.email, purpose: "signup_verify", uid: pending.user.uid })
-    }).catch(console.warn);
+      body: JSON.stringify(pending)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed to resend verification email.");
+    }
     alert(`Verification link and code re-sent to ${pending.email}.`);
   } catch (e) {
     showScriptAuthError("signUpVerifyAlert", "Failed to resend: " + (e.message || e));
@@ -798,6 +771,17 @@ window.handlePasswordSignIn = async function(e) {
 
   try {
     const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
+
+    // Strict Contributor Verification Gate: emailVerified MUST be true
+    if (!cred.user.emailVerified) {
+      await cred.user.reload();
+      if (!cred.user.emailVerified) {
+        await signOut(auth);
+        showScriptAuthError("signInErrorAlert", `Your email address is not verified yet. Please check your inbox and verify your email before signing in.`);
+        return;
+      }
+    }
+
     pendingSignInUser = cred.user;
     pendingSignInEmail = resolvedEmail;
 

@@ -16,20 +16,25 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Check for authToken in URL parameters (from email verification link)
-(async function handleCustomAuthToken() {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authToken = urlParams.get("authToken");
-    if (authToken) {
+let customAuthTokenPromise = null;
+const urlParams = new URLSearchParams(window.location.search);
+const authToken = urlParams.get("authToken");
+if (authToken) {
+  const statusTxt = document.getElementById("authStatusText");
+  const subTxt = document.getElementById("authSubText");
+  if (statusTxt) statusTxt.innerText = "Authenticating Contributor...";
+  if (subTxt) subTxt.innerText = "Verifying email token and activating contributor session...";
+  customAuthTokenPromise = (async function() {
+    try {
       await signInWithCustomToken(auth, authToken);
       const url = new URL(window.location.href);
       url.searchParams.delete("authToken");
       window.history.replaceState({}, document.title, url.toString());
+    } catch (tokErr) {
+      console.warn("Failed to sign in with verification custom token:", tokErr);
     }
-  } catch (tokErr) {
-    console.warn("Failed to sign in with verification custom token:", tokErr);
-  }
-})();
+  })();
+}
 
 let currentUser = null;
 
@@ -221,7 +226,23 @@ if (savedTheme) applyTheme(savedTheme);
 // AUTH STATE & BACKEND HOOKS
 // =========================================
 onAuthStateChanged(auth, async (user) => {
+  if (customAuthTokenPromise) {
+    try {
+      await customAuthTokenPromise;
+    } catch(e) {}
+    customAuthTokenPromise = null;
+    user = auth.currentUser;
+  }
+
   if (user) {
+    // Strict Contributor Verification Gate: NEVER allow unverified sessions in dashboard
+    if (!user.emailVerified) {
+      console.warn("Unverified session detected in dashboard. Signing out.");
+      await signOut(auth);
+      window.location.href = "index.html?unverified=1";
+      return;
+    }
+
     currentUser = user;
     localStorage.setItem("dpgActiveUserUid", user.uid);
     localStorage.setItem("dpgActiveUserEmail", user.email || "");
@@ -505,7 +526,9 @@ async function loadProfile() {
             <i class="ri-checkbox-circle-fill" style="font-size:1.3rem; color:#10b981;"></i> Contributor Email Successfully Verified!
           </div>
           <p style="margin:0; font-size:0.88rem; color:#f1f5f9;">
-            Welcome to DPGNotes! Please select your <strong>User Type (Student or Teacher)</strong> and provide your <strong>Student / Employee ID</strong> below to activate your account and unlock all dashboard features.
+            ${isProfileIncomplete 
+              ? 'Welcome to DPGNotes! Please select your <strong>User Type (Student or Teacher)</strong> and provide your <strong>Student / Employee ID</strong> below to activate your account and unlock all dashboard features.' 
+              : 'Welcome to the DPGNotes Contributor Network! Your email is verified and your account is active. Complete your academic bio and settings below, or start publishing and sharing study materials!'}
           </p>`;
         const formEl = document.getElementById("settingsForm");
         if (formEl) st.insertBefore(verifiedBanner, formEl);

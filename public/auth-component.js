@@ -8,8 +8,10 @@ import {
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  signInWithCustomToken,
   sendEmailVerification,
   sendPasswordResetEmail,
+  signOut,
   GoogleAuthProvider, 
   GithubAuthProvider,
   onAuthStateChanged
@@ -49,7 +51,7 @@ const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? i
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const API_BASE = (window.API_BASE_URL || "").replace(/\/+$/, "");
+const API_BASE = (window.API_BASE_URL || (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://dpgnotes.onrender.com')).replace(/\/+$/, "");
 
 // State
 let pendingUser = null;
@@ -1043,31 +1045,26 @@ window.dpgHandleSignUp = async function(e) {
   }
 
   if (btn) {
-    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Creating Account...`;
+    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Validating Email & Account...`;
   }
 
   try {
-    // 2. Create Firebase Auth account (emailVerified starts as false)
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const user = cred.user;
-
-    // 3. Dispatch official Firebase verification email link
-    try {
-      await sendEmailVerification(user);
-    } catch (verErr) {
-      console.warn("sendEmailVerification warning:", verErr);
-    }
-
-    // 4. Dispatch backend OTP email with 1-time verification link
-    fetch(`${API_BASE}/api/auth/send-otp`, {
+    // 2. Dispatch backend verification request (Zero-Creation Policy: NO Firebase Auth account created yet!)
+    // Strictly validates email format, blocks disposable burner domains, and verifies live DNS MX records
+    const startRes = await fetch(`${API_BASE}/api/auth/start-signup-verification`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, purpose: "signup_verify", uid: user.uid })
-    }).catch(console.warn);
+      body: JSON.stringify({ name, studentId, role, email, password })
+    });
+    const startData = await startRes.json();
 
-    // Save pending verification state in memory
+    if (!startRes.ok || !startData.success) {
+      showDpgError("dpgSignUpError", startData.error || "Failed to start registration verification. Please check your email.", "dpgSignupEmail");
+      return;
+    }
+
+    // Save pending registration state in memory (Zero Firebase Auth or Firestore accounts exist yet!)
     window._pendingSignup = {
-      user,
       name,
       studentId,
       email,
@@ -1082,6 +1079,10 @@ window.dpgHandleSignUp = async function(e) {
     if (targetEmailEl) targetEmailEl.textContent = email;
     if (step1) step1.style.display = "none";
     if (step2) step2.style.display = "block";
+
+    // Clear previous OTP code input
+    const otpInput = document.getElementById("dpgSignupOtpInput");
+    if (otpInput) otpInput.value = "";
 
     // Auto-listen to verification in real-time (link click & polling)
     window.startSignupVerificationPolling();
@@ -1099,113 +1100,64 @@ window.dpgHandleSignUp = async function(e) {
 };
 
 let signupPollTimer = null;
-let signupRealtimeUnsub = null;
 
 window.startSignupVerificationPolling = function() {
   if (signupPollTimer) clearInterval(signupPollTimer);
-  if (signupRealtimeUnsub) { signupRealtimeUnsub(); signupRealtimeUnsub = null; }
 
   const pending = window._pendingSignup;
-  if (!pending || !pending.user) return;
+  if (!pending || !pending.email) return;
 
-  // Real-time Firestore listener: instantly detects when verification link is clicked
-  try {
-    signupRealtimeUnsub = onSnapshot(doc(db, "users", pending.user.uid), async (docSnap) => {
-      if (docSnap.exists()) {
-        const uData = docSnap.data();
-        if (uData.emailVerified || uData.isVerified) {
-          if (signupRealtimeUnsub) { signupRealtimeUnsub(); signupRealtimeUnsub = null; }
-          if (signupPollTimer) { clearInterval(signupPollTimer); signupPollTimer = null; }
-          await pending.user.reload();
-          await window.activateVerifiedContributor(pending.user, pending);
-        }
-      }
-    });
-  } catch (snapErr) {
-    console.warn("Firestore snapshot notice:", snapErr);
-  }
-
-  // Active Firebase Auth polling fallback every 3.5 seconds
+  // Real-time backend status polling: instantly detects when verification link is clicked
   signupPollTimer = setInterval(async () => {
     const p = window._pendingSignup;
-    if (!p || !p.user) {
+    if (!p || !p.email) {
       clearInterval(signupPollTimer);
       return;
     }
     try {
-      await p.user.reload();
-      if (p.user.emailVerified) {
+      const res = await fetch(`${API_BASE}/api/auth/check-pending-signup-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: p.email })
+      });
+      const data = await res.json();
+      if (data && data.verified && data.customToken) {
         clearInterval(signupPollTimer);
-        if (signupRealtimeUnsub) { signupRealtimeUnsub(); signupRealtimeUnsub = null; }
-        await window.activateVerifiedContributor(p.user, p);
+        signupPollTimer = null;
+        await window.activateVerifiedContributor(data.customToken, p);
       }
     } catch (e) {
-      // Ignored during passive poll
+      // Passive poll error ignored
     }
-  }, 3500);
+  }, 3000);
 };
 
-window.activateVerifiedContributor = async function(user, data) {
+window.activateVerifiedContributor = async function(customToken, data) {
   if (signupPollTimer) {
     clearInterval(signupPollTimer);
     signupPollTimer = null;
   }
-  if (signupRealtimeUnsub) {
-    signupRealtimeUnsub();
-    signupRealtimeUnsub = null;
-  }
 
-  // Compute SHA-256 hash of password for security records in Firestore
-  let passwordHash = "";
-  try {
-    const msgBuffer = new TextEncoder().encode(data.password || "");
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  } catch (hashErr) {
-    console.warn("Password hash computation fallback:", hashErr);
+  // Sign in to Firebase Auth using custom token
+  if (customToken) {
+    try {
+      const cred = await signInWithCustomToken(auth, customToken);
+      const user = cred.user;
+      localStorage.setItem("dpgActiveUserUid", user.uid);
+      localStorage.setItem("dpgActiveUser", JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: data.name || (user.email ? user.email.split('@')[0] : 'Contributor')
+      }));
+    } catch (tokenErr) {
+      console.warn("Custom token sign-in notice:", tokenErr);
+    }
   }
-
-  // Save profile to Firestore ONLY after emailVerified is confirmed true!
-  try {
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      name: data.name,
-      email: data.email,
-      userType: data.role,
-      studentIdOrEmployeeId: data.studentId,
-      studentId: data.studentId,
-      isVerified: true,
-      emailVerified: true,
-      isEmailVerified: true,
-      status: 'active',
-      passwordHash: passwordHash,
-      createdAt: serverTimestamp(),
-      verifiedAt: serverTimestamp()
-    }, { merge: true });
-  } catch (docErr) {
-    console.warn("Error creating verified user document:", docErr);
-  }
-
-  // Optional welcome email
-  fetch(`${API_BASE}/api/email/welcome`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: data.email, name: data.name })
-  }).catch(console.warn);
 
   window._pendingSignup = null;
 
   // Verification modal auto disappears
   window.closeAuthModals();
-
-  // Save active session
-  localStorage.setItem("dpgActiveUserUid", user.uid);
-  localStorage.setItem("dpgActiveUser", JSON.stringify({
-    uid: user.uid,
-    email: user.email,
-    displayName: data.name || user.email.split('@')[0]
-  }));
 
   // Clear guest quota locks
   localStorage.removeItem("dpg_quota_locked");
@@ -1230,8 +1182,8 @@ window.dpgSubmitSignupOtp = async function(e) {
   if (e && typeof e.preventDefault === "function") e.preventDefault();
   clearDpgError("dpgVerifyError");
   const pending = window._pendingSignup;
-  if (!pending || !pending.user) {
-    showDpgError("dpgVerifyError", "Session expired. Please start registration again.");
+  if (!pending || !pending.email) {
+    showDpgError("dpgVerifyError", "Registration session expired. Please start registration again.");
     return;
   }
   const otp = document.getElementById("dpgSignupOtpInput")?.value.trim() || "";
@@ -1247,18 +1199,18 @@ window.dpgSubmitSignupOtp = async function(e) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/verify-signup-otp`, {
+    // Backend verifies 6-digit OTP, creates Firebase Auth user & Firestore profile, and returns customToken
+    const res = await fetch(`${API_BASE}/api/auth/complete-signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pending.email, otp, uid: pending.user.uid })
+      body: JSON.stringify({ email: pending.email, otp })
     });
     const result = await res.json();
     if (!res.ok || !result.success) {
       throw new Error(result.error || "Invalid or expired verification code.");
     }
 
-    await pending.user.reload();
-    await window.activateVerifiedContributor(pending.user, pending);
+    await window.activateVerifiedContributor(result.customToken, pending);
   } catch (err) {
     console.error("Signup OTP verify error:", err);
     showDpgError("dpgVerifyError", err.message || "Failed to verify code.", "dpgSignupOtpInput");
@@ -1273,8 +1225,8 @@ window.dpgSubmitSignupOtp = async function(e) {
 window.dpgCheckVerificationStatus = async function() {
   clearDpgError("dpgVerifyError");
   const pending = window._pendingSignup;
-  if (!pending || !pending.user) {
-    showDpgError("dpgVerifyError", "Session expired. Please sign in or register again.");
+  if (!pending || !pending.email) {
+    showDpgError("dpgVerifyError", "Registration session expired. Please register again.");
     return;
   }
   const btn = document.getElementById("dpgBtnCheckVerification");
@@ -1284,11 +1236,16 @@ window.dpgCheckVerificationStatus = async function() {
   }
 
   try {
-    await pending.user.reload();
-    if (pending.user.emailVerified) {
-      await window.activateVerifiedContributor(pending.user, pending);
+    const res = await fetch(`${API_BASE}/api/auth/check-pending-signup-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pending.email })
+    });
+    const result = await res.json();
+    if (result && result.verified && result.customToken) {
+      await window.activateVerifiedContributor(result.customToken, pending);
     } else {
-      showDpgError("dpgVerifyError", `Email not verified yet. Please click the link sent to ${pending.email} and try again.`);
+      showDpgError("dpgVerifyError", `Email not verified yet. Please check your inbox and click the verification link sent to ${pending.email} first.`);
     }
   } catch (err) {
     console.error("Verification check error:", err);
@@ -1304,15 +1261,18 @@ window.dpgCheckVerificationStatus = async function() {
 window.dpgResendVerificationEmail = async function() {
   clearDpgError("dpgVerifyError");
   const pending = window._pendingSignup;
-  if (!pending || !pending.user) return;
+  if (!pending || !pending.email) return;
 
   try {
-    await sendEmailVerification(pending.user);
-    fetch(`${API_BASE}/api/auth/send-otp`, {
+    const res = await fetch(`${API_BASE}/api/auth/start-signup-verification`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pending.email, purpose: "signup_verify", uid: pending.user.uid })
-    }).catch(console.warn);
+      body: JSON.stringify(pending)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed to resend verification email.");
+    }
 
     alert(`Verification link and code re-dispatched to ${pending.email}. Please check your inbox and spam folder.`);
   } catch (e) {
