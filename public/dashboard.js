@@ -1,4 +1,4 @@
-import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, updatePassword, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
@@ -14,6 +14,22 @@ const firebaseConfig = {
 const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Check for authToken in URL parameters (from email verification link)
+(async function handleCustomAuthToken() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const authToken = urlParams.get("authToken");
+    if (authToken) {
+      await signInWithCustomToken(auth, authToken);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("authToken");
+      window.history.replaceState({}, document.title, url.toString());
+    }
+  } catch (tokErr) {
+    console.warn("Failed to sign in with verification custom token:", tokErr);
+  }
+})();
 
 let currentUser = null;
 
@@ -474,7 +490,29 @@ async function loadProfile() {
     if (alertEl) alertEl.style.display = isProfileIncomplete ? "block" : "none";
 
     const urlParams = new URLSearchParams(window.location.search);
-    if (isProfileIncomplete || urlParams.get("tab") === "settingsTab") {
+    const isVerifiedLanding = urlParams.get("verified") === "1" || window.location.hash === "#settings";
+
+    // Dynamic verified banner in settings when landing after email verification
+    let verifiedBanner = document.getElementById("profileVerifiedBanner");
+    if (isVerifiedLanding && !verifiedBanner) {
+      const st = document.getElementById("settingsTab");
+      if (st) {
+        verifiedBanner = document.createElement("div");
+        verifiedBanner.id = "profileVerifiedBanner";
+        verifiedBanner.style.cssText = "background:rgba(16, 185, 129, 0.15); border:1px solid #10b981; border-radius:10px; padding:15px; margin-bottom:1.5rem; color:#a7f3d0;";
+        verifiedBanner.innerHTML = `
+          <div style="font-weight:700; font-size:1rem; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+            <i class="ri-checkbox-circle-fill" style="font-size:1.3rem; color:#10b981;"></i> Contributor Email Successfully Verified!
+          </div>
+          <p style="margin:0; font-size:0.88rem; color:#f1f5f9;">
+            Welcome to DPGNotes! Please select your <strong>User Type (Student or Teacher)</strong> and provide your <strong>Student / Employee ID</strong> below to activate your account and unlock all dashboard features.
+          </p>`;
+        const formEl = document.getElementById("settingsForm");
+        if (formEl) st.insertBefore(verifiedBanner, formEl);
+      }
+    }
+
+    if (isProfileIncomplete || urlParams.get("tab") === "settingsTab" || isVerifiedLanding) {
       const settingsTabBtn = document.querySelector('.tab-btn[data-target="settingsTab"]');
       if (settingsTabBtn) {
         document.querySelectorAll(".tab-btn[data-target]").forEach(b => b.classList.remove("active"));
@@ -1197,18 +1235,22 @@ if(settingsForm) {
       const isFirstUpdate = !localStorage.getItem("firstSettingUpdateDone");
       await setDoc(doc(db, "users", currentUser.uid), updateData, { merge: true });
       
+      window.dpgProfileIncomplete = false;
+      const verifiedBanner = document.getElementById("profileVerifiedBanner");
+      if (verifiedBanner) verifiedBanner.remove();
+
       if (isFirstUpdate) {
         localStorage.setItem("firstSettingUpdateDone", "true");
         if (window.customConfirm) {
           window.customConfirm(
-            `Your data must be uploaded to DPGNotes Server. <a href="legal/index.html#privacy" target="_blank" style="color:var(--primary-light);text-decoration:underline;">Learn More</a>`,
+            `🎉 Contributor Profile Completed! All dashboard tabs and publishing features are now unlocked.<br><a href="legal/index.html#privacy" target="_blank" style="color:var(--primary-light);text-decoration:underline;">Learn More</a>`,
             false
           );
         } else {
-          alert("Your data must be uploaded to DPGNotes Server.");
+          alert("🎉 Contributor Profile Completed! All dashboard tabs and publishing features are now unlocked.");
         }
       } else {
-        alert("Settings saved!");
+        alert("Settings saved! All dashboard features are active.");
       }
       loadProfile();
     } catch(err) {

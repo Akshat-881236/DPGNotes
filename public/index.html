@@ -2945,7 +2945,7 @@
 
             <div style="max-width:240px; margin:0 auto 0.8rem auto;">
               <label class="edu-label" style="text-align:center; display:block;">Enter 6-Digit Email Code</label>
-              <input type="text" id="signUpOtpInput" class="edu-input text-center" placeholder="123456" maxlength="6" autocomplete="off" style="font-size:1.5rem; letter-spacing:6px; font-family:monospace;" />
+              <input type="text" id="signUpOtpInput" class="edu-input text-center" placeholder="123456" maxlength="6" autocomplete="off" style="font-size:1.5rem; letter-spacing:6px; font-family:monospace;" oninput="onScriptSignUpOtpInput(this)" />
             </div>
 
             <button type="button" id="btnVerifySignUpOtp" class="btn-nav-glow w-100 py-2 mb-2 justify-content-center" onclick="verifySignUpOtpCode()" style="border-radius:12px;">

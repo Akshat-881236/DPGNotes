@@ -23,7 +23,8 @@ import {
   query, 
   where, 
   getDocs, 
-  serverTimestamp 
+  serverTimestamp,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -391,7 +392,7 @@ function injectAuthDOM() {
         <form id="dpgSignupOtpForm" onsubmit="window.dpgSubmitSignupOtp(event)" autocomplete="off">
           <div class="dpg-auth-form-group" style="max-width:240px; margin:0 auto 0.8rem auto;">
             <label class="dpg-auth-label" style="text-align:center;">Enter 6-Digit Email Code</label>
-            <input type="text" id="dpgSignupOtpInput" class="dpg-auth-input" placeholder="123456" maxlength="6" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:monospace; font-weight:700;" autocomplete="off" oninput="window.clearDpgError('dpgVerifyError', 'dpgSignupOtpInput')" />
+            <input type="text" id="dpgSignupOtpInput" class="dpg-auth-input" placeholder="123456" maxlength="6" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:monospace; font-weight:700;" autocomplete="off" oninput="window.dpgOnSignupOtpInput(this)" />
           </div>
           <button type="submit" id="dpgBtnSignupOtpSubmit" class="dpg-auth-btn-primary" style="margin-bottom:0.6rem;">
             <i class="ri-checkbox-circle-line"></i> Verify Code &amp; Activate Account
@@ -1016,26 +1017,52 @@ window.dpgHandleSignUp = async function(e) {
 
   if (btn) {
     btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Checking Account...`;
+  }
+
+  // 1. Verify New Email already does NOT exist as an Old Verified Contributor
+  try {
+    const chkRes = await fetch(`${API_BASE}/api/auth/check-contributor-exists`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    if (chkRes.ok) {
+      const chkData = await chkRes.json();
+      if (chkData && chkData.isVerified) {
+        showDpgError("dpgSignUpError", chkData.message || "This email is already registered and verified as a contributor. Please sign in instead.", "dpgSignupEmail");
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="ri-user-follow-line"></i> Create Contributor Account`;
+        }
+        return;
+      }
+    }
+  } catch (chkErr) {
+    console.warn("Pre-signup check error:", chkErr);
+  }
+
+  if (btn) {
     btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Creating Account...`;
   }
 
   try {
-    // 1. Create Firebase Auth account (emailVerified starts as false)
+    // 2. Create Firebase Auth account (emailVerified starts as false)
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
-    // 2. Dispatch official Firebase verification email link
+    // 3. Dispatch official Firebase verification email link
     try {
       await sendEmailVerification(user);
     } catch (verErr) {
       console.warn("sendEmailVerification warning:", verErr);
     }
 
-    // 3. Dispatch backend OTP email for dual verification flexibility
+    // 4. Dispatch backend OTP email with 1-time verification link
     fetch(`${API_BASE}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, purpose: "signup_verify" })
+      body: JSON.stringify({ email, purpose: "signup_verify", uid: user.uid })
     }).catch(console.warn);
 
     // Save pending verification state in memory
@@ -1056,7 +1083,7 @@ window.dpgHandleSignUp = async function(e) {
     if (step1) step1.style.display = "none";
     if (step2) step2.style.display = "block";
 
-    // Auto-poll verification status every 3.5 seconds
+    // Auto-listen to verification in real-time (link click & polling)
     window.startSignupVerificationPolling();
 
   } catch(err) {
@@ -1072,19 +1099,45 @@ window.dpgHandleSignUp = async function(e) {
 };
 
 let signupPollTimer = null;
+let signupRealtimeUnsub = null;
+
 window.startSignupVerificationPolling = function() {
   if (signupPollTimer) clearInterval(signupPollTimer);
+  if (signupRealtimeUnsub) { signupRealtimeUnsub(); signupRealtimeUnsub = null; }
+
+  const pending = window._pendingSignup;
+  if (!pending || !pending.user) return;
+
+  // Real-time Firestore listener: instantly detects when verification link is clicked
+  try {
+    signupRealtimeUnsub = onSnapshot(doc(db, "users", pending.user.uid), async (docSnap) => {
+      if (docSnap.exists()) {
+        const uData = docSnap.data();
+        if (uData.emailVerified || uData.isVerified) {
+          if (signupRealtimeUnsub) { signupRealtimeUnsub(); signupRealtimeUnsub = null; }
+          if (signupPollTimer) { clearInterval(signupPollTimer); signupPollTimer = null; }
+          await pending.user.reload();
+          await window.activateVerifiedContributor(pending.user, pending);
+        }
+      }
+    });
+  } catch (snapErr) {
+    console.warn("Firestore snapshot notice:", snapErr);
+  }
+
+  // Active Firebase Auth polling fallback every 3.5 seconds
   signupPollTimer = setInterval(async () => {
-    const pending = window._pendingSignup;
-    if (!pending || !pending.user) {
+    const p = window._pendingSignup;
+    if (!p || !p.user) {
       clearInterval(signupPollTimer);
       return;
     }
     try {
-      await pending.user.reload();
-      if (pending.user.emailVerified) {
+      await p.user.reload();
+      if (p.user.emailVerified) {
         clearInterval(signupPollTimer);
-        await window.activateVerifiedContributor(pending.user, pending);
+        if (signupRealtimeUnsub) { signupRealtimeUnsub(); signupRealtimeUnsub = null; }
+        await window.activateVerifiedContributor(p.user, p);
       }
     } catch (e) {
       // Ignored during passive poll
@@ -1096,6 +1149,10 @@ window.activateVerifiedContributor = async function(user, data) {
   if (signupPollTimer) {
     clearInterval(signupPollTimer);
     signupPollTimer = null;
+  }
+  if (signupRealtimeUnsub) {
+    signupRealtimeUnsub();
+    signupRealtimeUnsub = null;
   }
 
   // Compute SHA-256 hash of password for security records in Firestore
@@ -1110,20 +1167,25 @@ window.activateVerifiedContributor = async function(user, data) {
   }
 
   // Save profile to Firestore ONLY after emailVerified is confirmed true!
-  await setDoc(doc(db, "users", user.uid), {
-    uid: user.uid,
-    name: data.name,
-    email: data.email,
-    userType: data.role,
-    studentIdOrEmployeeId: data.studentId,
-    studentId: data.studentId,
-    isVerified: true,
-    emailVerified: true,
-    status: 'active',
-    passwordHash: passwordHash,
-    createdAt: serverTimestamp(),
-    verifiedAt: serverTimestamp()
-  }, { merge: true });
+  try {
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      name: data.name,
+      email: data.email,
+      userType: data.role,
+      studentIdOrEmployeeId: data.studentId,
+      studentId: data.studentId,
+      isVerified: true,
+      emailVerified: true,
+      isEmailVerified: true,
+      status: 'active',
+      passwordHash: passwordHash,
+      createdAt: serverTimestamp(),
+      verifiedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (docErr) {
+    console.warn("Error creating verified user document:", docErr);
+  }
 
   // Optional welcome email
   fetch(`${API_BASE}/api/email/welcome`, {
@@ -1133,11 +1195,39 @@ window.activateVerifiedContributor = async function(user, data) {
   }).catch(console.warn);
 
   window._pendingSignup = null;
-  await completeAuthSuccess(user);
+
+  // Verification modal auto disappears
+  window.closeAuthModals();
+
+  // Save active session
+  localStorage.setItem("dpgActiveUserUid", user.uid);
+  localStorage.setItem("dpgActiveUser", JSON.stringify({
+    uid: user.uid,
+    email: user.email,
+    displayName: data.name || user.email.split('@')[0]
+  }));
+
+  // Clear guest quota locks
+  localStorage.removeItem("dpg_quota_locked");
+  sessionStorage.removeItem("dpg_quota_locked");
+  document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+  // Landing Dashboard --> Setting tab (unlock every tab until profile completion)
+  window.location.href = "dashboard.html?verified=1#settings";
+};
+
+// Auto-call verify when OTP input is filled (6 digits)
+window.dpgOnSignupOtpInput = function(inp) {
+  clearDpgError("dpgVerifyError");
+  const cleaned = (inp.value || "").replace(/\D/g, '').slice(0, 6);
+  inp.value = cleaned;
+  if (cleaned.length === 6) {
+    window.dpgSubmitSignupOtp();
+  }
 };
 
 window.dpgSubmitSignupOtp = async function(e) {
-  e.preventDefault();
+  if (e && typeof e.preventDefault === "function") e.preventDefault();
   clearDpgError("dpgVerifyError");
   const pending = window._pendingSignup;
   if (!pending || !pending.user) {
@@ -1153,7 +1243,7 @@ window.dpgSubmitSignupOtp = async function(e) {
   const btn = document.getElementById("dpgBtnSignupOtpSubmit");
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Verifying...`;
+    btn.innerHTML = `<i class="ri-loader-4-line dpg-auth-spin"></i> Verifying Code...`;
   }
 
   try {
@@ -1221,7 +1311,7 @@ window.dpgResendVerificationEmail = async function() {
     fetch(`${API_BASE}/api/auth/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pending.email, purpose: "signup_verify" })
+      body: JSON.stringify({ email: pending.email, purpose: "signup_verify", uid: pending.user.uid })
     }).catch(console.warn);
 
     alert(`Verification link and code re-dispatched to ${pending.email}. Please check your inbox and spam folder.`);
