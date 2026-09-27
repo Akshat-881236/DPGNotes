@@ -163,6 +163,15 @@
       }
     }
     .mob-toggle{display:none}
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake-error {
+      animation: shakeError 0.4s ease;
+      border-color: #ef4444 !important;
+    }
   </style>
 </head>
 <body>
@@ -194,6 +203,7 @@
       <div class="mrow"><span class="mlabel">Discipline</span><span class="mval" id="mDisc">—</span></div>
       <div class="mrow"><span class="mlabel">Uploader</span><span class="mval" id="mUp">—</span></div>
       <div class="mrow"><span class="mlabel">Doc ID</span><span class="mval" id="mId" style="color:var(--mut);font-size:.74rem;">—</span></div>
+      <div class="mrow"><span class="mlabel">Access</span><span class="mval" id="mAccess"><span style="color:#60a5fa;"><i class="ri-global-line"></i> Public</span></span></div>
       <div id="mDescWrap" style="display:none;margin-top:.65rem">
         <div style="color:var(--mut);font-size:.72rem;margin-bottom:3px">Description</div>
         <div id="mDesc" style="font-size:.79rem;color:#94a3b8;line-height:1.5"></div>
@@ -314,6 +324,39 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- PRIVATE RESOURCE PASSWORD VERIFICATION MODAL -->
+<div id="pdfPasswordModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; align-items:center; justify-content:center; padding:1.25rem;">
+  <div style="background:#0f172a; border:1px solid rgba(99,102,241,0.35); border-radius:20px; padding:2rem; width:100%; max-width:440px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.85); text-align:center;">
+    <div style="width:58px; height:58px; border-radius:50%; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:1.8rem; color:#818cf8;">
+      <i class="ri-lock-2-line"></i>
+    </div>
+    <h3 style="font-family:'Outfit',sans-serif; font-size:1.35rem; color:white; margin:0 0 0.5rem 0;">Password Protected</h3>
+    <p style="color:#94a3b8; font-size:0.88rem; line-height:1.5; margin:0 0 1.25rem 0;">This academic document is private. Please enter the access password provided by the contributor to unlock and read this PDF.</p>
+    
+    <div id="pwdModalError" style="display:none; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-size:0.82rem; padding:8px 12px; border-radius:8px; margin-bottom:1rem; text-align:left;">
+      <i class="ri-error-warning-line"></i> <span id="pwdModalErrorText">Incorrect password</span>
+    </div>
+
+    <form id="pdfPasswordForm" onsubmit="handlePdfPasswordVerify(event)">
+      <div style="position:relative; margin-bottom:1.25rem; text-align:left;">
+        <label style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:6px; font-weight:600;">Access Password</label>
+        <div style="position:relative;">
+          <input type="password" id="pdfAccessPasswordInput" required placeholder="Enter document password" style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:10px; padding:10px 42px 10px 14px; color:white; font-size:0.95rem; outline:none; transition:border-color 0.2s;">
+          <button type="button" onclick="togglePdfPasswordEye()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.15rem; padding:4px;">
+            <i class="ri-eye-line" id="pdfEyeIcon"></i>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="/" style="flex:1; text-align:center; padding:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:10px; text-decoration:none; font-size:0.88rem; font-weight:600;">Cancel</a>
+        <button type="submit" id="btnUnlockPdf" style="flex:2; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:10px; border-radius:10px; font-weight:700; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <i class="ri-lock-unlock-line"></i> Unlock &amp; View
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script type="module">
@@ -475,6 +518,10 @@ function updateDocMetadataUI() {
   document.getElementById('mDisc').textContent    = docDisc;
   document.getElementById('mUp').textContent      = docUp;
   document.getElementById('mId').textContent      = docId;
+  const accessEl = document.getElementById('mAccess');
+  if (accessEl && window.currentDocAccessHtml) {
+    accessEl.innerHTML = window.currentDocAccessHtml;
+  }
 
   if (docDesc) {
     document.getElementById('mDesc').textContent    = docDesc;
@@ -1209,6 +1256,144 @@ async function sharePdf() {
 }
 window.sharePdf = sharePdf;
 
+function escapeDocHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+async function sha256ClientHash(text) {
+  const enc = new TextEncoder();
+  const hashBuf = await crypto.subtle.digest("SHA-256", enc.encode(text));
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+let pendingPasswordVerifyCallback = null;
+let pendingPasswordDoc = null;
+
+function showAccessBadge(type) {
+  const accessEl = document.getElementById('mAccess');
+  let html = '';
+  if (type === 'owner') {
+    html = `<span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-user-line"></i> Author Bypass</span>`;
+  } else if (type === 'admin') {
+    html = `<span style="background:rgba(99,102,241,0.18); color:#a5b4fc; border:1px solid rgba(99,102,241,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-keyhole-line"></i> Admin Preview</span>`;
+  } else if (type === 'unlocked') {
+    html = `<span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-lock-unlock-line"></i> Unlocked</span>`;
+  } else if (type === 'locked') {
+    html = `<span style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-lock-2-line"></i> Private (Password)</span>`;
+  } else {
+    html = `<span style="background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-global-line"></i> Public</span>`;
+  }
+  window.currentDocAccessHtml = html;
+  if (accessEl) accessEl.innerHTML = html;
+}
+
+function openPdfPasswordModal(docData, onVerified) {
+  pendingPasswordDoc = docData;
+  pendingPasswordVerifyCallback = onVerified;
+  const modal = document.getElementById("pdfPasswordModal");
+  const input = document.getElementById("pdfAccessPasswordInput");
+  const errBox = document.getElementById("pwdModalError");
+  if (errBox) errBox.style.display = "none";
+  if (input) {
+    input.value = "";
+    input.type = "password";
+  }
+  const eye = document.getElementById("pdfEyeIcon");
+  if (eye) eye.className = "ri-eye-line";
+
+  if (modal) {
+    modal.style.display = "flex";
+    setTimeout(() => { if (input) input.focus(); }, 100);
+  }
+
+  const spinner = document.getElementById('loadSpinner');
+  if (spinner) {
+    spinner.innerHTML = `
+      <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(239,68,68,0.3); border-radius:18px; padding:2rem; text-align:center; max-width:440px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+        <i class="ri-lock-2-line" style="font-size:3rem; color:#f87171; display:block; margin-bottom:1rem;"></i>
+        <h3 style="color:white; font-size:1.2rem; margin-bottom:0.5rem; font-family:'Outfit',sans-serif;">Document Locked</h3>
+        <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.2rem;">This academic resource is private and protected by an access password.</p>
+        <button onclick="document.getElementById('pdfPasswordModal').style.display='flex'" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:9px 20px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+          <i class="ri-key-line"></i> Enter Password to Unlock
+        </button>
+      </div>
+    `;
+    spinner.style.display = 'flex';
+  }
+}
+
+window.handlePdfPasswordVerify = async function(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById("pdfAccessPasswordInput");
+  const errBox = document.getElementById("pwdModalError");
+  const errText = document.getElementById("pwdModalErrorText");
+  const btn = document.getElementById("btnUnlockPdf");
+
+  if (!input || !pendingPasswordDoc) return;
+  const val = input.value.trim();
+  if (!val) {
+    if (errBox) {
+      errText.textContent = "Please enter the access password.";
+      errBox.style.display = "block";
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Verifying...`;
+  }
+
+  try {
+    const inputHash = await sha256ClientHash(val);
+    const targetHash = pendingPasswordDoc.passwordHash || "";
+    const plainPw = pendingPasswordDoc.password || "";
+
+    const isMatch = (targetHash && inputHash === targetHash) || (plainPw && val === plainPw);
+
+    if (isMatch) {
+      const modal = document.getElementById("pdfPasswordModal");
+      if (modal) modal.style.display = "none";
+      if (pendingPasswordVerifyCallback) {
+        await pendingPasswordVerifyCallback();
+      }
+    } else {
+      if (errBox) {
+        errText.textContent = "Incorrect password. Please verify with the contributor.";
+        errBox.style.display = "block";
+      }
+      input.classList.add("shake-error");
+      setTimeout(() => input.classList.remove("shake-error"), 500);
+      input.select();
+    }
+  } catch(err) {
+    console.error("Password verification error:", err);
+    if (errBox) {
+      errText.textContent = "Verification failed: " + err.message;
+      errBox.style.display = "block";
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-lock-unlock-line"></i> Unlock & View`;
+    }
+  }
+};
+
+window.togglePdfPasswordEye = function() {
+  const input = document.getElementById("pdfAccessPasswordInput");
+  const icon = document.getElementById("pdfEyeIcon");
+  if (!input || !icon) return;
+  if (input.type === "password") {
+    input.type = "text";
+    icon.className = "ri-eye-off-line";
+  } else {
+    input.type = "password";
+    icon.className = "ri-eye-line";
+  }
+};
+
 async function resolveAndRender() {
   // 1. Wait up to 3 seconds for async Firebase module to expose window.dpgDb and getDoc
   let attempts = 0;
@@ -1253,11 +1438,85 @@ async function resolveAndRender() {
           if (d.tags) docTags = Array.isArray(d.tags) ? d.tags.join(', ') : d.tags;
           if (d.trackId) window.resolvedTrackId = d.trackId;
           docId = d.documentId || window.firestoreDocId || targetSearchId;
+          window.currentLoadedDocData = d;
         }
       }
     } catch(err) {
       console.warn("Firestore resourceID fetch error, using URL params fallback:", err);
     }
+  }
+
+  // Allow brief window for auth to settle
+  let authWait = 0;
+  while (!window.dpgCurrentUser && window.dpgAuth && !window.dpgAuth.currentUser && authWait < 6) {
+    await new Promise(r => setTimeout(r, 100));
+    authWait++;
+  }
+
+  const d = window.currentLoadedDocData;
+  if (d) {
+    const isApproved = d.status === "approved" || d.isApproved === true || (d.status === undefined && d.isApproved === undefined);
+    const user = window.dpgCurrentUser || (window.dpgAuth ? window.dpgAuth.currentUser : null);
+    const currentUid = user?.uid || localStorage.getItem("dpgActiveUserUid") || "";
+    const currentEmail = (user?.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
+
+    const isAdmin = currentEmail === 'its.akshatnetworkhub23@gmail.com' || !!localStorage.getItem("adminToken") || P.get('preview') === 'admin';
+    const isOwner = !!(currentUid && d.userId && currentUid === d.userId) || !!(currentEmail && d.uploaderEmail && currentEmail === (d.uploaderEmail || "").toLowerCase().trim());
+
+    // 1. Approval Gate Check: Non-approved resources are inaccessible to general public
+    if (!isApproved && !isOwner && !isAdmin) {
+      updateDocMetadataUI();
+      const spinner = document.getElementById('loadSpinner');
+      if (spinner) {
+        spinner.innerHTML = `
+          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(245,158,11,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+            <div style="width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#fbbf24;">
+              <i class="ri-time-line"></i>
+            </div>
+            <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Resource Under Review</h2>
+            <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+              "${escapeDocHtml(d.title || docTitle)}" has been submitted by the contributor and is currently pending Administrator review. Once approved, it will be published for public reading.
+            </p>
+            <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 22px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
+              <i class="ri-arrow-left-line"></i> Return to DPGNotes Home
+            </a>
+          </div>
+        `;
+        spinner.style.display = 'flex';
+      }
+      return;
+    }
+
+    // 2. Private Resource Password Gate Check
+    const isPrivate = d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false;
+    window.currentDocumentIsPrivate = isPrivate;
+
+    if (isPrivate) {
+      const docKey = d.id || window.firestoreDocId || targetSearchId;
+      const isSessionUnlocked = sessionStorage.getItem('dpg_pdf_unlocked_' + docKey) === 'true';
+
+      if (isOwner) {
+        showAccessBadge("owner");
+      } else if (isAdmin) {
+        showAccessBadge("admin");
+      } else if (!isSessionUnlocked) {
+        updateDocMetadataUI();
+        showAccessBadge("locked");
+        openPdfPasswordModal(d, async () => {
+          sessionStorage.setItem('dpg_pdf_unlocked_' + docKey, 'true');
+          showAccessBadge("unlocked");
+          await renderAllPages();
+          backgroundPreFetchDocumentKnowledge();
+        });
+        return; // Halt render until verified
+      } else {
+        showAccessBadge("unlocked");
+      }
+    } else {
+      showAccessBadge("public");
+    }
+  } else {
+    showAccessBadge("public");
   }
 
   updateDocMetadataUI();

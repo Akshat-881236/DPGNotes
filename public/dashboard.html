@@ -170,7 +170,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <link rel="stylesheet" href="style.css" />
-  <script type="module" src="dashboard.js?v=2.0.4"></script>
 </head>
 <body class="dashboard-body">
 
@@ -295,6 +294,30 @@
                 <a href="legal/index.html?from=contributor#retention" target="_blank" style="color:var(--primary-light); text-decoration:underline;">Data Retention Policy</a> and 
                 <a href="legal/index.html?from=contributor#drasa" target="_blank" style="color:var(--primary-light); text-decoration:underline;">DRASA</a>.
               </p>
+              <!-- SECURITY & VISIBILITY (PUBLIC / PRIVATE PASSWORD) -->
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:14px; margin:10px 0;">
+                <label style="font-weight:600; font-size:0.9rem; color:#f1f5f9; display:block; margin-bottom:6px;">
+                  Resource Visibility &amp; Access Control*
+                </label>
+                <select id="resourceVisibility" style="width:100%; padding:0.75rem; border-radius:8px; background:rgba(15,23,42,0.85); color:white; border:1px solid rgba(255,255,255,0.2); font-size:0.9rem;" onchange="window.toggleResourcePasswordUI()">
+                  <option value="public" selected>🌐 Public</option>
+                  <option value="private">🔒 Private</option>
+                </select>
+
+                <div id="resourcePasswordGroup" style="display:none; margin-top:12px;">
+                  <label style="font-weight:600; font-size:0.85rem; color:#38bdf8; display:block; margin-bottom:4px;">
+                    Set Password* (min 4 characters)
+                  </label>
+                  <div style="position:relative;">
+                    <input type="password" id="resourcePassword" placeholder="Enter document password..." style="width:100%; padding:0.75rem 2.5rem 0.75rem 0.75rem; border-radius:8px; background:rgba(15,23,42,0.9); color:white; border:1px solid rgba(56,189,248,0.4); font-size:0.9rem;" autocomplete="new-password" />
+                    <i class="ri-eye-line" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#94a3b8;" onclick="window.toggleResourcePasswordVisibility(this)"></i>
+                  </div>
+                  <p style="font-size:0.58rem; color:#94a3b8; margin:6px 0 0 0; line-height:1.4;">
+                    🔒 Other contributors must enter this password to view this resource. Authorized Owner has direct access.
+                  </p>
+                </div>
+              </div>
+
               <button type="submit" class="upload-btn">Upload Document</button>
             </div>
           </form>
@@ -947,6 +970,6 @@
     }
     setInterval(checkAds, 1000);
   </script>
-  <script type="module" src="dashboard.js?v=2.8.0"></script>
+  <script type="module" src="dashboard.js?v=2.9.0"></script>
 </body>
 </html>

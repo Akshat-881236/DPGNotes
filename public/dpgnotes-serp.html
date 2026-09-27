@@ -2317,7 +2317,11 @@
         const snap = await getDocs(collection(db, "documents"));
         allDocs = [];
         snap.forEach(doc => {
-          allDocs.push({ id: doc.id, ...doc.data() });
+          const data = doc.data();
+          const isApproved = data.status === "approved" || data.isApproved === true;
+          if (isApproved) {
+            allDocs.push({ id: doc.id, ...data });
+          }
         });
 
         // Fetch academic solutions via collectionGroup

@@ -967,6 +967,8 @@ window.switchTab = function(tabId) {
     if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
   } else if (tabId === 'solutions-metrics') {
     if (typeof window.loadSolutionsMetricsAdmin === 'function') window.loadSolutionsMetricsAdmin();
+  } else if (tabId === 'content') {
+    if (typeof window.loadContentMgmtAdmin === 'function') window.loadContentMgmtAdmin();
   }
 };
 
@@ -1995,6 +1997,300 @@ window.deleteSelectedUnauthorizedActions = async function() {
 };
 
 // ==========================================
+// CONTENT MANAGEMENT & RESOURCE APPROVALS
+// ==========================================
+let contentMgmtCache = [];
+
+window.loadContentMgmtAdmin = async function() {
+  const pendingTbody = document.getElementById("pendingResourcesTableBody");
+  const allTbody = document.getElementById("allResourcesTableBody");
+
+  if (pendingTbody) pendingTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:1.5rem;"><i class="ri-loader-4-line spin-icon"></i> Loading pending approvals...</td></tr>`;
+  if (allTbody) allTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:1.5rem;"><i class="ri-loader-4-line spin-icon"></i> Loading directory...</td></tr>`;
+
+  try {
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db, "documents"), orderBy("createdAt", "desc")));
+    } catch(orderErr) {
+      snap = await getDocs(collection(db, "documents"));
+    }
+
+    contentMgmtCache = [];
+    snap.forEach(dSnap => {
+      contentMgmtCache.push({ id: dSnap.id, ...dSnap.data() });
+    });
+
+    // Update Top Metric Cards
+    const totalDocs = contentMgmtCache.length;
+    let pendingCount = 0;
+    let approvedCount = 0;
+    let privateCount = 0;
+
+    contentMgmtCache.forEach(doc => {
+      const isApproved = doc.status === "approved" || doc.isApproved === true;
+      const isPrivate = doc.visibility === "private" || doc.isPasswordProtected === true || doc.isPublic === false;
+      if (!isApproved) pendingCount++;
+      else approvedCount++;
+      if (isPrivate) privateCount++;
+    });
+
+    const elTotal = document.getElementById("statContentTotal");
+    const elPending = document.getElementById("statContentPending");
+    const elApproved = document.getElementById("statContentApproved");
+    const elPrivate = document.getElementById("statContentPrivate");
+    const badgePending = document.getElementById("pendingResBadge");
+
+    if (elTotal) elTotal.innerText = totalDocs;
+    if (elPending) elPending.innerText = pendingCount;
+    if (elApproved) elApproved.innerText = approvedCount;
+    if (elPrivate) elPrivate.innerText = privateCount;
+    if (badgePending) badgePending.innerText = `${pendingCount} Pending`;
+
+    renderPendingResourcesTable();
+    renderAllResourcesTable();
+
+    // Sync adminDocsCache for the DMCA deletion dropdown
+    adminDocsCache = [...contentMgmtCache];
+
+  } catch(err) {
+    console.error("Error loading content management:", err);
+    if (pendingTbody) pendingTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:1.5rem;">Error loading pending resources: ${err.message}</td></tr>`;
+    if (allTbody) allTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:1.5rem;">Error loading resources: ${err.message}</td></tr>`;
+  }
+};
+
+function renderPendingResourcesTable() {
+  const tbody = document.getElementById("pendingResourcesTableBody");
+  if (!tbody) return;
+
+  const pendingDocs = contentMgmtCache.filter(d => d.status !== "approved" && d.isApproved !== true);
+
+  if (pendingDocs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#4ade80; padding:2rem;"><i class="ri-checkbox-circle-line" style="font-size:1.8rem; display:block; margin-bottom:0.4rem;"></i> All uploaded resources have been reviewed and approved!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = pendingDocs.map((doc, idx) => {
+    const isPrivate = doc.visibility === "private" || doc.isPasswordProtected === true || doc.isPublic === false;
+    const accessBadge = isPrivate 
+      ? `<span style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.4); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;"><i class="ri-lock-2-line"></i> Private</span>`
+      : `<span style="background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.4); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;"><i class="ri-global-line"></i> Public</span>`;
+
+    let dt = 'Recent';
+    if (doc.createdAt) {
+      if (doc.createdAt.toDate) dt = doc.createdAt.toDate().toLocaleDateString();
+      else if (doc.createdAt.seconds) dt = new Date(doc.createdAt.seconds * 1000).toLocaleDateString();
+      else dt = new Date(doc.createdAt).toLocaleDateString();
+    }
+
+    const previewUrl = `dpgnotes-pdf-viewer.html?resourceID=${doc.id}&preview=admin`;
+
+    return `
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--admin-primary);">${idx + 1}</td>
+        <td>
+          <div style="font-weight:700; color:white; margin-bottom:3px;">${escapeAdminHtml(doc.title || 'Untitled Document')}</div>
+          <div style="font-size:0.75rem; color:var(--admin-muted);">${escapeAdminHtml(doc.category || 'General')} &bull; ${escapeAdminHtml(doc.discipline || 'General')}</div>
+        </td>
+        <td>
+          <div style="font-weight:600; color:white; font-size:0.85rem;">${escapeAdminHtml(doc.userName || doc.uploader || 'Contributor')}</div>
+          <div style="font-size:0.75rem; color:var(--admin-muted); font-family:monospace;">${escapeAdminHtml(doc.uploaderEmail || doc.userId || 'N/A')}</div>
+        </td>
+        <td>${accessBadge}</td>
+        <td style="font-size:0.8rem; color:var(--admin-muted);">${dt}</td>
+        <td>
+          <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+            <a href="${previewUrl}" target="_blank" class="admin-btn" style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:4px 10px; font-size:0.78rem; text-decoration:none;" title="Preview PDF in Viewer">
+              <i class="ri-eye-line"></i> Review
+            </a>
+            <button class="admin-btn" style="background:rgba(34,197,94,0.2); color:#4ade80; padding:4px 10px; font-size:0.78rem;" title="Approve Resource" onclick="approveResourceAdmin('${doc.id}')">
+              <i class="ri-check-line"></i> Approve
+            </button>
+            <button class="admin-btn" style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 10px; font-size:0.78rem;" title="Reject and Delete Resource" onclick="rejectResourceAdmin('${doc.id}')">
+              <i class="ri-close-line"></i> Reject
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderAllResourcesTable() {
+  const tbody = document.getElementById("allResourcesTableBody");
+  if (!tbody) return;
+
+  const searchVal = (document.getElementById("contentResSearch")?.value || "").toLowerCase().trim();
+  const filterVal = document.getElementById("contentResFilter")?.value || "ALL";
+
+  let list = [...contentMgmtCache];
+
+  if (filterVal === "APPROVED") {
+    list = list.filter(d => d.status === "approved" || d.isApproved === true);
+  } else if (filterVal === "PENDING") {
+    list = list.filter(d => d.status !== "approved" && d.isApproved !== true);
+  } else if (filterVal === "PRIVATE") {
+    list = list.filter(d => d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false);
+  } else if (filterVal === "PUBLIC") {
+    list = list.filter(d => d.visibility !== "private" && d.isPasswordProtected !== true && d.isPublic !== false);
+  }
+
+  if (searchVal) {
+    list = list.filter(d => 
+      (d.title && d.title.toLowerCase().includes(searchVal)) ||
+      (d.id && d.id.toLowerCase().includes(searchVal)) ||
+      (d.category && d.category.toLowerCase().includes(searchVal)) ||
+      (d.discipline && d.discipline.toLowerCase().includes(searchVal)) ||
+      (d.userName && d.userName.toLowerCase().includes(searchVal)) ||
+      (d.uploaderEmail && d.uploaderEmail.toLowerCase().includes(searchVal))
+    );
+  }
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:1.5rem;">No matching documents found in directory.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((doc, idx) => {
+    const isApproved = doc.status === "approved" || doc.isApproved === true;
+    const isPrivate = doc.visibility === "private" || doc.isPasswordProtected === true || doc.isPublic === false;
+
+    const statusBadge = isApproved
+      ? `<span style="background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">Approved</span>`
+      : `<span style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">Pending</span>`;
+
+    const accessBadge = isPrivate
+      ? `<span style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.4); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;"><i class="ri-lock-2-line"></i> Private</span>`
+      : `<span style="background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.4); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;"><i class="ri-global-line"></i> Public</span>`;
+
+    return `
+      <tr>
+        <td style="text-align:center; font-weight:600; color:var(--admin-muted);">${idx + 1}</td>
+        <td>
+          <div style="font-weight:700; color:white; margin-bottom:2px;">${escapeAdminHtml(doc.title || 'Untitled Document')}</div>
+          <div style="font-size:0.74rem; color:var(--admin-muted);">${escapeAdminHtml(doc.category || 'General')} &bull; ${escapeAdminHtml(doc.discipline || 'General')} &bull; ID: <span style="font-family:monospace; color:#a5b4fc;">${doc.id}</span></div>
+        </td>
+        <td>
+          <div style="font-weight:600; color:white; font-size:0.85rem;">${escapeAdminHtml(doc.userName || doc.uploader || 'Contributor')}</div>
+          <div style="font-size:0.74rem; color:var(--admin-muted); font-family:monospace;">${escapeAdminHtml(doc.uploaderEmail || 'N/A')}</div>
+        </td>
+        <td>${statusBadge}</td>
+        <td>${accessBadge}</td>
+        <td>
+          <div style="display:flex; gap:6px; justify-content:center;">
+            <a href="dpgnotes-pdf-viewer.html?resourceID=${doc.id}&preview=admin" target="_blank" class="admin-btn" style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:4px 8px; font-size:0.75rem; text-decoration:none;" title="View PDF">
+              <i class="ri-eye-line"></i> View
+            </a>
+            <button class="admin-btn" style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 8px; font-size:0.75rem;" title="Delete Resource" onclick="deleteResourceAdmin('${doc.id}')">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.filterContentMgmtAdmin = function() {
+  renderAllResourcesTable();
+};
+
+window.approveResourceAdmin = async function(docId) {
+  const docItem = contentMgmtCache.find(d => d.id === docId);
+  const title = docItem ? docItem.title : "Document";
+
+  const confirmed = window.customConfirm 
+    ? await window.customConfirm(`Approve "${title}" for public release on DPGNotes?`, { title: "Approve Resource", confirmText: "Approve & Publish" }) 
+    : confirm(`Approve "${title}"?`);
+  if (!confirmed) return;
+
+  try {
+    await updateDoc(doc(db, "documents", docId), {
+      status: "approved",
+      isApproved: true,
+      approvedAt: serverTimestamp()
+    });
+
+    if (docItem && docItem.uploaderEmail) {
+      addDoc(collection(db, "notifications"), {
+        email: docItem.uploaderEmail,
+        type: "success",
+        title: "Resource Approved! 🎉",
+        message: `Your resource "${title}" has been approved by an Administrator and is now publicly live on DPGNotes.`,
+        isRead: false,
+        createdAt: serverTimestamp()
+      }).catch(console.warn);
+    }
+
+    if (window.customAlert) {
+      await window.customAlert(`"${title}" has been approved and is now live across DPGNotes!`, { title: "Resource Approved" });
+    } else {
+      alert(`"${title}" approved successfully.`);
+    }
+
+    loadContentMgmtAdmin();
+  } catch(err) {
+    console.error("Approve resource failed:", err);
+    alert("Approval failed: " + err.message);
+  }
+};
+
+window.rejectResourceAdmin = async function(docId) {
+  const docItem = contentMgmtCache.find(d => d.id === docId);
+  const title = docItem ? docItem.title : "Document";
+
+  const confirmed = window.customConfirm 
+    ? await window.customConfirm(`Reject and permanently remove "${title}"? This cannot be undone.`, { title: "Reject & Delete Resource", isDanger: true, confirmText: "Reject & Delete" }) 
+    : confirm(`Reject and permanently remove "${title}"?`);
+  if (!confirmed) return;
+
+  try {
+    await deleteDoc(doc(db, "documents", docId));
+
+    if (docItem && docItem.uploaderEmail) {
+      addDoc(collection(db, "notifications"), {
+        email: docItem.uploaderEmail,
+        type: "alert",
+        title: "Resource Rejected & Removed",
+        message: `Your uploaded document "${title}" did not meet academic quality guidelines and was rejected by an Administrator.`,
+        isRead: false,
+        createdAt: serverTimestamp()
+      }).catch(console.warn);
+    }
+
+    if (window.customAlert) {
+      await window.customAlert(`"${title}" has been rejected and permanently removed.`, { title: "Resource Rejected" });
+    } else {
+      alert(`"${title}" rejected and deleted.`);
+    }
+
+    loadContentMgmtAdmin();
+  } catch(err) {
+    console.error("Reject resource failed:", err);
+    alert("Rejection failed: " + err.message);
+  }
+};
+
+window.deleteResourceAdmin = async function(docId) {
+  const docItem = contentMgmtCache.find(d => d.id === docId);
+  const title = docItem ? docItem.title : "Document";
+
+  const confirmed = window.customConfirm 
+    ? await window.customConfirm(`Permanently delete "${title}" from DPGNotes?`, { title: "Delete Resource", isDanger: true, confirmText: "Delete Permanently" }) 
+    : confirm(`Permanently delete "${title}"?`);
+  if (!confirmed) return;
+
+  try {
+    await deleteDoc(doc(db, "documents", docId));
+    if (window.customAlert) await window.customAlert(`"${title}" has been deleted.`, { title: "Deleted" });
+    loadContentMgmtAdmin();
+  } catch(err) {
+    alert("Delete failed: " + err.message);
+  }
+};
+
+// ==========================================
 // ADMIN ADS MANAGEMENT TAB LOGIC
 // ==========================================
 let pendingAdsCache = [];
@@ -2037,7 +2333,8 @@ window.loadAdsAdmin = async function() {
 
     snap.forEach(dSnap => {
       const ad = { id: dSnap.id, ...dSnap.data() };
-      if (ad.status === "Pending Approval") {
+      const statusLow = (ad.status || "").toLowerCase();
+      if (statusLow.includes("pending")) {
         pendingAdsCache.push(ad);
       } else {
         manageAdsCache.push(ad);
@@ -2325,13 +2622,11 @@ window.approveAdAdmin = async function(adId) {
 };
 
 window.rejectAdAdmin = async function(adId) {
-  const confirmed = window.customConfirm ? await window.customConfirm("Reject this ad request?", { title: "Reject Ad Request", isDanger: true, confirmText: "Reject Ad" }) : confirm("Reject this ad request?");
+  const confirmed = window.customConfirm ? await window.customConfirm("Reject and permanently delete this ad request? This action cannot be undone.", { title: "Reject & Delete Ad", isDanger: true, confirmText: "Reject & Delete" }) : confirm("Reject and permanently delete this ad request?");
   if (!confirmed) return;
   try {
-    await updateDoc(doc(db, "user_ads", adId), {
-      status: "Rejected",
-      rejectedAt: serverTimestamp()
-    });
+    await deleteDoc(doc(db, "user_ads", adId));
+    if (window.customAlert) await window.customAlert("Ad request has been rejected and permanently removed.", { title: "Ad Deleted" });
     loadAdsAdmin();
   } catch(e) { alert("Reject failed: " + e.message); }
 };

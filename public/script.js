@@ -1387,6 +1387,8 @@ async function loadAcademicResources() {
     window._allDocsCache = [];
     snap.forEach(d => {
       const data = d.data();
+      const isApproved = data.status === "approved" || data.isApproved === true;
+      if (!isApproved) return;
       const docId = d.id;
       window._allDocsCache.push({ id: docId, ...data });
       const matchedKey = matchCategory(data.category);

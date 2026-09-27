@@ -553,7 +553,7 @@
         <a class="nav-link active" onclick="switchTab('users')">
           <i class="ri-group-line"></i> Contributors
         </a>
-        <a class="nav-link" onclick="switchTab('content')">
+        <a class="nav-link" onclick="switchTab('content'); if(window.loadContentMgmtAdmin) window.loadContentMgmtAdmin();">
           <i class="ri-folder-shield-2-line"></i> Content Mgmt
         </a>
         <a class="nav-link" onclick="switchTab('logs'); if(window.loadActivityLogs) window.loadActivityLogs();">
@@ -724,6 +724,111 @@
 
       <!-- VIEW: CONTENT -->
       <section id="view-content" class="view-section">
+        <!-- Content Management Stats Cards -->
+        <div class="stat-cards" style="margin-bottom: 1.5rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+          <div class="stat-card" style="padding:1rem;">
+            <div class="stat-icon" style="background:rgba(99,102,241,0.15); color:#818cf8;"><i class="ri-folder-shield-2-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statContentTotal" style="color:#818cf8; font-size:1.4rem;">0</h3>
+              <p style="font-size:0.75rem;">Total Documents</p>
+            </div>
+          </div>
+          <div class="stat-card" style="padding:1rem;">
+            <div class="stat-icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;"><i class="ri-time-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statContentPending" style="color:#fbbf24; font-size:1.4rem;">0</h3>
+              <p style="font-size:0.75rem;">Pending Approval</p>
+            </div>
+          </div>
+          <div class="stat-card" style="padding:1rem;">
+            <div class="stat-icon" style="background:rgba(34,197,94,0.15); color:#4ade80;"><i class="ri-checkbox-circle-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statContentApproved" style="color:#4ade80; font-size:1.4rem;">0</h3>
+              <p style="font-size:0.75rem;">Approved (Live)</p>
+            </div>
+          </div>
+          <div class="stat-card" style="padding:1rem;">
+            <div class="stat-icon" style="background:rgba(239,68,68,0.15); color:#f87171;"><i class="ri-lock-2-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statContentPrivate" style="color:#f87171; font-size:1.4rem;">0</h3>
+              <p style="font-size:0.75rem;">Private (Password)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Pending Resource Approvals Queue -->
+        <div class="section-card" style="margin-bottom: 2rem;">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2 class="section-title" style="display:flex; align-items:center; gap:8px;">
+                <i class="ri-shield-check-line" style="color:#fbbf24;"></i>
+                Pending Resource Approvals
+                <span id="pendingResBadge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:2px 10px; border-radius:12px; font-size:0.75rem; font-weight:700;">0 Pending</span>
+              </h2>
+              <p style="color:var(--admin-muted); font-size:0.82rem; margin-top:3px;">Review contributor PDF uploads before granting public appearance on DPGNotes Home and Search Results.</p>
+            </div>
+            <button onclick="loadContentMgmtAdmin()" class="btn-action success" style="padding:0.45rem 0.9rem; font-size:0.82rem;"><i class="ri-refresh-line"></i> Refresh Queue</button>
+          </div>
+          <div class="table-responsive-wrapper" style="max-height: 420px;">
+            <table class="data-table" style="min-width: 820px;">
+              <thead>
+                <tr>
+                  <th style="width:50px; text-align:center;">SR</th>
+                  <th style="min-width:220px;">Resource Title &amp; Category</th>
+                  <th style="width:200px;">Contributor</th>
+                  <th style="width:130px;">Access Mode</th>
+                  <th style="width:130px;">Submitted</th>
+                  <th style="width:200px; text-align:center;">Review &amp; Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pendingResourcesTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:1.5rem;"><i class="ri-loader-4-line spin-icon"></i> Loading pending approvals...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: All Hosted Resources Directory & Access Control -->
+        <div class="section-card" style="margin-bottom: 2rem;">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h2 class="section-title" style="display:flex; align-items:center; gap:8px;">
+                <i class="ri-folder-open-line" style="color:#60a5fa;"></i>
+                Hosted Academic Resources Directory
+              </h2>
+              <p style="color:var(--admin-muted); font-size:0.82rem; margin-top:3px;">All PDF resources stored across DPGNotes with live status, privacy, and moderation controls.</p>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <select id="contentResFilter" class="admin-input" style="width:150px; margin:0; padding:0.45rem 0.75rem; font-size:0.82rem;" onchange="filterContentMgmtAdmin()">
+                <option value="ALL">All Statuses</option>
+                <option value="APPROVED">Approved Only</option>
+                <option value="PENDING">Pending Only</option>
+                <option value="PRIVATE">Private Only</option>
+                <option value="PUBLIC">Public Only</option>
+              </select>
+              <input type="text" id="contentResSearch" class="admin-input" style="width:220px; margin:0; padding:0.45rem 0.85rem; font-size:0.82rem;" placeholder="Search title, author, ID..." oninput="filterContentMgmtAdmin()">
+            </div>
+          </div>
+          <div class="table-responsive-wrapper" style="max-height: 520px;">
+            <table class="data-table" style="min-width: 860px;">
+              <thead>
+                <tr>
+                  <th style="width:50px; text-align:center;">SR</th>
+                  <th style="min-width:240px;">Title &amp; Subject</th>
+                  <th style="width:180px;">Contributor</th>
+                  <th style="width:120px;">Status</th>
+                  <th style="width:130px;">Access Mode</th>
+                  <th style="width:150px; text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allResourcesTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:1.5rem;"><i class="ri-loader-4-line spin-icon"></i> Loading directory...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 3: Enforce Document Deletion (DMCA / Policy Enforcement) -->
         <div class="section-card">
           <div class="section-header">
             <h2 class="section-title">Enforce Document Deletion <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="Document removals comply with our DMCA and Copyright Enforcement Policies. Click to view." onclick="window.open('legal/index.html?from=admin#copyright', '_blank')"></i></h2>
@@ -742,7 +847,7 @@
             <label style="color:var(--admin-muted); font-size:0.9rem; display:block; margin-bottom:0.5rem;">Reason for Enforced Deletion</label>
             <textarea id="delReason" class="admin-input" style="resize:vertical; min-height:80px;" placeholder="Optional custom reason (50 - 150 chars)."></textarea>
             
-            <button type="submit" class="admin-btn" id="deleteDocBtn" disabled style="background:var(--admin-danger);">Delete Resource & Notify</button>
+            <button type="submit" class="admin-btn" id="deleteDocBtn" disabled style="background:var(--admin-danger);">Delete Resource &amp; Notify</button>
           </form>
         </div>
       </section>

@@ -2,6 +2,42 @@ import { getAuth, onAuthStateChanged, signOut, updatePassword, signInWithCustomT
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
+// Prevent duplicate execution of dashboard module
+if (window._dpgDashboardScriptLoaded) {
+  console.warn("dashboard.js already loaded, preventing duplicate bindings.");
+}
+window._dpgDashboardScriptLoaded = true;
+
+window.toggleResourcePasswordUI = function() {
+  const vis = document.getElementById("resourceVisibility")?.value;
+  const grp = document.getElementById("resourcePasswordGroup");
+  const pw = document.getElementById("resourcePassword");
+  if (grp) {
+    grp.style.display = vis === "private" ? "block" : "none";
+  }
+  if (pw && vis !== "private") {
+    pw.value = "";
+  }
+};
+
+window.toggleResourcePasswordVisibility = function(iconEl) {
+  const pw = document.getElementById("resourcePassword");
+  if (!pw) return;
+  if (pw.type === "password") {
+    pw.type = "text";
+    if (iconEl) {
+      iconEl.classList.remove("ri-eye-line");
+      iconEl.classList.add("ri-eye-off-line");
+    }
+  } else {
+    pw.type = "password";
+    if (iconEl) {
+      iconEl.classList.remove("ri-eye-off-line");
+      iconEl.classList.add("ri-eye-line");
+    }
+  }
+};
+
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
   authDomain: "dpgnotes.firebaseapp.com",
@@ -687,7 +723,12 @@ async function loadExplore() {
   
   let docsArray = [];
   snap.forEach(doc => {
-    docsArray.push({ id: doc.id, ...doc.data() });
+    const d = doc.data();
+    const isOwner = currentUser && (d.userId === currentUser.uid || (d.uploaderEmail && currentUser.email && d.uploaderEmail.toLowerCase() === currentUser.email.toLowerCase()));
+    const isApproved = d.status === "approved" || d.isApproved === true;
+    if (isApproved || isOwner) {
+      docsArray.push({ id: doc.id, ...d });
+    }
   });
   
   const sortVal = document.getElementById("exploreSort") ? document.getElementById("exploreSort").value : "newest";
@@ -726,15 +767,22 @@ async function loadExplore() {
   docsArray.forEach(data => {
     const docId = data.id;
     const likes = data.likes || [];
-    const hasLiked = likes.includes(currentUser.uid);
+    const hasLiked = currentUser ? likes.includes(currentUser.uid) : false;
+    const isApproved = data.status === "approved" || data.isApproved === true;
+    const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
     
     const card = document.createElement("article");
     card.className = "resource-card";
     card.innerHTML = `
       <div class="card-top">
-        <span class="category">${data.category}</span>
-        <span class="discipline">${data.discipline}</span>
+        <span class="category">${escapeHtml(data.category || 'General')}</span>
+        <span class="discipline">${escapeHtml(data.discipline || 'General')}</span>
       </div>
+      ${(!isApproved || isPrivate) ? `
+      <div style="display:flex; gap:6px; margin: 4px 0 8px 0; flex-wrap:wrap;">
+        ${!isApproved ? `<span style="background:rgba(245,158,11,0.22); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;"><i class="ri-time-line"></i> Pending Admin Approval</span>` : ''}
+        ${isPrivate ? `<span style="background:rgba(239,68,68,0.22); color:#f87171; border:1px solid rgba(239,68,68,0.4); padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;"><i class="ri-lock-2-line"></i> Private (Encrypted)</span>` : ''}
+      </div>` : ''}
       <h3>${data.title}</h3>
       <div class="card-author">
         ${usersCache && usersCache[data.userId] && usersCache[data.userId].profilePic 
@@ -934,6 +982,21 @@ if(uploadForm) {
       if (!finalPdfUrl) throw new Error("Please provide a PDF link or file.");
 
       const title = document.getElementById("title").value;
+      const visibilityVal = document.getElementById("resourceVisibility")?.value || "public";
+      const isPrivate = visibilityVal === "private";
+
+      let passwordHash = "";
+      if (isPrivate) {
+        const rawPw = document.getElementById("resourcePassword")?.value.trim() || "";
+        if (!rawPw || rawPw.length < 4) {
+          throw new Error("Private resources require an access password of at least 4 characters.");
+        }
+        // Compute SHA-256 hash of password
+        const msgBuffer = new TextEncoder().encode(rawPw);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
       const docData = {
         category: document.getElementById("category").value,
         discipline: document.getElementById("discipline").value,
@@ -944,7 +1007,15 @@ if(uploadForm) {
         trackId: Math.floor(10000000 + Math.random() * 90000000).toString(),
         pdfUrl: finalPdfUrl,
         userId: currentUser.uid,
-        userName: currentUser.displayName,
+        userName: currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Contributor'),
+        uploaderEmail: currentUser.email || "",
+        uploaderId: currentUser.uid,
+        visibility: isPrivate ? "private" : "public",
+        isPublic: !isPrivate,
+        isPasswordProtected: isPrivate,
+        passwordHash: isPrivate ? passwordHash : "",
+        status: "pending", // Strict: requires Admin Approval before appearing in Home & Search
+        isApproved: false,
         createdAt: serverTimestamp(),
         likes: []
       };
@@ -957,7 +1028,7 @@ if(uploadForm) {
           userId: currentUser.uid,
           name: currentUser.displayName || currentUser.email,
           action: "UPLOAD",
-          details: `Uploaded resource: ${docData.title}`,
+          details: `Uploaded resource: ${docData.title} (${isPrivate ? 'Private' : 'Public'}, Pending Approval)`,
           timestamp: serverTimestamp()
         });
       } catch(e) {}
@@ -973,7 +1044,7 @@ if(uploadForm) {
         snapDocs.forEach(d => {
           const data = d.data();
           if (data.userId === currentUser.uid) {
-            userDocCount++; // Will include the new one since we just added it, or wait, it might not fetch immediately, but that's fine.
+            userDocCount++;
             if (data.likes && Array.isArray(data.likes)) {
               data.likes.forEach(uid => followerSet.add(uid));
             }
@@ -991,7 +1062,6 @@ if(uploadForm) {
         }).catch(console.error);
         
         // 2. First Contribution Check
-        // If userDocCount === 1, it's their first time! (Since we just added one, if they had 0 before, it's 1 now).
         if (userDocCount === 1) {
           fetch(window.API_BASE_URL + "/api/email/first-contribution", {
             method: "POST",
@@ -1002,7 +1072,6 @@ if(uploadForm) {
         
         // 3. New Resource Alert for Followers
         if (followerSet.size > 0) {
-          // Fetch follower emails from 'users' collection
           const followerEmails = [];
           for (let uid of followerSet) {
              const uDoc = await getDoc(doc(db, "users", uid));
@@ -1023,16 +1092,35 @@ if(uploadForm) {
           }
         }
       } catch(e) {
-        console.error("Follower notification failed", e);
+        console.error("Follower notification notice:", e);
       }
 
-      alert("Resource Uploaded Successfully!");
+      // Accurate DOM Success Message reflecting Admin Approval requirement
+      const uploadSuccessHtml = `Resource <strong>"${title}"</strong> submitted successfully! 🎓<br><br>
+      • Status: <span style="color:#f59e0b;font-weight:700;">⏳ Pending Administrator Review</span><br>
+      • Access Control: <strong>${isPrivate ? '🔒 Private (Password Protected)' : '🌐 Public'}</strong><br><br>
+      To maintain academic quality, your document requires Administrator approval before it appears publicly in Explore, Home page, and Search Results.<br><br>
+      You can review and manage your resource in the <strong>"Manage Resources"</strong> tab.`;
+
+      if (window.customAlert) {
+        await window.customAlert(uploadSuccessHtml, { title: "Resource Submitted for Approval 📄" });
+      } else {
+        alert(`Resource "${title}" submitted successfully!\n\nStatus: Pending Administrator Review\nAccess: ${isPrivate ? 'Private (Password Protected)' : 'Public'}\n\nYour resource will appear publicly once approved by an Administrator.`);
+      }
+
       uploadForm.reset();
+      const pwGroup = document.getElementById("resourcePasswordGroup");
+      if (pwGroup) pwGroup.style.display = "none";
+
       loadProfile();
       loadExplore();
+      loadContributorManageResources();
       
-      // Switch back to Explore Tab
-      document.querySelector('.tab-btn[data-target="exploreTab"]').click();
+      // Switch to Manage Resources tab so contributor sees their submitted resource and status
+      const manageBtn = document.querySelector('.tab-btn[data-target="manageResourcesTab"]');
+      if (manageBtn) {
+        manageBtn.click();
+      }
       
     } catch(err) {
       console.error(err);
@@ -1680,16 +1768,31 @@ async function loadContributorManageResources() {
     contributorDocsCache = {};
     docs.forEach((docData, idx) => {
       contributorDocsCache[docData.id] = docData;
+      const isApproved = docData.status === "approved" || docData.isApproved === true;
+      const isPrivate = docData.visibility === "private" || docData.isPasswordProtected === true || docData.isPublic === false;
+
+      const statusBadge = isApproved
+        ? `<span style="background:rgba(34,197,94,0.18); color:#4ade80; border:1px solid rgba(34,197,94,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-checkbox-circle-line"></i> Approved</span>`
+        : `<span style="background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-time-line"></i> Pending Approval</span>`;
+
+      const visibilityBadge = isPrivate
+        ? `<span style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-lock-2-line"></i> Private (Password)</span>`
+        : `<span style="background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-global-line"></i> Public</span>`;
+
       const tr = document.createElement("tr");
       tr.className = "manage-res-row";
       tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
       tr.innerHTML = `
         <td style="padding:0.75rem 1rem; font-weight:600; color:var(--primary-light);" data-label="SR No.">${idx + 1}</td>
         <td class="title-col" style="padding:0.75rem 1rem;" data-label="Title">
-          <div style="font-weight:600; color:white;">${docData.title || 'Untitled'}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">${docData.category || 'General'} • ID: ${docData.id}</div>
+          <div style="font-weight:600; color:white; margin-bottom:4px;">${escapeHtml(docData.title || 'Untitled')}</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:4px;">
+            ${statusBadge}
+            ${visibilityBadge}
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(docData.category || 'General')} • ID: ${docData.id}</div>
         </td>
-        <td style="padding:0.75rem 1rem; color:var(--text-muted);" data-label="Discipline">${docData.discipline || 'General'}</td>
+        <td style="padding:0.75rem 1rem; color:var(--text-muted);" data-label="Discipline">${escapeHtml(docData.discipline || 'General')}</td>
         <td style="padding:0.75rem 1rem; text-align:center;" data-label="Action Panel">
           <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
             <button onclick="openEditResourceModal('${docData.id}')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:5px 12px; border-radius:6px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px;"><i class="ri-edit-line"></i> Edit</button>
@@ -2175,9 +2278,9 @@ if (adForm) {
       if (!res.ok) throw new Error(resJson.error || "Submission failed");
 
       if (window.customAlert) {
-        await window.customAlert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted! Check your email to verify ownership authority within 10 minutes. Unverified campaigns auto-expire.`, { title: "Verification Email Dispatched ✉️" });
+        await window.customAlert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted successfully! It is now pending Administrator review and approval. Once approved, your ad campaign will be published live.`, { title: "Ad Submitted for Approval 🚀" });
       } else {
-        alert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted! Check your email to verify ownership authority within 10 minutes. Unverified campaigns auto-expire.`);
+        alert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted successfully!\n\nStatus: Pending Administrator Approval\n\nYour ad will go live once approved by an Administrator.`);
       }
       adForm.reset();
       updateAdFormFields();
