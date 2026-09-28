@@ -12,6 +12,7 @@ firebase-debug.*.log*
 __pycache__/
 *.pyc
 public/*.pdf
+public/**/*.pdf
 
 # Firebase config
 

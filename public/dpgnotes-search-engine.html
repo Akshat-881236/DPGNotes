@@ -671,7 +671,7 @@
   <script src="config.js"></script>
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -753,6 +753,34 @@
             cachedDocs.push({ id: d.id, ...data });
           }
         });
+
+        // Also preload Academic Solutions (Practicals & Assignments)
+        try {
+          const solSnap = await getDocs(collectionGroup(db, "solutions"));
+          solSnap.forEach(solDoc => {
+            const solData = solDoc.data();
+            const parentPath = solDoc.ref.path || '';
+            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
+            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
+            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
+            const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
+            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+            const subName = solData.subjectName || 'Academic Solution';
+            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
+
+            cachedDocs.push({
+              id: solDoc.id,
+              isSolution: true,
+              solutionUrl: solUrl,
+              title: `${subName}${subCode}`,
+              category: solType,
+              discipline: solData.course || solData.courseSec || "Academic",
+              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", solData.course || ""].filter(Boolean)
+            });
+          });
+        } catch(solErr) {
+          console.warn("Solutions suggestion preload warning:", solErr);
+        }
       } catch (err) {
         console.warn("Failed caching documents for suggestions:", err.message);
       }
@@ -803,16 +831,20 @@
         matches.forEach(d => {
           const row = document.createElement("div");
           row.className = "suggestion-row";
-          // Direct Destination navigation when clicking a document!
+          // Direct Destination navigation when clicking a document or solution!
           row.onclick = () => {
-            window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
+            if (d.isSolution && d.solutionUrl) {
+              window.location.href = d.solutionUrl;
+            } else {
+              window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
+            }
           };
           row.innerHTML = `
             <div class="suggestion-left">
-              <i class="ri-search-line"></i>
+              <i class="${d.isSolution ? 'ri-code-box-line' : 'ri-file-text-line'}" style="${d.isSolution ? 'color:#0284c7;' : ''}"></i>
               <span class="suggestion-text">${d.title}</span>
             </div>
-            <span class="suggestion-badge">${d.category || 'Notes'}</span>
+            <span class="suggestion-badge" style="${d.isSolution ? 'background:#e0f2fe; color:#0369a1;' : ''}">${d.category || 'Notes'}</span>
           `;
           dropdown.appendChild(row);
         });

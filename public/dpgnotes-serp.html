@@ -280,7 +280,7 @@
 
     /* =======================================================
        HORIZONTAL TABS NAVIGATION BAR (MATCHING IMAGE 5)
-       All Results | AI Overview | Websites | YouTube Videos | Academic Solutions | Contributors | Sponsored | Images
+       All Results | AI Overview | Websites | YouTube Videos | Academic Solutions | Contributors
        ======================================================= */
     .serp-tabs-bar {
       display: flex;
@@ -298,6 +298,12 @@
       white-space: nowrap;
     }
     .serp-tabs-bar::-webkit-scrollbar { display: none; }
+
+    @media (min-width: 900px) {
+      .serp-tabs-bar {
+        justify-content: center;
+      }
+    }
 
     .serp-tab-btn {
       background: none;
@@ -505,6 +511,10 @@
       padding: 1.25rem 1.5rem;
       box-shadow: 0 1px 3px rgba(32,33,36,0.06);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      box-sizing: border-box;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     .result-card:hover {
       box-shadow: 0 4px 14px rgba(32,33,36,0.12);
@@ -515,13 +525,14 @@
     .result-header-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
+      gap: 10px;
+      margin-bottom: 8px;
+      width: 100%;
     }
     .result-domain-icon {
-      width: 22px;
-      height: 22px;
-      border-radius: 5px;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
       background: #eff6ff;
       color: #1a73e8;
       border: 1px solid #bfdbfe;
@@ -529,26 +540,32 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       flex-shrink: 0;
     }
     .result-domain-info {
       display: flex;
       flex-direction: column;
-      line-height: 1.2;
+      line-height: 1.25;
+      flex: 1;
+      min-width: 0;
     }
     .result-domain-name {
       font-weight: 600;
       font-size: 0.84rem;
       color: #202124;
-    }
-    .result-breadcrumb-url {
-      font-size: 0.75rem;
-      color: #5f6368;
-      max-width: 480px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    .result-breadcrumb-url {
+      font-size: 0.74rem;
+      color: #5f6368;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: break-all;
     }
 
     .result-verified-pill {
@@ -563,6 +580,8 @@
       display: inline-flex;
       align-items: center;
       gap: 3px;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     /* Title Link */
@@ -572,6 +591,8 @@
       font-weight: 600;
       margin: 4px 0 6px 0;
       line-height: 1.35;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     .result-title a {
       color: var(--link-blue);
@@ -587,6 +608,8 @@
       color: #4d5156;
       line-height: 1.58;
       margin-bottom: 0.75rem;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     /* Card Footer & Action Buttons */
@@ -613,6 +636,22 @@
       border-radius: 4px;
       font-size: 0.75rem;
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .result-metric-tag {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      font-weight: 600;
+    }
+    .result-metric-tag i.ri-heart-3-line {
+      color: #e11d48;
+    }
+    .result-metric-tag i.ri-share-forward-line {
+      color: #2563eb;
     }
 
     .result-btn-open {
@@ -628,6 +667,7 @@
       align-items: center;
       gap: 4px;
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .result-btn-open:hover {
       background: #d2e3fc;
@@ -909,18 +949,39 @@
         border: 2px solid var(--primary);
       }
       .serp-tabs-bar {
-        padding: 0 0.75rem;
+        padding: 0 0.5rem;
         top: 55px;
+        justify-content: flex-start;
       }
       .serp-tab-btn {
-        padding: 0.65rem 0.6rem;
+        padding: 0.65rem 0.65rem;
         font-size: 0.82rem;
+        gap: 5px;
       }
       .serp-main-wrapper {
-        padding: 0.5rem 1rem 2rem 1rem;
+        padding: 0.5rem 0.85rem 2rem 0.85rem;
       }
       .result-card {
-        padding: 1rem;
+        padding: 1rem 1.1rem;
+        border-radius: 10px;
+      }
+      .result-title {
+        font-size: 1.12rem;
+        line-height: 1.35;
+      }
+      .result-snippet {
+        font-size: 0.88rem;
+        line-height: 1.52;
+      }
+      .result-footer-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .result-btn-open {
+        font-size: 0.78rem;
+        padding: 4px 10px;
       }
       .ai-msg-bubble {
         max-width: 98%;
@@ -970,7 +1031,7 @@
     </div>
   </header>
 
-  <!-- Horizontal 8-Tab Navigation Bar (Matching Image 5 & DPGNotes Requirements) -->
+  <!-- Horizontal 6-Tab Navigation Bar (Matching DPGNotes Requirements) -->
   <nav class="serp-tabs-bar" id="serpTabsBar">
     <button class="serp-tab-btn active" id="tab-btn-all" onclick="window.switchSerpTab('all')">
       <i class="ri-layout-grid-line"></i> All Results
@@ -989,12 +1050,6 @@
     </button>
     <button class="serp-tab-btn" id="tab-btn-contributors" onclick="window.switchSerpTab('contributors')">
       <i class="ri-team-line" style="color:#6366f1;"></i> Contributors
-    </button>
-    <button class="serp-tab-btn" id="tab-btn-sponsored" onclick="window.switchSerpTab('sponsored')">
-      <i class="ri-megaphone-line" style="color:#f59e0b;"></i> Sponsored
-    </button>
-    <button class="serp-tab-btn" id="tab-btn-image" onclick="window.switchSerpTab('image')">
-      <i class="ri-image-line" style="color:#06b6d4;"></i> Images
     </button>
   </nav>
 
@@ -1122,31 +1177,9 @@
     </div>
   </div>
 
-  <!-- Gallery Lightbox Modal -->
-  <div id="dpgGalleryModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.96); backdrop-filter:blur(12px); flex-direction:column; justify-content:space-between; padding:1.5rem;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <button onclick="closeDpgGalleryModal()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.4rem; border-radius:50%; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Close Gallery (Esc)">✖</button>
-      <span id="galleryModalTitle" style="color:#c084fc; font-weight:700; font-size:0.95rem;">DPGNotes Gallery Viewer</span>
-      <span id="galleryModalCounter" style="color:#94a3b8; font-size:0.85rem; font-weight:600;">1 of 1</span>
-    </div>
-    <div id="gallerySwipeContainer" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex:1; margin:1rem 0;">
-      <button onclick="prevGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Previous">◀</button>
-      <div style="text-align:center; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:78vh;">
-        <img id="galleryModalImage" src="ANH.png" style="max-width:100%; max-height:65vh; object-fit:contain; border-radius:12px;" alt="Gallery Image">
-        <p id="galleryModalCaption" style="color:white; font-size:0.88rem; margin-top:12px; font-weight:600;"></p>
-      </div>
-      <button onclick="nextGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Next">▶</button>
-    </div>
-    <div style="display:flex; justify-content:flex-start;">
-      <button onclick="closeDpgGalleryModal()" style="background:#ef4444; border:none; color:white; padding:8px 18px; border-radius:8px; font-weight:700; font-size:0.88rem; cursor:pointer;">
-        Close
-      </button>
-    </div>
-  </div>
-
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -1216,8 +1249,19 @@
     // QUERY PARAMETERS & STATE
     // ==========================================
     let allDocs = [];
+    let allContributors = [];
     window.currentSearchResults = [];
     window.activeSerpTab = 'all';
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const searchField = document.getElementById("serpSearchField");
@@ -1228,8 +1272,10 @@
     if (queryLabel) queryLabel.innerText = initialQuery || "All Materials";
 
     const initialTab = urlParams.get("tab");
-    if (initialTab && ['all', 'ai', 'website', 'videos', 'solutions', 'contributors', 'sponsored', 'image'].includes(initialTab.toLowerCase())) {
+    if (initialTab && ['all', 'ai', 'website', 'videos', 'solutions', 'contributors'].includes(initialTab.toLowerCase())) {
       window.activeSerpTab = initialTab.toLowerCase();
+    } else {
+      window.activeSerpTab = 'all';
     }
 
     window.clearSearchField = function() {
@@ -1279,6 +1325,9 @@
     // TAB SWITCHING (IMAGE 5)
     // ==========================================
     window.switchSerpTab = function(tabName) {
+      if (!['all', 'ai', 'website', 'videos', 'solutions', 'contributors'].includes(tabName)) {
+        tabName = 'all';
+      }
       window.activeSerpTab = tabName;
 
       document.querySelectorAll('.serp-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1320,7 +1369,7 @@
     }
 
     // ==========================================
-    // DATA LOADING & FILTERING
+    // DATA LOADING & MULTI-COLLECTION MERGE
     // ==========================================
     async function loadDocuments() {
       showLoadingStage();
@@ -1334,6 +1383,110 @@
             allDocs.push({ id: d.id, ...data });
           }
         });
+
+        // Restore Multi-Collection Query: Fetch Academic Solutions (Assignments & Practicals)
+        try {
+          const solSnap = await getDocs(collectionGroup(db, "solutions"));
+          solSnap.forEach(solDoc => {
+            const solData = solDoc.data();
+            const parentPath = solDoc.ref.path || '';
+            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
+            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
+            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
+            const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
+            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+
+            const subName = solData.subjectName || 'Academic Solution';
+            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
+            const course = solData.course || solData.courseSec || "Academic";
+            const author = solData.studentName || solData.contributorName || "Verified Contributor";
+            const isEnc = Boolean(solData.isEncrypted);
+            const likesCount = typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : (Array.isArray(solData.likes) ? solData.likes.length : 0));
+            const sharesCount = typeof solData.shares === 'number' ? solData.shares : (Array.isArray(solData.shares) ? solData.shares.length : (typeof solData.shareCount === 'number' ? solData.shareCount : (solData.views || 0)));
+
+            allDocs.push({
+              id: solDoc.id,
+              isSolution: true,
+              solutionType: isPractical ? "practical" : "assignment",
+              solutionUrl: solUrl,
+              title: `${subName}${subCode}`,
+              subjectName: solData.subjectName || '',
+              subjectCode: solData.subjectCode || '',
+              category: solType,
+              discipline: course,
+              description: `${solType} for ${subName}${subCode}. Course: ${course}. Contributor: ${author}. ${isEnc ? '🔐 Password Protected' : '🔓 Public Solution'}.`,
+              userName: author,
+              uploader: author,
+              contributorUid: contribUid,
+              uid: contribUid,
+              userId: contribUid,
+              likes: likesCount,
+              shares: sharesCount,
+              views: solData.views || 0,
+              screentime: solData.totalScreentimeSec || 60,
+              isEncrypted: isEnc,
+              isVerified: true,
+              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", course, isEnc ? "protected" : "public"].filter(Boolean),
+              createdAt: solData.createdAt ? (typeof solData.createdAt === 'string' ? { seconds: Math.floor(new Date(solData.createdAt).getTime() / 1000) } : solData.createdAt) : { seconds: Math.floor(Date.now() / 1000) },
+              rawDoc: solData
+            });
+          });
+        } catch (solErr) {
+          console.warn("Solutions collectionGroup fetch error:", solErr);
+        }
+
+        // Fetch registered users for Contributors tab
+        try {
+          const userSnap = await getDocs(collection(db, "users"));
+          const usersMap = new Map();
+          userSnap.forEach(uDoc => {
+            const uData = uDoc.data();
+            const displayName = uData.displayName || uData.name || (uData.email ? uData.email.split('@')[0] : 'Contributor');
+            usersMap.set(uDoc.id, {
+              uid: uDoc.id,
+              name: displayName,
+              photoURL: uData.photoURL || uData.profilePic || '',
+              role: uData.role || 'Contributor',
+              discipline: uData.discipline || 'Academic',
+              docsCount: 0,
+              likesCount: 0
+            });
+          });
+
+          // Match docs counts to users
+          allDocs.forEach(d => {
+            const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId;
+            const author = d.userName || d.uploader || d.studentName || d.contributorName;
+            const docLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
+
+            if (authorUid && usersMap.has(authorUid)) {
+              const u = usersMap.get(authorUid);
+              u.docsCount++;
+              u.likesCount += docLikes;
+            } else if (author && author !== 'Guest') {
+              let existing = Array.from(usersMap.values()).find(x => x.name.toLowerCase() === author.toLowerCase());
+              if (existing) {
+                existing.docsCount++;
+                existing.likesCount += docLikes;
+                if (!existing.uid && authorUid) existing.uid = authorUid;
+              } else {
+                usersMap.set(authorUid || author, {
+                  uid: authorUid || '',
+                  name: author,
+                  photoURL: '',
+                  role: 'Verified Contributor',
+                  discipline: d.discipline || 'Academic',
+                  docsCount: 1,
+                  likesCount: docLikes
+                });
+              }
+            }
+          });
+
+          allContributors = Array.from(usersMap.values()).filter(c => c.docsCount > 0 || c.uid).sort((a, b) => b.docsCount - a.docsCount);
+        } catch(uErr) {
+          console.warn("Users collection load warning:", uErr);
+        }
 
         populateDynamicFilters();
         applyFilters();
@@ -1495,18 +1648,17 @@
       else if (window.activeSerpTab === 'videos') renderVideosTab(q);
       else if (window.activeSerpTab === 'solutions') renderSolutionsTab(results, q);
       else if (window.activeSerpTab === 'contributors') renderContributorsTab(q);
-      else if (window.activeSerpTab === 'sponsored') renderSponsoredTab(q);
-      else if (window.activeSerpTab === 'image') renderImagesTab(results, q);
+      else renderAllTab(results, q);
     }
 
-    // TAB 1: ALL RESULTS
+    // TAB 1: ALL RESULTS (DOCUMENTS + ACADEMIC SOLUTIONS WITH ENGAGEMENT METRICS)
     function renderAllTab(results, q) {
       const list = document.getElementById("resultsList");
       if (results.length === 0) {
         list.innerHTML = `
           <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
             <i class="ri-search-line" style="font-size:3rem; color:#9aa0a6;"></i>
-            <h3 style="margin:12px 0 6px 0; color:#202124;">No results found for "${q || 'your query'}"</h3>
+            <h3 style="margin:12px 0 6px 0; color:#202124;">No results found for "${escapeHtml(q) || 'your query'}"</h3>
             <p style="font-size:0.9rem;">Check your spelling, try more general terms, or reset filters above.</p>
           </div>
         `;
@@ -1515,35 +1667,60 @@
 
       let html = '';
       results.forEach(d => {
-        const uploaderName = d.userName || d.uploader || 'DPG Contributor';
+        const uploaderName = d.userName || d.uploader || (d.isSolution ? 'Verified Contributor' : 'DPG Contributor');
         const initial = uploaderName.charAt(0).toUpperCase();
-        const viewerUrl = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
+
+        const isSol = Boolean(d.isSolution);
+        const viewerUrl = d.solutionUrl || (isSol ? (d.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(d.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(d.id)}`) : `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`);
+
+        // Engagement metrics: safely compute numeric Likes and Shares, never displaying Firestore UIDs or tokens!
+        const totalLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
+        const totalShares = typeof d.shares === 'number' ? d.shares : (Array.isArray(d.shares) ? d.shares.length : (typeof d.shareCount === 'number' ? d.shareCount : (d.views || 0)));
+
+        const categoryLabel = d.category || (isSol ? 'Academic Solution' : 'Notes');
+        const disciplineLabel = d.discipline || 'General';
+
+        const domainIconBg = isSol ? '#e0f2fe' : '#eff6ff';
+        const domainIconColor = isSol ? '#0284c7' : '#1a73e8';
+        const domainIconBorder = isSol ? '#bae6fd' : '#bfdbfe';
+
+        let badgeHtml = '';
+        if (isSol) {
+          badgeHtml = d.isEncrypted
+            ? `<span class="result-verified-pill" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;"><i class="ri-lock-2-line"></i> Encrypted</span>`
+            : `<span class="result-verified-pill" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;"><i class="ri-code-box-line"></i> Solution</span>`;
+        } else if (d.isVerified) {
+          badgeHtml = `<span class="result-verified-pill"><i class="ri-shield-check-fill"></i> Verified</span>`;
+        }
 
         html += `
           <div class="result-card">
             <div class="result-header-row">
-              <div class="result-domain-icon">${initial}</div>
-              <div class="result-domain-info">
-                <span class="result-domain-name">dpgnotes.web.app &rsaquo; ${d.category || 'Notes'}</span>
-                <span class="result-breadcrumb-url">Shared by ${uploaderName} &bull; ${d.discipline || 'General'}</span>
+              <div class="result-domain-icon" style="background:${domainIconBg}; color:${domainIconColor}; border-color:${domainIconBorder};">
+                ${isSol ? '<i class="ri-code-box-line"></i>' : initial}
               </div>
-              ${d.isVerified ? `<span class="result-verified-pill"><i class="ri-shield-check-fill"></i> Verified</span>` : ''}
+              <div class="result-domain-info">
+                <span class="result-domain-name">dpgnotes.web.app &rsaquo; ${escapeHtml(categoryLabel)}</span>
+                <span class="result-breadcrumb-url">Shared by ${escapeHtml(uploaderName)} &bull; ${escapeHtml(disciplineLabel)}</span>
+              </div>
+              ${badgeHtml}
             </div>
 
             <h3 class="result-title">
-              <a href="${viewerUrl}">${d.title}</a>
+              <a href="${viewerUrl}">${escapeHtml(d.title)}</a>
             </h3>
 
-            <p class="result-snippet">${d.description || 'Verified academic study material, notes, and sessional examination guidance.'}</p>
+            <p class="result-snippet">${escapeHtml(d.description || (isSol ? 'Verified programming exercise, algorithm implementation, and lab documentation.' : 'Verified academic study material, notes, and sessional examination guidance.'))}</p>
 
             <div class="result-footer-row">
               <div class="result-tags-row">
-                <span class="result-tag"><i class="ri-folder-2-line"></i> ${d.category || 'Academic'}</span>
-                <span class="result-tag"><i class="ri-book-open-line"></i> ${d.discipline || 'General'}</span>
-                ${d.likes ? `<span class="result-tag"><i class="ri-thumb-up-line"></i> ${d.likes}</span>` : ''}
+                <span class="result-tag"><i class="ri-folder-2-line"></i> ${escapeHtml(categoryLabel)}</span>
+                <span class="result-tag"><i class="ri-book-open-line"></i> ${escapeHtml(disciplineLabel)}</span>
+                <span class="result-tag result-metric-tag"><i class="ri-heart-3-line"></i> ${totalLikes} ${totalLikes === 1 ? 'Like' : 'Likes'}</span>
+                <span class="result-tag result-metric-tag"><i class="ri-share-forward-line"></i> ${totalShares} ${totalShares === 1 ? 'Share' : 'Shares'}</span>
               </div>
               <a href="${viewerUrl}" class="result-btn-open">
-                Read Notes <i class="ri-arrow-right-line"></i>
+                ${isSol ? 'Open Solution <i class="ri-arrow-right-line"></i>' : 'Read Notes <i class="ri-arrow-right-line"></i>'}
               </a>
             </div>
           </div>
@@ -1802,10 +1979,17 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
       const answerBubble = document.createElement("div");
       answerBubble.className = "ai-msg-bubble assistant";
 
-      let formattedHtml = typeof marked !== 'undefined' ? marked.parse(responseText) : responseText.replace(/\n/g, '<br>');
+      // Strip accidental leading spaces before HTML tags so marked doesn't turn HTML into <pre><code>
+      let cleanedResponse = responseText.replace(/^[ \t]+(?=<)/gm, '');
+
+      // Check if response actually contains intentional code fences (```) or code containers
+      const hasCodeBlocks = /```[a-zA-Z0-9_-]*\n[\s\S]*?```/.test(cleanedResponse) || /<div\s+class=["']code-container/i.test(cleanedResponse);
+
+      let formattedHtml = typeof marked !== 'undefined' ? marked.parse(cleanedResponse) : cleanedResponse.replace(/\n/g, '<br>');
       if (typeof DOMPurify !== 'undefined') formattedHtml = DOMPurify.sanitize(formattedHtml);
 
-      if (typeof window.formatSolutionContent === 'function') {
+      // ONLY call formatSolutionContent if the AI response actually contains code fences!
+      if (hasCodeBlocks && typeof window.formatSolutionContent === 'function') {
         formattedHtml = window.formatSolutionContent(formattedHtml, 'ai_chat_' + Date.now());
       }
 
@@ -1915,31 +2099,51 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
     // TAB 5: ACADEMIC SOLUTIONS
     function renderSolutionsTab(results, q) {
       const list = document.getElementById("resultsList");
-      const solutions = results.filter(r => r.isSolution || (r.category && r.category.toLowerCase().includes('solution')));
-      const targetSolutions = solutions.length > 0 ? solutions : results.slice(0, 6);
+      let solutions = results.filter(r => r.isSolution || (r.category && r.category.toLowerCase().includes('solution')));
+      if (solutions.length === 0 && (!q || q === '')) {
+        solutions = allDocs.filter(r => r.isSolution || (r.category && r.category.toLowerCase().includes('solution')));
+      }
 
-      if (targetSolutions.length === 0) {
-        list.innerHTML = `<div style="padding:3rem; text-align:center; color:#5f6368;">No practical or assignment solutions found for "${q}".</div>`;
+      if (solutions.length === 0) {
+        list.innerHTML = `
+          <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
+            <i class="ri-code-box-line" style="font-size:3rem; color:#0284c7; margin-bottom:0.75rem; display:block;"></i>
+            <h3 style="font-size:1.25rem; margin-bottom:0.5rem; color:#202124;">No Academic Solutions match "${escapeHtml(q) || 'filter'}"</h3>
+            <p style="font-size:0.9rem; max-width:480px; margin:0 auto;">Try searching for practical subjects like "Data Structures", "Java", "Python", "Web Technology", or "C++".</p>
+          </div>
+        `;
         return;
       }
 
       let solHtml = `<div style="display:flex; flex-direction:column; gap:16px; width:100%; max-width:900px;">`;
-      targetSolutions.forEach(s => {
-        const viewerUrl = s.solutionUrl || `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(s.id)}&title=${encodeURIComponent(s.title || '')}`;
+      solutions.forEach(s => {
+        const viewerUrl = s.solutionUrl || (s.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(s.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(s.id)}`);
+        const totalLikes = Array.isArray(s.likes) ? s.likes.length : (typeof s.likes === 'number' ? s.likes : (Array.isArray(s.likedBy) ? s.likedBy.length : 0));
+        const totalShares = typeof s.shares === 'number' ? s.shares : (Array.isArray(s.shares) ? s.shares.length : (typeof s.shareCount === 'number' ? s.shareCount : (s.views || 0)));
+
+        const encBadge = s.isEncrypted
+          ? `<span class="result-verified-pill" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;"><i class="ri-lock-2-line"></i> Encrypted</span>`
+          : `<span class="result-verified-pill" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;"><i class="ri-code-box-line"></i> Solution</span>`;
+
         solHtml += `
           <div class="result-card">
             <div class="result-header-row">
-              <div class="result-domain-icon" style="background:#e0f2fe; color:#0284c7;"><i class="ri-code-box-line"></i></div>
+              <div class="result-domain-icon" style="background:#e0f2fe; color:#0284c7; border-color:#bae6fd;"><i class="ri-code-box-line"></i></div>
               <div class="result-domain-info">
-                <span class="result-domain-name">Academic Solution &bull; ${s.discipline || 'Engineering'}</span>
-                <span class="result-breadcrumb-url">${s.category || 'Practical Solution'}</span>
+                <span class="result-domain-name">dpgnotes.web.app &rsaquo; ${escapeHtml(s.category || 'Practical Solution')}</span>
+                <span class="result-breadcrumb-url">Shared by ${escapeHtml(s.userName || s.uploader || 'Verified Contributor')} &bull; ${escapeHtml(s.discipline || 'Engineering')}</span>
               </div>
-              <span class="result-verified-pill" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">Verified Solution</span>
+              ${encBadge}
             </div>
-            <h3 class="result-title"><a href="${viewerUrl}">${s.title}</a></h3>
-            <p class="result-snippet">${s.description || 'Verified programming exercise, algorithm implementation, and lab documentation.'}</p>
+            <h3 class="result-title"><a href="${viewerUrl}">${escapeHtml(s.title)}</a></h3>
+            <p class="result-snippet">${escapeHtml(s.description || 'Verified programming exercise, algorithm implementation, and lab documentation.')}</p>
             <div class="result-footer-row">
-              <span class="result-tag"><i class="ri-terminal-box-line"></i> Live Sandbox</span>
+              <div class="result-tags-row">
+                <span class="result-tag"><i class="ri-folder-2-line"></i> ${escapeHtml(s.category || 'Academic Solution')}</span>
+                <span class="result-tag"><i class="ri-book-open-line"></i> ${escapeHtml(s.discipline || 'Academic')}</span>
+                <span class="result-tag result-metric-tag"><i class="ri-heart-3-line"></i> ${totalLikes} ${totalLikes === 1 ? 'Like' : 'Likes'}</span>
+                <span class="result-tag result-metric-tag"><i class="ri-share-forward-line"></i> ${totalShares} ${totalShares === 1 ? 'Share' : 'Shares'}</span>
+              </div>
               <a href="${viewerUrl}" class="result-btn-open">Open Solution <i class="ri-arrow-right-line"></i></a>
             </div>
           </div>
@@ -1949,125 +2153,64 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
       list.innerHTML = solHtml;
     }
 
-    // TAB 6: CONTRIBUTORS
+    // TAB 6: CONTRIBUTORS (WITH DIRECT FIREBASE UID PROFILE LINK)
     function renderContributorsTab(q) {
       const list = document.getElementById("resultsList");
-      const contributorsMap = {};
-      allDocs.forEach(d => {
-        const name = d.userName || d.uploader || 'Anonymous Contributor';
-        if (!contributorsMap[name]) {
-          contributorsMap[name] = { name: name, count: 0, discipline: d.discipline || 'General' };
-        }
-        contributorsMap[name].count++;
-      });
+      let contributors = allContributors;
+      if (q) {
+        const qLower = q.toLowerCase();
+        contributors = allContributors.filter(c => 
+          (c.name && c.name.toLowerCase().includes(qLower)) ||
+          (c.discipline && c.discipline.toLowerCase().includes(qLower)) ||
+          (c.role && c.role.toLowerCase().includes(qLower))
+        );
+      }
 
-      const contributors = Object.values(contributorsMap).sort((a, b) => b.count - a.count);
+      if (contributors.length === 0) {
+        list.innerHTML = `
+          <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
+            <i class="ri-team-line" style="font-size:3rem; color:#6366f1; margin-bottom:0.75rem; display:block;"></i>
+            <h3 style="font-size:1.25rem; margin-bottom:0.5rem; color:#202124;">No contributors match "${escapeHtml(q) || 'search'}"</h3>
+            <p style="font-size:0.9rem; max-width:480px; margin:0 auto;">Try searching for student or contributor names or course disciplines.</p>
+          </div>
+        `;
+        return;
+      }
 
-      let html = `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; width:100%; max-width:960px;">`;
+      let html = `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; width:100%; max-width:960px;">`;
       contributors.forEach(c => {
-        const initial = c.name.charAt(0).toUpperCase();
+        const initial = (c.name || 'C').charAt(0).toUpperCase();
+        const avatarContent = c.photoURL 
+          ? `<img src="${c.photoURL}" alt="${escapeHtml(c.name)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">` 
+          : initial;
+
+        const profileLink = c.uid ? `profile.html?uid=${encodeURIComponent(c.uid)}` : 'profile.html';
+
         html += `
-          <div class="result-card" style="display:flex; align-items:center; gap:14px;">
-            <div style="width:44px; height:44px; border-radius:50%; background:#1a73e8; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.15rem; flex-shrink:0;">
-              ${initial}
+          <div class="result-card" style="display:flex; align-items:center; gap:14px; padding:1.1rem;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#1a73e8; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.2rem; flex-shrink:0; overflow:hidden;">
+              ${avatarContent}
             </div>
             <div style="flex:1; min-width:0;">
-              <h4 style="margin:0 0 2px 0; font-size:0.98rem; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.name}</h4>
-              <div style="font-size:0.78rem; color:#5f6368;">${c.discipline} &bull; <strong>${c.count}</strong> notes</div>
+              <h4 style="margin:0 0 3px 0; font-size:1rem; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <a href="${profileLink}" style="color:#1e293b; text-decoration:none;">${escapeHtml(c.name)}</a>
+              </h4>
+              <div style="font-size:0.78rem; color:#5f6368; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                ${escapeHtml(c.role || 'Contributor')} &bull; ${escapeHtml(c.discipline || 'General')}
+              </div>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">
+                <strong>${c.docsCount || 0}</strong> ${c.docsCount === 1 ? 'resource' : 'resources'} &bull; <strong>${c.likesCount || 0}</strong> likes
+              </div>
             </div>
-            <a href="profile.html?user=${encodeURIComponent(c.name)}" class="result-btn-open" style="padding:4px 10px; font-size:0.75rem;">View</a>
+            <a href="${profileLink}" class="result-btn-open" style="padding:5px 12px; font-size:0.78rem; flex-shrink:0;">
+              View Profile <i class="ri-arrow-right-line"></i>
+            </a>
           </div>
         `;
       });
       html += `</div>`;
       list.innerHTML = html;
     }
-
-    // TAB 7: SPONSORED ADS
-    async function renderSponsoredTab(q) {
-      const list = document.getElementById("resultsList");
-      list.innerHTML = `
-        <div class="result-card" style="border-left:4px solid #f59e0b;">
-          <div class="result-header-row">
-            <span style="background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:4px; font-size:0.72rem; font-weight:700;">SPONSORED</span>
-            <span class="result-domain-name">Akshat Network Hub &bull; Student Development Program</span>
-          </div>
-          <h3 class="result-title"><a href="https://dpgnotes.web.app" target="_blank">DPGNotes Contributor &amp; Developer Partnership</a></h3>
-          <p class="result-snippet">Join the premier academic network of DPG College students and developers. Access high-speed verified notes, coding solutions, and sessional question banks.</p>
-          <div class="result-footer-row">
-            <span class="result-tag">Verified Partner</span>
-            <a href="https://dpgnotes.web.app" target="_blank" class="result-btn-open">Learn More <i class="ri-external-link-line"></i></a>
-          </div>
-        </div>
-      `;
-    }
-
-    // TAB 8: IMAGES (LIGHTBOX GRID)
-    window.galleryImagesList = [];
-    window.currentGalleryIndex = 0;
-
-    function renderImagesTab(results, q) {
-      const list = document.getElementById("resultsList");
-      window.galleryImagesList = results.map(r => ({
-        url: r.pdfUrl || 'ANH.png',
-        title: r.title,
-        discipline: r.discipline || 'General'
-      }));
-
-      let html = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:14px; width:100%; max-width:960px;">`;
-      window.galleryImagesList.slice(0, 12).forEach((img, idx) => {
-        html += `
-          <div class="result-card" onclick="openDpgGalleryModal(${idx})" style="padding:10px; cursor:pointer; text-align:center;">
-            <div style="height:140px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:8px;">
-              <i class="ri-file-pdf-fill" style="font-size:3rem; color:#ef4444;"></i>
-            </div>
-            <div style="font-weight:600; font-size:0.84rem; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${img.title}</div>
-            <div style="font-size:0.72rem; color:#64748b;">${img.discipline}</div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-      list.innerHTML = html;
-    }
-
-    window.openDpgGalleryModal = function(index) {
-      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
-      window.currentGalleryIndex = (index >= 0 && index < window.galleryImagesList.length) ? index : 0;
-      updateGalleryModalContent();
-      const modal = document.getElementById("dpgGalleryModal");
-      if (modal) modal.style.display = "flex";
-    };
-
-    window.closeDpgGalleryModal = function() {
-      const modal = document.getElementById("dpgGalleryModal");
-      if (modal) modal.style.display = "none";
-    };
-
-    function updateGalleryModalContent() {
-      const current = window.galleryImagesList[window.currentGalleryIndex];
-      if (!current) return;
-      const titleEl = document.getElementById("galleryModalTitle");
-      const counterEl = document.getElementById("galleryModalCounter");
-      const captionEl = document.getElementById("galleryModalCaption");
-
-      if (titleEl) titleEl.innerText = current.title;
-      if (counterEl) counterEl.innerText = `${window.currentGalleryIndex + 1} of ${window.galleryImagesList.length}`;
-      if (captionEl) captionEl.innerText = `${current.title} (${current.discipline})`;
-    }
-
-    window.prevGalleryImage = function() {
-      if (window.currentGalleryIndex > 0) {
-        window.currentGalleryIndex--;
-        updateGalleryModalContent();
-      }
-    };
-
-    window.nextGalleryImage = function() {
-      if (window.currentGalleryIndex < window.galleryImagesList.length - 1) {
-        window.currentGalleryIndex++;
-        updateGalleryModalContent();
-      }
-    };
 
     // =======================================================
     // GEMINI KEY MODAL HANDLERS
