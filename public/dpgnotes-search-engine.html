@@ -8,8 +8,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" href="ANH.png" type="image/png" />
-  <title>DPGNotes Search Engine | Academic Search, Notes & Question Papers</title>
-  <meta name="description" content="Search across thousands of university notes, computer science modules, sessional question papers, tutorials, and practical files on DPGNotes Search Engine." />
+  <title>DPGNotes Search Engine | Academic Notes, Solutions &amp; Question Papers</title>
+  <meta name="description" content="Search across thousands of verified university notes, computer science modules, sessional question papers, tutorials, and practical files on DPGNotes Search Engine." />
   <meta name="keywords" content="DPGNotes Search, Academic Search Engine, University Notes Finder, BCA PYQ, Computer Science Search, Physical Education Notes, Exam Preparation" />
   <meta name="author" content="DPGNotes / Akshat Network Hub" />
   <meta property="og:title" content="DPGNotes Search Engine" />
@@ -18,111 +18,295 @@
   <meta property="og:type" content="website" />
   
   <!-- Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="custom-dialogs.js"></script>
   <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
   
   <style>
     :root {
-      --bg-top: #0b0f19;
-      --bg-bottom: #030712;
-      --surface: rgba(17, 24, 39, 0.6);
-      --surface-hover: rgba(31, 41, 55, 0.85);
-      --border: rgba(255, 255, 255, 0.08);
-      --primary: #6366f1;
-      --primary-light: #8b5cf6;
-      --primary-glow: rgba(99, 102, 241, 0.4);
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
-      --shadow: 0 10px 40px rgba(0,0,0,0.5);
-      --radius-lg: 24px;
-      --radius-md: 16px;
+      --bg: #ffffff;
+      --text: #202124;
+      --text-muted: #5f6368;
+      --primary: #1a73e8;
+      --primary-hover: #1557b0;
+      --primary-light: #e8f0fe;
+      --border: #dfe1e5;
+      --border-hover: #dadce0;
+      --shadow-sm: 0 1px 6px rgba(32,33,36,0.18);
+      --shadow-md: 0 4px 16px rgba(32,33,36,0.16);
+      --chip-bg: #f8fafc;
+      --chip-border: #e2e8f0;
+      --chip-hover: #f1f5f9;
+      --radius-pill: 28px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
-      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
       color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ==========================================
+       TOP NAVIGATION BAR
+       ========================================== */
+    .engine-top-nav {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.75rem;
+      background: #ffffff;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--primary);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.4px;
+      transition: opacity 0.2s;
+    }
+    .nav-brand:hover {
+      opacity: 0.9;
+    }
+    .nav-brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Home (Always Present) */
+    .nav-home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .nav-home-btn:hover {
+      background: #f8fafc;
+      border-color: #bdc1c6;
+      color: #202124;
+    }
+
+    /* Guest Sign In Button */
+    .nav-btn-signin {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(26,115,232,0.28);
+    }
+    .nav-btn-signin:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      box-shadow: 0 2px 6px rgba(26,115,232,0.38);
+    }
+
+    /* Contributor / Logged-in State */
+    .contributor-user-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contributor-dashboard-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 4px 14px 4px 5px;
+      border-radius: 22px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(26,115,232,0.25);
+    }
+    .contributor-dashboard-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .contributor-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ffffff;
+      background: #3b82f6;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.78rem;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .contributor-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .contributor-logout-btn {
+      background: #f8fafc;
+      border: 1px solid #dadce0;
+      color: #5f6368;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.05rem;
+      transition: all 0.2s ease;
+    }
+    .contributor-logout-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+
+    /* ==========================================
+       MAIN HERO SECTION (MATCHING IMAGES 2 & 3)
+       ========================================== */
+    .search-hero-stage {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 1.5rem;
-      overflow-x: hidden;
-    }
-
-    /* Core Search Box Wrapper */
-    .search-container {
+      padding: 2.5rem 1.5rem 3rem 1.5rem;
       width: 100%;
-      max-width: 720px;
+      max-width: 820px;
+      margin: 0 auto;
       text-align: center;
-      z-index: 10;
-      animation: fadeIn 0.8s ease-out;
     }
 
-    .brand-logo {
-      width: 80px;
-      height: 80px;
-      border-radius: var(--radius-lg);
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    .hero-center-brand {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      font-weight: 800;
-      margin: 0 auto 1.5rem;
-      color: white;
-      box-shadow: 0 8px 30px var(--primary-glow);
-      animation: bounce 3s ease-in-out infinite;
-    }
-
-    .brand-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
+      gap: 12px;
       margin-bottom: 0.5rem;
-      background: linear-gradient(to right, #fff, #9ca3af);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    }
+    .hero-logo-icon {
+      font-size: 2.5rem;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.25rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #1a73e8;
+    }
+    .hero-brand-title .accent {
+      color: #202124;
     }
 
-    .brand-subtitle {
+    .hero-subtitle {
       color: var(--text-muted);
-      font-size: 0.95rem;
-      margin-bottom: 2.5rem;
+      font-size: 0.96rem;
+      margin-bottom: 2rem;
+      max-width: 600px;
+      line-height: 1.5;
     }
 
-    /* Interactive Search bar */
-    .search-box-wrapper {
+    /* ==========================================
+       SEARCH BOX & AUTO-SUGGESTIONS (IMAGE 4)
+       ========================================== */
+    .search-box-outer-container {
+      width: 100%;
+      max-width: 680px;
       position: relative;
-      background: var(--surface);
+      margin-bottom: 1.5rem;
+    }
+
+    .search-bar-wrapper {
+      position: relative;
+      background: #ffffff;
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 0.4rem;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: var(--radius-pill);
+      padding: 0.35rem 0.6rem;
+      box-shadow: var(--shadow-sm);
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 20;
     }
 
-    .search-box-wrapper:focus-within {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), 0 20px 40px rgba(0,0,0,0.6);
-      transform: scale(1.01);
+    .search-bar-wrapper:hover,
+    .search-bar-wrapper:focus-within {
+      box-shadow: var(--shadow-md);
+      border-color: transparent;
     }
 
-    .search-icon {
-      color: var(--primary-light);
-      font-size: 1.5rem;
-      margin-left: 1rem;
+    /* When suggestions are active, attach dropdown smoothly */
+    .search-bar-wrapper.has-suggestions {
+      border-bottom-left-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      border-bottom-color: #f1f3f4 !important;
+      box-shadow: 0 4px 16px rgba(32,33,36,0.16) !important;
+    }
+
+    .search-bar-icon {
+      color: #9aa0a6;
+      font-size: 1.25rem;
+      margin-left: 0.65rem;
+      flex-shrink: 0;
     }
 
     .search-input {
@@ -130,230 +314,365 @@
       border: none;
       outline: none;
       background: transparent;
-      color: white;
+      color: var(--text);
       font-family: inherit;
-      font-size: 1.15rem;
-      padding: 0.8rem 0.5rem;
+      font-size: 1.05rem;
+      padding: 0.65rem 0.3rem;
     }
-
     .search-input::placeholder {
-      color: var(--text-muted);
+      color: #9aa0a6;
+      font-size: 0.98rem;
     }
 
-    .search-btn {
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    .search-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .search-action-icon-btn {
+      background: none;
       border: none;
-      color: white;
-      padding: 0.8rem 1.8rem;
-      border-radius: 18px;
-      font-weight: 700;
-      font-family: inherit;
-      font-size: 0.95rem;
+      color: #5f6368;
+      font-size: 1.2rem;
+      padding: 6px;
+      border-radius: 50%;
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 15px var(--primary-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .search-action-icon-btn:hover {
+      background: #f1f3f4;
+      color: var(--text);
     }
 
-    .search-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px var(--primary-glow);
+    .search-mic-btn {
+      color: #ea4335 !important;
+    }
+    .search-mic-btn.listening {
+      color: #ea4335 !important;
+      animation: micPulse 1.2s infinite;
+      background: #fce8e6;
+    }
+    @keyframes micPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
     }
 
-    /* Live suggestions panel in normal document flow */
-    .suggestions-panel {
-      position: relative;
-      width: 100%;
-      max-width: 680px;
-      background: rgba(17, 24, 39, 0.98);
+    .search-clear-btn {
+      display: none;
+      color: #70757a;
+    }
+    .search-clear-btn.visible {
+      display: flex;
+    }
+
+    /* Auto-suggestions Dropdown (Matching Image 4) */
+    .suggestions-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
       border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-      max-height: 360px;
+      border-top: none;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 16px rgba(32,33,36,0.16);
+      display: none;
+      max-height: 380px;
       overflow-y: auto;
       text-align: left;
-      display: none;
-      margin-top: 0.8rem;
-      opacity: 0;
-      transform: translateY(-6px);
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      backdrop-filter: blur(24px);
-      box-sizing: border-box;
+      z-index: 15;
+      padding: 0.4rem 0;
     }
-    
-    .suggestions-panel.active {
-      display: block !important;
-      opacity: 1 !important;
-      pointer-events: auto !important;
-      transform: translateY(0) !important;
+    .suggestions-dropdown.active {
+      display: block;
     }
 
-    .suggestion-item {
+    .suggestion-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.9rem 1.2rem;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
+      padding: 0.65rem 1.25rem;
       cursor: pointer;
-      transition: background 0.2s;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.15s ease;
+      gap: 12px;
+    }
+    .suggestion-row:hover {
+      background: #f8fafc;
     }
 
-    .suggestion-item:last-child {
-      border-bottom: none;
-    }
-
-    .suggestion-item:hover {
-      background: var(--surface-hover);
-    }
-
-    .suggestion-info {
-      flex: 1;
-      margin-right: 1.5rem;
-    }
-
-    .suggestion-title {
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: white;
-      margin-bottom: 0.15rem;
-      display: -webkit-box;
-      -webkit-line-clamp: 1;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .suggestion-meta {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: flex;
-      gap: 0.8rem;
-    }
-
-    .suggestion-meta span {
+    .suggestion-left {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .suggestion-left i {
+      color: #9aa0a6;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+    .suggestion-text {
+      font-size: 0.95rem;
+      color: #202124;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .suggestion-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: #e8f0fe;
+      color: #1a73e8;
+      flex-shrink: 0;
     }
 
-    .suggestion-arrow {
-      color: var(--primary-light);
-      font-size: 1.2rem;
-      transition: transform 0.25s;
-    }
-
-    .suggestion-item:hover .suggestion-arrow {
-      transform: translateX(4px);
-    }
-
-    .no-results-item {
-      padding: 1.5rem;
+    .no-suggestions-row {
+      padding: 1rem 1.25rem;
+      font-size: 0.88rem;
+      color: #70757a;
       text-align: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
     }
 
-    /* Background lights decoration */
-    .bg-light-1 {
-      position: absolute;
-      top: 10%; left: 5%; width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .bg-light-2 {
-      position: absolute;
-      bottom: 10%; right: 5%; width: 450px; height: 450px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, transparent 70%);
-      pointer-events: none;
+    /* ==========================================
+       BUTTONS & TRENDING PILLS (IMAGE 2 & 3)
+       ========================================== */
+    .hero-btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
     }
 
-    /* Keyframe Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+    .hero-action-btn {
+      background: #f8fafc;
+      border: 1px solid #dadce0;
+      color: #3c4043;
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+    .hero-action-btn:hover {
+      background: #f1f3f4;
+      border-color: #bdc1c6;
+      color: #202124;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.15);
     }
 
-    /* Responsiveness Rules */
+    .trending-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 720px;
+    }
+
+    .trending-label {
+      font-size: 0.84rem;
+      color: #70757a;
+      font-weight: 500;
+    }
+
+    .trending-pill {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      color: #4b5563;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .trending-pill:hover {
+      background: var(--chip-hover);
+      border-color: #cbd5e1;
+      color: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================
+       MOBILE RESPONSIVENESS (MATCHING IMAGE 3)
+       ========================================== */
+    @media (max-width: 768px) {
+      .engine-top-nav {
+        padding: 0.65rem 1rem;
+      }
+      .dashboard-label-text {
+        display: none !important;
+      }
+      .contributor-dashboard-btn {
+        padding: 2px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+      }
+      .contributor-avatar {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--primary);
+      }
+      .search-hero-stage {
+        padding: 2rem 1rem;
+      }
+      .hero-brand-title {
+        font-size: 2.5rem;
+      }
+      .hero-subtitle {
+        font-size: 0.86rem;
+        margin-bottom: 1.5rem;
+      }
+      .search-box-outer-container {
+        margin-bottom: 1.25rem;
+      }
+      .search-input {
+        font-size: 0.95rem;
+      }
+      .hero-btn-row {
+        gap: 8px;
+        margin-bottom: 1.5rem;
+      }
+      .hero-action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.84rem;
+      }
+    }
+
     @media (max-width: 480px) {
-      .brand-title { font-size: 2rem; }
-      .brand-subtitle { font-size: 0.85rem; }
-      .search-box-wrapper { flex-direction: row; border-radius: var(--radius-md); padding: 0.2rem; }
-      .search-icon { font-size: 1.2rem; margin-left: 0.5rem; }
-      .search-input { font-size: 1rem; padding: 0.6rem 0.3rem; }
-      .search-btn { display: none; }
+      .nav-home-text {
+        display: none;
+      }
+      .nav-home-btn {
+        padding: 6px 10px;
+      }
+      .hero-brand-title {
+        font-size: 2.15rem;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="bg-light-1"></div>
-  <div class="bg-light-2"></div>
+  <!-- Top Navigation Header -->
+  <header class="engine-top-nav">
+    <a href="/dpgnotes-search-engine.html" class="nav-brand" title="DPGNotes Search Engine">
+      <div class="nav-brand-logo">
+        <i class="ri-search-2-line"></i>
+      </div>
+      <span class="nav-brand-title">DPGNotes</span>
+    </a>
 
-  <!-- Top Header Native Sponsored Ad Banner -->
-  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="width:100%; max-width:900px; margin:0.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
+    <div class="nav-actions">
+      <!-- Home (Always Present) -->
+      <a href="index.html" class="nav-home-btn" title="Back to Main Platform">
+        <i class="ri-home-4-line"></i>
+        <span class="nav-home-text">Home</span>
+      </a>
 
-  <div class="search-container">
-    <div class="brand-logo">
-      <i class="ri-search-eye-line"></i>
+      <!-- Auth Area: Contributor Dashboard with Photo & Logout OR Sign In if Guest -->
+      <div id="navAuthArea" class="nav-auth-area">
+        <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In to DPGNotes Contributor Portal">
+          <i class="ri-login-box-line"></i>
+          <span>Sign In</span>
+        </a>
+      </div>
     </div>
-    <h1 class="brand-title">DPG<span style="color:var(--primary-light);">Notes</span> Search</h1>
-    <p class="brand-subtitle">Academic Intelligence & Sessional Search Portal for DPG College</p>
+  </header>
 
-    <!-- Mini Google Style Search Box -->
-    <div class="search-box-wrapper" style="box-shadow: 0 12px 35px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); padding: 0.35rem 0.6rem;">
-      <i class="ri-search-line search-icon" style="font-size:1.3rem; color:var(--primary-light);"></i>
-      <input type="text" class="search-input" id="engineSearchInput" placeholder="Search sessional notes, PYQs, subjects, or keywords..." autocomplete="off">
-      
-      <div style="display:flex; align-items:center; gap:8px; margin-right:6px;">
-        <button type="button" title="Voice Search" onclick="startVoiceSearch()" style="background:none; border:none; color:#a78bfa; font-size:1.25rem; cursor:pointer; padding:4px 6px; border-radius:50%; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><i class="ri-mic-line"></i></button>
-        <button type="button" title="DPG Lens Search" onclick="triggerDpgLensUpload()" style="background:none; border:none; color:#38bdf8; font-size:1.25rem; cursor:pointer; padding:4px 6px; border-radius:50%; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'"><i class="ri-camera-lens-line"></i></button>
+  <!-- Top Native Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="width:100%; max-width:820px; margin:0.5rem auto 0 auto; padding:0 1rem; box-sizing:border-box;"></div>
+
+  <!-- Hero Search Stage -->
+  <main class="search-hero-stage">
+    <!-- Center Logo & Branding (Matching Images 2 & 3) -->
+    <div class="hero-center-brand">
+      <i class="ri-search-eye-line hero-logo-icon"></i>
+      <h1 class="hero-brand-title">DPGNotes</h1>
+    </div>
+    <p class="hero-subtitle">DPG College Verified Academic Notes, Solutions &amp; Sessional Exam Hub</p>
+
+    <!-- Search Box with Live Auto-suggestions (Matching Image 4) -->
+    <div class="search-box-outer-container">
+      <div class="search-bar-wrapper" id="searchBarWrapper">
+        <i class="ri-search-line search-bar-icon"></i>
+        <input type="text" class="search-input" id="engineSearchInput" placeholder="Search projects, developers, tech stacks, notes..." autocomplete="off">
+        
+        <div class="search-bar-actions">
+          <!-- Clear Button -->
+          <button type="button" class="search-action-icon-btn search-clear-btn" id="btnClearSearch" onclick="clearSearchInput()" title="Clear Search">
+            <i class="ri-close-line"></i>
+          </button>
+          <!-- Voice Search Mic Button -->
+          <button type="button" class="search-action-icon-btn search-mic-btn" id="btnVoiceSearch" onclick="startVoiceSearch()" title="Search by Voice">
+            <i class="ri-mic-fill"></i>
+          </button>
+          <!-- Lens Visual Search Button -->
+          <button type="button" class="search-action-icon-btn" onclick="triggerDpgLensUpload()" title="DPG Lens Search" style="color:#0284c7;">
+            <i class="ri-camera-lens-line"></i>
+          </button>
+        </div>
       </div>
 
+      <!-- Hidden file input for DPG Lens -->
       <input type="file" id="dpgLensFileInput" accept="image/*,.pdf" style="display:none;" onchange="handleDpgLensFileSelected(this)">
-      <button class="search-btn" onclick="triggerSearchRedirect()"><i class="ri-search-line"></i> Search</button>
+
+      <!-- Live Auto-suggestions Dropdown (Matching Image 4) -->
+      <div class="suggestions-dropdown" id="suggestionsDropdown">
+        <div class="no-suggestions-row">Start typing to search notes, solutions, or topics...</div>
+      </div>
     </div>
 
-    <!-- Quick Action Buttons & Category Chips (Google Style) -->
-    <div style="display:flex; justify-content:center; gap:10px; margin-top:1rem; flex-wrap:wrap;">
-      <button onclick="triggerSearchRedirect()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--text); padding:0.5rem 1.1rem; border-radius:12px; font-size:0.85rem; font-family:inherit; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(99,102,241,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.06)'">DPGNotes Search</button>
-      <button onclick="luckyRedirect()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--text); padding:0.5rem 1.1rem; border-radius:12px; font-size:0.85rem; font-family:inherit; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#f59e0b'; this.style.background='rgba(245,158,11,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.06)'">I'm Feeling Lucky ⚡</button>
+    <!-- Search Buttons (Matching Images 2 & 3) -->
+    <div class="hero-btn-row">
+      <button type="button" class="hero-action-btn" onclick="triggerSearchRedirect()">DPGNotes Search</button>
+      <button type="button" class="hero-action-btn" onclick="luckyRedirect()">I'm Feeling Lucky</button>
     </div>
 
-    <div style="display:flex; justify-content:center; gap:8px; margin-top:1rem; flex-wrap:wrap; font-size:0.8rem;">
-      <span class="btag" style="cursor:pointer; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a78bfa; padding:4px 12px; border-radius:20px;" onclick="window.location.href='/dpgnotes-serp.html?q=Sessional+Notes&category=Notes'"><i class="ri-file-text-line"></i> Sessional Notes</span>
-      <span class="btag" style="cursor:pointer; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#60a5fa; padding:4px 12px; border-radius:20px;" onclick="window.location.href='/dpgnotes-serp.html?q=PYQ&category=Question+Paper'"><i class="ri-question-line"></i> PYQs</span>
-      <span class="btag" style="cursor:pointer; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; padding:4px 12px; border-radius:20px;" onclick="window.location.href='/dpgnotes-serp.html?q=Computer+Science&discipline=Computer+Science'"><i class="ri-code-s-slash-line"></i> Computer Science</span>
-      <span class="btag" style="cursor:pointer; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; padding:4px 12px; border-radius:20px;" onclick="window.location.href='/dpgnotes-serp.html?q=Syllabus&category=Syllabus'"><i class="ri-book-line"></i> Syllabus</span>
-    </div>
-
-    <!-- Live Auto-suggestions Container -->
-    <div class="suggestions-panel" id="suggestionsPanel">
-      <div class="no-results-item">Start typing to scan documents...</div>
+    <!-- Trending Chips (Matching Images 2 & 3) -->
+    <div class="trending-container">
+      <span class="trending-label">Trending:</span>
+      <a class="trending-pill" onclick="searchTrendingTopic('Machine Learning')">Machine Learning</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Full Stack React')">Full Stack React</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Python')">Python</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('FastAPI')">FastAPI</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('AI & Deep Learning')">AI &amp; Deep Learning</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Data Structures')">Data Structures</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Operating Systems')">Operating Systems</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('DBMS Solutions')">DBMS Solutions</a>
     </div>
 
     <!-- Feed Native Ad Container -->
-    <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.5rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
-
-    <!-- Google AdSense Placeholder -->
-    <div class="ad-banner-section" style="margin-top:1.5rem; width:100%; max-width:600px;">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-5515547448097504"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    </div>
-  </div>
+    <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:2rem; width:100%; max-width:680px;"></div>
+  </main>
 
   <!-- Bottom Footer Native Sponsored Ad Banner -->
-  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="width:100%; max-width:900px; margin:2rem auto 1rem auto; padding:0 1rem; box-sizing:border-box;"></div>
+  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="width:100%; max-width:820px; margin:1rem auto 1.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
 
   <script src="config.js"></script>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -364,75 +683,184 @@
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    let allDocs = [];
+    // ==========================================
+    // AUTH STATE & NAVBAR ADAPTATION
+    // (Laptop: Photo + Dashboard + Logout; Mobile: Avatar + Logout; Guest: Sign In)
+    // ==========================================
+    onAuthStateChanged(auth, (user) => {
+      const authArea = document.getElementById("navAuthArea");
+      if (!authArea) return;
 
-    // Pre-load metadata for instant suggestion queries
+      if (user) {
+        const photoURL = user.photoURL || '';
+        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
+        const initial = displayName.charAt(0).toUpperCase();
+
+        const avatarHtml = photoURL 
+          ? `<img src="${photoURL}" alt="${displayName}" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">`
+          : initial;
+
+        authArea.innerHTML = `
+          <div class="contributor-user-wrapper">
+            <a href="dashboard.html" class="contributor-dashboard-btn" title="Go to Dashboard (${displayName})">
+              <div class="contributor-avatar">${avatarHtml}</div>
+              <span class="dashboard-label-text">Dashboard</span>
+            </a>
+            <button type="button" class="contributor-logout-btn" onclick="window.handleEngineSignOut()" title="Log Out">
+              <i class="ri-logout-box-r-line"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        authArea.innerHTML = `
+          <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In to DPGNotes">
+            <i class="ri-login-box-line"></i>
+            <span>Sign In</span>
+          </a>
+        `;
+      }
+    });
+
+    window.handleEngineSignOut = async function() {
+      try {
+        await signOut(auth);
+        localStorage.removeItem("dpgActiveUserUid");
+        localStorage.removeItem("dpgActiveUserEmail");
+        localStorage.removeItem("dpgActiveUserName");
+        window.location.reload();
+      } catch (err) {
+        console.error("Sign out error:", err);
+      }
+    };
+
+    // ==========================================
+    // FIRESTORE PRELOAD & AUTO-SUGGESTIONS ENGINE (IMAGE 4)
+    // ==========================================
+    let cachedDocs = [];
+
     async function loadDocumentsCache() {
       try {
         const snap = await getDocs(collection(db, "documents"));
-        allDocs = [];
-        snap.forEach(doc => {
-          const data = doc.data();
-          const isApproved = data.status === "approved" || data.isApproved === true;
+        cachedDocs = [];
+        snap.forEach(d => {
+          const data = d.data();
+          const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
           if (isApproved) {
-            allDocs.push({ id: doc.id, ...data });
+            cachedDocs.push({ id: d.id, ...data });
           }
         });
       } catch (err) {
-        console.error("Failed caching documents:", err);
+        console.warn("Failed caching documents for suggestions:", err.message);
       }
     }
 
     const input = document.getElementById("engineSearchInput");
-    const panel = document.getElementById("suggestionsPanel");
+    const wrapper = document.getElementById("searchBarWrapper");
+    const dropdown = document.getElementById("suggestionsDropdown");
+    const clearBtn = document.getElementById("btnClearSearch");
+
+    window.clearSearchInput = function() {
+      if (input) {
+        input.value = '';
+        input.focus();
+        if (clearBtn) clearBtn.classList.remove("visible");
+        closeSuggestions();
+      }
+    };
+
+    function closeSuggestions() {
+      if (dropdown) dropdown.classList.remove("active");
+      if (wrapper) wrapper.classList.remove("has-suggestions");
+    }
 
     input.addEventListener("input", (e) => {
       const q = e.target.value.trim().toLowerCase();
+      if (clearBtn) {
+        if (q.length > 0) clearBtn.classList.add("visible");
+        else clearBtn.classList.remove("visible");
+      }
+
       if (!q) {
-        panel.innerHTML = '<div class="no-results-item">Start typing to scan documents...</div>';
-        panel.classList.remove("active");
+        closeSuggestions();
         return;
       }
 
-      const matches = allDocs.filter(d => 
+      // Filter matched documents
+      const matches = cachedDocs.filter(d => 
         (d.title && d.title.toLowerCase().includes(q)) ||
-        (d.description && d.description.toLowerCase().includes(q)) ||
         (d.discipline && d.discipline.toLowerCase().includes(q)) ||
-        (d.category && d.category.toLowerCase().includes(q))
-      ).slice(0, 5); // Max 5 instant suggestions
+        (d.category && d.category.toLowerCase().includes(q)) ||
+        (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q)))
+      ).slice(0, 6);
 
-      if (matches.length === 0) {
-        panel.innerHTML = '<div class="no-results-item">No matching documents found.</div>';
-      } else {
-        panel.innerHTML = "";
+      dropdown.innerHTML = "";
+
+      if (matches.length > 0) {
         matches.forEach(d => {
-          const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
-          const viewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SEARCH_SUGGESTION`;
-
-          const item = document.createElement("a");
-          item.className = "suggestion-item";
-          item.href = viewerUrl;
-          item.style.textDecoration = "none";
-          item.innerHTML = `
-            <div class="suggestion-info">
-              <div class="suggestion-title">${d.title}</div>
-              <div class="suggestion-meta">
-                <span><i class="ri-folder-line"></i> ${d.category}</span>
-                <span><i class="ri-book-open-line"></i> ${d.discipline}</span>
-              </div>
+          const row = document.createElement("div");
+          row.className = "suggestion-row";
+          // Direct Destination navigation when clicking a document!
+          row.onclick = () => {
+            window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
+          };
+          row.innerHTML = `
+            <div class="suggestion-left">
+              <i class="ri-search-line"></i>
+              <span class="suggestion-text">${d.title}</span>
             </div>
-            <i class="ri-arrow-right-line suggestion-arrow"></i>
+            <span class="suggestion-badge">${d.category || 'Notes'}</span>
           `;
-          panel.appendChild(item);
+          dropdown.appendChild(row);
         });
+
+        // Also add direct query search row
+        const queryRow = document.createElement("div");
+        queryRow.className = "suggestion-row";
+        queryRow.style.borderTop = "1px solid #f1f3f4";
+        queryRow.onclick = () => {
+          window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
+        };
+        queryRow.innerHTML = `
+          <div class="suggestion-left">
+            <i class="ri-search-2-line" style="color:#1a73e8;"></i>
+            <span class="suggestion-text" style="color:#1a73e8; font-weight:600;">Search for "<strong>${e.target.value.trim()}</strong>" on DPGNotes SERP</span>
+          </div>
+          <i class="ri-arrow-right-up-line" style="color:#1a73e8;"></i>
+        `;
+        dropdown.appendChild(queryRow);
+      } else {
+        // Query search row even when no exact doc matches
+        const queryRow = document.createElement("div");
+        queryRow.className = "suggestion-row";
+        queryRow.onclick = () => {
+          window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
+        };
+        queryRow.innerHTML = `
+          <div class="suggestion-left">
+            <i class="ri-search-line"></i>
+            <span class="suggestion-text">Search DPGNotes SERP for "<strong>${e.target.value.trim()}</strong>"</span>
+          </div>
+          <i class="ri-arrow-right-line" style="color:#9aa0a6;"></i>
+        `;
+        dropdown.appendChild(queryRow);
       }
-      panel.classList.add("active");
+
+      dropdown.classList.add("active");
+      wrapper.classList.add("has-suggestions");
     });
 
-    // Enter Key Trigger
+    // Close suggestions if clicked outside
+    document.addEventListener("click", (e) => {
+      if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) {
+        closeSuggestions();
+      }
+    });
+
+    // Enter Key Trigger -> Points to SERP page
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         window.triggerSearchRedirect();
@@ -449,36 +877,54 @@
     };
 
     window.luckyRedirect = function() {
-      if (allDocs.length > 0) {
-        const randomDoc = allDocs[Math.floor(Math.random() * allDocs.length)];
-        const tagsString = Array.isArray(randomDoc.tags) ? randomDoc.tags.join(", ") : (randomDoc.tags || "");
-        window.location.href = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(randomDoc.pdfUrl || '')}&title=${encodeURIComponent(randomDoc.title || '')}&category=${encodeURIComponent(randomDoc.category || '')}&discipline=${encodeURIComponent(randomDoc.discipline || '')}&uploader=${encodeURIComponent(randomDoc.userName || randomDoc.uploader || 'Contributor')}&docid=${encodeURIComponent(randomDoc.id)}&description=${encodeURIComponent(randomDoc.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=LUCKY`;
+      if (cachedDocs.length > 0) {
+        const randomDoc = cachedDocs[Math.floor(Math.random() * cachedDocs.length)];
+        window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(randomDoc.id)}&title=${encodeURIComponent(randomDoc.title || '')}`;
       } else {
         window.location.href = `/dpgnotes-serp.html`;
       }
     };
 
+    window.searchTrendingTopic = function(topic) {
+      if (input) input.value = topic;
+      window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(topic)}`;
+    };
+
+    // ==========================================
+    // VOICE SEARCH (SPEECH RECOGNITION)
+    // ==========================================
     window.startVoiceSearch = function() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         alert("Voice recognition is not supported in this browser environment. Please type your query.");
         return;
       }
+      const micBtn = document.getElementById("btnVoiceSearch");
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
       recognition.start();
-      input.placeholder = "🎙️ Listening... Speak your search query now";
-      
+
+      if (micBtn) micBtn.classList.add("listening");
+      input.placeholder = "🎙️ Listening... Speak now";
+
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         input.value = transcript;
+        if (micBtn) micBtn.classList.remove("listening");
         window.triggerSearchRedirect();
       };
       recognition.onerror = () => {
-        input.placeholder = "Search sessional notes, PYQs, subjects, or keywords...";
+        if (micBtn) micBtn.classList.remove("listening");
+        input.placeholder = "Search projects, developers, tech stacks, notes...";
+      };
+      recognition.onend = () => {
+        if (micBtn) micBtn.classList.remove("listening");
       };
     };
 
+    // ==========================================
+    // DPG LENS VISUAL SEARCH
+    // ==========================================
     window.triggerDpgLensUpload = function() {
       const fileInput = document.getElementById("dpgLensFileInput");
       if (fileInput) fileInput.click();
@@ -487,15 +933,12 @@
     window.handleDpgLensFileSelected = async function(inputEl) {
       if (!inputEl.files || inputEl.files.length === 0) return;
       const file = inputEl.files[0];
-      const searchBox = document.getElementById("engineSearchInput");
-      if (searchBox) searchBox.value = `📷 DPG Lens Scanning: ${file.name}...`;
+      if (input) input.value = `📷 DPG Lens Scanning: ${file.name}...`;
 
       try {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64Data = e.target.result;
           const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-          
           const res = await fetch(apiBase + '/api/ai/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -506,19 +949,19 @@
           });
           const resJson = await res.json();
           const keyword = (resJson.answer || file.name.replace(/\.[^/.]+$/, "")).substring(0, 40);
-          if (searchBox) searchBox.value = keyword;
+          if (input) input.value = keyword;
           window.triggerSearchRedirect();
         };
         reader.readAsDataURL(file);
       } catch (err) {
         console.error("DPG Lens Error:", err);
         const fallbackQuery = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-        if (searchBox) searchBox.value = fallbackQuery;
+        if (input) input.value = fallbackQuery;
         window.triggerSearchRedirect();
       }
     };
 
-    // Load Cache on start
+    // Start background preload
     loadDocumentsCache();
   </script>
   <script src="redirect.js"></script>

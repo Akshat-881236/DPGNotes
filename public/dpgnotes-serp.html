@@ -8,17 +8,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="ANH.png" type="image/png" />
-  <title>Search Engine Results | DPGNotes AI Overview & SERP</title>
+  <title>Search Results | DPGNotes AI Overview &amp; SERP</title>
   <meta name="description" content="Explore instant AI Overviews, verified university notes, practice questions, contributor websites, and video masterclasses on DPGNotes SERP." />
   <meta name="keywords" content="DPGNotes SERP, Search Engine Results, AI Overview, Academic Search, Notes Downloads, Educational Videos, Contributor Websites, Academic Solutions" />
   <meta name="author" content="DPGNotes / Akshat Network Hub" />
-  <meta property="og:title" content="DPGNotes Search Results & AI Overview" />
+  <meta property="og:title" content="DPGNotes Search Results &amp; AI Overview" />
   <meta property="og:description" content="Comprehensive search results page featuring AI synthesis, academic documents, verified contributor websites, and video tutorials." />
   <meta property="og:image" content="ANH.png" />
   <meta property="og:type" content="website" />
   
   <!-- Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   
   <!-- Core Scripts & Markdown Parsers -->
@@ -33,970 +35,221 @@
   
   <style>
     :root {
-      --bg-top: #0a0e17;
-      --bg-bottom: #02060f;
-      --surface: rgba(15, 23, 42, 0.7);
-      --surface-elevated: rgba(30, 41, 59, 0.85);
-      --border: rgba(255, 255, 255, 0.09);
-      --border-focus: #818cf8;
-      --primary: #6366f1;
-      --primary-light: #8b5cf6;
-      --primary-glow: rgba(99, 102, 241, 0.35);
-      --ai-gradient: linear-gradient(135deg, #a855f7, #6366f1, #38bdf8);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --radius-sm: 10px;
-      --radius-md: 16px;
+      --bg: #ffffff;
+      --bg-surface: #f8fafc;
+      --text: #202124;
+      --text-muted: #5f6368;
+      --border: #dfe1e5;
+      --border-subtle: #f1f3f4;
+      --primary: #1a73e8;
+      --primary-hover: #1557b0;
+      --primary-light: #e8f0fe;
+      --link-blue: #1a0dab;
+      --radius-sm: 8px;
+      --radius-md: 12px;
       --radius-lg: 20px;
+      --radius-pill: 24px;
+      --shadow-sm: 0 1px 3px rgba(32,33,36,0.1);
+      --shadow-md: 0 4px 12px rgba(32,33,36,0.12);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
-      min-height: 100vh;
+      background: var(--bg);
       color: var(--text);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
     }
 
-    /* Header Styling */
+    /* =======================================================
+       STICKY TOP SERP HEADER (MATCHING IMAGE 5)
+       ======================================================= */
     .serp-header {
-      background: rgba(15, 23, 42, 0.92);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(16px);
-      position: sticky; top: 0; z-index: 100;
-      padding: 0.85rem 1.75rem;
-      display: flex; align-items: center; justify-content: space-between; gap: 1.25rem;
-    }
-
-    .brand-link {
-      display: flex; align-items: center; gap: 0.75rem;
-      text-decoration: none; color: white; flex-shrink: 0;
-    }
-    .brand-logo {
-      width: 38px; height: 38px; border-radius: var(--radius-sm);
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1.2rem;
-      box-shadow: 0 4px 15px var(--primary-glow);
-    }
-    .brand-title {
-      font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-    .brand-title .accent {
-      color: #818cf8;
-    }
-
-    .search-input-wrapper {
-      flex: 1; max-width: 680px;
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.2rem 0.6rem;
-      display: flex; align-items: center; gap: 0.5rem;
-      transition: all 0.2s ease;
-    }
-    .search-input-wrapper:focus-within {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-    }
-    .search-input-wrapper i {
-      color: #818cf8; margin-left: 0.6rem; font-size: 1.1rem;
-    }
-    .search-input-wrapper input {
-      flex: 1; border: none; outline: none; background: transparent;
-      color: white; font-family: inherit; font-size: 0.95rem; padding: 0.5rem 0.2rem;
-    }
-    .search-input-clear {
-      background: none; border: none; color: var(--text-muted); cursor: pointer;
-      padding: 4px 8px; font-size: 1rem; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .search-input-clear:hover { color: white; }
-
-    .header-quick-actions {
-      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-    }
-    .header-home-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: #cbd5e1;
-      padding: 6px 12px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 0.82rem;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.2s;
-    }
-    .header-home-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: white;
-    }
-
-    /* =======================================================
-       GOOGLE UI STRATEGY MULTIMEDIA TAB BAR
-       AI Overview | All | Sponsored | Images | Videos | Websites | Contributors | Academic Solutions
-       ======================================================= */
-    .serp-tabs-bar {
-      display: flex;
-      gap: 8px;
-      background: rgba(15, 23, 42, 0.88);
-      border-bottom: 1px solid var(--border);
-      padding: 0 1.5rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      backdrop-filter: blur(12px);
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-subtle);
       position: sticky;
-      top: 61px;
-      z-index: 95;
-    }
-    .serp-tabs-bar::-webkit-scrollbar { display: none; }
-
-    .serp-tab-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      border-bottom: 3px solid transparent;
-      padding: 0.75rem 0.8rem;
-      font-weight: 600;
-      font-size: 0.88rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-      font-family: inherit;
-    }
-    .serp-tab-btn:hover {
-      color: #f1f5f9;
-      background: rgba(255, 255, 255, 0.03);
-    }
-    .serp-tab-btn.active {
-      color: #818cf8;
-      border-bottom-color: #818cf8;
-      font-weight: 700;
-    }
-
-    /* Google AI Overview Tab Badge */
-    .serp-tab-btn#tab-btn-ai.active {
-      color: #c084fc;
-      border-bottom-color: #c084fc;
-    }
-    .ai-tab-sparkle {
-      background: linear-gradient(135deg, #ec4899, #8b5cf6, #38bdf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-size: 1.05rem;
-      animation: sparkleRotate 3s infinite linear;
-    }
-    @keyframes sparkleRotate {
-      0% { transform: rotate(0deg) scale(1); }
-      50% { transform: rotate(180deg) scale(1.15); }
-      100% { transform: rotate(360deg) scale(1); }
-    }
-
-    /* =======================================================
-       VERTICAL FILTER INTERFACE (JUST BELOW TAB BUTTONS)
-       Active on ALL tabs except AI Overview
-       ======================================================= */
-    .vertical-filter-interface {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.75);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(10px);
-      padding: 0.85rem 1.5rem;
-      transition: all 0.3s ease;
-    }
-    .vfilter-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .vfilter-header {
+      top: 0;
+      z-index: 100;
+      padding: 0.75rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .vfilter-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.76rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #a78bfa;
-      background: rgba(139, 92, 246, 0.15);
-      padding: 3px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(139, 92, 246, 0.3);
-    }
-    .vfilter-stats {
-      font-size: 0.84rem;
-      color: var(--text-muted);
-    }
-    .vfilter-stats strong { color: white; }
-    .vfilter-reset-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: #94a3b8;
-      border-radius: 6px;
-      padding: 3px 10px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s;
-    }
-    .vfilter-reset-btn:hover {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-    }
-
-    .vfilter-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.75rem;
-      align-items: end;
-    }
-    .vfilter-col {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .vfilter-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #cbd5e1;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .vfilter-select {
-      width: 100%;
-      padding: 0.55rem 0.8rem;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: white;
-      font-family: inherit;
-      font-size: 0.84rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .vfilter-select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-    }
-
-    /* Filter Chips Row */
-    .vfilter-chips-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      padding-top: 4px;
-    }
-    .vfilter-chips-row::-webkit-scrollbar { display: none; }
-    .vfilter-chip {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: #cbd5e1;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 0.76rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .vfilter-chip:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: white;
-    }
-    .vfilter-chip.active {
-      background: rgba(99, 102, 241, 0.25);
-      border-color: #818cf8;
-      color: #a5b4fc;
-      font-weight: 700;
-    }
-
-    /* =======================================================
-       MAIN LAYOUT CONTAINER
-       ======================================================= */
-    .serp-main-wrapper {
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.5rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    /* Result Cards */
-    .result-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1.35rem 1.6rem;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    }
-    .result-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(99, 102, 241, 0.35);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-
-    /* =======================================================
-       INTERACTIVE CODE CONTAINERS (STRICT CONSISTENCY WITH
-       ASSIGNMENT & PRACTICAL SOLUTION SUITE)
-       ======================================================= */
-    .sol-code-block-container {
-      margin: 1.15rem 0;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: #0d1117;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .sol-code-block-header {
-      background: #161b22;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 8px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .sol-code-block-lang {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-family: 'Fira Code', monospace;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #cbd5e1;
-    }
-    .sol-code-block-id-tag {
-      font-size: 0.72rem;
-      color: #94a3b8;
-      font-family: 'Fira Code', monospace;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 2px 7px;
-      border-radius: 4px;
-      max-width: 180px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .sol-code-block-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .sol-code-run-btn {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 4px 12px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .sol-code-run-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
-      background: linear-gradient(135deg, #059669, #047857);
-    }
-    .sol-code-try-btn {
-      background: linear-gradient(135deg, #6366f1, #4f46e5);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 4px 12px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .sol-code-try-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5);
-      background: linear-gradient(135deg, #4f46e5, #4338ca);
-    }
-    .sol-code-copy-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 0.74rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-    .sol-code-copy-btn:hover {
-      background: rgba(255, 255, 255, 0.14);
-      color: white;
-    }
-    .sol-code-block-body {
-      padding: 1rem 1.25rem;
-      margin: 0;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      font-family: 'Fira Code', Consolas, Monaco, monospace;
-      font-size: 0.86rem;
-      line-height: 1.55;
-      color: #e2e8f0;
-      background: transparent;
-      border: none;
-      width: 100%;
-      box-sizing: border-box;
-      white-space: pre;
-    }
-    .sol-code-block-body code {
-      font-family: inherit;
-      font-size: inherit;
-      color: inherit;
-      background: transparent;
-      white-space: inherit;
-      display: inline-block;
-      min-width: 100%;
-    }
-
-    /* Live Interactive Sandbox Modal (Rendered by solutions-sandbox-engine.js) */
-    .sol-modal-overlay.sol-sandbox-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-    }
-    .sol-sandbox-modal-card {
-      background: #0b1120;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 18px;
-      width: 96%;
-      max-width: 980px;
-      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
-      display: flex;
-      flex-direction: column;
-      height: 88vh;
-      max-height: 820px;
-      overflow: hidden;
-    }
-    .sol-sandbox-topbar {
-      background: #111827;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 10px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .sol-sandbox-topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .sol-sandbox-title {
-      color: white;
-      font-size: 1.05rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .sol-sandbox-tabs {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 3px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    .sol-sandbox-tab-btn {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s ease;
-    }
-    .sol-sandbox-tab-btn.active {
-      background: #1e293b;
-      color: #38bdf8;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
-    .sol-sandbox-topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .sol-btn {
-      border: none;
-      border-radius: 8px;
-      padding: 6px 14px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: inherit;
-      transition: all 0.2s;
-    }
-    .sol-btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .sol-btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
-    }
-    .sol-btn-sm { font-size: 0.78rem; padding: 4px 10px; }
-    .sol-sandbox-body-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background: #ffffff;
-      overflow: hidden;
-    }
-    .sol-sandbox-iframe-pane {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: #ffffff;
-      display: block;
-    }
-    .sol-sandbox-console-pane {
-      position: absolute;
-      inset: 0;
-      background: #0d1117;
-      color: #e2e8f0;
-      font-family: 'Fira Code', monospace;
-      font-size: 0.82rem;
-      padding: 1rem;
-      overflow-y: auto;
-      display: none;
-      z-index: 5;
-    }
-    .sol-console-item {
-      padding: 5px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      line-height: 1.5;
-    }
-    .sol-console-item .timestamp { color: #64748b; font-size: 0.74rem; white-space: nowrap; }
-    .sol-console-item.log-info { color: #38bdf8; }
-    .sol-console-item.log-warn { color: #f59e0b; }
-    .sol-console-item.log-error { color: #ef4444; }
-    .sol-sandbox-statusbar {
-      background: #0f172a;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 6px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.75rem;
-      color: #94a3b8;
-    }
-
-    /* =======================================================
-       CHAT-BASED AI OVERVIEW UI & GEMINI INTEGRATION
-       ======================================================= */
-    .ai-overview-page-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      width: 100%;
-    }
-    .ai-hero-card {
-      background: linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(15, 23, 42, 0.9));
-      border: 1px solid rgba(168, 85, 247, 0.4);
-      border-radius: var(--radius-lg);
-      padding: 1.75rem;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-    }
-    .ai-hero-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 1rem;
-      margin-bottom: 1.25rem;
-    }
-    .ai-hero-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .ai-hero-title h3 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #e9d5ff;
-      margin: 0;
-    }
-    .ai-sparkle-badge {
-      background: rgba(168, 85, 247, 0.2);
-      border: 1px solid rgba(168, 85, 247, 0.4);
-      color: #c084fc;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .ai-header-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .ai-key-config-btn {
-      background: rgba(168, 85, 247, 0.15);
-      border: 1px solid rgba(168, 85, 247, 0.4);
-      color: #d8b4fe;
-      padding: 5px 12px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .ai-key-config-btn:hover {
-      background: rgba(168, 85, 247, 0.3);
-      color: white;
-    }
-    .ai-clear-chat-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: #94a3b8;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s;
-    }
-    .ai-clear-chat-btn:hover {
-      background: rgba(239, 68, 68, 0.15);
-      color: #fca5a5;
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    .ai-synthesis-box {
-      font-size: 0.92rem;
-      line-height: 1.7;
-      color: #e2e8f0;
-    }
-
-    /* AI Chat Conversation Area */
-    .ai-chat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    }
-    .ai-chat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 0.75rem;
-    }
-    .ai-chat-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-height: 160px;
-      max-height: 520px;
-      overflow-y: auto;
-      padding: 0.5rem;
-    }
-
-    .ai-msg-bubble {
-      max-width: 90%;
-      padding: 0.85rem 1.15rem;
-      border-radius: 16px;
-      font-size: 0.88rem;
-      line-height: 1.6;
-      word-break: break-word;
-      animation: fadeInBubble 0.25s ease-out;
-    }
-    @keyframes fadeInBubble {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .ai-msg-bubble.user {
-      align-self: flex-end;
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.35));
-      border: 1px solid rgba(139, 92, 246, 0.5);
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-    .ai-msg-bubble.assistant {
-      align-self: flex-start;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(168, 85, 247, 0.3);
-      color: #e2e8f0;
-      border-bottom-left-radius: 4px;
-      width: 94%;
-    }
-
-    .ai-quick-prompts {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      padding: 4px 0;
-    }
-    .ai-quick-prompts::-webkit-scrollbar { display: none; }
-    .ai-quick-prompts button {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: #cbd5e1;
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 0.76rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .ai-quick-prompts button:hover {
-      background: rgba(168, 85, 247, 0.2);
-      border-color: #a855f7;
-      color: #e9d5ff;
-    }
-
-    .ai-chat-input-bar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 4px 6px 4px 14px;
-      transition: border-color 0.2s;
-    }
-    .ai-chat-input-bar:focus-within {
-      border-color: #c084fc;
-      box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.25);
-    }
-    .ai-chat-input-bar input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      outline: none;
-      color: white;
-      font-family: inherit;
-      font-size: 0.92rem;
-      padding: 8px 0;
-    }
-    .ai-chat-input-bar button {
-      background: linear-gradient(135deg, #c084fc, #8b5cf6);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.15rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-    .ai-chat-input-bar button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 15px rgba(192, 132, 252, 0.4);
-    }
-
-    /* Modal Styling for Gemini API Key Configuration */
-    .dpg-modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      padding: 1rem;
-    }
-    .dpg-modal-box {
-      background: #0f172a;
-      border: 1px solid rgba(168, 85, 247, 0.4);
-      border-radius: var(--radius-lg);
-      width: 100%;
-      max-width: 520px;
-      padding: 1.5rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-      animation: modalZoomIn 0.2s ease-out;
-    }
-    @keyframes modalZoomIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .dpg-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .dpg-modal-header h4 {
-      margin: 0;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: white;
-    }
-    .dpg-modal-close {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.4rem;
-      cursor: pointer;
-      line-height: 1;
-    }
-    .dpg-modal-close:hover { color: white; }
-    .dpg-modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 1.25rem;
-    }
-    .dpg-btn {
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-size: 0.84rem;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .dpg-btn-primary {
-      background: linear-gradient(135deg, #8b5cf6, #6366f1);
-      color: white;
-    }
-    .dpg-btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      border: 1px solid var(--border);
-    }
-    .dpg-btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-    }
-
-    /* Contributors Tab Card Styling */
-    .contributors-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1.25rem;
     }
-    .contributor-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1.25rem;
+
+    .serp-brand-link {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: all 0.25s ease;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--primary);
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      flex-shrink: 0;
     }
-    .contributor-card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(168, 85, 247, 0.4);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    .serp-brand-icon {
+      font-size: 1.25rem;
+      color: var(--primary);
     }
-    .contributor-avatar {
-      width: 48px;
-      height: 48px;
+
+    .serp-search-container {
+      flex: 1;
+      max-width: 680px;
+      position: relative;
+    }
+
+    .serp-search-wrapper {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 0.3rem 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 1px 6px rgba(32,33,36,0.15);
+      transition: all 0.2s ease;
+    }
+    .serp-search-wrapper:hover,
+    .serp-search-wrapper:focus-within {
+      box-shadow: 0 2px 8px rgba(32,33,36,0.22);
+      border-color: #bdc1c6;
+    }
+
+    .serp-search-icon {
+      color: #9aa0a6;
+      font-size: 1.15rem;
+      margin-left: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .serp-search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.98rem;
+      padding: 0.5rem 0.2rem;
+    }
+
+    .serp-search-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 0.4rem;
+      flex-shrink: 0;
+    }
+    .serp-action-btn {
+      background: none;
+      border: none;
+      color: #5f6368;
+      font-size: 1.15rem;
+      padding: 4px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      color: white;
-      font-size: 1.2rem;
+      transition: all 0.2s;
+    }
+    .serp-action-btn:hover {
+      background: #f1f3f4;
+      color: var(--text);
+    }
+    .serp-mic-btn {
+      color: #ea4335 !important;
+    }
+    .serp-mic-btn.listening {
+      animation: micPulse 1.2s infinite;
+      background: #fce8e6;
+    }
+
+    /* Top Right Auth & Navigation Controls */
+    .serp-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .serp-home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .serp-home-btn:hover {
+      background: #f8fafc;
+      border-color: #bdc1c6;
+      color: #202124;
+    }
+
+    .nav-btn-signin {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-btn-signin:hover {
+      background: var(--primary-hover);
+    }
+
+    .contributor-user-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .contributor-dashboard-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 4px 14px 4px 5px;
+      border-radius: 22px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .contributor-dashboard-btn:hover {
+      background: var(--primary-hover);
+    }
+    .contributor-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #2563eb;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.78rem;
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -1005,260 +258,861 @@
       height: 100%;
       object-fit: cover;
     }
-
-    /* Helper utility classes for mobile / desktop display */
-    .d-none { display: none !important; }
-    @media (min-width: 576px) {
-      .d-sm-inline { display: inline !important; }
-      .d-sm-flex { display: flex !important; }
-      .d-sm-none { display: none !important; }
+    .contributor-logout-btn {
+      background: #f8fafc;
+      border: 1px solid #dadce0;
+      color: #5f6368;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .contributor-logout-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
     }
 
-    /* Multi-media Responsiveness: Desktop, Tablet & Mobile */
-    @media (max-width: 1024px) {
-      .serp-main-wrapper { padding: 1.25rem; gap: 1.25rem; }
-      .ai-hero-card { padding: 1.5rem; }
-      .ai-chat-card { padding: 1.25rem; }
+    /* =======================================================
+       HORIZONTAL TABS NAVIGATION BAR (MATCHING IMAGE 5)
+       All Results | AI Overview | Websites | YouTube Videos | Academic Solutions | Contributors | Sponsored | Images
+       ======================================================= */
+    .serp-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      position: sticky;
+      top: 59px;
+      z-index: 90;
+      white-space: nowrap;
+    }
+    .serp-tabs-bar::-webkit-scrollbar { display: none; }
+
+    .serp-tab-btn {
+      background: none;
+      border: none;
+      color: #5f6368;
+      border-bottom: 3px solid transparent;
+      padding: 0.75rem 0.9rem;
+      font-weight: 500;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .serp-tab-btn:hover {
+      color: #202124;
+      background: #f8fafc;
+    }
+    .serp-tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
     }
 
-    @media (max-width: 899px) {
-      .serp-header { padding: 0.65rem 1rem; gap: 0.75rem; }
-      .brand-title { display: none; }
-      .serp-main-wrapper { padding: 1rem; gap: 1rem; }
-      .vfilter-grid { grid-template-columns: 1fr 1fr; }
-      .ai-hero-card { padding: 1.25rem; }
-      .ai-chat-card { padding: 1rem; }
-      .ai-msg-bubble { max-width: 96%; }
+    /* =======================================================
+       SUBHEADER RESULTS META & SORT BAR (MATCHING IMAGE 5)
+       ======================================================= */
+    .serp-meta-bar {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0.85rem 1.5rem 0.4rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
     }
 
-    @media (max-width: 560px) {
-      .serp-header { padding: 0.5rem 0.75rem; gap: 0.5rem; }
-      .brand-logo { width: 34px; height: 34px; font-size: 1.05rem; }
-      .search-input-wrapper { max-width: 100%; padding: 0.15rem 0.45rem; }
-      .search-input-wrapper input { font-size: 0.84rem; padding: 0.4rem 0.2rem; }
-      .search-input-wrapper i { font-size: 0.95rem; margin-left: 0.3rem; }
-      .header-quick-actions { gap: 5px; }
-      .header-home-btn { padding: 5px 8px; font-size: 0.76rem; }
-      .header-home-btn span { display: none; }
+    .serp-results-count {
+      font-size: 0.86rem;
+      color: #70757a;
+    }
+    .serp-results-count strong {
+      color: #202124;
+    }
 
+    .serp-sort-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .serp-sort-select {
+      border: 1px solid #dadce0;
+      background: #ffffff;
+      color: #3c4043;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Toggle Filters Button */
+    .serp-filter-toggle-btn {
+      background: #ffffff;
+      border: 1px solid #dadce0;
+      color: #3c4043;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .serp-filter-toggle-btn:hover {
+      background: #f8fafc;
+      border-color: #bdc1c6;
+    }
+
+    /* Collapsible Filter Panel */
+    .serp-filter-panel {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0.5rem 1.5rem 1rem 1.5rem;
+      display: none;
+    }
+    .serp-filter-panel.open {
+      display: block;
+    }
+
+    .serp-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      align-items: center;
+    }
+    .serp-filter-col select {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      font-size: 0.84rem;
+      font-family: inherit;
+      outline: none;
+    }
+    .serp-filter-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-top: 8px;
+    }
+    .serp-filter-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      padding: 3px 10px;
+      border-radius: 16px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .serp-filter-chip.active {
+      background: #e8f0fe;
+      border-color: #1a73e8;
+      color: #1a73e8;
+      font-weight: 600;
+    }
+
+    /* =======================================================
+       MAIN RESULTS STAGE & LOADING STATE (IMAGE 5)
+       ======================================================= */
+    .serp-main-wrapper {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0.75rem 1.5rem 3rem 1.5rem;
+      flex: 1;
+    }
+
+    /* Clean Image 5 Circular Blue Loading Spinner */
+    .serp-loading-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 1.5rem;
+      gap: 16px;
+      width: 100%;
+      text-align: center;
+    }
+    .serp-loading-spinner {
+      width: 44px;
+      height: 44px;
+      border: 3.5px solid #e2e8f0;
+      border-top-color: #1a73e8;
+      border-radius: 50%;
+      animation: serpSpin 0.75s linear infinite;
+    }
+    @keyframes serpSpin {
+      to { transform: rotate(360deg); }
+    }
+    .serp-loading-text {
+      font-size: 0.95rem;
+      color: #5f6368;
+      font-weight: 500;
+    }
+    .serp-loading-text span {
+      color: #202124;
+      font-weight: 600;
+    }
+
+    /* =======================================================
+       RESULT CARDS (CLEAN GOOGLE STYLE)
+       ======================================================= */
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .result-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 3px rgba(32,33,36,0.06);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .result-card:hover {
+      box-shadow: 0 4px 14px rgba(32,33,36,0.12);
+      border-color: #bdc1c6;
+    }
+
+    /* Breadcrumb Domain Header */
+    .result-header-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .result-domain-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      background: #eff6ff;
+      color: #1a73e8;
+      border: 1px solid #bfdbfe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+    .result-domain-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+    .result-domain-name {
+      font-weight: 600;
+      font-size: 0.84rem;
+      color: #202124;
+    }
+    .result-breadcrumb-url {
+      font-size: 0.75rem;
+      color: #5f6368;
+      max-width: 480px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .result-verified-pill {
+      margin-left: auto;
+      background: #e6f4ea;
+      color: #137333;
+      border: 1px solid #ceead6;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Title Link */
+    .result-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.22rem;
+      font-weight: 600;
+      margin: 4px 0 6px 0;
+      line-height: 1.35;
+    }
+    .result-title a {
+      color: var(--link-blue);
+      text-decoration: none;
+    }
+    .result-title a:hover {
+      text-decoration: underline;
+    }
+
+    /* Description Snippet */
+    .result-snippet {
+      font-size: 0.92rem;
+      color: #4d5156;
+      line-height: 1.58;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Card Footer & Action Buttons */
+    .result-footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-top: 1px solid #f1f3f4;
+      padding-top: 8px;
+      margin-top: 6px;
+    }
+    .result-tags-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .result-tag {
+      background: #f1f3f4;
+      color: #3c4043;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .result-btn-open {
+      background: #e8f0fe;
+      color: #1a73e8;
+      border: 1px solid #d2e3fc;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .result-btn-open:hover {
+      background: #d2e3fc;
+      color: #174ea6;
+    }
+
+    /* =======================================================
+       AI OVERVIEW TAB & INTERACTIVE CHAT ENGINE
+       ======================================================= */
+    .ai-hero-card {
+      background: #ffffff;
+      border: 1px solid #e9d5ff;
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.08);
+      margin-bottom: 1.5rem;
+    }
+    .ai-hero-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid #f3e8ff;
+    }
+    .ai-sparkle-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #f3e8ff, #e0e7ff);
+      color: #7c3aed;
+      border: 1px solid #ddd6fe;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .ai-hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.28rem;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin: 4px 0 0 0;
+    }
+    .ai-header-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ai-key-config-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .ai-key-config-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .ai-clear-chat-btn {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #e11d48;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* AI Chat Card */
+    .ai-chat-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .ai-chat-feed {
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0.5rem 0;
+      margin-bottom: 1rem;
+    }
+    .ai-msg-bubble {
+      padding: 0.9rem 1.15rem;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      line-height: 1.62;
+      max-width: 88%;
+      box-sizing: border-box;
+    }
+    .ai-msg-bubble.user {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      align-self: flex-end;
+    }
+    .ai-msg-bubble.assistant {
+      background: #fdf4ff;
+      border: 1px solid #f5d0fe;
+      color: #2e1065;
+      align-self: flex-start;
+      width: 100%;
+      max-width: 95%;
+    }
+
+    .ai-chat-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-pill);
+      padding: 4px 6px 4px 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .ai-chat-input-bar:focus-within {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+    }
+    .ai-chat-input-bar input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: #1e293b;
+    }
+    .ai-chat-input-bar button {
+      background: #7c3aed;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .ai-chat-input-bar button:hover {
+      background: #6d28d9;
+    }
+
+    .ai-quick-prompts {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      margin-bottom: 0.85rem;
+      padding-bottom: 4px;
+    }
+    .ai-quick-prompts button {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .ai-quick-prompts button:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #1e293b;
+    }
+
+    /* Modal Styling */
+    .dpg-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 1rem;
+    }
+    .dpg-modal-box {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-md);
+      width: 100%;
+      max-width: 520px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+    .dpg-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #f1f3f4;
+    }
+    .dpg-modal-header h4 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .dpg-modal-close {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .dpg-modal-close:hover { color: #0f172a; }
+
+    .dpg-btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .dpg-btn-primary { background: #1a73e8; color: white; }
+    .dpg-btn-primary:hover { background: #1557b0; }
+    .dpg-btn-secondary { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+    .dpg-btn-secondary:hover { background: #e2e8f0; }
+    .dpg-btn-danger { background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
+    .dpg-btn-danger:hover { background: #ffe4e6; }
+
+    /* =======================================================
+       RESPONSIVENESS (MOBILE & TABLET)
+       ======================================================= */
+    @media (max-width: 768px) {
+      .serp-header {
+        padding: 0.65rem 1rem;
+        gap: 0.65rem;
+      }
+      .serp-brand-text {
+        display: none;
+      }
+      .serp-home-text {
+        display: none;
+      }
+      .dashboard-label-text {
+        display: none !important;
+      }
+      .contributor-dashboard-btn {
+        padding: 2px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+      }
+      .contributor-avatar {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--primary);
+      }
       .serp-tabs-bar {
-        padding: 0 0.5rem;
-        gap: 4px;
-        top: 54px;
-        overflow-x: auto;
-        white-space: nowrap;
-        flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
+        padding: 0 0.75rem;
+        top: 55px;
       }
       .serp-tab-btn {
-        padding: 0.6rem 0.55rem;
-        font-size: 0.78rem;
-        gap: 5px;
+        padding: 0.65rem 0.6rem;
+        font-size: 0.82rem;
       }
-
-      .vertical-filter-interface { padding: 0.6rem 0.75rem; }
-      .vfilter-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-      .vfilter-grid { grid-template-columns: 1fr; gap: 0.5rem; }
-      .vfilter-chips-row { gap: 4px; padding-bottom: 2px; }
-      .vfilter-chip { padding: 3px 9px; font-size: 0.72rem; }
-
-      .serp-main-wrapper { padding: 0.75rem; gap: 0.75rem; }
-      .result-card { padding: 1rem; }
-      .ai-hero-card { padding: 1rem 0.85rem; }
-      .ai-chat-card { padding: 1rem 0.85rem; }
-      .ai-hero-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .ai-header-controls { width: 100%; display: flex; justify-content: space-between; }
-      .ai-msg-bubble { max-width: 98%; font-size: 0.86rem; padding: 0.75rem 0.85rem; }
-      .ai-chat-input-bar { padding: 4px; }
-      .ai-chat-input-bar input { font-size: 0.84rem; padding: 0.5rem 0.6rem; }
-      .ai-chat-input-bar button { padding: 0.5rem 0.9rem; }
-      .ai-quick-prompts { gap: 5px; }
-      .ai-quick-prompts button { font-size: 0.72rem; padding: 3px 8px; }
-
-      .dpg-modal-box { max-width: 95vw; padding: 1.1rem; }
-      .dpg-modal-footer { flex-direction: column; gap: 8px; }
-      .dpg-modal-footer button { width: 100%; }
+      .serp-main-wrapper {
+        padding: 0.5rem 1rem 2rem 1rem;
+      }
+      .result-card {
+        padding: 1rem;
+      }
+      .ai-msg-bubble {
+        max-width: 98%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Sticky SERP Header -->
+  <!-- Top SERP Navigation Header (Matching Image 5) -->
   <header class="serp-header">
-    <a href="/dpgnotes-search-engine.html" class="brand-link" title="DPGNotes Search Engine Portal">
-      <div class="brand-logo">D</div>
-      <span class="brand-title">DPGNotes <span class="accent">SERP</span></span>
+    <a href="/dpgnotes-search-engine.html" class="serp-brand-link" title="DPGNotes Search Engine">
+      <i class="ri-search-line serp-brand-icon"></i>
+      <span class="serp-brand-text">DPGNotes</span>
     </a>
-    <div class="search-input-wrapper">
-      <i class="ri-search-line"></i>
-      <input type="text" id="serpSearchField" placeholder="Search academic notes, solutions, PYQs, and videos...">
-      <button type="button" class="search-input-clear" id="btnClearSearch" onclick="clearSearchField()" title="Clear Search">
-        <i class="ri-close-line"></i>
-      </button>
+
+    <!-- Rounded Search Input Bar -->
+    <div class="serp-search-container">
+      <div class="serp-search-wrapper">
+        <i class="ri-search-line serp-search-icon"></i>
+        <input type="text" class="serp-search-input" id="serpSearchField" placeholder="Search academic notes, solutions, PYQs, and videos..." autocomplete="off">
+        <div class="serp-search-actions">
+          <button type="button" class="serp-action-btn" id="btnClearSearch" onclick="clearSearchField()" title="Clear Search">
+            <i class="ri-close-line"></i>
+          </button>
+          <button type="button" class="serp-action-btn serp-mic-btn" id="btnSerpMic" onclick="startSerpVoiceSearch()" title="Voice Search">
+            <i class="ri-mic-fill"></i>
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="header-quick-actions">
-      <a href="index.html" class="header-home-btn" title="Back to Main Platform">
-        <i class="ri-home-4-line"></i> <span class="d-none d-sm-inline">Home</span>
+
+    <!-- Quick Navigation & Auth Actions -->
+    <div class="serp-header-actions">
+      <a href="index.html" class="serp-home-btn" title="Back to Home Platform">
+        <i class="ri-home-4-line"></i>
+        <span class="serp-home-text">Home</span>
       </a>
-      <a href="dashboard.html" class="header-home-btn" title="Contributor Dashboard" style="color:#a78bfa; border-color:rgba(168,85,247,0.3);">
-        <i class="ri-dashboard-line"></i>
-      </a>
+
+      <!-- Dynamic Auth Area: Profile photo + Dashboard + Logout OR Sign In -->
+      <div id="navAuthArea" class="serp-auth-area">
+        <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In">
+          <i class="ri-login-box-line"></i>
+          <span>Sign In</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- =======================================================
-       GOOGLE UI STRATEGY 8-TAB NAVIGATION BAR
-       AI Overview | All | Sponsored | Images | Videos | Websites | Contributors | Academic Solutions
-       ======================================================= -->
+  <!-- Horizontal 8-Tab Navigation Bar (Matching Image 5 & DPGNotes Requirements) -->
   <nav class="serp-tabs-bar" id="serpTabsBar">
-    <button class="serp-tab-btn" id="tab-btn-ai" onclick="window.switchSerpTab('ai')">
-      <i class="ri-sparkling-fill ai-tab-sparkle"></i> AI Overview
-    </button>
     <button class="serp-tab-btn active" id="tab-btn-all" onclick="window.switchSerpTab('all')">
-      <i class="ri-search-2-line"></i> All
+      <i class="ri-layout-grid-line"></i> All Results
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-ai" onclick="window.switchSerpTab('ai')">
+      <i class="ri-sparkling-fill" style="color:#8b5cf6;"></i> AI Overview
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-website" onclick="window.switchSerpTab('website')">
+      <i class="ri-global-line" style="color:#10b981;"></i> Websites
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-videos" onclick="window.switchSerpTab('videos')">
+      <i class="ri-youtube-line" style="color:#ea4335;"></i> YouTube Videos
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-solutions" onclick="window.switchSerpTab('solutions')">
+      <i class="ri-code-box-line" style="color:#0284c7;"></i> Academic Solutions
+    </button>
+    <button class="serp-tab-btn" id="tab-btn-contributors" onclick="window.switchSerpTab('contributors')">
+      <i class="ri-team-line" style="color:#6366f1;"></i> Contributors
     </button>
     <button class="serp-tab-btn" id="tab-btn-sponsored" onclick="window.switchSerpTab('sponsored')">
       <i class="ri-megaphone-line" style="color:#f59e0b;"></i> Sponsored
     </button>
     <button class="serp-tab-btn" id="tab-btn-image" onclick="window.switchSerpTab('image')">
-      <i class="ri-image-line" style="color:#38bdf8;"></i> Images
-    </button>
-    <button class="serp-tab-btn" id="tab-btn-videos" onclick="window.switchSerpTab('videos')">
-      <i class="ri-youtube-line" style="color:#ef4444;"></i> Videos
-    </button>
-    <button class="serp-tab-btn" id="tab-btn-website" onclick="window.switchSerpTab('website')">
-      <i class="ri-global-line" style="color:#10b981;"></i> Websites
-    </button>
-    <button class="serp-tab-btn" id="tab-btn-contributors" onclick="window.switchSerpTab('contributors')">
-      <i class="ri-team-line" style="color:#a855f7;"></i> Contributors
-    </button>
-    <button class="serp-tab-btn" id="tab-btn-solutions" onclick="window.switchSerpTab('solutions')">
-      <i class="ri-code-box-line" style="color:#06b6d4;"></i> Academic Solutions
+      <i class="ri-image-line" style="color:#06b6d4;"></i> Images
     </button>
   </nav>
 
-  <!-- =======================================================
-       VERTICAL FILTER INTERFACE (JUST BELOW TAB BUTTONS)
-       Active on all tabs EXCEPT AI Overview
-       ======================================================= -->
-  <section id="serpFilterInterface" class="vertical-filter-interface">
-    <div class="vfilter-container">
-      <div class="vfilter-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <div class="vfilter-badge"><i class="ri-filter-3-line"></i> Filter Matrix</div>
-          <div class="vfilter-stats" id="vfilterStats">Showing <strong id="resultsCount">0</strong> results for "<strong id="queryText"></strong>"</div>
-        </div>
-        <button class="vfilter-reset-btn" onclick="resetAllFilters()"><i class="ri-refresh-line"></i> Reset Filters</button>
-      </div>
-
-      <div class="vfilter-grid">
-        <!-- 1. Category -->
-        <div class="vfilter-col">
-          <label class="vfilter-label"><i class="ri-folder-2-line"></i> Category</label>
-          <select class="vfilter-select" id="filterCategory" onchange="applyFilters()">
-            <option value="ALL">All Categories</option>
-          </select>
-        </div>
-
-        <!-- 2. Discipline / Course -->
-        <div class="vfilter-col">
-          <label class="vfilter-label"><i class="ri-book-open-line"></i> Discipline / Course</label>
-          <select class="vfilter-select" id="filterDiscipline" onchange="applyFilters()">
-            <option value="ALL">All Disciplines</option>
-          </select>
-        </div>
-
-        <!-- 3. Sort Order -->
-        <div class="vfilter-col">
-          <label class="vfilter-label"><i class="ri-sort-desc"></i> Sort By</label>
-          <select class="vfilter-select" id="sortOrder" onchange="applyFilters()">
-            <option value="relevance">⭐ Highest SERP Rank</option>
-            <option value="newest">🕒 Newest First</option>
-            <option value="likes">❤️ Most Liked</option>
-            <option value="views">👁️ Most Viewed</option>
-            <option value="title">🔤 Alphabetical (A-Z)</option>
-          </select>
-        </div>
-
-        <!-- 4. Content Type / Dynamic -->
-        <div class="vfilter-col" id="colSpecificFilter">
-          <label class="vfilter-label" id="labelSpecificFilter"><i class="ri-equalizer-line"></i> Content Filter</label>
-          <select class="vfilter-select" id="specificFilter" onchange="applyFilters()">
-            <option value="ALL">All Content</option>
-            <option value="notes_only">Sessional & Academic Notes</option>
-            <option value="solutions_only">Academic Solutions Only</option>
-            <option value="verified_only">Verified Creators Only</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Quick Filter Chips / Pills -->
-      <div class="vfilter-chips-row" id="vfilterChips">
-        <button class="vfilter-chip active" data-filter="ALL" onclick="selectFilterChip('ALL')">All</button>
-        <button class="vfilter-chip" data-filter="SE" onclick="selectFilterChip('SE')">Sessional Exam (SE)</button>
-        <button class="vfilter-chip" data-filter="SP" onclick="selectFilterChip('SP')">Sample Papers (SP)</button>
-        <button class="vfilter-chip" data-filter="UE" onclick="selectFilterChip('UE')">University Exam (UE)</button>
-        <button class="vfilter-chip" data-filter="T&N" onclick="selectFilterChip('T&N')">Tutorials & Notes</button>
-        <button class="vfilter-chip" data-filter="Practical Solution" onclick="selectFilterChip('Practical Solution')">Practical Solutions</button>
-        <button class="vfilter-chip" data-filter="Assignment Solution" onclick="selectFilterChip('Assignment Solution')">Assignment Solutions</button>
-      </div>
+  <!-- Subheader Meta Bar (Matching Image 5) -->
+  <div class="serp-meta-bar" id="serpMetaBar">
+    <div class="serp-results-count" id="serpResultsCountLabel">
+      About <strong id="resultsCount">0</strong> results for "<span id="queryTextLabel"></span>"
     </div>
-  </section>
-
-  <!-- Top Header Native Sponsored Ad Banner -->
-  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="max-width:1400px; width:100%; margin:0.5rem auto 0 auto; padding:0 1.5rem; box-sizing:border-box;"></div>
-
-  <!-- Main Results & Content Stage -->
-  <div class="serp-main-wrapper">
-    <div id="resultsList" style="display: flex; flex-direction: column; gap: 1.25rem;">
-      <!-- Dynamic Content Rendered Here via renderActiveTabContent() -->
+    <div class="serp-sort-wrapper">
+      <button type="button" class="serp-filter-toggle-btn" onclick="toggleFilterPanel()" title="Toggle Filter Matrix">
+        <i class="ri-filter-3-line"></i> Filter Matrix
+      </button>
+      <label style="font-size:0.84rem;">Sort:</label>
+      <select class="serp-sort-select" id="sortOrder" onchange="applyFilters()">
+        <option value="relevance">Relevance</option>
+        <option value="newest">Newest First</option>
+        <option value="likes">Most Liked</option>
+        <option value="views">Most Viewed</option>
+        <option value="title">Alphabetical (A-Z)</option>
+      </select>
     </div>
   </div>
 
-  <!-- Bottom Footer Native Sponsored Ad Banner -->
-  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1400px; width:100%; margin:1.5rem auto 1rem auto; padding:0 1.5rem; box-sizing:border-box;"></div>
+  <!-- Collapsible Filter Panel -->
+  <div class="serp-filter-panel" id="serpFilterPanel">
+    <div class="serp-filter-grid">
+      <div class="serp-filter-col">
+        <select id="filterCategory" onchange="applyFilters()">
+          <option value="ALL">All Categories</option>
+        </select>
+      </div>
+      <div class="serp-filter-col">
+        <select id="filterDiscipline" onchange="applyFilters()">
+          <option value="ALL">All Disciplines</option>
+        </select>
+      </div>
+      <div class="serp-filter-col">
+        <select id="specificFilter" onchange="applyFilters()">
+          <option value="ALL">All Content</option>
+          <option value="notes_only">Sessional &amp; Academic Notes</option>
+          <option value="solutions_only">Academic Solutions Only</option>
+          <option value="verified_only">Verified Creators Only</option>
+        </select>
+      </div>
+      <div class="serp-filter-col" style="text-align:right;">
+        <button type="button" class="dpg-btn dpg-btn-secondary" onclick="resetAllFilters()" style="padding:4px 10px; font-size:0.78rem;">
+          <i class="ri-refresh-line"></i> Reset Filters
+        </button>
+      </div>
+    </div>
+    <div class="serp-filter-chips" id="vfilterChips">
+      <button class="serp-filter-chip active" data-filter="ALL" onclick="selectFilterChip('ALL')">All</button>
+      <button class="serp-filter-chip" data-filter="SE" onclick="selectFilterChip('SE')">Sessional Exam (SE)</button>
+      <button class="serp-filter-chip" data-filter="SP" onclick="selectFilterChip('SP')">Sample Papers (SP)</button>
+      <button class="serp-filter-chip" data-filter="UE" onclick="selectFilterChip('UE')">University Exam (UE)</button>
+      <button class="serp-filter-chip" data-filter="T&N" onclick="selectFilterChip('T&N')">Tutorials &amp; Notes</button>
+      <button class="serp-filter-chip" data-filter="Practical Solution" onclick="selectFilterChip('Practical Solution')">Practical Solutions</button>
+      <button class="serp-filter-chip" data-filter="Assignment Solution" onclick="selectFilterChip('Assignment Solution')">Assignment Solutions</button>
+    </div>
+  </div>
 
-  <!-- =======================================================
-       GEMINI API KEY CONFIGURATION MODAL
-       ======================================================= -->
+  <!-- Top Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="max-width:1280px; width:100%; margin:0.5rem auto 0 auto; padding:0 1.5rem; box-sizing:border-box;"></div>
+
+  <!-- Main SERP Stage & Content -->
+  <main class="serp-main-wrapper">
+    <!-- Image 5 Loading Stage -->
+    <div class="serp-loading-stage" id="serpLoadingStage" style="display:none;">
+      <div class="serp-loading-spinner"></div>
+      <p class="serp-loading-text">Fetching live search results for "<span id="loadingQueryLabel">...</span>"...</p>
+    </div>
+
+    <!-- Results Feed -->
+    <div id="resultsList" class="results-list"></div>
+  </main>
+
+  <!-- Bottom Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1280px; width:100%; margin:1.5rem auto 1rem auto; padding:0 1.5rem; box-sizing:border-box;"></div>
+
+  <!-- Gemini API Key Modal with Render Cloud AI status banner -->
   <div id="geminiApiKeyModal" class="dpg-modal-backdrop" style="display:none;">
     <div class="dpg-modal-box">
       <div class="dpg-modal-header">
         <div style="display:flex; align-items:center; gap:8px;">
-          <i class="ri-key-2-fill" style="color:#c084fc; font-size:1.3rem;"></i>
+          <i class="ri-key-2-fill" style="color:#7c3aed; font-size:1.3rem;"></i>
           <h4>Gemini API Key Configuration</h4>
         </div>
         <button type="button" class="dpg-modal-close" onclick="closeGeminiKeyModal()">&times;</button>
       </div>
       <div class="dpg-modal-body">
-        <!-- Built-in Cloud AI Engine Status Banner -->
-        <div style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); border-radius:10px; padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <!-- Render Cloud AI Status Banner -->
+        <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:10px; padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <i class="ri-cloud-line" style="color:#a78bfa; font-size:1.25rem;"></i>
+            <i class="ri-cloud-line" style="color:#7c3aed; font-size:1.25rem;"></i>
             <div>
-              <div style="font-size:0.84rem; font-weight:700; color:white;">Render Cloud AI Engine (Built-in)</div>
-              <div style="font-size:0.75rem; color:#94a3b8;">Pre-configured on Render Web Service via <code>GEMINI_API_KEY</code></div>
+              <div style="font-size:0.84rem; font-weight:700; color:#1e1b4b;">Render Cloud AI Engine (Built-in)</div>
+              <div style="font-size:0.75rem; color:#6b7280;">Pre-configured on Render Web Service via <code>GEMINI_API_KEY</code></div>
             </div>
           </div>
-          <span style="background:rgba(52,211,153,0.15); color:#34d399; border:1px solid rgba(52,211,153,0.4); padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+          <span style="background:#e6f4ea; color:#137333; border:1px solid #ceead6; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
             <i class="ri-checkbox-circle-fill"></i> Cloud Ready
           </span>
         </div>
 
-        <p style="color:#cbd5e1; font-size:0.86rem; line-height:1.6; margin-bottom:0.9rem;">
+        <p style="color:#4b5563; font-size:0.86rem; line-height:1.6; margin-bottom:0.9rem;">
           By default, DPGNotes automatically routes AI queries through our <strong>Render Cloud AI Engine</strong>. If you want direct, high-speed client-side generation or custom quota, you can optionally provide your own Google Gemini API key below.
         </p>
         <div style="position:relative; margin-bottom:0.8rem;">
-          <input type="password" id="customGeminiKeyInput" placeholder="Optional: Paste custom Gemini API key (AIzaSy...)" style="width:100%; padding:0.7rem 2.8rem 0.7rem 0.85rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:white; font-family:'Fira Code', monospace; font-size:0.85rem; outline:none; box-sizing:border-box;">
-          <button type="button" onclick="toggleApiKeyVisibility()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.1rem;"><i id="apiKeyVisIcon" class="ri-eye-line"></i></button>
+          <input type="password" id="customGeminiKeyInput" placeholder="Optional: Paste custom Gemini API key (AIzaSy...)" style="width:100%; padding:0.65rem 2.8rem 0.65rem 0.85rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; color:#1e293b; font-family:'Fira Code', monospace; font-size:0.85rem; outline:none; box-sizing:border-box;">
+          <button type="button" onclick="toggleApiKeyVisibility()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748b; cursor:pointer; font-size:1.1rem;"><i id="apiKeyVisIcon" class="ri-eye-line"></i></button>
         </div>
         <div id="apiKeyTestResult" style="margin-bottom:0.8rem; font-size:0.82rem; display:none;"></div>
-        <div style="font-size:0.76rem; color:#94a3b8; line-height:1.5;">
+        <div style="font-size:0.76rem; color:#6b7280; line-height:1.5;">
           🔒 Your custom key is stored strictly in your local browser's <code>localStorage</code>.<br>
-          Get a free Gemini API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#a78bfa; text-decoration:none; font-weight:600;">Google AI Studio <i class="ri-external-link-line"></i></a>, or leave blank to use the built-in Cloud AI.
+          Get a free Gemini API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#7c3aed; text-decoration:none; font-weight:600;">Google AI Studio <i class="ri-external-link-line"></i></a>, or leave blank to use the built-in Cloud AI.
         </div>
       </div>
-      <div class="dpg-modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div class="dpg-modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:1.25rem;">
         <button type="button" class="dpg-btn dpg-btn-danger" onclick="clearCustomGeminiKey()" title="Clear and use Render Cloud AI Engine"><i class="ri-delete-bin-line"></i> Clear &amp; Use Cloud AI</button>
         <div style="display:flex; gap:8px;">
           <button type="button" class="dpg-btn dpg-btn-secondary" onclick="testCustomGeminiKey()"><i class="ri-test-tube-line"></i> Test Key</button>
@@ -1268,36 +1122,32 @@
     </div>
   </div>
 
-  <!-- =======================================================
-       DPGNOTES GALLERY LIGHTBOX MODAL (IMAGES TAB)
-       ======================================================= -->
+  <!-- Gallery Lightbox Modal -->
   <div id="dpgGalleryModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.96); backdrop-filter:blur(12px); flex-direction:column; justify-content:space-between; padding:1.5rem;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <button onclick="closeDpgGalleryModal()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.4rem; border-radius:50%; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700;" title="Close Gallery (Esc)">✖</button>
+      <button onclick="closeDpgGalleryModal()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.4rem; border-radius:50%; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Close Gallery (Esc)">✖</button>
       <span id="galleryModalTitle" style="color:#c084fc; font-weight:700; font-size:0.95rem;">DPGNotes Gallery Viewer</span>
       <span id="galleryModalCounter" style="color:#94a3b8; font-size:0.85rem; font-weight:600;">1 of 1</span>
     </div>
-
-    <div id="gallerySwipeContainer" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex:1; margin:1rem 0; touch-action:pan-y;">
-      <button onclick="prevGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Previous (Left Arrow)">◀</button>
+    <div id="gallerySwipeContainer" style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex:1; margin:1rem 0;">
+      <button onclick="prevGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Previous">◀</button>
       <div style="text-align:center; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:78vh;">
-        <img id="galleryModalImage" src="ANH.png" style="max-width:100%; max-height:65vh; object-fit:contain; border-radius:14px; border:1px solid rgba(255,255,255,0.15); box-shadow:0 20px 50px rgba(0,0,0,0.8);" alt="Gallery Image">
+        <img id="galleryModalImage" src="ANH.png" style="max-width:100%; max-height:65vh; object-fit:contain; border-radius:12px;" alt="Gallery Image">
         <p id="galleryModalCaption" style="color:white; font-size:0.88rem; margin-top:12px; font-weight:600;"></p>
       </div>
-      <button onclick="nextGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Next (Right Arrow)">▶</button>
+      <button onclick="nextGalleryImage()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:1.8rem; border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Next">▶</button>
     </div>
-
     <div style="display:flex; justify-content:flex-start;">
-      <button onclick="closeDpgGalleryModal()" style="background:#ef4444; border:none; color:white; padding:8px 18px; border-radius:10px; font-weight:700; font-size:0.88rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-        <i class="ri-close-line"></i> Close
+      <button onclick="closeDpgGalleryModal()" style="background:#ef4444; border:none; color:white; padding:8px 18px; border-radius:8px; font-weight:700; font-size:0.88rem; cursor:pointer;">
+        Close
       </button>
     </div>
   </div>
 
-  <!-- Global Application Logic & Firestore Multi-Collection Query Engine -->
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -1310,30 +1160,75 @@
 
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const auth = getAuth(app);
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com');
 
-    function extractYouTubeId(url) {
-      if (!url || typeof url !== 'string') return '';
-      const match = url.match(/(?:watch\?v=|embed\/|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-      return match ? match[1] : '';
-    }
+    // ==========================================
+    // AUTH STATE & NAVBAR
+    // ==========================================
+    onAuthStateChanged(auth, (user) => {
+      const authArea = document.getElementById("navAuthArea");
+      if (!authArea) return;
 
+      if (user) {
+        const photoURL = user.photoURL || '';
+        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
+        const initial = displayName.charAt(0).toUpperCase();
+
+        const avatarHtml = photoURL 
+          ? `<img src="${photoURL}" alt="${displayName}" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">`
+          : initial;
+
+        authArea.innerHTML = `
+          <div class="contributor-user-wrapper">
+            <a href="dashboard.html" class="contributor-dashboard-btn" title="Contributor Dashboard (${displayName})">
+              <div class="contributor-avatar">${avatarHtml}</div>
+              <span class="dashboard-label-text">Dashboard</span>
+            </a>
+            <button type="button" class="contributor-logout-btn" onclick="window.handleSerpSignOut()" title="Log Out">
+              <i class="ri-logout-box-r-line"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        authArea.innerHTML = `
+          <a href="dashboard.html" class="nav-btn-signin" title="Sign In">
+            <i class="ri-login-box-line"></i>
+            <span>Sign In</span>
+          </a>
+        `;
+      }
+    });
+
+    window.handleSerpSignOut = async function() {
+      try {
+        await signOut(auth);
+        localStorage.removeItem("dpgActiveUserUid");
+        localStorage.removeItem("dpgActiveUserEmail");
+        localStorage.removeItem("dpgActiveUserName");
+        window.location.reload();
+      } catch (err) {
+        console.error("Sign out error:", err);
+      }
+    };
+
+    // ==========================================
+    // QUERY PARAMETERS & STATE
+    // ==========================================
     let allDocs = [];
-    let allContributors = [];
     window.currentSearchResults = [];
     window.activeSerpTab = 'all';
 
-    // Parse URL Parameter
     const urlParams = new URLSearchParams(window.location.search);
     const searchField = document.getElementById("serpSearchField");
-    const queryTextSpan = document.getElementById("queryText");
-
+    const queryLabel = document.getElementById("queryTextLabel");
     const initialQuery = urlParams.get("q") || urlParams.get("query") || urlParams.get("tag") || "";
+
     if (searchField) searchField.value = initialQuery;
-    if (queryTextSpan) queryTextSpan.innerText = initialQuery || "All Materials";
+    if (queryLabel) queryLabel.innerText = initialQuery || "All Materials";
 
     const initialTab = urlParams.get("tab");
-    if (initialTab && ['ai', 'all', 'sponsored', 'image', 'videos', 'website', 'contributors', 'solutions'].includes(initialTab.toLowerCase())) {
+    if (initialTab && ['all', 'ai', 'website', 'videos', 'solutions', 'contributors', 'sponsored', 'image'].includes(initialTab.toLowerCase())) {
       window.activeSerpTab = initialTab.toLowerCase();
     }
 
@@ -1345,6 +1240,114 @@
       }
     };
 
+    window.toggleFilterPanel = function() {
+      const panel = document.getElementById("serpFilterPanel");
+      if (panel) panel.classList.toggle("open");
+    };
+
+    // Voice Search
+    window.startSerpVoiceSearch = function() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Voice recognition is not supported in this browser. Please type your query.");
+        return;
+      }
+      const micBtn = document.getElementById("btnSerpMic");
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.start();
+
+      if (micBtn) micBtn.classList.add("listening");
+      if (searchField) searchField.placeholder = "🎙️ Listening... Speak query now";
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (searchField) searchField.value = transcript;
+        if (micBtn) micBtn.classList.remove("listening");
+        runSearch();
+      };
+      recognition.onerror = () => {
+        if (micBtn) micBtn.classList.remove("listening");
+        if (searchField) searchField.placeholder = "Search notes, solutions, PYQs...";
+      };
+      recognition.onend = () => {
+        if (micBtn) micBtn.classList.remove("listening");
+      };
+    };
+
+    // ==========================================
+    // TAB SWITCHING (IMAGE 5)
+    // ==========================================
+    window.switchSerpTab = function(tabName) {
+      window.activeSerpTab = tabName;
+
+      document.querySelectorAll('.serp-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const metaBar = document.getElementById("serpMetaBar");
+      if (metaBar) {
+        metaBar.style.display = (tabName === 'ai') ? 'none' : 'flex';
+      }
+
+      // Update URL silently
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set("tab", tabName);
+      window.history.replaceState(null, null, newUrl);
+
+      showLoadingStage();
+      setTimeout(() => {
+        hideLoadingStage();
+        renderActiveTabContent();
+      }, 250);
+    };
+
+    function showLoadingStage() {
+      const stage = document.getElementById("serpLoadingStage");
+      const list = document.getElementById("resultsList");
+      const q = searchField ? searchField.value.trim() : '';
+      const lbl = document.getElementById("loadingQueryLabel");
+      if (lbl) lbl.innerText = q || 'Academic Resources';
+      if (stage) stage.style.display = 'flex';
+      if (list) list.style.display = 'none';
+    }
+
+    function hideLoadingStage() {
+      const stage = document.getElementById("serpLoadingStage");
+      const list = document.getElementById("resultsList");
+      if (stage) stage.style.display = 'none';
+      if (list) list.style.display = 'flex';
+    }
+
+    // ==========================================
+    // DATA LOADING & FILTERING
+    // ==========================================
+    async function loadDocuments() {
+      showLoadingStage();
+      try {
+        const snap = await getDocs(collection(db, "documents"));
+        allDocs = [];
+        snap.forEach(d => {
+          const data = d.data();
+          const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
+          if (isApproved) {
+            allDocs.push({ id: d.id, ...data });
+          }
+        });
+
+        populateDynamicFilters();
+        applyFilters();
+
+        if (window.activeSerpTab) {
+          window.switchSerpTab(window.activeSerpTab);
+        }
+      } catch (err) {
+        console.error("Failed downloading documents:", err);
+      } finally {
+        hideLoadingStage();
+      }
+    }
+
     function populateDynamicFilters() {
       const catSelect = document.getElementById("filterCategory");
       const discSelect = document.getElementById("filterDiscipline");
@@ -1353,25 +1356,11 @@
       const uniqueCats = [...new Set(allDocs.map(d => d.category).filter(Boolean))].sort();
       const uniqueDiscs = [...new Set(allDocs.map(d => d.discipline).filter(Boolean))].sort();
 
-      const defaultCats = {
-        "SE": "Sessional Exam (SE)",
-        "SP": "Sample Paper (SP)",
-        "UE": "University Exam (UE)",
-        "EV": "Event Materials (EV)",
-        "T&N": "Tutorial & Notes (T&N)",
-        "IQ": "Interview Questions (IQ)",
-        "A&LR": "Aptitude & Logical Reasoning (A&LR)",
-        "PQ": "Placement Questions (PQ)",
-        "Practical Solution": "Practical Solution",
-        "Assignment Solution": "Assignment Solution"
-      };
-
       catSelect.innerHTML = '<option value="ALL">All Categories</option>';
-      const finalCats = new Set([...Object.keys(defaultCats), ...uniqueCats]);
-      finalCats.forEach(cat => {
+      uniqueCats.forEach(cat => {
         const opt = document.createElement("option");
         opt.value = cat;
-        opt.innerText = defaultCats[cat] || cat;
+        opt.innerText = cat;
         catSelect.appendChild(opt);
       });
 
@@ -1382,53 +1371,11 @@
         opt.innerText = disc;
         discSelect.appendChild(opt);
       });
-
-      // Also check category / tag url param
-      const urlCat = urlParams.get("category") || urlParams.get("tag");
-      if (urlCat) {
-        const matchedOpt = Array.from(catSelect.options).find(o => o.value.toLowerCase().includes(urlCat.toLowerCase()) || urlCat.toLowerCase().includes(o.value.toLowerCase()));
-        if (matchedOpt) catSelect.value = matchedOpt.value;
-      }
-      const urlDisc = urlParams.get("discipline");
-      if (urlDisc) {
-        const matchedDisc = Array.from(discSelect.options).find(o => o.value.toLowerCase().includes(urlDisc.toLowerCase()));
-        if (matchedDisc) discSelect.value = matchedDisc.value;
-      }
     }
 
-    // =======================================================
-    // TAB SWITCHING & VERTICAL FILTER VISIBILITY LOGIC
-    // =======================================================
-    window.switchSerpTab = function(tabName) {
-      window.activeSerpTab = tabName;
-
-      // 1. Update tab button active states
-      document.querySelectorAll('.serp-tab-btn').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      // 2. Control Vertical Filter Interface visibility:
-      // In Each Tab except AI Overview, show vertical filter interface just below tab buttons!
-      const filterInterface = document.getElementById("serpFilterInterface");
-      if (filterInterface) {
-        if (tabName === 'ai') {
-          filterInterface.style.display = 'none';
-        } else {
-          filterInterface.style.display = 'block';
-        }
-      }
-
-      // Update URL silently
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set("tab", tabName);
-      window.history.replaceState(null, null, newUrl);
-
-      renderActiveTabContent();
-    };
-
     window.selectFilterChip = function(chipVal) {
-      document.querySelectorAll('.vfilter-chip').forEach(c => c.classList.remove('active'));
-      const activeChip = document.querySelector(`.vfilter-chip[data-filter="${chipVal}"]`);
+      document.querySelectorAll('.serp-filter-chip').forEach(c => c.classList.remove('active'));
+      const activeChip = document.querySelector(`.serp-filter-chip[data-filter="${chipVal}"]`);
       if (activeChip) activeChip.classList.add('active');
 
       const catSelect = document.getElementById("filterCategory");
@@ -1436,8 +1383,8 @@
         if (chipVal === 'ALL') {
           catSelect.value = 'ALL';
         } else {
-          const match = Array.from(catSelect.options).find(o => o.value === chipVal || o.value.toLowerCase().includes(chipVal.toLowerCase()));
-          if (match) catSelect.value = match.value;
+          const matched = Array.from(catSelect.options).find(o => o.value.toLowerCase().includes(chipVal.toLowerCase()));
+          if (matched) catSelect.value = matched.value;
         }
       }
       applyFilters();
@@ -1446,108 +1393,93 @@
     window.resetAllFilters = function() {
       const catSelect = document.getElementById("filterCategory");
       const discSelect = document.getElementById("filterDiscipline");
-      const sortSelect = document.getElementById("sortOrder");
       const specSelect = document.getElementById("specificFilter");
+      const sortSelect = document.getElementById("sortOrder");
 
       if (catSelect) catSelect.value = 'ALL';
       if (discSelect) discSelect.value = 'ALL';
-      if (sortSelect) sortSelect.value = 'relevance';
       if (specSelect) specSelect.value = 'ALL';
+      if (sortSelect) sortSelect.value = 'relevance';
 
-      document.querySelectorAll('.vfilter-chip').forEach(c => c.classList.remove('active'));
-      const allChip = document.querySelector('.vfilter-chip[data-filter="ALL"]');
+      document.querySelectorAll('.serp-filter-chip').forEach(c => c.classList.remove('active'));
+      const allChip = document.querySelector('.serp-filter-chip[data-filter="ALL"]');
       if (allChip) allChip.classList.add('active');
 
       applyFilters();
     };
 
-    // =======================================================
-    // FILTERING & RANKING ENGINE
-    // =======================================================
-    window.applyFilters = function() {
-      const q = searchField ? searchField.value.trim().toLowerCase() : '';
-      if (queryTextSpan) queryTextSpan.innerText = searchField ? (searchField.value.trim() || 'All Materials') : 'All Materials';
+    function applyFilters() {
+      const q = (searchField ? searchField.value.trim() : '').toLowerCase();
+      const catVal = document.getElementById("filterCategory")?.value || 'ALL';
+      const discVal = document.getElementById("filterDiscipline")?.value || 'ALL';
+      const specVal = document.getElementById("specificFilter")?.value || 'ALL';
+      const sortVal = document.getElementById("sortOrder")?.value || 'relevance';
 
-      if (q && window.dpgFeed) {
-        try { window.dpgFeed.logSerpSearch(q); } catch(e) {}
-      }
+      let filtered = allDocs.filter(d => {
+        // Query text match
+        if (q) {
+          const titleMatch = (d.title || '').toLowerCase().includes(q);
+          const descMatch = (d.description || '').toLowerCase().includes(q);
+          const discMatch = (d.discipline || '').toLowerCase().includes(q);
+          const catMatch = (d.category || '').toLowerCase().includes(q);
+          const tagsMatch = Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q));
+          if (!titleMatch && !descMatch && !discMatch && !catMatch && !tagsMatch) return false;
+        }
 
-      const catFilter = document.getElementById("filterCategory") ? document.getElementById("filterCategory").value : "ALL";
-      const discFilter = document.getElementById("filterDiscipline") ? document.getElementById("filterDiscipline").value : "ALL";
-      const sortBy = document.getElementById("sortOrder") ? document.getElementById("sortOrder").value : "relevance";
-      const specFilter = document.getElementById("specificFilter") ? document.getElementById("specificFilter").value : "ALL";
+        // Category filter
+        if (catVal !== 'ALL' && (d.category || '').toLowerCase() !== catVal.toLowerCase()) return false;
 
-      let results = allDocs;
+        // Discipline filter
+        if (discVal !== 'ALL' && (d.discipline || '').toLowerCase() !== discVal.toLowerCase()) return false;
 
-      // 1. Text keyword search
-      if (q) {
-        const tokens = q.split(/\s+/).filter(Boolean);
-        const matched = results.filter(d => {
-          const title = (d.title || "").toLowerCase();
-          const desc = (d.description || "").toLowerCase();
-          const disc = (d.discipline || "").toLowerCase();
-          const cat = (d.category || "").toLowerCase();
-          const uploader = (d.userName || d.uploader || "").toLowerCase();
-          const docId = (d.id || "").toLowerCase();
-          const tags = Array.isArray(d.tags) ? d.tags.join(" ").toLowerCase() : (d.tags || "").toLowerCase();
+        // Specific Content filter
+        if (specVal === 'notes_only' && (d.isSolution === true || d.solutionUrl)) return false;
+        if (specVal === 'solutions_only' && !d.isSolution && !d.solutionUrl) return false;
+        if (specVal === 'verified_only' && !d.isVerified && !d.verifiedContributor) return false;
 
-          const combined = `${title} ${desc} ${disc} ${cat} ${uploader} ${docId} ${tags}`;
-          return tokens.some(token => combined.includes(token));
-        });
-
-        if (matched.length > 0) results = matched;
-      }
-
-      // 2. Category Dropdown Filter
-      if (catFilter !== "ALL") {
-        const cFiltered = results.filter(d => (d.category || "").toLowerCase().includes(catFilter.toLowerCase()));
-        if (cFiltered.length > 0) results = cFiltered;
-      }
-
-      // 3. Discipline Dropdown Filter
-      if (discFilter !== "ALL") {
-        const dFiltered = results.filter(d => (d.discipline || "").toLowerCase().includes(discFilter.toLowerCase()));
-        if (dFiltered.length > 0) results = dFiltered;
-      }
-
-      // 4. Content Specific Filter
-      if (specFilter === "notes_only") {
-        results = results.filter(d => !d.isSolution);
-      } else if (specFilter === "solutions_only") {
-        results = results.filter(d => d.isSolution);
-      } else if (specFilter === "verified_only") {
-        results = results.filter(d => d.isVerified || d.isSolution || (d.likes && d.likes > 2));
-      }
-
-      // 5. Ranking
-      results.forEach(d => {
-        const lCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
-        const sCount = d.sharesCount || 0;
-        const vCount = d.views || 1;
-        const stMins = Math.round((d.screentime || 60) / 60);
-        const relScore = q ? (((d.title || "").toLowerCase().includes(q) || (d.category || "").toLowerCase().includes(q) || (d.discipline || "").toLowerCase().includes(q)) ? 15 : 4) : 1;
-        d.priorityScore = (lCount * 5) + (sCount * 4) + (stMins * 3) + (vCount * 2) + (relScore * 10);
+        return true;
       });
 
-      if (sortBy === "newest") {
-        results.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-      } else if (sortBy === "likes") {
-        results.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-      } else if (sortBy === "views") {
-        results.sort((a, b) => (b.views || 0) - (a.views || 0));
-      } else if (sortBy === "title") {
-        results.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-      } else {
-        results.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
+      // Sort
+      if (sortVal === 'newest') {
+        filtered.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      } else if (sortVal === 'likes') {
+        filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      } else if (sortVal === 'views') {
+        filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+      } else if (sortVal === 'title') {
+        filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
       }
 
-      window.currentSearchResults = results;
+      window.currentSearchResults = filtered;
       renderActiveTabContent();
-    };
+    }
 
-    // =======================================================
-    // TAB CONTENT RENDERER
-    // =======================================================
+    function runSearch() {
+      const q = searchField ? searchField.value.trim() : '';
+      if (queryLabel) queryLabel.innerText = q || 'All Materials';
+
+      const newUrl = new URL(window.location.href);
+      if (q) newUrl.searchParams.set("q", q);
+      else newUrl.searchParams.delete("q");
+      window.history.replaceState(null, null, newUrl);
+
+      showLoadingStage();
+      setTimeout(() => {
+        hideLoadingStage();
+        applyFilters();
+      }, 250);
+    }
+
+    if (searchField) {
+      searchField.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") runSearch();
+      });
+    }
+
+    // ==========================================
+    // RENDER TABS CONTENT
+    // ==========================================
     function renderActiveTabContent() {
       const results = window.currentSearchResults || [];
       const list = document.getElementById("resultsList");
@@ -1557,81 +1489,84 @@
 
       const q = searchField ? searchField.value.trim() : '';
 
-      // ==========================================
-      // TAB 1: AI OVERVIEW & INTERACTIVE CHAT
-      // ==========================================
-      if (window.activeSerpTab === 'ai') {
-        renderAiOverviewTab(results, q);
-      }
-
-      // ==========================================
-      // TAB 2: ALL (STANDARD RANKED RESULTS)
-      // ==========================================
-      else if (window.activeSerpTab === 'all') {
-        renderAllTab(results, q);
-      }
-
-      // ==========================================
-      // TAB 3: SPONSORED ADS
-      // ==========================================
-      else if (window.activeSerpTab === 'sponsored') {
-        renderSponsoredTab(q);
-      }
-
-      // ==========================================
-      // TAB 4: IMAGES GALLERY GRID
-      // ==========================================
-      else if (window.activeSerpTab === 'image') {
-        renderImagesTab(results, q);
-      }
-
-      // ==========================================
-      // TAB 5: VIDEOS (SAFE YOUTUBE EMBEDS)
-      // ==========================================
-      else if (window.activeSerpTab === 'videos') {
-        renderVideosTab(q);
-      }
-
-      // ==========================================
-      // TAB 6: WEBSITES (GOOGLE SERP CARDS)
-      // ==========================================
-      else if (window.activeSerpTab === 'website') {
-        renderWebsitesTab(q);
-      }
-
-      // ==========================================
-      // TAB 7: CONTRIBUTORS DIRECTORY
-      // ==========================================
-      else if (window.activeSerpTab === 'contributors') {
-        renderContributorsTab(q);
-      }
-
-      // ==========================================
-      // TAB 8: ACADEMIC SOLUTIONS SUITE
-      // ==========================================
-      else if (window.activeSerpTab === 'solutions') {
-        renderSolutionsTab(results, q);
-      }
+      if (window.activeSerpTab === 'all') renderAllTab(results, q);
+      else if (window.activeSerpTab === 'ai') renderAiOverviewTab(results, q);
+      else if (window.activeSerpTab === 'website') renderWebsitesTab(q);
+      else if (window.activeSerpTab === 'videos') renderVideosTab(q);
+      else if (window.activeSerpTab === 'solutions') renderSolutionsTab(results, q);
+      else if (window.activeSerpTab === 'contributors') renderContributorsTab(q);
+      else if (window.activeSerpTab === 'sponsored') renderSponsoredTab(q);
+      else if (window.activeSerpTab === 'image') renderImagesTab(results, q);
     }
 
-    // -------------------------------------------------------
-    // TAB IMPLEMENTATIONS
-    // -------------------------------------------------------
+    // TAB 1: ALL RESULTS
+    function renderAllTab(results, q) {
+      const list = document.getElementById("resultsList");
+      if (results.length === 0) {
+        list.innerHTML = `
+          <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
+            <i class="ri-search-line" style="font-size:3rem; color:#9aa0a6;"></i>
+            <h3 style="margin:12px 0 6px 0; color:#202124;">No results found for "${q || 'your query'}"</h3>
+            <p style="font-size:0.9rem;">Check your spelling, try more general terms, or reset filters above.</p>
+          </div>
+        `;
+        return;
+      }
 
+      let html = '';
+      results.forEach(d => {
+        const uploaderName = d.userName || d.uploader || 'DPG Contributor';
+        const initial = uploaderName.charAt(0).toUpperCase();
+        const viewerUrl = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
+
+        html += `
+          <div class="result-card">
+            <div class="result-header-row">
+              <div class="result-domain-icon">${initial}</div>
+              <div class="result-domain-info">
+                <span class="result-domain-name">dpgnotes.web.app &rsaquo; ${d.category || 'Notes'}</span>
+                <span class="result-breadcrumb-url">Shared by ${uploaderName} &bull; ${d.discipline || 'General'}</span>
+              </div>
+              ${d.isVerified ? `<span class="result-verified-pill"><i class="ri-shield-check-fill"></i> Verified</span>` : ''}
+            </div>
+
+            <h3 class="result-title">
+              <a href="${viewerUrl}">${d.title}</a>
+            </h3>
+
+            <p class="result-snippet">${d.description || 'Verified academic study material, notes, and sessional examination guidance.'}</p>
+
+            <div class="result-footer-row">
+              <div class="result-tags-row">
+                <span class="result-tag"><i class="ri-folder-2-line"></i> ${d.category || 'Academic'}</span>
+                <span class="result-tag"><i class="ri-book-open-line"></i> ${d.discipline || 'General'}</span>
+                ${d.likes ? `<span class="result-tag"><i class="ri-thumb-up-line"></i> ${d.likes}</span>` : ''}
+              </div>
+              <a href="${viewerUrl}" class="result-btn-open">
+                Read Notes <i class="ri-arrow-right-line"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+    }
+
+    // TAB 2: AI OVERVIEW (GEMINI + CODE SANDBOX)
     function renderAiOverviewTab(results, q) {
       const list = document.getElementById("resultsList");
       const topDoc = results[0] || { title: "DPG College Curriculum", category: "General", discipline: "Computer Science" };
       const apiKey = localStorage.getItem('dpg_gemini_api_key');
-      const keyStatusBadge = apiKey ? '🔑 Custom Gemini Key' : '☁️ Cloud AI Active';
+      const keyStatusBadge = apiKey ? '🔑 Custom Gemini Key Active' : '☁️ Cloud AI Active';
 
       list.innerHTML = `
-        <div class="ai-overview-page-wrapper">
-          <!-- Top Hero Card -->
+        <div style="width:100%; max-width:960px;">
+          <!-- AI Synthesis Hero Card -->
           <div class="ai-hero-card">
             <div class="ai-hero-header">
-              <div class="ai-hero-title">
+              <div>
                 <span class="ai-sparkle-badge"><i class="ri-sparkling-fill"></i> Google Gemini AI</span>
-                <h3>DPGNotes AI Overview &amp; Knowledge Synthesis</h3>
+                <h3 class="ai-hero-title">DPGNotes AI Overview &amp; Knowledge Synthesis</h3>
               </div>
               <div class="ai-header-controls">
                 <button type="button" class="ai-key-config-btn" onclick="openGeminiKeyModal()" title="Configure Custom Gemini API Key">
@@ -1644,46 +1579,32 @@
             </div>
 
             <!-- Instant Synthesis Output -->
-            <div class="ai-synthesis-box" id="aiInstantOverviewBox">
-              <p style="margin-bottom:0.75rem;">
-                📘 <strong>Academic Synthesis for "${q || 'Academic Curriculum'}":</strong><br>
-                Evaluated against <strong>${results.length} verified academic resources</strong> in the DPGNotes repository. Highest matching study resource: <strong>"${topDoc.title}"</strong> (${topDoc.category} &bull; ${topDoc.discipline}).
+            <div style="background:#f8fafc; border-left:4px solid #7c3aed; padding:14px; border-radius:8px; font-size:0.92rem; color:#334155; line-height:1.65; margin-bottom:1rem;">
+              <p style="margin-bottom:8px;">
+                📘 <strong>Academic Overview for "${q || 'Academic Curriculum'}":</strong><br>
+                Evaluated against verified academic records in DPGNotes. Top matching resource: <strong>"${topDoc.title}"</strong> (${topDoc.category} &bull; ${topDoc.discipline}).
               </p>
-              <div style="background:rgba(255,255,255,0.04); border-left:4px solid #c084fc; padding:12px; border-radius:8px; font-size:0.88rem; color:#cbd5e1; margin-bottom:1rem;">
-                💡 <strong>Exam Patterns &amp; Conceptual Tips:</strong><br>
-                • Review high-frequency definitions and theorem proofs from sessional exam records.<br>
-                • Check code solutions and syntax sandboxes in the <strong>Academic Solutions</strong> tab.<br>
-                • Use the interactive chat below to generate code, practice questions, or detailed derivations.
-              </div>
-            </div>
-
-            <!-- Quick Recommended Resource Cards -->
-            <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:1rem; margin-top:1rem;">
-              <h5 style="color:#a78bfa; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.6rem;">Recommended Relevant Documents:</h5>
-              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px;">
-                ${results.slice(0, 3).map(r => `
-                  <a href="${r.isSolution ? r.solutionUrl : `/dpgnotes-pdf-viewer.html?docid=${r.id}&title=${encodeURIComponent(r.title)}`}" target="_blank" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:10px 12px; border-radius:10px; text-decoration:none; color:white; transition:all 0.2s; display:block;">
-                    <div style="font-weight:700; font-size:0.84rem; color:#a5b4fc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.title}</div>
-                    <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${r.category} &bull; ${r.discipline}</div>
-                  </a>
-                `).join('')}
-              </div>
+              <ul style="margin:6px 0 0 18px; padding:0;">
+                <li>Review core definitions, formulas, and sessional exam patterns for maximum scoring.</li>
+                <li>Live interactive HTML, CSS, JavaScript, and Python code blocks can be executed in the sandbox below.</li>
+                <li>Ask any question in the interactive study chat to generate complete explanations or runnable programs.</li>
+              </ul>
             </div>
           </div>
 
-          <!-- Interactive AI Chat Continuation -->
+          <!-- Interactive Study Chat & Live Sandbox Card -->
           <div class="ai-chat-card">
-            <div class="ai-chat-header">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid #f1f3f4;">
               <div style="display:flex; align-items:center; gap:8px;">
-                <i class="ri-chat-voice-line" style="color:#c084fc; font-size:1.2rem;"></i>
-                <h4 style="margin:0; font-size:0.96rem; color:white;">Interactive Study Chat &amp; Code Sandbox</h4>
+                <i class="ri-chat-voice-line" style="color:#7c3aed; font-size:1.25rem;"></i>
+                <h4 style="margin:0; font-size:1rem; color:#1e293b; font-weight:700;">Interactive Study Chat &amp; Code Sandbox</h4>
               </div>
-              <span style="font-size:0.76rem; color:#94a3b8;">Supports HTML, CSS, JS, Python, C++, Java with Live Sandbox</span>
+              <span style="font-size:0.78rem; color:#64748b;">Supports HTML, CSS, JS, Python, C++</span>
             </div>
 
             <div id="serpAiChatLogContainer" class="ai-chat-feed">
               <div class="ai-msg-bubble assistant">
-                <div style="color:#c084fc; font-weight:700; font-size:0.82rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
                   <i class="ri-sparkling-fill"></i> DPGNotes AI Assistant
                 </div>
                 <div>Hello! Ask me any conceptual question about <strong>${q || 'your course'}</strong>, request exam code with live sandbox execution, or ask for step-by-step problem derivations.</div>
@@ -1702,7 +1623,7 @@
             <div class="ai-chat-input-bar">
               <input type="text" id="serpAiChatInput" placeholder="Ask AI anything about academic notes, code examples, or exam topics..." onkeydown="if(event.key==='Enter') sendSerpAiChatMessage()">
               <button id="serpAiSendBtn" onclick="sendSerpAiChatMessage()" title="Send Question">
-                <i class="ri-send-plane-2-fill"></i>
+                <i class="ri-send-plane-2-fill"></i> Send
               </button>
             </div>
           </div>
@@ -1710,371 +1631,12 @@
       `;
     }
 
-    function renderAllTab(results, q) {
-      const list = document.getElementById("resultsList");
-      if (results.length === 0) {
-        list.innerHTML = `
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:3rem 2rem; text-align:center;">
-            <i class="ri-search-eye-line" style="font-size:3rem; color:#818cf8; margin-bottom:1rem; display:block;"></i>
-            <h3 style="font-size:1.25rem; margin-bottom:0.5rem; color:white;">No academic documents match your filter</h3>
-            <p style="color:var(--text-muted); font-size:0.9rem; max-width:480px; margin:0 auto 1.5rem;">Try adjusting the Category or Discipline filters in the filter bar above, or search for broader keywords.</p>
-            <button onclick="resetAllFilters()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:8px 18px; border-radius:8px; font-weight:700; cursor:pointer;">Reset Filters</button>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      results.forEach((d, idx) => {
-        const likesCount = Array.isArray(d.likes) ? d.likes.length : (d.likes || 0);
-        const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
-        const isSol = Boolean(d.isSolution);
-        const viewerUrl = isSol
-          ? d.solutionUrl
-          : `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&trackId=${d.trackId || ''}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}&search-token=SERP`;
-
-        const typeBadge = isSol 
-          ? `<span style="background:rgba(6,182,212,0.15); color:#67e8f9; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:700;"><i class="ri-code-box-line"></i> Academic Solution</span>`
-          : `<span style="background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:700;"><i class="ri-file-pdf-line"></i> Notes / Exam Resource</span>`;
-
-        html += `
-          <article class="result-card">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
-              <div style="flex:1;">
-                <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.4rem; flex-wrap:wrap;">
-                  <span style="width:20px; height:20px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.68rem; font-weight:800;">D</span>
-                  <span>dpgnotes.web.app &rsaquo; ${d.category} &rsaquo; ${d.discipline}</span>
-                  ${typeBadge}
-                </div>
-                <h3 style="font-size:1.18rem; font-weight:700; margin-bottom:0.45rem; font-family:'Outfit', sans-serif;">
-                  <a href="${viewerUrl}" style="color:#818cf8; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='#a5b4fc'" onmouseout="this.style.color='#818cf8'">
-                    ${d.title}
-                  </a>
-                </h3>
-                <p style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">
-                  ${d.description || "Academic verified study notes and university resources."}
-                </p>
-                <div style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
-                  <span style="background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:8px;">📁 ${d.category}</span>
-                  <span style="background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:8px;">🏫 ${d.discipline}</span>
-                  <span>👤 ${d.userName || d.uploader || "Contributor"}</span>
-                  <span>❤️ ${likesCount} Likes</span>
-                  <span>👁️ ${d.views || 0} Views</span>
-                  <span style="color:#f59e0b; font-weight:700;">⭐ SERP Rank ${d.priorityScore || 10}</span>
-                </div>
-              </div>
-              <a href="${viewerUrl}" class="header-home-btn" style="background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.25)); border-color:rgba(139,92,246,0.4); color:white; padding:8px 14px; flex-shrink:0;">
-                Open <i class="ri-arrow-right-up-line"></i>
-              </a>
-            </div>
-          </article>
-        `;
-
-        if (idx > 0 && (idx + 1) % 5 === 0) {
-          html += `
-            <div class="serp-ad-slot" style="margin: 0.5rem 0; width: 100%;">
-              <div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>
-            </div>
-          `;
-        }
-      });
-
-      list.innerHTML = html;
-      if (typeof window.renderNativeDPGAds === "function") setTimeout(window.renderNativeDPGAds, 200);
-    }
-
-    function renderSponsoredTab(q) {
-      const list = document.getElementById("resultsList");
-      list.innerHTML = `
-        <div style="background:var(--surface); border:1px solid rgba(245,158,11,0.35); border-radius:var(--radius-lg); padding:1.75rem;">
-          <h3 style="color:#f59e0b; margin-bottom:0.75rem; font-family:'Outfit', sans-serif; display:flex; align-items:center; gap:8px;">
-            <i class="ri-megaphone-line"></i> Promoted Campaigns &amp; Verified Partner Features
-          </h3>
-          <p style="color:#cbd5e1; font-size:0.88rem; margin-bottom:1.5rem;">
-            Discover educational tools, developer portfolios, and academic student projects promoted across DPGNotes.
-          </p>
-          <div class="native-ads" data-ad-variant="feed" data-ad-count="3"></div>
-        </div>
-      `;
-      if (typeof window.renderNativeDPGAds === "function") setTimeout(window.renderNativeDPGAds, 200);
-    }
-
-    function renderImagesTab(results, q) {
-      const list = document.getElementById("resultsList");
-      window.galleryImagesList = [];
-
-      results.forEach(r => {
-        const imgUrl = r.coverImage || r.bannerUrl || 'ANH.png';
-        window.galleryImagesList.push({
-          url: imgUrl,
-          title: r.title || 'Academic Resource',
-          subtitle: `${r.category || 'Notes'} &bull; ${r.discipline || 'General'}`
-        });
-      });
-
-      if (Array.isArray(window.approvedAdsCache)) {
-        window.approvedAdsCache.forEach(ad => {
-          if (ad.thumbnailUrl) {
-            window.galleryImagesList.push({
-              url: ad.thumbnailUrl,
-              title: ad.title || 'Resource Visual Banner',
-              subtitle: `${ad.platform || 'DPGNotes'} ${ad.adCategory || 'Resource'}`
-            });
-          }
-        });
-      }
-
-      if (window.galleryImagesList.length === 0) {
-        window.galleryImagesList.push({ url: 'ANH.png', title: 'DPGNotes Academic Network', subtitle: 'Academic Repository' });
-      }
-
-      let imgHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:14px;">`;
-      window.galleryImagesList.forEach((item, idx) => {
-        imgHtml += `
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:transform 0.2s;" onclick="openDpgGalleryModal(${idx})">
-            <img src="${item.url}" style="width:100%; height:140px; object-fit:cover;" alt="${item.title}">
-            <div style="padding:10px;">
-              <div style="padding:2px 6px; border-radius:4px; background:rgba(99,102,241,0.2); color:#a5b4fc; font-size:0.7rem; font-weight:700; display:inline-block; margin-bottom:4px;">${item.subtitle}</div>
-              <div style="font-size:0.82rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.title}</div>
-            </div>
-          </div>
-        `;
-      });
-      imgHtml += `</div>`;
-      list.innerHTML = imgHtml;
-    }
-
-    function renderVideosTab(q) {
-      const list = document.getElementById("resultsList");
-      let rawVideoPool = [
-        { url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes PDF Viewer', source: 'Akshat Network Hub' },
-        { url: 'https://www.youtube.com/watch?v=Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story' },
-        { url: 'https://www.youtube.com/watch?v=hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship' },
-        { url: 'https://www.youtube.com/watch?v=Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship' }
-      ];
-
-      if (Array.isArray(window.approvedAdsCache)) {
-        window.approvedAdsCache.forEach(ad => {
-          const vLink = ad.videoUrl || ad.targetLink || '';
-          if (vLink && (vLink.includes('youtube.com') || vLink.includes('youtu.be'))) {
-            rawVideoPool.push({ url: vLink, title: ad.title || 'Educational Video Tutorial', source: `${ad.platform || 'DPGNotes'} Masterclass` });
-          }
-        });
-      }
-
-      let vidHtml = `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap:16px;">`;
-      rawVideoPool.forEach(v => {
-        const ytId = extractYouTubeId(v.url);
-        if (ytId) {
-          const embedUrl = `https://www.youtube-nocookie.com/embed/${ytId}`;
-          vidHtml += `
-            <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
-              <div style="position:relative; width:100%; padding-top:56.25%; background:#000;">
-                <iframe src="${embedUrl}" title="${v.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>
-              </div>
-              <div style="padding:12px; display:flex; flex-direction:column; gap:4px; flex:1;">
-                <h4 style="color:white; font-size:0.92rem; margin:0; line-height:1.3; font-weight:700;">${v.title}</h4>
-                <p style="color:#94a3b8; font-size:0.78rem; margin:0;">${v.source}</p>
-              </div>
-            </div>
-          `;
-        } else {
-          vidHtml += `
-            <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; padding:1.2rem; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <i class="ri-video-line" style="color:#f43f5e; font-size:1.4rem;"></i>
-                <h4 style="color:white; font-size:0.92rem; margin:0; line-height:1.3; font-weight:700;">${v.title}</h4>
-              </div>
-              <p style="color:#94a3b8; font-size:0.78rem; margin:0 0 12px 0;">${v.source}</p>
-              <a href="${v.url}" target="_blank" style="margin-top:auto; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.4); color:#fb7185; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:700; text-decoration:none; text-align:center;">Watch Video <i class="ri-external-link-line"></i></a>
-            </div>
-          `;
-        }
-      });
-      vidHtml += `</div>`;
-      list.innerHTML = vidHtml;
-    }
-
-    function renderWebsitesTab(q) {
-      const list = document.getElementById("resultsList");
-      list.innerHTML = `<div style="padding:2.5rem; text-align:center; color:#a78bfa;"><i class="ri-loader-4-line ri-spin" style="font-size:2.2rem;"></i><p style="margin-top:8px; font-weight:600;">Crawling & Ranking Web Resources via Google Strategy...</p></div>`;
-
-      const renderWebsitesList = (websites) => {
-        let webListHtml = `<div style="display:flex; flex-direction:column; gap:16px; width:100%; max-width:960px;">`;
-        websites.forEach(site => {
-          const targetUrl = site.targetUrl || site.url || '#';
-          let domain = site.domain || 'External Website';
-          if (domain === 'External Website' && targetUrl.startsWith('http')) {
-            try { domain = new URL(targetUrl).hostname; } catch(e) {}
-          }
-          const fallbackFavicon = 'ANH.png';
-          const isValidDomain = domain && domain !== 'External Website' && domain.includes('.');
-          const iconUrl = site.iconUrl || (isValidDomain ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64` : fallbackFavicon);
-          const title = site.title || `Web Resource (${domain})`;
-          const description = site.description || 'External web resource indexed by DPGNotes search crawler.';
-          const isVerified = Boolean(site.isVerified);
-
-          webListHtml += `
-            <div class="result-card" style="padding:1.25rem;">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                <img src="${iconUrl}" onerror="this.onerror=null; this.src='${fallbackFavicon}';" alt="favicon" style="width:20px; height:20px; border-radius:4px; object-fit:contain; background:#000;">
-                <div style="display:flex; flex-direction:column; line-height:1.2;">
-                  <span style="color:#e2e8f0; font-weight:700; font-size:0.85rem;">${domain}</span>
-                  <span style="color:#64748b; font-size:0.75rem; overflow:hidden; text-overflow:ellipsis; max-width:340px; white-space:nowrap;">${targetUrl}</span>
-                </div>
-                ${isVerified ? `<span style="margin-left:auto; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#34d399; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:700;"><i class="ri-shield-check-fill"></i> Verified</span>` : ''}
-              </div>
-              <h3 style="margin:4px 0 6px 0; font-size:1.15rem; font-family:'Outfit', sans-serif;">
-                <a href="${targetUrl}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:700;">${title}</a>
-              </h3>
-              <p style="color:#cbd5e1; font-size:0.88rem; line-height:1.5; margin:0 0 10px 0;">${description}</p>
-              <div style="display:flex; justify-content:flex-end;">
-                <a href="${targetUrl}" target="_blank" class="header-home-btn" style="padding:4px 12px; font-size:0.78rem;">Visit Website <i class="ri-arrow-right-up-line"></i></a>
-              </div>
-            </div>
-          `;
-        });
-        webListHtml += `</div>`;
-        list.innerHTML = webListHtml;
-      };
-
-      const fallbackList = [
-        { targetUrl: 'https://dpgnotes.web.app', domain: 'dpgnotes.web.app', title: 'DPGNotes Academic Portal', description: 'Official Academic Notes, PYQs, and Sessional Exam Repository for DPG College students.', isVerified: true },
-        { targetUrl: 'https://dpgnotes.web.app/legal/index.html', domain: 'dpgnotes.web.app', title: 'DPGNotes Legal Policies & Compliance Portal', description: 'Standardized copyright policies, terms of service, and student academic compliance regulations.', isVerified: true },
-        { targetUrl: 'https://dpgpolytechnic.com', domain: 'dpgpolytechnic.com', title: 'DPG Polytechnic & Degree Campus', description: 'Official university educational portal and curriculum resources.', isVerified: true }
-      ];
-
-      fetch(`${apiBase}/api/serp/web-search?q=${encodeURIComponent(q)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.success && Array.isArray(data.websites) && data.websites.length > 0) {
-            renderWebsitesList(data.websites);
-          } else {
-            renderWebsitesList(fallbackList);
-          }
-        })
-        .catch(() => renderWebsitesList(fallbackList));
-    }
-
-    function renderContributorsTab(q) {
-      const list = document.getElementById("resultsList");
-      if (allContributors.length === 0) {
-        // Build contributors dynamically from allDocs and solutions
-        const contribMap = new Map();
-        allDocs.forEach(d => {
-          const name = d.userName || d.uploader || d.studentName || d.contributorName;
-          if (name && name !== 'Guest') {
-            const existing = contribMap.get(name) || { name, docsCount: 0, likesCount: 0, uid: d.contributorUid || d.uid || '' };
-            existing.docsCount++;
-            existing.likesCount += (Array.isArray(d.likes) ? d.likes.length : (d.likes || 0));
-            contribMap.set(name, existing);
-          }
-        });
-        allContributors = Array.from(contribMap.values()).sort((a, b) => b.docsCount - a.docsCount);
-      }
-
-      let filtered = allContributors;
-      if (q) {
-        filtered = allContributors.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
-      }
-
-      let html = `<div class="contributors-grid">`;
-      filtered.forEach(c => {
-        const initial = (c.name || 'C').charAt(0).toUpperCase();
-        const profileLink = c.uid ? `profile.html?uid=${encodeURIComponent(c.uid)}` : `profile.html`;
-
-        html += `
-          <div class="contributor-card">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <div class="contributor-avatar">
-                ${c.photoURL ? `<img src="${c.photoURL}" alt="${c.name}">` : initial}
-              </div>
-              <div style="flex:1; min-width:0;">
-                <h4 style="font-size:0.95rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">${c.name}</h4>
-                <div style="font-size:0.75rem; color:#a78bfa; margin-top:2px;">Verified Contributor</div>
-              </div>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:#94a3b8; background:rgba(255,255,255,0.03); padding:8px 10px; border-radius:8px;">
-              <span>📁 ${c.docsCount} Resources</span>
-              <span>❤️ ${c.likesCount} Likes</span>
-            </div>
-            <a href="${profileLink}" class="header-home-btn" style="justify-content:center; background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.25)); border-color:rgba(139,92,246,0.4); color:white;">
-              View Profile <i class="ri-user-follow-line"></i>
-            </a>
-          </div>
-        `;
-      });
-      html += `</div>`;
-      list.innerHTML = html;
-    }
-
-    function renderSolutionsTab(results, q) {
-      const list = document.getElementById("resultsList");
-      const solutions = results.filter(d => d.isSolution);
-
-      if (solutions.length === 0) {
-        list.innerHTML = `
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:3rem 2rem; text-align:center;">
-            <i class="ri-code-box-line" style="font-size:3rem; color:#06b6d4; margin-bottom:1rem; display:block;"></i>
-            <h3 style="font-size:1.25rem; margin-bottom:0.5rem; color:white;">No Academic Solutions Match Query</h3>
-            <p style="color:var(--text-muted); font-size:0.9rem; max-width:480px; margin:0 auto;">Try searching for practical subjects like "Data Structures", "Java", "Web Technology", or "C++".</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      solutions.forEach(sol => {
-        const isPrac = sol.solutionType === "practical";
-        const iconBg = isPrac ? "linear-gradient(135deg, #06b6d4, #3b82f6)" : "linear-gradient(135deg, #8b5cf6, #ec4899)";
-        const encBadge = sol.isEncrypted
-          ? `<span style="background:rgba(239,68,68,0.15); color:#fca5a5; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600;"><i class="ri-lock-2-line"></i> Encrypted</span>`
-          : `<span style="background:rgba(16,185,129,0.15); color:#6ee7b7; padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600;"><i class="ri-lock-unlock-line"></i> Public Solution</span>`;
-
-        html += `
-          <article class="result-card">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
-              <div style="flex:1;">
-                <div style="display:flex; align-items:center; gap:8px; font-size:0.78rem; color:#94a3b8; margin-bottom:0.4rem; flex-wrap:wrap;">
-                  <span style="width:22px; height:22px; border-radius:6px; background:${iconBg}; display:inline-flex; align-items:center; justify-content:center; color:white; font-size:0.72rem; font-weight:800;">${isPrac ? 'P' : 'A'}</span>
-                  <span>dpgnotes.web.app &rsaquo; ${sol.category} &rsaquo; ${sol.discipline}</span>
-                  ${encBadge}
-                </div>
-                <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:0.4rem; font-family:'Outfit', sans-serif;">
-                  <a href="${sol.solutionUrl}" style="color:#67e8f9; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
-                    ${sol.title} <i class="ri-arrow-right-up-line" style="font-size:1rem; color:#06b6d4;"></i>
-                  </a>
-                </h3>
-                <p style="color:#cbd5e1; font-size:0.88rem; line-height:1.55; margin-bottom:0.75rem;">
-                  ${sol.description || "Academic verified solution document with linked live sandbox containers."}
-                </p>
-                <div style="display:flex; align-items:center; gap:1rem; font-size:0.78rem; color:#94a3b8; flex-wrap:wrap;">
-                  <span style="background:rgba(6,182,212,0.15); color:#67e8f9; padding:2px 8px; border-radius:8px; font-weight:600;">${sol.category}</span>
-                  <span>🏫 ${sol.discipline}</span>
-                  <span>👤 ${sol.userName || sol.uploader || "Verified Contributor"}</span>
-                  <span>❤️ ${sol.likes || 0} Likes</span>
-                </div>
-              </div>
-              <a href="${sol.solutionUrl}" class="header-home-btn" style="background:linear-gradient(135deg,#06b6d4,#3b82f6); color:white; border:none; padding:8px 16px; flex-shrink:0;">
-                Run Solution <i class="ri-play-circle-line"></i>
-              </a>
-            </div>
-          </article>
-        `;
-      });
-
-      list.innerHTML = html;
-    }
-
-    // =======================================================
-    // CHAT-BASED AI OVERVIEW & GEMINI API INTEGRATION
-    // =======================================================
     window.clearSerpAiChat = function() {
       const feed = document.getElementById("serpAiChatLogContainer");
       if (feed) {
         feed.innerHTML = `
           <div class="ai-msg-bubble assistant">
-            <div style="color:#c084fc; font-weight:700; font-size:0.82rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+            <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
               <i class="ri-sparkling-fill"></i> DPGNotes AI Assistant
             </div>
             <div>Conversation cleared. Ask me any question or request code solutions to get started.</div>
@@ -2115,7 +1677,7 @@
       // 2. Render Loading AI Bubble
       const loadingBubble = document.createElement("div");
       loadingBubble.className = "ai-msg-bubble assistant";
-      loadingBubble.innerHTML = `<i class="ri-loader-4-line ri-spin" style="color:#c084fc;"></i> DPGNotes AI is generating solution and code containers...`;
+      loadingBubble.innerHTML = `<i class="ri-loader-4-line ri-spin" style="color:#7c3aed;"></i> DPGNotes AI is generating solution and code containers...`;
       feed.appendChild(loadingBubble);
       feed.scrollTop = feed.scrollHeight;
 
@@ -2128,7 +1690,6 @@
         if (customApiKey) {
           // Direct Google Gemini API Call with model fallback
           const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-          let clientData = null;
           let clientErr = null;
           const contextDocs = (window.currentSearchResults || []).slice(0, 3).map(d => `${d.title} (${d.category} - ${d.discipline}): ${d.description || ''}`).join("\n");
 
@@ -2233,7 +1794,7 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
         if (loadingBubble.parentNode) feed.removeChild(loadingBubble);
         if (chatBtn) {
           chatBtn.disabled = false;
-          chatBtn.innerHTML = `<i class="ri-send-plane-2-fill"></i>`;
+          chatBtn.innerHTML = `<i class="ri-send-plane-2-fill"></i> Send`;
         }
       }
 
@@ -2241,17 +1802,15 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
       const answerBubble = document.createElement("div");
       answerBubble.className = "ai-msg-bubble assistant";
 
-      // Parse Markdown into HTML
       let formattedHtml = typeof marked !== 'undefined' ? marked.parse(responseText) : responseText.replace(/\n/g, '<br>');
       if (typeof DOMPurify !== 'undefined') formattedHtml = DOMPurify.sanitize(formattedHtml);
 
-      // Transform all code blocks into solutions-sandbox-engine interactive containers!
       if (typeof window.formatSolutionContent === 'function') {
         formattedHtml = window.formatSolutionContent(formattedHtml, 'ai_chat_' + Date.now());
       }
 
       answerBubble.innerHTML = `
-        <div style="color:#c084fc; font-weight:700; font-size:0.82rem; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+        <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
           <i class="ri-sparkling-fill"></i> DPGNotes AI Assistant
         </div>
         <div class="ai-parsed-content" style="line-height:1.65;">
@@ -2261,6 +1820,253 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
 
       feed.appendChild(answerBubble);
       feed.scrollTop = feed.scrollHeight;
+    };
+
+    // TAB 3: WEBSITES (ZERO 404 ERRORS VIA SAFE INITIAL BADGES)
+    function renderWebsitesTab(q) {
+      const list = document.getElementById("resultsList");
+      list.innerHTML = `<div class="serp-loading-stage"><div class="serp-loading-spinner"></div><p class="serp-loading-text">Crawling & Ranking Verified Web Resources...</p></div>`;
+
+      const renderWebsitesList = (websites) => {
+        let webListHtml = `<div style="display:flex; flex-direction:column; gap:16px; width:100%; max-width:900px;">`;
+        websites.forEach(site => {
+          const targetUrl = site.targetUrl || site.url || '#';
+          let domain = site.domain || 'External Website';
+          if (domain === 'External Website' && targetUrl.startsWith('http')) {
+            try { domain = new URL(targetUrl).hostname; } catch(e) {}
+          }
+          const initialLetter = (domain && domain !== 'External Website') ? domain.replace(/^www\./, '').charAt(0).toUpperCase() : 'W';
+          const title = site.title || `Web Resource (${domain})`;
+          const description = site.description || 'External educational web resource indexed by DPGNotes search crawler.';
+          const isVerified = Boolean(site.isVerified);
+
+          webListHtml += `
+            <div class="result-card">
+              <div class="result-header-row">
+                <div class="result-domain-icon">${initialLetter}</div>
+                <div class="result-domain-info">
+                  <span class="result-domain-name">${domain}</span>
+                  <span class="result-breadcrumb-url">${targetUrl}</span>
+                </div>
+                ${isVerified ? `<span class="result-verified-pill"><i class="ri-shield-check-fill"></i> Verified</span>` : ''}
+              </div>
+              <h3 class="result-title">
+                <a href="${targetUrl}" target="_blank">${title}</a>
+              </h3>
+              <p class="result-snippet">${description}</p>
+              <div style="display:flex; justify-content:flex-end;">
+                <a href="${targetUrl}" target="_blank" class="result-btn-open">Visit Website <i class="ri-arrow-right-up-line"></i></a>
+              </div>
+            </div>
+          `;
+        });
+        webListHtml += `</div>`;
+        list.innerHTML = webListHtml;
+      };
+
+      const fallbackList = [
+        { targetUrl: 'https://dpgnotes.web.app', domain: 'dpgnotes.web.app', title: 'DPGNotes Academic Portal', description: 'Official Academic Notes, PYQs, and Sessional Exam Repository for DPG College students.', isVerified: true },
+        { targetUrl: 'https://dpgnotes.web.app/legal/index.html', domain: 'dpgnotes.web.app', title: 'DPGNotes Legal Policies & Compliance Portal', description: 'Standardized copyright policies, terms of service, and student academic compliance regulations.', isVerified: true },
+        { targetUrl: 'https://dpgpolytechnic.com', domain: 'dpgpolytechnic.com', title: 'DPG Polytechnic & Degree Campus', description: 'Official university educational portal and curriculum resources.', isVerified: true }
+      ];
+
+      fetch(`${apiBase}/api/serp/web-search?q=${encodeURIComponent(q)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.success && Array.isArray(data.websites) && data.websites.length > 0) {
+            renderWebsitesList(data.websites);
+          } else {
+            renderWebsitesList(fallbackList);
+          }
+        })
+        .catch(() => renderWebsitesList(fallbackList));
+    }
+
+    // TAB 4: YOUTUBE VIDEOS
+    function renderVideosTab(q) {
+      const list = document.getElementById("resultsList");
+      const defaultVideos = [
+        { title: `${q || 'Computer Science'} - Complete Comprehensive Masterclass`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent((q || 'Computer Science') + ' full course')}`, source: 'YouTube Education' },
+        { title: `Data Structures & Algorithms in C++ / Java`, url: 'https://www.youtube.com/results?search_query=data+structures+and+algorithms+complete+course', source: 'Computer Science Portal' },
+        { title: `Operating Systems & DBMS University Exam Revision`, url: 'https://www.youtube.com/results?search_query=operating+systems+dbms+one+shot+revision', source: 'Exam Prep Channel' }
+      ];
+
+      let vidHtml = `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; width:100%; max-width:960px;">`;
+      defaultVideos.forEach(v => {
+        vidHtml += `
+          <div class="result-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <i class="ri-youtube-fill" style="color:#ea4335; font-size:1.4rem;"></i>
+                <h4 style="color:#1e293b; font-size:0.95rem; margin:0; line-height:1.3; font-weight:700;">${v.title}</h4>
+              </div>
+              <p style="color:#5f6368; font-size:0.8rem; margin:0 0 12px 0;">${v.source}</p>
+            </div>
+            <a href="${v.url}" target="_blank" class="result-btn-open" style="align-self:flex-start;">
+              Watch Video <i class="ri-external-link-line"></i>
+            </a>
+          </div>
+        `;
+      });
+      vidHtml += `</div>`;
+      list.innerHTML = vidHtml;
+    }
+
+    // TAB 5: ACADEMIC SOLUTIONS
+    function renderSolutionsTab(results, q) {
+      const list = document.getElementById("resultsList");
+      const solutions = results.filter(r => r.isSolution || (r.category && r.category.toLowerCase().includes('solution')));
+      const targetSolutions = solutions.length > 0 ? solutions : results.slice(0, 6);
+
+      if (targetSolutions.length === 0) {
+        list.innerHTML = `<div style="padding:3rem; text-align:center; color:#5f6368;">No practical or assignment solutions found for "${q}".</div>`;
+        return;
+      }
+
+      let solHtml = `<div style="display:flex; flex-direction:column; gap:16px; width:100%; max-width:900px;">`;
+      targetSolutions.forEach(s => {
+        const viewerUrl = s.solutionUrl || `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(s.id)}&title=${encodeURIComponent(s.title || '')}`;
+        solHtml += `
+          <div class="result-card">
+            <div class="result-header-row">
+              <div class="result-domain-icon" style="background:#e0f2fe; color:#0284c7;"><i class="ri-code-box-line"></i></div>
+              <div class="result-domain-info">
+                <span class="result-domain-name">Academic Solution &bull; ${s.discipline || 'Engineering'}</span>
+                <span class="result-breadcrumb-url">${s.category || 'Practical Solution'}</span>
+              </div>
+              <span class="result-verified-pill" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">Verified Solution</span>
+            </div>
+            <h3 class="result-title"><a href="${viewerUrl}">${s.title}</a></h3>
+            <p class="result-snippet">${s.description || 'Verified programming exercise, algorithm implementation, and lab documentation.'}</p>
+            <div class="result-footer-row">
+              <span class="result-tag"><i class="ri-terminal-box-line"></i> Live Sandbox</span>
+              <a href="${viewerUrl}" class="result-btn-open">Open Solution <i class="ri-arrow-right-line"></i></a>
+            </div>
+          </div>
+        `;
+      });
+      solHtml += `</div>`;
+      list.innerHTML = solHtml;
+    }
+
+    // TAB 6: CONTRIBUTORS
+    function renderContributorsTab(q) {
+      const list = document.getElementById("resultsList");
+      const contributorsMap = {};
+      allDocs.forEach(d => {
+        const name = d.userName || d.uploader || 'Anonymous Contributor';
+        if (!contributorsMap[name]) {
+          contributorsMap[name] = { name: name, count: 0, discipline: d.discipline || 'General' };
+        }
+        contributorsMap[name].count++;
+      });
+
+      const contributors = Object.values(contributorsMap).sort((a, b) => b.count - a.count);
+
+      let html = `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; width:100%; max-width:960px;">`;
+      contributors.forEach(c => {
+        const initial = c.name.charAt(0).toUpperCase();
+        html += `
+          <div class="result-card" style="display:flex; align-items:center; gap:14px;">
+            <div style="width:44px; height:44px; border-radius:50%; background:#1a73e8; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.15rem; flex-shrink:0;">
+              ${initial}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <h4 style="margin:0 0 2px 0; font-size:0.98rem; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.name}</h4>
+              <div style="font-size:0.78rem; color:#5f6368;">${c.discipline} &bull; <strong>${c.count}</strong> notes</div>
+            </div>
+            <a href="profile.html?user=${encodeURIComponent(c.name)}" class="result-btn-open" style="padding:4px 10px; font-size:0.75rem;">View</a>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      list.innerHTML = html;
+    }
+
+    // TAB 7: SPONSORED ADS
+    async function renderSponsoredTab(q) {
+      const list = document.getElementById("resultsList");
+      list.innerHTML = `
+        <div class="result-card" style="border-left:4px solid #f59e0b;">
+          <div class="result-header-row">
+            <span style="background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:4px; font-size:0.72rem; font-weight:700;">SPONSORED</span>
+            <span class="result-domain-name">Akshat Network Hub &bull; Student Development Program</span>
+          </div>
+          <h3 class="result-title"><a href="https://dpgnotes.web.app" target="_blank">DPGNotes Contributor &amp; Developer Partnership</a></h3>
+          <p class="result-snippet">Join the premier academic network of DPG College students and developers. Access high-speed verified notes, coding solutions, and sessional question banks.</p>
+          <div class="result-footer-row">
+            <span class="result-tag">Verified Partner</span>
+            <a href="https://dpgnotes.web.app" target="_blank" class="result-btn-open">Learn More <i class="ri-external-link-line"></i></a>
+          </div>
+        </div>
+      `;
+    }
+
+    // TAB 8: IMAGES (LIGHTBOX GRID)
+    window.galleryImagesList = [];
+    window.currentGalleryIndex = 0;
+
+    function renderImagesTab(results, q) {
+      const list = document.getElementById("resultsList");
+      window.galleryImagesList = results.map(r => ({
+        url: r.pdfUrl || 'ANH.png',
+        title: r.title,
+        discipline: r.discipline || 'General'
+      }));
+
+      let html = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:14px; width:100%; max-width:960px;">`;
+      window.galleryImagesList.slice(0, 12).forEach((img, idx) => {
+        html += `
+          <div class="result-card" onclick="openDpgGalleryModal(${idx})" style="padding:10px; cursor:pointer; text-align:center;">
+            <div style="height:140px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:8px;">
+              <i class="ri-file-pdf-fill" style="font-size:3rem; color:#ef4444;"></i>
+            </div>
+            <div style="font-weight:600; font-size:0.84rem; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${img.title}</div>
+            <div style="font-size:0.72rem; color:#64748b;">${img.discipline}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      list.innerHTML = html;
+    }
+
+    window.openDpgGalleryModal = function(index) {
+      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
+      window.currentGalleryIndex = (index >= 0 && index < window.galleryImagesList.length) ? index : 0;
+      updateGalleryModalContent();
+      const modal = document.getElementById("dpgGalleryModal");
+      if (modal) modal.style.display = "flex";
+    };
+
+    window.closeDpgGalleryModal = function() {
+      const modal = document.getElementById("dpgGalleryModal");
+      if (modal) modal.style.display = "none";
+    };
+
+    function updateGalleryModalContent() {
+      const current = window.galleryImagesList[window.currentGalleryIndex];
+      if (!current) return;
+      const titleEl = document.getElementById("galleryModalTitle");
+      const counterEl = document.getElementById("galleryModalCounter");
+      const captionEl = document.getElementById("galleryModalCaption");
+
+      if (titleEl) titleEl.innerText = current.title;
+      if (counterEl) counterEl.innerText = `${window.currentGalleryIndex + 1} of ${window.galleryImagesList.length}`;
+      if (captionEl) captionEl.innerText = `${current.title} (${current.discipline})`;
+    }
+
+    window.prevGalleryImage = function() {
+      if (window.currentGalleryIndex > 0) {
+        window.currentGalleryIndex--;
+        updateGalleryModalContent();
+      }
+    };
+
+    window.nextGalleryImage = function() {
+      if (window.currentGalleryIndex < window.galleryImagesList.length - 1) {
+        window.currentGalleryIndex++;
+        updateGalleryModalContent();
+      }
     };
 
     // =======================================================
@@ -2312,7 +2118,7 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
       const resEl = document.getElementById("apiKeyTestResult");
       if (resEl) {
         resEl.style.display = 'block';
-        resEl.style.color = '#34d399';
+        resEl.style.color = '#137333';
         resEl.innerHTML = '<i class="ri-checkbox-circle-fill"></i> Custom key removed. DPGNotes is now using the <strong>Render Cloud AI Engine</strong>.';
       }
       const badgeText = document.getElementById("geminiKeyStatusText");
@@ -2328,13 +2134,13 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
       const key = input.value.trim();
       if (!key) {
         resEl.style.display = 'block';
-        resEl.style.color = '#38bdf8';
+        resEl.style.color = '#1a73e8';
         resEl.innerHTML = '<i class="ri-information-line"></i> No custom key entered. DPGNotes will automatically use the <strong>Render Cloud AI Engine</strong>.';
         return;
       }
 
       resEl.style.display = 'block';
-      resEl.style.color = '#a78bfa';
+      resEl.style.color = '#7c3aed';
       resEl.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Validating Gemini API Key with Google servers...';
 
       const testModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
@@ -2367,14 +2173,14 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
       }
 
       if (passedModel) {
-        resEl.style.color = '#34d399';
+        resEl.style.color = '#137333';
         resEl.innerHTML = `<i class="ri-checkbox-circle-fill"></i> Key is valid and working with <strong>${passedModel}</strong>!`;
       } else {
-        resEl.style.color = '#f87171';
+        resEl.style.color = '#dc2626';
         resEl.innerHTML = `
-          <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:10px; margin-top:6px; line-height:1.5;">
+          <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px; margin-top:6px; line-height:1.5;">
             <div style="font-weight:700;"><i class="ri-error-warning-fill"></i> Validation notice: HTTP ${lastStatus} (${lastErrMsg})</div>
-            <div style="color:#cbd5e1; font-size:0.8rem; margin-top:5px;">
+            <div style="color:#4b5563; font-size:0.8rem; margin-top:5px;">
               Note: This key may be expired or restricted. <strong>You don't need a personal key!</strong> You can click <strong>"Clear &amp; Use Cloud AI"</strong> below to use the built-in Render Cloud AI engine configured with <code>GEMINI_API_KEY</code>.
             </div>
           </div>
@@ -2382,206 +2188,9 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
       }
     };
 
-    // =======================================================
-    // GALLERY LIGHTBOX MODAL HANDLERS
-    // =======================================================
-    window.currentGalleryIndex = 0;
-    window.openDpgGalleryModal = function(index) {
-      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
-      window.currentGalleryIndex = (index >= 0 && index < window.galleryImagesList.length) ? index : 0;
-      updateGalleryModalContent();
-      const modal = document.getElementById("dpgGalleryModal");
-      if (modal) modal.style.display = "flex";
-    };
-
-    window.closeDpgGalleryModal = function() {
-      const modal = document.getElementById("dpgGalleryModal");
-      if (modal) modal.style.display = "none";
-    };
-
-    window.nextGalleryImage = function() {
-      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
-      window.currentGalleryIndex = (window.currentGalleryIndex + 1) % window.galleryImagesList.length;
-      updateGalleryModalContent();
-    };
-
-    window.prevGalleryImage = function() {
-      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
-      window.currentGalleryIndex = (window.currentGalleryIndex - 1 + window.galleryImagesList.length) % window.galleryImagesList.length;
-      updateGalleryModalContent();
-    };
-
-    function updateGalleryModalContent() {
-      if (!window.galleryImagesList || window.galleryImagesList.length === 0) return;
-      const item = window.galleryImagesList[window.currentGalleryIndex];
-      const imgEl = document.getElementById("galleryModalImage");
-      const titleEl = document.getElementById("galleryModalTitle");
-      const counterEl = document.getElementById("galleryModalCounter");
-      const captionEl = document.getElementById("galleryModalCaption");
-
-      if (imgEl) imgEl.src = item.url;
-      if (titleEl) titleEl.textContent = item.title;
-      if (counterEl) counterEl.textContent = `${window.currentGalleryIndex + 1} of ${window.galleryImagesList.length}`;
-      if (captionEl) captionEl.textContent = `${item.subtitle} — ${item.title}`;
-    }
-
-    window.addEventListener("keydown", (e) => {
-      const modal = document.getElementById("dpgGalleryModal");
-      if (modal && modal.style.display === "flex") {
-        if (e.key === "ArrowRight") nextGalleryImage();
-        if (e.key === "ArrowLeft") prevGalleryImage();
-        if (e.key === "Escape") closeDpgGalleryModal();
-      }
-    });
-
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const swipeBox = document.getElementById("gallerySwipeContainer");
-    if (swipeBox) {
-      swipeBox.addEventListener("touchstart", (e) => { touchStartX = e.changedTouches[0].screenX; });
-      swipeBox.addEventListener("touchend", (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        if (touchEndX < touchStartX - 40) nextGalleryImage();
-        if (touchEndX > touchStartX + 40) prevGalleryImage();
-      });
-    }
-
-    // Input Trigger Listener
-    if (searchField) {
-      searchField.addEventListener("input", () => {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set("q", searchField.value);
-        window.history.replaceState(null, null, newUrl);
-        applyFilters();
-      });
-    }
-
-    // =======================================================
-    // FIRESTORE INITIALIZATION & MULTI-COLLECTION LOAD
-    // =======================================================
-    async function loadDocuments() {
-      try {
-        const snap = await getDocs(collection(db, "documents"));
-        allDocs = [];
-        snap.forEach(doc => {
-          const data = doc.data();
-          const isApproved = data.status === "approved" || data.isApproved === true;
-          if (isApproved) {
-            allDocs.push({ id: doc.id, ...data });
-          }
-        });
-
-        // Fetch academic solutions via collectionGroup
-        try {
-          const solSnap = await getDocs(collectionGroup(db, "solutions"));
-          solSnap.forEach(solDoc => {
-            const solData = solDoc.data();
-            const parentPath = solDoc.ref.path || '';
-            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
-            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
-            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
-            const contribUid = solData.contributorUid || "";
-            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
-
-            const subName = solData.subjectName || 'Academic Solution';
-            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
-            const course = solData.course || solData.courseSec || "Academic";
-            const author = solData.studentName || solData.contributorName || "Verified Contributor";
-            const isEnc = Boolean(solData.isEncrypted);
-            const likesCount = typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : 0);
-
-            allDocs.push({
-              id: solDoc.id,
-              isSolution: true,
-              solutionType: isPractical ? "practical" : "assignment",
-              solutionUrl: solUrl,
-              title: `${subName}${subCode}`,
-              subjectName: solData.subjectName || '',
-              subjectCode: solData.subjectCode || '',
-              category: solType,
-              discipline: course,
-              description: `${solType} for ${subName}${subCode}. Course: ${course}. Contributor: ${author}. ${isEnc ? '🔐 Password Protected' : '🔓 Public Solution'}.`,
-              userName: author,
-              uploader: author,
-              likes: likesCount,
-              views: solData.views || 0,
-              screentime: solData.totalScreentimeSec || 60,
-              isEncrypted: isEnc,
-              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", course, isEnc ? "protected" : "public"].filter(Boolean),
-              createdAt: solData.createdAt ? (typeof solData.createdAt === 'string' ? { seconds: Math.floor(new Date(solData.createdAt).getTime() / 1000) } : solData.createdAt) : { seconds: Math.floor(Date.now() / 1000) },
-              rawDoc: solData
-            });
-          });
-        } catch (solErr) {
-          console.warn("Solutions collectionGroup fetch error:", solErr);
-        }
-
-        // Fetch registered users for Contributors tab
-        try {
-          const userSnap = await getDocs(collection(db, "users"));
-          const usersMap = new Map();
-          userSnap.forEach(uDoc => {
-            const uData = uDoc.data();
-            const displayName = uData.displayName || uData.name || (uData.email ? uData.email.split('@')[0] : 'Contributor');
-            usersMap.set(displayName, {
-              uid: uDoc.id,
-              name: displayName,
-              photoURL: uData.photoURL || '',
-              role: uData.role || 'Contributor',
-              docsCount: 0,
-              likesCount: 0
-            });
-          });
-
-          // Match docs counts to users
-          allDocs.forEach(d => {
-            const author = d.userName || d.uploader || d.studentName || d.contributorName;
-            if (author && usersMap.has(author)) {
-              const u = usersMap.get(author);
-              u.docsCount++;
-              u.likesCount += (Array.isArray(d.likes) ? d.likes.length : (d.likes || 0));
-            } else if (author && author !== 'Guest') {
-              usersMap.set(author, {
-                uid: d.contributorUid || d.uid || '',
-                name: author,
-                photoURL: '',
-                role: 'Verified Contributor',
-                docsCount: 1,
-                likesCount: (Array.isArray(d.likes) ? d.likes.length : (d.likes || 0))
-              });
-            }
-          });
-
-          allContributors = Array.from(usersMap.values()).sort((a, b) => b.docsCount - a.docsCount);
-        } catch(uErr) {
-          console.warn("Users collection load warning:", uErr);
-        }
-
-        // Fetch user_ads for Sponsored and Gallery tabs
-        window.approvedAdsCache = [];
-        try {
-          const adsSnap = await getDocs(collection(db, "user_ads"));
-          adsSnap.forEach(adDoc => {
-            const ad = adDoc.data();
-            if (ad.status === "Approved") window.approvedAdsCache.push({ id: adDoc.id, ...ad });
-          });
-        } catch(e) { console.warn("User ads fetch warning", e); }
-
-        populateDynamicFilters();
-        applyFilters();
-
-        // Switch to initial tab if set
-        if (window.activeSerpTab) {
-          window.switchSerpTab(window.activeSerpTab);
-        }
-      } catch (err) {
-        console.error("Failed downloading documents:", err);
-      }
-    }
-
+    // Initialize Page
     loadDocuments();
   </script>
-
   <script src="redirect.js"></script>
 </body>
 </html>
