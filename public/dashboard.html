@@ -62,14 +62,29 @@
       text-align: left;
       font-size: 0.88rem;
     }
-    .manage-res-table th, .manage-res-table td {
+    .manage-res-table th {
       padding: 0.75rem 0.9rem;
+      white-space: nowrap;
+    }
+    .manage-res-table td {
+      padding: 0.75rem 0.9rem;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    .manage-res-table td.nowrap-col {
       white-space: nowrap;
     }
     .manage-res-table td.title-col {
       white-space: normal;
       min-width: 180px;
       max-width: 280px;
+      word-break: break-word;
+    }
+    .manage-res-empty-cell {
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
     }
     
     /* MOBILE & TABLET MEDIA OPTIMIZATION (Card Stack Transformation) */

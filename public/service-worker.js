@@ -96,13 +96,14 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((c) => c.put(req, clone));
         }
         return res;
-      }).catch((err) => {
+      }).catch(async (err) => {
         if (cached) return cached;
         // Offline Fallback for HTML documents
         if (req.mode === "navigate" || req.destination === "document") {
-          return caches.match("/index.html");
+          const fallback = await caches.match("/index.html");
+          if (fallback) return fallback;
         }
-        throw err;
+        return new Response(null, { status: 504, statusText: "Offline or Gateway Timeout" });
       });
 
       return cached || fetchPromise;

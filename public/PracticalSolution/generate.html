@@ -1598,6 +1598,8 @@
           payloadToStore.encryptedData = encryptedData;
           payloadToStore.salt = salt;
           payloadToStore.passHash = passHash;
+          payloadToStore.password = encPassword;
+          payloadToStore.accessPassword = encPassword;
           // Plaintext practicals and raw pdfUrl omitted from doc
 
           // Cache password in localStorage for author convenience

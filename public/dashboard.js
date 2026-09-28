@@ -787,9 +787,20 @@ async function loadExplore() {
   let docsArray = [];
   snap.forEach(doc => {
     const d = doc.data();
-    const isOwner = currentUser && (d.userId === currentUser.uid || (d.uploaderEmail && currentUser.email && d.uploaderEmail.toLowerCase() === currentUser.email.toLowerCase()));
+    const isOwner = !!(currentUser && (
+      (d.userId && d.userId === currentUser.uid) ||
+      (d.uploaderId && d.uploaderId === currentUser.uid) ||
+      (d.uploaderUid && d.uploaderUid === currentUser.uid) ||
+      (d.uploaderEmail && currentUser.email && d.uploaderEmail.toLowerCase() === currentUser.email.toLowerCase())
+    ));
     const isApproved = d.status === "approved" || d.isApproved === true;
-    if (isApproved || isOwner) {
+    const isPrivate = d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false;
+
+    // Strict Rule: Current Contributor sees their own resources (both Public and Private).
+    // Other Contributors: Show Public resources ONLY (!isPrivate && isApproved).
+    if (isOwner) {
+      docsArray.push({ id: doc.id, ...d });
+    } else if (!isPrivate && isApproved) {
       docsArray.push({ id: doc.id, ...d });
     }
   });
@@ -1811,17 +1822,27 @@ async function loadContributorManageResources() {
   tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:var(--text-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading resources...</td></tr>`;
 
   try {
-    const qDocs = query(collection(db, "documents"), where("uploaderEmail", "==", currentUser.email));
-    const snap = await getDocs(qDocs);
-    const docs = [];
-    snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
-
-    // Fallback by userId if empty
-    if (docs.length === 0 && currentUser.uid) {
-      const qUid = query(collection(db, "documents"), where("userId", "==", currentUser.uid));
-      const snapUid = await getDocs(qUid);
-      snapUid.forEach(d => docs.push({ id: d.id, ...d.data() }));
+    const docsMap = new Map();
+    const tryFetch = async (field, val) => {
+      if (!val) return;
+      try {
+        const q = query(collection(db, "documents"), where(field, "==", val));
+        const s = await getDocs(q);
+        s.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
+      } catch(e) {}
+    };
+    if (currentUser.email) {
+      await tryFetch("uploaderEmail", currentUser.email);
+      if (currentUser.email.toLowerCase() !== currentUser.email) {
+        await tryFetch("uploaderEmail", currentUser.email.toLowerCase());
+      }
     }
+    if (currentUser.uid) {
+      await tryFetch("uploaderId", currentUser.uid);
+      await tryFetch("userId", currentUser.uid);
+      await tryFetch("uploaderUid", currentUser.uid);
+    }
+    const docs = Array.from(docsMap.values());
 
     if (docs.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="padding:1.5rem; text-align:center; color:var(--text-muted);">No uploaded resources found. Upload notes using the Upload tab!</td></tr>`;
@@ -2172,50 +2193,46 @@ async function loadPasswordVaultData(forceReload = false) {
     const uid = currentUser.uid;
     const email = currentUser.email;
 
-    // 1. Fetch Private Documents from Firestore
+    // 1. Fetch Private Documents from Firestore across all contributor identifiers
     try {
-      const qDocs = query(collection(db, "documents"), where("uploaderEmail", "==", email));
-      const snap = await getDocs(qDocs);
-      snap.forEach(d => {
-        const data = d.data();
+      const userDocsMap = new Map();
+      const tryFetchDocs = async (field, val) => {
+        if (!val) return;
+        try {
+          const q = query(collection(db, "documents"), where(field, "==", val));
+          const s = await getDocs(q);
+          s.forEach(d => userDocsMap.set(d.id, d.data()));
+        } catch(e) {}
+      };
+
+      if (email) {
+        await tryFetchDocs("uploaderEmail", email);
+        if (email.toLowerCase() !== email) {
+          await tryFetchDocs("uploaderEmail", email.toLowerCase());
+        }
+      }
+      if (uid) {
+        await tryFetchDocs("uploaderId", uid);
+        await tryFetchDocs("userId", uid);
+        await tryFetchDocs("uploaderUid", uid);
+      }
+
+      userDocsMap.forEach((data, docId) => {
         const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
         if (isPrivate) {
           items.push({
-            id: d.id,
+            id: docId,
             type: "document",
             category: data.category || "Document",
             title: data.title || "Untitled Resource",
             discipline: data.discipline || "General",
-            password: data.password || "",
+            password: data.password || data.accessPassword || "",
             passwordHash: data.passwordHash || "",
             createdAt: data.createdAt,
             raw: data
           });
         }
       });
-
-      // Fallback by userId if needed
-      if (uid) {
-        const qUid = query(collection(db, "documents"), where("userId", "==", uid));
-        const snapUid = await getDocs(qUid);
-        snapUid.forEach(d => {
-          const data = d.data();
-          const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
-          if (isPrivate && !items.some(i => i.id === d.id)) {
-            items.push({
-              id: d.id,
-              type: "document",
-              category: data.category || "Document",
-              title: data.title || "Untitled Resource",
-              discipline: data.discipline || "General",
-              password: data.password || "",
-              passwordHash: data.passwordHash || "",
-              createdAt: data.createdAt,
-              raw: data
-            });
-          }
-        });
-      }
     } catch (docErr) {
       console.warn("Vault documents fetch error:", docErr);
     }
@@ -2228,13 +2245,14 @@ async function loadPasswordVaultData(forceReload = false) {
         const data = d.data();
         if (data.isEncrypted) {
           const localPass = localStorage.getItem('dpg_sol_pass_' + d.id) || '';
+          const plainPass = data.password || data.accessPassword || data.pass || localPass || '';
           items.push({
             id: d.id,
             type: "assignment",
             category: "Assignment Solution",
             title: (data.subjectName || "Assignment Solution") + (data.subjectCode ? ` (${data.subjectCode})` : ''),
             discipline: data.course || data.courseSec || "Academic",
-            password: data.password || localPass || "",
+            password: plainPass,
             passwordHash: data.passHash || "",
             salt: data.salt || "",
             encryptedData: data.encryptedData || "",
@@ -2255,13 +2273,14 @@ async function loadPasswordVaultData(forceReload = false) {
         const data = d.data();
         if (data.isEncrypted) {
           const localPass = localStorage.getItem('dpg_sol_pass_' + d.id) || '';
+          const plainPass = data.password || data.accessPassword || data.pass || localPass || '';
           items.push({
             id: d.id,
             type: "practical",
             category: "Practical Solution",
             title: (data.subjectName || "Practical Solution") + (data.subjectCode ? ` (${data.subjectCode})` : ''),
             discipline: data.course || data.courseSec || "Academic",
-            password: data.password || localPass || "",
+            password: plainPass,
             passwordHash: data.passHash || "",
             salt: data.salt || "",
             encryptedData: data.encryptedData || "",
@@ -2315,12 +2334,12 @@ function renderPasswordVaultTable(items) {
   if (!items || items.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" style="padding:3rem 1.5rem; text-align:center; color:var(--text-muted);">
+        <td colspan="5" class="manage-res-empty-cell" style="padding:3rem 1.5rem; text-align:center; color:var(--text-muted); white-space:normal !important; word-break:break-word !important; overflow-wrap:break-word !important;">
           <div style="width:60px; height:60px; border-radius:50%; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; color:var(--primary-light); font-size:1.8rem;">
             <i class="ri-shield-keyhole-line"></i>
           </div>
-          <h3 style="color:white; font-size:1.15rem; margin:0 0 0.4rem 0;">No Password-Protected Assets</h3>
-          <p style="margin:0; font-size:0.88rem; max-width:440px; margin:0 auto; line-height:1.5;">All your academic resources and solutions are currently public or you haven't uploaded private assets yet. When you set a resource to Private or encrypt a solution, it will appear here.</p>
+          <h3 style="color:white; font-size:1.15rem; margin:0 0 0.4rem 0; white-space:normal !important;">No Password-Protected Assets</h3>
+          <p style="margin:0 auto; font-size:0.88rem; max-width:440px; line-height:1.5; white-space:normal !important; word-wrap:break-word !important; word-break:break-word !important;">All your academic resources and solutions are currently public or you haven't uploaded private assets yet. When you set a resource to Private or encrypt a solution, it will appear here.</p>
         </td>
       </tr>
     `;
@@ -2338,7 +2357,8 @@ function renderPasswordVaultTable(items) {
       typeBadge = `<span style="background:rgba(52,211,153,0.15); color:#34d399; border:1px solid rgba(52,211,153,0.35); padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-flask-line"></i> Practical Solution</span>`;
     }
 
-    const plainPw = item.password || (item.passwordHash ? "(Stored as SHA-256 Hash)" : "Not Set");
+    const plainPw = item.password || item.accessPassword || "";
+    const displayPw = plainPw ? plainPw : "Not Stored";
 
     const tr = document.createElement("tr");
     tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
@@ -2358,10 +2378,12 @@ function renderPasswordVaultTable(items) {
       <td style="padding:0.85rem 1rem; vertical-align:middle;">
         <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.12); padding:5px 10px; border-radius:8px;">
           <i class="ri-key-fill" style="color:#38bdf8; font-size:0.95rem;"></i>
-          <span id="vaultPwSpan_${item.id}" style="font-family:'Fira Code', monospace; font-weight:700; color:#38bdf8; font-size:0.9rem; letter-spacing:0.5px;">${escapeHtml(plainPw)}</span>
-          <button type="button" onclick="copyVaultPassword('${escapeHtml(item.password || '')}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:2px; margin-left:4px;" title="Copy Password">
+          <span id="vaultPwSpan_${item.id}" style="font-family:'Fira Code', monospace; font-weight:700; color:#38bdf8; font-size:0.9rem; letter-spacing:0.5px;">${escapeHtml(displayPw)}</span>
+          ${plainPw ? `
+          <button type="button" onclick="copyVaultPassword('${escapeHtml(plainPw)}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:2px; margin-left:4px;" title="Copy Password">
             <i class="ri-file-copy-line"></i>
           </button>
+          ` : ''}
         </div>
       </td>
       <td style="padding:0.85rem 1rem; text-align:center; vertical-align:middle;">

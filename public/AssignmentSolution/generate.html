@@ -1528,6 +1528,8 @@
           payloadToStore.encryptedData = encryptedData;
           payloadToStore.salt = salt;
           payloadToStore.passHash = passHash;
+          payloadToStore.password = encPassword;
+          payloadToStore.accessPassword = encPassword;
           // Notice: plaintext questions are completely omitted!
 
           // Cache password in localStorage for author convenience
