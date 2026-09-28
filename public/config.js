@@ -2,7 +2,9 @@
 // DPGNOTES CONFIGURATION
 // ==========================================
 
-const RENDER_BACKEND_URL = "https://dpgnotes.onrender.com";
+var RENDER_BACKEND_URL = window.RENDER_BACKEND_URL || "https://dpgnotes.onrender.com";
+window.RENDER_BACKEND_URL = RENDER_BACKEND_URL;
+window.RENDER_BACKEND_URI = RENDER_BACKEND_URL;
 
 if (typeof window !== 'undefined') {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {

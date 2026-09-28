@@ -394,6 +394,33 @@
     }
 
     @media (max-width: 768px) {
+      .network-header {
+        padding: 0.6rem 1rem;
+        gap: 10px;
+      }
+      .brand-title {
+        font-size: 1.05rem;
+      }
+      .brand-logo {
+        width: 34px;
+        height: 34px;
+        font-size: 1.05rem;
+      }
+      .search-profiles-wrapper {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+        max-width: 220px;
+      }
+      .search-profiles-input {
+        padding: 0.45rem 0.75rem 0.45rem 2rem;
+        font-size: 0.8rem;
+      }
+      .search-profiles-icon {
+        left: 0.7rem;
+        font-size: 0.85rem;
+      }
+
       .profile-shell { grid-template-columns: 1fr; gap: 1.5rem; margin: 1rem auto; padding: 0 1rem 2rem; }
       .profile-banner { height: 130px; }
       .profile-avatar-large {
@@ -418,6 +445,24 @@
       
       .analytics-grid { grid-template-columns: 1fr 1fr; }
       .dm-panel { height: 380px; }
+    }
+
+    @media (max-width: 480px) {
+      .network-header {
+        padding: 0.5rem 0.75rem;
+        gap: 8px;
+      }
+      .brand-title {
+        display: none;
+      }
+      .search-profiles-wrapper {
+        max-width: none;
+        width: 100%;
+      }
+      .search-profiles-input {
+        font-size: 0.82rem;
+        padding: 0.5rem 0.85rem 0.5rem 2.2rem;
+      }
     }
 
     @media (min-width: 769px) and (max-width: 1024px) {

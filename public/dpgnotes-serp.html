@@ -1006,9 +1006,23 @@
       object-fit: cover;
     }
 
-    /* Multi-media Responsiveness */
+    /* Helper utility classes for mobile / desktop display */
+    .d-none { display: none !important; }
+    @media (min-width: 576px) {
+      .d-sm-inline { display: inline !important; }
+      .d-sm-flex { display: flex !important; }
+      .d-sm-none { display: none !important; }
+    }
+
+    /* Multi-media Responsiveness: Desktop, Tablet & Mobile */
+    @media (max-width: 1024px) {
+      .serp-main-wrapper { padding: 1.25rem; gap: 1.25rem; }
+      .ai-hero-card { padding: 1.5rem; }
+      .ai-chat-card { padding: 1.25rem; }
+    }
+
     @media (max-width: 899px) {
-      .serp-header { padding: 0.75rem 1rem; gap: 0.75rem; }
+      .serp-header { padding: 0.65rem 1rem; gap: 0.75rem; }
       .brand-title { display: none; }
       .serp-main-wrapper { padding: 1rem; gap: 1rem; }
       .vfilter-grid { grid-template-columns: 1fr 1fr; }
@@ -1016,10 +1030,54 @@
       .ai-chat-card { padding: 1rem; }
       .ai-msg-bubble { max-width: 96%; }
     }
+
     @media (max-width: 560px) {
-      .vfilter-grid { grid-template-columns: 1fr; }
-      .search-input-wrapper { max-width: 100%; }
-      .serp-tab-btn { padding: 0.7rem 0.6rem; font-size: 0.82rem; }
+      .serp-header { padding: 0.5rem 0.75rem; gap: 0.5rem; }
+      .brand-logo { width: 34px; height: 34px; font-size: 1.05rem; }
+      .search-input-wrapper { max-width: 100%; padding: 0.15rem 0.45rem; }
+      .search-input-wrapper input { font-size: 0.84rem; padding: 0.4rem 0.2rem; }
+      .search-input-wrapper i { font-size: 0.95rem; margin-left: 0.3rem; }
+      .header-quick-actions { gap: 5px; }
+      .header-home-btn { padding: 5px 8px; font-size: 0.76rem; }
+      .header-home-btn span { display: none; }
+
+      .serp-tabs-bar {
+        padding: 0 0.5rem;
+        gap: 4px;
+        top: 54px;
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      .serp-tab-btn {
+        padding: 0.6rem 0.55rem;
+        font-size: 0.78rem;
+        gap: 5px;
+      }
+
+      .vertical-filter-interface { padding: 0.6rem 0.75rem; }
+      .vfilter-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .vfilter-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+      .vfilter-chips-row { gap: 4px; padding-bottom: 2px; }
+      .vfilter-chip { padding: 3px 9px; font-size: 0.72rem; }
+
+      .serp-main-wrapper { padding: 0.75rem; gap: 0.75rem; }
+      .result-card { padding: 1rem; }
+      .ai-hero-card { padding: 1rem 0.85rem; }
+      .ai-chat-card { padding: 1rem 0.85rem; }
+      .ai-hero-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .ai-header-controls { width: 100%; display: flex; justify-content: space-between; }
+      .ai-msg-bubble { max-width: 98%; font-size: 0.86rem; padding: 0.75rem 0.85rem; }
+      .ai-chat-input-bar { padding: 4px; }
+      .ai-chat-input-bar input { font-size: 0.84rem; padding: 0.5rem 0.6rem; }
+      .ai-chat-input-bar button { padding: 0.5rem 0.9rem; }
+      .ai-quick-prompts { gap: 5px; }
+      .ai-quick-prompts button { font-size: 0.72rem; padding: 3px 8px; }
+
+      .dpg-modal-box { max-width: 95vw; padding: 1.1rem; }
+      .dpg-modal-footer { flex-direction: column; gap: 8px; }
+      .dpg-modal-footer button { width: 100%; }
     }
   </style>
 </head>
@@ -1173,23 +1231,39 @@
         <button type="button" class="dpg-modal-close" onclick="closeGeminiKeyModal()">&times;</button>
       </div>
       <div class="dpg-modal-body">
+        <!-- Built-in Cloud AI Engine Status Banner -->
+        <div style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); border-radius:10px; padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ri-cloud-line" style="color:#a78bfa; font-size:1.25rem;"></i>
+            <div>
+              <div style="font-size:0.84rem; font-weight:700; color:white;">Render Cloud AI Engine (Built-in)</div>
+              <div style="font-size:0.75rem; color:#94a3b8;">Pre-configured on Render Web Service via <code>GEMINI_API_KEY</code></div>
+            </div>
+          </div>
+          <span style="background:rgba(52,211,153,0.15); color:#34d399; border:1px solid rgba(52,211,153,0.4); padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+            <i class="ri-checkbox-circle-fill"></i> Cloud Ready
+          </span>
+        </div>
+
         <p style="color:#cbd5e1; font-size:0.86rem; line-height:1.6; margin-bottom:0.9rem;">
-          Connect your Google Gemini API key to enable high-speed direct client-side generation, custom coding answers, and interactive study chat on DPGNotes.
+          By default, DPGNotes automatically routes AI queries through our <strong>Render Cloud AI Engine</strong>. If you want direct, high-speed client-side generation or custom quota, you can optionally provide your own Google Gemini API key below.
         </p>
         <div style="position:relative; margin-bottom:0.8rem;">
-          <input type="password" id="customGeminiKeyInput" placeholder="Paste your Gemini API key (AIzaSy...)" style="width:100%; padding:0.7rem 2.8rem 0.7rem 0.85rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:white; font-family:'Fira Code', monospace; font-size:0.85rem; outline:none; box-sizing:border-box;">
+          <input type="password" id="customGeminiKeyInput" placeholder="Optional: Paste custom Gemini API key (AIzaSy...)" style="width:100%; padding:0.7rem 2.8rem 0.7rem 0.85rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:white; font-family:'Fira Code', monospace; font-size:0.85rem; outline:none; box-sizing:border-box;">
           <button type="button" onclick="toggleApiKeyVisibility()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.1rem;"><i id="apiKeyVisIcon" class="ri-eye-line"></i></button>
         </div>
         <div id="apiKeyTestResult" style="margin-bottom:0.8rem; font-size:0.82rem; display:none;"></div>
         <div style="font-size:0.76rem; color:#94a3b8; line-height:1.5;">
-          🔒 Your key is stored strictly in your local browser's <code>localStorage</code>.
-          Get a free Gemini API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#a78bfa; text-decoration:none; font-weight:600;">Google AI Studio <i class="ri-external-link-line"></i></a>.
+          🔒 Your custom key is stored strictly in your local browser's <code>localStorage</code>.<br>
+          Get a free Gemini API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#a78bfa; text-decoration:none; font-weight:600;">Google AI Studio <i class="ri-external-link-line"></i></a>, or leave blank to use the built-in Cloud AI.
         </div>
       </div>
-      <div class="dpg-modal-footer">
-        <button type="button" class="dpg-btn dpg-btn-danger" onclick="clearCustomGeminiKey()">Clear</button>
-        <button type="button" class="dpg-btn dpg-btn-secondary" onclick="testCustomGeminiKey()"><i class="ri-test-tube-line"></i> Test</button>
-        <button type="button" class="dpg-btn dpg-btn-primary" onclick="saveCustomGeminiKey()"><i class="ri-save-line"></i> Save Key</button>
+      <div class="dpg-modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <button type="button" class="dpg-btn dpg-btn-danger" onclick="clearCustomGeminiKey()" title="Clear and use Render Cloud AI Engine"><i class="ri-delete-bin-line"></i> Clear &amp; Use Cloud AI</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="dpg-btn dpg-btn-secondary" onclick="testCustomGeminiKey()"><i class="ri-test-tube-line"></i> Test Key</button>
+          <button type="button" class="dpg-btn dpg-btn-primary" onclick="saveCustomGeminiKey()"><i class="ri-save-line"></i> Save &amp; Connect</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1548,7 +1622,7 @@
       const list = document.getElementById("resultsList");
       const topDoc = results[0] || { title: "DPG College Curriculum", category: "General", discipline: "Computer Science" };
       const apiKey = localStorage.getItem('dpg_gemini_api_key');
-      const keyStatusBadge = apiKey ? '🔑 Custom Gemini Key Active' : '⚙️ Gemini API Key';
+      const keyStatusBadge = apiKey ? '🔑 Custom Gemini Key' : '☁️ Cloud AI Active';
 
       list.innerHTML = `
         <div class="ai-overview-page-wrapper">
@@ -1833,7 +1907,9 @@
           if (domain === 'External Website' && targetUrl.startsWith('http')) {
             try { domain = new URL(targetUrl).hostname; } catch(e) {}
           }
-          const iconUrl = site.iconUrl || `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+          const fallbackFavicon = 'ANH.png';
+          const isValidDomain = domain && domain !== 'External Website' && domain.includes('.');
+          const iconUrl = site.iconUrl || (isValidDomain ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64` : fallbackFavicon);
           const title = site.title || `Web Resource (${domain})`;
           const description = site.description || 'External web resource indexed by DPGNotes search crawler.';
           const isVerified = Boolean(site.isVerified);
@@ -1841,7 +1917,7 @@
           webListHtml += `
             <div class="result-card" style="padding:1.25rem;">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                <img src="${iconUrl}" onerror="this.src='https://www.google.com/s2/favicons?domain=${domain}&sz=64';" alt="favicon" style="width:20px; height:20px; border-radius:4px; object-fit:contain; background:#000;">
+                <img src="${iconUrl}" onerror="this.onerror=null; this.src='${fallbackFavicon}';" alt="favicon" style="width:20px; height:20px; border-radius:4px; object-fit:contain; background:#000;">
                 <div style="display:flex; flex-direction:column; line-height:1.2;">
                   <span style="color:#e2e8f0; font-weight:700; font-size:0.85rem;">${domain}</span>
                   <span style="color:#64748b; font-size:0.75rem; overflow:hidden; text-overflow:ellipsis; max-width:340px; white-space:nowrap;">${targetUrl}</span>
@@ -2050,41 +2126,70 @@
 
       try {
         if (customApiKey) {
-          // Direct Google Gemini API Call
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(customApiKey)}`;
+          // Direct Google Gemini API Call with model fallback
+          const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+          let clientData = null;
+          let clientErr = null;
           const contextDocs = (window.currentSearchResults || []).slice(0, 3).map(d => `${d.title} (${d.category} - ${d.discipline}): ${d.description || ''}`).join("\n");
-          
+
           const promptPayload = {
             contents: [{
               role: "user",
               parts: [{
-                text: `You are the DPGNotes AI Academic Assistant at DPG College. You help university students with exam preparation, concept explanations, and practical code solutions.\nWhen providing code examples, write clean code in standard markdown code fences (e.g. \`\`\`html, \`\`\`css, \`\`\`javascript, \`\`\`python, \`\`\`cpp) so that our live interactive sandbox engine can execute it directly.\n\nAcademic Context for query "${userQueryParam}":\n${contextDocs}\n\nStudent Question: ${question}`
+                text: `You are the Lead Academic AI Professor & Master Software Architect for DPGNotes at DPG College. You help university students with exam preparation, comprehensive theoretical explanations, and 100% complete, runnable code implementations.
+
+Student Question: ${question}
+Context: ${userQueryParam || 'Academic Curriculum & Engineering'}
+Relevant Documents:
+${contextDocs}
+
+CRITICAL CODE QUALITY & COMPLETION RULES:
+1. COMPLETE WORKING CODE: If code, algorithms, programs, or web pages (HTML, CSS, JS, Python, C++, Java, etc.) are requested or relevant, you MUST produce FULL, END-TO-END, PRODUCTION-READY CODE.
+2. NO LAZY SHORTCUTS: NEVER use placeholder comments such as "// ... write remaining code here", "// implement logic here", "// add styles here", or truncated ellipses. Every single function, styling rule, and logic flow must be completely written out.
+3. Live Interactive Sandbox Compliance: When providing web code, provide clean code in standard markdown code fences (e.g. \`\`\`html, \`\`\`css, \`\`\`javascript, \`\`\`python, \`\`\`cpp) so our live sandbox engine can render it directly for students.
+4. ACADEMIC DEPTH:
+   - Provide formal definitions, theoretical foundations, and core architecture.
+   - Outline exam scoring criteria, university syllabus breakdown, and step-by-step points.
+   - Include time/space complexity analysis when discussing algorithms or data structures.
+5. FORMATTING: Use structured Markdown with bold titles, clean lists, and informative code commentary.`
               }]
             }],
             generationConfig: {
-              temperature: 0.4,
-              maxOutputTokens: 2048
+              temperature: 0.3,
+              maxOutputTokens: 4096
             }
           };
 
-          const geminiRes = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(promptPayload)
-          });
-
-          if (!geminiRes.ok) {
-            throw new Error(`Gemini API Error: HTTP ${geminiRes.status}`);
+          for (const m of modelsToTry) {
+            try {
+              const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(customApiKey)}`;
+              const geminiRes = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(promptPayload)
+              });
+              if (geminiRes.ok) {
+                const resJson = await geminiRes.json();
+                if (resJson.candidates && resJson.candidates[0]?.content?.parts[0]?.text) {
+                  responseText = resJson.candidates[0].content.parts[0].text;
+                  break;
+                }
+              } else {
+                clientErr = new Error(`HTTP ${geminiRes.status}`);
+              }
+            } catch(e) {
+              clientErr = e;
+            }
           }
-          const geminiData = await geminiRes.json();
-          if (geminiData.candidates && geminiData.candidates[0]?.content?.parts[0]?.text) {
-            responseText = geminiData.candidates[0].content.parts[0].text;
-          } else {
-            throw new Error("Empty candidate response from Gemini API");
+
+          if (!responseText) {
+            console.warn("Client Gemini direct call failed, falling back to Render backend proxy:", clientErr);
+            throw clientErr || new Error("Client Gemini call failed");
           }
         } else {
-          // Fallback to Server-Side AI chat endpoint
-          const res = await fetch(apiBase + '/api/ai/serp-chat', {
+          // No custom key -> Call Render Backend AI directly
+          const backendUrl = apiBase || 'https://dpgnotes.onrender.com';
+          const res = await fetch(backendUrl + '/api/ai/serp-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2097,12 +2202,33 @@
           if (res.ok && data.answer) {
             responseText = data.answer;
           } else {
-            responseText = `Academic Overview for **${question}**:\n\nReview the core definitions, formulas, and verified sessional exam papers in the **All** and **Academic Solutions** tabs.`;
+            throw new Error(data.error || "Backend AI response unavailable");
           }
         }
       } catch(err) {
-        console.warn("SERP AI Chat primary request fallback:", err);
-        responseText = `### Academic Synthesis for "${question}"\n\n- **Core Concept:** Key principles based on university sessional exam curricula.\n- **Recommended Action:** Review the complete document notes in the **All** tab.\n- **Note:** Custom Gemini key was not reachable (${err.message}). Using local synthesis engine.`;
+        console.warn("SERP AI primary request fallback to Render backend:", err);
+        // Automatic Fallback to Render Backend Proxy if custom key failed!
+        try {
+          const backendUrl = apiBase || 'https://dpgnotes.onrender.com';
+          const res = await fetch(backendUrl + '/api/ai/serp-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: userQueryParam,
+              question: question,
+              contextDocs: (window.currentSearchResults || []).slice(0, 3)
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.answer) {
+            responseText = data.answer;
+          } else {
+            throw new Error(data.error || "Backend synthesis unavailable");
+          }
+        } catch(fallbackErr) {
+          console.warn("Both client direct and backend AI failed:", fallbackErr);
+          responseText = `### Academic Overview for "${question}"\n\n- **Core Concept:** University curriculum standards and exam patterns for **${question}**.\n- **Recommended Next Step:** Explore the matched documents, verified formulas, and practice files in the **All** and **Academic Solutions** tabs.`;
+        }
       } finally {
         if (loadingBubble.parentNode) feed.removeChild(loadingBubble);
         if (chatBtn) {
@@ -2172,10 +2298,8 @@
       const key = input ? input.value.trim() : '';
       if (key) {
         localStorage.setItem('dpg_gemini_api_key', key);
-        alert("Google Gemini API Key saved successfully! Interactive chat is now directly connected.");
       } else {
         localStorage.removeItem('dpg_gemini_api_key');
-        alert("Custom API Key cleared. DPGNotes will use the default backend AI model.");
       }
       closeGeminiKeyModal();
       if (window.activeSerpTab === 'ai') renderActiveTabContent();
@@ -2188,9 +2312,11 @@
       const resEl = document.getElementById("apiKeyTestResult");
       if (resEl) {
         resEl.style.display = 'block';
-        resEl.style.color = '#fca5a5';
-        resEl.innerText = 'API Key cleared. Using default backend model.';
+        resEl.style.color = '#34d399';
+        resEl.innerHTML = '<i class="ri-checkbox-circle-fill"></i> Custom key removed. DPGNotes is now using the <strong>Render Cloud AI Engine</strong>.';
       }
+      const badgeText = document.getElementById("geminiKeyStatusText");
+      if (badgeText) badgeText.innerHTML = '☁️ Cloud AI Active';
       if (window.activeSerpTab === 'ai') renderActiveTabContent();
     };
 
@@ -2202,8 +2328,8 @@
       const key = input.value.trim();
       if (!key) {
         resEl.style.display = 'block';
-        resEl.style.color = '#f59e0b';
-        resEl.innerText = 'Please enter an API Key to test.';
+        resEl.style.color = '#38bdf8';
+        resEl.innerHTML = '<i class="ri-information-line"></i> No custom key entered. DPGNotes will automatically use the <strong>Render Cloud AI Engine</strong>.';
         return;
       }
 
@@ -2211,27 +2337,48 @@
       resEl.style.color = '#a78bfa';
       resEl.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Validating Gemini API Key with Google servers...';
 
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Respond with the single word: OK" }] }]
-          })
-        });
+      const testModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      let passedModel = null;
+      let lastStatus = 0;
+      let lastErrMsg = '';
 
-        if (res.ok) {
-          resEl.style.color = '#34d399';
-          resEl.innerHTML = '<i class="ri-checkbox-circle-fill"></i> Key is valid and working with Gemini 2.5 Flash!';
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          resEl.style.color = '#ef4444';
-          resEl.innerHTML = `<i class="ri-error-warning-fill"></i> Validation failed: HTTP ${res.status} (${errData.error?.message || 'Invalid API Key'})`;
+      for (const mod of testModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${encodeURIComponent(key)}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: "Respond with: OK" }] }]
+            })
+          });
+
+          if (res.ok) {
+            passedModel = mod;
+            break;
+          } else {
+            lastStatus = res.status;
+            const errData = await res.json().catch(() => ({}));
+            lastErrMsg = errData.error?.message || `HTTP ${res.status}`;
+          }
+        } catch(e) {
+          lastErrMsg = e.message;
         }
-      } catch(e) {
-        resEl.style.color = '#ef4444';
-        resEl.innerHTML = `<i class="ri-error-warning-fill"></i> Network error: ${e.message}`;
+      }
+
+      if (passedModel) {
+        resEl.style.color = '#34d399';
+        resEl.innerHTML = `<i class="ri-checkbox-circle-fill"></i> Key is valid and working with <strong>${passedModel}</strong>!`;
+      } else {
+        resEl.style.color = '#f87171';
+        resEl.innerHTML = `
+          <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:10px; margin-top:6px; line-height:1.5;">
+            <div style="font-weight:700;"><i class="ri-error-warning-fill"></i> Validation notice: HTTP ${lastStatus} (${lastErrMsg})</div>
+            <div style="color:#cbd5e1; font-size:0.8rem; margin-top:5px;">
+              Note: This key may be expired or restricted. <strong>You don't need a personal key!</strong> You can click <strong>"Clear &amp; Use Cloud AI"</strong> below to use the built-in Render Cloud AI engine configured with <code>GEMINI_API_KEY</code>.
+            </div>
+          </div>
+        `;
       }
     };
 
