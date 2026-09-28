@@ -491,6 +491,190 @@
       }
     }
 
+    /* ENGAGEMENT STATS GRID & MODERN CARDS (Fixes Image 2 & 3 UI & Responsiveness) */
+    .engagement-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .engagement-stat-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--admin-border);
+      border-radius: 16px;
+      padding: 1.2rem 1.25rem;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+      box-sizing: border-box;
+    }
+    .engagement-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .engagement-stat-card.border-blue { border-left: 4px solid var(--admin-primary); }
+    .engagement-stat-card.border-cyan { border-left: 4px solid #06b6d4; }
+    .engagement-stat-card.border-amber { border-left: 4px solid #f59e0b; }
+    .engagement-stat-card.border-rose { border-left: 4px solid #ef4444; }
+    
+    .engagement-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .engagement-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+    }
+    .icon-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .icon-cyan { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+    .icon-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .icon-rose { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    
+    .engagement-pill {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .pill-blue { background: rgba(59, 130, 246, 0.12); color: #93c5fd; }
+    .pill-cyan { background: rgba(6, 182, 212, 0.12); color: #67e8f9; }
+    .pill-amber { background: rgba(245, 158, 11, 0.12); color: #fde68a; }
+    .pill-rose { background: rgba(239, 68, 68, 0.12); color: #fca5a5; }
+
+    .engagement-card-num {
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.02em;
+    }
+    .border-blue .engagement-card-num { color: #60a5fa; }
+    .border-cyan .engagement-card-num { color: #22d3ee; }
+    .border-amber .engagement-card-num { color: #fbbf24; }
+    .border-rose .engagement-card-num { color: #f87171; }
+
+    .engagement-card-title {
+      color: var(--admin-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 1024px) {
+      .engagement-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .engagement-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+      }
+      .engagement-stat-card {
+        padding: 0.9rem 0.85rem;
+        min-height: 100px;
+      }
+      .engagement-card-num {
+        font-size: 1.6rem;
+      }
+      .engagement-card-title {
+        font-size: 0.68rem;
+      }
+    }
+
+    /* UNIVERSAL METRICS STYLES */
+    .metrics-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .metrics-kpi-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--admin-border);
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-sizing: border-box;
+    }
+    .metrics-kpi-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+    .metrics-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .metrics-two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+    .metrics-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+    }
+    .metrics-bar-label {
+      width: 140px;
+      flex-shrink: 0;
+      color: var(--admin-text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .metrics-bar-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .metrics-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .metrics-bar-val {
+      width: 70px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: var(--admin-muted);
+      flex-shrink: 0;
+    }
+
     /* AUTH CHECK OVERLAY (Matching report.html & dashboard.html) */
     #authCheckOverlay {
       position: fixed;
@@ -570,6 +754,9 @@
         </a>
         <a class="nav-link" onclick="switchTab('referrers'); loadReferrerAnalysis();">
           <i class="ri-user-add-line"></i> Referrer Analysis
+        </a>
+        <a class="nav-link" id="nav-link-metrics" onclick="switchTab('metrics'); if(window.loadDpgMetricsAdmin) window.loadDpgMetricsAdmin();">
+          <i class="ri-pulse-line" style="color:#38bdf8;"></i> Metrics
         </a>
         <a class="nav-link" onclick="switchTab('device-logs'); loadDeviceLogsAdmin();">
           <i class="ri-device-line"></i> Device Logs
@@ -996,22 +1183,57 @@
       <section id="view-engagement" class="view-section">
         <div class="section-card" style="margin-bottom: 2rem;">
           <h2 class="section-title">Platform Connections & Follower Analytics</h2>
-          <div class="stats-cards" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
-            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid var(--admin-primary);">
-              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">TOTAL FOLLOWS</h4>
-              <p style="font-size: 2.2rem; font-weight: 800; color: var(--admin-primary);" id="adminTotalFollows">0</p>
+          <div class="engagement-stats-grid">
+            <div class="engagement-stat-card border-blue">
+              <div class="engagement-card-header">
+                <div class="engagement-card-icon icon-blue">
+                  <i class="ri-user-follow-line"></i>
+                </div>
+                <span class="engagement-pill pill-blue">Audience</span>
+              </div>
+              <div class="engagement-card-body">
+                <div class="engagement-card-num" id="adminTotalFollows">0</div>
+                <div class="engagement-card-title">TOTAL FOLLOWS</div>
+              </div>
             </div>
-            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid var(--admin-accent);">
-              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">TOTAL CONNECTIONS</h4>
-              <p style="font-size: 2.2rem; font-weight: 800; color: var(--admin-accent);" id="adminTotalConnections">0</p>
+
+            <div class="engagement-stat-card border-cyan">
+              <div class="engagement-card-header">
+                <div class="engagement-card-icon icon-cyan">
+                  <i class="ri-links-line"></i>
+                </div>
+                <span class="engagement-pill pill-cyan">Network</span>
+              </div>
+              <div class="engagement-card-body">
+                <div class="engagement-card-num" id="adminTotalConnections">0</div>
+                <div class="engagement-card-title">TOTAL CONNECTIONS</div>
+              </div>
             </div>
-            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid #f59e0b;">
-              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">PENDING REQUESTS</h4>
-              <p style="font-size: 2.2rem; font-weight: 800; color: #f59e0b;" id="adminPendingConnections">0</p>
+
+            <div class="engagement-stat-card border-amber">
+              <div class="engagement-card-header">
+                <div class="engagement-card-icon icon-amber">
+                  <i class="ri-time-line"></i>
+                </div>
+                <span class="engagement-pill pill-amber">Pending</span>
+              </div>
+              <div class="engagement-card-body">
+                <div class="engagement-card-num" id="adminPendingConnections">0</div>
+                <div class="engagement-card-title">PENDING REQUESTS</div>
+              </div>
             </div>
-            <div class="stat-card-box" style="background: rgba(15,23,42,0.4); border: 1px solid var(--admin-border); border-radius: 12px; padding: 1.5rem; text-align: center; border-left: 4px solid #ef4444;">
-              <h4 style="color: var(--admin-muted); font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">HARMFUL REPORTS</h4>
-              <p style="font-size: 2.2rem; font-weight: 800; color: #ef4444;" id="adminReportsCount">0</p>
+
+            <div class="engagement-stat-card border-rose">
+              <div class="engagement-card-header">
+                <div class="engagement-card-icon icon-rose">
+                  <i class="ri-shield-alert-line"></i>
+                </div>
+                <span class="engagement-pill pill-rose">Moderation</span>
+              </div>
+              <div class="engagement-card-body">
+                <div class="engagement-card-num" id="adminReportsCount">0</div>
+                <div class="engagement-card-title">HARMFUL REPORTS</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1035,6 +1257,7 @@
               </tbody>
             </table>
           </div>
+        </div>
       </section>
 
       <!-- VIEW: SUPPORT REQUESTS -->
@@ -1092,6 +1315,232 @@
         </div>
       </section>
 
+      <!-- VIEW: METRICS -->
+      <section id="view-metrics" class="view-section">
+        <div class="section-card" style="margin-bottom: 1.5rem;">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h2 class="section-title" style="display:flex; align-items:center; gap:8px;">
+                <i class="ri-pulse-line" style="color:#38bdf8;"></i> DPGNotes Universal Telemetry & Parameter Metrics
+              </h2>
+              <p style="color:var(--admin-muted); font-size:0.85rem; margin:4px 0 0 0;">
+                Comprehensive analytics collected via <code>dpg-params.js</code>: Inbound AI tools & search engine referrals, incognito/guest privacy habits, geolocation, devices, and tablet/mobile media responsiveness ratings.
+              </p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="btn-action success" onclick="loadDpgMetricsAdmin(true)" style="padding:0.5rem 1rem; border-radius:10px; font-weight:600; display:flex; align-items:center; gap:6px;">
+                <i class="ri-refresh-line"></i> Refresh Metrics
+              </button>
+            </div>
+          </div>
+
+          <!-- Top KPI Overview Cards -->
+          <div class="metrics-kpi-grid">
+            <div class="metrics-kpi-card">
+              <div class="metrics-kpi-icon" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8;">
+                <i class="ri-radar-line"></i>
+              </div>
+              <div>
+                <div style="font-size:1.6rem; font-weight:800; color:#f8fafc;" id="metricsTotalVisits">0</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase; font-weight:600;">Total Inbound Visits</div>
+              </div>
+            </div>
+
+            <div class="metrics-kpi-card">
+              <div class="metrics-kpi-icon" style="background:rgba(168, 85, 247, 0.15); color:#c084fc;">
+                <i class="ri-sparkling-fill"></i>
+              </div>
+              <div>
+                <div style="font-size:1.6rem; font-weight:800; color:#c084fc;" id="metricsAiReferralPct">0%</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase; font-weight:600;">AI Tools Inbound</div>
+              </div>
+            </div>
+
+            <div class="metrics-kpi-card">
+              <div class="metrics-kpi-icon" style="background:rgba(59, 130, 246, 0.15); color:#60a5fa;">
+                <i class="ri-search-eye-line"></i>
+              </div>
+              <div>
+                <div style="font-size:1.6rem; font-weight:800; color:#60a5fa;" id="metricsSearchPct">0%</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase; font-weight:600;">Search Engines</div>
+              </div>
+            </div>
+
+            <div class="metrics-kpi-card">
+              <div class="metrics-kpi-icon" style="background:rgba(245, 158, 11, 0.15); color:#fbbf24;">
+                <i class="ri-spy-line"></i>
+              </div>
+              <div>
+                <div style="font-size:1.6rem; font-weight:800; color:#fbbf24;" id="metricsIncognitoPct">0%</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase; font-weight:600;">Incognito Mode</div>
+              </div>
+            </div>
+
+            <div class="metrics-kpi-card">
+              <div class="metrics-kpi-icon" style="background:rgba(16, 185, 129, 0.15); color:#34d399;">
+                <i class="ri-user-shared-line"></i>
+              </div>
+              <div>
+                <div style="font-size:1.6rem; font-weight:800; color:#34d399;" id="metricsGuestPct">0%</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase; font-weight:600;">Guest Mode Users</div>
+              </div>
+            </div>
+
+            <div class="metrics-kpi-card">
+              <div class="metrics-kpi-icon" style="background:rgba(236, 72, 153, 0.15); color:#f472b6;">
+                <i class="ri-star-smile-fill"></i>
+              </div>
+              <div>
+                <div style="font-size:1.6rem; font-weight:800; color:#f472b6;" id="metricsAvgRating">5.0 ★</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase; font-weight:600;">Media Responsiveness</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 1: AI TOOLS vs SEARCH ENGINES -->
+        <div class="metrics-two-col">
+          <!-- AI Tools Breakdown -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3 style="margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-sparkling-fill" style="color:#c084fc;"></i> AI Referral Traffic Sources
+              </h3>
+              <span id="metricsAiTotalBadge" style="font-size:0.75rem; background:rgba(168,85,247,0.15); color:#c084fc; padding:3px 8px; border-radius:12px; font-weight:600;">0 visits</span>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.8rem; margin:-0.5rem 0 1rem 0;">Visitors arriving via AI search tools, chatbots, and UTM referrals (ChatGPT, Gemini, Claude, Copilot, Perplexity, etc.)</p>
+            <div id="metricsAiToolsContainer">
+              <div style="text-align:center; padding:1.5rem; color:var(--admin-muted);">Loading AI telemetry...</div>
+            </div>
+          </div>
+
+          <!-- Search Engines Breakdown -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3 style="margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-search-eye-line" style="color:#60a5fa;"></i> Search Engine Discovery
+              </h3>
+              <span id="metricsSearchTotalBadge" style="font-size:0.75rem; background:rgba(59,130,246,0.15); color:#60a5fa; padding:3px 8px; border-radius:12px; font-weight:600;">0 visits</span>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.8rem; margin:-0.5rem 0 1rem 0;">Organic search traffic across Google, Internet Explorer / MSN, Edge, Bing, Yahoo, DuckDuckGo, and others.</p>
+            <div id="metricsSearchEnginesContainer">
+              <div style="text-align:center; padding:1.5rem; color:var(--admin-muted);">Loading search engine telemetry...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 2: PRIVACY & MODE PREFERENCES (INCOGNITO & GUEST HABITS) -->
+        <div class="metrics-two-col">
+          <!-- Incognito vs Normal -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3 style="margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-spy-line" style="color:#fbbf24;"></i> Incognito & Private Mode Preference
+              </h3>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.8rem; margin:-0.5rem 0 1rem 0;">Storage quota and browser heuristic analysis detecting whether visitors prefer Private Browsing.</p>
+            <div id="metricsIncognitoContainer">
+              <div style="text-align:center; padding:1.5rem; color:var(--admin-muted);">Calculating privacy metrics...</div>
+            </div>
+          </div>
+
+          <!-- Guest vs Contributor Mode -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3 style="margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-user-shared-line" style="color:#34d399;"></i> User Mode Preference (Guest vs Contributor)
+              </h3>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.8rem; margin:-0.5rem 0 1rem 0;">Authenticated contributors vs Anonymous guests visiting notes, PDF viewer, and search engine.</p>
+            <div id="metricsUserModeContainer">
+              <div style="text-align:center; padding:1.5rem; color:var(--admin-muted);">Calculating user mode metrics...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 3: LOCATION & TIMEZONE METRICS -->
+        <div class="metrics-two-col">
+          <!-- Country & City Metrics -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3 style="margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-earth-line" style="color:#38bdf8;"></i> Geographic Distribution (Country & City)
+              </h3>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.8rem; margin:-0.5rem 0 1rem 0;">Top geographic origins based on IP addresses visiting DPGNotes.</p>
+            <div id="metricsGeoContainer">
+              <div style="text-align:center; padding:1.5rem; color:var(--admin-muted);">Analyzing location metrics...</div>
+            </div>
+          </div>
+
+          <!-- Timezone & GMT Offset Metrics -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3 style="margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-time-line" style="color:#a78bfa;"></i> Timezone & GMT Offsets
+              </h3>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.8rem; margin:-0.5rem 0 1rem 0;">Visitor timezone settings and international GMT offsets.</p>
+            <div id="metricsTimezoneContainer">
+              <div style="text-align:center; padding:1.5rem; color:var(--admin-muted);">Analyzing timezone data...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 4: DEVICE METRICS -->
+        <div class="section-card" style="margin-bottom: 1.5rem;">
+          <div class="section-header">
+            <h3 style="margin:0; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+              <i class="ri-device-line" style="color:#f59e0b;"></i> Device Breakdown (Desktop, Tablet & Mobile)
+            </h3>
+            <span id="metricsDeviceRatioBadge" style="font-size:0.75rem; background:rgba(245,158,11,0.15); color:#fbbf24; padding:3px 8px; border-radius:12px; font-weight:600;">Telemetry Device Split</span>
+          </div>
+          <div id="metricsDeviceContainer">
+            <div style="text-align:center; padding:1.5rem; color:var(--admin-muted);">Loading device metrics...</div>
+          </div>
+        </div>
+
+        <!-- ROW 5: TABLET & MOBILE MEDIA RESPONSIVENESS STAR RATINGS & USER FEEDBACK -->
+        <div class="section-card">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="margin:0; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-star-smile-fill" style="color:#f59e0b;"></i> Tablet & Mobile Media Responsiveness Ratings & Feedback
+              </h3>
+              <p style="color:var(--admin-muted); font-size:0.82rem; margin:4px 0 0 0;">
+                Direct feedback submitted via the Custom Rating Star Modal on mobile and tablet devices, including active page URLs and user comments on layout or media responsiveness.
+              </p>
+            </div>
+            <span id="metricsFeedbackCountBadge" style="font-size:0.82rem; background:rgba(245,158,11,0.15); color:#fbbf24; padding:4px 12px; border-radius:12px; font-weight:600;">
+              0 ratings collected
+            </span>
+          </div>
+
+          <!-- Star Score Summary & Distribution -->
+          <div id="metricsStarSummarySection" style="margin: 1rem 0 1.5rem 0;"></div>
+
+          <!-- Filterable Feedback Table -->
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:120px;">Rating</th>
+                  <th>User Feedback / Layout Issue</th>
+                  <th>Active Page URL</th>
+                  <th>Device & Screen</th>
+                  <th>Location</th>
+                  <th>User Mode</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="metricsFeedbackTableBody">
+                <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading responsiveness feedback...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <!-- VIEW: DEVICE LOGS -->
       <section id="view-device-logs" class="view-section">
         <div class="section-card">
@@ -1103,6 +1552,41 @@
               </button>
             </div>
           </div>
+
+          <!-- Filter Controls Bar (Country Pool & Duration Categories) -->
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:1.25rem; background:rgba(15,23,42,0.5); padding:0.75rem 1rem; border-radius:12px; border:1px solid var(--admin-border);">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="deviceLogsCountryFilter" style="font-size:0.82rem; font-weight:600; color:var(--admin-muted); display:flex; align-items:center; gap:4px;">
+                <i class="ri-earth-line" style="color:#38bdf8;"></i> Country Pool:
+              </label>
+              <select id="deviceLogsCountryFilter" onchange="filterDeviceLogsAdmin()" style="background:#151a28; color:#f8fafc; border:1px solid var(--admin-border); padding:6px 12px; border-radius:8px; font-size:0.82rem; outline:none; cursor:pointer;">
+                <option value="">All Countries (Loading pool...)</option>
+              </select>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="deviceLogsDurationFilter" style="font-size:0.82rem; font-weight:600; color:var(--admin-muted); display:flex; align-items:center; gap:4px;">
+                <i class="ri-timer-line" style="color:#f59e0b;"></i> Duration Category:
+              </label>
+              <select id="deviceLogsDurationFilter" onchange="filterDeviceLogsAdmin()" style="background:#151a28; color:#f8fafc; border:1px solid var(--admin-border); padding:6px 12px; border-radius:8px; font-size:0.82rem; outline:none; cursor:pointer;">
+                <option value="">All Durations</option>
+                <option value="lt5">&lt; 5 mins</option>
+                <option value="5-15">5 - 15 mins</option>
+                <option value="15-30">15 - 30 mins</option>
+                <option value="gt30">&gt; 30 mins</option>
+              </select>
+            </div>
+
+            <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+              <span id="deviceLogsFilteredBadge" style="font-size:0.8rem; color:#94a3b8; background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
+                Showing all logs
+              </span>
+              <button onclick="resetDeviceLogsFilters()" class="btn-action" style="font-size:0.8rem; padding:4px 10px;" title="Reset Filters">
+                <i class="ri-refresh-line"></i> Reset
+              </button>
+            </div>
+          </div>
+
           <div style="overflow-x:auto;">
             <table class="data-table">
               <thead>
@@ -2576,6 +3060,8 @@
         window.loadCoverPagesAdmin();
       } else if (tabId === 'solutions-metrics' && typeof window.loadSolutionsMetricsAdmin === 'function') {
         window.loadSolutionsMetricsAdmin();
+      } else if (tabId === 'metrics' && typeof window.loadDpgMetricsAdmin === 'function') {
+        window.loadDpgMetricsAdmin();
       } else if (tabId === 'feedback' && typeof window.loadFeedbackTabAdmin === 'function') {
         window.loadFeedbackTabAdmin();
       } else if (tabId === 'logs') {

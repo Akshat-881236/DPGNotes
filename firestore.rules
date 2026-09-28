@@ -122,6 +122,16 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    /* ---------- VISITOR ATTRIBUTION & LOCATION METRICS ---------- */
+    match /visitor_metrics/{metricId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- MEDIA RESPONSIVENESS USER FEEDBACK ---------- */
+    match /responsiveness_feedback/{feedbackId} {
+      allow read, write: if true;
+    }
+
     /* ---------- RESOURCE KNOWLEDGE ---------- */
     match /resource_knowledge/{rkId} {
       allow read, write: if true;

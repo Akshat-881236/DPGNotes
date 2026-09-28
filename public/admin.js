@@ -950,6 +950,8 @@ window.switchTab = function(tabId) {
     if (typeof loadSupportRequestsAdmin === 'function') loadSupportRequestsAdmin();
   } else if (tabId === 'referrers') {
     if (typeof loadReferrerAnalysis === 'function') loadReferrerAnalysis();
+  } else if (tabId === 'metrics') {
+    if (typeof window.loadDpgMetricsAdmin === 'function') window.loadDpgMetricsAdmin();
   } else if (tabId === 'device-logs') {
     if (typeof loadDeviceLogsAdmin === 'function') loadDeviceLogsAdmin();
   } else if (tabId === 'violation-logs') {
@@ -1558,33 +1560,11 @@ async function loadDeviceLogsAdmin() {
       };
     });
 
-    tbody.innerHTML = "";
-    adminDeviceLogsCache.forEach(log => {
-      let typeBadge = `<span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc; border:1px solid rgba(99,102,241,0.4);">Contributor</span>`;
-      if (log.userType === 'Admin') {
-        typeBadge = `<span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.4);">Admin</span>`;
-      } else if (log.userType === 'Anonymous') {
-        typeBadge = `<span class="badge" style="background:rgba(245,158,11,0.2); color:#fcd34d; border:1px solid rgba(245,158,11,0.4);">Anonymous</span>`;
-      }
+    // Populate dynamic Country Pool dropdown from unique Firestore log entries
+    populateDeviceLogsCountryPool(adminDeviceLogsCache);
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="text-align:center;">
-          <input type="checkbox" class="device-log-cb" value="${log.id}">
-        </td>
-        <td style="font-family:monospace; font-size:0.85rem; color:#cbd5e1;">${log.rawId}</td>
-        <td>${typeBadge}</td>
-        <td style="font-family:monospace;">${log.ipAddress}</td>
-        <td>${log.country}</td>
-        <td style="color:#a78bfa; font-size:0.85rem; font-weight:600;">${log.screenTime}</td>
-        <td>
-          <button class="btn-action danger" onclick="deleteDeviceLog('${log.id}', '${log.userType}')" title="Delete Device Log">
-            <i class="ri-delete-bin-line"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    // Initial render with current filter settings
+    filterDeviceLogsAdmin();
 
   } catch (err) {
     console.error("Failed to load device logs:", err);
@@ -1592,11 +1572,640 @@ async function loadDeviceLogsAdmin() {
   }
 }
 
+function renderDeviceLogsTable(logsToRender) {
+  const tbody = document.getElementById("deviceLogsTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (!logsToRender || logsToRender.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted); padding:1.5rem;">No matching device logs found for selected criteria.</td></tr>`;
+    return;
+  }
+
+  logsToRender.forEach(log => {
+    let typeBadge = `<span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc; border:1px solid rgba(99,102,241,0.4);">Contributor</span>`;
+    if (log.userType === 'Admin') {
+      typeBadge = `<span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.4);">Admin</span>`;
+    } else if (log.userType === 'Anonymous') {
+      typeBadge = `<span class="badge" style="background:rgba(245,158,11,0.2); color:#fcd34d; border:1px solid rgba(245,158,11,0.4);">Anonymous</span>`;
+    }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="text-align:center;">
+        <input type="checkbox" class="device-log-cb" value="${log.id}">
+      </td>
+      <td style="font-family:monospace; font-size:0.85rem; color:#cbd5e1;">${log.rawId}</td>
+      <td>${typeBadge}</td>
+      <td style="font-family:monospace;">${log.ipAddress}</td>
+      <td>${log.country}</td>
+      <td style="color:#a78bfa; font-size:0.85rem; font-weight:600;">${log.screenTime}</td>
+      <td>
+        <button class="btn-action danger" onclick="deleteDeviceLog('${log.id}', '${log.userType}')" title="Delete Device Log">
+          <i class="ri-delete-bin-line"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function populateDeviceLogsCountryPool(logs) {
+  const countrySelect = document.getElementById("deviceLogsCountryFilter");
+  if (!countrySelect) return;
+  const currentVal = countrySelect.value;
+  const countrySet = new Set();
+
+  logs.forEach(log => {
+    if (!log.country) return;
+    const str = log.country.trim();
+    if (str.includes('(')) {
+      const base = str.split('(')[0].trim();
+      if (base && base !== 'Unknown' && base !== 'Guest Client') countrySet.add(base);
+    } else if (str && str !== 'Unknown' && str !== 'Guest Client') {
+      countrySet.add(str);
+    }
+  });
+
+  const sortedCountries = Array.from(countrySet).sort();
+  let optionsHtml = `<option value="">All Countries (${sortedCountries.length} in pool)</option>`;
+  sortedCountries.forEach(c => {
+    optionsHtml += `<option value="${c}" ${c === currentVal ? 'selected' : ''}>${c}</option>`;
+  });
+  countrySelect.innerHTML = optionsHtml;
+}
+
+function filterDeviceLogsAdmin() {
+  if (!adminDeviceLogsCache) return;
+
+  const countryFilter = (document.getElementById("deviceLogsCountryFilter")?.value || "").toLowerCase().trim();
+  const durationFilter = document.getElementById("deviceLogsDurationFilter")?.value || "";
+
+  const filtered = adminDeviceLogsCache.filter(log => {
+    // Country Filter
+    if (countryFilter) {
+      const cStr = (log.country || '').toLowerCase();
+      if (!cStr.includes(countryFilter)) return false;
+    }
+
+    // Duration Category Filter
+    if (durationFilter) {
+      let mins = 0;
+      if (typeof log.screentimeSeconds === 'number' && log.screentimeSeconds > 0) {
+        mins = log.screentimeSeconds / 60;
+      } else if (log.screenTime) {
+        const m = String(log.screenTime).match(/(\d+)/);
+        if (m) mins = parseInt(m[1], 10);
+      }
+
+      if (durationFilter === 'lt5' && mins >= 5) return false;
+      if (durationFilter === '5-15' && (mins < 5 || mins > 15)) return false;
+      if (durationFilter === '15-30' && (mins < 15 || mins > 30)) return false;
+      if (durationFilter === 'gt30' && mins <= 30) return false;
+    }
+
+    return true;
+  });
+
+  const badge = document.getElementById("deviceLogsFilteredBadge");
+  if (badge) {
+    if (countryFilter || durationFilter) {
+      badge.textContent = `Showing ${filtered.length} of ${adminDeviceLogsCache.length} logs`;
+      badge.style.color = '#38bdf8';
+      badge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+    } else {
+      badge.textContent = `Showing all ${adminDeviceLogsCache.length} logs`;
+      badge.style.color = '#94a3b8';
+      badge.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+    }
+  }
+
+  renderDeviceLogsTable(filtered);
+}
+
+function resetDeviceLogsFilters() {
+  const cEl = document.getElementById("deviceLogsCountryFilter");
+  const dEl = document.getElementById("deviceLogsDurationFilter");
+  if (cEl) cEl.value = "";
+  if (dEl) dEl.value = "";
+  filterDeviceLogsAdmin();
+}
+
+window.filterDeviceLogsAdmin = filterDeviceLogsAdmin;
+window.resetDeviceLogsFilters = resetDeviceLogsFilters;
 window.loadDeviceLogsAdmin = loadDeviceLogsAdmin;
 
 window.toggleAllDeviceLogs = function(masterCb) {
   document.querySelectorAll(".device-log-cb").forEach(cb => cb.checked = masterCb.checked);
 };
+
+// ============================================================================
+// DPGNOTES UNIVERSAL TELEMETRY & PARAMETER METRICS SUITE (loadDpgMetricsAdmin)
+// ============================================================================
+let dpgMetricsCache = null;
+
+async function loadDpgMetricsAdmin(forceRefresh = false) {
+  const totalVisitsEl = document.getElementById("metricsTotalVisits");
+  if (!totalVisitsEl) return;
+
+  if (!forceRefresh && dpgMetricsCache && (Date.now() - dpgMetricsCache.loadedAt < 60000)) {
+    renderDpgMetricsUI(dpgMetricsCache.data, dpgMetricsCache.feedbacks);
+    return;
+  }
+
+  totalVisitsEl.innerText = "...";
+  const aiPctEl = document.getElementById("metricsAiReferralPct");
+  const searchPctEl = document.getElementById("metricsSearchPct");
+  const incognitoPctEl = document.getElementById("metricsIncognitoPct");
+  const guestPctEl = document.getElementById("metricsGuestPct");
+  const avgRatingEl = document.getElementById("metricsAvgRating");
+  if (aiPctEl) aiPctEl.innerText = "...";
+  if (searchPctEl) searchPctEl.innerText = "...";
+  if (incognitoPctEl) incognitoPctEl.innerText = "...";
+  if (guestPctEl) guestPctEl.innerText = "...";
+  if (avgRatingEl) avgRatingEl.innerText = "...";
+
+  const feedbackTbody = document.getElementById("metricsFeedbackTableBody");
+  if (feedbackTbody) {
+    feedbackTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted); padding:1.5rem;">Loading metrics & responsiveness feedback...</td></tr>`;
+  }
+
+  try {
+    const [visitorSnap, feedbackSnap] = await Promise.all([
+      getDocs(query(collection(db, "visitor_metrics"), orderBy("timestamp", "desc"), limit(500))),
+      getDocs(query(collection(db, "responsiveness_feedback"), orderBy("timestamp", "desc"), limit(200)))
+    ]);
+
+    const visitorList = [];
+    visitorSnap.forEach(d => visitorList.push({ id: d.id, ...d.data() }));
+
+    const feedbackList = [];
+    feedbackSnap.forEach(d => feedbackList.push({ id: d.id, ...d.data() }));
+
+    dpgMetricsCache = {
+      data: visitorList,
+      feedbacks: feedbackList,
+      loadedAt: Date.now()
+    };
+
+    renderDpgMetricsUI(visitorList, feedbackList);
+
+  } catch (err) {
+    console.error("Failed to load DPGNotes metrics:", err);
+    if (feedbackTbody) {
+      feedbackTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-danger); padding:1.5rem;">Failed to load metrics: ${err.message}</td></tr>`;
+    }
+  }
+}
+
+function renderDpgMetricsUI(visitorList, feedbackList) {
+  const totalVisits = visitorList.length;
+
+  // A. AI Tools vs Search Engines vs Direct
+  const aiToolsMap = {
+    'ChatGPT': 0,
+    'Google Gemini': 0,
+    'Claude': 0,
+    'Microsoft Copilot': 0,
+    'Perplexity AI': 0,
+    'Other AI Tools': 0
+  };
+
+  const searchEnginesMap = {
+    'Google Search': 0,
+    'Bing Search': 0,
+    'Internet Explorer / MSN': 0,
+    'Yahoo': 0,
+    'DuckDuckGo': 0,
+    'Other Search': 0
+  };
+
+  let totalAiVisits = 0;
+  let totalSearchVisits = 0;
+  let incognitoCount = 0;
+  let guestCount = 0;
+  let contribCount = 0;
+
+  let incognitoGuests = 0;
+  let normalGuests = 0;
+  let incognitoContribs = 0;
+  let normalContribs = 0;
+
+  const countryMap = {};
+  const cityMap = {};
+  const timezoneMap = {};
+  const gmtMap = {};
+  const deviceMap = { 'Desktop': 0, 'Tablet': 0, 'Mobile': 0 };
+
+  visitorList.forEach(v => {
+    // 1. Inbound Classification
+    const cat = v.sourceCategory || '';
+    const name = v.sourceName || '';
+
+    if (cat === 'AI Tool' || /chatgpt|openai|gemini|bard|claude|copilot|perplexity|poe|deepseek|mistral/i.test(name)) {
+      totalAiVisits++;
+      if (/chatgpt|openai/i.test(name)) aiToolsMap['ChatGPT']++;
+      else if (/gemini|bard/i.test(name)) aiToolsMap['Google Gemini']++;
+      else if (/claude/i.test(name)) aiToolsMap['Claude']++;
+      else if (/copilot/i.test(name)) aiToolsMap['Microsoft Copilot']++;
+      else if (/perplexity/i.test(name)) aiToolsMap['Perplexity AI']++;
+      else aiToolsMap['Other AI Tools']++;
+    } else if (cat === 'Search Engine' || /google|bing|msn|trident|msie|yahoo|duckduckgo|baidu|yandex|ecosia/i.test(name)) {
+      totalSearchVisits++;
+      if (/google/i.test(name)) searchEnginesMap['Google Search']++;
+      else if (/bing/i.test(name)) searchEnginesMap['Bing Search']++;
+      else if (/msn|trident|msie|internet explorer/i.test(name)) searchEnginesMap['Internet Explorer / MSN']++;
+      else if (/yahoo/i.test(name)) searchEnginesMap['Yahoo']++;
+      else if (/duckduckgo/i.test(name)) searchEnginesMap['DuckDuckGo']++;
+      else searchEnginesMap['Other Search']++;
+    }
+
+    // 2. Incognito / Private
+    const isIncog = Boolean(v.isIncognito);
+    if (isIncog) incognitoCount++;
+
+    // 3. User Mode (Guest vs Contributor)
+    const isGuest = (v.userMode === 'Guest' || !v.userId || v.userId === 'Guest');
+    if (isGuest) {
+      guestCount++;
+      if (isIncog) incognitoGuests++;
+      else normalGuests++;
+    } else {
+      contribCount++;
+      if (isIncog) incognitoContribs++;
+      else normalContribs++;
+    }
+
+    // 4. Geo Metrics
+    const c = v.country || 'Unknown';
+    if (c !== 'Unknown' && c !== 'Guest Client') countryMap[c] = (countryMap[c] || 0) + 1;
+
+    const city = v.city || 'N/A';
+    if (city !== 'N/A') cityMap[city] = (cityMap[city] || 0) + 1;
+
+    // 5. Timezone & GMT
+    const tz = v.timezone || 'UTC';
+    timezoneMap[tz] = (timezoneMap[tz] || 0) + 1;
+
+    const gmt = v.gmtOffset || 'GMT+00:00';
+    gmtMap[gmt] = (gmtMap[gmt] || 0) + 1;
+
+    // 6. Device
+    const dev = v.deviceType || 'Desktop';
+    if (deviceMap[dev] !== undefined) deviceMap[dev]++;
+    else deviceMap['Desktop']++;
+  });
+
+  // Calculate Key Percentages
+  const aiPct = totalVisits > 0 ? ((totalAiVisits / totalVisits) * 100).toFixed(1) : '0.0';
+  const searchPct = totalVisits > 0 ? ((totalSearchVisits / totalVisits) * 100).toFixed(1) : '0.0';
+  const incognitoPct = totalVisits > 0 ? ((incognitoCount / totalVisits) * 100).toFixed(1) : '0.0';
+  const guestPct = totalVisits > 0 ? ((guestCount / totalVisits) * 100).toFixed(1) : '0.0';
+
+  // Responsiveness Feedback Metrics
+  const totalFeedbacks = feedbackList.length;
+  const ratingDist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  let ratingSum = 0;
+
+  feedbackList.forEach(f => {
+    const r = parseInt(f.rating, 10) || 5;
+    if (ratingDist[r] !== undefined) ratingDist[r]++;
+    ratingSum += r;
+  });
+
+  const avgRating = totalFeedbacks > 0 ? (ratingSum / totalFeedbacks).toFixed(1) : '5.0';
+
+  // Update Top KPI Cards
+  document.getElementById("metricsTotalVisits").innerText = totalVisits.toLocaleString();
+  document.getElementById("metricsAiReferralPct").innerText = `${aiPct}%`;
+  document.getElementById("metricsSearchPct").innerText = `${searchPct}%`;
+  document.getElementById("metricsIncognitoPct").innerText = `${incognitoPct}%`;
+  document.getElementById("metricsGuestPct").innerText = `${guestPct}%`;
+  document.getElementById("metricsAvgRating").innerText = `${avgRating} ★`;
+
+  const aiBadge = document.getElementById("metricsAiTotalBadge");
+  if (aiBadge) aiBadge.textContent = `${totalAiVisits} visits (${aiPct}%)`;
+
+  const searchBadge = document.getElementById("metricsSearchTotalBadge");
+  if (searchBadge) searchBadge.textContent = `${totalSearchVisits} visits (${searchPct}%)`;
+
+  const feedbackBadge = document.getElementById("metricsFeedbackCountBadge");
+  if (feedbackBadge) feedbackBadge.textContent = `${totalFeedbacks} ratings collected (Avg: ${avgRating}★)`;
+
+  // Render AI Tools Bars
+  const aiContainer = document.getElementById("metricsAiToolsContainer");
+  if (aiContainer) {
+    let aiHtml = '';
+    const aiEntries = Object.entries(aiToolsMap);
+    aiEntries.forEach(([tool, count]) => {
+      const pct = totalAiVisits > 0 ? ((count / totalAiVisits) * 100).toFixed(1) : '0.0';
+      aiHtml += `
+        <div class="metrics-bar-row">
+          <div class="metrics-bar-label"><i class="ri-sparkling-line" style="color:#c084fc;"></i> ${tool}</div>
+          <div class="metrics-bar-track">
+            <div class="metrics-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #9333ea, #c084fc);"></div>
+          </div>
+          <div class="metrics-bar-val">${count} (${pct}%)</div>
+        </div>
+      `;
+    });
+    aiContainer.innerHTML = aiHtml || '<p style="color:var(--admin-muted); font-size:0.85rem;">No AI referral visits recorded yet.</p>';
+  }
+
+  // Render Search Engines Bars
+  const searchContainer = document.getElementById("metricsSearchEnginesContainer");
+  if (searchContainer) {
+    let sHtml = '';
+    const sEntries = Object.entries(searchEnginesMap);
+    sEntries.forEach(([engine, count]) => {
+      const pct = totalSearchVisits > 0 ? ((count / totalSearchVisits) * 100).toFixed(1) : '0.0';
+      sHtml += `
+        <div class="metrics-bar-row">
+          <div class="metrics-bar-label"><i class="ri-search-line" style="color:#60a5fa;"></i> ${engine}</div>
+          <div class="metrics-bar-track">
+            <div class="metrics-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #2563eb, #60a5fa);"></div>
+          </div>
+          <div class="metrics-bar-val">${count} (${pct}%)</div>
+        </div>
+      `;
+    });
+    searchContainer.innerHTML = sHtml || '<p style="color:var(--admin-muted); font-size:0.85rem;">No search engine visits recorded yet.</p>';
+  }
+
+  // Render Incognito Habits Panel
+  const incogContainer = document.getElementById("metricsIncognitoContainer");
+  if (incogContainer) {
+    const normalCount = totalVisits - incognitoCount;
+    const normalPct = totalVisits > 0 ? ((normalCount / totalVisits) * 100).toFixed(1) : '0.0';
+    incogContainer.innerHTML = `
+      <div class="metrics-bar-row" style="margin-bottom:1rem;">
+        <div class="metrics-bar-label" style="color:#fbbf24;"><i class="ri-spy-line"></i> Incognito Mode</div>
+        <div class="metrics-bar-track" style="height:10px;">
+          <div class="metrics-bar-fill" style="width:${incognitoPct}%; background:linear-gradient(90deg, #d97706, #fbbf24);"></div>
+        </div>
+        <div class="metrics-bar-val" style="color:#fbbf24; font-weight:700;">${incognitoCount} (${incognitoPct}%)</div>
+      </div>
+      <div class="metrics-bar-row">
+        <div class="metrics-bar-label" style="color:#94a3b8;"><i class="ri-window-line"></i> Standard Mode</div>
+        <div class="metrics-bar-track" style="height:10px;">
+          <div class="metrics-bar-fill" style="width:${normalPct}%; background:linear-gradient(90deg, #475569, #94a3b8);"></div>
+        </div>
+        <div class="metrics-bar-val" style="color:#cbd5e1;">${normalCount} (${normalPct}%)</div>
+      </div>
+      <div style="margin-top:1.2rem; background:rgba(0,0,0,0.25); border:1px solid var(--admin-border); border-radius:10px; padding:0.75rem 1rem; font-size:0.8rem; color:#94a3b8;">
+        <strong style="color:#f8fafc;">Privacy Insight:</strong> ${incognitoPct}% of visits prioritize private/incognito browsing mode.
+      </div>
+    `;
+  }
+
+  // Render User Mode (Guest vs Contributor) Panel
+  const userModeContainer = document.getElementById("metricsUserModeContainer");
+  if (userModeContainer) {
+    const contribPct = totalVisits > 0 ? ((contribCount / totalVisits) * 100).toFixed(1) : '0.0';
+    userModeContainer.innerHTML = `
+      <div class="metrics-bar-row" style="margin-bottom:1rem;">
+        <div class="metrics-bar-label" style="color:#34d399;"><i class="ri-user-shared-line"></i> Guest Visitors</div>
+        <div class="metrics-bar-track" style="height:10px;">
+          <div class="metrics-bar-fill" style="width:${guestPct}%; background:linear-gradient(90deg, #059669, #34d399);"></div>
+        </div>
+        <div class="metrics-bar-val" style="color:#34d399; font-weight:700;">${guestCount} (${guestPct}%)</div>
+      </div>
+      <div class="metrics-bar-row" style="margin-bottom:1.2rem;">
+        <div class="metrics-bar-label" style="color:#818cf8;"><i class="ri-shield-user-line"></i> Contributors</div>
+        <div class="metrics-bar-track" style="height:10px;">
+          <div class="metrics-bar-fill" style="width:${contribPct}%; background:linear-gradient(90deg, #4f46e5, #818cf8);"></div>
+        </div>
+        <div class="metrics-bar-val" style="color:#818cf8; font-weight:700;">${contribCount} (${contribPct}%)</div>
+      </div>
+
+      <!-- Cross Matrix -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:10px; padding:8px 12px; font-size:0.78rem;">
+          <div style="color:var(--admin-muted);">Incognito Guests</div>
+          <div style="font-weight:700; color:#fbbf24; font-size:1.1rem;">${incognitoGuests}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:10px; padding:8px 12px; font-size:0.78rem;">
+          <div style="color:var(--admin-muted);">Standard Guests</div>
+          <div style="font-weight:700; color:#34d399; font-size:1.1rem;">${normalGuests}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:10px; padding:8px 12px; font-size:0.78rem;">
+          <div style="color:var(--admin-muted);">Incognito Contributors</div>
+          <div style="font-weight:700; color:#a78bfa; font-size:1.1rem;">${incognitoContribs}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:10px; padding:8px 12px; font-size:0.78rem;">
+          <div style="color:var(--admin-muted);">Standard Contributors</div>
+          <div style="font-weight:700; color:#60a5fa; font-size:1.1rem;">${normalContribs}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Geolocation (Countries & Cities)
+  const geoContainer = document.getElementById("metricsGeoContainer");
+  if (geoContainer) {
+    const sortedCountries = Object.entries(countryMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    let geoHtml = '';
+    sortedCountries.forEach(([country, count]) => {
+      const pct = totalVisits > 0 ? ((count / totalVisits) * 100).toFixed(1) : '0.0';
+      geoHtml += `
+        <div class="metrics-bar-row">
+          <div class="metrics-bar-label"><i class="ri-global-line" style="color:#38bdf8;"></i> ${country}</div>
+          <div class="metrics-bar-track">
+            <div class="metrics-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #0284c7, #38bdf8);"></div>
+          </div>
+          <div class="metrics-bar-val">${count} (${pct}%)</div>
+        </div>
+      `;
+    });
+
+    const topCities = Object.entries(cityMap).sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => `${e[0]} (${e[1]})`).join(', ');
+
+    geoContainer.innerHTML = (geoHtml || '<p style="color:var(--admin-muted); font-size:0.85rem;">No location records found.</p>') +
+      (topCities ? `<div style="margin-top:1rem; font-size:0.78rem; color:var(--admin-muted);">Top Cities: <strong style="color:#cbd5e1;">${topCities}</strong></div>` : '');
+  }
+
+  // Render Timezone & GMT Offsets
+  const tzContainer = document.getElementById("metricsTimezoneContainer");
+  if (tzContainer) {
+    const sortedGmt = Object.entries(gmtMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    let tzHtml = '';
+    sortedGmt.forEach(([gmt, count]) => {
+      const pct = totalVisits > 0 ? ((count / totalVisits) * 100).toFixed(1) : '0.0';
+      tzHtml += `
+        <div class="metrics-bar-row">
+          <div class="metrics-bar-label"><i class="ri-time-line" style="color:#a78bfa;"></i> ${gmt}</div>
+          <div class="metrics-bar-track">
+            <div class="metrics-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #7c3aed, #a78bfa);"></div>
+          </div>
+          <div class="metrics-bar-val">${count} (${pct}%)</div>
+        </div>
+      `;
+    });
+
+    const topTzs = Object.entries(timezoneMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => `${e[0]} (${e[1]})`).join(', ');
+
+    tzContainer.innerHTML = (tzHtml || '<p style="color:var(--admin-muted); font-size:0.85rem;">No timezone records found.</p>') +
+      (topTzs ? `<div style="margin-top:1rem; font-size:0.78rem; color:var(--admin-muted);">Primary Timezones: <strong style="color:#cbd5e1;">${topTzs}</strong></div>` : '');
+  }
+
+  // Render Device Split Panel
+  const deviceContainer = document.getElementById("metricsDeviceContainer");
+  if (deviceContainer) {
+    const deskCount = deviceMap['Desktop'] || 0;
+    const tabCount = deviceMap['Tablet'] || 0;
+    const mobCount = deviceMap['Mobile'] || 0;
+
+    const deskPct = totalVisits > 0 ? ((deskCount / totalVisits) * 100).toFixed(1) : '0.0';
+    const tabPct = totalVisits > 0 ? ((tabCount / totalVisits) * 100).toFixed(1) : '0.0';
+    const mobPct = totalVisits > 0 ? ((mobCount / totalVisits) * 100).toFixed(1) : '0.0';
+
+    const ratioBadge = document.getElementById("metricsDeviceRatioBadge");
+    if (ratioBadge) ratioBadge.textContent = `Desktop: ${deskPct}% | Tablet: ${tabPct}% | Mobile: ${mobPct}%`;
+
+    deviceContainer.innerHTML = `
+      <div style="height:14px; width:100%; border-radius:8px; overflow:hidden; display:flex; background:rgba(255,255,255,0.06); margin-bottom:1.25rem;">
+        <div style="width:${deskPct}%; background:#3b82f6;" title="Desktop: ${deskPct}%"></div>
+        <div style="width:${tabPct}%; background:#f59e0b;" title="Tablet: ${tabPct}%"></div>
+        <div style="width:${mobPct}%; background:#10b981;" title="Mobile: ${mobPct}%"></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+        <div style="background:rgba(15,23,42,0.5); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; border-radius:10px; background:rgba(59,130,246,0.15); display:flex; align-items:center; justify-content:center; color:#60a5fa; font-size:1.3rem;">
+            <i class="ri-computer-line"></i>
+          </div>
+          <div>
+            <div style="font-size:1.3rem; font-weight:800; color:#60a5fa;">${deskCount} <span style="font-size:0.8rem; font-weight:500;">(${deskPct}%)</span></div>
+            <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase;">Desktop Browsers</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(15,23,42,0.5); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; border-radius:10px; background:rgba(245,158,11,0.15); display:flex; align-items:center; justify-content:center; color:#fbbf24; font-size:1.3rem;">
+            <i class="ri-tablet-line"></i>
+          </div>
+          <div>
+            <div style="font-size:1.3rem; font-weight:800; color:#fbbf24;">${tabCount} <span style="font-size:0.8rem; font-weight:500;">(${tabPct}%)</span></div>
+            <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase;">Tablet Devices</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(15,23,42,0.5); border:1px solid var(--admin-border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; border-radius:10px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#34d399; font-size:1.3rem;">
+            <i class="ri-smartphone-line"></i>
+          </div>
+          <div>
+            <div style="font-size:1.3rem; font-weight:800; color:#34d399;">${mobCount} <span style="font-size:0.8rem; font-weight:500;">(${mobPct}%)</span></div>
+            <div style="font-size:0.75rem; color:var(--admin-muted); text-transform:uppercase;">Mobile Phones</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Responsiveness Star Summary & Breakdown
+  const starSummaryEl = document.getElementById("metricsStarSummarySection");
+  if (starSummaryEl) {
+    let distHtml = '';
+    [5, 4, 3, 2, 1].forEach(star => {
+      const c = ratingDist[star] || 0;
+      const pct = totalFeedbacks > 0 ? ((c / totalFeedbacks) * 100).toFixed(1) : '0.0';
+      distHtml += `
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem; margin-bottom:4px;">
+          <span style="width:38px; color:#f59e0b; font-weight:700;">${star} ★</span>
+          <div style="flex:1; height:6px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+            <div style="width:${pct}%; height:100%; background:#f59e0b; border-radius:4px;"></div>
+          </div>
+          <span style="width:55px; text-align:right; color:var(--admin-muted); font-size:0.75rem;">${c} (${pct}%)</span>
+        </div>
+      `;
+    });
+
+    starSummaryEl.innerHTML = `
+      <div style="background:rgba(15,23,42,0.6); border:1px solid var(--admin-border); border-radius:14px; padding:1.25rem; display:flex; align-items:center; gap:2rem; flex-wrap:wrap;">
+        <div style="text-align:center; padding:0 1rem; border-right:1px solid rgba(255,255,255,0.08);">
+          <div style="font-size:3rem; font-weight:800; color:#f59e0b; line-height:1;">${avgRating}</div>
+          <div style="color:#f59e0b; font-size:1.1rem; margin:4px 0;">★★★★★</div>
+          <div style="color:var(--admin-muted); font-size:0.75rem;">Based on ${totalFeedbacks} reviews</div>
+        </div>
+        <div style="flex:1; min-width:240px;">
+          ${distHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Responsiveness Feedback Table
+  const tbody = document.getElementById("metricsFeedbackTableBody");
+  if (tbody) {
+    if (feedbackList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--admin-muted); padding:2rem;">No mobile/tablet responsiveness ratings submitted yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    feedbackList.forEach(item => {
+      const r = parseInt(item.rating, 10) || 5;
+      const starsDisplay = '★'.repeat(r) + '☆'.repeat(5 - r);
+
+      let ratingBadgeClass = 'color:#10b981;';
+      if (r <= 2) ratingBadgeClass = 'color:#ef4444;';
+      else if (r === 3) ratingBadgeClass = 'color:#f59e0b;';
+
+      const isPoorRating = r <= 3;
+      const feedbackComment = item.feedback ? item.feedback.trim() : '';
+
+      let feedbackCellContent = `<span style="color:var(--admin-muted); font-style:italic;">No written feedback</span>`;
+      if (feedbackComment) {
+        feedbackCellContent = `
+          <div>
+            ${isPoorRating ? `<span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; font-size:0.72rem; margin-right:6px; border:1px solid rgba(239,68,68,0.4);"><i class="ri-alert-line"></i> Issue Reported</span>` : ''}
+            <span style="color:#f8fafc; font-size:0.85rem; line-height:1.4;">${feedbackComment}</span>
+          </div>
+        `;
+      } else if (isPoorRating) {
+        feedbackCellContent = `<span class="badge" style="background:rgba(245,158,11,0.2); color:#fcd34d; font-size:0.72rem;">Rated ${r}★ without comment</span>`;
+      }
+
+      const activePageLink = item.activePageUrl
+        ? `<a href="${item.activePageUrl}" target="_blank" style="color:#38bdf8; text-decoration:none; display:flex; align-items:center; gap:4px; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.activePageUrl}"><i class="ri-external-link-line"></i> ${item.pathname || item.activePageUrl}</a>`
+        : `<span style="color:var(--admin-muted);">N/A</span>`;
+
+      const deviceStr = `<span style="font-weight:600; color:#e2e8f0;">${item.deviceType || 'Device'}</span> <span style="font-size:0.72rem; color:var(--admin-muted); display:block;">${item.screenResolution || item.viewport || ''}</span>`;
+      const locationStr = `${item.country || 'Unknown'} <span style="font-size:0.72rem; color:var(--admin-muted); display:block;">${item.city || 'N/A'}</span>`;
+
+      const userBadge = item.userMode === 'Contributor'
+        ? `<span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);">Contributor</span>`
+        : `<span class="badge" style="background:rgba(245,158,11,0.2); color:#fcd34d; border:1px solid rgba(245,158,11,0.3);">Guest</span>`;
+
+      let timeFormatted = 'Just now';
+      if (item.timestamp) {
+        try {
+          const d = item.timestamp.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
+          timeFormatted = d.toLocaleString();
+        } catch(e) {}
+      }
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>
+          <div style="${ratingBadgeClass} font-size:1.1rem; letter-spacing:1px; font-weight:700;">${starsDisplay}</div>
+          <span style="font-size:0.7rem; color:var(--admin-muted);">${r} out of 5</span>
+        </td>
+        <td>${feedbackCellContent}</td>
+        <td>${activePageLink}</td>
+        <td>${deviceStr}</td>
+        <td>${locationStr}</td>
+        <td>${userBadge}</td>
+        <td style="font-size:0.78rem; color:var(--admin-muted); white-space:nowrap;">${timeFormatted}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+}
+
+window.loadDpgMetricsAdmin = loadDpgMetricsAdmin;
+window.renderDpgMetricsUI = renderDpgMetricsUI;
 
 window.deleteDeviceLog = async function(logId, userType) {
   const confirmed = window.customConfirm ? await window.customConfirm("Are you sure you want to delete this device log?", { title: "Confirm Deletion", isDanger: true }) : confirm("Delete log?");
