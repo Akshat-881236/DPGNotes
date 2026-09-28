@@ -749,7 +749,8 @@
         snap.forEach(d => {
           const data = d.data();
           const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
-          if (isApproved) {
+          const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
+          if (isApproved && !isPrivate) {
             cachedDocs.push({ id: d.id, ...data });
           }
         });

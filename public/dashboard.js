@@ -49,6 +49,56 @@ window.toggleResourcePasswordVisibility = function(iconEl) {
   }
 };
 
+window.toggleModalResourcePasswordUI = function() {
+  const vis = document.getElementById("modalVisibility")?.value;
+  const grp = document.getElementById("modalPasswordGroup");
+  const badge = document.getElementById("modalVisBadge");
+  const isPriv = vis === "private";
+  if (grp) grp.style.display = isPriv ? "block" : "none";
+  if (badge) {
+    badge.textContent = isPriv ? "Private" : "Public";
+    badge.style.background = isPriv ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.15)";
+    badge.style.color = isPriv ? "#f87171" : "#34d399";
+    badge.style.borderColor = isPriv ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)";
+  }
+};
+
+window.toggleModalPasswordVisibility = function(iconEl) {
+  const pw = document.getElementById("modalResourcePassword");
+  if (!pw) return;
+  if (pw.type === "password") {
+    pw.type = "text";
+    if (iconEl) {
+      iconEl.classList.remove("ri-eye-line");
+      iconEl.classList.add("ri-eye-off-line");
+    }
+  } else {
+    pw.type = "password";
+    if (iconEl) {
+      iconEl.classList.remove("ri-eye-off-line");
+      iconEl.classList.add("ri-eye-line");
+    }
+  }
+};
+
+window.toggleVaultNewPasswordEye = function(iconEl) {
+  const inp = document.getElementById("vaultNewPasswordInput");
+  if (!inp) return;
+  if (inp.type === "password") {
+    inp.type = "text";
+    if (iconEl) {
+      iconEl.classList.remove("ri-eye-line");
+      iconEl.classList.add("ri-eye-off-line");
+    }
+  } else {
+    inp.type = "password";
+    if (iconEl) {
+      iconEl.classList.remove("ri-eye-off-line");
+      iconEl.classList.add("ri-eye-line");
+    }
+  }
+};
+
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
   authDomain: "dpgnotes.firebaseapp.com",
@@ -159,6 +209,8 @@ tabBtns.forEach(btn => {
       loadNotifications();
     } else if (btn.dataset.target === "manageResourcesTab") {
       loadContributorManageResources();
+    } else if (btn.dataset.target === "passwordVaultTab") {
+      loadPasswordVaultData();
     }
   });
 });
@@ -1024,6 +1076,7 @@ if(uploadForm) {
         visibility: isPrivate ? "private" : "public",
         isPublic: !isPrivate,
         isPasswordProtected: isPrivate,
+        password: isPrivate ? rawPw : "",
         passwordHash: isPrivate ? passwordHash : "",
         status: "pending", // Strict: requires Admin Approval before appearing in Home & Search
         isApproved: false,
@@ -1835,6 +1888,23 @@ window.openEditResourceModal = function(docId) {
   document.getElementById("modalTags").value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || "");
   document.getElementById("modalPdfUrl").value = data.pdfUrl || "";
 
+  // Visibility and Access Password setup
+  const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
+  const visSel = document.getElementById("modalVisibility");
+  const visBadge = document.getElementById("modalVisBadge");
+  const pwdGrp = document.getElementById("modalPasswordGroup");
+  const pwdInput = document.getElementById("modalResourcePassword");
+
+  if (visSel) visSel.value = isPrivate ? "private" : "public";
+  if (visBadge) {
+    visBadge.textContent = isPrivate ? "Private" : "Public";
+    visBadge.style.background = isPrivate ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.15)";
+    visBadge.style.color = isPrivate ? "#f87171" : "#34d399";
+    visBadge.style.borderColor = isPrivate ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)";
+  }
+  if (pwdGrp) pwdGrp.style.display = isPrivate ? "block" : "none";
+  if (pwdInput) pwdInput.value = data.password || "";
+
   const modal = document.getElementById("editResourceModal");
   if (modal) modal.style.display = "flex";
 
@@ -1946,6 +2016,8 @@ window.handleEditResourceSubmit = async function(e) {
   const description = document.getElementById("modalDescription").value.trim();
   const tagsStr = document.getElementById("modalTags").value.trim();
   const pdfUrl = document.getElementById("modalPdfUrl").value.trim();
+  const visibilityVal = document.getElementById("modalVisibility")?.value || "public";
+  const isPrivate = visibilityVal === "private";
 
   const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
 
@@ -1953,26 +2025,71 @@ window.handleEditResourceSubmit = async function(e) {
   saveBtn.disabled = true;
   saveBtn.innerText = "Saving...";
 
+  let rawPw = "";
+  let passwordHash = "";
+
+  if (isPrivate) {
+    rawPw = document.getElementById("modalResourcePassword")?.value.trim() || "";
+    if (!rawPw || rawPw.length < 4) {
+      saveBtn.disabled = false;
+      saveBtn.innerText = "Save Changes";
+      if (window.customAlert) {
+        await window.customAlert("Private resources require an access password of at least 4 characters.", { title: "Password Required", isDanger: true });
+      } else {
+        alert("Private resources require an access password of at least 4 characters.");
+      }
+      return;
+    }
+    // Compute SHA-256 hash of password
+    const msgBuffer = new TextEncoder().encode(rawPw);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   try {
     const docRef = doc(db, "documents", docId);
-    await updateDoc(docRef, {
+    const updatePayload = {
       category,
       discipline,
       title,
       description,
       tags,
       pdfUrl,
+      visibility: isPrivate ? "private" : "public",
+      isPublic: !isPrivate,
+      isPasswordProtected: isPrivate,
+      password: isPrivate ? rawPw : "",
+      passwordHash: isPrivate ? passwordHash : "",
       updatedAt: serverTimestamp()
-    });
+    };
+
+    await updateDoc(docRef, updatePayload);
+
+    // Update local cache
+    if (contributorDocsCache[docId]) {
+      Object.assign(contributorDocsCache[docId], updatePayload);
+    }
+
+    // Log Activity
+    try {
+      await addDoc(collection(db, "activity_logs"), {
+        userId: currentUser.uid,
+        name: currentUser.displayName || currentUser.email,
+        action: isPrivate ? "RESOURCE_MADE_PRIVATE" : "RESOURCE_MADE_PUBLIC",
+        details: `Updated resource: ${title} (${isPrivate ? 'Protected with Password' : 'Public / Unlocked'})`,
+        timestamp: serverTimestamp()
+      });
+    } catch(e) {}
 
     if (window.customAlert) {
-      await window.customAlert("Resource updated successfully!", { title: "Success" });
+      await window.customAlert(`Resource updated successfully! (${isPrivate ? 'Private / Password Protected' : 'Set to Public'})`, { title: "Success" });
     } else {
-      alert("Resource updated successfully!");
+      alert(`Resource updated successfully! (${isPrivate ? 'Private / Password Protected' : 'Set to Public'})`);
     }
 
     closeEditResourceModal();
     loadContributorManageResources();
+    loadPasswordVaultData(true);
   } catch(err) {
     console.error("Error updating resource:", err);
     if (window.customAlert) {
@@ -1983,6 +2100,520 @@ window.handleEditResourceSubmit = async function(e) {
   } finally {
     saveBtn.disabled = false;
     saveBtn.innerText = "Save Changes";
+  }
+};
+
+// =========================================
+// PASSWORD VAULT ENGINE
+// =========================================
+let vaultItemsCache = [];
+
+// Web Crypto PBKDF2/AES-GCM encryption & decryption helpers for solutions
+async function encryptSolutionData(dataObj, password) {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  let binarySalt = '';
+  for (let i = 0; i < salt.byteLength; i++) binarySalt += String.fromCharCode(salt[i]);
+  const saltBase64 = btoa(binarySalt);
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  );
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = enc.encode(JSON.stringify(dataObj));
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  let binary = '';
+  for (let i = 0; i < combined.byteLength; i++) binary += String.fromCharCode(combined[i]);
+  const encryptedData = btoa(binary);
+  const passHashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(password + saltBase64));
+  const passHash = Array.from(new Uint8Array(passHashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return { encryptedData, salt: saltBase64, passHash };
+}
+
+async function decryptSolutionData(encryptedBase64, saltBase64, password) {
+  const rawCipher = atob(encryptedBase64);
+  const cipherBytes = new Uint8Array(rawCipher.length);
+  for (let i = 0; i < rawCipher.length; i++) cipherBytes[i] = rawCipher.charCodeAt(i);
+  const iv = cipherBytes.slice(0, 12);
+  const dataBytes = cipherBytes.slice(12);
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']);
+  const salt = new Uint8Array(atob(saltBase64).split('').map(c => c.charCodeAt(0)));
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
+  return JSON.parse(new TextDecoder().decode(decrypted));
+}
+
+async function loadPasswordVaultData(forceReload = false) {
+  const tbody = document.getElementById("vaultTableBody");
+  if (!tbody) return;
+  if (!currentUser) {
+    tbody.innerHTML = `<tr><td colspan="5" style="padding:2rem; text-align:center; color:var(--text-muted);">Please authenticate to access your Password Vault.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = `<tr><td colspan="5" style="padding:2rem; text-align:center; color:var(--text-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading Password Vault...</td></tr>`;
+
+  try {
+    const items = [];
+    const uid = currentUser.uid;
+    const email = currentUser.email;
+
+    // 1. Fetch Private Documents from Firestore
+    try {
+      const qDocs = query(collection(db, "documents"), where("uploaderEmail", "==", email));
+      const snap = await getDocs(qDocs);
+      snap.forEach(d => {
+        const data = d.data();
+        const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
+        if (isPrivate) {
+          items.push({
+            id: d.id,
+            type: "document",
+            category: data.category || "Document",
+            title: data.title || "Untitled Resource",
+            discipline: data.discipline || "General",
+            password: data.password || "",
+            passwordHash: data.passwordHash || "",
+            createdAt: data.createdAt,
+            raw: data
+          });
+        }
+      });
+
+      // Fallback by userId if needed
+      if (uid) {
+        const qUid = query(collection(db, "documents"), where("userId", "==", uid));
+        const snapUid = await getDocs(qUid);
+        snapUid.forEach(d => {
+          const data = d.data();
+          const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
+          if (isPrivate && !items.some(i => i.id === d.id)) {
+            items.push({
+              id: d.id,
+              type: "document",
+              category: data.category || "Document",
+              title: data.title || "Untitled Resource",
+              discipline: data.discipline || "General",
+              password: data.password || "",
+              passwordHash: data.passwordHash || "",
+              createdAt: data.createdAt,
+              raw: data
+            });
+          }
+        });
+      }
+    } catch (docErr) {
+      console.warn("Vault documents fetch error:", docErr);
+    }
+
+    // 2. Fetch Encrypted Assignment Solutions
+    try {
+      const qAssign = collection(db, "assignment_solutions", uid, "solutions");
+      const snapAssign = await getDocs(qAssign);
+      snapAssign.forEach(d => {
+        const data = d.data();
+        if (data.isEncrypted) {
+          const localPass = localStorage.getItem('dpg_sol_pass_' + d.id) || '';
+          items.push({
+            id: d.id,
+            type: "assignment",
+            category: "Assignment Solution",
+            title: (data.subjectName || "Assignment Solution") + (data.subjectCode ? ` (${data.subjectCode})` : ''),
+            discipline: data.course || data.courseSec || "Academic",
+            password: data.password || localPass || "",
+            passwordHash: data.passHash || "",
+            salt: data.salt || "",
+            encryptedData: data.encryptedData || "",
+            createdAt: data.createdAt,
+            raw: data
+          });
+        }
+      });
+    } catch (assignErr) {
+      console.warn("Vault assignment solutions fetch warning:", assignErr);
+    }
+
+    // 3. Fetch Encrypted Practical Solutions
+    try {
+      const qPract = collection(db, "practical_solutions", uid, "solutions");
+      const snapPract = await getDocs(qPract);
+      snapPract.forEach(d => {
+        const data = d.data();
+        if (data.isEncrypted) {
+          const localPass = localStorage.getItem('dpg_sol_pass_' + d.id) || '';
+          items.push({
+            id: d.id,
+            type: "practical",
+            category: "Practical Solution",
+            title: (data.subjectName || "Practical Solution") + (data.subjectCode ? ` (${data.subjectCode})` : ''),
+            discipline: data.course || data.courseSec || "Academic",
+            password: data.password || localPass || "",
+            passwordHash: data.passHash || "",
+            salt: data.salt || "",
+            encryptedData: data.encryptedData || "",
+            createdAt: data.createdAt,
+            raw: data
+          });
+        }
+      });
+    } catch (practErr) {
+      console.warn("Vault practical solutions fetch warning:", practErr);
+    }
+
+    vaultItemsCache = items;
+    updateVaultMetrics(items);
+    renderPasswordVaultTable(items);
+
+  } catch (err) {
+    console.error("loadPasswordVaultData error:", err);
+    tbody.innerHTML = `<tr><td colspan="5" style="padding:2rem; text-align:center; color:#ef4444;">Failed to load Password Vault: ${err.message}</td></tr>`;
+  }
+}
+window.loadPasswordVaultData = loadPasswordVaultData;
+
+function updateVaultMetrics(items) {
+  const total = items.length;
+  const docs = items.filter(i => i.type === "document").length;
+  const assign = items.filter(i => i.type === "assignment").length;
+  const pract = items.filter(i => i.type === "practical").length;
+
+  const totalEl = document.getElementById("vaultTotalCount");
+  const docsEl = document.getElementById("vaultDocsCount");
+  const assignEl = document.getElementById("vaultAssignCount");
+  const practEl = document.getElementById("vaultPractCount");
+  const badgeEl = document.getElementById("vaultSidebarBadge");
+
+  if (totalEl) totalEl.textContent = total;
+  if (docsEl) docsEl.textContent = docs;
+  if (assignEl) assignEl.textContent = assign;
+  if (practEl) practEl.textContent = pract;
+
+  if (badgeEl) {
+    badgeEl.textContent = total;
+    badgeEl.style.display = total > 0 ? "inline-block" : "none";
+  }
+}
+
+function renderPasswordVaultTable(items) {
+  const tbody = document.getElementById("vaultTableBody");
+  if (!tbody) return;
+
+  if (!items || items.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="padding:3rem 1.5rem; text-align:center; color:var(--text-muted);">
+          <div style="width:60px; height:60px; border-radius:50%; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; color:var(--primary-light); font-size:1.8rem;">
+            <i class="ri-shield-keyhole-line"></i>
+          </div>
+          <h3 style="color:white; font-size:1.15rem; margin:0 0 0.4rem 0;">No Password-Protected Assets</h3>
+          <p style="margin:0; font-size:0.88rem; max-width:440px; margin:0 auto; line-height:1.5;">All your academic resources and solutions are currently public or you haven't uploaded private assets yet. When you set a resource to Private or encrypt a solution, it will appear here.</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = "";
+  items.forEach((item, idx) => {
+    let typeBadge = "";
+    if (item.type === "document") {
+      typeBadge = `<span style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-file-text-line"></i> Private Document</span>`;
+    } else if (item.type === "assignment") {
+      typeBadge = `<span style="background:rgba(167,139,250,0.15); color:#c4b5fd; border:1px solid rgba(167,139,250,0.35); padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-book-read-line"></i> Assignment Solution</span>`;
+    } else {
+      typeBadge = `<span style="background:rgba(52,211,153,0.15); color:#34d399; border:1px solid rgba(52,211,153,0.35); padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-flask-line"></i> Practical Solution</span>`;
+    }
+
+    const plainPw = item.password || (item.passwordHash ? "(Stored as SHA-256 Hash)" : "Not Set");
+
+    const tr = document.createElement("tr");
+    tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
+    tr.innerHTML = `
+      <td style="padding:0.85rem 1rem; font-weight:600; color:var(--primary-light); vertical-align:middle;">${idx + 1}</td>
+      <td style="padding:0.85rem 1rem; vertical-align:middle;">
+        <div style="font-weight:700; color:white; margin-bottom:4px; font-size:0.95rem;">${escapeHtml(item.title)}</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:4px;">
+          ${typeBadge}
+          <span style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(item.discipline)}</span>
+        </div>
+        <div style="font-size:0.74rem; color:#64748b; font-family:'Fira Code',monospace;">ID: ${escapeHtml(item.id)}</div>
+      </td>
+      <td style="padding:0.85rem 1rem; color:var(--text-muted); font-size:0.85rem; vertical-align:middle;">
+        ${escapeHtml(item.category)}
+      </td>
+      <td style="padding:0.85rem 1rem; vertical-align:middle;">
+        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.12); padding:5px 10px; border-radius:8px;">
+          <i class="ri-key-fill" style="color:#38bdf8; font-size:0.95rem;"></i>
+          <span id="vaultPwSpan_${item.id}" style="font-family:'Fira Code', monospace; font-weight:700; color:#38bdf8; font-size:0.9rem; letter-spacing:0.5px;">${escapeHtml(plainPw)}</span>
+          <button type="button" onclick="copyVaultPassword('${escapeHtml(item.password || '')}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:2px; margin-left:4px;" title="Copy Password">
+            <i class="ri-file-copy-line"></i>
+          </button>
+        </div>
+      </td>
+      <td style="padding:0.85rem 1rem; text-align:center; vertical-align:middle;">
+        <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+          <button onclick="openVaultChangePasswordModal('${item.id}', '${item.type}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:5px 12px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Change Password on Firestore">
+            <i class="ri-edit-line"></i> Change Password
+          </button>
+          <button onclick="removeVaultPasswordMakePublic('${item.id}', '${item.type}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')" style="background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#34d399; padding:5px 12px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Remove Password, Make Public, Index in SERP, and remove from Vault">
+            <i class="ri-lock-unlock-line"></i> Remove Password (Make Public)
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.filterPasswordVault = function() {
+  const searchVal = (document.getElementById("vaultSearchInput")?.value || "").toLowerCase().trim();
+  const typeVal = document.getElementById("vaultTypeFilter")?.value || "all";
+
+  let filtered = vaultItemsCache;
+  if (typeVal !== "all") {
+    filtered = filtered.filter(i => i.type === typeVal);
+  }
+  if (searchVal) {
+    filtered = filtered.filter(i => {
+      const t = (i.title || "").toLowerCase();
+      const d = (i.discipline || "").toLowerCase();
+      const id = (i.id || "").toLowerCase();
+      const c = (i.category || "").toLowerCase();
+      return t.includes(searchVal) || d.includes(searchVal) || id.includes(searchVal) || c.includes(searchVal);
+    });
+  }
+  renderPasswordVaultTable(filtered);
+};
+
+window.copyVaultPassword = async function(pw) {
+  if (!pw || pw.startsWith("(") || pw === "Not Set") {
+    if (window.customAlert) {
+      await window.customAlert("No plain text password stored for this record. Use 'Change Password' to set a new password.", { title: "Notice" });
+    } else {
+      alert("No plain text password stored for this record. Use 'Change Password' to set a new password.");
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(pw);
+    if (window.customAlert) {
+      await window.customAlert(`Password "${pw}" copied to clipboard!`, { title: "Copied" });
+    } else {
+      alert(`Password "${pw}" copied to clipboard!`);
+    }
+  } catch(e) {
+    alert("Copied: " + pw);
+  }
+};
+
+window.openVaultChangePasswordModal = function(id, type, title) {
+  const modal = document.getElementById("vaultChangePasswordModal");
+  if (!modal) return;
+  document.getElementById("vaultModalItemId").value = id;
+  document.getElementById("vaultModalItemType").value = type;
+  document.getElementById("vaultModalTargetTitle").textContent = title || "Asset";
+  document.getElementById("vaultNewPasswordInput").value = "";
+  modal.style.display = "flex";
+};
+
+window.closeVaultChangePasswordModal = function() {
+  const modal = document.getElementById("vaultChangePasswordModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.handleVaultChangePasswordSubmit = async function(e) {
+  e.preventDefault();
+  const id = document.getElementById("vaultModalItemId").value;
+  const type = document.getElementById("vaultModalItemType").value;
+  const newPw = document.getElementById("vaultNewPasswordInput").value.trim();
+  const title = document.getElementById("vaultModalTargetTitle").textContent;
+
+  if (!newPw || newPw.length < 4) {
+    alert("Password must be at least 4 characters.");
+    return;
+  }
+
+  const saveBtn = document.getElementById("vaultSavePasswordBtn");
+  saveBtn.disabled = true;
+  saveBtn.innerText = "Updating...";
+
+  try {
+    if (type === "document") {
+      // Compute SHA-256
+      const msgBuffer = new TextEncoder().encode(newPw);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+      await updateDoc(doc(db, "documents", id), {
+        password: newPw,
+        passwordHash: passwordHash,
+        updatedAt: serverTimestamp()
+      });
+
+      if (contributorDocsCache[id]) {
+        contributorDocsCache[id].password = newPw;
+        contributorDocsCache[id].passwordHash = passwordHash;
+      }
+    } else {
+      // Assignment or Practical Solution
+      const colName = type === "practical" ? "practical_solutions" : "assignment_solutions";
+      const item = vaultItemsCache.find(it => it.id === id);
+      const updateData = {
+        password: newPw,
+        updatedAt: new Date().toISOString()
+      };
+
+      // If old cipher exists and old password is known, re-encrypt questions
+      if (item && item.raw?.encryptedData && item.password) {
+        try {
+          const dec = await decryptSolutionData(item.raw.encryptedData, item.raw.salt, item.password);
+          const encResult = await encryptSolutionData(dec, newPw);
+          updateData.encryptedData = encResult.encryptedData;
+          updateData.salt = encResult.salt;
+          updateData.passHash = encResult.passHash;
+        } catch(decErr) {
+          console.warn("Re-encryption warning:", decErr);
+        }
+      }
+
+      await updateDoc(doc(db, colName, currentUser.uid, "solutions", id), updateData);
+      localStorage.setItem('dpg_sol_pass_' + id, newPw);
+    }
+
+    // Log Activity
+    try {
+      await addDoc(collection(db, "activity_logs"), {
+        userId: currentUser.uid,
+        name: currentUser.displayName || currentUser.email,
+        action: "PASSWORD_CHANGED",
+        details: `Changed access password for ${type}: "${title}" directly on Firestore.`,
+        timestamp: serverTimestamp()
+      });
+    } catch(e) {}
+
+    closeVaultChangePasswordModal();
+    if (window.customAlert) {
+      await window.customAlert(`Access password for "${title}" successfully updated on Firestore!`, { title: "Password Updated" });
+    } else {
+      alert(`Access password for "${title}" successfully updated on Firestore!`);
+    }
+
+    await loadPasswordVaultData(true);
+    loadContributorManageResources();
+  } catch(err) {
+    console.error("handleVaultChangePasswordSubmit error:", err);
+    if (window.customAlert) {
+      await window.customAlert("Failed to update password: " + err.message, { title: "Error", isDanger: true });
+    } else {
+      alert("Failed to update password: " + err.message);
+    }
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerText = "Update Password";
+  }
+};
+
+window.removeVaultPasswordMakePublic = async function(id, type, title) {
+  let confirmed = false;
+  const promptText = `Make "${title}" 100% Public?\n\nPassword protection will be removed, the asset will immediately appear in SERP search results, and this record will be deleted from your Password Vault.`;
+  if (window.customConfirm) {
+    confirmed = await window.customConfirm(promptText, { title: "Make Public & Remove Password", confirmText: "Make Public", isDanger: false });
+  } else {
+    confirmed = confirm(promptText);
+  }
+  if (!confirmed) return;
+
+  try {
+    if (type === "document") {
+      await updateDoc(doc(db, "documents", id), {
+        visibility: "public",
+        isPublic: true,
+        isPasswordProtected: false,
+        password: "",
+        passwordHash: "",
+        updatedAt: serverTimestamp()
+      });
+      if (contributorDocsCache[id]) {
+        contributorDocsCache[id].visibility = "public";
+        contributorDocsCache[id].isPublic = true;
+        contributorDocsCache[id].isPasswordProtected = false;
+        contributorDocsCache[id].password = "";
+        contributorDocsCache[id].passwordHash = "";
+      }
+    } else {
+      // Assignment or Practical Solution
+      const colName = type === "practical" ? "practical_solutions" : "assignment_solutions";
+      const item = vaultItemsCache.find(it => it.id === id);
+      const updateData = {
+        isEncrypted: false,
+        password: "",
+        passHash: "",
+        salt: "",
+        encryptedData: "",
+        updatedAt: new Date().toISOString()
+      };
+
+      if (item && item.raw?.encryptedData && item.password) {
+        try {
+          const dec = await decryptSolutionData(item.raw.encryptedData, item.raw.salt, item.password);
+          if (type === "practical" && (dec.practicals || dec)) {
+            updateData.practicals = dec.practicals || dec;
+          } else if (dec.questions || dec) {
+            updateData.questions = dec.questions || dec;
+          }
+        } catch(decErr) {
+          console.warn("Could not decrypt before unprotecting:", decErr);
+        }
+      }
+
+      await updateDoc(doc(db, colName, currentUser.uid, "solutions", id), updateData);
+      localStorage.removeItem('dpg_sol_pass_' + id);
+    }
+
+    // Auto delete that log on exist (remove from local vault list)
+    vaultItemsCache = vaultItemsCache.filter(it => it.id !== id);
+    updateVaultMetrics(vaultItemsCache);
+    renderPasswordVaultTable(vaultItemsCache);
+
+    // Log Activity
+    try {
+      await addDoc(collection(db, "activity_logs"), {
+        userId: currentUser.uid,
+        name: currentUser.displayName || currentUser.email,
+        action: "PASSWORD_REMOVED_MADE_PUBLIC",
+        details: `Removed password protection from ${type}: "${title}". Asset is now 100% public and live in SERP.`,
+        timestamp: serverTimestamp()
+      });
+    } catch(e) {}
+
+    if (window.customAlert) {
+      await window.customAlert(`"${title}" is now Public! It appears in SERP search results and has been removed from your Password Vault.`, { title: "Made Public" });
+    } else {
+      alert(`"${title}" is now Public! It appears in SERP search results and has been removed from your Password Vault.`);
+    }
+
+    loadContributorManageResources();
+  } catch(err) {
+    console.error("removeVaultPasswordMakePublic error:", err);
+    if (window.customAlert) {
+      await window.customAlert("Failed to remove password: " + err.message, { title: "Error", isDanger: true });
+    } else {
+      alert("Failed to remove password: " + err.message);
+    }
   }
 };
 
@@ -2000,6 +2631,7 @@ onAuthStateChanged(auth, user => {
       photoURL: user.photoURL || ""
     }));
     loadContributorManageResources();
+    loadPasswordVaultData();
     populateAdResourceSuggestions();
   }
 });

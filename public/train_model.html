@@ -41,52 +41,140 @@
       --text: #f8fafc;
       --text-muted: #94a3b8;
     }
-    body {
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    html, body {
       background: radial-gradient(circle at top, var(--bg-top), var(--bg-bottom));
       color: var(--text);
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
       margin: 0;
+      padding: 0;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
     }
     .header-nav {
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      padding: 0.9rem 1.5rem;
+      padding: 0.75rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+    .header-right-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
     }
     .header-nav .brand {
       font-family: 'Outfit', sans-serif;
       font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       color: white;
       text-decoration: none;
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
+      min-width: 0;
     }
-    .header-nav .back-link {
+    .brand-mobile-title {
+      display: none;
+    }
+    .nav-icon-link {
       color: var(--text-muted);
       text-decoration: none;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: color 0.15s;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s;
+      white-space: nowrap;
     }
-    .header-nav .back-link:hover {
+    .nav-icon-link:hover {
       color: white;
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    .header-user-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .header-user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .header-user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .header-user-name {
+      font-size: 0.82rem;
+      color: #f8fafc;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .nav-icon-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 6px 9px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-icon-btn:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
     }
     .container {
       max-width: 920px;
       margin: 1.5rem auto;
       padding: 0 1.25rem 4rem;
+      width: 100%;
+      box-sizing: border-box;
     }
     .card {
       background: var(--surface);
@@ -95,6 +183,8 @@
       padding: 1.75rem;
       box-shadow: 0 12px 35px rgba(0,0,0,0.45);
       backdrop-filter: blur(10px);
+      width: 100%;
+      box-sizing: border-box;
     }
     /* SEGMENTED CONTROL TABS */
     .train-tabs {
@@ -512,21 +602,62 @@
     /* MOBILE PRO-DESIGNER MEDIA QUERIES (Pixel 7 / <= 640px) */
     @media (max-width: 640px) {
       .header-nav {
-        padding: 0.75rem 1rem;
+        padding: 0.6rem 0.85rem;
+        gap: 6px;
       }
-      .header-nav .brand {
-        font-size: 1.05rem;
+      .header-left-group {
+        gap: 6px;
       }
-      .header-nav .back-link {
-        font-size: 0.8rem;
+      .header-right-group {
+        gap: 6px;
+      }
+      .brand-full-title {
+        display: none !important;
+      }
+      .brand-mobile-title {
+        display: inline !important;
+        font-size: 0.95rem;
+      }
+      /* STRICT DPGNOTES PDF VIEWER ICON HYPERLINK RULE: No text on mobile buttons! */
+      .header-nav .btn-label {
+        display: none !important;
+      }
+      .nav-icon-link {
+        padding: 6px 8px !important;
+        font-size: 1rem !important;
+        border-radius: 8px !important;
+      }
+      .header-user-wrapper {
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+      }
+      .header-user-avatar {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      .nav-icon-btn {
+        padding: 6px 8px !important;
+        font-size: 1rem !important;
       }
       .container {
-        padding: 0 0.75rem 3rem;
-        margin: 1rem auto;
+        padding: 0 0.85rem 3rem !important;
+        margin: 0.85rem auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
       }
       .card {
-        padding: 1.15rem 0.9rem;
-        border-radius: 14px;
+        padding: 1.15rem 0.9rem !important;
+        border-radius: 14px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      #authorizedResourcesSection, #trainCard, #notesTabContent {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
       }
       .train-tabs {
         grid-template-columns: 1fr 1fr;
@@ -685,17 +816,27 @@
 <body>
 
   <header class="header-nav">
-    <div style="display:flex; align-items:center; gap:16px;">
-      <a href="train_model.html" class="brand"><i class="ri-cpu-line" style="color:var(--primary-light);"></i> DPGNotes AI Trainer</a>
-      <a href="train_model.html" id="navAllResourcesLink" style="color:var(--text-muted); text-decoration:none; font-size:0.85rem; display:none;"><i class="ri-folders-line"></i> My Resources</a>
+    <div class="header-left-group">
+      <a href="train_model.html" class="brand" title="DPGNotes AI Trainer">
+        <i class="ri-cpu-line" style="color:var(--primary-light); font-size:1.25rem;"></i>
+        <span class="brand-full-title">DPGNotes <span style="color:var(--primary-light);">AI Trainer</span></span>
+        <span class="brand-mobile-title">AI Trainer</span>
+      </a>
+      <a href="train_model.html" id="navAllResourcesLink" class="nav-icon-link" title="My Authorized Resources" style="display:none;">
+        <i class="ri-folders-line"></i>
+        <span class="btn-label">My Resources</span>
+      </a>
     </div>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <div id="headerUserArea" style="display:none; align-items:center; gap:8px;">
-        <div id="headerUserAvatar" style="width:28px; height:28px; border-radius:50%; background:#6366f1; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:white;">U</div>
-        <span id="headerUserName" style="font-size:0.85rem; color:#f8fafc; font-weight:600;">Contributor</span>
+    <div class="header-right-group">
+      <div id="headerUserArea" class="header-user-wrapper" style="display:none;" title="Active Contributor">
+        <div id="headerUserAvatar" class="header-user-avatar">U</div>
+        <span id="headerUserName" class="header-user-name btn-label">Contributor</span>
       </div>
-      <a href="dashboard.html" class="back-link"><i class="ri-dashboard-line"></i> Dashboard</a>
-      <button id="headerLogoutBtn" onclick="window.trainLogout()" style="display:none; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.15rem; padding:4px;" title="Sign Out">
+      <a href="dashboard.html" class="nav-icon-link back-link" title="Dashboard">
+        <i class="ri-dashboard-line"></i>
+        <span class="btn-label">Dashboard</span>
+      </a>
+      <button id="headerLogoutBtn" onclick="window.trainLogout()" class="nav-icon-btn logout-icon-btn" style="display:none;" title="Sign Out">
         <i class="ri-logout-box-r-line"></i>
       </button>
     </div>

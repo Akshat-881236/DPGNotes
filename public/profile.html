@@ -164,6 +164,32 @@
     }
     .search-dropdown-item:hover { background: var(--surface-hover); }
 
+    .header-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-action-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 1.15rem;
+      transition: all 0.2s;
+    }
+    .header-action-icon:hover {
+      color: white;
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
+    }
+
     /* Main Container */
     .profile-shell {
       max-width: 1150px; margin: 2rem auto; padding: 0 1.5rem 4rem;
@@ -395,11 +421,11 @@
 
     @media (max-width: 768px) {
       .network-header {
-        padding: 0.6rem 1rem;
-        gap: 10px;
+        padding: 0.6rem 0.85rem;
+        gap: 8px;
       }
       .brand-title {
-        font-size: 1.05rem;
+        font-size: 1rem;
       }
       .brand-logo {
         width: 34px;
@@ -410,7 +436,7 @@
         flex: 1;
         min-width: 0;
         width: auto;
-        max-width: 220px;
+        max-width: none;
       }
       .search-profiles-input {
         padding: 0.45rem 0.75rem 0.45rem 2rem;
@@ -420,8 +446,41 @@
         left: 0.7rem;
         font-size: 0.85rem;
       }
+      .header-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .header-action-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: all 0.2s;
+      }
+      .header-action-icon:hover {
+        color: white;
+        background: rgba(99, 102, 241, 0.2);
+        border-color: rgba(99, 102, 241, 0.4);
+      }
 
-      .profile-shell { grid-template-columns: 1fr; gap: 1.5rem; margin: 1rem auto; padding: 0 1rem 2rem; }
+      .change-banner-btn {
+        padding: 4px 8px !important;
+        font-size: 0.75rem !important;
+      }
+      .change-banner-btn .btn-label {
+        display: none !important;
+      }
+
+      .profile-shell { grid-template-columns: 1fr; gap: 1.5rem; margin: 1rem auto; padding: 0 0.85rem 2rem; width: 100%; box-sizing: border-box; }
       .profile-banner { height: 130px; }
       .profile-avatar-large {
         width: 90px; height: 90px;
@@ -430,18 +489,18 @@
         font-size: 2.2rem;
       }
       .profile-details-wrapper {
-        padding: 3.8rem 1.2rem 1.5rem;
+        padding: 3.5rem 1rem 1.5rem;
         text-align: center;
       }
-      .profile-name { text-align: center; font-size: 1.5rem; margin-top: 0.8rem; }
+      .profile-name { text-align: center; font-size: 1.45rem; margin-top: 0.8rem; }
       .profile-tagline { text-align: center; font-size: 0.85rem; }
       .profile-meta-info { justify-content: center; gap: 0.8rem; font-size: 0.8rem; }
-      .profile-actions-row { justify-content: center; margin-bottom: 1.5rem; gap: 0.6rem; }
+      .profile-actions-row { justify-content: center; margin-bottom: 1.25rem; gap: 0.6rem; flex-wrap: wrap; min-height: auto; }
       .social-btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
       
       .profile-bio-section { text-align: left; }
-      .profile-tabs-bar { justify-content: center; }
-      .prof-tab-btn { padding: 0.6rem 0.8rem; font-size: 0.85rem; }
+      .profile-tabs-bar { justify-content: center; gap: 4px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+      .prof-tab-btn { padding: 0.55rem 0.7rem; font-size: 0.8rem; white-space: nowrap; }
       
       .analytics-grid { grid-template-columns: 1fr 1fr; }
       .dm-panel { height: 380px; }
@@ -450,18 +509,20 @@
     @media (max-width: 480px) {
       .network-header {
         padding: 0.5rem 0.75rem;
-        gap: 8px;
+        gap: 6px;
       }
       .brand-title {
         display: none;
       }
       .search-profiles-wrapper {
+        flex: 1;
+        min-width: 0;
+        width: auto;
         max-width: none;
-        width: 100%;
       }
       .search-profiles-input {
-        font-size: 0.82rem;
-        padding: 0.5rem 0.85rem 0.5rem 2.2rem;
+        font-size: 0.8rem;
+        padding: 0.45rem 0.75rem 0.45rem 1.9rem;
       }
     }
 
@@ -474,16 +535,24 @@
 
   <!-- Top Header Navigation -->
   <header class="network-header">
-    <a href="/index.html" class="brand-link">
-      <div class="brand-logo">D</div>
-      <span class="brand-title">DPGNotes Network</span>
-    </a>
+    <div style="display:flex; align-items:center; gap:8px; min-width:0; flex-shrink:0;">
+      <a href="/index.html" class="brand-link" title="DPGNotes Home">
+        <div class="brand-logo">D</div>
+        <span class="brand-title">DPGNotes Network</span>
+      </a>
+    </div>
     
     <!-- Contributor Lookup Bar -->
     <div class="search-profiles-wrapper">
       <i class="ri-search-line search-profiles-icon"></i>
       <input type="text" class="search-profiles-input" id="lookupField" placeholder="Search other contributors..." autocomplete="off">
       <div class="search-dropdown" id="lookupDropdown"></div>
+    </div>
+
+    <!-- Quick Navigation Action Icons -->
+    <div class="header-actions-group">
+      <a href="index.html" class="header-action-icon" title="Home"><i class="ri-home-4-line"></i></a>
+      <a href="dashboard.html" class="header-action-icon" title="Dashboard"><i class="ri-dashboard-line"></i></a>
     </div>
   </header>
 
@@ -519,8 +588,8 @@
             </button>
             <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this)">
           </div>
-          <button class="change-banner-btn" id="changeBannerBtn" onclick="document.getElementById('bannerFileInput').click()">
-            <i class="ri-camera-line"></i> Change Cover
+          <button class="change-banner-btn" id="changeBannerBtn" onclick="document.getElementById('bannerFileInput').click()" title="Change Cover Banner">
+            <i class="ri-camera-line"></i> <span class="btn-label">Change Cover</span>
           </button>
           <input type="file" id="bannerFileInput" accept="image/*" style="display:none" onchange="uploadHeaderBanner(this)">
         </div>
