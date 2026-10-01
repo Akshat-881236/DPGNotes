@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>DPGNotes Confidential System Overview &amp; Technical Blueprint | Level-3 Clearance</title>
+  
+  <!-- SEO & Security Meta Tags -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="description" content="Confidential architectural blueprint, security protocols, API specifications, and database schema documentation for verified DPGNotes contributors.">
+  <link rel="icon" type="image/png" href="https://dpgnotes.web.app/ANH.png">
+
+  <!-- Google Fonts: Inter, Outfit, Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- RemixIcon CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- Custom Dialogs CSS / Shared Style -->
+  <link rel="stylesheet" href="style.css?v=1.0.0">
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP HEADER & CLEARANCE CONTROLS
+       ======================================================================== -->
+  <header class="overview-header">
+    <div class="brand-wrapper">
+      <a href="https://dpgnotes.web.app/index.html" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
+        <div class="brand-icon-box">
+          <i class="ri-shield-keyhole-line"></i>
+        </div>
+        <div class="brand-titles">
+          <span class="brand-title">DPGNotes Overview</span>
+          <span class="brand-subtitle">Confidential Blueprint</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-controls">
+      <span class="badge-clearance" id="headerClearanceBadge">
+        <i class="ri-lock-2-line"></i> Level-3 Verification Gate
+      </span>
+      
+      <a href="https://dpgnotes.web.app/index.html" class="header-home-btn" title="Return to DPGNotes Homepage">
+        <i class="ri-home-4-line"></i> <span>Homepage</span>
+      </a>
+
+      <a href="https://dpgnotes.web.app/dashboard.html" class="header-home-btn" style="background:rgba(99,102,241,0.12); color:#818cf8; border-color:rgba(99,102,241,0.3);" title="Contributor Dashboard">
+        <i class="ri-dashboard-line"></i> <span>Dashboard</span>
+      </a>
+
+      <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle SPA Sidebar">
+        <i class="ri-menu-2-line"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       APP CONTAINER: SIDEBAR & MAIN SPA VIEW
+       ======================================================================== -->
+  <div class="overview-app-container">
+    
+    <!-- MOBILE BACKDROP -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- RESPONSIVE SPA SIDEBAR -->
+    <aside class="overview-sidebar" id="overviewSidebar">
+      <div class="sidebar-search-box">
+        <input type="text" id="overviewSidebarSearch" class="sidebar-search-input" placeholder="Search architecture topics..." autocomplete="off">
+      </div>
+
+      <ul class="sidebar-nav-list" id="sidebarNavList">
+        <!-- 12 SPA Tabs populated dynamically by script.js -->
+      </ul>
+
+      <div style="padding:1rem; border-top:1px solid var(--border-subtle); font-size:0.75rem; color:var(--text-muted); text-align:center;">
+        <span>Official DRASA Institutional Asset</span><br>
+        <span>&copy; 2026 Akshat Network Hub</span>
+      </div>
+    </aside>
+
+    <!-- MAIN DOCUMENTATION CONTAINER -->
+    <main class="overview-main">
+      <div id="tabContentContainer">
+        <!-- Rendered dynamically by script.js -->
+        <div style="text-align:center; padding:4rem; color:var(--text-muted);">
+          <i class="ri-loader-4-line" style="font-size:2rem; animation:spin 1s infinite linear; display:inline-block;"></i>
+          <p style="margin-top:1rem;">Verifying security clearance...</p>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ========================================================================
+       CLEARANCE GATE OVERLAY (STRICT SECURITY BARRIER)
+       ======================================================================== -->
+  <div class="clearance-gate-overlay" id="clearanceGateOverlay" style="display:none;">
+    <div class="gate-card">
+      <div class="gate-icon-circle">
+        <i class="ri-shield-keyhole-line"></i>
+      </div>
+      <h2 class="gate-title" id="gateTitle">Confidential Clearance Required</h2>
+      <p class="gate-desc" id="gateDesc">
+        Access to the DPGNotes technical architecture is strictly reserved for verified contributors who have obtained an active date-threshold authorization in the Admin Portal.
+      </p>
+
+      <div class="gate-status-alert" id="gateStatusAlert">
+        <!-- Filled dynamically based on auth / request status -->
+      </div>
+
+      <!-- REQUEST FORM -->
+      <form id="gateRequestForm" style="display:none;">
+        <label style="display:block; text-align:left; font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px;">
+          Purpose / Justification for Access
+        </label>
+        <textarea id="gateReasonInput" class="gate-input-field" rows="3" placeholder="e.g. Preparing Capstone Project presentation / Faculty technical evaluation" required></textarea>
+
+        <button type="submit" class="gate-btn-submit" id="btnSubmitGateRequest">
+          Submit Clearance Request <i class="ri-arrow-right-line"></i>
+        </button>
+      </form>
+
+      <div style="margin-top:1.5rem; display:flex; justify-content:center; gap:16px;">
+        <a href="https://dpgnotes.web.app/index.html" style="font-size:0.85rem; color:var(--text-muted);">
+          <i class="ri-home-line"></i> Exit to Homepage
+        </a>
+        <a href="https://dpgnotes.web.app/dashboard.html" style="font-size:0.85rem; color:var(--color-primary-light);">
+          <i class="ri-dashboard-line"></i> Contributor Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Shared Parameter & Custom Dialogs Scripts -->
+  <script src="https://dpgnotes.web.app/custom-dialogs.js"></script>
+  <script src="https://dpgnotes.web.app/dpg-params.js"></script>
+  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js"></script>
+
+  <!-- Modular SPA Script -->
+  <script type="module" src="script.js?v=1.0.0"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!-- Component: tab1_architecture.html - Platform Architecture & System Topography -->
+<article class="overview-tab-component" data-tab="1">
+  <header class="tab-header">
+    <h1>Platform Architecture &amp; System Topography</h1>
+    <p>Complete architectural blueprint of DPGNotes: microservices ecosystem, client-server topology, edge routing, caching layers, and high-availability patterns.</p>
+  </header>
+
+  <section class="overview-section" id="arch-1">
+    <div class="section-header-wrap">
+      <h2 class="section-title"><span class="section-num">1.1</span> Enterprise System Overview &amp; Core Mission</h2>
+      <span class="section-badge" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">Core</span>
+    </div>
+    <div class="section-body">
+      <p>DPGNotes is engineered as an enterprise-grade academic knowledge exchange platform serving university students, educators, and independent learners. The platform bridges the gap between syllabus lectures and real-world exam requirements across 8 core disciplines: Sessional Exams (SE), Sample Papers (SP), University Exams (UE), Event Materials (EV), Tutorial &amp; Notes (T&amp;N), Interview Questions (IQ), Aptitude &amp; Logical Reasoning (A&amp;LR), and Placement Papers (PQ).</p>
+      <div class="callout-box">
+        <div class="callout-title"><i class="ri-shield-check-line"></i> Architectural Mission Statement</div>
+        Democratize high-yield academic documentation with zero paywalls, complete attribution to verified contributors, and verifiable cryptographic integrity.
+      </div>
+      <p>Visit the live platform at <a href="https://dpgnotes.web.app/index.html">DPGNotes Homepage</a> or inspect verified contributions at <a href="https://dpgnotes.web.app/dashboard.html">Contributor Dashboard</a>.</p>
+    </div>
+  </section>
+
+  <section class="overview-section" id="arch-2">
+    <div class="section-header-wrap">
+      <h2 class="section-title"><span class="section-num">1.2</span> Edge Network &amp; Global Distribution Model</h2>
+      <span class="section-badge" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">Network</span>
+    </div>
+    <div class="section-body">
+      <p>The static frontend is deployed via Google Firebase Hosting, backed by Google's Fastly-powered global Content Delivery Network (CDN) Points of Presence (PoPs). All assets are served over HTTP/2 and HTTP/3 with automatic TLS certificate lifecycle management and Gzip/Brotli compression.</p>
+      <div class="code-block-wrap">
+        <div class="code-header"><span>firebase.json (Edge Rewrites)</span><span>CONFIDENTIAL</span></div>
+        <pre class="code-block"><code>{
+  "hosting": {
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/api/**", "destination": "https://dpgnotes.onrender.com/api/**" }
+    ],
+    "headers": [
+      { "source": "**/*.@(js|css)", "headers": [{ "key": "Cache-Control", "value": "max-age=31536000, immutable" }] }
+    ]
+  }
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="overview-section" id="arch-3">
+    <div class="section-header-wrap">
+      <h2 class="section-title"><span class="section-num">1.3</span> Stateless Microservices &amp; Node.js Cluster</h2>
+      <span class="section-badge" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">Backend</span>
+    </div>
+    <div class="section-body">
+      <p>The backend operates as an Express.js service hosted on Render (Frankfurt / Oregon cloud regions). The architecture follows a shared-nothing, 12-factor stateless design, allowing horizontal scalability behind Render's native reverse-proxy load balancer.</p>
+      <ul>
+        <li>Stateless session verification via signed JSON Web Tokens (JWT) and Firebase Admin SDK credentials.</li>
+        <li>Sub-second cold-start recovery with automated keep-alive telemetry pings.</li>
+        <li>Encrypted proprietary logic running entirely in-memory via AES-256 authenticated decryption.</li>
+      </ul>
+      <p>Endpoint Reference: <a href="https://dpgnotes.web.app/api/health">System Health Probe API</a>.</p>
+    </div>
+  </section>
+
+  <section class="overview-section" id="arch-4">
+    <div class="section-header-wrap">
+      <h2 class="section-title"><span class="section-num">1.4</span> Cloud Firestore Real-Time NoSQL Backbone</h2>
+      <span class="section-badge" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">Database</span>
+    </div>
+    <div class="section-body">
+      <p>Persistent storage is powered by Google Cloud Firestore in Datastore mode. Documents are indexed automatically for single-field queries, while composite indexes accelerate multi-parameter filtering across academic semesters, subject tags, and screentime telemetry.</p>
+      <table class="overview-data-table">
+        <thead>
+          <tr><th>Firestore Collection</th><th>Data Classification</th><th>Write Permission</th><th>Audited By</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>users</code></td><td>Contributor Profiles</td><td>Authenticated User (UID Match)</td><td>Admin Portal</td></tr>
+          <tr><td><code>documents</code></td><td>Academic Resource Records</td><td>Verified Contributor Only</td><td>DRASA Compliance</td></tr>
+          <tr><td><code>confidential_overview_requests</code></td><td>Access Clearances</td><td>User Submit / Admin Decide</td><td>Confidential Tab</td></tr>
+          <tr><td><code>confidential_read_history</code></td><td>Audit Trajectory</td><td>System Read Log Only</td><td>Security Auditor</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</article>

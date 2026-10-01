@@ -1427,7 +1427,9 @@ async function loadAcademicResources() {
 
       // Sort solutions by date desc
       solutions.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-      const displaySolutions = solutions.slice(0, 3);
+      const isTabletMode = window.innerWidth >= 768 && window.innerWidth <= 1024;
+      const solLimit = isTabletMode ? Math.min(solutions.length, 4) : 3;
+      const displaySolutions = solutions.slice(0, solLimit);
 
       if (solCardsWrapper) {
         solCardsWrapper.innerHTML = "";
@@ -1443,7 +1445,7 @@ async function loadAcademicResources() {
           const discipline = item.course || item.discipline || (item.subjectCode ? `Code: ${item.subjectCode}` : "Computer Science");
           const uploader = item.contributorName || item.userName || "Verified Contributor";
           const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
-          const viewerUrl = isPractical ? `PracticalSolution/index.html?id=${encodeURIComponent(item.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(item.id)}`;
+          const viewerUrl = isPractical ? `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(item.id)}` : `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(item.id)}`;
 
           card.innerHTML = `
             <div class="academic-res-card">
@@ -1459,7 +1461,7 @@ async function loadAcademicResources() {
                 <span><i class="ri-calendar-line"></i> ${date}</span>
               </div>
               <div class="res-card-actions">
-                <a href="${viewerUrl}" class="btn-res-view" style="background:linear-gradient(135deg, ${solTypeColor}, #6366f1); border:none;">
+                <a href="${viewerUrl}" class="btn-res-view" style="background:linear-gradient(135deg, ${solTypeColor}, #6366f1); border:none; font-family:var(--font-heading, 'Outfit', sans-serif); font-weight:700; font-size:0.9rem; letter-spacing:0.025em; box-shadow:0 4px 15px rgba(6,182,212,0.3); transition:all 0.25s ease;">
                   <i class="ri-book-read-line"></i> Read &amp; View Solution
                 </a>
               </div>
@@ -1494,8 +1496,10 @@ async function loadAcademicResources() {
           return scoreB - scoreA;
         });
 
-        // Strictly show only 3 resources per grid
-        const displayDocs = rankedDocs.slice(0, 3);
+        // In tablet media only, render at least 4 resource cards per stream when available; otherwise 3 on desktop/mobile
+        const isTabletScreen = window.innerWidth >= 768 && window.innerWidth <= 1024;
+        const streamLimit = isTabletScreen ? Math.min(rankedDocs.length, 4) : 3;
+        const displayDocs = rankedDocs.slice(0, streamLimit);
 
         if (cardsWrapper) {
           cardsWrapper.innerHTML = "";
@@ -1508,7 +1512,7 @@ async function loadAcademicResources() {
             const uploader = item.uploader || item.userName || "Verified Contributor";
             const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
             const pdfUrl = item.pdfUrl || "#";
-            const viewerUrl = `dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat.fullName)}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(uploader)}&docid=${encodeURIComponent(item.id)}`;
+            const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat.fullName)}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(uploader)}&docid=${encodeURIComponent(item.id)}`;
 
             card.innerHTML = `
               <div class="academic-res-card">

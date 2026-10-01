@@ -1,4 +1,4 @@
-import { getFirestore, collection, collectionGroup, getDocs, doc, deleteDoc, updateDoc, query, where, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, getDocs, doc, deleteDoc, updateDoc, setDoc, query, where, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
@@ -8680,6 +8680,766 @@ window.shareAdminVideoAdNative = async function(adId, title) {
   prompt("Copy ad video share link:", shareUrl);
 };
 
+// ============================================================================
+// CONFIDENTIAL OVERVIEW ACCESS & AUDIT CONTROLLER
+// ============================================================================
+window.confidentialPendingList = [];
+window.confidentialActiveList = [];
+window.confidentialHistoryList = [];
+window.confidentialCurrentApproveId = null;
+window.confidentialCurrentEditId = null;
 
+// Sub-tab Navigation
+window.switchConfidentialSubTab = function(subtab) {
+  const tabs = ['pending', 'active', 'history'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`subtabConfidential${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
+    const content = document.getElementById(`confidentialSubtab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    if (btn) {
+      if (t === subtab) {
+        btn.classList.add('active');
+        btn.style.background = t === 'pending' ? 'rgba(234,179,8,0.18)' : (t === 'active' ? 'rgba(16,185,129,0.18)' : 'rgba(99,102,241,0.18)');
+        btn.style.color = t === 'pending' ? '#eab308' : (t === 'active' ? '#10b981' : '#818cf8');
+        btn.style.borderColor = t === 'pending' ? 'rgba(234,179,8,0.35)' : (t === 'active' ? 'rgba(16,185,129,0.35)' : 'rgba(99,102,241,0.35)');
+      } else {
+        btn.classList.remove('active');
+        btn.style.background = 'rgba(255,255,255,0.04)';
+        btn.style.color = 'var(--admin-muted)';
+        btn.style.borderColor = 'var(--admin-border)';
+      }
+    }
+    if (content) {
+      content.style.display = (t === subtab) ? 'block' : 'none';
+    }
+  });
+};
 
+// Helper: Format Dates
+function formatConfDate(d) {
+  if (!d) return "N/A";
+  if (d.seconds) return new Date(d.seconds * 1000).toLocaleString();
+  if (typeof d === 'string' && d.includes('T')) return new Date(d).toLocaleString();
+  return String(d);
+}
 
+function getTodayString() {
+  const now = new Date();
+  return now.toISOString().split('T')[0];
+}
+
+function getSevenDaysLaterString() {
+  const later = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  return later.toISOString().split('T')[0];
+}
+
+// Load Confidential Tab Data
+window.loadConfidentialTabAdmin = async function() {
+  try {
+    const pendingTbody = document.getElementById("confidentialPendingTableBody");
+    const activeTbody = document.getElementById("confidentialActiveTableBody");
+    const historyTbody = document.getElementById("confidentialHistoryTableBody");
+
+    if (pendingTbody) pendingTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading requests...</td></tr>`;
+    if (activeTbody) activeTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading active users...</td></tr>`;
+    if (historyTbody) historyTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading read history logs...</td></tr>`;
+
+    // 1. Fetch Requests & Active Users
+    const reqSnap = await getDocs(collection(db, "confidential_overview_requests"));
+    window.confidentialPendingList = [];
+    window.confidentialActiveList = [];
+
+    reqSnap.forEach(docSnap => {
+      const data = { id: docSnap.id, ...docSnap.data() };
+      if (data.status === "pending" || !data.status) {
+        window.confidentialPendingList.push(data);
+      } else {
+        window.confidentialActiveList.push(data);
+      }
+    });
+
+    // Sort pending by requestDate desc
+    window.confidentialPendingList.sort((a, b) => {
+      const timeA = a.requestDate?.seconds ? a.requestDate.seconds : new Date(a.requestDate || 0).getTime();
+      const timeB = b.requestDate?.seconds ? b.requestDate.seconds : new Date(b.requestDate || 0).getTime();
+      return timeB - timeA;
+    });
+
+    // Sort active by approvedAt desc
+    window.confidentialActiveList.sort((a, b) => {
+      const timeA = a.approvedAt?.seconds ? a.approvedAt.seconds : new Date(a.approvedAt || 0).getTime();
+      const timeB = b.approvedAt?.seconds ? b.approvedAt.seconds : new Date(b.approvedAt || 0).getTime();
+      return timeB - timeA;
+    });
+
+    // 2. Fetch Read History Logs
+    window.confidentialHistoryList = [];
+    try {
+      const histSnap = await getDocs(collection(db, "confidential_read_history"));
+      histSnap.forEach(docSnap => {
+        window.confidentialHistoryList.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      window.confidentialHistoryList.sort((a, b) => {
+        const timeA = a.timestamp?.seconds ? a.timestamp.seconds : new Date(a.timestamp || 0).getTime();
+        const timeB = b.timestamp?.seconds ? b.timestamp.seconds : new Date(b.timestamp || 0).getTime();
+        return timeB - timeA;
+      });
+    } catch(hErr) {
+      console.warn("Read history fetch error:", hErr);
+    }
+
+    // Update count badges
+    const pBadge = document.getElementById("confidentialPendingCountBadge");
+    const aBadge = document.getElementById("confidentialActiveCountBadge");
+    const hBadge = document.getElementById("confidentialHistoryCountBadge");
+    if (pBadge) pBadge.textContent = window.confidentialPendingList.length;
+    if (aBadge) aBadge.textContent = window.confidentialActiveList.length;
+    if (hBadge) hBadge.textContent = window.confidentialHistoryList.length;
+
+    // Render Subtabs
+    window.renderConfidentialPending();
+    window.renderConfidentialActive();
+    window.renderConfidentialHistory();
+
+  } catch(err) {
+    console.error("loadConfidentialTabAdmin failed:", err);
+    if (typeof window.customAlert === 'function') {
+      window.customAlert("Failed to load Confidential Portal data: " + err.message, { title: "Error" });
+    }
+  }
+};
+
+// Render Pending Requests
+window.renderConfidentialPending = function() {
+  const tbody = document.getElementById("confidentialPendingTableBody");
+  if (!tbody) return;
+
+  const queryStr = (document.getElementById("confidentialPendingSearch")?.value || "").toLowerCase().trim();
+  const filtered = window.confidentialPendingList.filter(item => {
+    const name = (item.displayName || item.name || "").toLowerCase();
+    const email = (item.email || "").toLowerCase();
+    const reason = (item.reason || "").toLowerCase();
+    return name.includes(queryStr) || email.includes(queryStr) || reason.includes(queryStr);
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--admin-muted);">No pending access requests.</td></tr>`;
+    window.updateConfidentialPendingSelection();
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item => {
+    const name = item.displayName || item.name || "Contributor";
+    const email = item.email || "N/A";
+    const photo = item.photoURL || "";
+    const initial = name.charAt(0).toUpperCase();
+    const avatarHtml = photo 
+      ? `<img src="${photo}" alt="${name}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">` 
+      : `<div style="width:32px; height:32px; border-radius:50%; background:#eab308; color:#000; font-weight:bold; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">${initial}</div>`;
+    const dateFormatted = formatConfDate(item.requestDate);
+    const purpose = item.reason || "Verification and overview evaluation";
+
+    return `
+      <tr>
+        <td style="text-align:center;">
+          <input type="checkbox" class="conf-pending-check" data-id="${item.id}" onchange="window.updateConfidentialPendingSelection()">
+        </td>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${avatarHtml}
+            <div>
+              <div style="font-weight:600; color:white;">${name}</div>
+              <div style="font-size:0.78rem; color:var(--admin-muted);">${email}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:0.82rem; color:var(--admin-muted);">${dateFormatted}</td>
+        <td style="font-size:0.85rem; color:#cbd5e1; max-width:260px;">${purpose}</td>
+        <td>
+          <span style="background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:700;">
+            ⏳ Pending
+          </span>
+        </td>
+        <td style="text-align:center;">
+          <div style="display:flex; gap:6px; justify-content:center;">
+            <button type="button" class="btn-action success" style="padding:4px 8px; font-size:0.78rem;" onclick="window.openConfidentialApproveModal('${item.id}', '${name.replace(/'/g, "\\'")}', '${email}')" title="Approve with Date Threshold">
+              <i class="ri-check-line"></i> Approve
+            </button>
+            <button type="button" class="btn-action danger" style="padding:4px 8px; font-size:0.78rem;" onclick="window.rejectConfidentialRequest('${item.id}')" title="Reject Request">
+              <i class="ri-close-line"></i> Reject
+            </button>
+            <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.78rem; background:rgba(255,255,255,0.06); color:var(--admin-muted);" onclick="window.deleteConfidentialRequest('${item.id}')" title="Delete">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  window.updateConfidentialPendingSelection();
+};
+
+window.filterConfidentialPendingTable = function() {
+  window.renderConfidentialPending();
+};
+
+// Render Active Users
+window.renderConfidentialActive = function() {
+  const tbody = document.getElementById("confidentialActiveTableBody");
+  if (!tbody) return;
+
+  const queryStr = (document.getElementById("confidentialActiveSearch")?.value || "").toLowerCase().trim();
+  const filterType = document.getElementById("confidentialActiveFilter")?.value || "all";
+
+  const now = new Date();
+
+  const filtered = window.confidentialActiveList.filter(item => {
+    const name = (item.displayName || item.name || "").toLowerCase();
+    const email = (item.email || "").toLowerCase();
+    const matchesSearch = name.includes(queryStr) || email.includes(queryStr);
+    if (!matchesSearch) return false;
+
+    const start = item.startDate ? new Date(item.startDate + 'T00:00:00') : null;
+    const end = item.endDate ? new Date(item.endDate + 'T23:59:59') : null;
+    const isRevoked = item.status === 'revoked';
+    const isExpired = end && now > end;
+    const isActive = !isRevoked && start && end && now >= start && now <= end;
+
+    if (filterType === 'active') return isActive;
+    if (filterType === 'expired') return isExpired;
+    if (filterType === 'revoked') return isRevoked;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-muted);">No authorized users match filter.</td></tr>`;
+    window.updateConfidentialActiveSelection();
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item => {
+    const name = item.displayName || item.name || "Contributor";
+    const email = item.email || "N/A";
+    const photo = item.photoURL || "";
+    const initial = name.charAt(0).toUpperCase();
+    const avatarHtml = photo 
+      ? `<img src="${photo}" alt="${name}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">` 
+      : `<div style="width:32px; height:32px; border-radius:50%; background:#10b981; color:#fff; font-weight:bold; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">${initial}</div>`;
+    
+    const startStr = item.startDate || "Not set";
+    const endStr = item.endDate || "Not set";
+    const approvedOnStr = formatConfDate(item.approvedAt || item.requestDate);
+
+    const start = item.startDate ? new Date(item.startDate + 'T00:00:00') : null;
+    const end = item.endDate ? new Date(item.endDate + 'T23:59:59') : null;
+    const isRevoked = item.status === 'revoked';
+    const isExpired = end && now > end;
+    const isScheduled = start && now < start;
+    const isActive = !isRevoked && start && end && now >= start && now <= end;
+
+    let badgeHtml = "";
+    if (isRevoked) {
+      badgeHtml = `<span style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:700;">⊘ Access Revoked</span>`;
+    } else if (isExpired) {
+      badgeHtml = `<span style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:700;">⚠️ Expired (Auto-Denied)</span>`;
+    } else if (isScheduled) {
+      badgeHtml = `<span style="background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3); padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:700;">⏱ Scheduled</span>`;
+    } else if (isActive) {
+      badgeHtml = `<span style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:8px; font-size:0.75rem; font-weight:700;">● Active (Authorized)</span>`;
+    } else {
+      badgeHtml = `<span style="background:rgba(255,255,255,0.06); color:var(--admin-muted); padding:3px 8px; border-radius:8px; font-size:0.75rem;">Unknown</span>`;
+    }
+
+    return `
+      <tr>
+        <td style="text-align:center;">
+          <input type="checkbox" class="conf-active-check" data-id="${item.id}" onchange="window.updateConfidentialActiveSelection()">
+        </td>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${avatarHtml}
+            <div>
+              <div style="font-weight:600; color:white;">${name}</div>
+              <div style="font-size:0.78rem; color:var(--admin-muted);">${email}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:0.82rem; color:#cbd5e1; font-family:monospace;">${startStr}</td>
+        <td style="font-size:0.82rem; color:#cbd5e1; font-family:monospace;">${endStr}</td>
+        <td>${badgeHtml}</td>
+        <td style="font-size:0.8rem; color:var(--admin-muted);">${approvedOnStr}</td>
+        <td style="text-align:center;">
+          <div style="display:flex; gap:6px; justify-content:center;">
+            <button type="button" class="btn-action primary" style="padding:4px 8px; font-size:0.78rem;" onclick="window.openConfidentialEditDatesModal('${item.id}', '${item.startDate || ''}', '${item.endDate || ''}')" title="Edit Date Threshold">
+              <i class="ri-calendar-line"></i> Dates
+            </button>
+            ${isRevoked ? `
+              <button type="button" class="btn-action success" style="padding:4px 8px; font-size:0.78rem;" onclick="window.reactivateConfidentialUser('${item.id}')" title="Reactivate Access">
+                <i class="ri-check-line"></i>
+              </button>
+            ` : `
+              <button type="button" class="btn-action danger" style="padding:4px 8px; font-size:0.78rem;" onclick="window.revokeConfidentialUser('${item.id}')" title="Revoke Access">
+                <i class="ri-prohibited-line"></i>
+              </button>
+            `}
+            <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.78rem; background:rgba(255,255,255,0.06); color:var(--admin-muted);" onclick="window.deleteConfidentialRequest('${item.id}')" title="Delete">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  window.updateConfidentialActiveSelection();
+};
+
+window.filterConfidentialActiveTable = function() {
+  window.renderConfidentialActive();
+};
+
+// Render Read History
+window.renderConfidentialHistory = function() {
+  const tbody = document.getElementById("confidentialHistoryTableBody");
+  if (!tbody) return;
+
+  const queryStr = (document.getElementById("confidentialHistorySearch")?.value || "").toLowerCase().trim();
+  const filtered = window.confidentialHistoryList.filter(item => {
+    const name = (item.displayName || item.name || "").toLowerCase();
+    const email = (item.email || "").toLowerCase();
+    const tab = (item.activeTab || item.tab || "").toLowerCase();
+    return name.includes(queryStr) || email.includes(queryStr) || tab.includes(queryStr);
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--admin-muted);">No confidential read history recorded yet.</td></tr>`;
+    window.updateConfidentialHistorySelection();
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item => {
+    const name = item.displayName || item.name || "Verified Contributor";
+    const email = item.email || "N/A";
+    const tabName = item.activeTab || item.tab || "Overview Root";
+    const timeFormatted = formatConfDate(item.timestamp);
+    const ua = item.userAgent ? (item.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop Browser') : 'Secure Client';
+
+    return `
+      <tr>
+        <td style="text-align:center;">
+          <input type="checkbox" class="conf-history-check" data-id="${item.id}" onchange="window.updateConfidentialHistorySelection()">
+        </td>
+        <td>
+          <div style="font-weight:600; color:white;">${name}</div>
+          <div style="font-size:0.78rem; color:var(--admin-muted);">${email}</div>
+        </td>
+        <td>
+          <span style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3); padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:600;">
+            <i class="ri-book-open-line"></i> ${tabName}
+          </span>
+        </td>
+        <td style="font-size:0.82rem; color:#cbd5e1;">${timeFormatted}</td>
+        <td style="font-size:0.8rem; color:var(--admin-muted);">${ua}</td>
+        <td style="text-align:center;">
+          <button type="button" class="btn-action danger" style="padding:4px 8px; font-size:0.78rem;" onclick="window.deleteSingleConfidentialHistory('${item.id}')" title="Delete Log Entry">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  window.updateConfidentialHistorySelection();
+};
+
+window.filterConfidentialHistoryTable = function() {
+  window.renderConfidentialHistory();
+};
+
+// Approval Modals & Actions
+window.openConfidentialApproveModal = function(id, name, email) {
+  window.confidentialCurrentApproveId = id;
+  const modal = document.getElementById("confidentialApprovalModal");
+  const desc = document.getElementById("confidentialApprovalTargetDesc");
+  const startInput = document.getElementById("confidentialStartDateInput");
+  const endInput = document.getElementById("confidentialEndDateInput");
+  const notesInput = document.getElementById("confidentialApprovalNotesInput");
+
+  if (desc) desc.textContent = `Authorizing: ${name} (${email})`;
+  if (startInput) startInput.value = getTodayString();
+  if (endInput) endInput.value = getSevenDaysLaterString();
+  if (notesInput) notesInput.value = "";
+  if (modal) modal.classList.add("active");
+};
+
+window.closeConfidentialApprovalModal = function() {
+  window.confidentialCurrentApproveId = null;
+  const modal = document.getElementById("confidentialApprovalModal");
+  if (modal) modal.classList.remove("active");
+};
+
+window.confirmConfidentialApprovalAction = async function() {
+  const id = window.confidentialCurrentApproveId;
+  const startVal = document.getElementById("confidentialStartDateInput")?.value;
+  const endVal = document.getElementById("confidentialEndDateInput")?.value;
+  const notesVal = document.getElementById("confidentialApprovalNotesInput")?.value || "";
+
+  if (!startVal || !endVal) {
+    alert("Both Start Date and End Date are strictly required for authorization threshold.");
+    return;
+  }
+  if (new Date(endVal) < new Date(startVal)) {
+    alert("End Date cannot be earlier than Start Date.");
+    return;
+  }
+
+  try {
+    if (Array.isArray(id)) {
+      // Batch Approval
+      await Promise.all(id.map(singleId => updateDoc(doc(db, "confidential_overview_requests", singleId), {
+        status: "approved",
+        startDate: startVal,
+        endDate: endVal,
+        adminNotes: notesVal,
+        approvedAt: serverTimestamp(),
+        approvedBy: "Admin"
+      })));
+    } else {
+      await updateDoc(doc(db, "confidential_overview_requests", id), {
+        status: "approved",
+        startDate: startVal,
+        endDate: endVal,
+        adminNotes: notesVal,
+        approvedAt: serverTimestamp(),
+        approvedBy: "Admin"
+      });
+    }
+
+    window.closeConfidentialApprovalModal();
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Contributor overview access successfully approved with specified date threshold.", { title: "Access Authorized" });
+    }
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    console.error("Approval error:", err);
+    alert("Failed to approve: " + err.message);
+  }
+};
+
+window.rejectConfidentialRequest = async function(id) {
+  const reason = prompt("Enter rejection reason (optional):", "Overview access requirements not met.");
+  if (reason === null) return;
+
+  try {
+    await updateDoc(doc(db, "confidential_overview_requests", id), {
+      status: "rejected",
+      rejectionReason: reason,
+      rejectedAt: serverTimestamp()
+    });
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Request rejected.", { title: "Updated" });
+    }
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    console.error("Reject error:", err);
+    alert("Failed to reject: " + err.message);
+  }
+};
+
+window.deleteConfidentialRequest = async function(id) {
+  const confirmed = typeof window.customConfirm === 'function' 
+    ? await window.customConfirm("Permanently delete this access record?") 
+    : confirm("Permanently delete this access record?");
+  if (!confirmed) return;
+
+  try {
+    await deleteDoc(doc(db, "confidential_overview_requests", id));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    console.error("Delete error:", err);
+    alert("Failed to delete: " + err.message);
+  }
+};
+
+// Edit Dates Modal
+window.openConfidentialEditDatesModal = function(id, start, end) {
+  window.confidentialCurrentEditId = id;
+  const modal = document.getElementById("confidentialEditDatesModal");
+  const startInput = document.getElementById("confidentialEditStartDateInput");
+  const endInput = document.getElementById("confidentialEditEndDateInput");
+
+  if (startInput) startInput.value = start || getTodayString();
+  if (endInput) endInput.value = end || getSevenDaysLaterString();
+  if (modal) modal.classList.add("active");
+};
+
+window.closeConfidentialEditDatesModal = function() {
+  window.confidentialCurrentEditId = null;
+  const modal = document.getElementById("confidentialEditDatesModal");
+  if (modal) modal.classList.remove("active");
+};
+
+window.confirmConfidentialEditDatesAction = async function() {
+  const id = window.confidentialCurrentEditId;
+  const startVal = document.getElementById("confidentialEditStartDateInput")?.value;
+  const endVal = document.getElementById("confidentialEditEndDateInput")?.value;
+
+  if (!startVal || !endVal) {
+    alert("Start Date and End Date are required.");
+    return;
+  }
+  if (new Date(endVal) < new Date(startVal)) {
+    alert("End Date cannot be earlier than Start Date.");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "confidential_overview_requests", id), {
+      startDate: startVal,
+      endDate: endVal,
+      updatedAt: serverTimestamp()
+    });
+    window.closeConfidentialEditDatesModal();
+    if (typeof window.customAlert === 'function') {
+      await window.customAlert("Date threshold successfully updated.", { title: "Updated" });
+    }
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    console.error("Edit dates error:", err);
+    alert("Failed to update dates: " + err.message);
+  }
+};
+
+window.revokeConfidentialUser = async function(id) {
+  const confirmed = typeof window.customConfirm === 'function' 
+    ? await window.customConfirm("Revoke overview access for this contributor?") 
+    : confirm("Revoke overview access for this contributor?");
+  if (!confirmed) return;
+
+  try {
+    await updateDoc(doc(db, "confidential_overview_requests", id), {
+      status: "revoked",
+      revokedAt: serverTimestamp()
+    });
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    console.error("Revoke error:", err);
+    alert("Failed to revoke: " + err.message);
+  }
+};
+
+window.reactivateConfidentialUser = async function(id) {
+  try {
+    await updateDoc(doc(db, "confidential_overview_requests", id), {
+      status: "approved",
+      endDate: getSevenDaysLaterString(),
+      reactivatedAt: serverTimestamp()
+    });
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    console.error("Reactivate error:", err);
+    alert("Failed to reactivate: " + err.message);
+  }
+};
+
+// Multi-Select: Pending Tab
+window.toggleAllConfidentialPending = function(masterCb) {
+  const cbs = document.querySelectorAll(".conf-pending-check");
+  cbs.forEach(cb => cb.checked = masterCb.checked);
+  window.updateConfidentialPendingSelection();
+};
+
+window.updateConfidentialPendingSelection = function() {
+  const checked = document.querySelectorAll(".conf-pending-check:checked");
+  const countEl = document.getElementById("selectedConfidentialPendingCount");
+  const btnApprove = document.getElementById("btnBatchApproveConfidential");
+  const btnReject = document.getElementById("btnBatchRejectConfidential");
+  const btnDelete = document.getElementById("btnBatchDeleteConfidentialPending");
+
+  const isAny = checked.length > 0;
+  if (countEl) {
+    countEl.style.display = isAny ? "inline" : "none";
+    countEl.textContent = `${checked.length} selected`;
+  }
+  if (btnApprove) btnApprove.style.display = isAny ? "inline-flex" : "none";
+  if (btnReject) btnReject.style.display = isAny ? "inline-flex" : "none";
+  if (btnDelete) btnDelete.style.display = isAny ? "inline-flex" : "none";
+};
+
+window.batchApproveConfidentialPending = function() {
+  const checked = document.querySelectorAll(".conf-pending-check:checked");
+  if (checked.length === 0) return;
+  const ids = Array.from(checked).map(cb => cb.dataset.id);
+  window.openConfidentialApproveModal(ids, `${ids.length} Selected Contributors`, "Batch Approval");
+};
+
+window.batchRejectConfidentialPending = async function() {
+  const checked = document.querySelectorAll(".conf-pending-check:checked");
+  if (checked.length === 0) return;
+  const reason = prompt("Enter batch rejection reason:", "Overview access not authorized.");
+  if (reason === null) return;
+
+  const ids = Array.from(checked).map(cb => cb.dataset.id);
+  try {
+    await Promise.all(ids.map(id => updateDoc(doc(db, "confidential_overview_requests", id), {
+      status: "rejected",
+      rejectionReason: reason,
+      rejectedAt: serverTimestamp()
+    })));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Batch reject failed: " + err.message);
+  }
+};
+
+window.batchDeleteConfidentialPending = async function() {
+  const checked = document.querySelectorAll(".conf-pending-check:checked");
+  if (checked.length === 0) return;
+  const confirmed = confirm(`Permanently delete ${checked.length} pending request records?`);
+  if (!confirmed) return;
+
+  const ids = Array.from(checked).map(cb => cb.dataset.id);
+  try {
+    await Promise.all(ids.map(id => deleteDoc(doc(db, "confidential_overview_requests", id))));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Batch delete failed: " + err.message);
+  }
+};
+
+// Multi-Select: Active Tab
+window.toggleAllConfidentialActive = function(masterCb) {
+  const cbs = document.querySelectorAll(".conf-active-check");
+  cbs.forEach(cb => cb.checked = masterCb.checked);
+  window.updateConfidentialActiveSelection();
+};
+
+window.updateConfidentialActiveSelection = function() {
+  const checked = document.querySelectorAll(".conf-active-check:checked");
+  const countEl = document.getElementById("selectedConfidentialActiveCount");
+  const btnExtend = document.getElementById("btnBatchExtendConfidential");
+  const btnRevoke = document.getElementById("btnBatchRevokeConfidential");
+  const btnDelete = document.getElementById("btnBatchDeleteConfidentialActive");
+
+  const isAny = checked.length > 0;
+  if (countEl) {
+    countEl.style.display = isAny ? "inline" : "none";
+    countEl.textContent = `${checked.length} selected`;
+  }
+  if (btnExtend) btnExtend.style.display = isAny ? "inline-flex" : "none";
+  if (btnRevoke) btnRevoke.style.display = isAny ? "inline-flex" : "none";
+  if (btnDelete) btnDelete.style.display = isAny ? "inline-flex" : "none";
+};
+
+window.batchExtendConfidentialActive = async function() {
+  const checked = document.querySelectorAll(".conf-active-check:checked");
+  if (checked.length === 0) return;
+  const newEnd = getSevenDaysLaterString();
+  const confirmed = confirm(`Extend access end date to ${newEnd} for ${checked.length} selected users?`);
+  if (!confirmed) return;
+
+  const ids = Array.from(checked).map(cb => cb.dataset.id);
+  try {
+    await Promise.all(ids.map(id => updateDoc(doc(db, "confidential_overview_requests", id), {
+      endDate: newEnd,
+      status: "approved",
+      updatedAt: serverTimestamp()
+    })));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Batch extend failed: " + err.message);
+  }
+};
+
+window.batchRevokeConfidentialActive = async function() {
+  const checked = document.querySelectorAll(".conf-active-check:checked");
+  if (checked.length === 0) return;
+  const confirmed = confirm(`Revoke overview access for ${checked.length} selected users?`);
+  if (!confirmed) return;
+
+  const ids = Array.from(checked).map(cb => cb.dataset.id);
+  try {
+    await Promise.all(ids.map(id => updateDoc(doc(db, "confidential_overview_requests", id), {
+      status: "revoked",
+      revokedAt: serverTimestamp()
+    })));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Batch revoke failed: " + err.message);
+  }
+};
+
+window.batchDeleteConfidentialActive = async function() {
+  const checked = document.querySelectorAll(".conf-active-check:checked");
+  if (checked.length === 0) return;
+  const confirmed = confirm(`Permanently delete ${checked.length} active authorization records?`);
+  if (!confirmed) return;
+
+  const ids = Array.from(checked).map(cb => cb.dataset.id);
+  try {
+    await Promise.all(ids.map(id => deleteDoc(doc(db, "confidential_overview_requests", id))));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Batch delete failed: " + err.message);
+  }
+};
+
+// Multi-Select: Read History Tab
+window.toggleAllConfidentialHistory = function(masterCb) {
+  const cbs = document.querySelectorAll(".conf-history-check");
+  cbs.forEach(cb => cb.checked = masterCb.checked);
+  window.updateConfidentialHistorySelection();
+};
+
+window.updateConfidentialHistorySelection = function() {
+  const checked = document.querySelectorAll(".conf-history-check:checked");
+  const countEl = document.getElementById("selectedConfidentialHistoryCount");
+  const btnDelete = document.getElementById("btnDeleteSelectedConfidentialHistory");
+
+  const isAny = checked.length > 0;
+  if (countEl) {
+    countEl.style.display = isAny ? "inline" : "none";
+    countEl.textContent = `${checked.length} selected`;
+  }
+  if (btnDelete) btnDelete.style.display = isAny ? "inline-flex" : "none";
+};
+
+window.deleteSingleConfidentialHistory = async function(id) {
+  const confirmed = confirm("Delete this history log entry?");
+  if (!confirmed) return;
+
+  try {
+    await deleteDoc(doc(db, "confidential_read_history", id));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Failed to delete log: " + err.message);
+  }
+};
+
+window.deleteSelectedConfidentialHistory = async function() {
+  const checked = document.querySelectorAll(".conf-history-check:checked");
+  if (checked.length === 0) return;
+  const confirmed = confirm(`Delete ${checked.length} selected history log entries?`);
+  if (!confirmed) return;
+
+  const ids = Array.from(checked).map(cb => cb.dataset.id);
+  try {
+    await Promise.all(ids.map(id => deleteDoc(doc(db, "confidential_read_history", id))));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Failed to delete logs: " + err.message);
+  }
+};
+
+window.clearAllConfidentialHistory = async function() {
+  const confirmed = confirm("IRREVERSIBLE ACTION: Clear all confidential read history logs?");
+  if (!confirmed) return;
+
+  try {
+    const snap = await getDocs(collection(db, "confidential_read_history"));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+    window.loadConfidentialTabAdmin();
+  } catch(err) {
+    alert("Failed to clear history: " + err.message);
+  }
+};

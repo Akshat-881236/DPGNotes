@@ -308,6 +308,15 @@ service cloud.firestore {
     match /code-blocks/{document=**} {
       allow read, write: if true;
     }
+
+    /* ---------- CONFIDENTIAL OVERVIEW & AUDIT ---------- */
+    match /confidential_overview_requests/{requestId} {
+      allow read, write: if true;
+    }
+
+    match /confidential_read_history/{historyId} {
+      allow read, write: if true;
+    }
     /* ---------- VALIDATION ---------- */
 
     function validateDocument() {

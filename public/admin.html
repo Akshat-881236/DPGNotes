@@ -888,6 +888,9 @@
         <a class="nav-link" onclick="switchTab('feedback'); if(window.loadFeedbackTabAdmin) window.loadFeedbackTabAdmin();">
           <i class="ri-sparkling-fill" style="color:#f43f5e;"></i> Feedback Analytics
         </a>
+        <a class="nav-link" id="nav-link-confidential" onclick="switchTab('confidential'); if(window.loadConfidentialTabAdmin) window.loadConfidentialTabAdmin();">
+          <i class="ri-shield-keyhole-line" style="color:#eab308;"></i> Confidential
+        </a>
 
         <a class="nav-link" href="legal/index.html?from=admin" style="text-decoration:none;">
           <i class="ri-shield-user-line"></i> Legal Policies
@@ -3245,6 +3248,165 @@
           </div>
         </div>
       </section>
+
+      <!-- VIEW: CONFIDENTIAL OVERVIEW ACCESS MANAGEMENT -->
+      <section id="view-confidential" class="view-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-size:1.5rem; color:white; font-weight:700; display:flex; align-items:center; gap:10px;">
+              <i class="ri-shield-keyhole-line" style="color:#eab308;"></i> Confidential Overview Access Portal
+            </h2>
+            <p style="color:var(--admin-text-muted); font-size:0.85rem; margin-top:2px;">
+              Manage verified contributor requests to access the confidential system overview. Enforce date thresholds (Start Date &rarr; End Date), revoke expired access, and monitor audit read history with multi-select CRUD.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button onclick="window.loadConfidentialTabAdmin()" class="btn-action primary" style="padding:0.6rem 1rem; display:flex; align-items:center; gap:6px;">
+              <i class="ri-refresh-line"></i> Refresh Data
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Sub-tabs Navigation -->
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:1.5rem; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
+          <button type="button" class="admin-subtab-btn active" id="subtabConfidentialPendingBtn" onclick="window.switchConfidentialSubTab('pending')" style="background:rgba(234,179,8,0.18); color:#eab308; border:1px solid rgba(234,179,8,0.35); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+            <i class="ri-time-line"></i> Pending Request (<span id="confidentialPendingCountBadge">0</span>)
+          </button>
+          <button type="button" class="admin-subtab-btn" id="subtabConfidentialActiveBtn" onclick="window.switchConfidentialSubTab('active')" style="background:rgba(255,255,255,0.04); color:var(--admin-muted); border:1px solid var(--admin-border); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+            <i class="ri-user-star-line"></i> Active Users (<span id="confidentialActiveCountBadge">0</span>)
+          </button>
+          <button type="button" class="admin-subtab-btn" id="subtabConfidentialHistoryBtn" onclick="window.switchConfidentialSubTab('history')" style="background:rgba(255,255,255,0.04); color:var(--admin-muted); border:1px solid var(--admin-border); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+            <i class="ri-history-line"></i> Read History (<span id="confidentialHistoryCountBadge">0</span>)
+          </button>
+        </div>
+
+        <!-- SUBTAB 1: PENDING REQUEST -->
+        <div id="confidentialSubtabPending" class="confidential-subtab-content">
+          <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1rem; margin-bottom:1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <span id="selectedConfidentialPendingCount" style="display:none; background:rgba(234,179,8,0.2); color:#eab308; padding:3px 10px; border-radius:8px; font-size:0.8rem; font-weight:600;">0 selected</span>
+              <button type="button" id="btnBatchApproveConfidential" onclick="window.batchApproveConfidentialPending()" class="btn-action success" style="display:none; padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-check-line"></i> Batch Approve
+              </button>
+              <button type="button" id="btnBatchRejectConfidential" onclick="window.batchRejectConfidentialPending()" class="btn-action danger" style="display:none; padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-close-line"></i> Batch Reject
+              </button>
+              <button type="button" id="btnBatchDeleteConfidentialPending" onclick="window.batchDeleteConfidentialPending()" class="btn-action danger" style="display:none; padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-delete-bin-line"></i> Batch Delete
+              </button>
+            </div>
+            <div>
+              <input type="text" id="confidentialPendingSearch" class="admin-input" style="width:260px; margin:0; padding:6px 12px; font-size:0.82rem;" placeholder="Search pending contributor..." oninput="window.filterConfidentialPendingTable()">
+            </div>
+          </div>
+
+          <div style="overflow-x:auto; background:rgba(15,23,42,0.6); border:1px solid var(--admin-border); border-radius:14px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:38px; text-align:center;">
+                    <input type="checkbox" id="selectAllConfidentialPending" onchange="window.toggleAllConfidentialPending(this)" title="Select all pending">
+                  </th>
+                  <th>Contributor</th>
+                  <th>Request Date</th>
+                  <th>Purpose / Justification</th>
+                  <th>Status</th>
+                  <th style="text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="confidentialPendingTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading pending requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBTAB 2: ACTIVE USERS -->
+        <div id="confidentialSubtabActive" class="confidential-subtab-content" style="display:none;">
+          <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1rem; margin-bottom:1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <span id="selectedConfidentialActiveCount" style="display:none; background:rgba(16,185,129,0.2); color:#10b981; padding:3px 10px; border-radius:8px; font-size:0.8rem; font-weight:600;">0 selected</span>
+              <button type="button" id="btnBatchExtendConfidential" onclick="window.batchExtendConfidentialActive()" class="btn-action success" style="display:none; padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-time-line"></i> Batch Extend (+7 Days)
+              </button>
+              <button type="button" id="btnBatchRevokeConfidential" onclick="window.batchRevokeConfidentialActive()" class="btn-action danger" style="display:none; padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-prohibited-line"></i> Batch Revoke
+              </button>
+              <button type="button" id="btnBatchDeleteConfidentialActive" onclick="window.batchDeleteConfidentialActive()" class="btn-action danger" style="display:none; padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-delete-bin-line"></i> Batch Delete
+              </button>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <select id="confidentialActiveFilter" class="admin-input" style="width:160px; margin:0; padding:6px 10px; font-size:0.82rem;" onchange="window.filterConfidentialActiveTable()">
+                <option value="all">All Records</option>
+                <option value="active">Active Window Only</option>
+                <option value="expired">Expired Threshold Only</option>
+                <option value="revoked">Revoked Access</option>
+              </select>
+              <input type="text" id="confidentialActiveSearch" class="admin-input" style="width:240px; margin:0; padding:6px 12px; font-size:0.82rem;" placeholder="Search user..." oninput="window.filterConfidentialActiveTable()">
+            </div>
+          </div>
+
+          <div style="overflow-x:auto; background:rgba(15,23,42,0.6); border:1px solid var(--admin-border); border-radius:14px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:38px; text-align:center;">
+                    <input type="checkbox" id="selectAllConfidentialActive" onchange="window.toggleAllConfidentialActive(this)" title="Select all active">
+                  </th>
+                  <th>Contributor</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Access Validity</th>
+                  <th>Approved On</th>
+                  <th style="text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="confidentialActiveTableBody">
+                <tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading active authorized users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBTAB 3: READ HISTORY -->
+        <div id="confidentialSubtabHistory" class="confidential-subtab-content" style="display:none;">
+          <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1rem; margin-bottom:1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <span id="selectedConfidentialHistoryCount" style="display:none; background:rgba(99,102,241,0.2); color:#818cf8; padding:3px 10px; border-radius:8px; font-size:0.8rem; font-weight:600;">0 selected</span>
+              <button type="button" id="btnDeleteSelectedConfidentialHistory" onclick="window.deleteSelectedConfidentialHistory()" class="btn-action danger" style="display:none; padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-delete-bin-line"></i> Delete Selected Logs
+              </button>
+              <button type="button" id="btnClearAllConfidentialHistory" onclick="window.clearAllConfidentialHistory()" class="btn-action secondary" style="padding:6px 12px; font-size:0.82rem;">
+                <i class="ri-delete-bin-4-line"></i> Clear All History
+              </button>
+            </div>
+            <div>
+              <input type="text" id="confidentialHistorySearch" class="admin-input" style="width:260px; margin:0; padding:6px 12px; font-size:0.82rem;" placeholder="Search history by name, tab..." oninput="window.filterConfidentialHistoryTable()">
+            </div>
+          </div>
+
+          <div style="overflow-x:auto; background:rgba(15,23,42,0.6); border:1px solid var(--admin-border); border-radius:14px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:38px; text-align:center;">
+                    <input type="checkbox" id="selectAllConfidentialHistory" onchange="window.toggleAllConfidentialHistory(this)" title="Select all history logs">
+                  </th>
+                  <th>Contributor</th>
+                  <th>Tab Visited</th>
+                  <th>Access Timestamp</th>
+                  <th>Device / Browser</th>
+                  <th style="text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="confidentialHistoryTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading read history logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -3262,6 +3424,68 @@
           <button type="submit" class="admin-btn" style="background:var(--admin-danger);" id="confirmDeleteBtn">Execute Deletion</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- CONFIDENTIAL APPROVAL MODAL -->
+  <div class="modal-overlay" id="confidentialApprovalModal">
+    <div class="auth-card" style="max-width:520px; width:95%; text-align:left; padding:1.75rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
+        <h2 style="margin:0; font-size:1.25rem; color:#eab308; display:flex; align-items:center; gap:8px;">
+          <i class="ri-shield-keyhole-line"></i> <span id="confidentialApprovalModalTitle">Approve Confidential Access</span>
+        </h2>
+        <button type="button" class="btn-action" onclick="window.closeConfidentialApprovalModal()" style="background:none; border:none; color:var(--admin-muted); font-size:1.4rem; cursor:pointer;">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div style="font-size:0.88rem; color:var(--admin-text); display:flex; flex-direction:column; gap:12px;">
+        <p id="confidentialApprovalTargetDesc" style="color:var(--admin-muted); margin:0;">Configure access date threshold for contributor.</p>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:var(--admin-muted); text-transform:uppercase;">Access Start Date</label>
+          <input type="date" id="confidentialStartDateInput" class="admin-input" style="width:100%; box-sizing:border-box; margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:var(--admin-muted); text-transform:uppercase;">Access End Date (Auto-Expires After)</label>
+          <input type="date" id="confidentialEndDateInput" class="admin-input" style="width:100%; box-sizing:border-box; margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:var(--admin-muted); text-transform:uppercase;">Admin Audit Note (Optional)</label>
+          <input type="text" id="confidentialApprovalNotesInput" class="admin-input" style="width:100%; box-sizing:border-box; margin-top:4px;" placeholder="e.g. Approved for Capstone evaluation">
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1.5rem; border-top:1px solid var(--admin-border); padding-top:1rem;">
+        <button type="button" class="admin-btn" style="background:rgba(255,255,255,0.08); color:var(--admin-text);" onclick="window.closeConfidentialApprovalModal()">Cancel</button>
+        <button type="button" class="admin-btn" style="background:linear-gradient(135deg, #eab308, #ca8a04); color:#000; font-weight:700;" onclick="window.confirmConfidentialApprovalAction()">Authorize Access Window</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIDENTIAL EDIT DATES MODAL -->
+  <div class="modal-overlay" id="confidentialEditDatesModal">
+    <div class="auth-card" style="max-width:520px; width:95%; text-align:left; padding:1.75rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
+        <h2 style="margin:0; font-size:1.25rem; color:#10b981; display:flex; align-items:center; gap:8px;">
+          <i class="ri-calendar-event-line"></i> Modify Access Threshold
+        </h2>
+        <button type="button" class="btn-action" onclick="window.closeConfidentialEditDatesModal()" style="background:none; border:none; color:var(--admin-muted); font-size:1.4rem; cursor:pointer;">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+      <div style="font-size:0.88rem; color:var(--admin-text); display:flex; flex-direction:column; gap:12px;">
+        <p id="confidentialEditTargetDesc" style="color:var(--admin-muted); margin:0;">Update start and end validity dates.</p>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:var(--admin-muted); text-transform:uppercase;">New Start Date</label>
+          <input type="date" id="confidentialEditStartDateInput" class="admin-input" style="width:100%; box-sizing:border-box; margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:var(--admin-muted); text-transform:uppercase;">New End Date (Auto-Expires After)</label>
+          <input type="date" id="confidentialEditEndDateInput" class="admin-input" style="width:100%; box-sizing:border-box; margin-top:4px;">
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1.5rem; border-top:1px solid var(--admin-border); padding-top:1rem;">
+        <button type="button" class="admin-btn" style="background:rgba(255,255,255,0.08); color:var(--admin-text);" onclick="window.closeConfidentialEditDatesModal()">Cancel</button>
+        <button type="button" class="admin-btn" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-weight:700;" onclick="window.confirmConfidentialEditDatesAction()">Save Threshold</button>
+      </div>
     </div>
   </div>
 
@@ -3477,6 +3701,8 @@
         window.loadDpgMetricsAdmin();
       } else if (tabId === 'feedback' && typeof window.loadFeedbackTabAdmin === 'function') {
         window.loadFeedbackTabAdmin();
+      } else if (tabId === 'confidential' && typeof window.loadConfidentialTabAdmin === 'function') {
+        window.loadConfidentialTabAdmin();
       } else if (tabId === 'logs') {
         if (typeof window.loadActivityLogs === 'function') window.loadActivityLogs();
         if (typeof window.loadAdminNotifications === 'function') window.loadAdminNotifications();
