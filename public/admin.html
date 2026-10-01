@@ -770,6 +770,9 @@
         <a class="nav-link" onclick="switchTab('ads-analytics'); if(window.loadAdsAnalyticsAdmin) window.loadAdsAnalyticsAdmin();">
           <i class="ri-line-chart-line" style="color:#10b981;"></i> Ads Analytics
         </a>
+        <a class="nav-link" onclick="switchTab('videos-mgmt'); if(window.loadVideosMgmtAdmin) window.loadVideosMgmtAdmin();">
+          <i class="ri-video-line" style="color:#ef4444;"></i> Videos MGMT
+        </a>
         <a class="nav-link" onclick="switchTab('notes-analytics'); if(window.loadNotesAnalyticsAdmin) window.loadNotesAnalyticsAdmin();">
           <i class="ri-sticky-note-line" style="color:#a855f7;"></i> Notes Analytics
         </a>
@@ -1924,6 +1927,79 @@
             </tbody>
           </table>
         </div>
+
+        <!-- YouTube Video Ads Telemetry & Performance -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-top:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+            <h3 style="font-size:1.15rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+              <i class="ri-youtube-line" style="color:#ef4444;"></i> YouTube Video Ads Telemetry & Engagement
+            </h3>
+            <span style="font-size:0.8rem; color:var(--admin-muted);">Live verified contributor likes and render URL view telemetry</span>
+          </div>
+
+          <!-- Mini KPI Row for YT Video Ads -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.2rem;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:0.9rem; display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:8px; background:rgba(239,68,68,0.15); display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.2rem;">
+                <i class="ri-video-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.75rem;">Total Video Ads</div>
+                <div id="statYtAdsCount" style="font-size:1.3rem; font-weight:700; color:white;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:0.9rem; display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:8px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10b981; font-size:1.2rem;">
+                <i class="ri-eye-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.75rem;">Total Video Views</div>
+                <div id="statYtAdsViews" style="font-size:1.3rem; font-weight:700; color:#10b981;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:0.9rem; display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:8px; background:rgba(244,114,182,0.15); display:flex; align-items:center; justify-content:center; color:#f472b6; font-size:1.2rem;">
+                <i class="ri-heart-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.75rem;">Total Video Likes</div>
+                <div id="statYtAdsLikes" style="font-size:1.3rem; font-weight:700; color:#f472b6;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:12px; padding:0.9rem; display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:8px; background:rgba(99,102,241,0.15); display:flex; align-items:center; justify-content:center; color:#818cf8; font-size:1.2rem;">
+                <i class="ri-share-forward-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.75rem;">Share Links Generated</div>
+                <div id="statYtAdsShares" style="font-size:1.3rem; font-weight:700; color:#818cf8;">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Ads Table -->
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem;">Ad Campaign</th>
+                  <th style="padding:0.75rem;">YouTube Source</th>
+                  <th style="padding:0.75rem;">Advertiser / UID</th>
+                  <th style="padding:0.75rem;">Render Endpoint</th>
+                  <th style="padding:0.75rem;">Views</th>
+                  <th style="padding:0.75rem;">Likes</th>
+                  <th style="padding:0.75rem;">Share Tokens</th>
+                </tr>
+              </thead>
+              <tbody id="ytAdsTelemetryTableBody">
+                <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading YouTube video ads telemetry...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- IN-DOCUMENT NOTES & CONTRIBUTOR ANALYTICS TAB -->
@@ -2834,6 +2910,238 @@
           </div>
         </div>
       </section>
+
+      <!-- VIDEOS MANAGEMENT & EDUCATIONAL MEDIA STUDIO -->
+      <section id="view-videos-mgmt" class="view-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-size:1.5rem; color:white; font-weight:700; display:flex; align-items:center; gap:10px;">
+              <i class="ri-video-line" style="color:#ef4444;"></i> Videos Management & Educational Media Studio
+            </h2>
+            <p style="color:var(--admin-text-muted); font-size:0.85rem; margin-top:2px;">Moderate educational YouTube video references, configure boost & auto-expiry block policies, and inspect cross-contributor video telemetry.</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button onclick="window.loadVideosMgmtAdmin()" class="btn-action primary" style="padding:0.6rem 1rem; display:flex; align-items:center; gap:6px;">
+              <i class="ri-refresh-line"></i> Refresh Videos
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Sub-tabs Navigation -->
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:1.5rem; border-bottom:1px solid var(--admin-border); padding-bottom:0.8rem;">
+          <button type="button" class="admin-subtab-btn active" id="subtabVideosPendingBtn" onclick="window.switchVideosMgmtSubTab('pending')" style="background:rgba(239,68,68,0.18); color:#ef4444; border:1px solid rgba(239,68,68,0.35); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+            <i class="ri-time-line"></i> Pending Request (<span id="videosPendingCountBadge">0</span>)
+          </button>
+          <button type="button" class="admin-subtab-btn" id="subtabVideosApprovedBtn" onclick="window.switchVideosMgmtSubTab('approved')" style="background:rgba(255,255,255,0.04); color:var(--admin-muted); border:1px solid var(--admin-border); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+            <i class="ri-checkbox-circle-line"></i> Approved Videos (<span id="videosApprovedCountBadge">0</span>)
+          </button>
+          <button type="button" class="admin-subtab-btn" id="subtabVideosAnalyticsBtn" onclick="window.switchVideosMgmtSubTab('analytics')" style="background:rgba(255,255,255,0.04); color:var(--admin-muted); border:1px solid var(--admin-border); padding:8px 16px; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+            <i class="ri-line-chart-line"></i> Videos Analytics
+          </button>
+        </div>
+
+        <!-- SUB-TAB 1: PENDING REQUEST -->
+        <div id="videosSubtabPending" class="videos-subtab-content">
+          <!-- Multi-select Action Bar -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1rem; margin-bottom:1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:#f8fafc; cursor:pointer; font-weight:600;">
+                <input type="checkbox" id="checkAllPendingVideos" onchange="window.toggleSelectAllPendingVideos(this.checked)" style="accent-color:#ef4444; width:16px; height:16px; cursor:pointer;" />
+                Select All
+              </label>
+              <button onclick="window.approveSelectedVideos()" class="btn-action success" style="padding:0.5rem 1rem; display:flex; align-items:center; gap:6px;">
+                <i class="ri-check-double-line"></i> Group Approve (<span id="selectedPendingApproveCount">0</span>)
+              </button>
+              <button onclick="window.rejectSelectedVideos()" class="btn-action danger" style="padding:0.5rem 1rem; display:flex; align-items:center; gap:6px;">
+                <i class="ri-delete-bin-line"></i> Group Reject / Auto Delete (<span id="selectedPendingRejectCount">0</span>)
+              </button>
+            </div>
+            <div style="position:relative; min-width:240px;">
+              <i class="ri-search-line" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--admin-muted); font-size:0.9rem;"></i>
+              <input type="text" id="searchPendingVideosInput" placeholder="Search by ID, title, contributor..." oninput="window.filterPendingVideos()" style="width:100%; padding:0.5rem 0.8rem 0.5rem 2.2rem; background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:8px; color:white; font-size:0.82rem;" />
+            </div>
+          </div>
+
+          <!-- Pending Data Table -->
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem; width:40px;"></th>
+                  <th style="padding:0.75rem;">Video ID</th>
+                  <th style="padding:0.75rem;">Title & Source</th>
+                  <th style="padding:0.75rem;">YouTube Link</th>
+                  <th style="padding:0.75rem;">Contributor</th>
+                  <th style="padding:0.75rem;">Submitted Date</th>
+                  <th style="padding:0.75rem; text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pendingVideosTableBody">
+                <tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-text-muted);">Loading pending video submissions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUB-TAB 2: APPROVED VIDEOS -->
+        <div id="videosSubtabApproved" class="videos-subtab-content" style="display:none;">
+          <!-- Multi-select Action Bar -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1rem; margin-bottom:1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:#f8fafc; cursor:pointer; font-weight:600;">
+                <input type="checkbox" id="checkAllApprovedVideos" onchange="window.toggleSelectAllApprovedVideos(this.checked)" style="accent-color:#ef4444; width:16px; height:16px; cursor:pointer;" />
+                Select All
+              </label>
+              <button onclick="window.blockSelectedVideos()" class="btn-action warning" style="padding:0.5rem 1rem; display:flex; align-items:center; gap:6px;">
+                <i class="ri-forbid-line"></i> Multiple Block (<span id="selectedApprovedBlockCount">0</span>)
+              </button>
+              <button onclick="window.deleteSelectedVideos()" class="btn-action danger" style="padding:0.5rem 1rem; display:flex; align-items:center; gap:6px;">
+                <i class="ri-delete-bin-2-line"></i> Multiple Delete (<span id="selectedApprovedDeleteCount">0</span>)
+              </button>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <select id="filterApprovedVideoStatus" onchange="window.filterApprovedVideos()" style="padding:0.5rem 0.8rem; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); color:white; font-size:0.82rem; cursor:pointer;">
+                <option value="ALL">All Statuses</option>
+                <option value="boosted">🚀 Boosted Only</option>
+                <option value="blocked">🚫 Blocked Only</option>
+                <option value="active">✅ Active Only</option>
+              </select>
+              <div style="position:relative; min-width:220px;">
+                <i class="ri-search-line" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--admin-muted); font-size:0.9rem;"></i>
+                <input type="text" id="searchApprovedVideosInput" placeholder="Search approved videos..." oninput="window.filterApprovedVideos()" style="width:100%; padding:0.5rem 0.8rem 0.5rem 2.2rem; background:rgba(0,0,0,0.3); border:1px solid var(--admin-border); border-radius:8px; color:white; font-size:0.82rem;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Approved Videos Table -->
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem; width:40px;"></th>
+                  <th style="padding:0.75rem;">Video ID</th>
+                  <th style="padding:0.75rem;">Title & Source</th>
+                  <th style="padding:0.75rem;">Contributor</th>
+                  <th style="padding:0.75rem;">Telemetry (V / L / S)</th>
+                  <th style="padding:0.75rem;">Status / Policy</th>
+                  <th style="padding:0.75rem; text-align:right;">CRUD Actions</th>
+                </tr>
+              </thead>
+              <tbody id="approvedVideosTableBody">
+                <tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-text-muted);">Loading approved videos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUB-TAB 3: VIDEOS ANALYTICS -->
+        <div id="videosSubtabAnalytics" class="videos-subtab-content" style="display:none;">
+          <!-- KPI Cards Grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:14px; padding:1.2rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:44px; height:44px; border-radius:10px; background:rgba(239,68,68,0.15); display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.4rem;">
+                <i class="ri-youtube-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Total Videos</div>
+                <div id="statTotalVideosCount" style="font-size:1.5rem; font-weight:700; color:white;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:14px; padding:1.2rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:44px; height:44px; border-radius:10px; background:rgba(245,158,11,0.15); display:flex; align-items:center; justify-content:center; color:#f59e0b; font-size:1.4rem;">
+                <i class="ri-trophy-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Top Contributor</div>
+                <div id="statTopVideoContributor" style="font-size:1.05rem; font-weight:700; color:#fbbf24; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;">None</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:14px; padding:1.2rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:44px; height:44px; border-radius:10px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10b981; font-size:1.4rem;">
+                <i class="ri-user-star-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Active Contributors (>3 Vids)</div>
+                <div id="statActiveVideoContributorsCount" style="font-size:1.5rem; font-weight:700; color:#10b981;">0</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--admin-border); border-radius:14px; padding:1.2rem; display:flex; align-items:center; gap:12px;">
+              <div style="width:44px; height:44px; border-radius:10px; background:rgba(99,102,241,0.15); display:flex; align-items:center; justify-content:center; color:#818cf8; font-size:1.4rem;">
+                <i class="ri-eye-line"></i>
+              </div>
+              <div>
+                <div style="color:var(--admin-muted); font-size:0.78rem;">Total Views / Likes / Shares</div>
+                <div id="statTotalVideoEngagement" style="font-size:1.3rem; font-weight:700; color:#a5b4fc;">0 / 0 / 0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Appearance and Analytics Graphical Telemetry using Canvas -->
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+              <h3 style="font-size:1.1rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+                <i class="ri-line-chart-line" style="color:#ef4444;"></i> Video Appearance & Telemetry Trend Canvas
+              </h3>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-action primary" id="btnChartDaily" onclick="window.setVideosAnalyticsFilter('daily')" style="padding:4px 10px; font-size:0.78rem;">Daily</button>
+                <button type="button" class="btn-action secondary" id="btnChartWeekly" onclick="window.setVideosAnalyticsFilter('weekly')" style="padding:4px 10px; font-size:0.78rem;">Weekly</button>
+                <button type="button" class="btn-action secondary" id="btnChartMonthly" onclick="window.setVideosAnalyticsFilter('monthly')" style="padding:4px 10px; font-size:0.78rem;">Monthly</button>
+              </div>
+            </div>
+            <div style="position:relative; width:100%; height:320px;">
+              <canvas id="videosAnalyticsCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Contributor wise Videos Upload Telemetry Table -->
+          <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto;">
+            <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+              <i class="ri-group-line" style="color:#38bdf8;"></i> Contributor-wise Videos Upload Telemetry
+            </h3>
+            <table class="data-table">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem;">Contributor</th>
+                  <th style="padding:0.75rem;">Videos Uploaded</th>
+                  <th style="padding:0.75rem;">Total Views</th>
+                  <th style="padding:0.75rem;">Total Likes</th>
+                  <th style="padding:0.75rem;">Total Shares</th>
+                  <th style="padding:0.75rem;">Activity Status</th>
+                </tr>
+              </thead>
+              <tbody id="contributorVideosTelemetryTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading contributor telemetry...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- One-Click Gemini AI Analytics Report Card -->
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.4);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+              <div>
+                <h3 style="font-size:1.15rem; color:#f87171; margin:0; display:flex; align-items:center; gap:8px;">
+                  <i class="ri-sparkling-fill" style="color:#ef4444;"></i> One-Click AI Video Analytics Report (Gemini LLM)
+                </h3>
+                <p style="color:var(--admin-muted); font-size:0.82rem; margin-top:2px;">Automated deep synthesis of academic video views, contributor retention, and appearance reach via Gemini AI.</p>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" id="btnGenerateVideosAiReport" onclick="window.generateAiVideoAnalyticsReport()" class="btn-action primary" style="padding:0.6rem 1.2rem; display:flex; align-items:center; gap:6px;">
+                  <i class="ri-robot-2-line"></i> Generate Report Now
+                </button>
+                <button type="button" id="btnCopyVideosAiReport" onclick="window.copyVideosAiReport()" class="btn-action secondary" style="display:none; padding:0.6rem 1rem;">
+                  <i class="ri-file-copy-line"></i> Copy Report
+                </button>
+              </div>
+            </div>
+            <div id="videosAiReportContent" style="min-height:160px; background:rgba(15,23,42,0.7); border:1px solid var(--admin-border); border-radius:12px; padding:1.2rem; font-size:0.88rem; line-height:1.6; color:#cbd5e1;">
+              Click "Generate Report Now" to trigger automated Gemini processing across all approved and pending videos telemetry.
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -3050,6 +3358,8 @@
         window.loadAdsAdmin();
       } else if (tabId === 'ads-analytics' && typeof window.loadAdsAnalyticsAdmin === 'function') {
         window.loadAdsAnalyticsAdmin();
+      } else if (tabId === 'videos-mgmt' && typeof window.loadVideosMgmtAdmin === 'function') {
+        window.loadVideosMgmtAdmin();
       } else if (tabId === 'notes-analytics' && typeof window.loadNotesAnalyticsAdmin === 'function') {
         window.loadNotesAnalyticsAdmin();
       } else if (tabId === 'resource-analytics' && typeof window.loadResourceAnalyticsAdmin === 'function') {

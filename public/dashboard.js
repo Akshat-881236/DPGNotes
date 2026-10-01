@@ -211,6 +211,8 @@ tabBtns.forEach(btn => {
       loadContributorManageResources();
     } else if (btn.dataset.target === "passwordVaultTab") {
       loadPasswordVaultData();
+    } else if (btn.dataset.target === "ytVideosTab") {
+      loadYtVideosData();
     }
   });
 });
@@ -3201,3 +3203,176 @@ window.deleteContributorWebsite = async function(siteId) {
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => window.loadContributorWebsites(), 1200);
 });
+
+// =========================================
+// YT VIDEOS REFERENCE MANAGEMENT
+// =========================================
+async function getNextYtVideoId() {
+  try {
+    let maxNum = 0;
+    const snap = await getDocs(collection(db, "videos"));
+    snap.forEach(d => {
+      const vidId = d.id || d.data().id || "";
+      const m = vidId.match(/^yt-(\d+)$/i);
+      if (m) {
+        const num = parseInt(m[1], 10);
+        if (num > maxNum) maxNum = num;
+      }
+    });
+    return `yt-${String(maxNum + 1).padStart(3, '0')}`;
+  } catch (err) {
+    console.warn("Error calculating next video ID:", err);
+    return `yt-001`;
+  }
+}
+
+async function loadYtVideosData() {
+  const tbody = document.getElementById("myVideosTableBody");
+  const idInput = document.getElementById("ytVideoIdInput");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">Loading your submitted videos...</td></tr>`;
+
+  try {
+    if (idInput) {
+      const nextId = await getNextYtVideoId();
+      idInput.value = nextId;
+    }
+
+    if (!currentUser) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">Please sign in to view your video submissions.</td></tr>`;
+      return;
+    }
+
+    const snap = await getDocs(collection(db, "videos"));
+    const myVideos = [];
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.uploaderUid === currentUser.uid || (!data.uploaderUid && currentUser.uid === 'CCoQSLFfzWf4NGF6zox3tO399Xg1')) {
+        myVideos.push({ id: d.id, ...data });
+      }
+    });
+
+    if (myVideos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:2.5rem; text-align:center; color:var(--text-muted);">You have not submitted any academic video references yet. Use the form above to submit your first video.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    myVideos.forEach(v => {
+      const status = (v.status || 'pending').toLowerCase();
+      let statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;"><i class="ri-time-line"></i> Pending Approval</span>`;
+      if (status === 'approved') {
+        statusBadge = `<span style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;"><i class="ri-checkbox-circle-line"></i> Approved</span>`;
+      } else if (status === 'blocked' || status === 'rejected') {
+        statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;"><i class="ri-close-circle-line"></i> ${status.toUpperCase()}</span>`;
+      }
+
+      const totalViews = Number(v.views) || 0;
+      const totalLikes = Array.isArray(v.likes) ? v.likes.length : (Number(v.likes) || 0);
+      const totalShares = Number(v.shares) || 0;
+
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid var(--border)";
+      tr.innerHTML = `
+        <td style="padding:12px; font-family:'Fira Code', monospace; font-weight:700; color:#a5b4fc;">${v.id}</td>
+        <td style="padding:12px; font-weight:600; color:#fff;">${escapeHtml(v.title || 'Untitled')}</td>
+        <td style="padding:12px; color:var(--text-muted);">${escapeHtml(v.source || 'Akshat Network Hub')}</td>
+        <td style="padding:12px;">${statusBadge}</td>
+        <td style="padding:12px; font-size:0.8rem; color:var(--text-muted);">
+          <span title="Views"><i class="ri-eye-line"></i> ${totalViews}</span> &bull; 
+          <span title="Likes"><i class="ri-heart-3-line"></i> ${totalLikes}</span> &bull; 
+          <span title="Shares"><i class="ri-share-forward-line"></i> ${totalShares}</span>
+        </td>
+        <td style="padding:12px; text-align:right;">
+          <a href="dpgnotes-video.html?id=${encodeURIComponent(v.id)}" target="_blank" style="padding:4px 10px; border-radius:6px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+            <i class="ri-play-circle-line"></i> Preview Player
+          </a>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("loadYtVideosData error:", err);
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:#ef4444;">Failed to load videos: ${err.message}</td></tr>`;
+  }
+}
+window.loadYtVideosData = loadYtVideosData;
+
+window.handleYtVideoSubmit = async function(e) {
+  e.preventDefault();
+  if (!currentUser) {
+    alert("Please sign in as a verified contributor to submit video references.");
+    return;
+  }
+
+  const submitBtn = document.getElementById("ytVideoSubmitBtn");
+  const sourceInput = document.getElementById("ytVideoSourceInput");
+  const urlInput = document.getElementById("ytVideoUrlInput");
+  const titleInput = document.getElementById("ytVideoTitleInput");
+
+  const source = sourceInput?.value.trim();
+  const url = urlInput?.value.trim();
+  const title = titleInput?.value.trim();
+
+  if (!source || !url || !title) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+    alert("Please enter a valid YouTube video URL (youtube.com or youtu.be).");
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Submitting Reference...`;
+  }
+
+  try {
+    const nextId = await getNextYtVideoId();
+    const videoDoc = {
+      id: nextId,
+      url: url,
+      title: title,
+      source: source,
+      status: "pending",
+      uploaderUid: currentUser.uid,
+      uploaderName: currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Contributor'),
+      views: 0,
+      likes: [],
+      shares: 0,
+      boosted: false,
+      createdAt: serverTimestamp()
+    };
+
+    await setDoc(doc(db, "videos", nextId), videoDoc);
+    await setDoc(doc(db, "Video", nextId), videoDoc);
+
+    try {
+      await addDoc(collection(db, "activity_logs"), {
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        action: `Submitted YouTube Video Reference (${nextId}: ${title}) with pending status`,
+        timestamp: serverTimestamp()
+      });
+    } catch(le) {}
+
+    alert(`✅ Video Reference "${title}" successfully submitted with ID: ${nextId}!\nStatus is set to 'pending' and awaiting administrator review.`);
+
+    if (sourceInput) sourceInput.value = "";
+    if (urlInput) urlInput.value = "";
+    if (titleInput) titleInput.value = "";
+
+    await loadYtVideosData();
+  } catch (err) {
+    console.error("Video submission failed:", err);
+    alert("Failed to submit video reference: " + err.message);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="ri-upload-cloud-2-line"></i> Submit for Approval`;
+    }
+  }
+};

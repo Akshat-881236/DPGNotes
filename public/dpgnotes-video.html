@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DPGNotes - Video Player &amp; Telemetry</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg: #0c0e1a;
+      --sb: #111427;
+      --surface: #161929;
+      --bdr: rgba(255,255,255,0.08);
+      --pri: #6366f1;
+      --pli: #818cf8;
+      --txt: #e2e8f0;
+      --mut: #94a3b8;
+      --red: #ef4444;
+      --green: #10b981;
+    }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    /* TOPBAR */
+    .topbar {
+      height: 60px;
+      background: var(--sb);
+      border-bottom: 1px solid var(--bdr);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--mut);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: #fff; }
+    .brand-tag {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-tag i { color: var(--pri); }
+    .policy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .policy-no-hide {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .policy-auto-restart {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .act-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--bdr);
+      color: var(--txt);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      text-decoration: none;
+      font-family: inherit;
+    }
+    .act-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .act-btn.liked {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+    .act-btn.primary {
+      background: var(--pri);
+      border-color: var(--pri);
+      color: #fff;
+    }
+    .act-btn.primary:hover {
+      background: var(--pli);
+    }
+    /* MAIN PLAYER CONTAINER */
+    .player-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem 1rem;
+      gap: 1.25rem;
+    }
+    .player-screen-box {
+      width: 100%;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      border: 1px solid var(--bdr);
+      position: relative;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    }
+    .player-screen-box iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    /* METADATA & TELEMETRY CARD */
+    .meta-card {
+      background: var(--surface);
+      border: 1px solid var(--bdr);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .meta-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .video-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+    .video-source {
+      color: var(--mut);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .telemetry-pills {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .tel-pill {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--bdr);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #cbd5e1;
+    }
+    .tel-pill strong { color: #fff; }
+    .badge-sponsored {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .badge-academic {
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    /* SHARE MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #111427;
+      border: 1px solid var(--bdr);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 480px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    }
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .share-input-box {
+      display: flex;
+      gap: 8px;
+      background: #0a0c18;
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 6px;
+    }
+    .share-input-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 6px 10px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    .copy-btn {
+      background: var(--pri);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .video-title { font-size: 1.15rem; }
+      .meta-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="dpgnotes-serp.html" class="back-btn" title="Back to SERP">
+        <i class="ri-arrow-left-line"></i> SERP
+      </a>
+      <div class="brand-tag">
+        <i class="ri-youtube-line"></i> DPGNotes Video
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button type="button" class="act-btn" id="likeBtn" onclick="toggleVideoLike()">
+        <i class="ri-heart-3-line" id="likeIcon"></i> <span id="likeCount">0</span>
+      </button>
+      <button type="button" class="act-btn primary" onclick="openShareModal()">
+        <i class="ri-share-forward-line"></i> Share
+      </button>
+      <a href="#" target="_blank" rel="noopener" class="act-btn" id="openYtBtn" title="Open in YouTube">
+        <i class="ri-external-link-line"></i>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="player-main">
+    <div class="player-screen-box">
+      <iframe id="videoIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </div>
+
+    <div class="meta-card">
+      <div class="meta-header">
+        <div>
+          <div id="typeBadgeContainer" style="margin-bottom:8px;">
+            <span class="badge-academic"><i class="ri-graduation-cap-line"></i> Academic Video</span>
+          </div>
+          <h1 class="video-title" id="videoTitle">Loading Video...</h1>
+          <div class="video-source" id="videoSource">
+            <i class="ri-user-line"></i> <span id="sourceName">Loading Source...</span>
+          </div>
+        </div>
+
+        <div class="telemetry-pills">
+          <div class="tel-pill">
+            <i class="ri-eye-line" style="color:#38bdf8;"></i> Views: <strong id="telViews">0</strong>
+          </div>
+          <div class="tel-pill">
+            <i class="ri-heart-3-fill" style="color:#f43f5e;"></i> Likes: <strong id="telLikes">0</strong>
+          </div>
+          <div class="tel-pill">
+            <i class="ri-share-forward-fill" style="color:#a855f7;"></i> Shares: <strong id="telShares">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="color:var(--mut); font-size:0.9rem; line-height:1.6; border-top:1px solid var(--bdr); padding-top:1rem;">
+        <p id="videoDesc">Verified educational module hosted within DPGNotes academic ecosystem. Adheres strictly to the university curriculum framework.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- SHARE MODAL -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <i class="ri-share-forward-line" style="color:var(--pri);"></i> Share Video Link
+      </div>
+      <p style="color:var(--mut); font-size:0.85rem;">
+        Share this unique video URL with friends.
+      </p>
+      <div class="share-input-box">
+        <input type="text" id="shareUrlInput" readonly>
+        <button type="button" class="copy-btn" id="copyBtn" onclick="copyShareUrl()">Copy</button>
+      </div>
+      <div id="copySuccessMsg" style="color:#34d399; font-size:0.8rem; display:none;">
+        <i class="ri-checkbox-circle-line"></i> Link copied to clipboard!
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="act-btn" onclick="closeShareModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentVideoId = "";
+    let currentAdId = "";
+    let currentToken = "";
+    let isAd = false;
+    let currentUser = null;
+    let videoData = null;
+
+    function extractYouTubeId(url) {
+      if (!url) return "";
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+      return match ? match[1] : "";
+    }
+
+    async function initPlayer() {
+      const params = new URLSearchParams(window.location.search);
+      currentVideoId = params.get("id") || "";
+      currentAdId = params.get("adId") || "";
+      currentToken = params.get("token") || "";
+
+      // 1. Resolve Token if present
+      if (currentToken) {
+        try {
+          const shareDoc = await getDoc(doc(db, "share_links", currentToken));
+          if (shareDoc.exists()) {
+            const sData = shareDoc.data();
+            currentVideoId = sData.videoId || sData.docId || "";
+            if (sData.type === "ad_video") {
+              currentAdId = currentVideoId;
+              isAd = true;
+            }
+            // Increment share clicks
+            updateDoc(doc(db, "share_links", currentToken), {
+              clicks: increment(1)
+            }).catch(() => {});
+          }
+        } catch(e) {
+          console.warn("Share token resolve failed:", e);
+        }
+      }
+
+      if (currentAdId) {
+        isAd = true;
+        await loadAdVideo(currentAdId);
+      } else if (currentVideoId) {
+        await loadAcademicVideo(currentVideoId);
+      } else {
+        // Fallback default
+        currentVideoId = "yt-001";
+        await loadAcademicVideo(currentVideoId);
+      }
+    }
+
+    async function loadAcademicVideo(id) {
+      try {
+        let snap = await getDoc(doc(db, "videos", id));
+        if (!snap.exists()) {
+          snap = await getDoc(doc(db, "Video", id));
+        }
+
+        if (snap.exists()) {
+          videoData = snap.data();
+          renderVideo(videoData);
+          // Increment views telemetry
+          updateDoc(doc(db, "videos", id), { views: increment(1) }).catch(() => {});
+          updateDoc(doc(db, "Video", id), { views: increment(1) }).catch(() => {});
+        } else {
+          // Hardcoded fallback for default 4
+          const defaults = {
+            'yt-001': { url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes PDF Viewer', source: 'Akshat Network Hub' },
+            'yt-002': { url: 'https://www.youtube.com/watch?v=Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story' },
+            'yt-003': { url: 'https://www.youtube.com/watch?v=hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship' },
+            'yt-004': { url: 'https://www.youtube.com/watch?v=Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship' }
+          };
+          videoData = defaults[id] || defaults['yt-001'];
+          renderVideo(videoData);
+        }
+      } catch (e) {
+        console.error("Failed loading academic video:", e);
+      }
+    }
+
+    async function loadAdVideo(adId) {
+      try {
+        const snap = await getDoc(doc(db, "user_ads", adId));
+        if (snap.exists()) {
+          videoData = snap.data();
+          videoData.isSponsored = true;
+          renderVideo(videoData);
+          // Increment views in ad doc
+          updateDoc(doc(db, "user_ads", adId), {
+            views: increment(1),
+            impressionsCount: increment(1)
+          }).catch(() => {});
+        }
+      } catch (e) {
+        console.error("Failed loading ad video:", e);
+      }
+    }
+
+    function renderVideo(data) {
+      const ytId = extractYouTubeId(data.url || data.videoUrl || data.targetLink || "");
+      const iframe = document.getElementById("videoIframe");
+      if (iframe && ytId) {
+        // Enforce Auto Restart Policy: enablejsapi=1, loop=1, playlist=ytId
+        iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
+      }
+
+      document.getElementById("videoTitle").innerText = data.title || "Academic Educational Demonstration";
+      document.getElementById("sourceName").innerText = data.source || data.uploaderName || data.userName || "Verified Creator";
+
+      const ytBtn = document.getElementById("openYtBtn");
+      if (ytBtn && ytId) ytBtn.href = `https://www.youtube.com/watch?v=${ytId}`;
+
+      const typeBadge = document.getElementById("typeBadgeContainer");
+      if (typeBadge) {
+        if (data.isSponsored || isAd) {
+          typeBadge.innerHTML = `<span class="badge-sponsored"><i class="ri-advertisement-fill"></i> Sponsored Ad Video</span>`;
+        } else {
+          typeBadge.innerHTML = `<span class="badge-academic"><i class="ri-shield-check-fill"></i> Verified Academic Video</span>`;
+        }
+      }
+
+      const views = (Number(data.views) || 0) + 1;
+      const likesCount = Array.isArray(data.likes) ? data.likes.length : (Number(data.likes) || 0);
+      const sharesCount = Number(data.shares) || 0;
+
+      document.getElementById("telViews").innerText = views.toLocaleString();
+      document.getElementById("telLikes").innerText = likesCount.toLocaleString();
+      document.getElementById("telShares").innerText = sharesCount.toLocaleString();
+      document.getElementById("likeCount").innerText = likesCount.toLocaleString();
+
+      updateLikeButtonState();
+    }
+
+    function updateLikeButtonState() {
+      const btn = document.getElementById("likeBtn");
+      const icon = document.getElementById("likeIcon");
+      if (!btn || !icon || !currentUser || !videoData) return;
+
+      const likesArr = Array.isArray(videoData.likes) ? videoData.likes : [];
+      const hasLiked = likesArr.includes(currentUser.uid);
+
+      if (hasLiked) {
+        btn.classList.add("liked");
+        icon.className = "ri-heart-3-fill";
+      } else {
+        btn.classList.remove("liked");
+        icon.className = "ri-heart-3-line";
+      }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      updateLikeButtonState();
+    });
+
+    window.toggleVideoLike = async function() {
+      if (!currentUser) {
+        alert("Please sign in as a verified contributor to like this video.");
+        return;
+      }
+
+      const likesArr = Array.isArray(videoData.likes) ? videoData.likes : [];
+      const hasLiked = likesArr.includes(currentUser.uid);
+
+      const targetCol = isAd ? "user_ads" : "videos";
+      const targetId = isAd ? currentAdId : currentVideoId;
+
+      try {
+        if (hasLiked) {
+          videoData.likes = likesArr.filter(u => u !== currentUser.uid);
+          await updateDoc(doc(db, targetCol, targetId), {
+            likes: arrayRemove(currentUser.uid)
+          });
+          if (!isAd) {
+            updateDoc(doc(db, "Video", targetId), { likes: arrayRemove(currentUser.uid) }).catch(() => {});
+          }
+        } else {
+          videoData.likes = [...likesArr, currentUser.uid];
+          await updateDoc(doc(db, targetCol, targetId), {
+            likes: arrayUnion(currentUser.uid)
+          });
+          if (!isAd) {
+            updateDoc(doc(db, "Video", targetId), { likes: arrayUnion(currentUser.uid) }).catch(() => {});
+          }
+        }
+
+        const count = videoData.likes.length;
+        document.getElementById("telLikes").innerText = count.toLocaleString();
+        document.getElementById("likeCount").innerText = count.toLocaleString();
+        updateLikeButtonState();
+      } catch (err) {
+        console.error("Like toggle failed:", err);
+      }
+    };
+
+    window.openShareModal = async function() {
+      const modal = document.getElementById("shareModal");
+      const input = document.getElementById("shareUrlInput");
+      const msg = document.getElementById("copySuccessMsg");
+      if (msg) msg.style.display = "none";
+
+      let token = currentToken;
+      if (!token) {
+        token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+        try {
+          await setDoc(doc(db, "share_links", token), {
+            token: token,
+            type: isAd ? "ad_video" : "video",
+            videoId: isAd ? currentAdId : currentVideoId,
+            docId: isAd ? currentAdId : currentVideoId,
+            title: videoData?.title || "Educational Video",
+            uploader: currentUser?.displayName || videoData?.source || "DPGNotes Contributor",
+            clicks: 0,
+            createdAt: new Date()
+          });
+
+          // Increment shares count
+          const targetCol = isAd ? "user_ads" : "videos";
+          const targetId = isAd ? currentAdId : currentVideoId;
+          updateDoc(doc(db, targetCol, targetId), { shares: increment(1) }).catch(() => {});
+          if (!isAd) updateDoc(doc(db, "Video", targetId), { shares: increment(1) }).catch(() => {});
+
+          const currentShares = (Number(videoData?.shares) || 0) + 1;
+          document.getElementById("telShares").innerText = currentShares.toLocaleString();
+        } catch(e) {
+          console.warn("Share token creation failed:", e);
+        }
+      }
+
+      const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
+      if (input) input.value = shareUrl;
+      if (modal) modal.classList.add("active");
+    };
+
+    window.closeShareModal = function() {
+      const modal = document.getElementById("shareModal");
+      if (modal) modal.classList.remove("active");
+    };
+
+    window.copyShareUrl = function() {
+      const input = document.getElementById("shareUrlInput");
+      if (!input) return;
+      navigator.clipboard.writeText(input.value).then(() => {
+        const msg = document.getElementById("copySuccessMsg");
+        if (msg) msg.style.display = "block";
+      });
+    };
+
+    initPlayer();
+  </script>
+</body>
+</html>

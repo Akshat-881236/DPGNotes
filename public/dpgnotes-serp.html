@@ -1207,49 +1207,39 @@
     <div id="resultsList" class="results-list"></div>
   </main>
 
-  <!-- Gemini API Key Modal with Render Cloud AI status banner -->
-  <div id="geminiApiKeyModal" class="dpg-modal-backdrop" style="display:none;">
-    <div class="dpg-modal-box">
-      <div class="dpg-modal-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <i class="ri-key-2-fill" style="color:#7c3aed; font-size:1.3rem;"></i>
-          <h4>Gemini API Key Configuration</h4>
-        </div>
-        <button type="button" class="dpg-modal-close" onclick="closeGeminiKeyModal()">&times;</button>
-      </div>
-      <div class="dpg-modal-body">
-        <!-- Render Cloud AI Status Banner -->
-        <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:10px; padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <i class="ri-cloud-line" style="color:#7c3aed; font-size:1.25rem;"></i>
-            <div>
-              <div style="font-size:0.84rem; font-weight:700; color:#1e1b4b;">Render Cloud AI Engine (Built-in)</div>
-              <div style="font-size:0.75rem; color:#6b7280;">Pre-configured on Render Web Service via <code>GEMINI_API_KEY</code></div>
-            </div>
-          </div>
-          <span style="background:#e6f4ea; color:#137333; border:1px solid #ceead6; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-            <i class="ri-checkbox-circle-fill"></i> Cloud Ready
+  <!-- YouTube Video Player Modal (Enforcing No Hide Policy & Auto Restart Policy) -->
+  <div id="serpVideoPlayerModal" class="dpg-modal-backdrop" style="display:none;" data-policy="no-hide">
+    <div class="dpg-modal-box" style="max-width:860px; width:95%; padding:18px; border-radius:16px;">
+      <div class="dpg-modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <i class="ri-youtube-fill" style="color:#ea4335; font-size:1.5rem;"></i>
+          <h4 id="serpModalVideoTitle" style="margin:0; font-size:1.05rem; color:#1e293b; font-weight:700;">Educational Video</h4>
+          <span id="serpModalSponsoredBadge" style="display:none; background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700;">
+            <i class="ri-advertisement-fill"></i> Sponsored
           </span>
         </div>
-
-        <p style="color:#4b5563; font-size:0.86rem; line-height:1.6; margin-bottom:0.9rem;">
-          By default, DPGNotes automatically routes AI queries through our <strong>Render Cloud AI Engine</strong>. If you want direct, high-speed client-side generation or custom quota, you can optionally provide your own Google Gemini API key below.
-        </p>
-        <div style="position:relative; margin-bottom:0.8rem;">
-          <input type="password" id="customGeminiKeyInput" placeholder="Optional: Paste custom Gemini API key (AIzaSy...)" style="width:100%; padding:0.65rem 2.8rem 0.65rem 0.85rem; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; color:#1e293b; font-family:'Fira Code', monospace; font-size:0.85rem; outline:none; box-sizing:border-box;">
-          <button type="button" onclick="toggleApiKeyVisibility()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748b; cursor:pointer; font-size:1.1rem;"><i id="apiKeyVisIcon" class="ri-eye-line"></i></button>
-        </div>
-        <div id="apiKeyTestResult" style="margin-bottom:0.8rem; font-size:0.82rem; display:none;"></div>
-        <div style="font-size:0.76rem; color:#6b7280; line-height:1.5;">
-          🔒 Your custom key is stored strictly in your local browser's <code>localStorage</code>.<br>
-          Get a free Gemini API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#7c3aed; text-decoration:none; font-weight:600;">Google AI Studio <i class="ri-external-link-line"></i></a>, or leave blank to use the built-in Cloud AI.
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid #fca5a5; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700;">
+            <i class="ri-shield-keyhole-line"></i> No Hide Policy
+          </span>
+          <span style="background:rgba(16,185,129,0.1); color:#059669; border:1px solid #a7f3d0; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700;">
+            <i class="ri-repeat-2-line"></i> Auto Restart Policy
+          </span>
+          <button type="button" class="dpg-modal-close" onclick="closeSerpVideoModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b;" title="Exit Video">&times;</button>
         </div>
       </div>
-      <div class="dpg-modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:1.25rem;">
-        <button type="button" class="dpg-btn dpg-btn-danger" onclick="clearCustomGeminiKey()" title="Clear and use Render Cloud AI Engine"><i class="ri-delete-bin-line"></i> Clear &amp; Use Cloud AI</button>
+      <div style="position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden; margin-bottom:12px;">
+        <iframe id="serpModalIframe" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div id="serpModalChannel" style="color:#64748b; font-size:0.85rem; font-weight:600;">Channel: Loading...</div>
         <div style="display:flex; gap:8px;">
-          <button type="button" class="dpg-btn dpg-btn-secondary" onclick="testCustomGeminiKey()"><i class="ri-test-tube-line"></i> Test Key</button>
-          <button type="button" class="dpg-btn dpg-btn-primary" onclick="saveCustomGeminiKey()"><i class="ri-save-line"></i> Save &amp; Connect</button>
+          <a id="serpModalFullScreenBtn" href="#" target="_blank" class="dpg-btn dpg-btn-primary" style="padding:6px 14px; font-size:0.82rem; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+            <i class="ri-fullscreen-line"></i> View Full Screen in New Tab
+          </a>
+          <button type="button" class="dpg-btn dpg-btn-secondary" onclick="shareSerpModalVideo()" style="padding:6px 14px; font-size:0.82rem; display:inline-flex; align-items:center; gap:6px;">
+            <i class="ri-share-forward-line"></i> Share Link
+          </button>
         </div>
       </div>
     </div>
@@ -1257,7 +1247,7 @@
 
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, collectionGroup, doc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -1605,20 +1595,13 @@
       });
     }
 
+    window.activeFilterChip = 'ALL';
+
     window.selectFilterChip = function(chipVal) {
+      window.activeFilterChip = chipVal || 'ALL';
       document.querySelectorAll('.serp-filter-chip').forEach(c => c.classList.remove('active'));
       const activeChip = document.querySelector(`.serp-filter-chip[data-filter="${chipVal}"]`);
       if (activeChip) activeChip.classList.add('active');
-
-      const catSelect = document.getElementById("filterCategory");
-      if (catSelect) {
-        if (chipVal === 'ALL') {
-          catSelect.value = 'ALL';
-        } else {
-          const matched = Array.from(catSelect.options).find(o => o.value.toLowerCase().includes(chipVal.toLowerCase()));
-          if (matched) catSelect.value = matched.value;
-        }
-      }
       applyFilters();
     };
 
@@ -1633,6 +1616,7 @@
       if (specSelect) specSelect.value = 'ALL';
       if (sortSelect) sortSelect.value = 'relevance';
 
+      window.activeFilterChip = 'ALL';
       document.querySelectorAll('.serp-filter-chip').forEach(c => c.classList.remove('active'));
       const allChip = document.querySelector('.serp-filter-chip[data-filter="ALL"]');
       if (allChip) allChip.classList.add('active');
@@ -1646,9 +1630,10 @@
       const discVal = document.getElementById("filterDiscipline")?.value || 'ALL';
       const specVal = document.getElementById("specificFilter")?.value || 'ALL';
       const sortVal = document.getElementById("sortOrder")?.value || 'relevance';
+      const chipVal = window.activeFilterChip || 'ALL';
 
       let filtered = allDocs.filter(d => {
-        // Query text match
+        // 1. Search Query Match
         if (q) {
           const titleMatch = (d.title || '').toLowerCase().includes(q);
           const descMatch = (d.description || '').toLowerCase().includes(q);
@@ -1658,16 +1643,43 @@
           if (!titleMatch && !descMatch && !discMatch && !catMatch && !tagsMatch) return false;
         }
 
-        // Category filter
+        // 2. Category Dropdown Filter
         if (catVal !== 'ALL' && (d.category || '').toLowerCase() !== catVal.toLowerCase()) return false;
 
-        // Discipline filter
+        // 3. Discipline Dropdown Filter
         if (discVal !== 'ALL' && (d.discipline || '').toLowerCase() !== discVal.toLowerCase()) return false;
 
-        // Specific Content filter
+        // 4. Specific Content Filter
         if (specVal === 'notes_only' && (d.isSolution === true || d.solutionUrl)) return false;
         if (specVal === 'solutions_only' && !d.isSolution && !d.solutionUrl) return false;
         if (specVal === 'verified_only' && !d.isVerified && !d.verifiedContributor) return false;
+
+        // 5. Real-Time Filter Chips Matrix
+        if (chipVal !== 'ALL') {
+          const dTitle = (d.title || '').toLowerCase();
+          const dCat = (d.category || '').toLowerCase();
+          const dTags = Array.isArray(d.tags) ? d.tags.map(t => t.toLowerCase()) : [];
+
+          if (chipVal === 'SE') {
+            const matchesSe = dCat.includes('se') || dCat.includes('sessional') || dTitle.includes('se') || dTitle.includes('sessional') || dTags.some(t => t.includes('se') || t.includes('sessional'));
+            if (!matchesSe) return false;
+          } else if (chipVal === 'SP') {
+            const matchesSp = dCat.includes('sample') || dCat.includes('sp') || dTitle.includes('sample') || dTitle.includes('sp') || dTags.some(t => t.includes('sample') || t.includes('sp'));
+            if (!matchesSp) return false;
+          } else if (chipVal === 'UE') {
+            const matchesUe = dCat.includes('university') || dCat.includes('ue') || dTitle.includes('university') || dTitle.includes('ue') || dTags.some(t => t.includes('university') || t.includes('ue'));
+            if (!matchesUe) return false;
+          } else if (chipVal === 'T&N') {
+            const matchesTn = dCat.includes('tutorial') || dCat.includes('note') || dTitle.includes('tutorial') || dTitle.includes('note') || dTags.some(t => t.includes('tutorial') || t.includes('note'));
+            if (!matchesTn) return false;
+          } else if (chipVal === 'Practical Solution') {
+            const matchesPrac = d.isSolution || d.solutionType === 'practical' || dCat.includes('practical') || dTitle.includes('practical') || dTags.some(t => t.includes('practical'));
+            if (!matchesPrac) return false;
+          } else if (chipVal === 'Assignment Solution') {
+            const matchesAss = d.isSolution || d.solutionType === 'assignment' || dCat.includes('assignment') || dTitle.includes('assignment') || dTags.some(t => t.includes('assignment'));
+            if (!matchesAss) return false;
+          }
+        }
 
         return true;
       });
@@ -1684,8 +1696,20 @@
       }
 
       window.currentSearchResults = filtered;
+      const countEl = document.getElementById("resultsCount");
+      if (countEl) countEl.innerText = filtered.length;
       renderActiveTabContent();
     }
+    window.applyFilters = applyFilters;
+
+    // Attach immediate event listeners for instantaneous filter updates
+    ['filterCategory', 'filterDiscipline', 'specificFilter', 'sortOrder'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', () => applyFilters());
+        el.addEventListener('input', () => applyFilters());
+      }
+    });
 
     function runSearch() {
       const q = searchField ? searchField.value.trim() : '';
@@ -1817,8 +1841,6 @@
     function renderAiOverviewTab(results, q) {
       const list = document.getElementById("resultsList");
       const topDoc = results[0] || { title: "DPG College Curriculum", category: "General", discipline: "Computer Science" };
-      const apiKey = localStorage.getItem('dpg_gemini_api_key');
-      const keyStatusBadge = apiKey ? '🔑 Custom Gemini Key Active' : '☁️ Cloud AI Active';
 
       list.innerHTML = `
         <div style="width:100%; max-width:960px;">
@@ -1830,26 +1852,17 @@
                 <h3 class="ai-hero-title">DPGNotes AI Overview &amp; Knowledge Synthesis</h3>
               </div>
               <div class="ai-header-controls">
-                <button type="button" class="ai-key-config-btn" onclick="openGeminiKeyModal()" title="Configure Custom Gemini API Key">
-                  <span id="geminiKeyStatusText">${keyStatusBadge}</span>
-                </button>
                 <button type="button" class="ai-clear-chat-btn" onclick="clearSerpAiChat()" title="Clear Chat History">
-                  <i class="ri-delete-bin-line"></i> Clear
+                  <i class="ri-delete-bin-line"></i> Clear Conversation
                 </button>
               </div>
             </div>
 
-            <!-- Instant Synthesis Output -->
-            <div style="background:#f8fafc; border-left:4px solid #7c3aed; padding:14px; border-radius:8px; font-size:0.92rem; color:#334155; line-height:1.65; margin-bottom:1rem;">
-              <p style="margin-bottom:8px;">
-                📘 <strong>Academic Overview for "${q || 'Academic Curriculum'}":</strong><br>
-                Evaluated against verified academic records in DPGNotes. Top matching resource: <strong>"${topDoc.title}"</strong> (${topDoc.category} &bull; ${topDoc.discipline}).
+            <!-- Introductory synthesis badge -->
+            <div style="background:#f8fafc; border-left:4px solid #7c3aed; padding:12px 14px; border-radius:8px; font-size:0.9rem; color:#334155; line-height:1.6; margin-bottom:1rem;">
+              <p style="margin:0;">
+                ✨ <strong>DPGNotes NLP Synthesis Engine:</strong> Ask conceptual questions, explore exam scoring frameworks, or request runnable program implementations. Responses are dynamically generated via Gemini AI and contextualized with verified university repository documents.
               </p>
-              <ul style="margin:6px 0 0 18px; padding:0;">
-                <li>Review core definitions, formulas, and sessional exam patterns for maximum scoring.</li>
-                <li>Live interactive HTML, CSS, JavaScript, and Python code blocks can be executed in the sandbox below.</li>
-                <li>Ask any question in the interactive study chat to generate complete explanations or runnable programs.</li>
-              </ul>
             </div>
           </div>
 
@@ -1860,15 +1873,15 @@
                 <i class="ri-chat-voice-line" style="color:#7c3aed; font-size:1.25rem;"></i>
                 <h4 style="margin:0; font-size:1rem; color:#1e293b; font-weight:700;">Interactive Study Chat &amp; Code Sandbox</h4>
               </div>
-              <span style="font-size:0.78rem; color:#64748b;">Supports HTML, CSS, JS, Python, C++</span>
+              <span style="font-size:0.78rem; color:#64748b;">Powered by Gemini NLP &amp; Live Sandbox</span>
             </div>
 
             <div id="serpAiChatLogContainer" class="ai-chat-feed">
-              <div class="ai-msg-bubble assistant">
+              <div class="ai-msg-bubble assistant" id="welcomeAiMsg">
                 <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
                   <i class="ri-sparkling-fill"></i> DPGNotes AI Assistant
                 </div>
-                <div>Hello! Ask me any conceptual question about <strong>${q || 'your course'}</strong>, request exam code with live sandbox execution, or ask for step-by-step problem derivations.</div>
+                <div>Hello! Ask me any conceptual question about <strong>${escapeHtml(q) || 'your coursework'}</strong>, request exam revision summaries, or request programming solutions.</div>
               </div>
             </div>
 
@@ -1890,6 +1903,16 @@
           </div>
         </div>
       `;
+
+      // Auto-trigger initial search query synthesis if not already triggered for this query
+      if (q && q.trim() && window.initialAiQueryRun !== q.trim()) {
+        window.initialAiQueryRun = q.trim();
+        setTimeout(() => {
+          const welcome = document.getElementById("welcomeAiMsg");
+          if (welcome) welcome.remove();
+          window.executeSerpAiQuery(q.trim(), true);
+        }, 150);
+      }
     }
 
     window.clearSerpAiChat = function() {
@@ -1900,7 +1923,7 @@
             <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
               <i class="ri-sparkling-fill"></i> DPGNotes AI Assistant
             </div>
-            <div>Conversation cleared. Ask me any question or request code solutions to get started.</div>
+            <div>Conversation cleared. Ask me any conceptual question or request code solutions to get started.</div>
           </div>
         `;
       }
@@ -1914,22 +1937,22 @@
       }
     };
 
-    window.sendSerpAiChatMessage = async function() {
+    window.executeSerpAiQuery = async function(questionText, isInitial = false) {
       const chatInput = document.getElementById("serpAiChatInput");
       const chatBtn = document.getElementById("serpAiSendBtn");
       const feed = document.getElementById("serpAiChatLogContainer");
-      if (!chatInput || !feed) return;
+      if (!feed) return;
 
-      const question = chatInput.value.trim();
+      const question = questionText.trim();
       if (!question) return;
 
       // 1. Render User Message
       const userBubble = document.createElement("div");
       userBubble.className = "ai-msg-bubble user";
-      userBubble.innerHTML = `<strong>You:</strong> ${question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
+      userBubble.innerHTML = `<strong>You:</strong> ${escapeHtml(question)}`;
       feed.appendChild(userBubble);
 
-      chatInput.value = "";
+      if (!isInitial && chatInput) chatInput.value = "";
       if (chatBtn) {
         chatBtn.disabled = true;
         chatBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`;
@@ -1938,146 +1961,62 @@
       // 2. Render Loading AI Bubble
       const loadingBubble = document.createElement("div");
       loadingBubble.className = "ai-msg-bubble assistant";
-      loadingBubble.innerHTML = `<i class="ri-loader-4-line ri-spin" style="color:#7c3aed;"></i> DPGNotes AI is generating solution and code containers...`;
+      loadingBubble.innerHTML = `<i class="ri-loader-4-line ri-spin" style="color:#7c3aed;"></i> DPGNotes AI is processing your query with Gemini LLM...`;
       feed.appendChild(loadingBubble);
       feed.scrollTop = feed.scrollHeight;
 
       const userQueryParam = searchField ? searchField.value.trim() : '';
-      const customApiKey = localStorage.getItem('dpg_gemini_api_key');
-
-      let responseText = "";
+      const backendUrl = apiBase || 'https://dpgnotes.onrender.com';
 
       try {
-        if (customApiKey) {
-          // Direct Google Gemini API Call with model fallback
-          const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-          let clientErr = null;
-          const contextDocs = (window.currentSearchResults || []).slice(0, 3).map(d => `${d.title} (${d.category} - ${d.discipline}): ${d.description || ''}`).join("\n");
+        const res = await fetch(backendUrl + '/api/ai/serp-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: userQueryParam,
+            question: question,
+            contextDocs: (window.currentSearchResults || []).slice(0, 3)
+          })
+        });
 
-          const promptPayload = {
-            contents: [{
-              role: "user",
-              parts: [{
-                text: `You are the Lead Academic AI Professor & Master Software Architect for DPGNotes at DPG College. You help university students with exam preparation, comprehensive theoretical explanations, and 100% complete, runnable code implementations.
-
-Student Question: ${question}
-Context: ${userQueryParam || 'Academic Curriculum & Engineering'}
-Relevant Documents:
-${contextDocs}
-
-CRITICAL CODE QUALITY & COMPLETION RULES:
-1. COMPLETE WORKING CODE: If code, algorithms, programs, or web pages (HTML, CSS, JS, Python, C++, Java, etc.) are requested or relevant, you MUST produce FULL, END-TO-END, PRODUCTION-READY CODE.
-2. NO LAZY SHORTCUTS: NEVER use placeholder comments such as "// ... write remaining code here", "// implement logic here", "// add styles here", or truncated ellipses. Every single function, styling rule, and logic flow must be completely written out.
-3. Live Interactive Sandbox Compliance: When providing web code, provide clean code in standard markdown code fences (e.g. \`\`\`html, \`\`\`css, \`\`\`javascript, \`\`\`python, \`\`\`cpp) so our live sandbox engine can render it directly for students.
-4. ACADEMIC DEPTH:
-   - Provide formal definitions, theoretical foundations, and core architecture.
-   - Outline exam scoring criteria, university syllabus breakdown, and step-by-step points.
-   - Include time/space complexity analysis when discussing algorithms or data structures.
-5. FORMATTING: Use structured Markdown with bold titles, clean lists, and informative code commentary.`
-              }]
-            }],
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 4096
-            }
-          };
-
-          for (const m of modelsToTry) {
-            try {
-              const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(customApiKey)}`;
-              const geminiRes = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(promptPayload)
-              });
-              if (geminiRes.ok) {
-                const resJson = await geminiRes.json();
-                if (resJson.candidates && resJson.candidates[0]?.content?.parts[0]?.text) {
-                  responseText = resJson.candidates[0].content.parts[0].text;
-                  break;
-                }
-              } else {
-                clientErr = new Error(`HTTP ${geminiRes.status}`);
-              }
-            } catch(e) {
-              clientErr = e;
-            }
-          }
-
-          if (!responseText) {
-            console.warn("Client Gemini direct call failed, falling back to Render backend proxy:", clientErr);
-            throw clientErr || new Error("Client Gemini call failed");
-          }
+        const data = await res.json();
+        if (res.ok && data.answer) {
+          loadingBubble.innerHTML = formatAiMessage(data.answer);
         } else {
-          // No custom key -> Call Render Backend AI directly
-          const backendUrl = apiBase || 'https://dpgnotes.onrender.com';
-          const res = await fetch(backendUrl + '/api/ai/serp-chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query: userQueryParam,
-              question: question,
-              contextDocs: (window.currentSearchResults || []).slice(0, 3)
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.answer) {
-            responseText = data.answer;
-          } else {
-            throw new Error(data.error || "Backend AI response unavailable");
-          }
+          throw new Error(data.error || "Backend AI synthesis unavailable");
         }
-      } catch(err) {
-        console.warn("SERP AI primary request fallback to Render backend:", err);
-        // Automatic Fallback to Render Backend Proxy if custom key failed!
-        try {
-          const backendUrl = apiBase || 'https://dpgnotes.onrender.com';
-          const res = await fetch(backendUrl + '/api/ai/serp-chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query: userQueryParam,
-              question: question,
-              contextDocs: (window.currentSearchResults || []).slice(0, 3)
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.answer) {
-            responseText = data.answer;
-          } else {
-            throw new Error(data.error || "Backend synthesis unavailable");
-          }
-        } catch(fallbackErr) {
-          console.warn("Both client direct and backend AI failed:", fallbackErr);
-          responseText = `### Academic Overview for "${question}"\n\n- **Core Concept:** University curriculum standards and exam patterns for **${question}**.\n- **Recommended Next Step:** Explore the matched documents, verified formulas, and practice files in the **All** and **Academic Solutions** tabs.`;
-        }
+      } catch (err) {
+        console.warn("SERP AI query error:", err);
+        loadingBubble.innerHTML = `
+          <div style="color:#dc2626; font-size:0.88rem;">
+            <i class="ri-error-warning-fill"></i> Unable to complete AI synthesis at this moment: ${escapeHtml(err.message)}
+          </div>
+          <div style="margin-top:6px; font-size:0.8rem; color:#64748b;">
+            Please ensure you are connected to the network or try submitting your query again.
+          </div>
+        `;
       } finally {
-        if (loadingBubble.parentNode) feed.removeChild(loadingBubble);
         if (chatBtn) {
           chatBtn.disabled = false;
           chatBtn.innerHTML = `<i class="ri-send-plane-2-fill"></i> Send`;
         }
+        feed.scrollTop = feed.scrollHeight;
       }
+    };
 
-      // 3. Render Formatted AI Answer with Interactive Code Containers
-      const answerBubble = document.createElement("div");
-      answerBubble.className = "ai-msg-bubble assistant";
-
-      // Strip accidental leading spaces before HTML tags so marked doesn't turn HTML into <pre><code>
+    function formatAiMessage(responseText) {
+      if (!responseText) return "";
       let cleanedResponse = responseText.replace(/^[ \t]+(?=<)/gm, '');
-
-      // Check if response actually contains intentional code fences (```) or code containers
       const hasCodeBlocks = /```[a-zA-Z0-9_-]*\n[\s\S]*?```/.test(cleanedResponse) || /<div\s+class=["']code-container/i.test(cleanedResponse);
 
       let formattedHtml = typeof marked !== 'undefined' ? marked.parse(cleanedResponse) : cleanedResponse.replace(/\n/g, '<br>');
       if (typeof DOMPurify !== 'undefined') formattedHtml = DOMPurify.sanitize(formattedHtml);
 
-      // ONLY call formatSolutionContent if the AI response actually contains code fences!
       if (hasCodeBlocks && typeof window.formatSolutionContent === 'function') {
         formattedHtml = window.formatSolutionContent(formattedHtml, 'ai_chat_' + Date.now());
       }
 
-      answerBubble.innerHTML = `
+      return `
         <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
           <i class="ri-sparkling-fill"></i> DPGNotes AI Assistant
         </div>
@@ -2085,9 +2024,14 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
           ${formattedHtml}
         </div>
       `;
+    }
 
-      feed.appendChild(answerBubble);
-      feed.scrollTop = feed.scrollHeight;
+    window.sendSerpAiChatMessage = function() {
+      const chatInput = document.getElementById("serpAiChatInput");
+      if (!chatInput) return;
+      const question = chatInput.value.trim();
+      if (!question) return;
+      window.executeSerpAiQuery(question, false);
     };
 
     // TAB 3: WEBSITES (ZERO 404 ERRORS VIA SAFE INITIAL BADGES)
@@ -2150,34 +2094,174 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
         .catch(() => renderWebsitesList(fallbackList));
     }
 
-    // TAB 4: YOUTUBE VIDEOS
-    function renderVideosTab(q) {
-      const list = document.getElementById("resultsList");
-      const defaultVideos = [
-        { title: `${q || 'Computer Science'} - Complete Comprehensive Masterclass`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent((q || 'Computer Science') + ' full course')}`, source: 'YouTube Education' },
-        { title: `Data Structures & Algorithms in C++ / Java`, url: 'https://www.youtube.com/results?search_query=data+structures+and+algorithms+complete+course', source: 'Computer Science Portal' },
-        { title: `Operating Systems & DBMS University Exam Revision`, url: 'https://www.youtube.com/results?search_query=operating+systems+dbms+one+shot+revision', source: 'Exam Prep Channel' }
-      ];
+    // TAB 4: YOUTUBE VIDEOS (Academic Videos + Sponsored Ads Videos)
+    function extractYouTubeId(url) {
+      if (!url) return "";
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+      return match ? match[1] : "";
+    }
 
-      let vidHtml = `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; width:100%; max-width:960px;">`;
-      defaultVideos.forEach(v => {
-        vidHtml += `
-          <div class="result-card" style="display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <i class="ri-youtube-fill" style="color:#ea4335; font-size:1.4rem;"></i>
-                <h4 style="color:#1e293b; font-size:0.95rem; margin:0; line-height:1.3; font-weight:700;">${v.title}</h4>
-              </div>
-              <p style="color:#5f6368; font-size:0.8rem; margin:0 0 12px 0;">${v.source}</p>
+    async function renderVideosTab(q) {
+      const list = document.getElementById("resultsList");
+      if (!list) return;
+
+      list.innerHTML = `
+        <div style="padding:2.5rem 1rem; text-align:center; color:#64748b; width:100%;">
+          <div class="serp-loading-spinner" style="margin:0 auto 12px auto;"></div>
+          <p style="font-size:0.92rem;">Loading verified academic videos and sponsored media...</p>
+        </div>
+      `;
+
+      try {
+        // 1. Fetch academic videos from 'videos' collection (and fallback to 'Video')
+        let academicVideos = [];
+        try {
+          const vSnap = await getDocs(collection(db, "videos"));
+          vSnap.forEach(d => {
+            const v = d.data();
+            if (v.status === 'approved' || !v.status) {
+              academicVideos.push({ id: d.id, ...v, isSponsored: false });
+            }
+          });
+        } catch(e) { console.warn("Failed reading videos collection:", e); }
+
+        if (academicVideos.length === 0) {
+          try {
+            const vSnap2 = await getDocs(collection(db, "Video"));
+            vSnap2.forEach(d => {
+              const v = d.data();
+              if (v.status === 'approved' || !v.status) {
+                academicVideos.push({ id: d.id, ...v, isSponsored: false });
+              }
+            });
+          } catch(e) {}
+        }
+
+        // Fallback predefined if collection is momentarily unreachable
+        if (academicVideos.length === 0) {
+          const predefined = [
+            { id: 'yt-001', url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes PDF Viewer', source: 'Akshat Network Hub', status: 'approved' },
+            { id: 'yt-002', url: 'https://www.youtube.com/watch?v=Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story', status: 'approved' },
+            { id: 'yt-003', url: 'https://www.youtube.com/watch?v=hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship', status: 'approved' },
+            { id: 'yt-004', url: 'https://www.youtube.com/watch?v=Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship', status: 'approved' }
+          ];
+          academicVideos = predefined.map(p => ({ ...p, isSponsored: false, views: 0, likes: [], shares: 0 }));
+        }
+
+        // Sort boosted videos to top
+        academicVideos.sort((a, b) => (b.boosted ? 1 : 0) - (a.boosted ? 1 : 0));
+
+        // 2. Fetch video ads from 'user_ads' collection
+        let adVideos = [];
+        try {
+          const adsSnap = await getDocs(collection(db, "user_ads"));
+          adsSnap.forEach(d => {
+            const a = d.data();
+            const target = a.url || a.targetLink || a.videoUrl || '';
+            if (target.includes('youtube.com') || target.includes('youtu.be')) {
+              adVideos.push({
+                id: d.id,
+                url: target,
+                title: a.title || 'Sponsored Academic Promotion',
+                source: a.platform || a.company || 'Sponsored Partner',
+                description: a.description || '',
+                views: a.views || 0,
+                likes: a.likes || [],
+                shares: a.shares || 0,
+                isSponsored: true
+              });
+            }
+          });
+        } catch(e) { console.warn("Failed reading user_ads for videos:", e); }
+
+        // Combine pool: Academic videos + Sponsored Ad videos
+        let allVideoItems = [...academicVideos, ...adVideos];
+
+        if (q && q.trim()) {
+          const lq = q.trim().toLowerCase();
+          allVideoItems = allVideoItems.filter(v => 
+            (v.title || '').toLowerCase().includes(lq) ||
+            (v.source || '').toLowerCase().includes(lq) ||
+            (v.description || '').toLowerCase().includes(lq)
+          );
+        }
+
+        if (allVideoItems.length === 0) {
+          list.innerHTML = `
+            <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368; width:100%;">
+              <i class="ri-youtube-line" style="font-size:3rem; color:#ea4335; margin-bottom:0.75rem; display:block;"></i>
+              <h3 style="font-size:1.25rem; margin-bottom:0.5rem; color:#202124;">No YouTube Videos match "${escapeHtml(q) || 'your query'}"</h3>
+              <p style="font-size:0.9rem; max-width:480px; margin:0 auto;">Try clearing search filters or searching for "DPGNotes", "PDF Viewer", or "Calculator".</p>
             </div>
-            <a href="${v.url}" target="_blank" class="result-btn-open" style="align-self:flex-start;">
-              Watch Video <i class="ri-external-link-line"></i>
-            </a>
-          </div>
-        `;
-      });
-      vidHtml += `</div>`;
-      list.innerHTML = vidHtml;
+          `;
+          return;
+        }
+
+        window.currentVideosTabItems = allVideoItems;
+
+        let vidHtml = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:20px; width:100%; max-width:1040px;">`;
+
+        allVideoItems.forEach((v) => {
+          const ytId = extractYouTubeId(v.url || '');
+          const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : 'https://placehold.co/600x338/1e293b/ffffff?text=Video+Demonstration';
+          const renderPageUrl = v.isSponsored ? `dpgnotes-video.html?adId=${encodeURIComponent(v.id)}` : `dpgnotes-video.html?id=${encodeURIComponent(v.id)}`;
+          const totalLikes = Array.isArray(v.likes) ? v.likes.length : (Number(v.likes) || 0);
+          const totalViews = Number(v.views) || 0;
+          const totalShares = Number(v.shares) || 0;
+
+          const badgeHtml = v.isSponsored
+            ? `<span class="result-verified-pill" style="background:#fef3c7; color:#b45309; border-color:#fde68a;"><i class="ri-advertisement-fill"></i> Sponsored</span>`
+            : `<span class="result-verified-pill" style="background:#eff6ff; color:#2563eb; border-color:#bfdbfe;"><i class="ri-shield-check-fill"></i> Verified Academic</span>`;
+
+          vidHtml += `
+            <div class="result-card" style="display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:14px; border:1px solid #e2e8f0; background:#fff; transition:transform 0.2s, box-shadow 0.2s;">
+              <div style="position:relative; width:100%; padding-top:56.25%; background:#000; cursor:pointer;" onclick="openSerpVideoModalById('${v.id}')">
+                <img src="${thumbUrl}" alt="${escapeHtml(v.title)}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">
+                <div style="position:absolute; inset:0; background:rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; transition:background 0.2s;">
+                  <div style="width:48px; height:48px; border-radius:50%; background:rgba(234,67,53,0.9); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow:0 4px 14px rgba(0,0,0,0.4);">
+                    <i class="ri-play-fill" style="margin-left:3px;"></i>
+                  </div>
+                </div>
+                ${v.boosted ? `<span style="position:absolute; top:10px; left:10px; background:#7c3aed; color:#fff; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700;"><i class="ri-rocket-fill"></i> Boosted</span>` : ''}
+              </div>
+
+              <div style="padding:16px; display:flex; flex-direction:column; flex:1; justify-content:space-between; gap:12px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:0.78rem; color:#64748b; font-weight:600;"><i class="ri-user-line"></i> ${escapeHtml(v.source || 'Akshat Network Hub')}</span>
+                    ${badgeHtml}
+                  </div>
+                  <h4 style="margin:0 0 6px 0; font-size:0.98rem; font-weight:700; color:#1e293b; line-height:1.4;">
+                    <a href="${renderPageUrl}" target="_blank" style="text-decoration:none; color:inherit;">${escapeHtml(v.title)}</a>
+                  </h4>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.78rem; color:#64748b; border-top:1px solid #f1f5f9; padding-top:10px;">
+                  <div style="display:flex; gap:10px;">
+                    <span title="Total Views"><i class="ri-eye-line"></i> ${totalViews}</span>
+                    <span title="Total Likes"><i class="ri-heart-3-line"></i> ${totalLikes}</span>
+                    <span title="Total Shares"><i class="ri-share-forward-line"></i> ${totalShares}</span>
+                  </div>
+                  <div style="display:flex; gap:6px;">
+                    <button type="button" class="dpg-btn dpg-btn-secondary" onclick="openSerpVideoModalById('${v.id}')" style="padding:4px 8px; font-size:0.75rem;" title="Watch in Modal (No Hide Policy)">
+                      <i class="ri-play-circle-line"></i> Watch
+                    </button>
+                    <a href="${renderPageUrl}" target="_blank" class="dpg-btn dpg-btn-primary" style="padding:4px 8px; font-size:0.75rem; text-decoration:none;" title="Full Screen View in New Tab">
+                      <i class="ri-fullscreen-line"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        vidHtml += `</div>`;
+        list.innerHTML = vidHtml;
+      } catch (err) {
+        console.error("renderVideosTab error:", err);
+        list.innerHTML = `<div style="padding:2rem; text-align:center; color:#ef4444;">Failed to load videos: ${escapeHtml(err.message)}</div>`;
+      }
     }
 
     // TAB 5: ACADEMIC SOLUTIONS
@@ -2303,121 +2387,73 @@ CRITICAL CODE QUALITY & COMPLETION RULES:
     }
 
     // =======================================================
-    // GEMINI KEY MODAL HANDLERS
+    // YOUTUBE VIDEO MODAL HANDLERS (ENFORCING NO HIDE & AUTO RESTART)
     // =======================================================
-    window.openGeminiKeyModal = function() {
-      const modal = document.getElementById("geminiApiKeyModal");
-      const input = document.getElementById("customGeminiKeyInput");
-      const resEl = document.getElementById("apiKeyTestResult");
-      if (resEl) resEl.style.display = 'none';
-      if (input) input.value = localStorage.getItem('dpg_gemini_api_key') || '';
+    window.openSerpVideoModalById = function(id) {
+      const item = (window.currentVideosTabItems || []).find(v => v.id === id);
+      if (!item) return;
+
+      const modal = document.getElementById("serpVideoPlayerModal");
+      const iframe = document.getElementById("serpModalIframe");
+      const title = document.getElementById("serpModalVideoTitle");
+      const channel = document.getElementById("serpModalChannel");
+      const fullBtn = document.getElementById("serpModalFullScreenBtn");
+      const spBadge = document.getElementById("serpModalSponsoredBadge");
+
+      const ytId = extractYouTubeId(item.url || '');
+      if (iframe && ytId) {
+        // Enforce Auto Restart Policy: enablejsapi=1, loop=1, playlist=ytId
+        iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
+      }
+
+      if (title) title.innerText = item.title || 'Educational Demonstration';
+      if (channel) channel.innerText = `Source: ${item.source || 'Akshat Network Hub'}`;
+      if (spBadge) spBadge.style.display = item.isSponsored ? 'inline-block' : 'none';
+
+      const renderUrl = item.isSponsored ? `dpgnotes-video.html?adId=${encodeURIComponent(item.id)}` : `dpgnotes-video.html?id=${encodeURIComponent(item.id)}`;
+      if (fullBtn) fullBtn.href = renderUrl;
+
+      window.activeModalVideoItem = item;
       if (modal) modal.style.display = "flex";
     };
 
-    window.closeGeminiKeyModal = function() {
-      const modal = document.getElementById("geminiApiKeyModal");
+    window.closeSerpVideoModal = function() {
+      const modal = document.getElementById("serpVideoPlayerModal");
+      const iframe = document.getElementById("serpModalIframe");
+      if (iframe) iframe.src = "";
       if (modal) modal.style.display = "none";
+      window.activeModalVideoItem = null;
     };
 
-    window.toggleApiKeyVisibility = function() {
-      const input = document.getElementById("customGeminiKeyInput");
-      const icon = document.getElementById("apiKeyVisIcon");
-      if (!input || !icon) return;
-      if (input.type === "password") {
-        input.type = "text";
-        icon.className = "ri-eye-off-line";
+    window.shareSerpModalVideo = async function() {
+      const item = window.activeModalVideoItem;
+      if (!item) return;
+
+      const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+      try {
+        await setDoc(doc(db, "share_links", token), {
+          token: token,
+          type: item.isSponsored ? "ad_video" : "video",
+          videoId: item.id,
+          docId: item.id,
+          title: item.title,
+          uploader: item.source || "DPGNotes Contributor",
+          clicks: 0,
+          createdAt: new Date()
+        });
+      } catch (e) {
+        console.warn("Share token creation failed:", e);
+      }
+
+      const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert(`Share link generated and copied to clipboard!\nShare Token: ${token}\n${shareUrl}`);
+        }).catch(() => {
+          prompt("Copy video share link:", shareUrl);
+        });
       } else {
-        input.type = "password";
-        icon.className = "ri-eye-line";
-      }
-    };
-
-    window.saveCustomGeminiKey = function() {
-      const input = document.getElementById("customGeminiKeyInput");
-      const key = input ? input.value.trim() : '';
-      if (key) {
-        localStorage.setItem('dpg_gemini_api_key', key);
-      } else {
-        localStorage.removeItem('dpg_gemini_api_key');
-      }
-      closeGeminiKeyModal();
-      if (window.activeSerpTab === 'ai') renderActiveTabContent();
-    };
-
-    window.clearCustomGeminiKey = function() {
-      localStorage.removeItem('dpg_gemini_api_key');
-      const input = document.getElementById("customGeminiKeyInput");
-      if (input) input.value = '';
-      const resEl = document.getElementById("apiKeyTestResult");
-      if (resEl) {
-        resEl.style.display = 'block';
-        resEl.style.color = '#137333';
-        resEl.innerHTML = '<i class="ri-checkbox-circle-fill"></i> Custom key removed. DPGNotes is now using the <strong>Render Cloud AI Engine</strong>.';
-      }
-      const badgeText = document.getElementById("geminiKeyStatusText");
-      if (badgeText) badgeText.innerHTML = '☁️ Cloud AI Active';
-      if (window.activeSerpTab === 'ai') renderActiveTabContent();
-    };
-
-    window.testCustomGeminiKey = async function() {
-      const input = document.getElementById("customGeminiKeyInput");
-      const resEl = document.getElementById("apiKeyTestResult");
-      if (!input || !resEl) return;
-
-      const key = input.value.trim();
-      if (!key) {
-        resEl.style.display = 'block';
-        resEl.style.color = '#1a73e8';
-        resEl.innerHTML = '<i class="ri-information-line"></i> No custom key entered. DPGNotes will automatically use the <strong>Render Cloud AI Engine</strong>.';
-        return;
-      }
-
-      resEl.style.display = 'block';
-      resEl.style.color = '#7c3aed';
-      resEl.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Validating Gemini API Key with Google servers...';
-
-      const testModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-      let passedModel = null;
-      let lastStatus = 0;
-      let lastErrMsg = '';
-
-      for (const mod of testModels) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${encodeURIComponent(key)}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: "Respond with: OK" }] }]
-            })
-          });
-
-          if (res.ok) {
-            passedModel = mod;
-            break;
-          } else {
-            lastStatus = res.status;
-            const errData = await res.json().catch(() => ({}));
-            lastErrMsg = errData.error?.message || `HTTP ${res.status}`;
-          }
-        } catch(e) {
-          lastErrMsg = e.message;
-        }
-      }
-
-      if (passedModel) {
-        resEl.style.color = '#137333';
-        resEl.innerHTML = `<i class="ri-checkbox-circle-fill"></i> Key is valid and working with <strong>${passedModel}</strong>!`;
-      } else {
-        resEl.style.color = '#dc2626';
-        resEl.innerHTML = `
-          <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px; margin-top:6px; line-height:1.5;">
-            <div style="font-weight:700;"><i class="ri-error-warning-fill"></i> Validation notice: HTTP ${lastStatus} (${lastErrMsg})</div>
-            <div style="color:#4b5563; font-size:0.8rem; margin-top:5px;">
-              Note: This key may be expired or restricted. <strong>You don't need a personal key!</strong> You can click <strong>"Clear &amp; Use Cloud AI"</strong> below to use the built-in Render Cloud AI engine configured with <code>GEMINI_API_KEY</code>.
-            </div>
-          </div>
-        `;
+        prompt("Copy video share link:", shareUrl);
       }
     };
 

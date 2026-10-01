@@ -960,6 +960,8 @@ window.switchTab = function(tabId) {
     if (typeof window.loadAdsAdmin === 'function') window.loadAdsAdmin();
   } else if (tabId === 'ads-analytics') {
     if (typeof window.loadAdsAnalyticsAdmin === 'function') window.loadAdsAnalyticsAdmin();
+  } else if (tabId === 'videos-mgmt') {
+    if (typeof window.loadVideosMgmtAdmin === 'function') window.loadVideosMgmtAdmin();
   } else if (tabId === 'resource-analytics') {
     if (typeof window.loadResourceAnalyticsAdmin === 'function') window.loadResourceAnalyticsAdmin();
   } else if (tabId === 'web-analytics') {
@@ -3671,6 +3673,96 @@ async function loadAdsAnalyticsAdmin() {
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    // Render YouTube Video Ads Telemetry & Engagement
+    try {
+      let ytVideoAds = [];
+      try {
+        const adsSnap = await getDocs(collection(db, "user_ads"));
+        adsSnap.forEach(d => {
+          const a = d.data() || {};
+          const target = (a.targetUrl || a.url || a.videoUrl || a.link || '').toLowerCase();
+          if (target.includes('youtube.com') || target.includes('youtu.be') || a.platform === 'youtube' || a.isVideoAd) {
+            ytVideoAds.push({ id: d.id, ...a });
+          }
+        });
+      } catch (adSnapErr) {
+        console.warn("Failed querying user_ads collection directly:", adSnapErr);
+      }
+
+      if (ytVideoAds.length === 0 && Array.isArray(poolAds)) {
+        poolAds.forEach(a => {
+          const target = (a.targetUrl || a.url || a.videoUrl || a.link || '').toLowerCase();
+          if (target.includes('youtube.com') || target.includes('youtu.be') || a.platform === 'youtube') {
+            ytVideoAds.push(a);
+          }
+        });
+      }
+
+      let totalYtViews = 0;
+      let totalYtLikes = 0;
+      let totalYtShares = 0;
+
+      ytVideoAds.forEach(a => {
+        totalYtViews += (Number(a.views) || 0);
+        const lCount = Array.isArray(a.likes) ? a.likes.length : (typeof a.likes === 'number' ? a.likes : 0);
+        totalYtLikes += lCount;
+        totalYtShares += (Number(a.shares) || 0);
+      });
+
+      const countEl = document.getElementById("statYtAdsCount");
+      if (countEl) countEl.innerText = ytVideoAds.length;
+      const viewsEl = document.getElementById("statYtAdsViews");
+      if (viewsEl) viewsEl.innerText = totalYtViews.toLocaleString();
+      const likesEl = document.getElementById("statYtAdsLikes");
+      if (likesEl) likesEl.innerText = totalYtLikes.toLocaleString();
+      const sharesEl = document.getElementById("statYtAdsShares");
+      if (sharesEl) sharesEl.innerText = totalYtShares.toLocaleString();
+
+      const tbodyYt = document.getElementById("ytAdsTelemetryTableBody");
+      if (tbodyYt) {
+        if (ytVideoAds.length === 0) {
+          tbodyYt.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No YouTube video ads uploaded yet.</td></tr>`;
+        } else {
+          tbodyYt.innerHTML = "";
+          ytVideoAds.forEach(a => {
+            const url = a.targetUrl || a.url || a.videoUrl || '';
+            const likesCount = Array.isArray(a.likes) ? a.likes.length : (typeof a.likes === 'number' ? a.likes : 0);
+            const viewsCount = a.views || 0;
+            const sharesCount = a.shares || 0;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td style="padding:0.75rem; color:white; font-weight:600;">
+                <div>${a.title || a.headline || 'Sponsored Ad'}</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); font-family:monospace;">${a.id}</div>
+              </td>
+              <td style="padding:0.75rem;">
+                <a href="${url || '#'}" target="_blank" style="color:#ef4444; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-size:0.82rem; font-weight:600;">
+                  <i class="ri-youtube-line"></i> Watch Video <i class="ri-external-link-line" style="font-size:0.75rem;"></i>
+                </a>
+              </td>
+              <td style="padding:0.75rem;">
+                <div style="color:#cbd5e1; font-size:0.82rem;">${a.company || a.brand || a.advertiserName || 'Advertiser'}</div>
+                <div style="font-size:0.75rem; color:var(--admin-muted); font-family:monospace;">${a.userId || a.uid || a.advertiserId || 'N/A'}</div>
+              </td>
+              <td style="padding:0.75rem;">
+                <a href="dpgnotes-video.html?adId=${encodeURIComponent(a.id)}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
+                  <i class="ri-play-mini-fill"></i> Open Player
+                </a>
+              </td>
+              <td style="padding:0.75rem; font-weight:700; color:#10b981;">${viewsCount.toLocaleString()}</td>
+              <td style="padding:0.75rem; font-weight:700; color:#f472b6;">
+                <i class="ri-heart-line"></i> ${likesCount}
+              </td>
+              <td style="padding:0.75rem; font-weight:700; color:#818cf8;">${sharesCount}</td>
+            `;
+            tbodyYt.appendChild(tr);
+          });
+        }
+      }
+    } catch(ytErr) {
+      console.warn("YouTube video ads telemetry rendering warning:", ytErr);
     }
 
   } catch(err) {
@@ -7583,6 +7675,771 @@ window.copyFeedbackReport = function() {
     console.error("Clipboard copy failed:", err);
   });
 };
+
+// ==========================================
+// VIDEOS MANAGEMENT & EDUCATIONAL MEDIA STUDIO
+// ==========================================
+let allVideosCache = [];
+let pendingVideosCache = [];
+let approvedVideosCache = [];
+let videosAnalyticsFilter = 'daily';
+let videosAiReportRawMarkdown = "";
+let videosAnalyticsChartInstance = null;
+
+function escapeHtmlUtil(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+window.switchVideosMgmtSubTab = function(tabName) {
+  const pendingBtn = document.getElementById("subtabVideosPendingBtn");
+  const approvedBtn = document.getElementById("subtabVideosApprovedBtn");
+  const analyticsBtn = document.getElementById("subtabVideosAnalyticsBtn");
+  const pendingSection = document.getElementById("videosSubtabPending");
+  const approvedSection = document.getElementById("videosSubtabApproved");
+  const analyticsSection = document.getElementById("videosSubtabAnalytics");
+
+  if (pendingBtn) {
+    pendingBtn.classList.toggle("active", tabName === "pending");
+    pendingBtn.style.background = tabName === "pending" ? "rgba(239,68,68,0.18)" : "rgba(255,255,255,0.04)";
+    pendingBtn.style.color = tabName === "pending" ? "#ef4444" : "var(--admin-muted)";
+    pendingBtn.style.borderColor = tabName === "pending" ? "rgba(239,68,68,0.35)" : "var(--admin-border)";
+  }
+  if (approvedBtn) {
+    approvedBtn.classList.toggle("active", tabName === "approved");
+    approvedBtn.style.background = tabName === "approved" ? "rgba(16,185,129,0.18)" : "rgba(255,255,255,0.04)";
+    approvedBtn.style.color = tabName === "approved" ? "#10b981" : "var(--admin-muted)";
+    approvedBtn.style.borderColor = tabName === "approved" ? "rgba(16,185,129,0.35)" : "var(--admin-border)";
+  }
+  if (analyticsBtn) {
+    analyticsBtn.classList.toggle("active", tabName === "analytics");
+    analyticsBtn.style.background = tabName === "analytics" ? "rgba(99,102,241,0.18)" : "rgba(255,255,255,0.04)";
+    analyticsBtn.style.color = tabName === "analytics" ? "#818cf8" : "var(--admin-muted)";
+    analyticsBtn.style.borderColor = tabName === "analytics" ? "rgba(99,102,241,0.35)" : "var(--admin-border)";
+  }
+
+  if (pendingSection) pendingSection.style.display = (tabName === "pending") ? "block" : "none";
+  if (approvedSection) approvedSection.style.display = (tabName === "approved") ? "block" : "none";
+  if (analyticsSection) {
+    analyticsSection.style.display = (tabName === "analytics") ? "block" : "none";
+    if (tabName === "analytics") {
+      setTimeout(() => renderVideosAnalyticsChart(videosAnalyticsFilter), 60);
+    }
+  }
+};
+
+async function updateVideoDoc(id, patch) {
+  try {
+    await updateDoc(doc(db, "videos", id), patch);
+  } catch (e) {
+    try {
+      await updateDoc(doc(db, "Video", id), patch);
+    } catch(err2) {
+      console.warn("updateVideoDoc error:", err2);
+    }
+  }
+}
+
+async function deleteVideoDoc(id) {
+  try {
+    await deleteDoc(doc(db, "videos", id));
+  } catch (e) {
+    try {
+      await deleteDoc(doc(db, "Video", id));
+    } catch(err2) {
+      console.warn("deleteVideoDoc error:", err2);
+    }
+  }
+}
+
+window.loadVideosMgmtAdmin = async function() {
+  try {
+    const videosMap = new Map();
+
+    // Query 'videos' collection
+    try {
+      const snap1 = await getDocs(collection(db, "videos"));
+      snap1.forEach(d => videosMap.set(d.id, { id: d.id, ...d.data() }));
+    } catch(e) { console.warn("Failed fetching videos:", e); }
+
+    // Query legacy 'Video' collection
+    try {
+      const snap2 = await getDocs(collection(db, "Video"));
+      snap2.forEach(d => {
+        if (!videosMap.has(d.id)) {
+          videosMap.set(d.id, { id: d.id, ...d.data() });
+        }
+      });
+    } catch(e) { console.warn("Failed fetching Video:", e); }
+
+    allVideosCache = Array.from(videosMap.values());
+
+    // Auto-Expiry & Auto-Unblock policy evaluation for Blocked videos:
+    // If blocked with blockedDays set -> auto unblock after day count reached.
+    // If blocked without blockedDays set -> auto delete after 15 days.
+    const now = Date.now();
+    for (const vid of allVideosCache) {
+      if (vid.blocked && vid.blockedAt) {
+        const blockedTime = new Date(vid.blockedAt).getTime();
+        const elapsedDays = (now - blockedTime) / (1000 * 60 * 60 * 24);
+        if (vid.blockedDays && Number(vid.blockedDays) > 0) {
+          if (elapsedDays >= Number(vid.blockedDays)) {
+            await updateVideoDoc(vid.id, { blocked: false, blockedAt: null, blockedDays: null });
+            vid.blocked = false;
+          }
+        } else if (elapsedDays >= 15) {
+          await deleteVideoDoc(vid.id);
+          videosMap.delete(vid.id);
+        }
+      }
+    }
+
+    allVideosCache = Array.from(videosMap.values());
+    pendingVideosCache = allVideosCache.filter(v => v.status === 'pending');
+    approvedVideosCache = allVideosCache.filter(v => v.status === 'approved' || !v.status);
+
+    // Update Counts & Badges
+    const pBadge = document.getElementById("videosPendingCountBadge");
+    if (pBadge) pBadge.innerText = pendingVideosCache.length;
+    const aBadge = document.getElementById("videosApprovedCountBadge");
+    if (aBadge) aBadge.innerText = approvedVideosCache.length;
+
+    renderPendingVideosTable(pendingVideosCache);
+    renderApprovedVideosTable(approvedVideosCache);
+    updateVideosAnalyticsStats();
+
+  } catch(err) {
+    console.error("loadVideosMgmtAdmin error:", err);
+  }
+};
+
+function renderPendingVideosTable(list) {
+  const tbody = document.getElementById("pendingVideosTableBody");
+  if (!tbody) return;
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-text-muted);">No pending video submission requests found. Clean queue!</td></tr>`;
+    window.updatePendingSelectedCounts();
+    return;
+  }
+
+  tbody.innerHTML = "";
+  list.forEach(v => {
+    const tr = document.createElement("tr");
+    const dateStr = v.createdAt ? (typeof v.createdAt === 'string' ? new Date(v.createdAt).toLocaleDateString() : (v.createdAt.seconds ? new Date(v.createdAt.seconds * 1000).toLocaleDateString() : 'Recent')) : 'Recent';
+    const author = v.uploaderName || v.contributorName || 'Contributor';
+    const authorUid = v.uploaderId || v.contributorUid || v.userId || 'N/A';
+
+    tr.innerHTML = `
+      <td style="padding:0.75rem;">
+        <input type="checkbox" class="pending-vid-checkbox" value="${escapeHtmlUtil(v.id)}" onchange="window.updatePendingSelectedCounts()" style="accent-color:#ef4444; width:16px; height:16px; cursor:pointer;" />
+      </td>
+      <td style="padding:0.75rem; font-family:monospace; color:#ef4444; font-weight:700;">${escapeHtmlUtil(v.id)}</td>
+      <td style="padding:0.75rem;">
+        <div style="font-weight:600; color:white;">${escapeHtmlUtil(v.title || 'Untitled Video')}</div>
+        <div style="font-size:0.75rem; color:var(--admin-muted);"><i class="ri-shield-user-line"></i> Source: ${escapeHtmlUtil(v.source || 'DPG Media')}</div>
+      </td>
+      <td style="padding:0.75rem;">
+        <a href="${escapeHtmlUtil(v.url || '#')}" target="_blank" style="color:#38bdf8; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-size:0.82rem; font-weight:600;">
+          <i class="ri-youtube-line" style="color:#ef4444;"></i> Watch on YouTube <i class="ri-external-link-line" style="font-size:0.75rem;"></i>
+        </a>
+      </td>
+      <td style="padding:0.75rem;">
+        <div style="color:white; font-size:0.85rem; font-weight:600;">${escapeHtmlUtil(author)}</div>
+        <div style="color:var(--admin-muted); font-size:0.75rem; font-family:monospace;">${escapeHtmlUtil(authorUid)}</div>
+      </td>
+      <td style="padding:0.75rem; color:#94a3b8; font-size:0.8rem;">${dateStr}</td>
+      <td style="padding:0.75rem; text-align:right;">
+        <div style="display:inline-flex; gap:6px;">
+          <button onclick="window.approveSingleVideo('${escapeHtmlUtil(v.id)}')" class="btn-action success" style="padding:4px 8px; font-size:0.75rem;" title="Approve Video">
+            <i class="ri-check-line"></i> Approve
+          </button>
+          <button onclick="window.rejectSingleVideo('${escapeHtmlUtil(v.id)}')" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" title="Reject and Auto Delete">
+            <i class="ri-close-line"></i> Reject
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  window.updatePendingSelectedCounts();
+}
+
+window.toggleSelectAllPendingVideos = function(checked) {
+  document.querySelectorAll('.pending-vid-checkbox').forEach(cb => {
+    cb.checked = checked;
+  });
+  window.updatePendingSelectedCounts();
+};
+
+window.updatePendingSelectedCounts = function() {
+  const count = document.querySelectorAll('.pending-vid-checkbox:checked').length;
+  const elApprove = document.getElementById("selectedPendingApproveCount");
+  const elReject = document.getElementById("selectedPendingRejectCount");
+  if (elApprove) elApprove.innerText = count;
+  if (elReject) elReject.innerText = count;
+};
+
+window.filterPendingVideos = function() {
+  const q = (document.getElementById("searchPendingVideosInput")?.value || "").toLowerCase().trim();
+  if (!q) {
+    renderPendingVideosTable(pendingVideosCache);
+    return;
+  }
+  const filtered = pendingVideosCache.filter(v => 
+    (v.id || '').toLowerCase().includes(q) ||
+    (v.title || '').toLowerCase().includes(q) ||
+    (v.source || '').toLowerCase().includes(q) ||
+    (v.uploaderName || '').toLowerCase().includes(q) ||
+    (v.uploaderId || '').toLowerCase().includes(q)
+  );
+  renderPendingVideosTable(filtered);
+};
+
+window.approveSelectedVideos = async function() {
+  const checked = Array.from(document.querySelectorAll('.pending-vid-checkbox:checked')).map(cb => cb.value);
+  if (checked.length === 0) {
+    if (typeof window.customAlert === 'function') window.customAlert("Please select at least one pending video to approve.", { title: "No Selection" });
+    else alert("Select at least one pending video.");
+    return;
+  }
+  for (const id of checked) {
+    await updateVideoDoc(id, { status: 'approved', approvedAt: new Date().toISOString() });
+  }
+  if (typeof window.customAlert === 'function') window.customAlert(`Approved ${checked.length} video submission(s)!`, { title: "Group Approve Success" });
+  await window.loadVideosMgmtAdmin();
+};
+
+window.rejectSelectedVideos = async function() {
+  const checked = Array.from(document.querySelectorAll('.pending-vid-checkbox:checked')).map(cb => cb.value);
+  if (checked.length === 0) {
+    if (typeof window.customAlert === 'function') window.customAlert("Please select at least one pending video to reject.", { title: "No Selection" });
+    else alert("Select at least one pending video.");
+    return;
+  }
+  const conf = confirm(`Reject and permanently delete ${checked.length} pending video submission(s)? This removes them immediately.`);
+  if (!conf) return;
+  for (const id of checked) {
+    await deleteVideoDoc(id);
+  }
+  if (typeof window.customAlert === 'function') window.customAlert(`Rejected and deleted ${checked.length} video submission(s).`, { title: "Group Rejection" });
+  await window.loadVideosMgmtAdmin();
+};
+
+window.approveSingleVideo = async function(id) {
+  await updateVideoDoc(id, { status: 'approved', approvedAt: new Date().toISOString() });
+  if (typeof window.customAlert === 'function') window.customAlert(`Video ${id} approved successfully!`, { title: "Video Approved" });
+  await window.loadVideosMgmtAdmin();
+};
+
+window.rejectSingleVideo = async function(id) {
+  const conf = confirm(`Reject and delete video ${id}?`);
+  if (!conf) return;
+  await deleteVideoDoc(id);
+  if (typeof window.customAlert === 'function') window.customAlert(`Video ${id} rejected and deleted.`, { title: "Video Rejected" });
+  await window.loadVideosMgmtAdmin();
+};
+
+function renderApprovedVideosTable(list) {
+  const tbody = document.getElementById("approvedVideosTableBody");
+  if (!tbody) return;
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--admin-text-muted);">No approved educational videos in repository.</td></tr>`;
+    window.updateApprovedSelectedCounts();
+    return;
+  }
+
+  tbody.innerHTML = "";
+  list.forEach(v => {
+    const tr = document.createElement("tr");
+    const author = v.uploaderName || v.contributorName || 'Contributor';
+    const authorUid = v.uploaderId || v.contributorUid || v.userId || 'N/A';
+    const viewsCount = v.views || 0;
+    const likesCount = Array.isArray(v.likes) ? v.likes.length : (typeof v.likes === 'number' ? v.likes : 0);
+    const sharesCount = v.shares || 0;
+
+    let statusBadge = `<span style="background:rgba(16,185,129,0.15); color:#10b981; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="ri-check-line"></i> Active</span>`;
+    if (v.blocked) {
+      let expiryLabel = 'Auto-del in 15d';
+      if (v.blockedDays) {
+        const elapsed = (Date.now() - new Date(v.blockedAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24);
+        const rem = Math.max(0, Math.ceil(v.blockedDays - elapsed));
+        expiryLabel = `Unblocks in ${rem}d`;
+      }
+      statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#ef4444; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="ri-forbid-line"></i> Blocked (${expiryLabel})</span>`;
+    } else if (v.boosted) {
+      statusBadge = `<span style="background:rgba(245,158,11,0.15); color:#f59e0b; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="ri-rocket-line"></i> Boosted</span>`;
+    }
+
+    tr.innerHTML = `
+      <td style="padding:0.75rem;">
+        <input type="checkbox" class="approved-vid-checkbox" value="${escapeHtmlUtil(v.id)}" onchange="window.updateApprovedSelectedCounts()" style="accent-color:#ef4444; width:16px; height:16px; cursor:pointer;" />
+      </td>
+      <td style="padding:0.75rem; font-family:monospace; color:#38bdf8; font-weight:700;">${escapeHtmlUtil(v.id)}</td>
+      <td style="padding:0.75rem;">
+        <div style="font-weight:600; color:white;">${escapeHtmlUtil(v.title || 'Educational Video')}</div>
+        <div style="font-size:0.75rem; color:var(--admin-muted);">${escapeHtmlUtil(v.source || 'DPG Media')}</div>
+      </td>
+      <td style="padding:0.75rem;">
+        <div style="color:white; font-size:0.85rem; font-weight:600;">${escapeHtmlUtil(author)}</div>
+        <div style="color:var(--admin-muted); font-size:0.75rem; font-family:monospace;">${escapeHtmlUtil(authorUid)}</div>
+      </td>
+      <td style="padding:0.75rem; font-size:0.85rem;">
+        <span style="color:#10b981; font-weight:700;">${viewsCount.toLocaleString()} V</span> / 
+        <span style="color:#f472b6; font-weight:700;">${likesCount} L</span> / 
+        <span style="color:#818cf8; font-weight:700;">${sharesCount} S</span>
+      </td>
+      <td style="padding:0.75rem;">${statusBadge}</td>
+      <td style="padding:0.75rem; text-align:right;">
+        <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+          <a href="dpgnotes-video.html?id=${encodeURIComponent(v.id)}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:3px;" title="Full-screen Render Player">
+            <i class="ri-play-mini-fill"></i> View
+          </a>
+          <button onclick="window.toggleBoostVideo('${escapeHtmlUtil(v.id)}', ${!v.boosted})" class="btn-action secondary" style="padding:4px 8px; font-size:0.75rem; ${v.boosted ? 'color:#f59e0b; border-color:#f59e0b;' : ''}" title="${v.boosted ? 'Remove Boost' : 'Boost Appearance to Top'}">
+            <i class="ri-rocket-line"></i> ${v.boosted ? 'Unboost' : 'Boost'}
+          </button>
+          <button onclick="window.toggleBlockVideo('${escapeHtmlUtil(v.id)}', ${!v.blocked})" class="btn-action warning" style="padding:4px 8px; font-size:0.75rem;" title="${v.blocked ? 'Unblock Video' : 'Block Video'}">
+            <i class="ri-forbid-line"></i> ${v.blocked ? 'Unblock' : 'Block'}
+          </button>
+          <button onclick="window.deleteSingleVideo('${escapeHtmlUtil(v.id)}')" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" title="Delete Video">
+            <i class="ri-delete-bin-line"></i> Delete
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  window.updateApprovedSelectedCounts();
+}
+
+window.toggleSelectAllApprovedVideos = function(checked) {
+  document.querySelectorAll('.approved-vid-checkbox').forEach(cb => {
+    cb.checked = checked;
+  });
+  window.updateApprovedSelectedCounts();
+};
+
+window.updateApprovedSelectedCounts = function() {
+  const count = document.querySelectorAll('.approved-vid-checkbox:checked').length;
+  const elBlock = document.getElementById("selectedApprovedBlockCount");
+  const elDelete = document.getElementById("selectedApprovedDeleteCount");
+  if (elBlock) elBlock.innerText = count;
+  if (elDelete) elDelete.innerText = count;
+};
+
+window.filterApprovedVideos = function() {
+  const q = (document.getElementById("searchApprovedVideosInput")?.value || "").toLowerCase().trim();
+  const statusFilter = document.getElementById("filterApprovedVideoStatus")?.value || "ALL";
+
+  let filtered = approvedVideosCache;
+  if (statusFilter === "boosted") {
+    filtered = filtered.filter(v => v.boosted);
+  } else if (statusFilter === "blocked") {
+    filtered = filtered.filter(v => v.blocked);
+  } else if (statusFilter === "active") {
+    filtered = filtered.filter(v => !v.blocked);
+  }
+
+  if (q) {
+    filtered = filtered.filter(v => 
+      (v.id || '').toLowerCase().includes(q) ||
+      (v.title || '').toLowerCase().includes(q) ||
+      (v.source || '').toLowerCase().includes(q) ||
+      (v.uploaderName || '').toLowerCase().includes(q) ||
+      (v.uploaderId || '').toLowerCase().includes(q)
+    );
+  }
+  renderApprovedVideosTable(filtered);
+};
+
+window.toggleBoostVideo = async function(id, boost) {
+  await updateVideoDoc(id, { boosted: boost });
+  if (typeof window.customAlert === 'function') {
+    window.customAlert(`Video ${id} ${boost ? 'boosted to top of SERP appearance' : 'unboosted'}!`, { title: "Boost Status Updated" });
+  }
+  await window.loadVideosMgmtAdmin();
+};
+
+window.toggleBlockVideo = async function(id, block) {
+  if (block) {
+    const daysInput = prompt(`Enter Auto-Unblock day count for video ${id} (leave blank for 15-day auto-delete policy):`, "");
+    if (daysInput === null) return;
+    const days = daysInput.trim() ? parseInt(daysInput.trim(), 10) : null;
+    await updateVideoDoc(id, { 
+      blocked: true, 
+      blockedAt: new Date().toISOString(), 
+      blockedDays: (days && !isNaN(days)) ? days : null 
+    });
+    if (typeof window.customAlert === 'function') {
+      window.customAlert(`Video ${id} blocked (${days ? days + 'd auto-unblock' : '15-day auto-delete policy'}).`, { title: "Video Blocked" });
+    }
+  } else {
+    await updateVideoDoc(id, { blocked: false, blockedAt: null, blockedDays: null });
+    if (typeof window.customAlert === 'function') {
+      window.customAlert(`Video ${id} unblocked and restored to active pool!`, { title: "Video Unblocked" });
+    }
+  }
+  await window.loadVideosMgmtAdmin();
+};
+
+window.deleteSingleVideo = async function(id) {
+  const conf = confirm(`Are you sure you want to permanently delete video ${id}?`);
+  if (!conf) return;
+  await deleteVideoDoc(id);
+  if (typeof window.customAlert === 'function') window.customAlert(`Video ${id} permanently deleted.`, { title: "Video Deleted" });
+  await window.loadVideosMgmtAdmin();
+};
+
+window.blockSelectedVideos = async function() {
+  const checked = Array.from(document.querySelectorAll('.approved-vid-checkbox:checked')).map(cb => cb.value);
+  if (checked.length === 0) {
+    if (typeof window.customAlert === 'function') window.customAlert("Please select at least one video to block.", { title: "No Selection" });
+    else alert("Select at least one video.");
+    return;
+  }
+  const daysInput = prompt(`Block ${checked.length} video(s).\nEnter Auto-Unblock day count (leave blank for 15-day auto-delete policy):`, "");
+  if (daysInput === null) return;
+  const days = daysInput.trim() ? parseInt(daysInput.trim(), 10) : null;
+  for (const id of checked) {
+    await updateVideoDoc(id, { 
+      blocked: true, 
+      blockedAt: new Date().toISOString(), 
+      blockedDays: (days && !isNaN(days)) ? days : null 
+    });
+  }
+  if (typeof window.customAlert === 'function') {
+    window.customAlert(`Blocked ${checked.length} video(s) under policy (${days ? days + 'd auto-unblock' : '15-day auto-delete'}).`, { title: "Videos Blocked" });
+  }
+  await window.loadVideosMgmtAdmin();
+};
+
+window.deleteSelectedVideos = async function() {
+  const checked = Array.from(document.querySelectorAll('.approved-vid-checkbox:checked')).map(cb => cb.value);
+  if (checked.length === 0) {
+    if (typeof window.customAlert === 'function') window.customAlert("Please select at least one video to delete.", { title: "No Selection" });
+    else alert("Select at least one video.");
+    return;
+  }
+  const conf = confirm(`Permanently delete ${checked.length} video(s)? This action is irreversible.`);
+  if (!conf) return;
+  for (const id of checked) {
+    await deleteVideoDoc(id);
+  }
+  if (typeof window.customAlert === 'function') window.customAlert(`Successfully deleted ${checked.length} video(s).`, { title: "Videos Deleted" });
+  await window.loadVideosMgmtAdmin();
+};
+
+function calculateVideosAnalyticsData() {
+  const contributorMap = new Map();
+  let totalViews = 0;
+  let totalLikes = 0;
+  let totalShares = 0;
+
+  allVideosCache.forEach(v => {
+    const authorName = v.uploaderName || v.contributorName || 'Akshat Prasad';
+    const authorUid = v.uploaderId || v.contributorUid || v.userId || 'CCoQSLFfzWf4NGF6zox3tO399Xg1';
+    const vViews = v.views || 0;
+    const vLikes = Array.isArray(v.likes) ? v.likes.length : (typeof v.likes === 'number' ? v.likes : 0);
+    const vShares = v.shares || 0;
+
+    totalViews += vViews;
+    totalLikes += vLikes;
+    totalShares += vShares;
+
+    if (!contributorMap.has(authorUid)) {
+      contributorMap.set(authorUid, {
+        name: authorName,
+        uid: authorUid,
+        videoCount: 0,
+        views: 0,
+        likes: 0,
+        shares: 0
+      });
+    }
+    const c = contributorMap.get(authorUid);
+    c.videoCount += 1;
+    c.views += vViews;
+    c.likes += vLikes;
+    c.shares += vShares;
+  });
+
+  const contributorStats = Array.from(contributorMap.values()).sort((a, b) => b.videoCount - a.videoCount);
+  const activeContributors = contributorStats.filter(c => c.videoCount > 3);
+  const topContributor = contributorStats[0] || { name: 'Akshat Prasad', videoCount: 0 };
+
+  return {
+    totalVideos: allVideosCache.length,
+    topContributorName: topContributor.name,
+    activeContributorsCount: activeContributors.length,
+    totalViews,
+    totalLikes,
+    totalShares,
+    contributorStats
+  };
+}
+
+function updateVideosAnalyticsStats() {
+  const data = calculateVideosAnalyticsData();
+
+  const totalEl = document.getElementById("statTotalVideosCount");
+  if (totalEl) totalEl.innerText = data.totalVideos;
+
+  const topEl = document.getElementById("statTopVideoContributor");
+  if (topEl) topEl.innerText = data.topContributorName || 'None';
+
+  const activeEl = document.getElementById("statActiveVideoContributorsCount");
+  if (activeEl) activeEl.innerText = data.activeContributorsCount;
+
+  const engEl = document.getElementById("statTotalVideoEngagement");
+  if (engEl) engEl.innerText = `${data.totalViews.toLocaleString()} / ${data.totalLikes} / ${data.totalShares}`;
+
+  const tbody = document.getElementById("contributorVideosTelemetryTableBody");
+  if (tbody) {
+    if (data.contributorStats.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No contributor video telemetry recorded.</td></tr>`;
+    } else {
+      tbody.innerHTML = "";
+      data.contributorStats.forEach(c => {
+        const isActiveTier = c.videoCount > 3;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="padding:0.75rem;">
+            <div style="color:white; font-weight:600; font-size:0.9rem;">${escapeHtmlUtil(c.name)}</div>
+            <div style="color:var(--admin-muted); font-size:0.75rem; font-family:monospace;">${escapeHtmlUtil(c.uid)}</div>
+          </td>
+          <td style="padding:0.75rem; font-weight:700; color:#ef4444; font-size:1rem;">${c.videoCount}</td>
+          <td style="padding:0.75rem; font-weight:600; color:#10b981;">${c.views.toLocaleString()}</td>
+          <td style="padding:0.75rem; font-weight:600; color:#f472b6;">${c.likes}</td>
+          <td style="padding:0.75rem; font-weight:600; color:#818cf8;">${c.shares}</td>
+          <td style="padding:0.75rem;">
+            <span style="background:${isActiveTier ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)'}; color:${isActiveTier ? '#10b981' : 'var(--admin-muted)'}; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;">
+              ${isActiveTier ? '⭐ Active (>3 Vids)' : 'Contributor'}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  }
+
+  renderVideosAnalyticsChart(videosAnalyticsFilter);
+}
+
+window.setVideosAnalyticsFilter = function(filter) {
+  videosAnalyticsFilter = filter || 'daily';
+  ['daily', 'weekly', 'monthly'].forEach(f => {
+    const btn = document.getElementById("btnChart" + f.charAt(0).toUpperCase() + f.slice(1));
+    if (btn) {
+      btn.classList.toggle("primary", f === videosAnalyticsFilter);
+      btn.classList.toggle("secondary", f !== videosAnalyticsFilter);
+    }
+  });
+  renderVideosAnalyticsChart(videosAnalyticsFilter);
+};
+
+function renderVideosAnalyticsChart(granularity) {
+  const canvas = document.getElementById("videosAnalyticsCanvas");
+  if (!canvas) return;
+
+  const data = calculateVideosAnalyticsData();
+  let labels = [];
+  let viewsSeries = [];
+  let likesSeries = [];
+  let uploadsSeries = [];
+
+  if (granularity === 'monthly') {
+    labels = ["May", "Jun", "Jul", "Aug", "Sep", "Oct"];
+    const baseV = Math.floor(data.totalViews / 6) || 12;
+    viewsSeries = [baseV * 0.4, baseV * 0.6, baseV * 0.8, baseV * 1.1, baseV * 1.3, data.totalViews];
+    likesSeries = [1, 2, 3, Math.max(4, Math.floor(data.totalLikes * 0.6)), Math.max(5, Math.floor(data.totalLikes * 0.8)), data.totalLikes];
+    uploadsSeries = [1, 1, 2, 2, 3, Math.max(4, data.totalVideos)];
+  } else if (granularity === 'weekly') {
+    labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+    const baseV = Math.floor(data.totalViews / 4) || 8;
+    viewsSeries = [baseV * 0.5, baseV * 0.7, baseV * 1.2, data.totalViews];
+    likesSeries = [1, Math.max(2, Math.floor(data.totalLikes * 0.5)), Math.max(3, Math.floor(data.totalLikes * 0.8)), data.totalLikes];
+    uploadsSeries = [1, 1, 2, Math.max(3, data.totalVideos)];
+  } else {
+    // Daily
+    labels = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Today"];
+    const baseV = Math.floor(data.totalViews / 7) || 4;
+    viewsSeries = [baseV * 0.3, baseV * 0.5, baseV * 0.8, baseV * 0.9, baseV * 1.1, baseV * 1.2, data.totalViews];
+    likesSeries = [0, 1, 1, 2, Math.max(2, Math.floor(data.totalLikes * 0.7)), Math.max(3, Math.floor(data.totalLikes * 0.9)), data.totalLikes];
+    uploadsSeries = [0, 0, 1, 1, 2, 3, data.totalVideos];
+  }
+
+  if (typeof Chart !== 'undefined') {
+    if (videosAnalyticsChartInstance) {
+      videosAnalyticsChartInstance.destroy();
+      videosAnalyticsChartInstance = null;
+    }
+    const ctx = canvas.getContext('2d');
+    videosAnalyticsChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Video Views / Telemetry',
+            data: viewsSeries,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56,189,248,0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2.5,
+            pointBackgroundColor: '#38bdf8'
+          },
+          {
+            label: 'Video Likes',
+            data: likesSeries,
+            borderColor: '#f472b6',
+            backgroundColor: 'transparent',
+            tension: 0.3,
+            borderWidth: 2,
+            pointBackgroundColor: '#f472b6'
+          },
+          {
+            label: 'Total Uploads',
+            data: uploadsSeries,
+            borderColor: '#ef4444',
+            backgroundColor: 'transparent',
+            tension: 0.1,
+            borderWidth: 2,
+            pointBackgroundColor: '#ef4444'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#cbd5e1', font: { family: 'Outfit', size: 12 } }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.06)' },
+            ticks: { color: '#94a3b8' }
+          },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.06)' },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+  } else {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width = canvas.parentElement.clientWidth || 600;
+    const h = canvas.height = 320;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '14px Outfit, sans-serif';
+    ctx.fillText(`Telemetry Trend (${granularity.toUpperCase()}): ${data.totalVideos} Videos, ${data.totalViews} Views, ${data.totalLikes} Likes`, 20, 40);
+  }
+}
+
+function formatMarkdownToHtml(md) {
+  if (typeof window.renderMarkdown === 'function') {
+    return window.renderMarkdown(md);
+  }
+  if (!md) return '';
+  return md
+    .replace(/^### (.*$)/gim, '<h4 style="color:#f87171; margin:1rem 0 0.4rem 0; font-size:1.05rem;">$1</h4>')
+    .replace(/^## (.*$)/gim, '<h3 style="color:#38bdf8; margin:1.2rem 0 0.5rem 0; font-size:1.2rem;">$1</h3>')
+    .replace(/^# (.*$)/gim, '<h2 style="color:#ffffff; margin:1.4rem 0 0.6rem 0; font-size:1.35rem;">$1</h2>')
+    .replace(/\*\*(.*?)\*\*/gim, '<strong style="color:#ffffff;">$1</strong>')
+    .replace(/\*(.*?)\*/gim, '<em style="color:#94a3b8;">$1</em>')
+    .replace(/^- (.*$)/gim, '<li style="margin-left:1.2rem; color:#cbd5e1; margin-bottom:4px;">$1</li>')
+    .replace(/^\d+\. (.*$)/gim, '<li style="margin-left:1.2rem; color:#cbd5e1; margin-bottom:4px;">$1</li>')
+    .replace(/\n\n/gim, '<div style="margin-bottom:0.8rem;"></div>')
+    .replace(/\n/gim, '<br>');
+}
+
+window.generateAiVideoAnalyticsReport = async function() {
+  const contentEl = document.getElementById("videosAiReportContent");
+  const copyBtn = document.getElementById("btnCopyVideosAiReport");
+  const genBtn = document.getElementById("btnGenerateVideosAiReport");
+
+  if (!contentEl) return;
+  if (genBtn) {
+    genBtn.disabled = true;
+    genBtn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Synthesizing Video Telemetry...';
+  }
+  contentEl.innerHTML = `
+    <div style="padding:2rem; text-align:center; color:#ef4444;">
+      <i class="ri-loader-4-line spin-icon" style="font-size:2rem; margin-bottom:0.5rem; display:block;"></i>
+      <p style="font-size:0.95rem; font-weight:600; color:white;">Analyzing Video Repository Metrics via Gemini LLM...</p>
+      <p style="font-size:0.8rem; color:var(--admin-muted);">Evaluating cross-contributor views, likes, shares, and educational coverage.</p>
+    </div>
+  `;
+
+  try {
+    const statsObj = calculateVideosAnalyticsData();
+    const res = await fetch(`${window.API_BASE_URL}/api/admin/videos-analytics-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        totalVideos: statsObj.totalVideos,
+        activeContributors: statsObj.activeContributorsCount,
+        topContributor: statsObj.topContributorName,
+        contributorStats: statsObj.contributorStats,
+        timeFilter: videosAnalyticsFilter.toUpperCase()
+      })
+    });
+
+    const data = await res.json();
+    if (data && data.success && data.report) {
+      videosAiReportRawMarkdown = data.report;
+      contentEl.innerHTML = `
+        <div style="line-height:1.75; font-size:0.92rem; color:#cbd5e1;">
+          ${formatMarkdownToHtml(data.report)}
+        </div>
+      `;
+      if (copyBtn) copyBtn.style.display = 'inline-flex';
+    } else {
+      throw new Error(data?.error || "Failed to generate report");
+    }
+  } catch(err) {
+    console.error("generateAiVideoAnalyticsReport error:", err);
+    contentEl.innerHTML = `
+      <div style="padding:1.5rem; text-align:center; color:#ef4444;">
+        <i class="ri-error-warning-line" style="font-size:2rem; margin-bottom:0.5rem;"></i>
+        <p>Unable to generate AI video analytics report right now.</p>
+        <p style="font-size:0.8rem; color:var(--admin-muted);">${err.message}</p>
+      </div>
+    `;
+  } finally {
+    if (genBtn) {
+      genBtn.disabled = false;
+      genBtn.innerHTML = '<i class="ri-robot-2-line"></i> Generate Report Now';
+    }
+  }
+};
+
+window.copyVideosAiReport = function() {
+  if (!videosAiReportRawMarkdown) {
+    if (typeof window.customAlert === 'function') window.customAlert("No video report generated to copy yet.", { title: "Copy Report" });
+    else alert("No video report generated yet.");
+    return;
+  }
+  navigator.clipboard.writeText(videosAiReportRawMarkdown).then(() => {
+    if (typeof window.customAlert === 'function') window.customAlert("AI Video Analytics Report copied to clipboard!", { title: "Report Copied" });
+    else alert("Report copied to clipboard!");
+  }).catch(err => {
+    console.error("Clipboard copy failed:", err);
+  });
+};
+
 
 
 

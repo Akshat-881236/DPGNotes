@@ -213,6 +213,7 @@
         <button class="tab-btn" data-target="contributionTab">Contribution</button>
         <button class="tab-btn" data-target="manageResourcesTab">Manage Resources</button>
         <button class="tab-btn" data-target="passwordVaultTab"><i class="ri-shield-keyhole-line" style="margin-right:6px;"></i> Password Vault <span id="vaultSidebarBadge" style="display:none; margin-left:6px; background:#ef4444; color:white; font-size:0.72rem; padding:1px 6px; border-radius:10px; font-weight:700;">0</span></button>
+        <button class="tab-btn" data-target="ytVideosTab"><i class="ri-youtube-line" style="margin-right:6px; color:#ef4444;"></i> YT Videos</button>
         <button class="tab-btn" data-target="uploadAdsTab">Promote & Upload Ads</button>
         <button class="tab-btn" data-target="websiteTab">Website</button>
         <button class="tab-btn" data-target="exploreTab">Explore</button>
@@ -631,6 +632,91 @@
             </form>
           </div>
         </div>
+
+        <!-- YT VIDEOS TAB (ACADEMIC VIDEO REFERENCES) -->
+        <section id="ytVideosTab" class="dashboard-tab">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+            <div>
+              <h2 style="margin:0 0 0.4rem 0; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:10px;">
+                <i class="ri-youtube-fill" style="color:#ef4444;"></i> YouTube Video References
+              </h2>
+              <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">
+                Share verified academic lecture videos, lab walkthroughs, or project demonstrations with students. Submissions are reviewed and approved by administrators before appearing in the DPGNotes search engine.
+              </p>
+            </div>
+            <button type="button" class="tab-btn" onclick="loadYtVideosData()" style="padding:6px 14px; font-size:0.82rem; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:8px; color:#fff; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <i class="ri-refresh-line"></i> Refresh
+            </button>
+          </div>
+
+          <!-- Video Submission Form -->
+          <div style="background:var(--card-bg, #1e293b); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:2rem; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+            <h3 style="margin:0 0 1rem 0; font-size:1.05rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-add-circle-line" style="color:var(--primary-light);"></i> Submit Academic Video Reference (Not Ads)
+            </h3>
+
+            <form id="ytVideoUploadForm" onsubmit="handleYtVideoSubmit(event)">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1rem;">
+                <div>
+                  <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">Allocated Video ID *</label>
+                  <input type="text" id="ytVideoIdInput" readonly style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.6); color:#a5b4fc; font-family:'Fira Code', monospace; font-weight:700; font-size:0.9rem;" value="Calculating next ID...">
+                  <small style="color:var(--text-muted); font-size:0.72rem;">Auto-sequenced from latest Firestore record</small>
+                </div>
+
+                <div>
+                  <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">Video Source / Channel Name *</label>
+                  <input type="text" id="ytVideoSourceInput" placeholder="e.g. Akshat Network Hub, NPTEL" required style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
+                </div>
+              </div>
+
+              <div style="margin-bottom:1rem;">
+                <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">YouTube Video URL *</label>
+                <input type="url" id="ytVideoUrlInput" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." required style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
+              </div>
+
+              <div style="margin-bottom:1.25rem;">
+                <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">Video Title / Topic *</label>
+                <input type="text" id="ytVideoTitleInput" placeholder="e.g. Introducing DPGNotes PDF Viewer &amp; Reader" required style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+                  <span style="background:rgba(234,179,8,0.15); color:#facc15; padding:2px 8px; border-radius:6px; font-weight:700;"><i class="ri-time-line"></i> Status: Pending Approval</span>
+                  <span>Will be evaluated by Admin team</span>
+                </div>
+                <button type="submit" id="ytVideoSubmitBtn" class="submit-btn" style="padding:0.75rem 1.8rem; border-radius:10px; border:none; background:linear-gradient(135deg, #ef4444, #dc2626); color:white; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+                  <i class="ri-upload-cloud-2-line"></i> Submit for Approval
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- My Submissions Table -->
+          <div style="background:var(--card-bg, #1e293b); border:1px solid var(--border); border-radius:16px; padding:1.5rem;">
+            <h3 style="margin:0 0 1rem 0; font-size:1.05rem; color:#fff; display:flex; align-items:center; gap:8px;">
+              <i class="ri-folder-video-line" style="color:var(--primary-light);"></i> My Submitted Video References
+            </h3>
+            <div class="manage-res-table-wrapper" style="overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.85rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--border); color:var(--text-muted);">
+                    <th style="padding:10px 12px;">Video ID</th>
+                    <th style="padding:10px 12px;">Title</th>
+                    <th style="padding:10px 12px;">Source</th>
+                    <th style="padding:10px 12px;">Status</th>
+                    <th style="padding:10px 12px;">Telemetry</th>
+                    <th style="padding:10px 12px; text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="myVideosTableBody">
+                  <tr>
+                    <td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">Loading your submitted videos...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
         <!-- UPLOAD ADS TAB -->
         <section id="uploadAdsTab" class="dashboard-tab">
