@@ -58,6 +58,15 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    /* ---------- EDUCATIONAL VIDEOS ---------- */
+    match /videos/{videoId} {
+      allow read, write: if true;
+    }
+
+    match /Video/{videoId} {
+      allow read, write: if true;
+    }
+
     /* ---------- SHARE ENGAGEMENTS ---------- */
     match /share_engagements/{engId} {
       allow read, write: if true;
