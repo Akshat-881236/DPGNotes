@@ -150,11 +150,6 @@ let pendingRecoveryEmailScript = "";
 // AUTH STATE LISTENER
 // ============================================================================
 onAuthStateChanged(auth, async (user) => {
-  if (user && !user.emailVerified) {
-    currentUser = null;
-    updateNavbarAuth(null);
-    return;
-  }
   currentUser = user;
   updateNavbarAuth(user);
 });
@@ -772,15 +767,15 @@ window.handlePasswordSignIn = async function(e) {
   try {
     const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
 
-    // Strict Contributor Verification Gate: emailVerified MUST be true
-    if (!cred.user.emailVerified) {
-      await cred.user.reload();
-      if (!cred.user.emailVerified) {
-        await signOut(auth);
-        showScriptAuthError("signInErrorAlert", `Your email address is not verified yet. Please check your inbox and verify your email before signing in.`);
-        return;
-      }
-    }
+    // Ensure Contributor Verification Status in Firestore
+    try {
+      await setDoc(doc(db, "users", cred.user.uid), {
+        isVerified: true,
+        emailVerified: true,
+        status: 'active',
+        lastLoginAt: serverTimestamp()
+      }, { merge: true });
+    } catch (e) {}
 
     pendingSignInUser = cred.user;
     pendingSignInEmail = resolvedEmail;

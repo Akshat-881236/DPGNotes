@@ -1637,7 +1637,11 @@
     window.sendDirectMessage = async function() {
       const field = document.getElementById("dmInputField");
       const text = field.value.trim();
-      if (!text || !currentUser) return;
+      const activeUser = currentUser || (typeof auth !== 'undefined' && auth.currentUser) || null;
+      const activeUid = (activeUser && activeUser.uid) || localStorage.getItem("dpgActiveUserUid");
+      if (!text || !activeUid) return;
+      const senderName = (activeUser && (activeUser.displayName || (activeUser.email && activeUser.email.split('@')[0]))) || localStorage.getItem("dpgActiveUserName") || "Contributor";
+
       // Optimistic render first
       const box = document.getElementById("dmMessagesBox");
       const div = document.createElement("div");
@@ -1651,11 +1655,11 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || currentUser.email.split('@')[0],
+            senderId: activeUid,
+            senderName: senderName,
             receiverId: targetUid,
-            receiverName: targetProfile.name,
-            receiverEmail: targetProfile.email,
+            receiverName: (targetProfile && targetProfile.name) || "Contributor",
+            receiverEmail: (targetProfile && targetProfile.email) || "",
             text
           })
         });
@@ -1669,9 +1673,11 @@
     // Load mutual connection group chat feed
     async function loadGroupChatFeed() {
       const feed = document.getElementById("groupChatMessagesFeed");
-      if (!feed || !currentUser) return;
+      const activeUser = currentUser || (typeof auth !== 'undefined' && auth.currentUser) || null;
+      const activeUid = (activeUser && activeUser.uid) || localStorage.getItem("dpgActiveUserUid");
+      if (!feed || !activeUid) return;
       try {
-        const res = await fetch(`${window.API_BASE_URL}/api/social/get-group-messages?userId=${currentUser.uid}`);
+        const res = await fetch(`${window.API_BASE_URL}/api/social/get-group-messages?userId=${activeUid}`);
         if (!res.ok) return;
         const messages = await res.json();
         
@@ -1682,7 +1688,7 @@
         }
 
         messages.forEach(msg => {
-          const isMe = msg.senderId === currentUser.uid;
+          const isMe = msg.senderId === activeUid;
           const wrapper = document.createElement("div");
           wrapper.style.cssText = `display:flex; gap:8px; align-items:flex-end; justify-content:${isMe ? 'flex-end' : 'flex-start'};`;
           
@@ -1696,7 +1702,7 @@
               </div>
             </div>
 
-            ${isMe ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>` : ''}
+            ${isMe ? `<div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${(activeUser && activeUser.photoURL) ? `<img src="${activeUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>` : ''}
           `;
           feed.appendChild(wrapper);
         });
@@ -1709,7 +1715,12 @@
     window.sendGroupChatMessage = async function() {
       const input = document.getElementById("groupChatInputField");
       const text = input.value.trim();
-      if (!text || !currentUser) return;
+      const activeUser = currentUser || (typeof auth !== 'undefined' && auth.currentUser) || null;
+      const activeUid = (activeUser && activeUser.uid) || localStorage.getItem("dpgActiveUserUid");
+      if (!text || !activeUid) return;
+      const senderName = (activeUser && (activeUser.displayName || (activeUser.email && activeUser.email.split('@')[0]))) || localStorage.getItem("dpgActiveUserName") || "Contributor";
+      const senderPhoto = (activeUser && activeUser.photoURL) || localStorage.getItem("dpgActiveUserPhoto") || "";
+
       input.value = "";
       input.focus();
 
@@ -1720,10 +1731,10 @@
         wrapper.style.cssText = "display:flex; gap:8px; align-items:flex-end; justify-content:flex-end;";
         wrapper.innerHTML = `
           <div style="display:flex; flex-direction:column; max-width:70%;">
-            <span style="font-size:0.7rem; color:var(--primary-light); font-weight:600; margin-bottom:2px; align-self:flex-end;">${currentUser.displayName || 'You'}</span>
+            <span style="font-size:0.7rem; color:var(--primary-light); font-weight:600; margin-bottom:2px; align-self:flex-end;">${senderName}</span>
             <div style="padding:0.6rem 0.9rem; border-radius:12px; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; font-size:0.85rem; line-height:1.45;">${formatBioContent(text)}</div>
           </div>
-          <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>
+          <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; overflow:hidden; flex-shrink:0;">${senderPhoto ? `<img src="${senderPhoto}" style="width:100%; height:100%; object-fit:cover;">` : 'Y'}</div>
         `;
         feed.appendChild(wrapper);
         feed.scrollTop = feed.scrollHeight;
@@ -1734,9 +1745,9 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            senderId: currentUser.uid,
-            senderName: currentUser.displayName || currentUser.email.split('@')[0],
-            senderPhoto: currentUser.photoURL || "",
+            senderId: activeUid,
+            senderName: senderName,
+            senderPhoto: senderPhoto,
             text
           })
         });

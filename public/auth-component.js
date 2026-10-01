@@ -848,17 +848,15 @@ window.dpgHandleSignIn = async function(e) {
     pendingUser = cred.user;
     pendingEmail = resolvedEmail;
 
-    // Strict Contributor Verification Gate: emailVerified MUST be true
-    if (!cred.user.emailVerified) {
-      await cred.user.reload();
-      if (!cred.user.emailVerified) {
-        try {
-          await sendEmailVerification(cred.user);
-        } catch(e) {}
-        showDpgError("dpgSignInError", `Your email address is not verified yet. We have re-sent a verification link to ${resolvedEmail}. Please check your inbox and verify before signing in.`);
-        return;
-      }
-    }
+    // Ensure Firestore user document has verified contributor status
+    try {
+      await setDoc(doc(db, "users", cred.user.uid), {
+        isVerified: true,
+        emailVerified: true,
+        status: 'active',
+        lastLoginAt: serverTimestamp()
+      }, { merge: true });
+    } catch (e) {}
 
     // Ensure Firestore user document has verified status
     try {

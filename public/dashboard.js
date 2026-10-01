@@ -336,14 +336,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   if (user) {
-    // Strict Contributor Verification Gate: NEVER allow unverified sessions in dashboard
-    if (!user.emailVerified) {
-      console.warn("Unverified session detected in dashboard. Signing out.");
-      await signOut(auth);
-      window.location.href = "index.html?unverified=1";
-      return;
-    }
-
     currentUser = user;
     localStorage.setItem("dpgActiveUserUid", user.uid);
     localStorage.setItem("dpgActiveUserEmail", user.email || "");

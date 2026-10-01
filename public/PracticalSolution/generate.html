@@ -517,9 +517,8 @@
       }
       try {
         contributorProfile = userRaw ? JSON.parse(userRaw) : { uid, name: 'Contributor', email: 'contributor@dpgnotes.com' };
-        if (contributorProfile.name) {
-          document.getElementById('contributorNameText').textContent = contributorProfile.name;
-        }
+        const dispName = contributorProfile.name || contributorProfile.displayName || 'Contributor';
+        document.getElementById('contributorNameText').textContent = dispName;
       } catch (e) {
         contributorProfile = { uid, name: 'Contributor' };
       }
@@ -1491,6 +1490,11 @@
               : '<i class="ri-send-plane-fill"></i> Publish Practical Solution';
           }
           
+          if (typeof window.openSignInModal === 'function') {
+            window.openSignInModal();
+            return;
+          }
+
           const confirmSignIn = typeof window.customConfirm === 'function'
             ? await window.customConfirm("Your Contributor authentication session has expired or requires renewal to publish to Firestore.\n\nSign in with Google now to securely publish your practical solution?", { title: "Authentication Renewal Required" })
             : confirm("Your Contributor authentication session has expired or requires renewal to publish to Firestore.\n\nSign in with Google now to securely publish your practical solution?");
