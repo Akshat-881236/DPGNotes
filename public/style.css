@@ -67,3 +67,195 @@
     font-size: 0.7rem !important;
   }
 }
+
+/* ========================================================
+   FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+   ======================================================== */
+
+/* 1. Folded Outer Screen / Extra Narrow (max-width: 380px) */
+@media (max-width: 380px) {
+  :root {
+    --container: 100%;
+  }
+  body {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  .top-header {
+    padding: 0.45rem 0.6rem !important;
+    gap: 0.4rem !important;
+  }
+  .brand-area {
+    gap: 0.4rem !important;
+  }
+  .brand-logo {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.95rem !important;
+  }
+  .brand-text h1 {
+    font-size: 0.95rem !important;
+    max-width: 140px;
+  }
+  .brand-text p {
+    display: none !important;
+  }
+  .auth-btn, .btn-back {
+    padding: 0.45rem 0.65rem !important;
+    font-size: 0.75rem !important;
+  }
+  .hero-section {
+    padding: 0.75rem 0.5rem !important;
+  }
+  .hero-content {
+    padding: 1.5rem 0.75rem !important;
+    border-radius: 16px !important;
+  }
+  .hero-content h2 {
+    font-size: 1.45rem !important;
+    line-height: 1.25 !important;
+  }
+  .hero-content p {
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+  }
+  .search-wrapper {
+    padding: 0.5rem 0.5rem !important;
+  }
+  .search-box {
+    padding: 0.6rem 0.8rem !important;
+    border-radius: 14px !important;
+    gap: 0.5rem !important;
+  }
+  .search-box input {
+    font-size: 0.88rem !important;
+  }
+  .category-strip {
+    padding: 0.4rem 0.5rem 1rem !important;
+    gap: 0.5rem !important;
+  }
+  .category-strip button {
+    padding: 0.55rem 1rem !important;
+    font-size: 0.78rem !important;
+  }
+  .main-content, .seo-section {
+    padding: 0 0.5rem 1.5rem !important;
+  }
+  .resource-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+  .resource-card {
+    padding: 1rem !important;
+    border-radius: 12px !important;
+  }
+  .resource-card h3 {
+    font-size: 1.05rem !important;
+  }
+  .card-desc {
+    font-size: 0.84rem !important;
+  }
+  .card-stats {
+    padding: 6px 8px !important;
+    gap: 8px !important;
+    font-size: 0.74rem !important;
+  }
+  .card-actions {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .action-btn {
+    padding: 4px 6px !important;
+    font-size: 0.76rem !important;
+  }
+  .sidebar {
+    width: min(280px, 86vw) !important;
+  }
+  .tabs-container {
+    padding: 0.75rem 0.4rem !important;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  .stat-card {
+    padding: 1rem !important;
+  }
+  .stat-card p {
+    font-size: 1.8rem !important;
+  }
+  .bottom-nav {
+    width: calc(100% - 12px) !important;
+    bottom: 8px !important;
+    padding: 0.35rem !important;
+    border-radius: 18px !important;
+  }
+  .bottom-nav button {
+    padding: 0.5rem 0.2rem !important;
+  }
+  .bottom-nav span {
+    font-size: 1.05rem !important;
+  }
+  .bottom-nav small {
+    font-size: 0.64rem !important;
+  }
+}
+
+/* 2. Extra Narrow Folded Display (max-width: 340px - e.g. Galaxy Z Fold folded 344px or smaller) */
+@media (max-width: 340px) {
+  .brand-text h1 {
+    font-size: 0.85rem !important;
+    max-width: 100px;
+  }
+  .hero-content h2 {
+    font-size: 1.25rem !important;
+  }
+  .open-btn {
+    padding: 0.6rem !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+/* 3. Unfolded Foldable Screens / Square-ish Dual View (600px - 960px with 3/4 to 4/3 aspect ratio) */
+@media (min-width: 600px) and (max-width: 960px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+  .resource-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.15rem !important;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+  .seo-section {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+  .tabs-container {
+    padding: 1.25rem 1rem !important;
+  }
+  .hero-content {
+    padding: 2.5rem 1.5rem !important;
+  }
+  .hero-content h2 {
+    font-size: 2.2rem !important;
+  }
+}
+
+/* 4. Dual-Screen Spanning Foldable Support (Surface Duo & CSS Spanning Spec) */
+@media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+  .dashboard-shell {
+    display: grid !important;
+    grid-template-columns: env(fold-left, 280px) 1fr !important;
+  }
+  .sidebar {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+  }
+  .mobile-header {
+    display: none !important;
+  }
+  .sidebar-overlay {
+    display: none !important;
+  }
+}

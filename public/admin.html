@@ -597,6 +597,103 @@
       }
     }
 
+    /* ========================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================== */
+
+    /* 1. Folded Outer Screen / Extra Narrow (max-width: 380px) */
+    @media (max-width: 380px) {
+      .admin-main {
+        padding: 0.6rem 0.35rem !important;
+      }
+      .admin-mobile-header {
+        padding: 0.5rem 0.6rem !important;
+      }
+      .admin-mobile-header h2 {
+        font-size: 1.05rem !important;
+      }
+      .stat-cards,
+      .engagement-stats-grid,
+      .metrics-kpi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.55rem !important;
+      }
+      .engagement-stat-card {
+        padding: 0.8rem 0.75rem !important;
+        min-height: 85px !important;
+      }
+      .engagement-card-num {
+        font-size: 1.45rem !important;
+      }
+      .section-card {
+        padding: 1rem 0.6rem !important;
+        border-radius: 12px !important;
+      }
+      .admin-sidebar {
+        width: min(270px, 86vw) !important;
+      }
+      .table-responsive,
+      .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        max-width: 100% !important;
+      }
+      div[id$="Modal"] > div,
+      .admin-modal-card {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        padding: 1.15rem 0.75rem !important;
+        border-radius: 12px !important;
+      }
+    }
+
+    /* 2. Extra Narrow Folded Display (max-width: 340px) */
+    @media (max-width: 340px) {
+      .admin-nav-item {
+        padding: 0.6rem 0.8rem !important;
+        font-size: 0.82rem !important;
+      }
+      .admin-btn {
+        padding: 5px 8px !important;
+        font-size: 0.75rem !important;
+      }
+    }
+
+    /* 3. Unfolded Foldable Screens / Square Dual View (600px - 900px, 3/4 to 4/3 aspect ratio) */
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .admin-main {
+        padding: 1.25rem 1rem !important;
+      }
+      .stat-cards {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.85rem !important;
+      }
+      .engagement-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.85rem !important;
+      }
+      .metrics-two-col {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+      }
+    }
+
+    /* 4. Dual-Screen Spanning Foldable Support */
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .admin-layout {
+        display: grid !important;
+        grid-template-columns: env(fold-left, 260px) 1fr !important;
+      }
+      .admin-sidebar {
+        transform: none !important;
+        position: static !important;
+        width: 100% !important;
+      }
+      .admin-mobile-header {
+        display: none !important;
+      }
+    }
+
     /* UNIVERSAL METRICS STYLES */
     .metrics-kpi-grid {
       display: grid;

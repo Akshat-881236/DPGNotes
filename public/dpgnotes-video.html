@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DPGNotes - Video Player &amp; Telemetry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>DPGNotes - Video Player &amp; Educational Media</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
@@ -13,14 +13,18 @@
       --bg: #0c0e1a;
       --sb: #111427;
       --surface: #161929;
+      --surface-light: #1e2238;
       --bdr: rgba(255,255,255,0.08);
+      --bdr-focus: rgba(99,102,241,0.4);
       --pri: #6366f1;
       --pli: #818cf8;
       --txt: #e2e8f0;
       --mut: #94a3b8;
       --red: #ef4444;
       --green: #10b981;
+      --amber: #f59e0b;
     }
+
     body {
       font-family: 'Outfit', sans-serif;
       background: var(--bg);
@@ -28,7 +32,9 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
+
     /* TOPBAR */
     .topbar {
       height: 60px;
@@ -37,56 +43,70 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 1.25rem;
+      padding: 0 1rem;
       position: sticky;
       top: 0;
       z-index: 200;
+      backdrop-filter: blur(12px);
     }
     .topbar-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
+      min-width: 0;
     }
     .back-btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       color: var(--mut);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 500;
-      transition: color 0.2s;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--bdr);
+      transition: all 0.2s;
+      white-space: nowrap;
     }
-    .back-btn:hover { color: #fff; }
+    .back-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
     .brand-tag {
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: #fff;
       display: flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .brand-tag i { color: var(--pri); }
+    .brand-tag i { color: #ef4444; font-size: 1.3rem; }
+    .brand-sub { color: #a5b4fc; font-weight: 500; font-size: 0.82rem; }
+
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
+      flex-shrink: 0;
     }
     .act-btn {
       background: rgba(255,255,255,0.06);
       border: 1px solid var(--bdr);
       color: var(--txt);
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 8px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.2s;
       text-decoration: none;
       font-family: inherit;
+      white-space: nowrap;
     }
     .act-btn:hover {
       background: rgba(255,255,255,0.12);
@@ -98,30 +118,42 @@
       color: #fca5a5;
     }
     .act-btn.primary {
-      background: var(--pri);
-      border-color: var(--pri);
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-color: #6366f1;
       color: #fff;
     }
     .act-btn.primary:hover {
-      background: var(--pli);
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
     }
-    /* MAIN PLAYER CONTAINER */
+
+    /* MAIN LAYOUT */
     .player-main {
       flex: 1;
+      width: 100%;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 1.2rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* LEFT COLUMN: PLAYER & METADATA */
+    .player-col-left {
       display: flex;
       flex-direction: column;
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 1.5rem 1rem;
-      gap: 1.25rem;
+      gap: 1.2rem;
+      min-width: 0;
     }
+
+    /* 16:9 VIDEO CONTAINER */
     .player-screen-box {
       width: 100%;
       background: #000;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
       border: 1px solid var(--bdr);
       position: relative;
       padding-top: 56.25%; /* 16:9 Aspect Ratio */
@@ -134,12 +166,48 @@
       height: 100%;
       border: none;
     }
-    /* METADATA & TELEMETRY CARD */
+
+    /* FULLSCREEN CSS MODES */
+    .player-screen-box:fullscreen,
+    .player-screen-box:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      padding-top: 0 !important;
+      background: #000 !important;
+    }
+    .player-screen-box:fullscreen iframe,
+    .player-screen-box:-webkit-full-screen iframe {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* QUICK PLAYBAR CONTROLS */
+    .player-quick-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--surface);
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-top: -6px;
+    }
+    .quick-bar-left, .quick-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* METADATA CARD */
     .meta-card {
       background: var(--surface);
       border: 1px solid var(--bdr);
       border-radius: 16px;
-      padding: 1.5rem;
+      padding: 1.3rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -152,15 +220,16 @@
       flex-wrap: wrap;
     }
     .video-title {
-      font-size: 1.4rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: #fff;
       line-height: 1.35;
       margin-bottom: 6px;
+      word-break: break-word;
     }
     .video-source {
       color: var(--mut);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -168,28 +237,28 @@
     .telemetry-pills {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .tel-pill {
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--bdr);
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 8px;
-      font-size: 0.85rem;
-      display: flex;
+      font-size: 0.82rem;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       color: #cbd5e1;
     }
     .tel-pill strong { color: #fff; }
     .badge-sponsored {
       background: rgba(245, 158, 11, 0.15);
       color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      border: 1px solid rgba(245, 158, 11, 0.35);
       padding: 4px 10px;
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
@@ -198,38 +267,192 @@
     .badge-academic {
       background: rgba(99, 102, 241, 0.15);
       color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      border: 1px solid rgba(99, 102, 241, 0.35);
       padding: 4px 10px;
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
       gap: 5px;
     }
-    /* SHARE MODAL */
+
+    /* RIGHT COLUMN: VIDEO SWITCHER & PLAYLIST */
+    .player-col-right {
+      background: var(--surface);
+      border: 1px solid var(--bdr);
+      border-radius: 16px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: calc(100vh - 90px);
+      position: sticky;
+      top: 75px;
+    }
+
+    /* SWITCHER TABS */
+    .switcher-tabs-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(0,0,0,0.3);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--bdr);
+    }
+    .switcher-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--mut);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .switcher-tab-btn.active {
+      background: var(--surface-light);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .switcher-tab-btn.active.tab-academic {
+      color: #a5b4fc;
+      border: 1px solid rgba(99,102,241,0.3);
+    }
+    .switcher-tab-btn.active.tab-sponsored {
+      color: #fbbf24;
+      border: 1px solid rgba(245,158,11,0.3);
+    }
+
+    /* PLAYLIST ITEMS SCROLL LIST */
+    .playlist-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+      max-height: 520px;
+    }
+    .playlist-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .playlist-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+
+    /* PLAYLIST ITEM CARD */
+    .video-item-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+    }
+    .video-item-card:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+    }
+    .video-item-card.active {
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+    .video-item-card.active.card-sponsored {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+    .item-thumb-box {
+      width: 96px;
+      height: 54px;
+      border-radius: 8px;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .item-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .item-playing-indicator {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      font-size: 1.1rem;
+    }
+    .item-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .item-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .item-meta {
+      font-size: 0.74rem;
+      color: var(--mut);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* SHARE FALLBACK MODAL */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      padding: 1rem;
     }
     .modal-overlay.active { display: flex; }
     .modal-card {
       background: #111427;
       border: 1px solid var(--bdr);
       border-radius: 16px;
-      width: 90%;
-      max-width: 480px;
+      width: 100%;
+      max-width: 440px;
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
     }
     .modal-title {
       font-size: 1.15rem;
@@ -254,7 +477,7 @@
       color: #fff;
       padding: 6px 10px;
       font-family: inherit;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       outline: none;
     }
     .copy-btn {
@@ -266,16 +489,122 @@
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
+      font-size: 0.82rem;
     }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
+
+    /* ======================================================== */
+    /* FOLDABLE DEVICES & MEDIA RESPONSIVENESS MATRIX           */
+    /* ======================================================== */
+
+    /* 1. Unfolded Foldable Screens / Tablet Portrait (600px - 960px) */
+    @media (max-width: 960px) {
+      .player-main {
+        grid-template-columns: 1fr;
+        padding: 1rem 0.8rem;
+        gap: 1.2rem;
+      }
+      .player-col-right {
+        position: static;
+        max-height: none;
+      }
+      .playlist-scroll {
+        max-height: 400px;
+      }
     }
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .video-title { font-size: 1.15rem; }
-      .meta-header { flex-direction: column; }
+
+    /* 2. Foldable Square-ish / Unfolded Dual-View (600px - 900px aspect ratios) */
+    @media (min-width: 600px) and (max-width: 900px) and (max-aspect-ratio: 4/3) {
+      .player-main {
+        padding: 0.8rem;
+      }
+      .playlist-scroll {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        max-height: 340px;
+      }
+      .video-title {
+        font-size: 1.25rem;
+      }
+    }
+
+    /* 3. Mobile / Folded Narrow Screen (< 500px, e.g. iPhone 16 @ 393px, Fold @ 340px) */
+    @media (max-width: 500px) {
+      .topbar {
+        padding: 0 0.6rem;
+      }
+      .topbar-left {
+        gap: 0.4rem;
+      }
+      .brand-sub { display: none; }
+      .brand-tag { font-size: 0.95rem; }
+      .act-btn {
+        padding: 5px 8px;
+        font-size: 0.78rem;
+      }
+      .act-btn .btn-text-full {
+        display: none; /* Icon only for full screen and share on narrow screen */
+      }
+      .player-main {
+        padding: 0.8rem 0.5rem;
+        gap: 1rem;
+      }
+      .player-screen-box {
+        border-radius: 12px;
+      }
+      .meta-card {
+        padding: 1rem 0.85rem;
+        border-radius: 12px;
+      }
+      .video-title {
+        font-size: 1.1rem;
+      }
+      .telemetry-pills {
+        gap: 6px;
+      }
+      .tel-pill {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+      }
+      .item-thumb-box {
+        width: 80px;
+        height: 48px;
+      }
+      .item-title {
+        font-size: 0.8rem;
+      }
+      .player-col-right {
+        padding: 1rem 0.85rem;
+        border-radius: 12px;
+      }
+    }
+
+    /* 4. Extra Narrow Folded Display (< 350px, e.g. Galaxy Z Fold Outer Screen @ 340px) */
+    @media (max-width: 350px) {
+      .topbar {
+        padding: 0 0.4rem;
+      }
+      .back-btn span { display: none; }
+      .brand-tag span { font-size: 0.85rem; }
+      .player-quick-bar {
+        font-size: 0.75rem;
+      }
+      .switcher-tab-btn {
+        font-size: 0.74rem;
+        padding: 6px 4px;
+      }
+    }
+
+    /* 5. Dual-Screen Spanning Foldable Support */
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .player-main {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1.5rem !important;
+      }
+      .player-col-right {
+        position: sticky !important;
+        top: 80px !important;
+      }
     }
   </style>
 </head>
@@ -284,22 +613,29 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
-      <a href="dpgnotes-serp.html" class="back-btn" title="Back to SERP">
-        <i class="ri-arrow-left-line"></i> SERP
+      <a href="dpgnotes-serp.html" class="back-btn" title="Back to Search Engine">
+        <i class="ri-arrow-left-line"></i> <span>SERP</span>
       </a>
       <div class="brand-tag">
-        <i class="ri-youtube-line"></i> DPGNotes Video
+        <i class="ri-youtube-fill"></i>
+        <span>DPGNotes <span class="brand-sub">Video Studio</span></span>
       </div>
     </div>
 
     <div class="topbar-right">
-      <button type="button" class="act-btn" id="likeBtn" onclick="toggleVideoLike()">
+      <button type="button" class="act-btn" id="likeBtn" onclick="window.toggleVideoLike()" title="Verified Like">
         <i class="ri-heart-3-line" id="likeIcon"></i> <span id="likeCount">0</span>
       </button>
-      <button type="button" class="act-btn primary" onclick="openShareModal()">
-        <i class="ri-share-forward-line"></i> Share
+
+      <button type="button" class="act-btn primary" onclick="window.shareCurrentVideo()" title="Native Chrome Share (WhatsApp, Email &amp; Apps)">
+        <i class="ri-share-forward-line"></i> <span class="btn-text-full">Share</span>
       </button>
-      <a href="#" target="_blank" rel="noopener" class="act-btn" id="openYtBtn" title="Open in YouTube">
+
+      <button type="button" class="act-btn" id="fullScreenBtn" onclick="window.toggleFullScreenPlayer()" title="Full Screen Video View">
+        <i class="ri-fullscreen-line" id="fsIcon"></i> <span class="btn-text-full">Full Screen</span>
+      </button>
+
+      <a href="#" target="_blank" rel="noopener" class="act-btn" id="openYtBtn" title="Watch on YouTube">
         <i class="ri-external-link-line"></i>
       </a>
     </div>
@@ -307,80 +643,154 @@
 
   <!-- MAIN WRAPPER -->
   <main class="player-main">
-    <div class="player-screen-box">
-      <iframe id="videoIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-    </div>
+    
+    <!-- LEFT: PLAYER, CONTROLS & METADATA -->
+    <div class="player-col-left">
+      <div class="player-screen-box" id="playerScreenBox">
+        <iframe id="videoIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen="true"></iframe>
+      </div>
 
-    <div class="meta-card">
-      <div class="meta-header">
-        <div>
-          <div id="typeBadgeContainer" style="margin-bottom:8px;">
-            <span class="badge-academic"><i class="ri-graduation-cap-line"></i> Academic Video</span>
-          </div>
-          <h1 class="video-title" id="videoTitle">Loading Video...</h1>
-          <div class="video-source" id="videoSource">
-            <i class="ri-user-line"></i> <span id="sourceName">Loading Source...</span>
-          </div>
+      <!-- Quick Playbar Controls -->
+      <div class="player-quick-bar">
+        <div class="quick-bar-left">
+          <button type="button" class="act-btn" onclick="window.playPreviousVideo()" style="padding:4px 10px; font-size:0.78rem;">
+            <i class="ri-skip-back-line"></i> Prev
+          </button>
+          <button type="button" class="act-btn" onclick="window.playNextVideo()" style="padding:4px 10px; font-size:0.78rem;">
+            Next <i class="ri-skip-forward-line"></i>
+          </button>
         </div>
 
-        <div class="telemetry-pills">
-          <div class="tel-pill">
-            <i class="ri-eye-line" style="color:#38bdf8;"></i> Views: <strong id="telViews">0</strong>
-          </div>
-          <div class="tel-pill">
-            <i class="ri-heart-3-fill" style="color:#f43f5e;"></i> Likes: <strong id="telLikes">0</strong>
-          </div>
-          <div class="tel-pill">
-            <i class="ri-share-forward-fill" style="color:#a855f7;"></i> Shares: <strong id="telShares">0</strong>
-          </div>
+        <div class="quick-bar-right">
+          <button type="button" class="act-btn" onclick="window.restartCurrentVideo()" style="padding:4px 10px; font-size:0.78rem;" title="Replay Video">
+            <i class="ri-restart-line"></i> Replay
+          </button>
+          <button type="button" class="act-btn" onclick="window.toggleFullScreenPlayer()" style="padding:4px 10px; font-size:0.78rem;">
+            <i class="ri-fullscreen-fill"></i> Expand
+          </button>
         </div>
       </div>
 
-      <div style="color:var(--mut); font-size:0.9rem; line-height:1.6; border-top:1px solid var(--bdr); padding-top:1rem;">
-        <p id="videoDesc">Verified educational module hosted within DPGNotes academic ecosystem. Adheres strictly to the university curriculum framework.</p>
+      <!-- Video Metadata Details Card -->
+      <div class="meta-card">
+        <div class="meta-header">
+          <div>
+            <div id="typeBadgeContainer" style="margin-bottom:8px;">
+              <span class="badge-academic"><i class="ri-graduation-cap-line"></i> Verified Academic Video</span>
+            </div>
+            <h1 class="video-title" id="videoTitle">Loading Educational Video...</h1>
+            <div class="video-source" id="videoSource">
+              <i class="ri-user-line"></i> <span id="sourceName">Loading Creator...</span>
+            </div>
+          </div>
+
+          <div class="telemetry-pills">
+            <div class="tel-pill">
+              <i class="ri-eye-line" style="color:#38bdf8;"></i> Views: <strong id="telViews">0</strong>
+            </div>
+            <div class="tel-pill">
+              <i class="ri-heart-3-fill" style="color:#f43f5e;"></i> Likes: <strong id="telLikes">0</strong>
+            </div>
+            <div class="tel-pill">
+              <i class="ri-share-forward-fill" style="color:#a855f7;"></i> Shares: <strong id="telShares">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div style="color:var(--mut); font-size:0.88rem; line-height:1.6; border-top:1px solid var(--bdr); padding-top:0.85rem;">
+          <p id="videoDesc">Verified academic lecture and educational walkthrough hosted within DPGNotes digital repository. Synchronized with the university syllabus framework.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SWITCHER & VIDEO PLAYLIST BROWSER -->
+    <div class="player-col-right">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-size:0.95rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
+          <i class="ri-play-list-2-fill" style="color:#6366f1;"></i> Media Playlist
+        </h3>
+        <span id="playlistCurrentIndex" style="font-size:0.75rem; color:var(--mut);">1 of 4</span>
+      </div>
+
+      <!-- Switcher: Academic Video vs Sponsored Ad Video -->
+      <div class="switcher-tabs-wrap">
+        <button type="button" class="switcher-tab-btn tab-academic active" id="tabBtnAcademic" onclick="window.switchVideoPool('academic')">
+          <i class="ri-graduation-cap-line"></i> Academic (<span id="countAcademicVids">0</span>)
+        </button>
+        <button type="button" class="switcher-tab-btn tab-sponsored" id="tabBtnSponsored" onclick="window.switchVideoPool('sponsored')">
+          <i class="ri-advertisement-line"></i> Sponsored (<span id="countSponsoredVids">0</span>)
+        </button>
+      </div>
+
+      <!-- Video Cards Playlist -->
+      <div class="playlist-scroll" id="playlistItemsContainer">
+        <!-- Rendered dynamically -->
+        <div style="text-align:center; padding:2rem 1rem; color:var(--mut); font-size:0.85rem;">
+          <i class="ri-loader-4-line ri-spin" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
+          Loading media collection...
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- SHARE MODAL -->
+  <!-- SHARE FALLBACK MODAL -->
   <div class="modal-overlay" id="shareModal">
     <div class="modal-card">
       <div class="modal-title">
         <i class="ri-share-forward-line" style="color:var(--pri);"></i> Share Video Link
       </div>
       <p style="color:var(--mut); font-size:0.85rem;">
-        Share this unique video URL with friends.
+        Copy and distribute this unique verified video URL:
       </p>
       <div class="share-input-box">
         <input type="text" id="shareUrlInput" readonly>
-        <button type="button" class="copy-btn" id="copyBtn" onclick="copyShareUrl()">Copy</button>
+        <button type="button" class="copy-btn" id="copyBtn" onclick="window.copyShareUrl()">Copy</button>
       </div>
       <div id="copySuccessMsg" style="color:#34d399; font-size:0.8rem; display:none;">
         <i class="ri-checkbox-circle-line"></i> Link copied to clipboard!
       </div>
-      <div class="modal-actions">
-        <button type="button" class="act-btn" onclick="closeShareModal()">Close</button>
+      <div style="display:flex; justify-content:flex-end;">
+        <button type="button" class="act-btn" onclick="window.closeShareModal()">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Firebase Scripts -->
+  <!-- Firebase Scripts with Inlined Configuration Safeguard -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { firebaseConfig } from "./firebase-config.js";
 
-    const app = initializeApp(firebaseConfig);
+    // Direct inlined configuration prevents 404 network failure on any client
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // Default Predefined Academic Videos
+    const PREDEFINED_ACADEMIC = [
+      { id: 'yt-001', url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes PDF Viewer', source: 'Akshat Network Hub', views: 0, likes: [], shares: 0, isSponsored: false },
+      { id: 'yt-002', url: 'https://www.youtube.com/watch?v=Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story', views: 0, likes: [], shares: 0, isSponsored: false },
+      { id: 'yt-003', url: 'https://www.youtube.com/watch?v=hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship', views: 0, likes: [], shares: 0, isSponsored: false },
+      { id: 'yt-004', url: 'https://www.youtube.com/watch?v=Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship', views: 0, likes: [], shares: 0, isSponsored: false }
+    ];
+
+    let academicVideos = [...PREDEFINED_ACADEMIC];
+    let sponsoredVideos = [];
+    let currentPoolType = "academic"; // "academic" or "sponsored"
     let currentVideoId = "";
     let currentAdId = "";
     let currentToken = "";
-    let isAd = false;
+    let currentVideoItem = null;
     let currentUser = null;
-    let videoData = null;
 
     function extractYouTubeId(url) {
       if (!url) return "";
@@ -388,118 +798,91 @@
       return match ? match[1] : "";
     }
 
-    async function initPlayer() {
-      const params = new URLSearchParams(window.location.search);
-      currentVideoId = params.get("id") || "";
-      currentAdId = params.get("adId") || "";
-      currentToken = params.get("token") || "";
-
-      // 1. Resolve Token if present
-      if (currentToken) {
-        try {
-          const shareDoc = await getDoc(doc(db, "share_links", currentToken));
-          if (shareDoc.exists()) {
-            const sData = shareDoc.data();
-            currentVideoId = sData.videoId || sData.docId || "";
-            if (sData.type === "ad_video") {
-              currentAdId = currentVideoId;
-              isAd = true;
-            }
-            // Increment share clicks
-            updateDoc(doc(db, "share_links", currentToken), {
-              clicks: increment(1)
-            }).catch(() => {});
-          }
-        } catch(e) {
-          console.warn("Share token resolve failed:", e);
+    // Toggle Full Screen Function (Native browser + Webkit + MS prefixes)
+    window.toggleFullScreenPlayer = function() {
+      const box = document.getElementById("playerScreenBox");
+      const icon = document.getElementById("fsIcon");
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (box.requestFullscreen) {
+          box.requestFullscreen();
+        } else if (box.webkitRequestFullscreen) {
+          box.webkitRequestFullscreen();
+        } else if (box.msRequestFullscreen) {
+          box.msRequestFullscreen();
         }
-      }
-
-      if (currentAdId) {
-        isAd = true;
-        await loadAdVideo(currentAdId);
-      } else if (currentVideoId) {
-        await loadAcademicVideo(currentVideoId);
+        if (icon) icon.className = "ri-fullscreen-exit-line";
       } else {
-        // Fallback default
-        currentVideoId = "yt-001";
-        await loadAcademicVideo(currentVideoId);
-      }
-    }
-
-    async function loadAcademicVideo(id) {
-      try {
-        let snap = await getDoc(doc(db, "videos", id));
-        if (!snap.exists()) {
-          snap = await getDoc(doc(db, "Video", id));
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
         }
-
-        if (snap.exists()) {
-          videoData = snap.data();
-          renderVideo(videoData);
-          // Increment views telemetry
-          updateDoc(doc(db, "videos", id), { views: increment(1) }).catch(() => {});
-          updateDoc(doc(db, "Video", id), { views: increment(1) }).catch(() => {});
-        } else {
-          // Hardcoded fallback for default 4
-          const defaults = {
-            'yt-001': { url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes PDF Viewer', source: 'Akshat Network Hub' },
-            'yt-002': { url: 'https://www.youtube.com/watch?v=Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story' },
-            'yt-003': { url: 'https://www.youtube.com/watch?v=hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship' },
-            'yt-004': { url: 'https://www.youtube.com/watch?v=Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship' }
-          };
-          videoData = defaults[id] || defaults['yt-001'];
-          renderVideo(videoData);
-        }
-      } catch (e) {
-        console.error("Failed loading academic video:", e);
+        if (icon) icon.className = "ri-fullscreen-line";
       }
-    }
+    };
 
-    async function loadAdVideo(adId) {
-      try {
-        const snap = await getDoc(doc(db, "user_ads", adId));
-        if (snap.exists()) {
-          videoData = snap.data();
-          videoData.isSponsored = true;
-          renderVideo(videoData);
-          // Increment views in ad doc
-          updateDoc(doc(db, "user_ads", adId), {
-            views: increment(1),
-            impressionsCount: increment(1)
-          }).catch(() => {});
-        }
-      } catch (e) {
-        console.error("Failed loading ad video:", e);
+    document.addEventListener("fullscreenchange", () => {
+      const icon = document.getElementById("fsIcon");
+      if (icon) {
+        icon.className = document.fullscreenElement ? "ri-fullscreen-exit-line" : "ri-fullscreen-line";
       }
-    }
+    });
 
-    function renderVideo(data) {
-      const ytId = extractYouTubeId(data.url || data.videoUrl || data.targetLink || "");
+    // Play video
+    window.loadAndPlayVideo = function(item, updateUrl = true) {
+      if (!item) return;
+      currentVideoItem = item;
+
+      if (item.isSponsored) {
+        currentPoolType = "sponsored";
+        currentAdId = item.id;
+        currentVideoId = "";
+        if (updateUrl) {
+          window.history.pushState(null, '', `dpgnotes-video.html?adId=${encodeURIComponent(item.id)}`);
+        }
+        // Increment ad views
+        updateDoc(doc(db, "user_ads", item.id), {
+          views: increment(1),
+          impressionsCount: increment(1)
+        }).catch(() => {});
+      } else {
+        currentPoolType = "academic";
+        currentVideoId = item.id;
+        currentAdId = "";
+        if (updateUrl) {
+          window.history.pushState(null, '', `dpgnotes-video.html?id=${encodeURIComponent(item.id)}`);
+        }
+        // Increment academic views
+        updateDoc(doc(db, "videos", item.id), { views: increment(1) }).catch(() => {});
+        updateDoc(doc(db, "Video", item.id), { views: increment(1) }).catch(() => {});
+      }
+
+      // Render Player iframe
+      const ytId = extractYouTubeId(item.url || item.videoUrl || item.targetUrl || "");
       const iframe = document.getElementById("videoIframe");
       if (iframe && ytId) {
-        // Enforce Auto Restart Policy: enablejsapi=1, loop=1, playlist=ytId
         iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
       }
 
-      document.getElementById("videoTitle").innerText = data.title || "Academic Educational Demonstration";
-      document.getElementById("sourceName").innerText = data.source || data.uploaderName || data.userName || "Verified Creator";
+      // Update Metadata
+      document.getElementById("videoTitle").innerText = item.title || "Academic Educational Demonstration";
+      document.getElementById("sourceName").innerText = item.source || item.company || item.brand || item.uploaderName || "Verified Creator";
 
       const ytBtn = document.getElementById("openYtBtn");
       if (ytBtn && ytId) ytBtn.href = `https://www.youtube.com/watch?v=${ytId}`;
 
-      const typeBadge = document.getElementById("typeBadgeContainer");
-      if (typeBadge) {
-        if (data.isSponsored || isAd) {
-          typeBadge.innerHTML = `<span class="badge-sponsored"><i class="ri-advertisement-fill"></i> Sponsored Ad Video</span>`;
+      const badgeContainer = document.getElementById("typeBadgeContainer");
+      if (badgeContainer) {
+        if (item.isSponsored) {
+          badgeContainer.innerHTML = `<span class="badge-sponsored"><i class="ri-advertisement-fill"></i> Sponsored Media Ad</span>`;
         } else {
-          typeBadge.innerHTML = `<span class="badge-academic"><i class="ri-shield-check-fill"></i> Verified Academic Video</span>`;
+          badgeContainer.innerHTML = `<span class="badge-academic"><i class="ri-shield-check-fill"></i> Verified Academic Video</span>`;
         }
       }
 
-      const views = (Number(data.views) || 0) + 1;
-      const likesCount = Array.isArray(data.likes) ? data.likes.length : (Number(data.likes) || 0);
-      const sharesCount = Number(data.shares) || 0;
+      const views = (Number(item.views) || 0) + 1;
+      const likesCount = Array.isArray(item.likes) ? item.likes.length : (Number(item.likes) || 0);
+      const sharesCount = Number(item.shares) || 0;
 
       document.getElementById("telViews").innerText = views.toLocaleString();
       document.getElementById("telLikes").innerText = likesCount.toLocaleString();
@@ -507,15 +890,126 @@
       document.getElementById("likeCount").innerText = likesCount.toLocaleString();
 
       updateLikeButtonState();
+      renderPlaylistUI();
+    };
+
+    window.restartCurrentVideo = function() {
+      if (currentVideoItem) {
+        const ytId = extractYouTubeId(currentVideoItem.url || currentVideoItem.videoUrl || currentVideoItem.targetUrl || "");
+        const iframe = document.getElementById("videoIframe");
+        if (iframe && ytId) {
+          iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
+        }
+      }
+    };
+
+    // Cycle Previous / Next
+    window.playPreviousVideo = function() {
+      const activeList = (currentPoolType === "sponsored") ? sponsoredVideos : academicVideos;
+      if (activeList.length === 0) return;
+      const currIdx = activeList.findIndex(v => v.id === (currentVideoItem?.id));
+      const prevIdx = (currIdx - 1 + activeList.length) % activeList.length;
+      window.loadAndPlayVideo(activeList[prevIdx]);
+    };
+
+    window.playNextVideo = function() {
+      const activeList = (currentPoolType === "sponsored") ? sponsoredVideos : academicVideos;
+      if (activeList.length === 0) return;
+      const currIdx = activeList.findIndex(v => v.id === (currentVideoItem?.id));
+      const nextIdx = (currIdx + 1) % activeList.length;
+      window.loadAndPlayVideo(activeList[nextIdx]);
+    };
+
+    // Switch between Academic and Sponsored pool
+    window.switchVideoPool = function(type) {
+      currentPoolType = type;
+      const tabAcademic = document.getElementById("tabBtnAcademic");
+      const tabSponsored = document.getElementById("tabBtnSponsored");
+
+      if (tabAcademic && tabSponsored) {
+        tabAcademic.classList.toggle("active", type === "academic");
+        tabSponsored.classList.toggle("active", type === "sponsored");
+      }
+
+      renderPlaylistUI();
+
+      // If switching to pool that doesn't contain currently playing video, play first from that pool
+      const activeList = (type === "sponsored") ? sponsoredVideos : academicVideos;
+      if (activeList.length > 0) {
+        const isCurrentInPool = activeList.some(v => v.id === currentVideoItem?.id);
+        if (!isCurrentInPool) {
+          window.loadAndPlayVideo(activeList[0]);
+        }
+      }
+    };
+
+    // Render Playlist UI
+    function renderPlaylistUI() {
+      const container = document.getElementById("playlistItemsContainer");
+      if (!container) return;
+
+      const activeList = (currentPoolType === "sponsored") ? sponsoredVideos : academicVideos;
+      const countEl = document.getElementById("playlistCurrentIndex");
+      
+      const currIdx = activeList.findIndex(v => v.id === (currentVideoItem?.id));
+      if (countEl) {
+        countEl.innerText = `${activeList.length ? (currIdx >= 0 ? currIdx + 1 : 1) : 0} of ${activeList.length}`;
+      }
+
+      if (activeList.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:2rem 1rem; color:var(--mut); font-size:0.85rem;">
+            <i class="ri-folder-info-line" style="font-size:1.6rem; color:#6366f1; display:block; margin-bottom:6px;"></i>
+            No ${currentPoolType === "sponsored" ? "sponsored video campaigns" : "academic videos"} available yet.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+      activeList.forEach((item, idx) => {
+        const ytId = extractYouTubeId(item.url || item.videoUrl || item.targetUrl || "");
+        const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='54' fill='%23111427'></svg>";
+        const isCurrent = currentVideoItem && (currentVideoItem.id === item.id);
+        const likes = Array.isArray(item.likes) ? item.likes.length : (Number(item.likes) || 0);
+
+        const card = document.createElement("div");
+        card.className = `video-item-card ${isCurrent ? 'active' : ''} ${item.isSponsored ? 'card-sponsored' : ''}`;
+        card.onclick = () => window.loadAndPlayVideo(item);
+
+        card.innerHTML = `
+          <div class="item-thumb-box">
+            <img src="${thumbUrl}" alt="Thumbnail" loading="lazy">
+            ${isCurrent ? `<div class="item-playing-indicator"><i class="ri-volume-up-fill"></i></div>` : ''}
+          </div>
+          <div class="item-info">
+            <div class="item-title">${escapeHtml(item.title || 'Educational Demonstration')}</div>
+            <div class="item-meta">
+              <span>${escapeHtml(item.source || item.company || 'Creator')}</span>
+              <span>&bull;</span>
+              <span><i class="ri-eye-line"></i> ${Number(item.views || 0).toLocaleString()}</span>
+              <span>&bull;</span>
+              <span><i class="ri-heart-line"></i> ${likes}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
 
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // Like Button
     function updateLikeButtonState() {
       const btn = document.getElementById("likeBtn");
       const icon = document.getElementById("likeIcon");
-      if (!btn || !icon || !currentUser || !videoData) return;
+      if (!btn || !icon || !currentVideoItem) return;
 
-      const likesArr = Array.isArray(videoData.likes) ? videoData.likes : [];
-      const hasLiked = likesArr.includes(currentUser.uid);
+      const likesArr = Array.isArray(currentVideoItem.likes) ? currentVideoItem.likes : [];
+      const hasLiked = currentUser && likesArr.includes(currentUser.uid);
 
       if (hasLiked) {
         btn.classList.add("liked");
@@ -526,56 +1020,48 @@
       }
     }
 
-    onAuthStateChanged(auth, (user) => {
-      currentUser = user;
-      updateLikeButtonState();
-    });
-
     window.toggleVideoLike = async function() {
       if (!currentUser) {
         alert("Please sign in as a verified contributor to like this video.");
         return;
       }
+      if (!currentVideoItem) return;
 
-      const likesArr = Array.isArray(videoData.likes) ? videoData.likes : [];
+      const likesArr = Array.isArray(currentVideoItem.likes) ? currentVideoItem.likes : [];
       const hasLiked = likesArr.includes(currentUser.uid);
-
-      const targetCol = isAd ? "user_ads" : "videos";
-      const targetId = isAd ? currentAdId : currentVideoId;
+      const targetCol = currentVideoItem.isSponsored ? "user_ads" : "videos";
+      const targetId = currentVideoItem.id;
 
       try {
         if (hasLiked) {
-          videoData.likes = likesArr.filter(u => u !== currentUser.uid);
-          await updateDoc(doc(db, targetCol, targetId), {
-            likes: arrayRemove(currentUser.uid)
-          });
-          if (!isAd) {
+          currentVideoItem.likes = likesArr.filter(u => u !== currentUser.uid);
+          await updateDoc(doc(db, targetCol, targetId), { likes: arrayRemove(currentUser.uid) });
+          if (!currentVideoItem.isSponsored) {
             updateDoc(doc(db, "Video", targetId), { likes: arrayRemove(currentUser.uid) }).catch(() => {});
           }
         } else {
-          videoData.likes = [...likesArr, currentUser.uid];
-          await updateDoc(doc(db, targetCol, targetId), {
-            likes: arrayUnion(currentUser.uid)
-          });
-          if (!isAd) {
+          currentVideoItem.likes = [...likesArr, currentUser.uid];
+          await updateDoc(doc(db, targetCol, targetId), { likes: arrayUnion(currentUser.uid) });
+          if (!currentVideoItem.isSponsored) {
             updateDoc(doc(db, "Video", targetId), { likes: arrayUnion(currentUser.uid) }).catch(() => {});
           }
         }
 
-        const count = videoData.likes.length;
+        const count = currentVideoItem.likes.length;
         document.getElementById("telLikes").innerText = count.toLocaleString();
         document.getElementById("likeCount").innerText = count.toLocaleString();
         updateLikeButtonState();
+        renderPlaylistUI();
       } catch (err) {
         console.error("Like toggle failed:", err);
       }
     };
 
-    window.openShareModal = async function() {
+    // Native Chrome / Web Share
+    window.shareCurrentVideo = async function() {
+      if (!currentVideoItem) return;
       const modal = document.getElementById("shareModal");
       const input = document.getElementById("shareUrlInput");
-      const msg = document.getElementById("copySuccessMsg");
-      if (msg) msg.style.display = "none";
 
       let token = currentToken;
       if (!token) {
@@ -583,30 +1069,30 @@
         try {
           await setDoc(doc(db, "share_links", token), {
             token: token,
-            type: isAd ? "ad_video" : "video",
-            videoId: isAd ? currentAdId : currentVideoId,
-            docId: isAd ? currentAdId : currentVideoId,
-            title: videoData?.title || "Educational Video",
-            uploader: currentUser?.displayName || videoData?.source || "DPGNotes Contributor",
+            type: currentVideoItem.isSponsored ? "ad_video" : "video",
+            videoId: currentVideoItem.id,
+            targetId: currentVideoItem.id,
+            title: currentVideoItem.title || "Educational Video",
+            uploader: currentUser?.displayName || currentVideoItem.source || "DPGNotes Contributor",
             clicks: 0,
-            createdAt: new Date()
+            createdAt: new Date().toISOString()
           });
 
-          // Increment shares count
-          const targetCol = isAd ? "user_ads" : "videos";
-          const targetId = isAd ? currentAdId : currentVideoId;
-          updateDoc(doc(db, targetCol, targetId), { shares: increment(1) }).catch(() => {});
-          if (!isAd) updateDoc(doc(db, "Video", targetId), { shares: increment(1) }).catch(() => {});
+          const targetCol = currentVideoItem.isSponsored ? "user_ads" : "videos";
+          updateDoc(doc(db, targetCol, currentVideoItem.id), { shares: increment(1) }).catch(() => {});
+          if (!currentVideoItem.isSponsored) {
+            updateDoc(doc(db, "Video", currentVideoItem.id), { shares: increment(1) }).catch(() => {});
+          }
 
-          const currentShares = (Number(videoData?.shares) || 0) + 1;
-          document.getElementById("telShares").innerText = currentShares.toLocaleString();
+          currentVideoItem.shares = (Number(currentVideoItem.shares) || 0) + 1;
+          document.getElementById("telShares").innerText = currentVideoItem.shares.toLocaleString();
         } catch(e) {
-          console.warn("Share token creation failed:", e);
+          console.warn("Share token creation warning:", e);
         }
       }
 
       const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
-      const videoTitle = videoData?.title || "Educational Video";
+      const videoTitle = currentVideoItem.title || "Educational Video";
       const shareTitle = `${videoTitle} — DPGNotes`;
       const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
 
@@ -624,7 +1110,7 @@
         }
       }
 
-      // Fallback: Display the modal with direct URL copy
+      // Fallback: Copy to modal
       if (input) input.value = shareUrl;
       if (modal) modal.classList.add("active");
     };
@@ -643,6 +1129,130 @@
       });
     };
 
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      updateLikeButtonState();
+    });
+
+    // Main Initializer
+    async function initPlayer() {
+      const params = new URLSearchParams(window.location.search);
+      currentVideoId = params.get("id") || "";
+      currentAdId = params.get("adId") || "";
+      currentToken = params.get("token") || "";
+
+      // 1. Fetch Academic Videos from Firestore
+      try {
+        const vSnap = await getDocs(collection(db, "videos"));
+        let firestoreAcademic = [];
+        vSnap.forEach(d => {
+          const v = d.data();
+          if (v.status === 'approved' || !v.status) {
+            firestoreAcademic.push({ id: d.id, ...v, isSponsored: false });
+          }
+        });
+
+        if (firestoreAcademic.length === 0) {
+          const vSnap2 = await getDocs(collection(db, "Video"));
+          vSnap2.forEach(d => {
+            const v = d.data();
+            if (v.status === 'approved' || !v.status) {
+              firestoreAcademic.push({ id: d.id, ...v, isSponsored: false });
+            }
+          });
+        }
+
+        if (firestoreAcademic.length > 0) {
+          // Merge unique with predefined
+          const map = new Map();
+          firestoreAcademic.forEach(v => map.set(v.id, v));
+          PREDEFINED_ACADEMIC.forEach(v => {
+            if (!map.has(v.id)) map.set(v.id, v);
+          });
+          academicVideos = Array.from(map.values());
+        }
+      } catch (e) {
+        console.warn("Firestore academic videos load error, keeping predefined:", e);
+      }
+
+      // 2. Fetch Sponsored Video Ads from user_ads
+      try {
+        const adsSnap = await getDocs(collection(db, "user_ads"));
+        sponsoredVideos = [];
+        adsSnap.forEach(d => {
+          const a = d.data();
+          const target = (a.targetUrl || a.url || a.videoUrl || a.link || '').toLowerCase();
+          if (target.includes('youtube.com') || target.includes('youtu.be')) {
+            sponsoredVideos.push({
+              id: d.id,
+              url: target,
+              title: a.title || a.headline || 'Sponsored Media Ad',
+              source: a.company || a.brand || 'Advertiser',
+              likes: a.likes || [],
+              views: a.views || 0,
+              shares: a.shares || 0,
+              isSponsored: true
+            });
+          }
+        });
+      } catch (e) {
+        console.warn("user_ads videos load error:", e);
+      }
+
+      // Update Tab Badges
+      const countAcadEl = document.getElementById("countAcademicVids");
+      if (countAcadEl) countAcadEl.innerText = academicVideos.length;
+      const countSponEl = document.getElementById("countSponsoredVids");
+      if (countSponEl) countSponEl.innerText = sponsoredVideos.length;
+
+      // 3. Resolve Token if present
+      if (currentToken) {
+        try {
+          const sDoc = await getDoc(doc(db, "share_links", currentToken));
+          if (sDoc.exists()) {
+            const sData = sDoc.data();
+            const targetId = sData.videoId || sData.docId || sData.targetId;
+            if (sData.type === "ad_video") {
+              currentAdId = targetId;
+            } else {
+              currentVideoId = targetId;
+            }
+            updateDoc(doc(db, "share_links", currentToken), { clicks: increment(1) }).catch(() => {});
+          }
+        } catch (e) {}
+      }
+
+      // 4. Select Video to Play
+      let toPlay = null;
+      if (currentAdId) {
+        currentPoolType = "sponsored";
+        toPlay = sponsoredVideos.find(v => v.id === currentAdId);
+        if (!toPlay) {
+          toPlay = { id: currentAdId, title: 'Sponsored Video', url: '', source: 'Advertiser', isSponsored: true };
+          sponsoredVideos.unshift(toPlay);
+        }
+      } else if (currentVideoId) {
+        currentPoolType = "academic";
+        toPlay = academicVideos.find(v => v.id === currentVideoId);
+      }
+
+      if (!toPlay) {
+        currentPoolType = "academic";
+        toPlay = academicVideos[0] || PREDEFINED_ACADEMIC[0];
+      }
+
+      // Set active tab
+      const tabAcademic = document.getElementById("tabBtnAcademic");
+      const tabSponsored = document.getElementById("tabBtnSponsored");
+      if (tabAcademic && tabSponsored) {
+        tabAcademic.classList.toggle("active", currentPoolType === "academic");
+        tabSponsored.classList.toggle("active", currentPoolType === "sponsored");
+      }
+
+      window.loadAndPlayVideo(toPlay, false);
+    }
+
+    // Run initializer immediately
     initPlayer();
   </script>
 </body>

@@ -2202,6 +2202,27 @@
       .mobile-hamburger-btn { width: 32px; height: 32px; font-size: 1.05rem; }
       .mobile-quick-signin { padding: 4px 8px; font-size: 0.72rem; }
     }
+
+    /* ========================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================== */
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .hero-content {
+        padding: 2.5rem 1.5rem !important;
+      }
+      .hero-title {
+        font-size: 2.4rem !important;
+      }
+      .features-grid, .stats-row {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .hero-section {
+        padding: 2rem 1.5rem !important;
+      }
+    }
   </style>
 </head>
 

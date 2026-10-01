@@ -1070,6 +1070,121 @@
         max-width: 98%;
       }
     }
+
+    /* =======================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================= */
+    
+    /* 1. Folded Cover Display / Narrow Screens (max-width: 480px and max-width: 380px) */
+    @media (max-width: 480px) {
+      .serp-header {
+        padding: 0.45rem 0.6rem;
+        gap: 0.4rem;
+      }
+      .serp-brand-logo {
+        width: 28px;
+        height: 28px;
+      }
+      .serp-search-wrapper {
+        padding: 0.2rem 0.35rem;
+        gap: 0.25rem;
+      }
+      .serp-search-input {
+        font-size: 0.82rem;
+      }
+      .serp-header-actions {
+        gap: 4px;
+      }
+      .nav-btn-signin {
+        padding: 4px 8px;
+        font-size: 0.72rem;
+      }
+      .nav-btn-signin span {
+        display: none;
+      }
+      .serp-tabs-bar {
+        padding: 0 0.35rem;
+        gap: 4px;
+      }
+      .serp-tab-btn {
+        padding: 0.55rem 0.55rem;
+        font-size: 0.78rem;
+        gap: 4px;
+      }
+      .serp-meta-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 0.5rem 0.6rem;
+      }
+      .serp-sort-wrapper {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .serp-videos-grid-container {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+      }
+    }
+
+    /* 2. Extra Narrow Folded Display (max-width: 360px - e.g. Galaxy Z Fold outer screen) */
+    @media (max-width: 360px) {
+      .serp-header {
+        padding: 0.35rem 0.4rem;
+      }
+      .serp-home-btn {
+        width: 30px;
+        height: 30px;
+      }
+      .contributor-avatar {
+        width: 28px;
+        height: 28px;
+      }
+      .serp-tab-btn {
+        font-size: 0.74rem;
+        padding: 0.5rem 0.45rem;
+      }
+      .result-card {
+        padding: 0.85rem;
+        border-radius: 12px;
+      }
+      .result-title {
+        font-size: 1.05rem;
+      }
+      .result-snippet {
+        font-size: 0.82rem;
+      }
+      .result-domain-name {
+        font-size: 0.76rem;
+      }
+    }
+
+    /* 3. Unfolded Foldable Screens / Tablet Portrait (600px - 900px, 3/4 to 4/3 aspect ratio) */
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .serp-main-wrapper {
+        padding: 0.75rem 1.25rem 2rem 1.25rem;
+      }
+      .serp-videos-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+      }
+      .results-list {
+        max-width: 100%;
+      }
+      .ai-chat-feed {
+        max-height: 520px;
+      }
+    }
+
+    /* 4. Dual-Screen Spanning Foldable Support */
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .serp-main-wrapper {
+        padding: 1rem 1.5rem;
+      }
+      .serp-videos-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2193,7 +2308,7 @@
 
         window.currentVideosTabItems = allVideoItems;
 
-        let vidHtml = `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:20px; width:100%; max-width:1040px;">`;
+        let vidHtml = `<div class="serp-videos-grid-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:20px; width:100%; max-width:1040px;">`;
 
         allVideoItems.forEach((v) => {
           const ytId = extractYouTubeId(v.url || '');

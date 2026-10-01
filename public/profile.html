@@ -529,6 +529,73 @@
     @media (min-width: 769px) and (max-width: 1024px) {
       .profile-shell { grid-template-columns: 1fr; }
     }
+
+    /* ========================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================== */
+
+    /* 1. Folded Outer Screen / Extra Narrow (max-width: 380px) */
+    @media (max-width: 380px) {
+      .network-header {
+        padding: 0.45rem 0.55rem;
+        gap: 5px;
+      }
+      .brand-logo {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+      }
+      .search-profiles-input {
+        font-size: 0.76rem;
+        padding: 0.4rem 0.6rem 0.4rem 1.7rem;
+      }
+      .prof-tab-btn {
+        padding: 0.45rem 0.55rem;
+        font-size: 0.74rem;
+      }
+      .analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+      }
+      .profile-card {
+        padding: 1rem 0.75rem;
+        border-radius: 12px;
+      }
+      .dm-panel {
+        height: 320px;
+      }
+    }
+
+    /* 2. Extra Narrow Folded Display (max-width: 340px) */
+    @media (max-width: 340px) {
+      .prof-tab-btn {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.45rem;
+      }
+      .nav-action-btn span {
+        display: none;
+      }
+    }
+
+    /* 3. Unfolded Foldable Screens (600px - 900px, 3/4 to 4/3 aspect ratio) */
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .profile-shell {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+      }
+      .analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* 4. Dual-Screen Spanning Foldable Support */
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .profile-shell {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1.5rem !important;
+      }
+    }
   </style>
 </head>
 <body>

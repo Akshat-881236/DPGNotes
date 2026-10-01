@@ -162,6 +162,73 @@
         box-sizing: border-box !important;
       }
     }
+
+    /* ========================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================== */
+
+    /* 1. Folded Outer Screen / Extra Narrow (max-width: 380px) */
+    @media (max-width: 380px) {
+      .topbar {
+        height: 48px !important;
+        padding: 0 0.35rem !important;
+        gap: 0.25rem !important;
+      }
+      .topbar .logo {
+        font-size: 0.8rem !important;
+      }
+      .topbar .nbtn {
+        padding: 4px 6px !important;
+        font-size: 0.7rem !important;
+      }
+      .sidebar {
+        width: min(260px, 86vw) !important;
+      }
+      .pdfmain {
+        padding: 0.5rem 0.15rem !important;
+      }
+      .modal-box, .share-modal, div[id$="Modal"] > div {
+        max-width: 95vw !important;
+        padding: 1rem 0.75rem !important;
+      }
+    }
+
+    /* 2. Extra Narrow Folded Display (max-width: 340px) */
+    @media (max-width: 340px) {
+      .topbar .nbtn {
+        padding: 3px 5px !important;
+        font-size: 0.65rem !important;
+      }
+      .sidebar {
+        width: 88vw !important;
+      }
+    }
+
+    /* 3. Unfolded Foldable Screens (600px - 900px, 3/4 to 4/3 aspect ratio) */
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .pdfmain {
+        padding: 1rem 0.75rem !important;
+      }
+      .pdfpage {
+        max-width: 96% !important;
+      }
+    }
+
+    /* 4. Dual-Screen Spanning Foldable Support */
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .sidebar {
+        display: flex !important;
+        position: static !important;
+        width: env(fold-left, 300px) !important;
+        height: calc(100vh - 56px) !important;
+      }
+      .mob-toggle {
+        display: none !important;
+      }
+      .resizer {
+        display: flex !important;
+      }
+    }
     .mob-toggle{display:none}
     @keyframes shakeError {
       0%, 100% { transform: translateX(0); }

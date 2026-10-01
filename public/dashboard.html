@@ -142,6 +142,91 @@
       }
     }
 
+    /* ========================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================== */
+
+    /* 1. Folded Outer Screen / Extra Narrow (max-width: 380px) */
+    @media (max-width: 380px) {
+      .tabs-container {
+        padding: 0.6rem 0.35rem !important;
+      }
+      .dashboard-tab h2 {
+        font-size: 1.35rem !important;
+        margin-bottom: 1rem !important;
+      }
+      .mobile-header {
+        padding: 0.6rem 0.8rem !important;
+      }
+      .manage-res-table tr.manage-res-row {
+        padding: 0.75rem !important;
+        border-radius: 10px !important;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.65rem !important;
+      }
+      .stat-card {
+        padding: 0.85rem !important;
+      }
+      .stat-card p {
+        font-size: 1.6rem !important;
+      }
+      div[id$="Modal"] > div,
+      .modal-card {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        padding: 1.25rem 0.85rem !important;
+        border-radius: 12px !important;
+      }
+      .sidebar {
+        width: min(270px, 86vw) !important;
+      }
+    }
+
+    /* 2. Extra Narrow Folded Display (max-width: 340px) */
+    @media (max-width: 340px) {
+      .tab-btn {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.88rem !important;
+      }
+      .manage-res-table td[data-label="Action Panel"] > div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+    }
+
+    /* 3. Unfolded Foldable Screens / Square Dual View (600px - 900px, 3/4 to 4/3 aspect ratio) */
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .tabs-container {
+        padding: 1.25rem 1rem !important;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+      }
+      .resource-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    /* 4. Dual-Screen Spanning Foldable Support */
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .dashboard-shell {
+        display: grid !important;
+        grid-template-columns: env(fold-left, 270px) 1fr !important;
+      }
+      .sidebar {
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+      }
+      .mobile-header, .sidebar-overlay {
+        display: none !important;
+      }
+    }
+
+
     /* AUTH CHECK OVERLAY (Matching report.html) */
     #authCheckOverlay {
       position: fixed;
