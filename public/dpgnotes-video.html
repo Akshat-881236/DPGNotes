@@ -7,6 +7,7 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="custom-dialogs.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     :root {
@@ -169,18 +170,29 @@
 
     /* FULLSCREEN CSS MODES */
     .player-screen-box:fullscreen,
-    .player-screen-box:-webkit-full-screen {
+    .player-screen-box:-webkit-full-screen,
+    .player-screen-box:-moz-full-screen,
+    .player-screen-box:-ms-fullscreen {
       width: 100vw !important;
       height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
       border-radius: 0 !important;
       border: none !important;
       padding-top: 0 !important;
       background: #000 !important;
+      margin: 0 !important;
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 99999 !important;
     }
     .player-screen-box:fullscreen iframe,
-    .player-screen-box:-webkit-full-screen iframe {
+    .player-screen-box:-webkit-full-screen iframe,
+    .player-screen-box:-moz-full-screen iframe,
+    .player-screen-box:-ms-fullscreen iframe {
       width: 100% !important;
       height: 100% !important;
+      border: none !important;
     }
 
     /* QUICK PLAYBAR CONTROLS */
@@ -792,40 +804,99 @@
     let currentVideoItem = null;
     let currentUser = null;
 
+    // Case sensitivity repair map for known legacy lowercased IDs
+    const KNOWN_ID_REPAIR = {
+      'cgdr5bgt9w0': 'CgdR5BGT9w0',
+      'cuzg4tdlifm': 'Cuzg4tDliFM',
+      'hcoz0sm5rvu': 'hcOz0sm5rvU',
+      'yh2jqjwzbsi': 'Yh2jQJWzbsI',
+      'bkftnvwpoqy': 'bkftNvwpOqY',
+      '7rgverwta9y': '7RgVerwta9Y',
+      '09x7-z1svyu': '09x7-z1SvyU',
+      'mfpg6gz0_98': 'MFPg6gz0_98',
+      'gjizlopvyoy': 'GjizloPVYoY'
+    };
+
     function extractYouTubeId(url) {
       if (!url) return "";
-      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-      return match ? match[1] : "";
+      const str = String(url).trim();
+      let extracted = "";
+      if (/^[a-zA-Z0-9_-]{11}$/.test(str)) {
+        extracted = str;
+      } else {
+        const match = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([a-zA-Z0-9_-]{11})/i);
+        if (match && match[1]) {
+          extracted = match[1];
+        } else {
+          try {
+            const parsed = new URL(str.startsWith('http') ? str : 'https://' + str);
+            if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be')) {
+              const v = parsed.searchParams.get('v');
+              if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) extracted = v;
+              else {
+                const parts = parsed.pathname.split('/').filter(Boolean);
+                const last = parts[parts.length - 1];
+                if (last && /^[a-zA-Z0-9_-]{11}$/.test(last)) extracted = last;
+              }
+            }
+          } catch(e) {}
+        }
+      }
+      if (extracted && KNOWN_ID_REPAIR[extracted.toLowerCase()]) {
+        return KNOWN_ID_REPAIR[extracted.toLowerCase()];
+      }
+      return extracted;
     }
 
-    // Toggle Full Screen Function (Native browser + Webkit + MS prefixes)
+    function findYouTubeUrl(a) {
+      if (!a) return "";
+      const candidates = [a.videoUrl, a.targetLink, a.targetUrl, a.url, a.link];
+      for (const c of candidates) {
+        if (c && extractYouTubeId(c)) return String(c).trim();
+      }
+      for (const c of candidates) {
+        if (c && /youtube\.com|youtu\.be/i.test(String(c))) return String(c).trim();
+      }
+      return "";
+    }
+
+    // Toggle Full Screen Function (Native browser + Webkit + Moz + MS prefixes)
     window.toggleFullScreenPlayer = function() {
       const box = document.getElementById("playerScreenBox");
       const icon = document.getElementById("fsIcon");
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
         if (box.requestFullscreen) {
-          box.requestFullscreen();
+          box.requestFullscreen().catch(e => console.warn(e));
         } else if (box.webkitRequestFullscreen) {
           box.webkitRequestFullscreen();
+        } else if (box.mozRequestFullScreen) {
+          box.mozRequestFullScreen();
         } else if (box.msRequestFullscreen) {
           box.msRequestFullscreen();
         }
         if (icon) icon.className = "ri-fullscreen-exit-line";
       } else {
         if (document.exitFullscreen) {
-          document.exitFullscreen();
+          document.exitFullscreen().catch(e => console.warn(e));
         } else if (document.webkitExitFullscreen) {
           document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
         }
         if (icon) icon.className = "ri-fullscreen-line";
       }
     };
 
-    document.addEventListener("fullscreenchange", () => {
-      const icon = document.getElementById("fsIcon");
-      if (icon) {
-        icon.className = document.fullscreenElement ? "ri-fullscreen-exit-line" : "ri-fullscreen-line";
-      }
+    ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
+      document.addEventListener(evt, () => {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        const icon = document.getElementById("fsIcon");
+        if (icon) {
+          icon.className = isFs ? "ri-fullscreen-exit-line" : "ri-fullscreen-line";
+        }
+      });
     });
 
     // Play video
@@ -858,18 +929,27 @@
       }
 
       // Render Player iframe
-      const ytId = extractYouTubeId(item.url || item.videoUrl || item.targetUrl || "");
+      let rawUrl = item.url || item.videoUrl || item.targetLink || item.targetUrl || "";
+      if (!rawUrl) rawUrl = findYouTubeUrl(item);
+      const ytId = extractYouTubeId(rawUrl);
       const iframe = document.getElementById("videoIframe");
-      if (iframe && ytId) {
-        iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
+      if (iframe) {
+        if (ytId) {
+          iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
+        } else if (rawUrl) {
+          iframe.src = rawUrl;
+        }
       }
 
       // Update Metadata
       document.getElementById("videoTitle").innerText = item.title || "Academic Educational Demonstration";
-      document.getElementById("sourceName").innerText = item.source || item.company || item.brand || item.uploaderName || "Verified Creator";
+      document.getElementById("sourceName").innerText = item.source || item.company || item.brand || item.advertiserName || item.uploaderName || "Verified Creator";
 
       const ytBtn = document.getElementById("openYtBtn");
-      if (ytBtn && ytId) ytBtn.href = `https://www.youtube.com/watch?v=${ytId}`;
+      if (ytBtn) {
+        if (ytId) ytBtn.href = `https://www.youtube.com/watch?v=${ytId}`;
+        else if (rawUrl) ytBtn.href = rawUrl;
+      }
 
       const badgeContainer = document.getElementById("typeBadgeContainer");
       if (badgeContainer) {
@@ -895,7 +975,9 @@
 
     window.restartCurrentVideo = function() {
       if (currentVideoItem) {
-        const ytId = extractYouTubeId(currentVideoItem.url || currentVideoItem.videoUrl || currentVideoItem.targetUrl || "");
+        let rawUrl = currentVideoItem.url || currentVideoItem.videoUrl || currentVideoItem.targetLink || currentVideoItem.targetUrl || "";
+        if (!rawUrl) rawUrl = findYouTubeUrl(currentVideoItem);
+        const ytId = extractYouTubeId(rawUrl);
         const iframe = document.getElementById("videoIframe");
         if (iframe && ytId) {
           iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
@@ -968,7 +1050,9 @@
 
       container.innerHTML = "";
       activeList.forEach((item, idx) => {
-        const ytId = extractYouTubeId(item.url || item.videoUrl || item.targetUrl || "");
+        let rawItemUrl = item.url || item.videoUrl || item.targetLink || item.targetUrl || "";
+        if (!rawItemUrl) rawItemUrl = findYouTubeUrl(item);
+        const ytId = extractYouTubeId(rawItemUrl);
         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='54' fill='%23111427'></svg>";
         const isCurrent = currentVideoItem && (currentVideoItem.id === item.id);
         const likes = Array.isArray(item.likes) ? item.likes.length : (Number(item.likes) || 0);
@@ -1022,7 +1106,11 @@
 
     window.toggleVideoLike = async function() {
       if (!currentUser) {
-        alert("Please sign in as a verified contributor to like this video.");
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Please sign in as a verified contributor to like this video.", { title: "Authentication Required" });
+        } else {
+          alert("Please sign in as a verified contributor to like this video.");
+        }
         return;
       }
       if (!currentVideoItem) return;
@@ -1175,22 +1263,24 @@
         console.warn("Firestore academic videos load error, keeping predefined:", e);
       }
 
-      // 2. Fetch Sponsored Video Ads from user_ads
+      // 2. Fetch Sponsored Video Ads from user_ads preserving original case
       try {
         const adsSnap = await getDocs(collection(db, "user_ads"));
         sponsoredVideos = [];
         adsSnap.forEach(d => {
-          const a = d.data();
-          const target = (a.targetUrl || a.url || a.videoUrl || a.link || '').toLowerCase();
-          if (target.includes('youtube.com') || target.includes('youtu.be')) {
+          const a = d.data() || {};
+          const rawYtUrl = findYouTubeUrl(a);
+          if (rawYtUrl) {
             sponsoredVideos.push({
               id: d.id,
-              url: target,
+              url: rawYtUrl,
+              videoUrl: a.videoUrl || rawYtUrl,
+              targetLink: a.targetLink || '',
               title: a.title || a.headline || 'Sponsored Media Ad',
-              source: a.company || a.brand || 'Advertiser',
-              likes: a.likes || [],
-              views: a.views || 0,
-              shares: a.shares || 0,
+              source: a.company || a.brand || a.advertiserName || 'Advertiser',
+              likes: Array.isArray(a.likes) ? a.likes : [],
+              views: Number(a.views) || 0,
+              shares: Number(a.shares) || 0,
               isSponsored: true
             });
           }
@@ -1228,17 +1318,61 @@
         currentPoolType = "sponsored";
         toPlay = sponsoredVideos.find(v => v.id === currentAdId);
         if (!toPlay) {
-          toPlay = { id: currentAdId, title: 'Sponsored Video', url: '', source: 'Advertiser', isSponsored: true };
-          sponsoredVideos.unshift(toPlay);
+          try {
+            const adDoc = await getDoc(doc(db, "user_ads", currentAdId));
+            if (adDoc.exists()) {
+              const aData = adDoc.data() || {};
+              const dUrl = findYouTubeUrl(aData);
+              toPlay = {
+                id: adDoc.id,
+                url: dUrl,
+                videoUrl: aData.videoUrl || dUrl,
+                targetLink: aData.targetLink || '',
+                title: aData.title || aData.headline || 'Sponsored Media Ad',
+                source: aData.company || aData.brand || aData.advertiserName || 'Advertiser',
+                likes: Array.isArray(aData.likes) ? aData.likes : [],
+                views: Number(aData.views) || 0,
+                shares: Number(aData.shares) || 0,
+                isSponsored: true
+              };
+              sponsoredVideos.unshift(toPlay);
+            }
+          } catch(err) {
+            console.warn("Direct fetch for adId failed:", err);
+          }
         }
       } else if (currentVideoId) {
         currentPoolType = "academic";
         toPlay = academicVideos.find(v => v.id === currentVideoId);
+        if (!toPlay) {
+          try {
+            let vDoc = await getDoc(doc(db, "videos", currentVideoId));
+            if (!vDoc.exists()) vDoc = await getDoc(doc(db, "Video", currentVideoId));
+            if (vDoc.exists()) {
+              const vd = vDoc.data() || {};
+              toPlay = {
+                id: vDoc.id,
+                url: vd.url || vd.videoUrl || '',
+                title: vd.title || 'Educational Demonstration',
+                source: vd.source || vd.uploaderName || 'Akshat Network Hub',
+                likes: Array.isArray(vd.likes) ? vd.likes : [],
+                views: Number(vd.views) || 0,
+                shares: Number(vd.shares) || 0,
+                isSponsored: false
+              };
+              academicVideos.unshift(toPlay);
+            }
+          } catch(err) {}
+        }
       }
 
       if (!toPlay) {
-        currentPoolType = "academic";
-        toPlay = academicVideos[0] || PREDEFINED_ACADEMIC[0];
+        if (currentPoolType === "sponsored" && sponsoredVideos.length > 0) {
+          toPlay = sponsoredVideos[0];
+        } else {
+          currentPoolType = "academic";
+          toPlay = academicVideos[0] || PREDEFINED_ACADEMIC[0];
+        }
       }
 
       // Set active tab

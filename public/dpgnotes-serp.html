@@ -2204,10 +2204,59 @@
     }
 
     // TAB 4: YOUTUBE VIDEOS (Academic Videos + Sponsored Ads Videos)
+    const KNOWN_ID_REPAIR = {
+      'cgdr5bgt9w0': 'CgdR5BGT9w0',
+      'cuzg4tdlifm': 'Cuzg4tDliFM',
+      'hcoz0sm5rvu': 'hcOz0sm5rvU',
+      'yh2jqjwzbsi': 'Yh2jQJWzbsI',
+      'bkftnvwpoqy': 'bkftNvwpOqY',
+      '7rgverwta9y': '7RgVerwta9Y',
+      '09x7-z1svyu': '09x7-z1SvyU',
+      'mfpg6gz0_98': 'MFPg6gz0_98',
+      'gjizlopvyoy': 'GjizloPVYoY'
+    };
+
     function extractYouTubeId(url) {
       if (!url) return "";
-      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-      return match ? match[1] : "";
+      const str = String(url).trim();
+      let extracted = "";
+      if (/^[a-zA-Z0-9_-]{11}$/.test(str)) {
+        extracted = str;
+      } else {
+        const match = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([a-zA-Z0-9_-]{11})/i);
+        if (match && match[1]) {
+          extracted = match[1];
+        } else {
+          try {
+            const parsed = new URL(str.startsWith('http') ? str : 'https://' + str);
+            if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be')) {
+              const v = parsed.searchParams.get('v');
+              if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) extracted = v;
+              else {
+                const parts = parsed.pathname.split('/').filter(Boolean);
+                const last = parts[parts.length - 1];
+                if (last && /^[a-zA-Z0-9_-]{11}$/.test(last)) extracted = last;
+              }
+            }
+          } catch(e) {}
+        }
+      }
+      if (extracted && KNOWN_ID_REPAIR[extracted.toLowerCase()]) {
+        return KNOWN_ID_REPAIR[extracted.toLowerCase()];
+      }
+      return extracted;
+    }
+
+    function findYouTubeUrl(a) {
+      if (!a) return "";
+      const candidates = [a.videoUrl, a.targetLink, a.targetUrl, a.url, a.link];
+      for (const c of candidates) {
+        if (c && extractYouTubeId(c)) return String(c).trim();
+      }
+      for (const c of candidates) {
+        if (c && /youtube\.com|youtu\.be/i.test(String(c))) return String(c).trim();
+      }
+      return "";
     }
 
     async function renderVideosTab(q) {
@@ -2265,17 +2314,17 @@
         try {
           const adsSnap = await getDocs(collection(db, "user_ads"));
           adsSnap.forEach(d => {
-            const a = d.data();
-            const target = a.url || a.targetLink || a.videoUrl || '';
-            if (target.includes('youtube.com') || target.includes('youtu.be')) {
+            const a = d.data() || {};
+            const rawYtUrl = findYouTubeUrl(a);
+            if (rawYtUrl) {
               adVideos.push({
                 id: d.id,
-                url: target,
-                title: a.title || 'Sponsored Academic Promotion',
-                source: a.platform || a.company || 'Sponsored Partner',
+                url: rawYtUrl,
+                title: a.title || a.headline || 'Sponsored Academic Promotion',
+                source: a.platform || a.company || a.brand || 'Sponsored Partner',
                 description: a.description || '',
                 views: a.views || 0,
-                likes: a.likes || [],
+                likes: Array.isArray(a.likes) ? a.likes : [],
                 shares: a.shares || 0,
                 isSponsored: true
               });

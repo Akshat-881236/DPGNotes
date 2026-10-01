@@ -3305,7 +3305,10 @@ window.rejectAdAdmin = async function(adId) {
     await deleteDoc(doc(db, "user_ads", adId));
     if (window.customAlert) await window.customAlert("Ad request has been rejected and permanently removed.", { title: "Ad Deleted" });
     loadAdsAdmin();
-  } catch(e) { alert("Reject failed: " + e.message); }
+  } catch(e) {
+    if (window.customAlert) await window.customAlert("Reject failed: " + e.message, { title: "Error", isDanger: true });
+    else alert("Reject failed: " + e.message);
+  }
 };
 
 window.deleteAdAdmin = async function(adId) {
@@ -3313,8 +3316,12 @@ window.deleteAdAdmin = async function(adId) {
   if (!confirmed) return;
   try {
     await deleteDoc(doc(db, "user_ads", adId));
+    if (window.customAlert) await window.customAlert("Ad deleted permanently.", { title: "Deleted" });
     loadAdsAdmin();
-  } catch(e) { alert("Delete failed: " + e.message); }
+  } catch(e) {
+    if (window.customAlert) await window.customAlert("Delete failed: " + e.message, { title: "Error", isDanger: true });
+    else alert("Delete failed: " + e.message);
+  }
 };
 
 window.toggleBlockAdAdmin = async function(adId, shouldBlock) {
@@ -3327,8 +3334,12 @@ window.toggleBlockAdAdmin = async function(adId, shouldBlock) {
       status: shouldBlock ? "Blocked" : "Approved",
       blockedAt: shouldBlock ? serverTimestamp() : null
     });
+    if (window.customAlert) await window.customAlert(`Ad ${shouldBlock ? 'blocked' : 'unblocked'} successfully.`, { title: "Status Updated" });
     loadAdsAdmin();
-  } catch(e) { alert("Action failed: " + e.message); }
+  } catch(e) {
+    if (window.customAlert) await window.customAlert("Action failed: " + e.message, { title: "Error", isDanger: true });
+    else alert("Action failed: " + e.message);
+  }
 };
 
 window.toggleAllManageAds = function(masterCb) {
@@ -3337,7 +3348,10 @@ window.toggleAllManageAds = function(masterCb) {
 
 window.deleteSelectedAdsGroup = async function() {
   const selectedCbs = Array.from(document.querySelectorAll(".manage-ad-cb:checked"));
-  if (selectedCbs.length === 0) return alert("Select at least one ad to delete.");
+  if (selectedCbs.length === 0) {
+    if (window.customAlert) return await window.customAlert("Select at least one ad to delete.", { title: "No Selection" });
+    return alert("Select at least one ad to delete.");
+  }
   const confirmed = window.customConfirm ? await window.customConfirm(`Delete ${selectedCbs.length} selected ad(s)?`, { title: "Batch Delete Ads", isDanger: true, confirmText: "Delete Selected" }) : confirm(`Delete ${selectedCbs.length} selected ad(s)?`);
   if (!confirmed) return;
 
@@ -3345,13 +3359,20 @@ window.deleteSelectedAdsGroup = async function() {
     for (const cb of selectedCbs) {
       await deleteDoc(doc(db, "user_ads", cb.value)).catch(console.warn);
     }
+    if (window.customAlert) await window.customAlert(`Successfully deleted ${selectedCbs.length} ad(s).`, { title: "Ads Deleted" });
     loadAdsAdmin();
-  } catch(e) { alert("Batch delete error: " + e.message); }
+  } catch(e) {
+    if (window.customAlert) await window.customAlert("Batch delete error: " + e.message, { title: "Error", isDanger: true });
+    else alert("Batch delete error: " + e.message);
+  }
 };
 
 window.blockSelectedAdsGroup = async function() {
   const selectedCbs = Array.from(document.querySelectorAll(".manage-ad-cb:checked"));
-  if (selectedCbs.length === 0) return alert("Select at least one ad to block.");
+  if (selectedCbs.length === 0) {
+    if (window.customAlert) return await window.customAlert("Select at least one ad to block.", { title: "No Selection" });
+    return alert("Select at least one ad to block.");
+  }
   const confirmed = window.customConfirm ? await window.customConfirm(`Block ${selectedCbs.length} selected ad(s)? Blocked ads auto-delete after 45 days.`, { title: "Batch Block Ads", isDanger: true, confirmText: "Block Selected" }) : confirm(`Block ${selectedCbs.length} selected ad(s)?`);
   if (!confirmed) return;
 
@@ -3743,14 +3764,32 @@ async function loadAdsAnalyticsAdmin() {
 
     // Render YouTube Video Ads Telemetry & Engagement
     try {
+      function extractAdminYtId(url) {
+        if (!url) return "";
+        const str = String(url).trim();
+        const m = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([a-zA-Z0-9_-]{11})/i);
+        return m ? m[1] : (/^[a-zA-Z0-9_-]{11}$/.test(str) ? str : "");
+      }
+      function findAdminYtUrl(a) {
+        if (!a) return "";
+        const candidates = [a.videoUrl, a.targetLink, a.targetUrl, a.url, a.link];
+        for (const c of candidates) {
+          if (c && extractAdminYtId(c)) return String(c).trim();
+        }
+        for (const c of candidates) {
+          if (c && /youtube\.com|youtu\.be/i.test(String(c))) return String(c).trim();
+        }
+        return "";
+      }
+
       let ytVideoAds = [];
       try {
         const adsSnap = await getDocs(collection(db, "user_ads"));
         adsSnap.forEach(d => {
           const a = d.data() || {};
-          const target = (a.targetUrl || a.url || a.videoUrl || a.link || '').toLowerCase();
-          if (target.includes('youtube.com') || target.includes('youtu.be') || a.platform === 'youtube' || a.isVideoAd) {
-            ytVideoAds.push({ id: d.id, ...a });
+          const ytUrl = findAdminYtUrl(a);
+          if (ytUrl || a.platform === 'youtube' || a.isVideoAd) {
+            ytVideoAds.push({ id: d.id, ...a, videoUrl: ytUrl || a.videoUrl });
           }
         });
       } catch (adSnapErr) {
@@ -3759,9 +3798,9 @@ async function loadAdsAnalyticsAdmin() {
 
       if (ytVideoAds.length === 0 && Array.isArray(poolAds)) {
         poolAds.forEach(a => {
-          const target = (a.targetUrl || a.url || a.videoUrl || a.link || '').toLowerCase();
-          if (target.includes('youtube.com') || target.includes('youtu.be') || a.platform === 'youtube') {
-            ytVideoAds.push(a);
+          const ytUrl = findAdminYtUrl(a);
+          if (ytUrl || a.platform === 'youtube') {
+            ytVideoAds.push({ ...a, videoUrl: ytUrl || a.videoUrl });
           }
         });
       }
@@ -3793,7 +3832,7 @@ async function loadAdsAnalyticsAdmin() {
         } else {
           tbodyYt.innerHTML = "";
           ytVideoAds.forEach(a => {
-            const url = a.targetUrl || a.url || a.videoUrl || '';
+            const url = a.videoUrl || a.targetLink || a.targetUrl || a.url || '';
             const likesCount = Array.isArray(a.likes) ? a.likes.length : (typeof a.likes === 'number' ? a.likes : 0);
             const viewsCount = a.views || 0;
             const sharesCount = a.shares || 0;
@@ -4944,11 +4983,15 @@ window.toggleSelectAllWebsites = function(masterChk) {
 window.bulkDeleteWebsites = async function() {
   const checkboxes = document.querySelectorAll(".admin-website-chk:checked");
   if (checkboxes.length === 0) {
-    alert("Please select at least one website to delete.");
+    if (typeof window.customAlert === 'function') await window.customAlert("Please select at least one website to delete.", { title: "No Selection" });
+    else alert("Please select at least one website to delete.");
     return;
   }
 
-  if (!confirm(`Are you sure you want to delete ${checkboxes.length} selected website(s)?`)) return;
+  const confirmed = typeof window.customConfirm === 'function' 
+    ? await window.customConfirm(`Are you sure you want to delete ${checkboxes.length} selected website(s)?`, { title: "Bulk Delete Websites", isDanger: true }) 
+    : confirm(`Are you sure you want to delete ${checkboxes.length} selected website(s)?`);
+  if (!confirmed) return;
 
   const ids = Array.from(checkboxes).map(c => c.value);
   const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
@@ -4961,9 +5004,11 @@ window.bulkDeleteWebsites = async function() {
     });
 
     if (!res.ok) throw new Error("Bulk delete failed");
+    if (typeof window.customAlert === 'function') await window.customAlert(`Successfully deleted ${ids.length} website(s).`, { title: "Websites Deleted" });
     window.loadAdminWebsitesList();
   } catch(e) {
-    alert("Bulk Delete Error: " + e.message);
+    if (typeof window.customAlert === 'function') await window.customAlert("Bulk Delete Error: " + e.message, { title: "Error", isDanger: true });
+    else alert("Bulk Delete Error: " + e.message);
   }
 };
 
@@ -4976,15 +5021,21 @@ window.adminVerifyWebsiteMeta = async function(siteId) {
       body: JSON.stringify({ websiteId: siteId })
     });
     const data = await res.json();
-    alert(data.message || (data.success ? "Verified!" : "Verification Failed"));
+    const msg = data.message || (data.success ? "Verified!" : "Verification Failed");
+    if (typeof window.customAlert === 'function') await window.customAlert(msg, { title: data.success ? "Verified" : "Verification Status" });
+    else alert(msg);
     window.loadAdminWebsitesList();
   } catch(e) {
-    alert("Verification Error: " + e.message);
+    if (typeof window.customAlert === 'function') await window.customAlert("Verification Error: " + e.message, { title: "Error", isDanger: true });
+    else alert("Verification Error: " + e.message);
   }
 };
 
 window.adminDeleteSingleWebsite = async function(siteId) {
-  if (!confirm("Are you sure you want to delete this website?")) return;
+  const confirmed = typeof window.customConfirm === 'function'
+    ? await window.customConfirm("Are you sure you want to delete this website?", { title: "Delete Website", isDanger: true })
+    : confirm("Are you sure you want to delete this website?");
+  if (!confirmed) return;
   const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
   try {
     const res = await fetch(`${baseUrl}/api/website/delete-site`, {
@@ -7989,30 +8040,34 @@ window.approveSelectedVideos = async function() {
 window.rejectSelectedVideos = async function() {
   const checked = Array.from(document.querySelectorAll('.pending-vid-checkbox:checked')).map(cb => cb.value);
   if (checked.length === 0) {
-    if (typeof window.customAlert === 'function') window.customAlert("Please select at least one pending video to reject.", { title: "No Selection" });
+    if (typeof window.customAlert === 'function') await window.customAlert("Please select at least one pending video to reject.", { title: "No Selection" });
     else alert("Select at least one pending video.");
     return;
   }
-  const conf = confirm(`Reject and permanently delete ${checked.length} pending video submission(s)? This removes them immediately.`);
+  const conf = typeof window.customConfirm === 'function' 
+    ? await window.customConfirm(`Reject and permanently delete ${checked.length} pending video submission(s)? This removes them immediately.`, { title: "Confirm Rejection", isDanger: true }) 
+    : confirm(`Reject and permanently delete ${checked.length} pending video submission(s)? This removes them immediately.`);
   if (!conf) return;
   for (const id of checked) {
     await deleteVideoDoc(id);
   }
-  if (typeof window.customAlert === 'function') window.customAlert(`Rejected and deleted ${checked.length} video submission(s).`, { title: "Group Rejection" });
+  if (typeof window.customAlert === 'function') await window.customAlert(`Rejected and deleted ${checked.length} video submission(s).`, { title: "Group Rejection" });
   await window.loadVideosMgmtAdmin();
 };
 
 window.approveSingleVideo = async function(id) {
   await updateVideoDoc(id, { status: 'approved', approvedAt: new Date().toISOString() });
-  if (typeof window.customAlert === 'function') window.customAlert(`Video ${id} approved successfully!`, { title: "Video Approved" });
+  if (typeof window.customAlert === 'function') await window.customAlert(`Video ${id} approved successfully!`, { title: "Video Approved" });
   await window.loadVideosMgmtAdmin();
 };
 
 window.rejectSingleVideo = async function(id) {
-  const conf = confirm(`Reject and delete video ${id}?`);
+  const conf = typeof window.customConfirm === 'function' 
+    ? await window.customConfirm(`Reject and delete video ${id}?`, { title: "Confirm Rejection", isDanger: true }) 
+    : confirm(`Reject and delete video ${id}?`);
   if (!conf) return;
   await deleteVideoDoc(id);
-  if (typeof window.customAlert === 'function') window.customAlert(`Video ${id} rejected and deleted.`, { title: "Video Rejected" });
+  if (typeof window.customAlert === 'function') await window.customAlert(`Video ${id} rejected and deleted.`, { title: "Video Rejected" });
   await window.loadVideosMgmtAdmin();
 };
 
@@ -8142,7 +8197,9 @@ window.toggleBoostVideo = async function(id, boost) {
 
 window.toggleBlockVideo = async function(id, block) {
   if (block) {
-    const daysInput = prompt(`Enter Auto-Unblock day count for video ${id} (leave blank for 15-day auto-delete policy):`, "");
+    const daysInput = typeof window.customPrompt === 'function' 
+      ? await window.customPrompt(`Enter Auto-Unblock day count for video ${id} (leave blank for 15-day auto-delete policy):`, "") 
+      : prompt(`Enter Auto-Unblock day count for video ${id} (leave blank for 15-day auto-delete policy):`, "");
     if (daysInput === null) return;
     const days = daysInput.trim() ? parseInt(daysInput.trim(), 10) : null;
     await updateVideoDoc(id, { 
@@ -8151,33 +8208,37 @@ window.toggleBlockVideo = async function(id, block) {
       blockedDays: (days && !isNaN(days)) ? days : null 
     });
     if (typeof window.customAlert === 'function') {
-      window.customAlert(`Video ${id} blocked (${days ? days + 'd auto-unblock' : '15-day auto-delete policy'}).`, { title: "Video Blocked" });
+      await window.customAlert(`Video ${id} blocked (${days ? days + 'd auto-unblock' : '15-day auto-delete policy'}).`, { title: "Video Blocked" });
     }
   } else {
     await updateVideoDoc(id, { blocked: false, blockedAt: null, blockedDays: null });
     if (typeof window.customAlert === 'function') {
-      window.customAlert(`Video ${id} unblocked and restored to active pool!`, { title: "Video Unblocked" });
+      await window.customAlert(`Video ${id} unblocked and restored to active pool!`, { title: "Video Unblocked" });
     }
   }
   await window.loadVideosMgmtAdmin();
 };
 
 window.deleteSingleVideo = async function(id) {
-  const conf = confirm(`Are you sure you want to permanently delete video ${id}?`);
+  const conf = typeof window.customConfirm === 'function' 
+    ? await window.customConfirm(`Are you sure you want to permanently delete video ${id}?`, { title: "Delete Video", isDanger: true }) 
+    : confirm(`Are you sure you want to permanently delete video ${id}?`);
   if (!conf) return;
   await deleteVideoDoc(id);
-  if (typeof window.customAlert === 'function') window.customAlert(`Video ${id} permanently deleted.`, { title: "Video Deleted" });
+  if (typeof window.customAlert === 'function') await window.customAlert(`Video ${id} permanently deleted.`, { title: "Video Deleted" });
   await window.loadVideosMgmtAdmin();
 };
 
 window.blockSelectedVideos = async function() {
   const checked = Array.from(document.querySelectorAll('.approved-vid-checkbox:checked')).map(cb => cb.value);
   if (checked.length === 0) {
-    if (typeof window.customAlert === 'function') window.customAlert("Please select at least one video to block.", { title: "No Selection" });
+    if (typeof window.customAlert === 'function') await window.customAlert("Please select at least one video to block.", { title: "No Selection" });
     else alert("Select at least one video.");
     return;
   }
-  const daysInput = prompt(`Block ${checked.length} video(s).\nEnter Auto-Unblock day count (leave blank for 15-day auto-delete policy):`, "");
+  const daysInput = typeof window.customPrompt === 'function' 
+    ? await window.customPrompt(`Block ${checked.length} video(s).\nEnter Auto-Unblock day count (leave blank for 15-day auto-delete policy):`, "") 
+    : prompt(`Block ${checked.length} video(s).\nEnter Auto-Unblock day count (leave blank for 15-day auto-delete policy):`, "");
   if (daysInput === null) return;
   const days = daysInput.trim() ? parseInt(daysInput.trim(), 10) : null;
   for (const id of checked) {
@@ -8188,7 +8249,7 @@ window.blockSelectedVideos = async function() {
     });
   }
   if (typeof window.customAlert === 'function') {
-    window.customAlert(`Blocked ${checked.length} video(s) under policy (${days ? days + 'd auto-unblock' : '15-day auto-delete'}).`, { title: "Videos Blocked" });
+    await window.customAlert(`Blocked ${checked.length} video(s) under policy (${days ? days + 'd auto-unblock' : '15-day auto-delete'}).`, { title: "Videos Blocked" });
   }
   await window.loadVideosMgmtAdmin();
 };
@@ -8196,16 +8257,18 @@ window.blockSelectedVideos = async function() {
 window.deleteSelectedVideos = async function() {
   const checked = Array.from(document.querySelectorAll('.approved-vid-checkbox:checked')).map(cb => cb.value);
   if (checked.length === 0) {
-    if (typeof window.customAlert === 'function') window.customAlert("Please select at least one video to delete.", { title: "No Selection" });
+    if (typeof window.customAlert === 'function') await window.customAlert("Please select at least one video to delete.", { title: "No Selection" });
     else alert("Select at least one video.");
     return;
   }
-  const conf = confirm(`Permanently delete ${checked.length} video(s)? This action is irreversible.`);
+  const conf = typeof window.customConfirm === 'function' 
+    ? await window.customConfirm(`Permanently delete ${checked.length} video(s)? This action is irreversible.`, { title: "Delete Videos", isDanger: true }) 
+    : confirm(`Permanently delete ${checked.length} video(s)? This action is irreversible.`);
   if (!conf) return;
   for (const id of checked) {
     await deleteVideoDoc(id);
   }
-  if (typeof window.customAlert === 'function') window.customAlert(`Successfully deleted ${checked.length} video(s).`, { title: "Videos Deleted" });
+  if (typeof window.customAlert === 'function') await window.customAlert(`Successfully deleted ${checked.length} video(s).`, { title: "Videos Deleted" });
   await window.loadVideosMgmtAdmin();
 };
 
