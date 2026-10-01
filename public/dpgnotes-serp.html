@@ -1435,14 +1435,6 @@
         console.error("Sign out error:", err);
       }
     };
-        localStorage.removeItem("dpgActiveUserUid");
-        localStorage.removeItem("dpgActiveUserEmail");
-        localStorage.removeItem("dpgActiveUserName");
-        window.location.reload();
-      } catch (err) {
-        console.error("Sign out error:", err);
-      }
-    };
 
     // ==========================================
     // QUERY PARAMETERS & STATE
