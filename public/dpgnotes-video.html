@@ -907,6 +907,7 @@
     window.loadAndPlayVideo = function(item, updateUrl = true) {
       if (!item) return;
       currentVideoItem = item;
+      currentToken = ""; // Clear share token on manual track change
 
       if (item.isSponsored) {
         currentPoolType = "sponsored";
@@ -1166,36 +1167,64 @@
       const modal = document.getElementById("shareModal");
       const input = document.getElementById("shareUrlInput");
 
-      let token = currentToken;
-      if (!token) {
-        token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
-        try {
-          await setDoc(doc(db, "share_links", token), {
-            token: token,
-            type: currentVideoItem.isSponsored ? "ad_video" : "video",
-            videoId: currentVideoItem.id,
-            targetId: currentVideoItem.id,
-            title: currentVideoItem.title || "Educational Video",
-            uploader: currentUser?.displayName || currentVideoItem.source || "DPGNotes Contributor",
-            clicks: 0,
-            createdAt: new Date().toISOString()
-          });
+      // Generate a fresh, unique share token specifically for this video share event
+      const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+      const isSpon = Boolean(currentVideoItem.isSponsored);
+      const targetCol = isSpon ? "user_ads" : "videos";
+      const targetId = currentVideoItem.id || "";
+      const videoTitle = currentVideoItem.title || (isSpon ? "Sponsored Video Ad" : "Educational Video");
+      const videoSource = currentVideoItem.source || currentVideoItem.company || "DPGNotes Contributor";
+      const activeUser = currentUser || auth.currentUser || (localStorage.getItem("dpgActiveUserUid") ? {
+        displayName: localStorage.getItem("dpgActiveUserName") || "Contributor",
+        email: localStorage.getItem("dpgActiveUserEmail") || "",
+        uid: localStorage.getItem("dpgActiveUserUid")
+      } : null);
+      const uploaderName = activeUser?.displayName || activeUser?.email || videoSource;
 
-          const targetCol = currentVideoItem.isSponsored ? "user_ads" : "videos";
-          updateDoc(doc(db, targetCol, currentVideoItem.id), { shares: increment(1) }).catch(() => {});
-          if (!currentVideoItem.isSponsored) {
-            updateDoc(doc(db, "Video", currentVideoItem.id), { shares: increment(1) }).catch(() => {});
-          }
+      const shareData = {
+        token: token,
+        type: isSpon ? "ad_video" : "video",
+        videoId: targetId,
+        targetId: targetId,
+        title: videoTitle,
+        source: videoSource,
+        uploader: uploaderName,
+        uploaderUid: activeUser?.uid || "",
+        clicks: 0,
+        createdAt: new Date().toISOString()
+      };
 
-          currentVideoItem.shares = (Number(currentVideoItem.shares) || 0) + 1;
-          document.getElementById("telShares").innerText = currentVideoItem.shares.toLocaleString();
-        } catch(e) {
-          console.warn("Share token creation warning:", e);
-        }
+      // 1. Direct Firestore write
+      try {
+        await setDoc(doc(db, "share_links", token), shareData, { merge: true });
+      } catch(e) {
+        console.warn("Direct Firestore setDoc warning:", e);
       }
 
-      const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
-      const videoTitle = currentVideoItem.title || "Educational Video";
+      // 2. Redundant backend API call to guarantee push to Firestore DB
+      try {
+        fetch('/api/share/generate-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(shareData)
+        }).catch(() => {});
+      } catch(_) {}
+
+      // 3. Increment counters
+      try {
+        if (targetId) {
+          updateDoc(doc(db, targetCol, targetId), { shares: increment(1) }).catch(() => {});
+          if (!isSpon) {
+            updateDoc(doc(db, "Video", targetId), { shares: increment(1) }).catch(() => {});
+          }
+        }
+      } catch(_) {}
+
+      currentVideoItem.shares = (Number(currentVideoItem.shares) || 0) + 1;
+      const telSharesEl = document.getElementById("telShares");
+      if (telSharesEl) telSharesEl.innerText = currentVideoItem.shares.toLocaleString();
+
+      const shareUrl = `https://dpgnotes.web.app/dpgnotes-video.html?token=${token}`;
       const shareTitle = `${videoTitle} — DPGNotes`;
       const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
 
@@ -1242,7 +1271,7 @@
       const params = new URLSearchParams(window.location.search);
       currentVideoId = params.get("id") || "";
       currentAdId = params.get("adId") || "";
-      currentToken = params.get("token") || "";
+      currentToken = (params.get("token") || params.get("share") || "").trim();
 
       // 1. Fetch Academic Videos from Firestore
       try {
@@ -1316,15 +1345,38 @@
           const sDoc = await getDoc(doc(db, "share_links", currentToken));
           if (sDoc.exists()) {
             const sData = sDoc.data();
-            const targetId = sData.videoId || sData.docId || sData.targetId;
+            const targetId = sData.videoId || sData.targetId || sData.docId;
             if (sData.type === "ad_video") {
               currentAdId = targetId;
+              currentPoolType = "sponsored";
             } else {
               currentVideoId = targetId;
+              currentPoolType = "academic";
             }
             updateDoc(doc(db, "share_links", currentToken), { clicks: increment(1) }).catch(() => {});
+          } else {
+            // Fallback via server API
+            try {
+              const apiResp = await fetch(`/api/share/click?token=${encodeURIComponent(currentToken)}`);
+              if (apiResp.ok) {
+                const apiData = await apiResp.json();
+                if (apiData && apiData.documentData) {
+                  const bd = apiData.documentData;
+                  const targetId = bd.videoId || bd.targetId || bd.docId;
+                  if (bd.type === "ad_video") {
+                    currentAdId = targetId;
+                    currentPoolType = "sponsored";
+                  } else {
+                    currentVideoId = targetId;
+                    currentPoolType = "academic";
+                  }
+                }
+              }
+            } catch(_) {}
           }
-        } catch (e) {}
+        } catch (e) {
+          console.warn("Share token resolution notice:", e);
+        }
       }
 
       // 4. Select Video to Play

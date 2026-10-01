@@ -873,13 +873,24 @@
   });
 
   // ==========================================================================
-  // 10. SMART SHARE LINK RESOLUTION & REDIRECTION (?share=TOKEN)
+  // 10. SMART SHARE LINK RESOLUTION & REDIRECTION (?share=TOKEN or ?token=TOKEN)
   // ==========================================================================
-  const shareToken = params.get('share');
-  if (shareToken) {
-    const isAlreadyViewingPdf = window.location.pathname.includes('dpgnotes-pdf-viewer.html') && params.get('pdf');
+  const rawShareParam = params.get('share') || (!window.location.pathname.includes('dpgnotes-video.html') ? params.get('token') : null);
+  const shareToken = rawShareParam ? rawShareParam.trim() : null;
 
-    if (!isAlreadyViewingPdf && !isCrawler) {
+  if (shareToken) {
+    // Fast path: If the token is unambiguously a video share token (VSH_ or VSH_AD_)
+    if (shareToken.startsWith('VSH_') || shareToken.startsWith('VSH_AD_')) {
+      if (!window.location.pathname.includes('dpgnotes-video.html')) {
+        window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(shareToken)}`);
+        return;
+      }
+    }
+
+    const isAlreadyViewingPdf = window.location.pathname.includes('dpgnotes-pdf-viewer.html') && params.get('pdf');
+    const isAlreadyViewingVideo = window.location.pathname.includes('dpgnotes-video.html');
+
+    if (!isAlreadyViewingPdf && !isAlreadyViewingVideo && !isCrawler) {
       let overlay = document.getElementById('dpgShareRedirectOverlay');
       if (!overlay) {
         overlay = document.createElement('div');
@@ -918,11 +929,44 @@
           if (res.ok && data && data.documentData) {
             const d = data.documentData;
 
+            // 1. Legal Document
             if (d.docId && d.docId.startsWith('legal_')) {
               window.location.replace(`/legal/index.html#${encodeURIComponent(d.docId.replace('legal_', ''))}`);
               return;
             }
 
+            // 2. Educational Video or Sponsored Video Ad
+            if (d.type === 'video' || d.type === 'ad_video' || (d.token && (d.token.startsWith('VSH_') || d.token.startsWith('VSH_AD_'))) || d.videoId) {
+              const videoTargetUrl = new URL('/dpgnotes-video.html', window.location.origin);
+              videoTargetUrl.searchParams.set('token', d.token || shareToken);
+              if (d.type === 'ad_video') {
+                videoTargetUrl.searchParams.set('adId', d.videoId || d.targetId || '');
+              } else if (d.videoId) {
+                videoTargetUrl.searchParams.set('id', d.videoId || d.targetId || '');
+              }
+              window.location.replace(videoTargetUrl.toString());
+              return;
+            }
+
+            // 3. Practical Solution
+            if (d.type === 'practical_solution' || d.subType === 'practical') {
+              const solTargetUrl = new URL('/PracticalSolution/index.html', window.location.origin);
+              solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
+              solTargetUrl.searchParams.set('share_token', d.token || shareToken);
+              window.location.replace(solTargetUrl.toString());
+              return;
+            }
+
+            // 4. Assignment Solution
+            if (d.type === 'assignment_solution' || d.type === 'solution') {
+              const solTargetUrl = new URL('/AssignmentSolution/index.html', window.location.origin);
+              solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
+              solTargetUrl.searchParams.set('share_token', d.token || shareToken);
+              window.location.replace(solTargetUrl.toString());
+              return;
+            }
+
+            // 5. Standard PDF Document
             const viewerUrl = new URL('/dpgnotes-pdf-viewer.html', window.location.origin);
             if (d.pdfUrl) viewerUrl.searchParams.set('pdf', d.pdfUrl);
             if (d.title) viewerUrl.searchParams.set('title', d.title);
@@ -939,7 +983,7 @@
             return;
           } else {
             if (overlay) overlay.remove();
-            cleanUrlParam(['share']);
+            cleanUrlParam(['share', 'token']);
             const msg = (data && data.error) ? data.error : 'Share link has expired or is invalid.';
             if (window.customAlert) {
               window.customAlert(msg, { title: 'Share Link Expired' });
@@ -950,9 +994,11 @@
         } catch(netErr) {
           console.error('[dpg-params] Network error resolving share token:', netErr);
           if (overlay) overlay.remove();
-          cleanUrlParam(['share']);
+          cleanUrlParam(['share', 'token']);
         }
       })();
+    }
+  }
     }
   }
 

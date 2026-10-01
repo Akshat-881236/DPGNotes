@@ -2615,29 +2615,51 @@
     window.shareVideoItemNative = async function(item) {
       if (!item) return;
       const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
-      try {
-        await setDoc(doc(db, "share_links", token), {
-          token: token,
-          type: item.isSponsored ? "ad_video" : "video",
-          videoId: item.id,
-          targetId: item.id,
-          title: item.title || "Academic Video",
-          uploader: item.source || "DPGNotes Contributor",
-          clicks: 0,
-          createdAt: new Date().toISOString()
-        });
+      const isSpon = Boolean(item.isSponsored);
+      const targetCol = isSpon ? "user_ads" : "videos";
+      const targetId = item.id || "";
+      const videoTitle = item.title || (isSpon ? "Sponsored Video Ad" : "Academic Video");
+      const videoSource = item.source || item.company || "DPGNotes Contributor";
 
-        const targetCol = item.isSponsored ? "user_ads" : "videos";
-        updateDoc(doc(db, targetCol, item.id), { shares: increment(1) }).catch(() => {});
-        if (!item.isSponsored) {
-          updateDoc(doc(db, "Video", item.id), { shares: increment(1) }).catch(() => {});
-        }
+      const shareData = {
+        token: token,
+        type: isSpon ? "ad_video" : "video",
+        videoId: targetId,
+        targetId: targetId,
+        title: videoTitle,
+        source: videoSource,
+        uploader: videoSource,
+        clicks: 0,
+        createdAt: new Date().toISOString()
+      };
+
+      // 1. Direct Firestore write
+      try {
+        await setDoc(doc(db, "share_links", token), shareData, { merge: true });
       } catch (e) {
-        console.warn("Share token creation failed:", e);
+        console.warn("Share token creation warning:", e);
       }
 
-      const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
-      const videoTitle = item.title || "Educational Video";
+      // 2. Redundant backend API call
+      try {
+        fetch('/api/share/generate-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(shareData)
+        }).catch(() => {});
+      } catch(_) {}
+
+      // 3. Increment counters
+      try {
+        if (targetId) {
+          updateDoc(doc(db, targetCol, targetId), { shares: increment(1) }).catch(() => {});
+          if (!isSpon) {
+            updateDoc(doc(db, "Video", targetId), { shares: increment(1) }).catch(() => {});
+          }
+        }
+      } catch(_) {}
+
+      const shareUrl = `https://dpgnotes.web.app/dpgnotes-video.html?token=${token}`;
       const shareTitle = `${videoTitle} — DPGNotes`;
       const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
 
@@ -2658,7 +2680,11 @@
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
           await navigator.clipboard.writeText(shareUrl);
-          alert(`Share link copied to clipboard!\n${shareUrl}`);
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert(`Share link copied to clipboard!\n${shareUrl}`, { title: "Link Copied" });
+          } else {
+            alert(`Share link copied to clipboard!\n${shareUrl}`);
+          }
           return;
         } catch(cErr) {}
       }

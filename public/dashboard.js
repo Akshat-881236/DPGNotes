@@ -402,19 +402,47 @@ onAuthStateChanged(auth, async (user) => {
     
     // Check for Share Token parameter in dashboard
     const urlParams = new URLSearchParams(window.location.search);
-    const shareToken = urlParams.get('share');
+    const rawShareParam = urlParams.get('share') || urlParams.get('token');
+    const shareToken = rawShareParam ? rawShareParam.trim() : null;
     if (shareToken) {
+      if (shareToken.startsWith('VSH_') || shareToken.startsWith('VSH_AD_')) {
+        window.location.href = `https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(shareToken)}`;
+        return;
+      }
       (async () => {
         try {
-          const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${shareToken}&openedBy=${currentUser.uid}`);
+          const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(currentUser?.uid || 'Guest')}`);
           const data = await res.json();
           if (res.ok && data.documentData) {
             const d = data.documentData;
+
+            // 1. Legal Document
             if (d.docId && d.docId.startsWith('legal_')) {
-              window.location.href = `legal/index.html#${d.docId.replace('legal_', '')}`;
+              window.location.href = `https://dpgnotes.web.app/legal/index.html#${encodeURIComponent(d.docId.replace('legal_', ''))}`;
               return;
             }
-            const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl)}&title=${encodeURIComponent(d.title)}&category=${encodeURIComponent(d.category)}&discipline=${encodeURIComponent(d.discipline)}&uploader=${encodeURIComponent(d.uploader)}&docid=${encodeURIComponent(d.docId)}&description=${encodeURIComponent(d.description)}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}`;
+
+            // 2. Video or Video Ad
+            if (d.type === 'video' || d.type === 'ad_video' || (d.token && (d.token.startsWith('VSH_') || d.token.startsWith('VSH_AD_'))) || d.videoId) {
+              const vParam = d.videoId ? (d.type === 'ad_video' ? `&adId=${encodeURIComponent(d.videoId)}` : `&id=${encodeURIComponent(d.videoId)}`) : '';
+              window.location.href = `https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(d.token || shareToken)}${vParam}`;
+              return;
+            }
+
+            // 3. Practical Solution
+            if (d.type === 'practical_solution' || d.subType === 'practical') {
+              window.location.href = `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(d.docId || d.solutionId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
+              return;
+            }
+
+            // 4. Assignment Solution
+            if (d.type === 'assignment_solution' || d.type === 'solution') {
+              window.location.href = `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(d.docId || d.solutionId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
+              return;
+            }
+
+            // 5. Standard PDF
+            const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.uploader || '')}&docid=${encodeURIComponent(d.docId || '')}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}&share=${encodeURIComponent(shareToken)}`;
             window.location.href = viewerUrl;
           } else {
             alert("Share link expired or invalid.");
@@ -3298,27 +3326,39 @@ window.loadYtVideosData = loadYtVideosData;
 
 window.shareContributorVideo = async function(id, title) {
   const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
-  try {
-    await setDoc(doc(db, "share_links", token), {
-      token: token,
-      type: "video",
-      videoId: id,
-      targetId: id,
-      title: title || "Academic Video",
-      uploader: currentUser?.displayName || currentUser?.email || "Contributor",
-      clicks: 0,
-      createdAt: new Date().toISOString()
-    }, { merge: true });
+  const uploader = currentUser?.displayName || currentUser?.email || "Contributor";
+  const videoTitle = title || "Academic Video";
+  const shareData = {
+    token: token,
+    type: "video",
+    videoId: id,
+    targetId: id,
+    title: videoTitle,
+    uploader: uploader,
+    clicks: 0,
+    createdAt: new Date().toISOString()
+  };
 
+  try {
+    await setDoc(doc(db, "share_links", token), shareData, { merge: true });
     updateDoc(doc(db, "videos", id), { shares: increment(1) }).catch(() => {});
     updateDoc(doc(db, "Video", id), { shares: increment(1) }).catch(() => {});
   } catch(e) {
     console.warn("Share token creation warning:", e);
   }
 
-  const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
-  const shareTitle = `${title || 'Educational Video'} — DPGNotes`;
-  const shareText = `Watch "${title || 'Educational Video'}" on DPGNotes - Verified Academic Resource:\n`;
+  // Redundant backend API call to guarantee push to Firestore DB
+  try {
+    fetch('/api/share/generate-video', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(shareData)
+    }).catch(() => {});
+  } catch(_) {}
+
+  const shareUrl = `https://dpgnotes.web.app/dpgnotes-video.html?token=${token}`;
+  const shareTitle = `${videoTitle} — DPGNotes`;
+  const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
 
   if (navigator.share) {
     try {

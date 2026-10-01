@@ -800,6 +800,7 @@ async function loadShares() {
     let docShares = 0;
     let noteShares = 0;
     let solShares = 0;
+    let videoShares = 0;
     let totalClicks = 0;
 
     snap.forEach(doc => {
@@ -811,6 +812,8 @@ async function loadShares() {
         noteShares++;
       } else if (item.type === 'solution' || item.type === 'assignment_solution' || item.type === 'practical_solution') {
         solShares++;
+      } else if (item.type === 'video' || item.type === 'ad_video' || (item.token && (item.token.startsWith('VSH_') || item.token.startsWith('VSH_AD_')))) {
+        videoShares++;
       } else {
         docShares++;
       }
@@ -846,7 +849,7 @@ window.loadShares = loadShares;
 
 window.filterSharesByType = function(type, btnEl) {
   window.currentSharesFilter = type;
-  const buttons = ['shareFilterAll', 'shareFilterDoc', 'shareFilterNote', 'shareFilterSolution'];
+  const buttons = ['shareFilterAll', 'shareFilterDoc', 'shareFilterNote', 'shareFilterSolution', 'shareFilterVideo'];
   buttons.forEach(bId => {
     const b = document.getElementById(bId);
     if (b) {
@@ -863,11 +866,13 @@ function applySharesFilterAndRender() {
   let list = adminSharesCache;
 
   if (window.currentSharesFilter === 'document') {
-    list = list.filter(l => l.type !== 'note' && l.type !== 'solution' && l.type !== 'assignment_solution' && l.type !== 'practical_solution');
+    list = list.filter(l => l.type !== 'note' && l.type !== 'solution' && l.type !== 'assignment_solution' && l.type !== 'practical_solution' && l.type !== 'video' && l.type !== 'ad_video' && !(l.token && l.token.startsWith('VSH_')));
   } else if (window.currentSharesFilter === 'note') {
     list = list.filter(l => l.type === 'note');
   } else if (window.currentSharesFilter === 'solution') {
     list = list.filter(l => l.type === 'solution' || l.type === 'assignment_solution' || l.type === 'practical_solution');
+  } else if (window.currentSharesFilter === 'video') {
+    list = list.filter(l => l.type === 'video' || l.type === 'ad_video' || (l.token && (l.token.startsWith('VSH_') || l.token.startsWith('VSH_AD_'))));
   }
 
   if (queryStr) {
@@ -896,6 +901,7 @@ function renderSharesTable(shares) {
   shares.forEach(link => {
     const isNote = link.type === 'note';
     const isSolution = link.type === 'solution' || link.type === 'assignment_solution' || link.type === 'practical_solution';
+    const isVideo = link.type === 'video' || link.type === 'ad_video' || (link.token && (link.token.startsWith('VSH_') || link.token.startsWith('VSH_AD_')));
 
     let typeBadge = '';
     if (isNote) {
@@ -905,6 +911,9 @@ function renderSharesTable(shares) {
       const label = isPrac ? '🔬 PRACTICAL' : '🎓 ASSIGNMENT';
       const courseStr = (link.course || link.courseSec) ? ` [${escapeAdminHtml(link.course || link.courseSec)}]` : '';
       typeBadge = `<span style="background:rgba(20,184,166,0.2); color:#14b8a6; border:1px solid rgba(20,184,166,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">${label}${courseStr}</span>`;
+    } else if (isVideo) {
+      const isAd = link.type === 'ad_video' || (link.token && link.token.startsWith('VSH_AD_'));
+      typeBadge = `<span style="background:rgba(236,72,153,0.2); color:#f472b6; border:1px solid rgba(236,72,153,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📹 ${isAd ? 'VIDEO AD' : 'VIDEO'}</span>`;
     } else {
       typeBadge = `<span style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📄 DOC</span>`;
     }
@@ -918,6 +927,8 @@ function renderSharesTable(shares) {
       const folder = (link.subType === 'practical' || link.type === 'practical_solution') ? 'PracticalSolution' : 'AssignmentSolution';
       const contrib = link.contributorUid || link.uploaderUid || '';
       directViewerLink = `${folder}/index.html?id=${encodeURIComponent(link.docId || link.solutionId || targetDocId)}&contributor=${encodeURIComponent(contrib)}&share_token=${encodeURIComponent(link.token)}`;
+    } else if (isVideo) {
+      directViewerLink = `dpgnotes-video.html?token=${encodeURIComponent(link.token)}`;
     } else {
       directViewerLink = `dashboard.html?share=${encodeURIComponent(link.token)}`;
     }
@@ -937,7 +948,7 @@ function renderSharesTable(shares) {
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <a href="${directViewerLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;" title="Open directly"><i class="ri-external-link-line"></i> Open</a>
           <a href="report.html?code=${encodeURIComponent(link.token)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-file-chart-line"></i> Report</a>
-          <button type="button" onclick="navigator.clipboard.writeText('https://dpgnotes.web.app/${directViewerLink}'); alert('Share link copied to clipboard!');" class="btn-action" style="padding:4px 8px; font-size:0.75rem;" title="Copy public share URL"><i class="ri-file-copy-line"></i> Copy</button>
+          <button type="button" onclick="navigator.clipboard.writeText('https://dpgnotes.web.app/${directViewerLink}'); if(typeof window.customAlert==='function'){window.customAlert('Share link copied to clipboard!\nhttps://dpgnotes.web.app/${directViewerLink}', {title:'Link Copied'});}else{alert('Share link copied to clipboard!');}" class="btn-action" style="padding:4px 8px; font-size:0.75rem;" title="Copy public share URL"><i class="ri-file-copy-line"></i> Copy</button>
           <button type="button" onclick="window.deleteShareCode('${link.token}')" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" title="Delete share code"><i class="ri-delete-bin-line"></i></button>
         </div>
       </td>

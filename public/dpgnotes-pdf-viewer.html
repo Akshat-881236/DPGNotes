@@ -518,7 +518,17 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 // ─ Params & Dual-Mode Resolver ─────────────────────────────────────────────
 const P = new URLSearchParams(location.search);
-let resourceId = P.get('resourceID') || P.get('resourceId') || P.get('id') || P.get('docid') || '';
+const incomingShare = (P.get('share') || P.get('token') || '').trim();
+const incomingId = (P.get('id') || P.get('docid') || P.get('resourceId') || P.get('resourceID') || '').trim();
+
+// Video redirect safeguard: Never render video tokens or video IDs inside PDF viewer
+if (incomingShare.startsWith('VSH_') || incomingShare.startsWith('VSH_AD_')) {
+  window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(incomingShare)}`);
+} else if (incomingId.startsWith('yt-') || incomingId.startsWith('v-') || incomingId.startsWith('vid_')) {
+  window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?id=${encodeURIComponent(incomingId)}`);
+}
+
+let resourceId = incomingId;
 let pdfUrl  = P.get('pdf')         || '';
 let docTitle= P.get('title')       || 'Untitled Document';
 let docCat  = P.get('category')    || '—';
