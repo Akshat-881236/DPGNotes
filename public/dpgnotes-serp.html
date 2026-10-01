@@ -1368,7 +1368,7 @@
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
 
-    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
     const db = getFirestore(app);
     const auth = getAuth(app);
     const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com');
@@ -1376,13 +1376,20 @@
     // ==========================================
     // AUTH STATE & NAVBAR
     // ==========================================
-    onAuthStateChanged(auth, (user) => {
+    function renderNavAuth(user) {
       const authArea = document.getElementById("navAuthArea");
       if (!authArea) return;
 
-      if (user) {
-        const photoURL = user.photoURL || '';
-        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
+      const activeUser = user || (localStorage.getItem("dpgActiveUserUid") ? {
+        uid: localStorage.getItem("dpgActiveUserUid"),
+        email: localStorage.getItem("dpgActiveUserEmail") || "",
+        displayName: localStorage.getItem("dpgActiveUserName") || "",
+        photoURL: localStorage.getItem("dpgActiveUserPhoto") || ""
+      } : null);
+
+      if (activeUser) {
+        const photoURL = activeUser.photoURL || '';
+        const displayName = activeUser.displayName || (activeUser.email ? activeUser.email.split('@')[0] : 'Contributor');
         const initial = displayName.charAt(0).toUpperCase();
 
         const avatarHtml = photoURL 
@@ -1408,11 +1415,26 @@
           </a>
         `;
       }
+    }
+
+    renderNavAuth(auth.currentUser);
+
+    onAuthStateChanged(auth, (user) => {
+      renderNavAuth(user);
     });
 
     window.handleSerpSignOut = async function() {
       try {
+        localStorage.removeItem("dpgActiveUserUid");
+        localStorage.removeItem("dpgActiveUserEmail");
+        localStorage.removeItem("dpgActiveUserName");
+        localStorage.removeItem("dpgActiveUserPhoto");
         await signOut(auth);
+        window.location.reload();
+      } catch (err) {
+        console.error("Sign out error:", err);
+      }
+    };
         localStorage.removeItem("dpgActiveUserUid");
         localStorage.removeItem("dpgActiveUserEmail");
         localStorage.removeItem("dpgActiveUserName");

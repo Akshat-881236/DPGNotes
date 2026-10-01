@@ -783,7 +783,7 @@
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
 
-    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
@@ -802,7 +802,11 @@
     let currentAdId = "";
     let currentToken = "";
     let currentVideoItem = null;
-    let currentUser = null;
+    let currentUser = localStorage.getItem("dpgActiveUserUid") ? {
+      uid: localStorage.getItem("dpgActiveUserUid"),
+      email: localStorage.getItem("dpgActiveUserEmail") || "",
+      displayName: localStorage.getItem("dpgActiveUserName") || "Contributor"
+    } : null;
 
     // Case sensitivity repair map for known legacy lowercased IDs
     const KNOWN_ID_REPAIR = {
@@ -1092,8 +1096,12 @@
       const icon = document.getElementById("likeIcon");
       if (!btn || !icon || !currentVideoItem) return;
 
+      const activeUser = currentUser || auth.currentUser || (localStorage.getItem("dpgActiveUserUid") ? {
+        uid: localStorage.getItem("dpgActiveUserUid")
+      } : null);
+
       const likesArr = Array.isArray(currentVideoItem.likes) ? currentVideoItem.likes : [];
-      const hasLiked = currentUser && likesArr.includes(currentUser.uid);
+      const hasLiked = activeUser && likesArr.includes(activeUser.uid);
 
       if (hasLiked) {
         btn.classList.add("liked");
@@ -1105,7 +1113,13 @@
     }
 
     window.toggleVideoLike = async function() {
-      if (!currentUser) {
+      const activeUser = currentUser || auth.currentUser || (localStorage.getItem("dpgActiveUserUid") ? {
+        uid: localStorage.getItem("dpgActiveUserUid"),
+        email: localStorage.getItem("dpgActiveUserEmail") || "",
+        displayName: localStorage.getItem("dpgActiveUserName") || "Contributor"
+      } : null);
+
+      if (!activeUser) {
         if (typeof window.customAlert === 'function') {
           await window.customAlert("Please sign in as a verified contributor to like this video.", { title: "Authentication Required" });
         } else {
@@ -1113,25 +1127,26 @@
         }
         return;
       }
+      currentUser = activeUser;
       if (!currentVideoItem) return;
 
       const likesArr = Array.isArray(currentVideoItem.likes) ? currentVideoItem.likes : [];
-      const hasLiked = likesArr.includes(currentUser.uid);
+      const hasLiked = likesArr.includes(activeUser.uid);
       const targetCol = currentVideoItem.isSponsored ? "user_ads" : "videos";
       const targetId = currentVideoItem.id;
 
       try {
         if (hasLiked) {
-          currentVideoItem.likes = likesArr.filter(u => u !== currentUser.uid);
-          await updateDoc(doc(db, targetCol, targetId), { likes: arrayRemove(currentUser.uid) });
+          currentVideoItem.likes = likesArr.filter(u => u !== activeUser.uid);
+          await updateDoc(doc(db, targetCol, targetId), { likes: arrayRemove(activeUser.uid) });
           if (!currentVideoItem.isSponsored) {
-            updateDoc(doc(db, "Video", targetId), { likes: arrayRemove(currentUser.uid) }).catch(() => {});
+            updateDoc(doc(db, "Video", targetId), { likes: arrayRemove(activeUser.uid) }).catch(() => {});
           }
         } else {
-          currentVideoItem.likes = [...likesArr, currentUser.uid];
-          await updateDoc(doc(db, targetCol, targetId), { likes: arrayUnion(currentUser.uid) });
+          currentVideoItem.likes = [...likesArr, activeUser.uid];
+          await updateDoc(doc(db, targetCol, targetId), { likes: arrayUnion(activeUser.uid) });
           if (!currentVideoItem.isSponsored) {
-            updateDoc(doc(db, "Video", targetId), { likes: arrayUnion(currentUser.uid) }).catch(() => {});
+            updateDoc(doc(db, "Video", targetId), { likes: arrayUnion(activeUser.uid) }).catch(() => {});
           }
         }
 
@@ -1218,7 +1233,7 @@
     };
 
     onAuthStateChanged(auth, (user) => {
-      currentUser = user;
+      if (user) currentUser = user;
       updateLikeButtonState();
     });
 
