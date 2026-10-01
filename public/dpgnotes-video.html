@@ -67,26 +67,6 @@
       gap: 6px;
     }
     .brand-tag i { color: var(--pri); }
-    .policy-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
-    .policy-no-hide {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-    .policy-auto-restart {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
     .topbar-right {
       display: flex;
       align-items: center;
@@ -626,6 +606,25 @@
       }
 
       const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
+      const videoTitle = videoData?.title || "Educational Video";
+      const shareTitle = `${videoTitle} — DPGNotes`;
+      const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: shareTitle,
+            text: shareText,
+            url: shareUrl
+          });
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') return;
+          console.warn("navigator.share failed, fallback to modal:", shareErr);
+        }
+      }
+
+      // Fallback: Display the modal with direct URL copy
       if (input) input.value = shareUrl;
       if (modal) modal.classList.add("active");
     };

@@ -3747,9 +3747,14 @@ async function loadAdsAnalyticsAdmin() {
                 <div style="font-size:0.75rem; color:var(--admin-muted); font-family:monospace;">${a.userId || a.uid || a.advertiserId || 'N/A'}</div>
               </td>
               <td style="padding:0.75rem;">
-                <a href="dpgnotes-video.html?adId=${encodeURIComponent(a.id)}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
-                  <i class="ri-play-mini-fill"></i> Open Player
-                </a>
+                <div style="display:inline-flex; gap:6px;">
+                  <a href="dpgnotes-video.html?adId=${encodeURIComponent(a.id)}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="ri-play-mini-fill"></i> Player
+                  </a>
+                  <button type="button" onclick="window.shareAdminVideoAdNative('${a.id}', '${(a.title || a.headline || 'Sponsored Ad').replace(/'/g, "\\'")}')" class="btn-action secondary" style="padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:3px;" title="Native Share">
+                    <i class="ri-share-forward-line"></i> Share
+                  </button>
+                </div>
               </td>
               <td style="padding:0.75rem; font-weight:700; color:#10b981;">${viewsCount.toLocaleString()}</td>
               <td style="padding:0.75rem; font-weight:700; color:#f472b6;">
@@ -8001,6 +8006,9 @@ function renderApprovedVideosTable(list) {
           <a href="dpgnotes-video.html?id=${encodeURIComponent(v.id)}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:3px;" title="Full-screen Render Player">
             <i class="ri-play-mini-fill"></i> View
           </a>
+          <button type="button" onclick="window.shareAdminVideoNative('${escapeHtmlUtil(v.id)}', '${escapeHtmlUtil(v.title || 'Video')}')" class="btn-action secondary" style="padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:3px;" title="Native Share (WhatsApp, Email & Apps)">
+            <i class="ri-share-forward-line"></i> Share
+          </button>
           <button onclick="window.toggleBoostVideo('${escapeHtmlUtil(v.id)}', ${!v.boosted})" class="btn-action secondary" style="padding:4px 8px; font-size:0.75rem; ${v.boosted ? 'color:#f59e0b; border-color:#f59e0b;' : ''}" title="${v.boosted ? 'Remove Boost' : 'Boost Appearance to Top'}">
             <i class="ri-rocket-line"></i> ${v.boosted ? 'Unboost' : 'Boost'}
           </button>
@@ -8438,6 +8446,109 @@ window.copyVideosAiReport = function() {
   }).catch(err => {
     console.error("Clipboard copy failed:", err);
   });
+};
+
+window.shareAdminVideoNative = async function(id, title) {
+  const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+  try {
+    await setDoc(doc(db, "share_links", token), {
+      token: token,
+      type: "video",
+      videoId: id,
+      targetId: id,
+      title: title || "Academic Video",
+      uploader: "DPGNotes Admin",
+      clicks: 0,
+      createdAt: new Date().toISOString()
+    }, { merge: true });
+
+    updateDoc(doc(db, "videos", id), { shares: increment(1) }).catch(() => {});
+    updateDoc(doc(db, "Video", id), { shares: increment(1) }).catch(() => {});
+  } catch(e) {
+    console.warn("Share token creation warning:", e);
+  }
+
+  const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
+  const shareTitle = `${title || 'Educational Video'} — DPGNotes`;
+  const shareText = `Watch "${title || 'Educational Video'}" on DPGNotes - Verified Academic Resource:\n`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl
+      });
+      return;
+    } catch(err) {
+      if (err.name === 'AbortError') return;
+      console.warn("navigator.share failed, fallback to clipboard:", err);
+    }
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      if (typeof window.customAlert === 'function') {
+        window.customAlert(`Share link copied to clipboard!\n${shareUrl}`, { title: "Link Copied" });
+      } else {
+        alert(`Share link copied to clipboard!\n${shareUrl}`);
+      }
+      return;
+    } catch(cErr) {}
+  }
+  prompt("Copy video share link:", shareUrl);
+};
+
+window.shareAdminVideoAdNative = async function(adId, title) {
+  const token = "VSH_AD_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+  try {
+    await setDoc(doc(db, "share_links", token), {
+      token: token,
+      type: "ad_video",
+      videoId: adId,
+      targetId: adId,
+      title: title || "Sponsored Video Ad",
+      uploader: "DPGNotes Ads",
+      clicks: 0,
+      createdAt: new Date().toISOString()
+    }, { merge: true });
+
+    updateDoc(doc(db, "user_ads", adId), { shares: increment(1) }).catch(() => {});
+  } catch(e) {
+    console.warn("Share token creation warning:", e);
+  }
+
+  const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
+  const shareTitle = `${title || 'Sponsored Video'} — DPGNotes`;
+  const shareText = `Watch "${title || 'Sponsored Video'}" on DPGNotes:\n`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl
+      });
+      return;
+    } catch(err) {
+      if (err.name === 'AbortError') return;
+      console.warn("navigator.share failed, fallback to clipboard:", err);
+    }
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      if (typeof window.customAlert === 'function') {
+        window.customAlert(`Ad video share link copied to clipboard!\n${shareUrl}`, { title: "Link Copied" });
+      } else {
+        alert(`Ad video share link copied to clipboard!\n${shareUrl}`);
+      }
+      return;
+    } catch(cErr) {}
+  }
+  prompt("Copy ad video share link:", shareUrl);
 };
 
 

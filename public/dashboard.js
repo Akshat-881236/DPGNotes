@@ -3285,9 +3285,14 @@ async function loadYtVideosData() {
           <span title="Shares"><i class="ri-share-forward-line"></i> ${totalShares}</span>
         </td>
         <td style="padding:12px; text-align:right;">
-          <a href="dpgnotes-video.html?id=${encodeURIComponent(v.id)}" target="_blank" style="padding:4px 10px; border-radius:6px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
-            <i class="ri-play-circle-line"></i> Preview Player
-          </a>
+          <div style="display:inline-flex; gap:6px;">
+            <a href="dpgnotes-video.html?id=${encodeURIComponent(v.id)}" target="_blank" style="padding:4px 10px; border-radius:6px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+              <i class="ri-play-circle-line"></i> Preview
+            </a>
+            <button type="button" onclick="window.shareContributorVideo('${v.id}', '${escapeHtml(v.title || 'Video')}')" style="padding:4px 10px; border-radius:6px; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#fff; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <i class="ri-share-forward-line"></i> Share
+            </button>
+          </div>
         </td>
       `;
       tbody.appendChild(tr);
@@ -3298,6 +3303,58 @@ async function loadYtVideosData() {
   }
 }
 window.loadYtVideosData = loadYtVideosData;
+
+window.shareContributorVideo = async function(id, title) {
+  const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+  try {
+    await setDoc(doc(db, "share_links", token), {
+      token: token,
+      type: "video",
+      videoId: id,
+      targetId: id,
+      title: title || "Academic Video",
+      uploader: currentUser?.displayName || currentUser?.email || "Contributor",
+      clicks: 0,
+      createdAt: new Date().toISOString()
+    }, { merge: true });
+
+    updateDoc(doc(db, "videos", id), { shares: increment(1) }).catch(() => {});
+    updateDoc(doc(db, "Video", id), { shares: increment(1) }).catch(() => {});
+  } catch(e) {
+    console.warn("Share token creation warning:", e);
+  }
+
+  const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
+  const shareTitle = `${title || 'Educational Video'} — DPGNotes`;
+  const shareText = `Watch "${title || 'Educational Video'}" on DPGNotes - Verified Academic Resource:\n`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl
+      });
+      return;
+    } catch(err) {
+      if (err.name === 'AbortError') return;
+      console.warn("navigator.share failed, fallback to clipboard:", err);
+    }
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      if (window.customAlert) {
+        window.customAlert(`Share link copied to clipboard!\n${shareUrl}`, { title: "Link Copied" });
+      } else {
+        alert(`Share link copied to clipboard!\n${shareUrl}`);
+      }
+      return;
+    } catch(cErr) {}
+  }
+  prompt("Copy video share link:", shareUrl);
+};
 
 window.handleYtVideoSubmit = async function(e) {
   e.preventDefault();

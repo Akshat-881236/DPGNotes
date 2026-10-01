@@ -1207,7 +1207,7 @@
     <div id="resultsList" class="results-list"></div>
   </main>
 
-  <!-- YouTube Video Player Modal (Enforcing No Hide Policy & Auto Restart Policy) -->
+  <!-- YouTube Video Player Modal -->
   <div id="serpVideoPlayerModal" class="dpg-modal-backdrop" style="display:none;" data-policy="no-hide">
     <div class="dpg-modal-box" style="max-width:860px; width:95%; padding:18px; border-radius:16px;">
       <div class="dpg-modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
@@ -1218,13 +1218,7 @@
             <i class="ri-advertisement-fill"></i> Sponsored
           </span>
         </div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid #fca5a5; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700;">
-            <i class="ri-shield-keyhole-line"></i> No Hide Policy
-          </span>
-          <span style="background:rgba(16,185,129,0.1); color:#059669; border:1px solid #a7f3d0; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700;">
-            <i class="ri-repeat-2-line"></i> Auto Restart Policy
-          </span>
+        <div>
           <button type="button" class="dpg-modal-close" onclick="closeSerpVideoModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b;" title="Exit Video">&times;</button>
         </div>
       </div>
@@ -2243,8 +2237,11 @@
                     <span title="Total Shares"><i class="ri-share-forward-line"></i> ${totalShares}</span>
                   </div>
                   <div style="display:flex; gap:6px;">
-                    <button type="button" class="dpg-btn dpg-btn-secondary" onclick="openSerpVideoModalById('${v.id}')" style="padding:4px 8px; font-size:0.75rem;" title="Watch in Modal (No Hide Policy)">
+                    <button type="button" class="dpg-btn dpg-btn-secondary" onclick="openSerpVideoModalById('${v.id}')" style="padding:4px 8px; font-size:0.75rem;" title="Watch Video">
                       <i class="ri-play-circle-line"></i> Watch
+                    </button>
+                    <button type="button" class="dpg-btn dpg-btn-secondary" onclick="window.shareSerpVideoItem('${v.id}')" style="padding:4px 8px; font-size:0.75rem;" title="Share Video">
+                      <i class="ri-share-forward-line"></i> Share
                     </button>
                     <a href="${renderPageUrl}" target="_blank" class="dpg-btn dpg-btn-primary" style="padding:4px 8px; font-size:0.75rem; text-decoration:none;" title="Full Screen View in New Tab">
                       <i class="ri-fullscreen-line"></i>
@@ -2428,33 +2425,66 @@
     window.shareSerpModalVideo = async function() {
       const item = window.activeModalVideoItem;
       if (!item) return;
+      await window.shareVideoItemNative(item);
+    };
 
+    window.shareSerpVideoItem = async function(id) {
+      const item = (window.currentVideosTabItems || []).find(v => v.id === id);
+      if (!item) return;
+      await window.shareVideoItemNative(item);
+    };
+
+    window.shareVideoItemNative = async function(item) {
+      if (!item) return;
       const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
       try {
         await setDoc(doc(db, "share_links", token), {
           token: token,
           type: item.isSponsored ? "ad_video" : "video",
           videoId: item.id,
-          docId: item.id,
-          title: item.title,
+          targetId: item.id,
+          title: item.title || "Academic Video",
           uploader: item.source || "DPGNotes Contributor",
           clicks: 0,
-          createdAt: new Date()
+          createdAt: new Date().toISOString()
         });
+
+        const targetCol = item.isSponsored ? "user_ads" : "videos";
+        updateDoc(doc(db, targetCol, item.id), { shares: increment(1) }).catch(() => {});
+        if (!item.isSponsored) {
+          updateDoc(doc(db, "Video", item.id), { shares: increment(1) }).catch(() => {});
+        }
       } catch (e) {
         console.warn("Share token creation failed:", e);
       }
 
       const shareUrl = `${window.location.origin}/dpgnotes-video.html?token=${token}`;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          alert(`Share link generated and copied to clipboard!\nShare Token: ${token}\n${shareUrl}`);
-        }).catch(() => {
-          prompt("Copy video share link:", shareUrl);
-        });
-      } else {
-        prompt("Copy video share link:", shareUrl);
+      const videoTitle = item.title || "Educational Video";
+      const shareTitle = `${videoTitle} — DPGNotes`;
+      const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: shareTitle,
+            text: shareText,
+            url: shareUrl
+          });
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') return;
+          console.warn("navigator.share failed, fallback to clipboard:", shareErr);
+        }
       }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          alert(`Share link copied to clipboard!\n${shareUrl}`);
+          return;
+        } catch(cErr) {}
+      }
+      prompt("Copy video share link:", shareUrl);
     };
 
     // Initialize Page
