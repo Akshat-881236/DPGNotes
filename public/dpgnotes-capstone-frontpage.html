@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DPGNotes - Minor Capstone Project Report Frontpage</title>
+  <link rel="icon" type="image/png" href="ANH.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0f111a;
+      color: #1e293b;
+      font-family: 'Merriweather', 'Times New Roman', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 3rem;
+    }
+
+    /* =========================================================
+       NON-PRINTABLE TOP CONTROLS BAR
+       ========================================================= */
+    .controls-banner {
+      width: 100%;
+      background: #16192b;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .banner-title {
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-act {
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-act:hover {
+      background: #4f46e5;
+      transform: translateY(-1px);
+    }
+    .btn-act.btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+    }
+    .btn-act.btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    /* CUSTOMIZER DRAWER / MODAL */
+    .edit-drawer {
+      background: #111424;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1rem 0;
+      width: 100%;
+      max-width: 900px;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .edit-drawer.active {
+      display: block;
+    }
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .drawer-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .drawer-field label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+    .drawer-field input {
+      background: #090c16;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .drawer-field input:focus {
+      border-color: #6366f1;
+    }
+
+    /* =========================================================
+       STANDARD A4 CANVAS CONTAINER
+       ======================================================== */
+    .sheet-wrapper {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 0 1rem;
+    }
+
+    .a4-page {
+      width: 210mm;
+      min-height: 297mm;
+      height: 297mm;
+      background: #ffffff;
+      padding: 12mm 14mm 14mm 14mm;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    /* ELEGANT DOUBLE ACADEMIC BORDER */
+    .page-border {
+      position: absolute;
+      inset: 8mm;
+      border: 2.5px solid #0f172a;
+      pointer-events: none;
+    }
+    .page-border::after {
+      content: '';
+      position: absolute;
+      inset: 2.5px;
+      border: 1px solid #0f172a;
+    }
+
+    /* CORNER ORNAMENTS */
+    .corner-decor {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-color: #0f172a;
+      border-style: solid;
+      pointer-events: none;
+    }
+    .corner-tl { top: 9.5mm; left: 9.5mm; border-width: 3px 0 0 3px; }
+    .corner-tr { top: 9.5mm; right: 9.5mm; border-width: 3px 3px 0 0; }
+    .corner-bl { bottom: 9.5mm; left: 9.5mm; border-width: 0 0 3px 3px; }
+    .corner-br { bottom: 9.5mm; right: 9.5mm; border-width: 0 3px 3px 0; }
+
+    /* CONTENT SECTIONS */
+    .page-inner-content {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+      padding: 4mm 6mm;
+    }
+
+    /* 1. TOP HEADER IMAGE */
+    .header-img-box {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2mm;
+    }
+    .header-img-box img {
+      width: 100%;
+      max-height: 27mm;
+      object-fit: contain;
+    }
+
+    /* 2. PROJECT TITLE BLOCK */
+    .project-title-block {
+      margin: 3mm 0 2mm 0;
+    }
+    .report-type-heading {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 2mm;
+    }
+    .conjunction-on {
+      font-family: 'Merriweather', serif;
+      font-size: 1.1rem;
+      font-style: italic;
+      color: #334155;
+      margin-bottom: 2mm;
+    }
+    .project-name-main {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 2.15rem;
+      font-weight: 900;
+      color: #000000;
+      letter-spacing: 0.04em;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      margin-bottom: 2mm;
+      text-transform: uppercase;
+    }
+    .project-subtitle {
+      font-family: 'Outfit', 'Inter', sans-serif;
+      font-size: 0.88rem;
+      color: #475569;
+      font-weight: 600;
+      max-width: 85%;
+      margin: 0 auto;
+      line-height: 1.35;
+    }
+
+    /* 3. DEGREE SUBMISSION NOTICE */
+    .degree-notice-block {
+      margin: 2mm 0;
+      font-size: 0.86rem;
+      color: #334155;
+      line-height: 1.5;
+    }
+    .degree-notice-block p {
+      font-style: italic;
+      margin-bottom: 1.5mm;
+    }
+    .degree-name {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .affiliation-text {
+      font-size: 0.82rem;
+      color: #475569;
+      margin-top: 1mm;
+      font-weight: 600;
+    }
+
+    /* 4. CENTER UNIVERSITY EMBLEM / SEAL */
+    .center-logo-box {
+      margin: 2mm auto;
+      width: 34mm;
+      height: 34mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .center-logo-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+    }
+
+    /* 5. TWO-COLUMN DETAILS BLOCK (GUIDED BY / SUBMITTED BY) */
+    .metadata-columns-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin: 2mm 0;
+      text-align: left;
+      padding: 0 4mm;
+    }
+    .meta-col {
+      flex: 1;
+      max-width: 48%;
+    }
+    .meta-col-right {
+      text-align: right;
+    }
+    .meta-col-header {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1.5px solid #0f172a;
+      padding-bottom: 1.5mm;
+      margin-bottom: 2mm;
+      display: inline-block;
+    }
+    .meta-col-right .meta-col-header {
+      border-bottom-color: #0f172a;
+    }
+    .person-name {
+      font-family: 'Merriweather', serif;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #000;
+      margin-bottom: 1mm;
+    }
+    .person-sub {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      color: #334155;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+
+    /* 6. BOTTOM INSTITUTION FOOTER */
+    .institution-footer-block {
+      border-top: 1px solid #cbd5e1;
+      padding-top: 2.5mm;
+      margin-top: 1mm;
+    }
+    .dept-title {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 1mm;
+    }
+    .college-name {
+      font-family: 'Merriweather', serif;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1mm;
+    }
+    .college-address {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.74rem;
+      color: #64748b;
+      margin-bottom: 1.5mm;
+    }
+    .session-badge {
+      display: inline-block;
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.05em;
+    }
+
+    /* =========================================================
+       PRINT OPTIMIZATIONS (A4 EXACT PAPER)
+       ========================================================= */
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .controls-banner,
+      .edit-drawer {
+        display: none !important;
+      }
+      .sheet-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .a4-page {
+        width: 100% !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        box-shadow: none !important;
+        page-break-after: always;
+        page-break-inside: avoid;
+        margin: 0 !important;
+        padding: 10mm 12mm 12mm 12mm !important;
+      }
+      .page-border {
+        inset: 6mm !important;
+      }
+      .corner-tl { top: 7.5mm !important; left: 7.5mm !important; }
+      .corner-tr { top: 7.5mm !important; right: 7.5mm !important; }
+      .corner-bl { bottom: 7.5mm !important; left: 7.5mm !important; }
+      .corner-br { bottom: 7.5mm !important; right: 7.5mm !important; }
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+    }
+
+    /* MOBILE & TABLET PREVIEW RESPONSIVENESS */
+    @media (max-width: 820px) {
+      .a4-page {
+        transform-origin: top center;
+        width: 95vw;
+        height: auto;
+        min-height: auto;
+        padding: 6mm 8mm;
+      }
+      .page-border {
+        inset: 4mm;
+      }
+      .project-name-main {
+        font-size: 1.5rem;
+      }
+      .report-type-heading {
+        font-size: 1.15rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================
+       CONTROLS BAR (Hidden in print)
+       ========================================================= -->
+  <header class="controls-banner">
+    <div class="banner-title">
+      <i class="ri-article-fill" style="color:#818cf8; font-size:1.3rem;"></i>
+      <span>DPGNotes Minor Project Frontpage Generator</span>
+    </div>
+    <div class="banner-actions">
+      <button type="button" class="btn-act btn-secondary" onclick="toggleEditDrawer()">
+        <i class="ri-edit-2-line"></i> Customize Details
+      </button>
+      <button type="button" class="btn-act" onclick="window.print()">
+        <i class="ri-printer-fill"></i> Print / Save as PDF
+      </button>
+      <a href="/index.html" class="btn-act btn-secondary">
+        <i class="ri-home-4-line"></i> Back to DPGNotes
+      </a>
+    </div>
+  </header>
+
+  <!-- CUSTOMIZER FORM DRAWER -->
+  <div id="editDrawer" class="edit-drawer">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+      <h4 style="color:#fff; font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:700;">
+        <i class="ri-equalizer-line" style="color:#818cf8;"></i> Customize Report Cover Attributes
+      </h4>
+      <button type="button" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;" onclick="toggleEditDrawer()">&times;</button>
+    </div>
+    <div class="drawer-grid">
+      <div class="drawer-field">
+        <label>Report Header</label>
+        <input type="text" id="inpReportType" value="Minor Capstone Project Report" oninput="updateField('lblReportType', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Project Title</label>
+        <input type="text" id="inpProjectTitle" value="DPGNotes" oninput="updateField('lblProjectTitle', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Project Subtitle</label>
+        <input type="text" id="inpProjectSubtitle" value="AI-Powered Academic Resource Management &amp; Collaborative Knowledge Hub" oninput="updateField('lblProjectSubtitle', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Degree / Course</label>
+        <input type="text" id="inpDegreeName" value="Bachelor of Computer Applications (BCA)" oninput="updateField('lblDegreeName', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Student Name</label>
+        <input type="text" id="inpStudentName" value="Akshat Prasad" oninput="updateField('lblStudentName', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Student College Roll No</label>
+        <input type="text" id="inpRollNo" value="23040101" oninput="updateField('lblRollNo', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>University Reg. No</label>
+        <input type="text" id="inpRegNo" value="2316401010" oninput="updateField('lblRegNo', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Semester / Year</label>
+        <input type="text" id="inpSemester" value="5th Semester (3rd Year)" oninput="updateField('lblSemester', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Faculty Guide Name</label>
+        <input type="text" id="inpGuideName" value="Prof. / Dr. [Guide Name]" oninput="updateField('lblGuideName', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Guide Designation</label>
+        <input type="text" id="inpGuideDesignation" value="Assistant Professor" oninput="updateField('lblGuideDesignation', this.value)">
+      </div>
+      <div class="drawer-field">
+        <label>Academic Session</label>
+        <input type="text" id="inpSession" value="2025 – 2026" oninput="updateField('lblSession', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       PRINTABLE A4 SHEET CANVAS
+       ========================================================= -->
+  <main class="sheet-wrapper">
+    <article class="a4-page" id="printableA4Page">
+      
+      <!-- DOUBLE ACADEMIC BORDER -->
+      <div class="page-border"></div>
+      <div class="corner-decor corner-tl"></div>
+      <div class="corner-decor corner-tr"></div>
+      <div class="corner-decor corner-bl"></div>
+      <div class="corner-decor corner-br"></div>
+
+      <!-- INNER STRUCTURE -->
+      <div class="page-inner-content">
+
+        <!-- 1. OFFICIAL COLLEGE HEADER -->
+        <header class="header-img-box">
+          <img src="AssignmentCoverPageGenerator/DPGSTM-2HeaderImage.png" alt="DPG School of Technology & Management" onerror="this.src='ANH.png'">
+        </header>
+
+        <!-- 2. PROJECT TITLE BLOCK (Matches user image exactly) -->
+        <section class="project-title-block">
+          <h2 class="report-type-heading" id="lblReportType">Minor Capstone Project Report</h2>
+          <div class="conjunction-on">On</div>
+          <h1 class="project-name-main" id="lblProjectTitle">DPGNotes</h1>
+          <p class="project-subtitle" id="lblProjectSubtitle">
+            An Intelligent Academic Resource Management &amp; Collaborative Knowledge System
+          </p>
+        </section>
+
+        <!-- 3. DEGREE FULFILLMENT NOTICE -->
+        <section class="degree-notice-block">
+          <p>
+            Submitted in partial fulfillment of the requirements for the award of the degree of
+          </p>
+          <div class="degree-name" id="lblDegreeName">
+            Bachelor of Computer Applications (BCA)
+          </div>
+          <div class="affiliation-text">
+            Affiliated to Maharshi Dayanand University (MDU), Rohtak, Haryana
+          </div>
+        </section>
+
+        <!-- 4. UNIVERSITY / COLLEGE EMBLEM -->
+        <section class="center-logo-box">
+          <img src="AssignmentCoverPageGenerator/Center_Logo.jpg" alt="University Seal" onerror="this.src='AssignmentCoverPageGenerator/DPGDegreeCenter_Logo2.png'">
+        </section>
+
+        <!-- 5. GUIDED BY & SUBMITTED BY (2 COLUMNS) -->
+        <section class="metadata-columns-block">
+          
+          <!-- LEFT: UNDER GUIDANCE -->
+          <div class="meta-col">
+            <div class="meta-col-header">Under the Guidance of:</div>
+            <div class="person-name" id="lblGuideName">Prof. / Dr. [Guide Name]</div>
+            <div class="person-sub">
+              <span id="lblGuideDesignation">Assistant Professor</span><br>
+              Department of Computer Applications<br>
+              DPG School of Technology &amp; Management
+            </div>
+          </div>
+
+          <!-- RIGHT: SUBMITTED BY -->
+          <div class="meta-col meta-col-right">
+            <div class="meta-col-header">Submitted by:</div>
+            <div class="person-name" id="lblStudentName">Akshat Prasad</div>
+            <div class="person-sub">
+              <strong>College Roll No:</strong> <span id="lblRollNo">23040101</span><br>
+              <strong>Univ. Reg. No:</strong> <span id="lblRegNo">2316401010</span><br>
+              <span id="lblSemester">BCA – 5th Semester</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- 6. INSTITUTION FOOTER -->
+        <footer class="institution-footer-block">
+          <div class="dept-title">Department of Computer Applications</div>
+          <div class="college-name">DPG SCHOOL OF TECHNOLOGY &amp; MANAGEMENT</div>
+          <div class="college-address">
+            Sector-34, Near Hero Honda Chowk, Behind Marble Market, Gurugram – 122004, Haryana
+          </div>
+          <div class="session-badge">
+            Academic Session: <span id="lblSession">2025 – 2026</span>
+          </div>
+        </footer>
+
+      </div>
+
+    </article>
+  </main>
+
+  <script>
+    function toggleEditDrawer() {
+      const drawer = document.getElementById("editDrawer");
+      if (drawer) drawer.classList.toggle("active");
+    }
+
+    function updateField(targetId, value) {
+      const el = document.getElementById(targetId);
+      if (el) el.innerText = value;
+    }
+  </script>
+</body>
+</html>

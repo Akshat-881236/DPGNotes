@@ -225,6 +225,10 @@ function filterUsersTable() {
     filtered = filtered.filter(u => !u.isBlocked && (!u.suspendedUntil || u.suspendedUntil <= Date.now()));
   } else if (filterVal === 'suspended') {
     filtered = filtered.filter(u => u.isBlocked || (u.suspendedUntil && u.suspendedUntil > Date.now()));
+  } else if (filterVal === 'unverified') {
+    filtered = filtered.filter(u => !u.isEmailVerified);
+  } else if (filterVal === 'verified') {
+    filtered = filtered.filter(u => u.isEmailVerified);
   }
 
   if (queryStr) {
@@ -263,10 +267,20 @@ function renderUsersTable(usersList) {
       ? `<span class="badge tier-contributor" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-weight:700; font-size:0.75rem; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-check-fill"></i> Contributor</span>`
       : `<span class="badge tier-guest" style="background:rgba(148,163,184,0.15); color:#94a3b8; border:1px solid rgba(148,163,184,0.3); font-weight:700; font-size:0.75rem; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;"><i class="ri-user-line"></i> Guest</span>`;
 
+    const isEmailVerified = Boolean(user.isEmailVerified);
+    const emailVerifiedBadge = isEmailVerified
+      ? `<span class="badge" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-weight:700; font-size:0.72rem; padding:2px 6px; border-radius:5px; margin-left:6px; display:inline-flex; align-items:center; gap:3px;"><i class="ri-checkbox-circle-fill"></i> Verified</span>`
+      : `<span class="badge" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); font-weight:700; font-size:0.72rem; padding:2px 6px; border-radius:5px; margin-left:6px; display:inline-flex; align-items:center; gap:3px;" title="Unverified email address (e.g. test or non-existing account)"><i class="ri-alert-fill"></i> Unverified Email</span>`;
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td style="font-weight:500;">${user.name || (isContributor ? "Unknown Contributor" : "Anonymous Guest")}</td>
-      <td style="color:var(--admin-muted);">${user.email || "N/A"}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span style="color:var(--admin-muted); font-size:0.86rem;">${user.email || "N/A"}</span>
+          ${emailVerifiedBadge}
+        </div>
+      </td>
       <td>${tierBadge}</td>
       <td>${statusBadge}</td>
       <td>${user.userDocs || 0} docs</td>
@@ -292,7 +306,7 @@ function renderUsersTable(usersList) {
               })()
             : `<button class="btn-action warn block-btn" data-id="${user.id}" data-email="${user.email}">Suspend</button>`
           }
-          <button class="btn-action danger delete-user-btn" data-id="${user.id}" data-email="${user.email}" data-name="${user.name}">Delete</button>
+          <button class="btn-action danger delete-user-btn" data-id="${user.id}" data-email="${user.email}" data-name="${user.name}" data-unverified="${!isEmailVerified}">Delete</button>
         </div>
       </td>
     `;
@@ -396,7 +410,38 @@ function renderUsersTable(usersList) {
       const uid = btn.dataset.id;
       const email = btn.dataset.email;
       const name = btn.dataset.name;
+      const isUnverified = btn.dataset.unverified === "true";
       
+      // If unverified / fake account (e.g. test@gmail.com), allow instant direct Firestore wipe
+      if (isUnverified) {
+        const confirmWipe = await window.customConfirm(
+          `Account "${email}" has an UNVERIFIED email address (e.g. non-existing or legacy test account).\n\nDo you want to permanently delete this user record directly from Firestore now?`,
+          { title: "Delete Unverified Account" }
+        );
+        if (confirmWipe) {
+          btn.innerText = "⏳";
+          try {
+            await deleteDoc(doc(db, "users", uid));
+            addDoc(collection(db, "activity_logs"), {
+              action: "DELETE_UNVERIFIED_USER",
+              adminEmail: adminEmailGlobal || "Admin",
+              targetEmail: email,
+              targetUid: uid,
+              timestamp: serverTimestamp()
+            }).catch(() => {});
+            alert(`Unverified account "${email}" has been permanently deleted from Firestore.`);
+            loadUsers();
+            return;
+          } catch(err) {
+            console.error("Direct deletion error:", err);
+            alert("Failed to delete user document: " + err.message);
+            btn.innerText = "Delete";
+            return;
+          }
+        }
+        return;
+      }
+
       btn.innerText = "⏳";
       try {
         const res = await fetch(`${API_URL}/admin/send-delete-key`, {
@@ -415,13 +460,29 @@ function renderUsersTable(usersList) {
           document.getElementById("deleteModal").classList.add("active");
           btn.innerText = "Delete";
         } else {
-          const data = await res.json();
-          alert(data.error || "Failed to send auth key.");
+          const data = await res.json().catch(() => ({}));
+          const fallbackWipe = await window.customConfirm(
+            `Backend response: ${data.error || "Email delivery failed"}.\n\nWould you like to delete this user document directly from Firestore instead?`,
+            { title: "Direct Deletion Fallback" }
+          );
+          if (fallbackWipe) {
+            await deleteDoc(doc(db, "users", uid));
+            alert(`User record "${email}" deleted from Firestore.`);
+            loadUsers();
+          }
           btn.innerText = "Delete";
         }
       } catch (e) {
         console.error(e);
-        alert("Server error");
+        const fallbackWipe = await window.customConfirm(
+          `Could not connect to backend service.\n\nWould you like to delete this user document directly from Firestore instead?`,
+          { title: "Direct Deletion Fallback" }
+        );
+        if (fallbackWipe) {
+          await deleteDoc(doc(db, "users", uid));
+          alert(`User record "${email}" deleted from Firestore.`);
+          loadUsers();
+        }
         btn.innerText = "Delete";
       }
     });
@@ -452,26 +513,31 @@ async function loadUsers() {
       const email = (data.email || '').trim();
       if (!email || !email.includes('@') || email === 'Legacy Contributor') return;
 
-      const isEmailVerified = data.emailVerified === true || data.isVerified === true || data.verified === true;
-      // Skip accounts explicitly flagged as unverified
-      if (data.status === 'unverified' || data.status === 'unverified_missing_auth' || !isEmailVerified) {
-        return;
-      }
+      const isEmailVerified = Boolean(data.emailVerified === true || data.isVerified === true || data.verified === true);
+      const isExplicitlyUnverified = data.status === 'unverified' || data.status === 'unverified_missing_auth' || !isEmailVerified;
 
       const userDocs = adminDocsCache.filter(docItem => docItem.userId === d.id).length;
       usersMap[d.id] = {
         id: d.id,
         tier: 'contributor',
-        isVerified: true,
+        isVerified: !isExplicitlyUnverified,
+        isEmailVerified: !isExplicitlyUnverified,
         userDocs,
         ...data
       };
     });
     
-    // Strict Verified Contributors classification
+    // All Contributor Accounts (Verified & Unverified for Admin inspection/action)
     adminUsersCache = Object.values(usersMap);
     
-    // Update Stats UI
+    // Update Stats UI & Unverified Badge
+    const unverifiedCount = adminUsersCache.filter(u => !u.isEmailVerified).length;
+    const badgeEl = document.getElementById("statUnverifiedUsersBadge");
+    if (badgeEl) {
+      badgeEl.innerText = `${unverifiedCount} Unverified`;
+      badgeEl.style.display = unverifiedCount > 0 ? "inline-flex" : "none";
+    }
+
     document.getElementById("statUsers").innerText = adminUsersCache.length;
     document.getElementById("statDocs").innerText = adminDocsCache.length;
     

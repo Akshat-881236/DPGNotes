@@ -954,14 +954,20 @@
       <section id="view-users" class="view-section active">
         <div class="section-card">
           <div class="section-header">
-            <h2 class="section-title">Verified Contributor Directory <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="All user profiles are governed under our terms & conditions and DRASA suspension parameters. Click to view." onclick="window.open('legal/index.html?from=admin#terms', '_blank')"></i></h2>
+            <h2 class="section-title">
+              Contributor Directory 
+              <span id="statUnverifiedUsersBadge" style="display:none; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:12px; vertical-align:middle; margin-left:8px;" title="Contributors with unverified/non-existing emails">0 Unverified</span>
+              <i class="ri-information-line" style="font-size: 1.1rem; color: var(--admin-primary); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="All user profiles are governed under our terms & conditions and DRASA suspension parameters. Click to view." onclick="window.open('legal/index.html?from=admin#terms', '_blank')"></i>
+            </h2>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-              <select id="userTierFilter" class="admin-input" style="width:190px; margin:0; padding:0.5rem 0.8rem;">
-                <option value="all">All Verified</option>
+              <select id="userTierFilter" class="admin-input" style="width:215px; margin:0; padding:0.5rem 0.8rem;">
+                <option value="all">All Contributors</option>
+                <option value="unverified">⚠️ Unverified Emails Only</option>
+                <option value="verified">✅ Verified Emails Only</option>
                 <option value="active">Active Only</option>
                 <option value="suspended">Suspended Only</option>
               </select>
-              <input type="text" id="userSearch" class="admin-input" style="width:230px; margin:0; padding:0.5rem 1rem;" placeholder="Search verified contributor...">
+              <input type="text" id="userSearch" class="admin-input" style="width:230px; margin:0; padding:0.5rem 1rem;" placeholder="Search contributor / email...">
             </div>
           </div>
           <div style="overflow-x:auto;">
