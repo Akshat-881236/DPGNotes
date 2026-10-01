@@ -1,6 +1,6 @@
 /**
  * DPGNotes Project-Based FSD Tutorial, SRS Overview & Technical Blueprint
- * Script: script.js (Legal Center Architecture v2.0.0)
+ * Script: script.js (Legal Center Architecture v2.0.0 - Comprehensive Module Registry)
  */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -225,7 +225,7 @@ export const MODULE_GROUPS = [
         readTime: "11 min read",
         desc: "Dual HTML5/YouTube player engine, academic vs sponsored switching, double-write persistence pattern, and share tokens.",
         sections: [
-          { id: "vid-1", num: "9.1", title: "Dual Player Architecture: HTML5 & YouTube API", badge: "Player" },
+          { id: "vid-1", num: "9.1", title: "Dual Video Player Engine: HTML5 & YouTube API", badge: "Player" },
           { id: "vid-2", num: "9.2", title: "Predefined Academic Video Library & Curation", badge: "Academic" },
           { id: "vid-3", num: "9.3", title: "Sponsored Video Ad Campaigns & Insertion Rules", badge: "Ads" },
           { id: "vid-4", num: "9.4", title: "Dynamic Pool Switching: Academic vs Sponsored Ads", badge: "Pools" },
@@ -316,429 +316,460 @@ export const MODULE_GROUPS = [
 export const ALL_MODULES = MODULE_GROUPS.flatMap(g => g.modules);
 
 // ============================================================================
-// COMPREHENSIVE FSD TUTORIAL & SRS CONTENT REPOSITORY
+// COMPREHENSIVE FSD TUTORIAL & SRS REGISTRY (ALL 12 MODULES)
 // ============================================================================
 const FSD_TUTORIAL_REGISTRY = {
   1: {
     overview: "This foundational module introduces the full-stack system architecture of DPGNotes. Learn how client-side Single Page Applications (SPA), global edge content distribution, stateless microservices, and real-time distributed NoSQL databases collaborate to deliver zero-latency academic knowledge retrieval.",
-    stepsIntro: "In this practical Full Stack Development milestone, we implement a production 3-tier architecture with Firebase Hosting, an Express microservice on Render, and Cloud Firestore.",
-    sectionsData: {
-      "arch-1": {
-        srsTitle: "SRS Requirement 1.1: Academic Platform Mission & Architectural Scope",
-        concept: "DPGNotes is engineered as an enterprise-grade academic knowledge exchange platform serving university students, educators, and independent learners. The platform bridges the gap between syllabus lectures and real-world exam requirements across 8 core academic streams: Sessional Exams (SE), Sample Papers (SP), University Exams (UE), Event Materials (EV), Tutorial & Notes (T&N), Interview Questions (IQ), Aptitude & Logical Reasoning (A&LR), and Placement Papers (PQ).",
-        steps: [
-          "Establish the central architectural invariant: zero paywalls, complete contributor attribution, and cryptographic integrity.",
-          "Partition functionality into independent client-facing interfaces (Homepage, SERP, PDF Viewer, Video Theater, Legal Center, and Contributor Dashboard).",
-          "Bind all client modules to verified security clearance tokens and signed session identifiers."
-        ],
-        code: `// Express / Node.js Architectural Entry Point
-const express = require('express');
-const app = express();
-const cors = require('cors');
-
-// Enforce strict academic security origins
-app.use(cors({
-  origin: ['https://dpgnotes.web.app', 'https://dpgnotes.firebaseapp.com'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));`,
-        invariants: [
-          "Zero unauthenticated access to administrative command interfaces.",
-          "Sub-100ms first-contentful paint across desktop, tablet, and mobile browsers.",
-          "Adherence to DRASA academic integrity standards and continuous telemetry auditing."
-        ]
-      },
-      "arch-2": {
-        srsTitle: "SRS Requirement 1.2: Global Edge CDN & Google Firebase Reverse Proxy",
-        concept: "The static client layer is deployed globally via Google Firebase Hosting, backed by Google's Fastly-powered global Content Delivery Network (CDN) Points of Presence (PoPs). All assets are served over HTTP/2 and HTTP/3 with automatic TLS certificate lifecycle management and Brotli/Gzip compression.",
-        steps: [
-          "Configure firebase.json with selective edge rewrites redirecting /api/** calls to the Render microservice.",
-          "Set immutable cache-control headers on static JS and CSS bundles (max-age=31536000, immutable).",
-          "Verify edge TLS certificate lifecycle management and automated HTTPS upgrade."
-        ],
-        code: `// firebase.json Edge Proxy & Header Directives
-{
-  "hosting": {
-    "public": "public",
-    "rewrites": [
-      { "source": "/api/**", "destination": "https://dpgnotes.onrender.com/api/**" }
+    techStack: ["Node.js", "Express.js", "Firebase Hosting", "Cloud Firestore", "Render Cloud", "Fastly CDN", "TLS 1.3"],
+    keyDeliverables: [
+      "Architect a 3-tier hybrid cloud system decoupling presentation, compute, and data layers.",
+      "Configure edge CDN reverse proxy routing with immutable caching headers.",
+      "Enforce stateless microservice scalability with zero-downtime rolling updates."
     ],
-    "headers": [
-      { "source": "**/*.@(js|css)", "headers": [{ "key": "Cache-Control", "value": "max-age=31536000, immutable" }] }
-    ]
-  }
-}`,
-        invariants: [
-          "Static assets must be cached at the nearest edge PoP with automatic cache invalidation on deployment.",
-          "Proxy rewrites must forward client IP headers (x-forwarded-for) for security telemetry."
-        ]
-      },
-      "arch-3": {
-        srsTitle: "SRS Requirement 1.3: Stateless Microservices & Node.js Cluster on Render",
-        concept: "The backend operates as an Express.js service hosted on Render (Frankfurt and Oregon cloud regions). The architecture follows a shared-nothing, 12-factor stateless design, allowing horizontal scalability behind Render's native reverse-proxy load balancer.",
-        steps: [
-          "Decouple state from memory: session records and transient uploads reside in Firestore and Cloudinary.",
-          "Implement keep-alive heartbeat cron jobs to prevent Render free-tier cold starts.",
-          "Run proprietary business logic in memory using AES-256 authenticated decryption via Node's vm module."
-        ],
-        code: `// Health check probe and stateless heartbeat
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'ONLINE',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    service: 'DPGNotes-Core-API'
-  });
-});`,
-        invariants: [
-          "No local disk persistence for user session data.",
-          "Zero-downtime rolling deploys via Render Git triggers."
-        ]
-      },
-      "arch-4": {
-        srsTitle: "SRS Requirement 1.4: Cloud Firestore Real-Time NoSQL Backbone",
-        concept: "Data persistence is managed by Google Cloud Firestore in multi-region mode (eur3 / us-central). Firestore provides 99.999% availability, automatic sharding, real-time reactive query listeners (onSnapshot), and ACID transaction guarantees.",
-        steps: [
-          "Define normalized root collections: users, documents, share_links, videos, user_ads, and confidential_overview_requests.",
-          "Implement atomic transactions for metrics counters (clicks, likes, shares, views).",
-          "Deploy granular security rules restricting write permissions to verified owners."
-        ],
-        code: `// Incrementing engagement counters atomically in Firestore
-import { doc, updateDoc, increment } from "firebase/firestore";
-
-async function recordDocumentClick(docId) {
-  const ref = doc(db, "documents", docId);
-  await updateDoc(ref, {
-    clicks: increment(1),
-    lastAccessedAt: new Date().toISOString()
-  });
-}`,
-        invariants: [
-          "All metric increments must execute atomically via increment(1) to avoid race conditions.",
-          "Sensitive security clearance records must only be modifiable by admin credentials."
-        ]
-      }
-    }
+    stepsIntro: "In this practical Full Stack Development milestone, we implement a production 3-tier architecture with Firebase Hosting, an Express microservice on Render, and Cloud Firestore."
   },
   2: {
     overview: "Explore the modern Frontend Engineering paradigm of DPGNotes. Built in high-performance Vanilla JavaScript and modern CSS without the overhead of heavy virtual DOM frameworks, this module demonstrates responsive grid design, custom modal frameworks, PDF canvas rendering, and progressive web application (PWA) caching.",
-    stepsIntro: "In this practical UI/UX engineering tutorial, we build fluid responsive interfaces that seamlessly adapt from 280px foldable devices up to 4K ultra-wide monitors.",
-    sectionsData: {
-      "fe-1": {
-        srsTitle: "SRS Requirement 2.1: Design System & CSS Custom Properties Architecture",
-        concept: "The DPGNotes design system is structured around semantic CSS Custom Properties (CSS variables). This enables instantaneous theme transitions (Dark, Light, High-Contrast) and guarantees consistent spacing, elevation, and typographic rhythm across all pages.",
-        steps: [
-          "Declare global color tokens, surface elevations, and typographic scales in :root.",
-          "Adopt Outfit for high-impact headings and Inter for body text readability.",
-          "Structure UI cards with subtle translucent borders (rgba(255,255,255,0.08)) and glassmorphic backdrops."
-        ],
-        code: `:root {
-  --font-base: 'Inter', -apple-system, sans-serif;
-  --font-heading: 'Outfit', sans-serif;
-  --bg-primary: #0a0f1d;
-  --bg-secondary: #0f172a;
-  --bg-card: rgba(15, 23, 42, 0.78);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --color-primary: #6366f1;
-  --color-accent: #38bdf8;
-}`,
-        invariants: [
-          "No hardcoded hex colors inside component rules; reference semantic CSS tokens exclusively.",
-          "Maintain WCAG AAA contrast ratio for all educational body text and code snippets."
-        ]
-      },
-      "fe-2": {
-        srsTitle: "SRS Requirement 2.2: Responsive Grid for Mobile, Tablet, Foldable & Small Phones",
-        concept: "Educational users access DPGNotes across a vast spectrum of devices, from ultra-narrow foldable phones (280px folded Galaxy Z Fold) and modern mobile phones (427px Pixel 9) to tablets and large laptops. The layout avoids fixed pixel widths and utilizes fluid CSS clamping and flexible drawer sidebars.",
-        steps: [
-          "Enforce width: 100% and box-sizing: border-box on all container elements.",
-          "Implement off-canvas drawer navigation on screens <= 991px with blurred backdrop and swipe gestures.",
-          "Use horizontal scroll tracks (scroll-snap-type: x mandatory) for quick pill sub-navigation.",
-          "Ensure code blocks and data tables scroll horizontally without breaking the viewport."
-        ],
-        code: `@media (max-width: 991px) {
-  .overview-sidebar {
-    position: fixed;
-    left: -100%;
-    width: min(320px, 85vw);
-    transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .overview-sidebar.active { left: 0; }
-  .overview-main { margin-left: 0 !important; width: 100% !important; }
-}`,
-        invariants: [
-          "Zero horizontal page-level overflow across all viewports down to 280px.",
-          "Interactive touch targets must measure at least 44px by 44px on touchscreens."
-        ]
-      },
-      "fe-6": {
-        srsTitle: "SRS Requirement 2.6: Custom Modal & Dialog Framework (Zero Native Alerts)",
-        concept: "Native browser alert() and confirm() dialogs block the JavaScript main thread and deliver inconsistent styling. DPGNotes enforces custom asynchronous modal dialogs (customAlert, customConfirm, customPrompt) loaded via custom-dialogs.js.",
-        steps: [
-          "Create reusable DOM template for accessible dialog backdrop, card, and action buttons.",
-          "Return a JavaScript Promise from customAlert() and customConfirm() to allow clean async/await syntax.",
-          "Trap focus inside the modal and support Escape key dismissal."
-        ],
-        code: `// Async Custom Dialog Implementation
-window.customAlert = function(message, options = {}) {
-  return new Promise((resolve) => {
-    const modal = document.createElement('div');
-    modal.className = 'custom-dialog-backdrop active';
-    modal.innerHTML = \`
-      <div class="custom-dialog-card">
-        <h3>\${options.title || 'Notification'}</h3>
-        <p>\${message}</p>
-        <button class="dialog-btn-primary" id="btnOk">OK</button>
-      </div>\`;
-    document.body.appendChild(modal);
-    modal.querySelector('#btnOk').onclick = () => {
-      modal.remove();
-      resolve(true);
-    };
-  });
-};`,
-        invariants: [
-          "Native browser alert(), confirm(), and prompt() are strictly prohibited across all frontend files.",
-          "Modals must be aria-modal='true' and lock background document scroll while active."
-        ]
-      }
-    }
+    techStack: ["Vanilla JavaScript (ES6+)", "CSS Custom Properties", "PDF.js Engine", "Service Workers (PWA)", "Web Canvas API"],
+    keyDeliverables: [
+      "Construct a zero-framework component architecture with modular lifecycle management.",
+      "Implement fluid responsive layouts supporting 280px foldables up to 4K displays.",
+      "Deploy custom accessible modal framework replacing all native blocking dialogs."
+    ],
+    stepsIntro: "In this practical UI/UX engineering tutorial, we build fluid responsive interfaces that seamlessly adapt from 280px foldable devices up to 4K ultra-wide monitors."
   },
   3: {
     overview: "Master modern Backend API engineering with Node.js and Express. This module covers REST microservices, token validation, document ingestion, Cloudinary signed upload handlers, and Brevo SMTP mail dispatching.",
-    stepsIntro: "Build a production RESTful microservice layer following 12-factor app principles and defense-in-depth security.",
-    sectionsData: {
-      "api-1": {
-        srsTitle: "SRS Requirement 3.1: Express Server Bootstrap & Middleware Pipeline",
-        concept: "The Express microservice acts as the secure gateway connecting client interfaces with Cloudinary, Brevo, and AI inference engines. Middleware is arranged in a strict security pipeline: helmet for HTTP headers, cors for domain whitelisting, express.json for payload parsing, and express-rate-limit for DDoS defense.",
-        steps: [
-          "Initialize Express application with strict trust-proxy configuration for Render load balancers.",
-          "Register global rate limiting (max 100 requests per 15 minutes per IP for public routes).",
-          "Attach JSON body parser with 10MB payload limit for base64 thumbnails.",
-          "Mount modular router handlers under the /api prefix."
-        ],
-        code: `// Express Security Middleware Pipeline
-const express = require('express');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-
-const app = express();
-app.set('trust proxy', 1);
-app.use(helmet());
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { error: 'Too many requests, please retry later.' }
-});
-app.use('/api/', apiLimiter);`,
-        invariants: [
-          "Payloads exceeding 10MB are rejected at edge middleware.",
-          "CORS preflight requests must respond with 204 No Content within 5ms."
-        ]
-      },
-      "api-2": {
-        srsTitle: "SRS Requirement 3.2: Authentication Endpoints & Session Tokens",
-        concept: "User identity verification supports both Firebase ID Tokens and signed server session cookies. The backend validates token signatures using the Firebase Admin SDK, extracting UID, email, and custom claims (isVerifiedContributor, isAdmin).",
-        steps: [
-          "Validate incoming Authorization: Bearer <token> header via admin.auth().verifyIdToken().",
-          "Inject authenticated user context (req.user) into downstream route handlers.",
-          "Reject expired or revoked tokens with HTTP 401 Unauthorized and standard error JSON."
-        ],
-        code: `// Firebase Admin Token Verification Middleware
-async function authenticateToken(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or malformed authorization header.' });
-  }
-  const token = authHeader.split('Bearer ')[1];
-  try {
-    const decoded = await admin.auth().verifyIdToken(token);
-    req.user = decoded;
-    next();
-  } catch(err) {
-    return res.status(401).json({ error: 'Invalid or expired token.' });
-  }
-}`,
-        invariants: [
-          "Privileged routes require both valid token and verified contributor claim.",
-          "Tokens must be verified on every state-mutating request without in-memory caching."
-        ]
-      }
-    }
+    techStack: ["Node.js", "Express.js", "Firebase Admin SDK", "JWT Authentication", "Brevo SMTP", "express-rate-limit"],
+    keyDeliverables: [
+      "Build RESTful microservices following strict 12-factor cloud principles.",
+      "Implement dual token validation with Firebase Admin SDK and signed session cookies.",
+      "Deploy automated keep-alive probes to eliminate cold starts on Render."
+    ],
+    stepsIntro: "Build a production RESTful microservice layer following 12-factor app principles and defense-in-depth security."
+  },
+  4: {
+    overview: "Study DPGNotes' media transformation and asset delivery pipelines. Learn how user-uploaded PDF study notes are parsed, converted into high-DPI canvas front covers, watermarked with contributor attribution, and served through Cloudinary's global media CDN with on-the-fly bandwidth optimization.",
+    techStack: ["Cloudinary Node.js SDK", "PDF-Lib", "Canvas 2D API", "Brotli Compression", "Signed Direct Uploads"],
+    keyDeliverables: [
+      "Automate serverless thumbnail generation and high-DPI cover page synthesis.",
+      "Embed dynamic DRM watermarks onto academic PDF documents in-memory.",
+      "Optimize bandwidth consumption via Cloudinary adaptive formats (f_auto, q_auto)."
+    ],
+    stepsIntro: "Construct an automated media transformation pipeline with signed client uploads and dynamic PDF watermarking."
+  },
+  5: {
+    overview: "Explore the database modeling strategies powering DPGNotes. Learn how Cloud Firestore's distributed NoSQL collections are structured for high-velocity read workloads, compound indexing, real-time reactive sync (onSnapshot), and atomic transactions.",
+    techStack: ["Google Cloud Firestore", "NoSQL Data Modeling", "Security Rules Engine", "Compound Indexing", "ACID Transactions"],
+    keyDeliverables: [
+      "Architect high-throughput NoSQL schemas balancing normalization with read speeds.",
+      "Deploy atomic transaction counters to eliminate concurrency race conditions.",
+      "Automate 14-day ephemeral data cleansing using Firestore TTL mechanisms."
+    ],
+    stepsIntro: "Design and implement production NoSQL collections with granular security rules and real-time reactive observers."
   },
   6: {
     overview: "Study DPGNotes' proprietary security architecture: the Cryptographic Vault. This module covers AES-256-GCM authenticated encryption, PBKDF2 key derivation, in-memory sandboxed V8 execution, and zero-knowledge deployments.",
-    stepsIntro: "In this advanced security engineering milestone, we explore how server source code is compiled into an encrypted payload (server.payload.enc) and executed entirely in RAM without touching disk.",
-    sectionsData: {
-      "sec-1": {
-        srsTitle: "SRS Requirement 6.1: Zero-Knowledge Code Protection & In-Memory Execution",
-        concept: "To protect proprietary routing algorithms, AI orchestration prompts, and intellectual property, DPGNotes compiles its Express backend source into an AES-256-GCM ciphertext file. When the server launches on Render, the payload is decrypted into memory and executed inside a sandboxed V8 VM context.",
-        steps: [
-          "Encrypt server.source.js into server.payload.enc using the CLI tool backend/security/vault.js.",
-          "Derive 256-bit AES key from the master secret using PBKDF2 with 100,000 iterations and cryptographic salt.",
-          "Verify the 128-bit GCM authentication tag before executing the decrypted code in V8.",
-          "Zero out intermediate plaintext buffers in memory."
-        ],
-        code: `// In-Memory Decryption & Sandboxed V8 Compilation
-const crypto = require('crypto');
-const vm = require('vm');
-
-function runEncryptedServer(ciphertext, key, iv, authTag) {
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(authTag);
-  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  
-  // Compile in V8 Script sandbox
-  const script = new vm.Script(decrypted.toString('utf8'), { filename: 'server.vm.js' });
-  script.runInThisContext();
-}`,
-        invariants: [
-          "server.source.js is never committed to production git branches.",
-          "Any tampering with the ciphertext causes immediate process termination with code 1."
-        ]
-      }
-    }
+    techStack: ["Node.js crypto Module", "AES-256-GCM", "PBKDF2 Key Derivation", "V8 VM Sandboxed Execution", "HMAC-SHA256"],
+    keyDeliverables: [
+      "Compile proprietary server source into authenticated AES-256-GCM ciphertexts.",
+      "Execute decrypted bytecode directly in memory without disk footprint.",
+      "Deploy hardware-accelerated tamper detection circuit breakers."
+    ],
+    stepsIntro: "In this advanced security engineering milestone, we explore how server source code is compiled into an encrypted payload (server.payload.enc) and executed entirely in RAM without touching disk."
   },
   7: {
     overview: "Explore DPGNotes' multi-engine Artificial Intelligence pipeline. Learn how Google Gemini 1.5/2.0 Pro and Flash models are orchestrated with a seamless fallback to xAI Grok, delivering resilient legal advisory, PDF document summarization, and solution generation.",
-    stepsIntro: "Implement a tiered AI proxy gateway with automated health scoring, token usage limits, and streaming Markdown responses.",
-    sectionsData: {
-      "ai-1": {
-        srsTitle: "SRS Requirement 7.1: Multi-LLM Provider Architecture & Priority Cascade",
-        concept: "DPGNotes integrates both Google Gemini (Primary) and xAI Grok (Secondary Fallback). When an academic or legal AI request is received, the gateway first attempts inference using Gemini 2.0 Pro / Flash. If rate limits (HTTP 429) or timeouts occur, it automatically cascades to Grok with zero user interruption.",
-        steps: [
-          "Dispatch prompt to primary Gemini API client.",
-          "Catch timeout or quota errors and trigger the Grok fallback pipeline.",
-          "Sanitize generated Markdown output using DOMPurify before DOM insertion.",
-          "Stream tokens progressively using Server-Sent Events (SSE) for sub-second perceived latency."
-        ],
-        code: `// Resilient Multi-Engine AI Inference Gateway
-async function generateAIResponse(prompt, systemInstruction) {
-  try {
-    // Priority 1: Google Gemini
-    return await callGeminiAPI(prompt, systemInstruction);
-  } catch(geminiErr) {
-    console.warn("Gemini exhausted, triggering Grok fallback:", geminiErr);
-    // Priority 2: xAI Grok Fallback
-    return await callGrokAPI(prompt, systemInstruction);
-  }
-}`,
-        invariants: [
-          "All AI outputs must be sanitized through DOMPurify to eliminate XSS vectors.",
-          "Context prompts must inject academic integrity constraints prohibiting exam cheating."
-        ]
-      }
-    }
+    techStack: ["Google Gemini 2.0 / 1.5 Pro & Flash", "xAI Grok API", "Server-Sent Events (SSE)", "DOMPurify", "Marked.js"],
+    keyDeliverables: [
+      "Orchestrate resilient multi-LLM fallback pipelines (Gemini Pro -> Flash -> Grok).",
+      "Engineer context-aware system prompts enforcing academic integrity boundaries.",
+      "Stream sanitized Markdown responses via Server-Sent Events with zero XSS risk."
+    ],
+    stepsIntro: "Implement a tiered AI proxy gateway with automated health scoring, token usage limits, and streaming Markdown responses."
+  },
+  8: {
+    overview: "Master the algorithms powering DPGNotes' search engine and SERP ranking. Discover how client-side trie autocomplete, server-side lexical tokenization, multi-field weighted scoring formulas, and CTR telemetry feedback loops deliver sub-50ms search results.",
+    techStack: ["Lexical Tokenizer", "Inverted Index Trie", "TF-IDF Scoring Formula", "OpenGraph Protocol", "Debounced Autocomplete"],
+    keyDeliverables: [
+      "Develop client-side debounced search suggestion trie with sub-10ms latency.",
+      "Implement multi-field weighted relevance scoring boosted by user CTR feedback.",
+      "Architect faceted SERP navigation across disciplines, semesters, and document types."
+    ],
+    stepsIntro: "Build an academic search engine with inverted indexing, weighted multi-field relevance, and real-time autocomplete."
   },
   9: {
     overview: "Deep dive into the Educational Media Studio and Video Ecosystem. This module breaks down the dual HTML5/YouTube player architecture, fullscreen theater mode, real-time social engagement, and resilient double-write share link persistence.",
-    stepsIntro: "Build an academic video streaming interface with YouTube API integration and guaranteed Firestore share persistence.",
-    sectionsData: {
-      "vid-1": {
-        srsTitle: "SRS Requirement 9.1: Dual Video Player Engine & YouTube API Bridge",
-        concept: "The video ecosystem provides an immersive full-screen learning experience. It interleaves curated academic syllabus lectures with approved student project showcases and sponsored university partner ads.",
-        steps: [
-          "Initialize the YouTube IFrame API with custom controls and postMessage communication bridge.",
-          "Normalize legacy YouTube video URLs and 11-character identifiers.",
-          "Handle play/pause, volume, fullscreen theater mode, and mobile orientation lock."
-        ],
-        code: `// YouTube Player API Initialization
-function initYouTubePlayer(videoId) {
-  window.player = new YT.Player('videoPlayerContainer', {
-    videoId: videoId,
-    playerVars: {
-      autoplay: 1,
-      modestbranding: 1,
-      rel: 0,
-      playsinline: 1
-    },
-    events: {
-      onStateChange: handlePlayerStateChange
-    }
-  });
-}`,
-        invariants: [
-          "Videos must adapt to mobile orientation with safe-area notch padding.",
-          "Screentime telemetry is logged only when the video is actively playing."
-        ]
-      },
-      "vid-7": {
-        srsTitle: "SRS Requirement 9.7: Ephemeral VSH_ Share Links & Double-Write Resilience",
-        concept: "When a user shares a video, DPGNotes creates a unique share token prefixed with VSH_. To guarantee database persistence across browser ad-blockers and flaky networks, the application performs a double-write: writing directly to Firestore via client setDoc and dispatching a redundant POST /api/share/generate-video backend call.",
-        steps: [
-          "Generate unique random token with VSH_ prefix.",
-          "Execute client setDoc to Firestore share_links collection.",
-          "Dispatch asynchronous redundant POST /api/share/generate-video payload to backend.",
-          "Construct absolute URL: https://dpgnotes.web.app/dpgnotes-video.html?token=VSH_...",
-          "Trigger navigator.share() on mobile or copy to clipboard with custom notification modal."
-        ],
-        code: `// Double-Write Resilience Video Share Generation
-async function shareVideo(videoId, title) {
-  const token = 'VSH_' + Math.random().toString(36).substring(2, 9).toUpperCase();
-  const shareData = {
-    token: token,
-    type: 'video',
-    videoId: videoId,
-    title: title || 'Educational Video',
-    createdAt: new Date().toISOString()
-  };
-
-  // 1. Direct Client Firestore Write
-  await setDoc(doc(db, "share_links", token), shareData, { merge: true });
-
-  // 2. Redundant Backend Dispatch
-  fetch('/api/share/generate-video', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(shareData)
-  }).catch(() => {});
-
-  const shareUrl = \`https://dpgnotes.web.app/dpgnotes-video.html?token=\${token}\`;
-  return shareUrl;
-}`,
-        invariants: [
-          "Video share links must always navigate to dpgnotes-video.html, never to the PDF viewer.",
-          "All generated URLs must be complete absolute links (https://dpgnotes.web.app/...)."
-        ]
-      }
-    }
+    techStack: ["YouTube IFrame API", "HTML5 Media Player", "Firestore Real-Time Sync", "Web Share API", "Double-Write Pattern"],
+    keyDeliverables: [
+      "Integrate dual HTML5/YouTube playback engine with full-screen theater mode.",
+      "Interleave curated syllabus lectures with sponsored educational university ads.",
+      "Guarantee share link persistence via simultaneous client setDoc and backend dispatch."
+    ],
+    stepsIntro: "Build an academic video streaming interface with YouTube API integration and guaranteed Firestore share persistence."
+  },
+  10: {
+    overview: "Explore the Contributor Ecosystem and Role-Based Access Control (RBAC). Understand how DPGNotes ensures feature parity between traditional email/password and OAuth sign-in methods, manages reputation milestones, and provides administrative access gates in the Admin Confidential Tab.",
+    techStack: ["Firebase Authentication", "Google OAuth 2.0", "Firestore RBAC Rules", "Reputation Scoring Engine", "Admin Command Center"],
+    keyDeliverables: [
+      "Enforce authentication parity between traditional email/password and OAuth providers.",
+      "Implement Contributor verification workflows with automated reputation milestone badges.",
+      "Build Admin Confidential Tab CRUD with date-threshold access gates and automatic expiry."
+    ],
+    stepsIntro: "Implement an enterprise RBAC hierarchy with credential parity, automated reputation badges, and date-threshold approvals."
+  },
+  11: {
+    overview: "Study the legal engineering frameworks governing DPGNotes. Discover how the platform complies with DMCA notice-and-takedown procedures, enforces DRASA academic integrity standards, automates 14-day ephemeral data cleansing, and maintains transparent advertising policies.",
+    techStack: ["DRASA Compliance Framework", "DMCA Takedown Engine", "Cookie Consent Governance", "GDPR Data Deletion", "Legal Policy Engine"],
+    keyDeliverables: [
+      "Construct automated DMCA notice-and-takedown workflow with attribution tracking.",
+      "Deploy automated 14-day ephemeral data cleansing for privacy compliance.",
+      "Embed DRASA academic integrity standards across all contributed study materials."
+    ],
+    stepsIntro: "Integrate regulatory compliance mechanisms, automated intellectual property safeguards, and privacy retention rules."
+  },
+  12: {
+    overview: "Master modern cloud DevOps and site reliability engineering. This module covers multi-cloud hybrid deployments (Firebase Hosting + Render Node.js), GitHub Actions CI/CD automation, production secrets lifecycle, and 10,000+ reader concurrency benchmarking.",
+    techStack: ["GitHub Actions", "Firebase CLI", "Render Deploy Hooks", "Vault Encryption CLI", "Snyk Vulnerability Auditing"],
+    keyDeliverables: [
+      "Automate multi-cloud deployment pipelines for static hosting and backend microservices.",
+      "Integrate cryptographic vault verification into CI test suites before deployment.",
+      "Conduct 10,000+ reader concurrency benchmarking and zero-downtime disaster recovery drills."
+    ],
+    stepsIntro: "Deploy automated continuous integration and continuous deployment (CI/CD) workflows with multi-cloud health telemetry."
   }
 };
 
-// Generic Fallback Generator for Remaining Sub-Chapters
+// ============================================================================
+// DOMAIN-AWARE SUB-CHAPTER CONTENT GENERATOR
+// ============================================================================
 function generateSubChapterContent(tab, sec) {
   const customTab = FSD_TUTORIAL_REGISTRY[tab.id];
-  if (customTab && customTab.sectionsData && customTab.sectionsData[sec.id]) {
-    return customTab.sectionsData[sec.id];
+  
+  // High-yield domain templates
+  const domainTemplates = {
+    // 1. Architecture
+    1: {
+      conceptPrefix: "Within the DPGNotes architecture, this layer orchestrates the seamless flow of academic resources across edge PoPs and core microservices.",
+      stepTemplate: (t) => [
+        `Analyze the Software Requirements Specification (SRS) for ${t} to define interface contracts and latency budgets.`,
+        `Configure client-side request dispatchers to target edge proxy endpoints (/api/...) with automatic retry logic.`,
+        `Bind upstream routes to Render microservices with circuit breakers to prevent cascading service degradation.`,
+        `Verify cross-region telemetry capture to ensure auditability under DRASA governance standards.`
+      ],
+      codeSnippet: (s) => `// Architectural Subsystem: ${s.id}
+export async function setup_${s.id.replace(/-/g, '_')}() {
+  const nodeConfig = {
+    subsystem: "${s.title}",
+    edgeRouting: "https://dpgnotes.web.app/api/${s.id}",
+    failoverRegion: "eu-west-1",
+    healthCheckIntervalMs: 30000,
+    circuitBreakerThreshold: 5
+  };
+  return Object.freeze(nodeConfig);
+}`,
+      invariants: [
+        "Edge reverse proxy latency must remain below 15ms under standard network conditions.",
+        "Zero unauthenticated bypass of API gateways; all state-mutating calls require validated tokens.",
+        "System telemetry logs must be dispatched asynchronously without impeding user response times."
+      ]
+    },
+    // 2. Frontend
+    2: {
+      conceptPrefix: "The DPGNotes client-side interface emphasizes instantaneous rendering, zero-framework lightweight execution, and complete cross-device responsiveness.",
+      stepTemplate: (t) => [
+        `Declare semantic CSS custom properties in :root for consistent typography, spacing, and color contrast.`,
+        `Construct modular JavaScript components with lifecycle hooks (mount, render, destroy) without external framework bloat.`,
+        `Attach debounced resize and orientation listeners to adapt layouts across mobile, foldable, and tablet screens.`,
+        `Ensure keyboard navigation, ARIA live regions, and screen reader landmarks comply with WCAG 2.1 AA standards.`
+      ],
+      codeSnippet: (s) => `// Frontend Component Controller: ${s.id}
+class ${s.id.replace(/[-_]/g, '')}Controller {
+  constructor(container) {
+    this.container = container;
+    this.state = { active: true, deviceTier: window.innerWidth < 768 ? 'mobile' : 'desktop' };
   }
+  render() {
+    this.container.classList.add('hydrated-component');
+    this.bindEvents();
+  }
+  bindEvents() {
+    window.addEventListener('resize', () => this.handleResize(), { passive: true });
+  }
+}`,
+      invariants: [
+        "Zero horizontal page-level overflow across all viewports from 280px foldables to 4K monitors.",
+        "Component hydration must complete within 50ms of DOMContentLoaded.",
+        "All user modals and alerts must utilize custom async dialogs without native blocking dialogs."
+      ]
+    },
+    // 3. Backend API
+    3: {
+      conceptPrefix: "Operating on Render's containerized infrastructure, the Express microservice processes authentication, document uploads, and external AI queries.",
+      stepTemplate: (t) => [
+        `Define Express route middleware verifying Firebase Admin ID tokens and extracting user claims.`,
+        `Implement JSON schema payload validation using Joi / express-validator before invoking database drivers.`,
+        `Dispatch asynchronous transactional emails via Brevo SMTP with anti-spam rate limiting.`,
+        `Attach structured Winston loggers recording route duration, status codes, and client IP addresses.`
+      ],
+      codeSnippet: (s) => `// Express REST Route: ${s.id}
+app.post('/api/${s.id}', async (req, res) => {
+  try {
+    const { payload, token } = req.body;
+    const decoded = await admin.auth().verifyIdToken(token);
+    // Process verified request under req.user
+    res.status(200).json({ success: true, timestamp: new Date().toISOString() });
+  } catch (err) {
+    res.status(401).json({ error: 'Unauthorized: ' + err.message });
+  }
+});`,
+      invariants: [
+        "All mutating endpoints must enforce strict express-rate-limit quotas (max 100 req/15min).",
+        "Payloads exceeding 10MB are rejected at edge middleware before buffer allocation.",
+        "Zero plaintext database credentials in source code; all secrets are sourced from environment variables."
+      ]
+    },
+    // 4. Cloudinary Media
+    4: {
+      conceptPrefix: "The Cloudinary media pipeline handles the high-volume ingestion and dynamic transformation of university syllabus materials, past question papers, and solutions.",
+      stepTemplate: (t) => [
+        `Generate secure, time-limited cryptographic upload signatures on the Node.js backend using cloudinary.utils.api_sign_request.`,
+        `Upload raw document files directly from the client to Cloudinary bypassing server bandwidth limits.`,
+        `Apply on-the-fly Cloudinary transformation URL parameters (f_auto, q_auto, w_800) for low-bandwidth mobile optimization.`,
+        `Synthesize dynamic cover pages and canvas watermarks embedding contributor attribution before PDF download.`
+      ],
+      codeSnippet: (s) => `// Cloudinary Transformation Signature Engine
+function generateUploadSignature(folder) {
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const signature = cloudinary.utils.api_sign_request({
+    timestamp: timestamp,
+    folder: folder || 'dpgnotes_academic_docs'
+  }, process.env.CLOUDINARY_API_SECRET);
+  return { timestamp, signature, apiKey: process.env.CLOUDINARY_API_KEY };
+}`,
+      invariants: [
+        "All academic documents must retain contributor attribution watermarks across all generated pages.",
+        "Original high-resolution master PDFs must be protected behind signed URL access tokens.",
+        "Automatic fallback to low-resolution cached thumbnails when client networks report 2G/3G speeds."
+      ]
+    },
+    // 5. Database Schema
+    5: {
+      conceptPrefix: "Cloud Firestore manages the real-time operational state of DPGNotes across multi-region clusters with automatic sharding and zero server maintenance.",
+      stepTemplate: (t) => [
+        `Structure Firestore collections to partition documents, user metrics, advertisements, and audit history.`,
+        `Denormalize frequently read author metadata onto resource documents to minimize billable read operations.`,
+        `Deploy compound indexes on filtered search fields (stream, year, semester, date) to maintain sub-50ms query speeds.`,
+        `Configure Firestore TTL policies to automatically purge ephemeral analytics and temporary share tokens after 14 days.`
+      ],
+      codeSnippet: (s) => `// Firestore Compound Query & Atomic Counter
+import { query, collection, where, orderBy, limit, getDocs } from "firebase/firestore";
 
-  // Synthesize rich, authoritative tutorial content based on section topic
+async function fetchCuratedResources(stream, discipline) {
+  const q = query(
+    collection(db, "documents"),
+    where("stream", "==", stream),
+    where("discipline", "==", discipline),
+    orderBy("createdAt", "desc"),
+    limit(20)
+  );
+  return await getDocs(q);
+}`,
+      invariants: [
+        "Engagement counters (clicks, likes, shares, views) must only be incremented via atomic increment(1).",
+        "Security rules must enforce owner-only write permissions on user profiles and uploaded resources.",
+        "Database migrations must maintain backward compatibility with legacy document schemas."
+      ]
+    },
+    // 6. Security Vault
+    6: {
+      conceptPrefix: "The Cryptographic Vault ensures that DPGNotes' core business logic and AI prompts run exclusively in encrypted memory without exposure on disk.",
+      stepTemplate: (t) => [
+        `Execute the CLI build tool (vault.js) to derive 256-bit AES keys from the master passphrase using PBKDF2.`,
+        `Encrypt the server source file with AES-256-GCM generating ciphertext and a 128-bit authentication tag.`,
+        `During production server bootstrap, decrypt the payload in-memory and compile using Node's vm.Script engine.`,
+        `Execute the automated verify-vault.js test suite across all 5 security test suites before production deployment.`
+      ],
+      codeSnippet: (s) => `// Cryptographic Vault Initialization & Verification
+const crypto = require('crypto');
+const vm = require('vm');
+
+function executeEncryptedPayload(ciphertext, key, iv, tag) {
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  const script = new vm.Script(decrypted.toString('utf8'), { filename: 'server.vault.vm' });
+  script.runInThisContext();
+}`,
+      invariants: [
+        "server.source.js is strictly git-ignored and never deployed in plaintext to production environments.",
+        "Any bit-flip in ciphertext or invalid authentication tag causes immediate process shutdown (exit code 1).",
+        "Master encryption keys must be sourced exclusively from environment variables."
+      ]
+    },
+    // 7. AI Engine
+    7: {
+      conceptPrefix: "The multi-engine AI intelligence gateway powers the Legal Center AI Advisor, PDF Document Summarizer, and Assignment Solution Generator.",
+      stepTemplate: (t) => [
+        `Construct system prompts injecting academic integrity guidelines, university curriculum boundaries, and regulatory citations.`,
+        `Dispatch inference queries to the primary Google Gemini API (Gemini 2.0 / 1.5 Pro).`,
+        `Intercept quota exhaustion (HTTP 429) or upstream timeouts and trigger seamless fallback to xAI Grok.`,
+        `Sanitize generated Markdown through DOMPurify before hydrating UI components.`
+      ],
+      codeSnippet: (s) => `// Multi-Engine AI Inference with Grok Fallback
+async function queryAIEngine(prompt, systemInstruction) {
+  try {
+    return await callGeminiEngine(prompt, systemInstruction);
+  } catch (geminiErr) {
+    console.warn("Gemini cascade failed, switching to Grok fallback:", geminiErr.message);
+    return await callGrokEngine(prompt, systemInstruction);
+  }
+}`,
+      invariants: [
+        "Zero direct insertion of raw AI markdown into the DOM; all content must pass DOMPurify sanitization.",
+        "Fallback cascade between Gemini and Grok must execute transparently with sub-2 second response latency.",
+        "System prompts must strictly prohibit generating examination solutions during live test hours."
+      ]
+    },
+    // 8. Search Engine
+    8: {
+      conceptPrefix: "The DPGNotes Search Engine processes multi-field academic queries across document titles, subjects, syllabus codes, and faculty notes.",
+      stepTemplate: (t) => [
+        `Tokenize user queries on the client side with punctuation stripping and academic synonym expansion.`,
+        `Query pre-cached in-memory tries for sub-10ms instant search suggestions during keyboard input.`,
+        `Apply weighted multi-field relevance scoring (Title: 5x, Subject: 3x, Stream: 2x, Description: 1x).`,
+        `Boost search ranking dynamically based on historical click-through rates (CTR) and contributor reputation.`
+      ],
+      codeSnippet: (s) => `// Weighted Relevance Scoring Formula
+function calculateRelevanceScore(doc, queryTokens) {
+  let score = 0;
+  const title = (doc.title || '').toLowerCase();
+  const subject = (doc.subject || '').toLowerCase();
+  queryTokens.forEach(token => {
+    if (title.includes(token)) score += 50;
+    if (subject.includes(token)) score += 30;
+  });
+  return score + (doc.clicks || 0) * 0.1;
+}`,
+      invariants: [
+        "Autocomplete suggestions must render within 15ms of user keystrokes using memory trie lookups.",
+        "Zero-result queries must dynamically surface related academic syllabus alternatives.",
+        "Search bot crawlers must be served pre-rendered OpenGraph metadata for optimal SEO indexation."
+      ]
+    },
+    // 9. Video Ecosystem
+    9: {
+      conceptPrefix: "The Video Ecosystem provides university students with high-yield syllabus lecture recordings and sponsor-backed educational workshops.",
+      stepTemplate: (t) => [
+        `Initialize YouTube IFrame Player with custom overlay controls, theater mode toggling, and orientation lock.`,
+        `Interleave curated syllabus lectures with sponsored educational partner advertisements.`,
+        `Implement ephemeral VSH_ token share generation with double-write resilience (client setDoc + redundant backend POST).`,
+        `Log screentime retention telemetry to verify genuine student viewership before awarding contributor reputation points.`
+      ],
+      codeSnippet: (s) => `// Double-Write Video Share Persistence
+async function generateVideoShare(videoId, title) {
+  const token = 'VSH_' + Math.random().toString(36).substring(2, 9).toUpperCase();
+  const data = { token, type: 'video', videoId, title, createdAt: new Date().toISOString() };
+  await setDoc(doc(db, "share_links", token), data, { merge: true });
+  fetch('/api/share/generate-video', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).catch(() => {});
+  return \`https://dpgnotes.web.app/dpgnotes-video.html?token=\${token}\`;
+}`,
+      invariants: [
+        "Video share tokens must route exclusively to dpgnotes-video.html, never to the PDF viewer.",
+        "Double-write persistence ensures zero link loss during client ad-blocker or network interference.",
+        "Screentime tracking pauses automatically when the user switches browser tabs or minimizes the window."
+      ]
+    },
+    // 10. Contributor RBAC
+    10: {
+      conceptPrefix: "The Role-Based Access Control (RBAC) model safeguards administrative portals while fostering an open academic contributor community.",
+      stepTemplate: (t) => [
+        `Enforce complete feature parity between email/password contributors and OAuth provider sign-ins.`,
+        `Implement Contributor onboarding workflows validating university student/faculty credentials.`,
+        `Compute reputation scores dynamically based on verified resource uploads, peer likes, and download metrics.`,
+        `Build Admin Confidential Tab CRUD interface with date-threshold access approvals and automated revocation.`
+      ],
+      codeSnippet: (s) => `// Contributor RBAC Claim Verification
+function verifyContributorAccess(userRecord, thresholdDate) {
+  if (!userRecord || !userRecord.isVerified) return false;
+  const now = new Date();
+  const expiry = new Date(thresholdDate);
+  return now <= expiry;
+}`,
+      invariants: [
+        "Feature parity is mandatory: password contributors must access all tools available to OAuth users.",
+        "Clearance gate access expires automatically at 23:59:59 on the administrator-assigned end date.",
+        "All administrative approval and rejection actions must be recorded in an immutable audit ledger."
+      ]
+    },
+    // 11. Legal Compliance
+    11: {
+      conceptPrefix: "The legal engineering subsystem enforces strict copyright compliance, DMCA notice-and-takedown workflows, and academic integrity regulations under DRASA.",
+      stepTemplate: (t) => [
+        `Publish standardized Terms of Service and Privacy Policies updated in synchronization with platform features.`,
+        `Deploy automated DMCA takedown pipelines archiving contested materials within 24 hours of verified notice.`,
+        `Execute automated 14-day ephemeral data cleansing to purge temporary chat sessions and tracking tokens.`,
+        `Verify cookie consent banners and respect user Do Not Track (DNT) header preferences.`
+      ],
+      codeSnippet: (s) => `// Automated 14-Day Ephemeral Data Pruning
+async function purgeExpiredTelemetryRecords() {
+  const threshold = new Date(Date.now() - 14 * 86400 * 1000).toISOString();
+  const q = query(collection(db, "telemetry_logs"), where("createdAt", "<=", threshold));
+  const snap = await getDocs(q);
+  const batch = writeBatch(db);
+  snap.forEach(d => batch.delete(d.ref));
+  await batch.commit();
+}`,
+      invariants: [
+        "Contested copyrighted material must be suspended from public view immediately upon valid notice.",
+        "Personal identifiable information (PII) must never be logged in public telemetry streams.",
+        "DRASA academic standards require complete attribution to verified student/faculty authors."
+      ]
+    },
+    // 12. DevOps CI/CD
+    12: {
+      conceptPrefix: "DevOps practices at DPGNotes guarantee 99.95% availability, zero-downtime releases, and comprehensive cloud telemetry monitoring across multi-cloud environments.",
+      stepTemplate: (t) => [
+        `Configure GitHub Actions workflows to execute automated linting, unit tests, and vault verification suites on every push.`,
+        `Deploy static hosting assets to Firebase via firebase deploy --only hosting with edge cache invalidation.`,
+        `Trigger Render backend rolling deployments via authenticated deploy webhooks.`,
+        `Execute synthetic load tests simulating 10,000+ concurrent readers to verify database connection pool limits.`
+      ],
+      codeSnippet: (s) => `// GitHub Actions CI/CD Deployment Step
+name: Deploy DPGNotes to Production
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Verify Security Vault
+        run: node backend/security/verify-vault.js
+      - name: Deploy Firebase Hosting
+        run: npx firebase-tools deploy --only hosting --token "\${{ secrets.FIREBASE_TOKEN }}"`,
+      invariants: [
+        "Failed security vault verification tests must immediately abort CI/CD pipelines before deployment.",
+        "Zero-downtime rolling deploys: backend instances must health-check successfully before terminating old pods.",
+        "Comprehensive disaster recovery playbooks must ensure sub-15 minute recovery during cloud provider outages."
+      ]
+    }
+  };
+
+  const domain = domainTemplates[tab.id] || domainTemplates[1];
+
   return {
     srsTitle: `SRS Specification ${sec.num}: ${sec.title}`,
-    concept: `The ${sec.title} subsystem constitutes a mission-critical pillar of the DPGNotes full-stack platform. In accordance with DRASA academic regulations and enterprise cloud standards, this component guarantees low latency, high availability, and rigorous security enforcement across all client devices.`,
-    steps: [
-      `Analyze the Software Requirements Specification (SRS) for ${sec.title} and identify interface contracts.`,
-      `Implement client and server abstractions following the 12-factor application methodology.`,
-      `Bind data flows to authenticated Firestore collections and validate payload integrity via cryptographic hashes.`,
-      `Execute cross-device responsive verification covering mobile phones, foldables, tablets, and desktop workstations.`
-    ],
-    code: `// Implementation Blueprint for ${sec.title}
-export async function initialize_${sec.id.replace(/-/g, '_')}() {
-  const config = {
-    module: "${tab.slug}",
-    subsystem: "${sec.title}",
-    endpoint: "https://dpgnotes.web.app/api/${tab.slug}/${sec.id}",
-    telemetryEnabled: true,
-    status: "PRODUCTION_ACTIVE"
-  };
-  return Object.freeze(config);
-}`,
-    invariants: [
-      `Maintain 99.95% continuous operational availability across all academic semesters.`,
-      `Enforce end-to-end data encryption in transit via TLS 1.3 and at rest via AES-256-GCM.`,
-      `Subject all state changes to non-blocking telemetry auditing in compliance with DRASA policies.`
-    ]
+    concept: `${domain.conceptPrefix} Specifically, the ${sec.title} subsystem implements core requirements of SRS Section ${sec.num}, ensuring robust functionality, cryptographic integrity, and compliance across all client environments.`,
+    steps: domain.stepTemplate(sec.title),
+    code: domain.codeSnippet(sec),
+    invariants: domain.invariants
   };
 }
 
@@ -1065,7 +1096,7 @@ function renderTabContent(tab) {
       <span style="color:#ffffff;">Module ${tab.id}: ${tab.title}</span>
     </div>
 
-    <!-- MODULE BANNER HERO CARD -->
+    <!-- MODULE BANNER HERO CARD WITH EXECUTIVE OVERVIEW -->
     <div class="tab-banner-card">
       <div class="tab-banner-meta">
         <span class="tab-index-badge">Module ${tab.id} of 12</span>
@@ -1073,7 +1104,33 @@ function renderTabContent(tab) {
         <span class="tab-read-time"><i class="ri-time-line"></i> ${tab.readTime}</span>
       </div>
       <h1 class="tab-main-title">${tab.title}</h1>
-      <p class="tab-main-desc">${overviewDesc}</p>
+      
+      <!-- Executive Architecture Overview Card -->
+      <div class="module-overview-box">
+        <div class="module-overview-heading">
+          <i class="ri-compass-3-line"></i>
+          <span>Executive Architectural Overview</span>
+        </div>
+        <p class="module-overview-text">${overviewDesc}</p>
+        
+        <!-- Core Tech Stack Pills -->
+        <div class="module-tech-stack">
+          <span class="tech-stack-label">Core Tech Stack:</span>
+          ${(customTab?.techStack || ['Node.js', 'Vanilla JS', 'Firebase', 'Cloud Firestore', 'Render']).map(t => `<span class="tech-pill">${t}</span>`).join('')}
+        </div>
+
+        <!-- Key SRS Milestones -->
+        <div class="module-deliverables">
+          <div class="deliverables-title"><i class="ri-checkbox-circle-fill" style="color:var(--color-success);"></i> Key SRS Milestones &amp; Learning Objectives:</div>
+          <ul class="deliverables-list">
+            ${(customTab?.keyDeliverables || [
+              'Understand the core architectural patterns and interface contracts.',
+              'Implement production-grade full-stack features with security validation.',
+              'Verify cross-device responsiveness and compliance with DRASA regulations.'
+            ]).map(d => `<li>${d}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
     </div>
 
     <!-- SUB-CHAPTER QUICK PILLS (HORIZONTAL SCROLL TRACK) -->

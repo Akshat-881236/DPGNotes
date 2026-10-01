@@ -668,6 +668,105 @@ a:hover {
   max-width: 960px;
 }
 
+/* Executive Overview Card in Module Banner */
+.module-overview-box {
+  background: rgba(10, 15, 29, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.module-overview-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.module-overview-heading i {
+  font-size: 1.1rem;
+}
+
+.module-overview-text {
+  font-size: 0.95rem;
+  line-height: 1.68;
+  color: #cbd5e1;
+  margin-bottom: 1.15rem;
+}
+
+.module-tech-stack {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1.15rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tech-stack-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tech-pill {
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #a5b4fc;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-code);
+}
+
+.module-deliverables {
+  font-size: 0.88rem;
+}
+
+.deliverables-title {
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+}
+
+.deliverables-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.deliverables-list li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.deliverables-list li::before {
+  content: "→";
+  position: absolute;
+  left: 2px;
+  color: var(--color-primary-light);
+  font-weight: bold;
+}
+
 /* ==========================================================================
    SUB-CHAPTER QUICK PILLS (HORIZONTAL SCROLL TRACK)
    ========================================================================== */
