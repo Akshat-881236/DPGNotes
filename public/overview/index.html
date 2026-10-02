@@ -7,15 +7,15 @@
   <script src="../config.js"></script>
   <script src="../dpg-params.js"></script>
   <script src="../custom-dialogs.js"></script>
-  <script src="../native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>DPGNotes FSD Tutorial, SRS Overview &amp; Technical Blueprint | Level-3 Clearance</title>
+  <title>DPGNotes Engineering Study Notes, FSD Tutorial &amp; SRS Overview</title>
   
   <!-- SEO & Security Meta Tags -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-  <meta name="description" content="Official Project-Based Full Stack Development Tutorial, Software Requirements Specification (SRS), and Technical Architecture Blueprint of DPGNotes.">
+  <meta name="description" content="Official Project-Based Full Stack Development Study Notes, Software Requirements Specification (SRS), and Technical Architecture of DPGNotes.">
   <meta name="keywords" content="DPGNotes FSD Tutorial, Full Stack Development, SRS Overview, System Design, Cloudflare, Node.js, Firebase, Cloudinary, AI Integration, DRASA">
   <meta name="author" content="DPGNotes / Akshat Network Hub">
   <link rel="icon" type="image/png" href="https://dpgnotes.web.app/ANH.png">
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.0.0">
+  <link rel="stylesheet" href="style.css?v=2.1.0">
 </head>
 <body class="theme-auto">
 
@@ -42,7 +42,7 @@
   </div>
 
   <!-- ========================================================================
-       TOP HEADER (LEGAL CENTER STYLE & FULL RESPONSIVENESS)
+       TOP HEADER (CLEAN EDITORIAL NAV WITHOUT CLEARANCE THRESHOLD)
        ======================================================================== -->
   <header class="overview-header" id="overviewHeader">
     <div class="header-container">
@@ -53,8 +53,8 @@
           <i class="ri-code-box-fill"></i>
         </div>
         <div class="logo-text-block">
-          <span class="logo-title">DPGNotes <span class="accent-text">Tutorial &amp; SRS</span></span>
-          <span class="logo-subtitle">Project-Based FSD Engineering</span>
+          <span class="logo-title">DPGNotes <span class="accent-text">Study Notes &amp; SRS</span></span>
+          <span class="logo-subtitle">Project-Based FSD Architecture</span>
         </div>
       </a>
 
@@ -65,7 +65,7 @@
         <span class="search-shortcut">⌘K</span>
       </div>
 
-      <!-- Header Action Links & Clearance Status -->
+      <!-- Header Action Links -->
       <div class="header-actions">
         <a href="https://dpgnotes.web.app/index.html" class="header-nav-link" title="Main Platform Homepage">
           <i class="ri-home-4-line"></i>
@@ -81,12 +81,6 @@
           <i class="ri-scales-3-line"></i>
           <span class="nav-text">Legal</span>
         </a>
-
-        <!-- Clearance Badge -->
-        <span class="badge-clearance" id="headerClearanceBadge" title="Security Verification Tier">
-          <i class="ri-shield-keyhole-line"></i>
-          <span class="clearance-text">Level-3 Clearance</span>
-        </span>
 
         <!-- Mobile Drawer Menu Toggle -->
         <button type="button" class="mobile-menu-btn" id="sidebarToggleBtn" aria-label="Toggle Navigation Menu">
@@ -108,17 +102,17 @@
        ======================================================================== -->
   <div class="overview-layout-container">
     
-    <!-- RESPONSIVE SPA SIDEBAR (LEGAL CENTER GROUPED NAVIGATION) -->
+    <!-- RESPONSIVE SPA SIDEBAR (12 CLEAN STANDALONE MODULE TABS) -->
     <aside class="overview-sidebar" id="overviewSidebar">
       <div class="sidebar-header-box">
         <div class="sidebar-search-box">
           <i class="ri-search-line"></i>
-          <input type="text" id="overviewSidebarSearch" class="sidebar-search-input" placeholder="Filter modules &amp; topics..." autocomplete="off">
+          <input type="text" id="overviewSidebarSearch" class="sidebar-search-input" placeholder="Search 12 module topics..." autocomplete="off">
         </div>
       </div>
 
       <nav class="sidebar-nav" id="sidebarNav">
-        <!-- 4 Structured Categories with 12 Modules rendered dynamically by script.js -->
+        <!-- 4 Structured Categories with 12 Standalone Modules rendered dynamically by script.js -->
         <div id="sidebarGroupsContainer">
           <!-- Populated by script.js -->
         </div>
@@ -133,13 +127,13 @@
       </div>
     </aside>
 
-    <!-- MAIN SPA CONTENT CANVAS -->
+    <!-- MAIN EDITORIAL CONTENT CANVAS (SIMPLE BLOGS WITHOUT CARD IN BLOG) -->
     <main class="overview-main" id="overviewMain">
       <div id="tabContentContainer">
-        <!-- Dynamically mounted active module -->
+        <!-- Dynamically mounted active module blog -->
         <div class="loading-state-card">
           <i class="ri-loader-4-line spin-icon"></i>
-          <p>Verifying Contributor Clearance &amp; Loading FSD Tutorial...</p>
+          <p>Loading High-Yield Engineering Study Notes...</p>
         </div>
       </div>
     </main>
@@ -153,52 +147,12 @@
     <i class="ri-arrow-up-line"></i>
   </button>
 
-  <!-- ========================================================================
-       CLEARANCE GATE OVERLAY (STRICT CONFIDENTIALITY BARRIER)
-       ======================================================================== -->
-  <div class="clearance-gate-overlay" id="clearanceGateOverlay" style="display:none;">
-    <div class="gate-card">
-      <div class="gate-icon-circle">
-        <i class="ri-shield-keyhole-line"></i>
-      </div>
-      <h2 class="gate-title" id="gateTitle">Confidential Clearance Required</h2>
-      <p class="gate-desc" id="gateDesc">
-        Access to the DPGNotes Full Stack Development Tutorial and SRS Technical Architecture is strictly reserved for verified contributors who have obtained active date-threshold authorization in the Admin Portal.
-      </p>
-
-      <div class="gate-status-alert" id="gateStatusAlert">
-        <!-- Dynamically rendered status alert -->
-      </div>
-
-      <!-- REQUEST FORM -->
-      <form id="gateRequestForm" style="display:none;">
-        <label class="gate-field-label">
-          Purpose / Academic Justification for Access
-        </label>
-        <textarea id="gateReasonInput" class="gate-input-field" rows="3" placeholder="e.g. Preparing Capstone Project presentation, Faculty technical evaluation, or architectural study." required></textarea>
-
-        <button type="submit" class="gate-btn-submit" id="btnSubmitGateRequest">
-          Submit Clearance Request <i class="ri-arrow-right-line"></i>
-        </button>
-      </form>
-
-      <div class="gate-footer-links">
-        <a href="https://dpgnotes.web.app/index.html">
-          <i class="ri-home-line"></i> Exit to Homepage
-        </a>
-        <a href="https://dpgnotes.web.app/dashboard.html">
-          <i class="ri-dashboard-line"></i> Contributor Dashboard
-        </a>
-      </div>
-    </div>
-  </div>
-
   <!-- Global Shared Parameter & Custom Dialogs Scripts -->
   <script src="https://dpgnotes.web.app/custom-dialogs.js"></script>
   <script src="https://dpgnotes.web.app/dpg-params.js"></script>
-  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js"></script>
+  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
 
   <!-- Modular SPA Script -->
-  <script type="module" src="script.js?v=2.0.0"></script>
+  <script type="module" src="script.js?v=2.1.0"></script>
 </body>
 </html>
