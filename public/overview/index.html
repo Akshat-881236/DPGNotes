@@ -31,7 +31,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.1.0">
+  <link rel="stylesheet" href="style.css?v=2.2.0">
+  
+  <!-- DPGNotes Unified Shared Auth Component -->
+  <link rel="stylesheet" href="/auth-component.css">
+  <script type="module" src="/auth-component.js"></script>
 </head>
 <body class="theme-auto">
 
@@ -68,11 +72,6 @@
 
       <!-- Header Action Links -->
       <div class="header-actions">
-        <a href="https://dpgnotes.web.app/index.html" class="header-nav-link" title="Main Platform Homepage">
-          <i class="ri-home-4-line"></i>
-          <span class="nav-text">Home</span>
-        </a>
-
         <a href="https://dpgnotes.web.app/dashboard.html" class="header-nav-link" title="Contributor Dashboard">
           <i class="ri-dashboard-line"></i>
           <span class="nav-text">Dashboard</span>
@@ -146,21 +145,42 @@
        Hidden when authorized. No clearance threshold badges shown on DOM.
        ======================================================================== -->
   <div class="clearance-gate-overlay" id="clearanceGateOverlay" style="display:none;">
-    <div class="gate-card">
+    <div class="gate-card" id="gateCard">
       <div class="gate-icon-circle">
-        <i class="ri-shield-keyhole-line"></i>
+        <i class="ri-shield-user-fill"></i>
       </div>
-      <h2 class="gate-title" id="gateTitle">Confidential Contributor Access</h2>
+      <h2 class="gate-title" id="gateTitle">Verified Contributor Access Only</h2>
       <p class="gate-desc" id="gateDesc">
-        Access to the DPGNotes Full Stack Development Tutorial and Technical Architecture is reserved for verified contributors authorized in the Admin Portal.
+        The DPGNotes Overview Tutorial &amp; Technical Architecture is reserved for authenticated contributors and approved researchers.
       </p>
 
-      <div class="gate-status-alert" id="gateStatusAlert">
+      <div class="gate-status-alert" id="gateStatusAlert" style="display:none;">
         <!-- Dynamically populated status -->
       </div>
 
-      <!-- REQUEST FORM -->
-      <form id="gateRequestForm" style="display:none;">
+      <!-- ALL AUTHENTICATION METHODS (MATCHING CONTRIBUTOR PAGES) -->
+      <div id="gateAuthSection">
+        <div class="gate-auth-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+          <button type="button" class="gate-btn-social" id="btnGateGoogleSignIn" onclick="window.dpgLoginGoogle ? window.dpgLoginGoogle() : window.signInWithGoogleGate()">
+            <i class="ri-google-fill" style="color:#ea4335;"></i> Google
+          </button>
+          <button type="button" class="gate-btn-social" id="btnGateGithubSignIn" onclick="window.dpgLoginGithub ? window.dpgLoginGithub() : (window.openSignInModal &amp;&amp; window.openSignInModal())">
+            <i class="ri-github-fill"></i> GitHub
+          </button>
+        </div>
+
+        <button type="button" class="gate-btn-primary-auth" style="width:100%; margin-bottom:1rem;" onclick="window.openSignInModal ? window.openSignInModal() : window.signInWithGoogleGate()">
+          <i class="ri-id-card-line"></i> Sign In with Student ID / Email + Password
+        </button>
+
+        <div style="display:flex; justify-content:space-between; margin-top:0.8rem; font-size:0.85rem;">
+          <a href="javascript:void(0)" onclick="window.openSignUpModal ? window.openSignUpModal() : (window.location.href='https://dpgnotes.web.app/index.html?action=signup')" style="color:#818cf8; text-decoration:none; font-weight:600;">Create Free Account</a>
+          <a href="javascript:void(0)" onclick="window.openForgotPasswordModal ? window.openForgotPasswordModal() : (window.location.href='https://dpgnotes.web.app/index.html?action=signin')" style="color:#94a3b8; text-decoration:none;">Forgot Password?</a>
+        </div>
+      </div>
+
+      <!-- REQUEST FORM (FOR LOGGED IN CONTRIBUTORS REQUIRING ADMIN APPROVAL) -->
+      <form id="gateRequestForm" style="display:none; margin-top:1.25rem;">
         <label class="gate-field-label">
           Purpose / Academic Justification for Access
         </label>
@@ -171,13 +191,32 @@
         </button>
       </form>
 
-      <div class="gate-footer-links">
+      <div class="gate-footer-links" style="margin-top:1.5rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1rem;">
         <a href="https://dpgnotes.web.app/index.html">
-          <i class="ri-home-line"></i> Homepage
+          <i class="ri-arrow-left-line"></i> Back to Homepage
         </a>
         <a href="https://dpgnotes.web.app/dashboard.html">
           <i class="ri-dashboard-line"></i> Contributor Dashboard
         </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       LEGAL CENTER-STYLE SEARCH MODAL (DIRECT CONTENT NAVIGATION)
+       ======================================================================== -->
+  <div class="search-modal" id="searchModal">
+    <div class="search-modal-box">
+      <div class="search-modal-header">
+        <i class="ri-search-line"></i>
+        <input type="text" id="searchInput" placeholder="Search across all 12 modules, topics, code &amp; SRS..." aria-label="Search modules">
+        <button id="closeSearchBtn" class="close-search-btn" type="button" aria-label="Close search"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="search-results" id="searchResults">
+        <p class="no-results">Type keywords to search documentation...</p>
+      </div>
+      <div class="search-modal-footer">
+        <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select, <kbd>ESC</kbd> to close.</span>
       </div>
     </div>
   </div>
@@ -195,6 +234,6 @@
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
 
   <!-- Modular SPA Script -->
-  <script type="module" src="script.js?v=2.1.0"></script>
+  <script type="module" src="script.js?v=2.2.0"></script>
 </body>
 </html>

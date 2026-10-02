@@ -999,8 +999,6 @@
       })();
     }
   }
-    }
-  }
 
   function cleanUrlParam(paramKeys) {
     try {

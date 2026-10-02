@@ -766,6 +766,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initReadingProgressBar();
   initSidebarNavigation();
   initSearchFilter();
+  initHeaderSearchModal();
+  checkAuthAndClearanceGate();
+});
+
+// Real-Time Contributor Auth Event Listener (from unified auth-component.js)
+window.addEventListener('dpg-auth-success', () => {
   checkAuthAndClearanceGate();
 });
 
@@ -900,8 +906,194 @@ function initSearchFilter() {
   });
 }
 
+// Legal Center-Style Search Modal Engine (Direct Content Navigation)
+function initHeaderSearchModal() {
+  const searchTrigger = document.getElementById("searchTrigger");
+  const searchModal = document.getElementById("searchModal");
+  const closeSearchBtn = document.getElementById("closeSearchBtn");
+  const searchInput = document.getElementById("searchInput");
+  const searchResults = document.getElementById("searchResults");
+
+  if (!searchTrigger || !searchModal || !searchInput) return;
+
+  function openSearch() {
+    searchModal.classList.add("active");
+    setTimeout(() => {
+      searchInput.focus();
+      if (!searchInput.value.trim()) {
+        renderSearchSuggestions();
+      }
+    }, 50);
+  }
+
+  function closeSearch() {
+    searchModal.classList.remove("active");
+    searchInput.value = "";
+    if (searchResults) {
+      searchResults.innerHTML = '<p class="no-results">Type keywords to search documentation...</p>';
+    }
+  }
+
+  searchTrigger.addEventListener("click", openSearch);
+  if (closeSearchBtn) closeSearchBtn.addEventListener("click", closeSearch);
+
+  searchModal.addEventListener("click", (e) => {
+    if (e.target === searchModal) closeSearch();
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      openSearch();
+    }
+    if (e.key === "Escape" && searchModal.classList.contains("active")) {
+      closeSearch();
+    }
+  });
+
+  let selectedIndex = -1;
+
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+    if (query.length < 2) {
+      renderSearchSuggestions();
+      return;
+    }
+    performSearch(query);
+  });
+
+  searchInput.addEventListener("keydown", (e) => {
+    const items = searchResults.querySelectorAll(".search-result-item");
+    if (!items.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      selectedIndex = (selectedIndex + 1) % items.length;
+      updateSelection(items);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+      updateSelection(items);
+    } else if (e.key === "Enter" && selectedIndex >= 0 && items[selectedIndex]) {
+      e.preventDefault();
+      items[selectedIndex].click();
+    }
+  });
+
+  function updateSelection(items) {
+    items.forEach((item, idx) => {
+      if (idx === selectedIndex) {
+        item.classList.add("selected");
+        item.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      } else {
+        item.classList.remove("selected");
+      }
+    });
+  }
+
+  function renderSearchSuggestions() {
+    if (!searchResults) return;
+    searchResults.innerHTML = `
+      <div style="padding:0.5rem 0.6rem; font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Quick Documentation Jump</div>
+      ${ALL_MODULES.slice(0, 6).map(m => `
+        <a href="javascript:void(0)" class="search-result-item" onclick="window.navigateFromSearch(${m.id})">
+          <div class="search-result-title"><span class="badge-mod">M-${m.id}</span> ${escapeHtml(m.title)}</div>
+          <div class="search-result-snippet">${escapeHtml(m.desc)}</div>
+        </a>
+      `).join('')}
+    `;
+    selectedIndex = -1;
+  }
+
+  function performSearch(query) {
+    const matches = [];
+
+    ALL_MODULES.forEach(mod => {
+      const notes = BLOG_STUDY_NOTES[mod.id] || {};
+      const fullText = [
+        mod.title,
+        notes.subtitle || '',
+        notes.lead || '',
+        (notes.techStack || []).join(' '),
+        notes.srsMission || '',
+        (notes.components || []).map(c => c.name + ' ' + c.text).join(' '),
+        (notes.tutorialSteps || []).join(' '),
+        (notes.invariants || []).join(' '),
+        notes.codeSnippet || ''
+      ].join(' ').toLowerCase();
+
+      const idx = fullText.indexOf(query);
+      if (idx !== -1) {
+        const start = Math.max(0, idx - 45);
+        const end = Math.min(fullText.length, idx + query.length + 55);
+        let snippet = fullText.substring(start, end).replace(/\s+/g, ' ');
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        snippet = snippet.replace(regex, '<mark>$1</mark>');
+
+        let sectionId = `sec-1-${mod.id}`;
+        let sectionName = "Module Overview";
+
+        if ((notes.techStack || []).join(' ').toLowerCase().includes(query)) {
+          sectionName = "Tech Stack Specs";
+        } else if ((notes.srsMission || '').toLowerCase().includes(query)) {
+          sectionId = `sec-1-${mod.id}`;
+          sectionName = "1.0 SRS & Scope";
+        } else if ((notes.components || []).some(c => (c.name + c.text).toLowerCase().includes(query))) {
+          sectionId = `sec-2-${mod.id}`;
+          sectionName = "2.0 Components & ER Flow";
+        } else if ((notes.tutorialSteps || []).some(s => s.toLowerCase().includes(query))) {
+          sectionId = `sec-3-${mod.id}`;
+          sectionName = "3.0 Implementation Tutorial";
+        } else if ((notes.codeSnippet || '').toLowerCase().includes(query)) {
+          sectionId = `sec-4-${mod.id}`;
+          sectionName = "4.0 Source Code Blueprint";
+        } else if ((notes.invariants || []).some(i => i.toLowerCase().includes(query))) {
+          sectionId = `sec-5-${mod.id}`;
+          sectionName = "5.0 Architectural Invariants";
+        }
+
+        matches.push({
+          moduleId: mod.id,
+          moduleTitle: mod.title,
+          sectionId: sectionId,
+          sectionName: sectionName,
+          snippet: `...${snippet.trim()}...`
+        });
+      }
+    });
+
+    displaySearchResults(matches);
+  }
+
+  function displaySearchResults(results) {
+    if (!searchResults) return;
+    if (results.length === 0) {
+      searchResults.innerHTML = '<p class="no-results">No documentation matches found for this query.</p>';
+      selectedIndex = -1;
+      return;
+    }
+
+    searchResults.innerHTML = results.map((res, index) => `
+      <a href="javascript:void(0)" class="search-result-item ${index === 0 ? 'selected' : ''}" onclick="window.navigateFromSearch(${res.moduleId}, '${res.sectionId}')">
+        <div class="search-result-title">
+          <span class="badge-mod">M-${res.moduleId}</span>
+          <span>${escapeHtml(res.moduleTitle)}</span>
+          <span style="font-size:0.75rem; color:#818cf8; font-weight:500; margin-left:auto;">${escapeHtml(res.sectionName)}</span>
+        </div>
+        <div class="search-result-snippet">${res.snippet}</div>
+      </a>
+    `).join('');
+    selectedIndex = 0;
+  }
+
+  window.navigateFromSearch = function(moduleId, sectionId = null) {
+    closeSearch();
+    window.switchTab(moduleId, sectionId);
+  };
+}
+
 // Switch SPA Tab (Mounts Active Module, Unmounts Inactive - Cleans DOM)
-window.switchTab = function(tabId) {
+window.switchTab = function(tabId, targetSectionId = null) {
   currentActiveTabIndex = tabId;
   const targetTab = ALL_MODULES.find(t => t.id === tabId);
   if (!targetTab) return;
@@ -922,8 +1114,19 @@ window.switchTab = function(tabId) {
   // Log read history audit to Firestore
   logReadHistory(targetTab.title);
 
-  // Scroll to top of content
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Direct content scrolling
+  if (targetSectionId) {
+    setTimeout(() => {
+      const targetEl = document.getElementById(targetSectionId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 150);
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 };
 
 // Render Comprehensive Hard-Coded Overview (SIMPLE BLOG FORMAT - NO CARD IN BLOG)
@@ -980,7 +1183,7 @@ function renderTabContent(tab) {
       <div class="blog-body">
         
         <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS SPECIFICATION -->
-        <h2>1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
+        <h2 id="sec-1-${tab.id}">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
         <p><strong>Subsystem Directive:</strong> ${notes.subtitle}</p>
         <p>${notes.srsMission}</p>
 
@@ -993,12 +1196,85 @@ function renderTabContent(tab) {
         </div>
 
         <!-- SECTION 2: COMPONENT BREAKDOWN & DATA FLOW -->
-        <h2>2. Component Hierarchy &amp; Core Data Flows</h2>
+        <h2 id="sec-2-${tab.id}">2. Component Hierarchy, ER Diagram &amp; Core Data Flows</h2>
         <p>This subsystem is architected into four decoupled engineering pillars to guarantee horizontal scale-out and continuous service availability:</p>
         
         <ul>
           ${notes.components.map(c => `<li><strong>${c.name}:</strong> ${c.text}</li>`).join('')}
         </ul>
+
+        ${(tab.id === 1 || tab.id === 5) ? `
+          <!-- ENTITY-RELATIONSHIP (ER) ARCHITECTURE & WORKFLOW -->
+          <div class="er-diagram-container">
+            <div class="er-diagram-header">
+              <div class="er-diagram-title">
+                <i class="ri-git-merge-line" style="color:#818cf8;"></i>
+                <span>DPGNotes Platform Entity-Relationship (ER) Architecture &amp; Connectivity Topography</span>
+              </div>
+              <span style="font-size:0.75rem; color:#94a3b8; font-family:monospace;">RELATIONAL NO-SQL SCHEMA v2.4</span>
+            </div>
+
+            <div class="er-grid-layout">
+              <div class="er-entity-card">
+                <div class="er-entity-header"><span>users</span><span>Root Collection</span></div>
+                <div class="er-field-row"><span class="er-field-pk">PK uid</span><span class="er-field-type">String</span></div>
+                <div class="er-field-row"><span class="er-field-name">email</span><span class="er-field-type">String (Unique)</span></div>
+                <div class="er-field-row"><span class="er-field-name">role</span><span class="er-field-type">"guest"|"contributor"|"admin"</span></div>
+                <div class="er-field-row"><span class="er-field-name">reputation</span><span class="er-field-type">Number (Points)</span></div>
+                <div class="er-field-row"><span class="er-field-name">createdAt</span><span class="er-field-type">Timestamp</span></div>
+              </div>
+
+              <div class="er-entity-card">
+                <div class="er-entity-header"><span>documents</span><span>Study Notes / Papers</span></div>
+                <div class="er-field-row"><span class="er-field-pk">PK docId</span><span class="er-field-type">String</span></div>
+                <div class="er-field-row"><span class="er-field-fk">FK uploaderUid</span><span class="er-field-type">users.uid</span></div>
+                <div class="er-field-row"><span class="er-field-name">category</span><span class="er-field-type">SE|SP|UE|EV|T&amp;N|IQ|A&amp;LR|PQ</span></div>
+                <div class="er-field-row"><span class="er-field-name">discipline</span><span class="er-field-type">BCA|B.Tech|BBA|MCA</span></div>
+                <div class="er-field-row"><span class="er-field-name">pdfUrl</span><span class="er-field-type">Cloudinary Secure URL</span></div>
+              </div>
+
+              <div class="er-entity-card">
+                <div class="er-entity-header"><span>share_links</span><span>Ephemeral Redirection</span></div>
+                <div class="er-field-row"><span class="er-field-pk">PK token</span><span class="er-field-type">String (Token)</span></div>
+                <div class="er-field-row"><span class="er-field-fk">FK docId</span><span class="er-field-type">documents.docId</span></div>
+                <div class="er-field-row"><span class="er-field-fk">FK creatorUid</span><span class="er-field-type">users.uid</span></div>
+                <div class="er-field-row"><span class="er-field-name">type</span><span class="er-field-type">"pdf"|"video"|"solution"</span></div>
+                <div class="er-field-row"><span class="er-field-name">clickCount</span><span class="er-field-type">Atomic Counter</span></div>
+              </div>
+
+              <div class="er-entity-card">
+                <div class="er-entity-header"><span>confidential_requests</span><span>Clearance Ledger</span></div>
+                <div class="er-field-row"><span class="er-field-pk">PK uid</span><span class="er-field-type">users.uid</span></div>
+                <div class="er-field-row"><span class="er-field-name">reason</span><span class="er-field-type">String (Justification)</span></div>
+                <div class="er-field-row"><span class="er-field-name">status</span><span class="er-field-type">"pending"|"approved"|"revoked"</span></div>
+                <div class="er-field-row"><span class="er-field-name">startDate</span><span class="er-field-type">Date String (YYYY-MM-DD)</span></div>
+                <div class="er-field-row"><span class="er-field-name">endDate</span><span class="er-field-type">Date String (YYYY-MM-DD)</span></div>
+              </div>
+            </div>
+
+            <div class="arch-flow-diagram">
++--------------------+        HTTP/3 / TLS 1.3       +-------------------------+
+|   CLIENT LAYER     | ----------------------------&gt; |   EDGE REVERSE PROXY    |
+| (HTML5/CSS3/JS SPA)| &lt;---------------------------- |  (Firebase Hosting CDN) |
++--------------------+                               +-------------------------+
+          |                                                       |
+          | Static Asset Cache                                    | Proxy /api/**
+          v                                                       v
++--------------------+                               +-------------------------+
+| Browser Cache / SW |                               |   BACKEND CLUSTERS      |
+| Local/SessionStorage|                              | (Node.js 20 + Python 3) |
++--------------------+                               +-------------------------+
+                                                                  |
+                                       +--------------------------+--------------------------+
+                                       | Database Queries                                    | Signed Media Uploads
+                                       v                                                     v
+                            +--------------------+                                +--------------------+
+                            |  CLOUD FIRESTORE   |                                |   CLOUDINARY CDN   |
+                            | (Multi-Region eur3)|                                | (Optimized Storage)|
+                            +--------------------+                                +--------------------+
+            </div>
+          </div>
+        ` : ''}
 
         <div class="callout-box callout-tutorial">
           <div class="callout-title">
@@ -1009,7 +1285,7 @@ function renderTabContent(tab) {
         </div>
 
         <!-- SECTION 3: STEP-BY-STEP PRODUCTION IMPLEMENTATION GUIDE -->
-        <h2>3. Step-by-Step Production Implementation Guide</h2>
+        <h2 id="sec-3-${tab.id}">3. Step-by-Step Production Implementation Guide</h2>
         <p>Follow the practical engineering roadmap to configure, implement, and deploy this subsystem:</p>
         
         <ol class="tutorial-steps-list">
@@ -1017,7 +1293,7 @@ function renderTabContent(tab) {
         </ol>
 
         <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
-        <h2>4. Production Source Code Blueprint &amp; Implementation</h2>
+        <h2 id="sec-4-${tab.id}">4. Production Source Code Blueprint &amp; Implementation</h2>
         <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
         
         <div class="code-block-wrap">
@@ -1034,7 +1310,7 @@ function renderTabContent(tab) {
         <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
 
         <!-- SECTION 5: ARCHITECTURAL INVARIANTS & QUALITY STANDARDS -->
-        <h2>5. Architectural Invariants &amp; Production Verification</h2>
+        <h2 id="sec-5-${tab.id}">5. Architectural Invariants &amp; Production Verification</h2>
         <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
         
         <ul>
@@ -1050,7 +1326,7 @@ function renderTabContent(tab) {
         </div>
 
         <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
-        <h2>6. Technical Specification Ledger &amp; Benchmarks</h2>
+        <h2 id="sec-6-${tab.id}">6. Technical Specification Ledger &amp; Benchmarks</h2>
         <p>Review the operational parameters and performance targets established for this module:</p>
 
         <details class="tech-spec-accordion">
@@ -1281,20 +1557,14 @@ function renderSignInGate() {
   const gateDesc = document.getElementById("gateDesc");
   const gateStatusAlert = document.getElementById("gateStatusAlert");
   const gateForm = document.getElementById("gateRequestForm");
+  const gateAuthSection = document.getElementById("gateAuthSection");
 
   if (gateOverlay) gateOverlay.style.display = "flex";
-  if (gateTitle) gateTitle.textContent = "Contributor Authentication Required";
-  if (gateDesc) gateDesc.textContent = "Access to the DPGNotes Full Stack Development Tutorial and Technical Architecture is reserved for authenticated contributors and approved team members.";
-  if (gateStatusAlert) {
-    gateStatusAlert.innerHTML = `
-      <div style="color:#eab308; font-weight:700; margin-bottom:6px;"><i class="ri-user-shared-line"></i> Please Sign In</div>
-      <p style="margin:0 0 12px; color:#cbd5e1; font-size:0.88rem;">Sign in with your verified DPGNotes Contributor account to verify approval status.</p>
-      <button type="button" class="gate-btn-submit" id="btnGateGoogleSignIn" onclick="window.signInWithGoogleGate()" style="width:100%; justify-content:center;">
-        <i class="ri-google-fill"></i> Sign In with Google
-      </button>
-    `;
-  }
+  if (gateTitle) gateTitle.textContent = "Verified Contributor Access Only";
+  if (gateDesc) gateDesc.textContent = "The DPGNotes Overview Tutorial & Technical Architecture is reserved for authenticated contributors and approved team members. Please sign in with your contributor account to proceed.";
+  if (gateStatusAlert) gateStatusAlert.style.display = "none";
   if (gateForm) gateForm.style.display = "none";
+  if (gateAuthSection) gateAuthSection.style.display = "block";
 }
 
 function renderRequestClearanceForm(isRenewal = false) {
@@ -1303,15 +1573,18 @@ function renderRequestClearanceForm(isRenewal = false) {
   const gateDesc = document.getElementById("gateDesc");
   const gateStatusAlert = document.getElementById("gateStatusAlert");
   const gateForm = document.getElementById("gateRequestForm");
+  const gateAuthSection = document.getElementById("gateAuthSection");
 
   if (gateOverlay) gateOverlay.style.display = "flex";
-  if (gateTitle) gateTitle.textContent = isRenewal ? "Renew Overview Clearance" : "Administrator Approval Required";
-  if (gateDesc) gateDesc.textContent = "Submit your purpose for reviewing the confidential architecture. Once approved in the Admin Portal 'Confidential' tab, access will unlock automatically.";
+  if (gateAuthSection) gateAuthSection.style.display = "none";
+  if (gateTitle) gateTitle.textContent = isRenewal ? "Renew Overview Clearance" : "Confidential Clearance Required";
+  if (gateDesc) gateDesc.textContent = "Access to the DPGNotes Technical Architecture and FSD Tutorial is reserved for verified contributors authorized by administrators in the Admin Portal.";
 
   if (gateStatusAlert) {
+    gateStatusAlert.style.display = "block";
     gateStatusAlert.innerHTML = `
-      <div style="color:#eab308; font-weight:700;"><i class="ri-shield-keyhole-line"></i> Verified Contributor: ${escapeHtml(currentActiveUser?.displayName || currentActiveUser?.email || "Contributor")}</div>
-      <p style="margin:4px 0 0; font-size:0.85rem; color:#cbd5e1;">Requests are reviewed by administrators with assigned validity date thresholds.</p>
+      <div style="color:#eab308; font-weight:700;"><i class="ri-shield-keyhole-line"></i> Signed In Contributor: ${escapeHtml(currentActiveUser?.displayName || currentActiveUser?.email || "Contributor")}</div>
+      <p style="margin:4px 0 0; font-size:0.85rem; color:#cbd5e1;">Submit your academic justification or evaluation purpose to request an active clearance threshold.</p>
     `;
   }
 
@@ -1365,10 +1638,13 @@ function renderPendingStatus(record) {
   const gateDesc = document.getElementById("gateDesc");
   const gateStatusAlert = document.getElementById("gateStatusAlert");
   const gateForm = document.getElementById("gateRequestForm");
+  const gateAuthSection = document.getElementById("gateAuthSection");
 
+  if (gateAuthSection) gateAuthSection.style.display = "none";
   if (gateTitle) gateTitle.textContent = "Clearance Pending Approval";
   if (gateDesc) gateDesc.textContent = "Your request has been dispatched to the Administrator and is currently listed in the Admin Portal 'Confidential' Tab.";
   if (gateStatusAlert) {
+    gateStatusAlert.style.display = "block";
     gateStatusAlert.innerHTML = `
       <div style="color:#eab308; font-weight:700;"><i class="ri-time-line"></i> Status: Pending Admin Review</div>
       <p style="margin:4px 0; color:#cbd5e1;"><strong>Submitted By:</strong> ${escapeHtml(record.displayName || record.email)}</p>
@@ -1386,10 +1662,13 @@ function renderRejectedStatus(record) {
   const gateTitle = document.getElementById("gateTitle");
   const gateDesc = document.getElementById("gateDesc");
   const gateStatusAlert = document.getElementById("gateStatusAlert");
+  const gateAuthSection = document.getElementById("gateAuthSection");
 
+  if (gateAuthSection) gateAuthSection.style.display = "none";
   if (gateTitle) gateTitle.textContent = "Access Request Declined";
   if (gateDesc) gateDesc.textContent = "Your recent request for system overview access was declined by the administrator.";
   if (gateStatusAlert) {
+    gateStatusAlert.style.display = "block";
     gateStatusAlert.innerHTML = `
       <div style="color:#ef4444; font-weight:700;"><i class="ri-close-circle-line"></i> Request Declined</div>
       <p style="margin:4px 0; color:#cbd5e1;"><strong>Note:</strong> ${escapeHtml(record.rejectionReason || "No explanation provided")}</p>
@@ -1403,10 +1682,13 @@ function renderRevokedStatus(record) {
   const gateTitle = document.getElementById("gateTitle");
   const gateDesc = document.getElementById("gateDesc");
   const gateStatusAlert = document.getElementById("gateStatusAlert");
+  const gateAuthSection = document.getElementById("gateAuthSection");
 
+  if (gateAuthSection) gateAuthSection.style.display = "none";
   if (gateTitle) gateTitle.textContent = "Clearance Revoked";
   if (gateDesc) gateDesc.textContent = "Your access authorization has been revoked by the administrator in the Admin Portal.";
   if (gateStatusAlert) {
+    gateStatusAlert.style.display = "block";
     gateStatusAlert.innerHTML = `
       <div style="color:#ef4444; font-weight:700;"><i class="ri-prohibited-line"></i> Access Revoked</div>
       <p style="margin:6px 0; color:#cbd5e1;">Submit a new request if this action was taken in error.</p>
@@ -1419,10 +1701,13 @@ function renderExpiredStatus(record) {
   const gateTitle = document.getElementById("gateTitle");
   const gateDesc = document.getElementById("gateDesc");
   const gateStatusAlert = document.getElementById("gateStatusAlert");
+  const gateAuthSection = document.getElementById("gateAuthSection");
 
+  if (gateAuthSection) gateAuthSection.style.display = "none";
   if (gateTitle) gateTitle.textContent = "Access Window Expired";
   if (gateDesc) gateDesc.textContent = "Your previously approved access window has expired. Access is automatically denied until renewed.";
   if (gateStatusAlert) {
+    gateStatusAlert.style.display = "block";
     gateStatusAlert.innerHTML = `
       <div style="color:#ef4444; font-weight:700;"><i class="ri-alarm-warning-line"></i> Clearance Expired</div>
       <p style="margin:6px 0; color:#cbd5e1;">Submit a renewal request for updated administrator authorization.</p>
@@ -1436,10 +1721,13 @@ function renderScheduledStatus(record) {
   const gateDesc = document.getElementById("gateDesc");
   const gateStatusAlert = document.getElementById("gateStatusAlert");
   const gateForm = document.getElementById("gateRequestForm");
+  const gateAuthSection = document.getElementById("gateAuthSection");
 
+  if (gateAuthSection) gateAuthSection.style.display = "none";
   if (gateTitle) gateTitle.textContent = "Clearance Scheduled";
   if (gateDesc) gateDesc.textContent = `Your access authorization is scheduled to become active on ${escapeHtml(record.startDate)}.`;
   if (gateStatusAlert) {
+    gateStatusAlert.style.display = "block";
     gateStatusAlert.innerHTML = `
       <div style="color:#38bdf8; font-weight:700;"><i class="ri-calendar-event-line"></i> Scheduled Access</div>
       <p style="margin:6px 0; color:#cbd5e1;">Access will activate automatically on your approved start date.</p>

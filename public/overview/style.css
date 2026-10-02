@@ -1102,6 +1102,319 @@ code {
   color: #ffffff;
 }
 
+.gate-btn-social {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.85rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.gate-btn-social:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.gate-btn-primary-auth {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  color: #ffffff;
+  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s;
+}
+
+.gate-btn-primary-auth:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+/* ==========================================================================
+   LEGAL CENTER-STYLE SEARCH MODAL FOR OVERVIEW
+   ========================================================================== */
+.search-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 15, 29, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2500;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.search-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-modal-box {
+  background-color: #0f172a;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  width: 92%;
+  max-width: 620px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(99, 102, 241, 0.15);
+  overflow: hidden;
+  transform: translateY(-20px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.search-modal.active .search-modal-box {
+  transform: translateY(0);
+}
+
+.search-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.search-modal-header i {
+  font-size: 1.3rem;
+  color: #818cf8;
+}
+
+.search-modal-header input {
+  flex-grow: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 1.05rem;
+  color: #ffffff;
+  font-family: var(--font-body);
+}
+
+.search-modal-header input::placeholder {
+  color: #64748b;
+}
+
+.close-search-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-search-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.search-results {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 0.8rem;
+}
+
+.search-result-item {
+  display: block;
+  text-decoration: none;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.45rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.search-result-item:hover, .search-result-item.selected {
+  background-color: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.search-result-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-result-title .badge-mod {
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.search-result-snippet {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.search-result-snippet mark {
+  background: #fef08a;
+  color: #0f172a;
+  font-weight: 700;
+  padding: 0 3px;
+  border-radius: 3px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
+.search-modal-footer {
+  padding: 0.75rem 1.4rem;
+  background-color: #0b1120;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.search-modal-footer kbd {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: #cbd5e1;
+}
+
+/* ==========================================================================
+   ER DIAGRAM & ARCHITECTURAL WORKFLOW VISUALIZER
+   ========================================================================== */
+.er-diagram-container {
+  background: #090d16;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.er-diagram-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.er-diagram-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.er-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.er-entity-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.er-entity-header {
+  background: rgba(99, 102, 241, 0.15);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #a5b4fc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.er-field-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-family: monospace;
+}
+
+.er-field-name {
+  color: #f1f5f9;
+}
+
+.er-field-type {
+  color: #94a3b8;
+}
+
+.er-field-pk {
+  color: #eab308;
+  font-weight: 700;
+}
+
+.er-field-fk {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.arch-flow-diagram {
+  background: #020617;
+  border: 1px dashed rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+}
+
 /* ==========================================================================
    RESPONSIVENESS (MOBILE, TABLET, FOLDABLE & SMALL PHONES)
    ========================================================================== */
