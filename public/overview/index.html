@@ -8,6 +8,7 @@
   <script src="../dpg-params.js"></script>
   <script src="../custom-dialogs.js"></script>
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script src="https://dpgnotes.web.app/redirect.js" defer></script>
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -138,6 +139,47 @@
       </div>
     </main>
 
+  </div>
+
+  <!-- ========================================================================
+       CLEARANCE GATE OVERLAY (CONFIDENTIALITY AUTHORIZATION GATE)
+       Hidden when authorized. No clearance threshold badges shown on DOM.
+       ======================================================================== -->
+  <div class="clearance-gate-overlay" id="clearanceGateOverlay" style="display:none;">
+    <div class="gate-card">
+      <div class="gate-icon-circle">
+        <i class="ri-shield-keyhole-line"></i>
+      </div>
+      <h2 class="gate-title" id="gateTitle">Confidential Contributor Access</h2>
+      <p class="gate-desc" id="gateDesc">
+        Access to the DPGNotes Full Stack Development Tutorial and Technical Architecture is reserved for verified contributors authorized in the Admin Portal.
+      </p>
+
+      <div class="gate-status-alert" id="gateStatusAlert">
+        <!-- Dynamically populated status -->
+      </div>
+
+      <!-- REQUEST FORM -->
+      <form id="gateRequestForm" style="display:none;">
+        <label class="gate-field-label">
+          Purpose / Academic Justification for Access
+        </label>
+        <textarea id="gateReasonInput" class="gate-input-field" rows="3" placeholder="e.g. Capstone Project evaluation, Faculty technical review, or architectural study." required></textarea>
+
+        <button type="submit" class="gate-btn-submit" id="btnSubmitGateRequest">
+          Submit Access Request <i class="ri-arrow-right-line"></i>
+        </button>
+      </form>
+
+      <div class="gate-footer-links">
+        <a href="https://dpgnotes.web.app/index.html">
+          <i class="ri-home-line"></i> Homepage
+        </a>
+        <a href="https://dpgnotes.web.app/dashboard.html">
+          <i class="ri-dashboard-line"></i> Contributor Dashboard
+        </a>
+      </div>
+    </div>
   </div>
 
   <!-- ========================================================================

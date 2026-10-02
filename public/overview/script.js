@@ -5,7 +5,7 @@
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -1140,13 +1140,34 @@ function escapeHtml(str) {
 }
 
 // ============================================================================
-// ACCESS CONTROL CONTROLLER (NO CLEARANCE THRESHOLD DISPLAY)
+// CONTRIBUTOR AUTH LAYER & ADMIN APPROVAL CHECK (SILENT VERIFICATION - NO DOM THRESHOLD)
 // ============================================================================
+
+window.signInWithGoogleGate = async function() {
+  const btn = document.getElementById("btnGateGoogleSignIn");
+  if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Authenticating...';
+  try {
+    const provider = new GoogleAuthProvider();
+    const res = await signInWithPopup(auth, provider);
+    if (res && res.user) {
+      localStorage.setItem("dpgActiveUserUid", res.user.uid);
+      localStorage.setItem("dpgActiveUserEmail", res.user.email);
+      localStorage.setItem("dpgActiveUserName", res.user.displayName || "Verified Contributor");
+      checkAuthAndClearanceGate();
+    }
+  } catch(err) {
+    console.error("Google Sign In error:", err);
+    if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In with Google';
+    alert("Authentication failed: " + (err.message || err));
+  }
+};
+
 async function checkAuthAndClearanceGate() {
   onAuthStateChanged(auth, async (user) => {
     const localUid = localStorage.getItem("dpgActiveUserUid");
     const localEmail = localStorage.getItem("dpgActiveUserEmail");
     const localName = localStorage.getItem("dpgActiveUserName");
+    const localRole = localStorage.getItem("dpgActiveUserRole");
 
     if (user) {
       currentActiveUser = user;
@@ -1154,15 +1175,277 @@ async function checkAuthAndClearanceGate() {
       currentActiveUser = {
         uid: localUid,
         email: localEmail || "contributor@dpgnotes.app",
-        displayName: localName || "Verified Contributor"
+        displayName: localName || "Verified Contributor",
+        role: localRole || "contributor"
       };
     } else {
       currentActiveUser = null;
     }
 
-    // Load initial Module 1 blog
-    window.switchTab(1);
+    // 1. Unauthenticated Contributor Check
+    if (!currentActiveUser) {
+      renderSignInGate();
+      return;
+    }
+
+    // 2. Administrator Exemption Check
+    const isAdmin = currentActiveUser.email === "its.akshatnetworkhub23@gmail.com" || 
+                    currentActiveUser.role === "admin" || 
+                    localRole === "admin";
+
+    if (isAdmin) {
+      currentClearanceRecord = { status: "approved", role: "admin", exempt: true };
+      grantClearanceAccess();
+      return;
+    }
+
+    // 3. Contributor Admin Approval Check in Firestore (confidential_overview_requests)
+    try {
+      const reqRef = doc(db, "confidential_overview_requests", currentActiveUser.uid);
+      const reqSnap = await getDoc(reqRef);
+
+      if (!reqSnap.exists()) {
+        renderRequestClearanceForm(false);
+        return;
+      }
+
+      const record = reqSnap.data();
+      currentClearanceRecord = record;
+      evaluateClearanceStatus(record);
+    } catch(err) {
+      console.warn("Clearance verification error:", err);
+      // Fallback: check session-level authorization
+      const sessionApproved = sessionStorage.getItem("dpg_confidential_approved") === currentActiveUser.uid;
+      if (sessionApproved) {
+        grantClearanceAccess();
+      } else {
+        renderRequestClearanceForm(false);
+      }
+    }
   });
+}
+
+function evaluateClearanceStatus(record) {
+  const now = new Date();
+  const start = record.startDate ? new Date(record.startDate + "T00:00:00") : null;
+  const end = record.endDate ? new Date(record.endDate + "T23:59:59") : null;
+
+  if (record.status === "pending" || !record.status) {
+    renderPendingStatus(record);
+    return;
+  }
+
+  if (record.status === "rejected") {
+    renderRejectedStatus(record);
+    return;
+  }
+
+  if (record.status === "revoked") {
+    renderRevokedStatus(record);
+    return;
+  }
+
+  if (end && now > end) {
+    // Expired: auto-denied
+    renderExpiredStatus(record);
+    return;
+  }
+
+  if (start && now < start) {
+    renderScheduledStatus(record);
+    return;
+  }
+
+  if (record.status === "approved" && (!start || now >= start) && (!end || now <= end)) {
+    // APPROVED: Silent access grant - nothing shown on DOM
+    sessionStorage.setItem("dpg_confidential_approved", currentActiveUser.uid);
+    grantClearanceAccess();
+    return;
+  }
+
+  // Fallback
+  renderRequestClearanceForm(false);
+}
+
+function grantClearanceAccess() {
+  const gateOverlay = document.getElementById("clearanceGateOverlay");
+  if (gateOverlay) gateOverlay.style.display = "none";
+
+  // Note: Per requirements, NO clearance threshold badge or date threshold is rendered on the DOM
+  window.switchTab(1);
+}
+
+function renderSignInGate() {
+  const gateOverlay = document.getElementById("clearanceGateOverlay");
+  const gateTitle = document.getElementById("gateTitle");
+  const gateDesc = document.getElementById("gateDesc");
+  const gateStatusAlert = document.getElementById("gateStatusAlert");
+  const gateForm = document.getElementById("gateRequestForm");
+
+  if (gateOverlay) gateOverlay.style.display = "flex";
+  if (gateTitle) gateTitle.textContent = "Contributor Authentication Required";
+  if (gateDesc) gateDesc.textContent = "Access to the DPGNotes Full Stack Development Tutorial and Technical Architecture is reserved for authenticated contributors and approved team members.";
+  if (gateStatusAlert) {
+    gateStatusAlert.innerHTML = `
+      <div style="color:#eab308; font-weight:700; margin-bottom:6px;"><i class="ri-user-shared-line"></i> Please Sign In</div>
+      <p style="margin:0 0 12px; color:#cbd5e1; font-size:0.88rem;">Sign in with your verified DPGNotes Contributor account to verify approval status.</p>
+      <button type="button" class="gate-btn-submit" id="btnGateGoogleSignIn" onclick="window.signInWithGoogleGate()" style="width:100%; justify-content:center;">
+        <i class="ri-google-fill"></i> Sign In with Google
+      </button>
+    `;
+  }
+  if (gateForm) gateForm.style.display = "none";
+}
+
+function renderRequestClearanceForm(isRenewal = false) {
+  const gateOverlay = document.getElementById("clearanceGateOverlay");
+  const gateTitle = document.getElementById("gateTitle");
+  const gateDesc = document.getElementById("gateDesc");
+  const gateStatusAlert = document.getElementById("gateStatusAlert");
+  const gateForm = document.getElementById("gateRequestForm");
+
+  if (gateOverlay) gateOverlay.style.display = "flex";
+  if (gateTitle) gateTitle.textContent = isRenewal ? "Renew Overview Clearance" : "Administrator Approval Required";
+  if (gateDesc) gateDesc.textContent = "Submit your purpose for reviewing the confidential architecture. Once approved in the Admin Portal 'Confidential' tab, access will unlock automatically.";
+
+  if (gateStatusAlert) {
+    gateStatusAlert.innerHTML = `
+      <div style="color:#eab308; font-weight:700;"><i class="ri-shield-keyhole-line"></i> Verified Contributor: ${escapeHtml(currentActiveUser?.displayName || currentActiveUser?.email || "Contributor")}</div>
+      <p style="margin:4px 0 0; font-size:0.85rem; color:#cbd5e1;">Requests are reviewed by administrators with assigned validity date thresholds.</p>
+    `;
+  }
+
+  if (gateForm) {
+    gateForm.style.display = "block";
+    gateForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const reasonVal = document.getElementById("gateReasonInput")?.value || "";
+      if (!reasonVal.trim()) {
+        alert("Please state your justification or purpose for access.");
+        return;
+      }
+      submitClearanceRequest(reasonVal.trim());
+    };
+  }
+}
+
+async function submitClearanceRequest(reason) {
+  const submitBtn = document.getElementById("btnSubmitGateRequest");
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Submitting to Admin...`;
+  }
+
+  try {
+    const docData = {
+      uid: currentActiveUser.uid,
+      email: currentActiveUser.email,
+      displayName: currentActiveUser.displayName || currentActiveUser.name || "Verified Contributor",
+      photoURL: currentActiveUser.photoURL || "",
+      reason: reason,
+      status: "pending",
+      requestDate: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    await setDoc(doc(db, "confidential_overview_requests", currentActiveUser.uid), docData, { merge: true });
+    renderPendingStatus(docData);
+  } catch(err) {
+    console.error("Submission failed:", err);
+    alert("Request submission failed: " + err.message);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `Submit Access Request <i class="ri-arrow-right-line"></i>`;
+    }
+  }
+}
+
+function renderPendingStatus(record) {
+  const gateTitle = document.getElementById("gateTitle");
+  const gateDesc = document.getElementById("gateDesc");
+  const gateStatusAlert = document.getElementById("gateStatusAlert");
+  const gateForm = document.getElementById("gateRequestForm");
+
+  if (gateTitle) gateTitle.textContent = "Clearance Pending Approval";
+  if (gateDesc) gateDesc.textContent = "Your request has been dispatched to the Administrator and is currently listed in the Admin Portal 'Confidential' Tab.";
+  if (gateStatusAlert) {
+    gateStatusAlert.innerHTML = `
+      <div style="color:#eab308; font-weight:700;"><i class="ri-time-line"></i> Status: Pending Admin Review</div>
+      <p style="margin:4px 0; color:#cbd5e1;"><strong>Submitted By:</strong> ${escapeHtml(record.displayName || record.email)}</p>
+      <p style="margin:4px 0; color:#cbd5e1;"><strong>Purpose:</strong> ${escapeHtml(record.reason || "Architecture evaluation")}</p>
+      <p style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);">Once the Administrator authorizes your request in the Admin Portal, refresh to view.</p>
+      <button type="button" class="gate-btn-submit" style="margin-top:12px; width:100%; justify-content:center;" onclick="window.location.reload()">
+        <i class="ri-refresh-line"></i> Check Approval Status
+      </button>
+    `;
+  }
+  if (gateForm) gateForm.style.display = "none";
+}
+
+function renderRejectedStatus(record) {
+  const gateTitle = document.getElementById("gateTitle");
+  const gateDesc = document.getElementById("gateDesc");
+  const gateStatusAlert = document.getElementById("gateStatusAlert");
+
+  if (gateTitle) gateTitle.textContent = "Access Request Declined";
+  if (gateDesc) gateDesc.textContent = "Your recent request for system overview access was declined by the administrator.";
+  if (gateStatusAlert) {
+    gateStatusAlert.innerHTML = `
+      <div style="color:#ef4444; font-weight:700;"><i class="ri-close-circle-line"></i> Request Declined</div>
+      <p style="margin:4px 0; color:#cbd5e1;"><strong>Note:</strong> ${escapeHtml(record.rejectionReason || "No explanation provided")}</p>
+      <p style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);">You may submit an updated request below.</p>
+    `;
+  }
+  renderRequestClearanceForm(true);
+}
+
+function renderRevokedStatus(record) {
+  const gateTitle = document.getElementById("gateTitle");
+  const gateDesc = document.getElementById("gateDesc");
+  const gateStatusAlert = document.getElementById("gateStatusAlert");
+
+  if (gateTitle) gateTitle.textContent = "Clearance Revoked";
+  if (gateDesc) gateDesc.textContent = "Your access authorization has been revoked by the administrator in the Admin Portal.";
+  if (gateStatusAlert) {
+    gateStatusAlert.innerHTML = `
+      <div style="color:#ef4444; font-weight:700;"><i class="ri-prohibited-line"></i> Access Revoked</div>
+      <p style="margin:6px 0; color:#cbd5e1;">Submit a new request if this action was taken in error.</p>
+    `;
+  }
+  renderRequestClearanceForm(true);
+}
+
+function renderExpiredStatus(record) {
+  const gateTitle = document.getElementById("gateTitle");
+  const gateDesc = document.getElementById("gateDesc");
+  const gateStatusAlert = document.getElementById("gateStatusAlert");
+
+  if (gateTitle) gateTitle.textContent = "Access Window Expired";
+  if (gateDesc) gateDesc.textContent = "Your previously approved access window has expired. Access is automatically denied until renewed.";
+  if (gateStatusAlert) {
+    gateStatusAlert.innerHTML = `
+      <div style="color:#ef4444; font-weight:700;"><i class="ri-alarm-warning-line"></i> Clearance Expired</div>
+      <p style="margin:6px 0; color:#cbd5e1;">Submit a renewal request for updated administrator authorization.</p>
+    `;
+  }
+  renderRequestClearanceForm(true);
+}
+
+function renderScheduledStatus(record) {
+  const gateTitle = document.getElementById("gateTitle");
+  const gateDesc = document.getElementById("gateDesc");
+  const gateStatusAlert = document.getElementById("gateStatusAlert");
+  const gateForm = document.getElementById("gateRequestForm");
+
+  if (gateTitle) gateTitle.textContent = "Clearance Scheduled";
+  if (gateDesc) gateDesc.textContent = `Your access authorization is scheduled to become active on ${escapeHtml(record.startDate)}.`;
+  if (gateStatusAlert) {
+    gateStatusAlert.innerHTML = `
+      <div style="color:#38bdf8; font-weight:700;"><i class="ri-calendar-event-line"></i> Scheduled Access</div>
+      <p style="margin:6px 0; color:#cbd5e1;">Access will activate automatically on your approved start date.</p>
+    `;
+  }
+  if (gateForm) gateForm.style.display = "none";
 }
 
 // Log Read History to Firestore

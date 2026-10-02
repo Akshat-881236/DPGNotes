@@ -230,6 +230,7 @@
           window.location.pathname.includes('PracticalSolution/generator') ||
           window.location.pathname.includes('admin') ||
           window.location.pathname.includes('dashboard') ||
+          window.location.pathname.includes('overview') ||
           window.location.pathname.includes('train_model')) {
         return;
       }
