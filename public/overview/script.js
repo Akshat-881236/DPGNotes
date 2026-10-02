@@ -1093,7 +1093,7 @@ function initHeaderSearchModal() {
 }
 
 // Switch SPA Tab (Mounts Active Module, Unmounts Inactive - Cleans DOM)
-window.switchTab = function(tabId, targetSectionId = null) {
+window.switchTab = async function(tabId, targetSectionId = null) {
   currentActiveTabIndex = tabId;
   const targetTab = ALL_MODULES.find(t => t.id === tabId);
   if (!targetTab) return;
@@ -1104,7 +1104,7 @@ window.switchTab = function(tabId, targetSectionId = null) {
   if (activeItem) activeItem.classList.add("active");
 
   window.closeMobileSidebar();
-  renderTabContent(targetTab);
+  await renderTabContent(targetTab);
 
   // Hydrate Native Ads in newly mounted editorial blog
   if (typeof window.renderNativeDPGAds === "function") {
@@ -1129,8 +1129,61 @@ window.switchTab = function(tabId, targetSectionId = null) {
   }
 };
 
+const COMPONENT_FILE_MAP = {
+  1: 'components/html_tabs/tab1_architecture.html',
+  2: 'components/html_tabs/tab2_frontend.html',
+  3: 'components/html_tabs/tab3_backend_api.html',
+  4: 'components/html_tabs/tab4_cloudinary_media.html',
+  5: 'components/html_tabs/tab5_database_schema.html',
+  6: 'components/html_tabs/tab6_security_vault.html',
+  7: 'components/html_tabs/tab7_ai_engine.html',
+  8: 'components/html_tabs/tab8_search_engine.html',
+  9: 'components/html_tabs/tab9_video_ecosystem.html',
+  10: 'components/html_tabs/tab10_contributor_rbac.html',
+  11: 'components/html_tabs/tab11_legal_compliance.html',
+  12: 'components/html_tabs/tab12_devops_cicd.html'
+};
+
+function buildBreadcrumbsHtml(tab) {
+  return `
+    <!-- BREADCRUMBS -->
+    <div class="breadcrumbs-bar">
+      <a href="https://dpgnotes.web.app/index.html"><i class="ri-home-4-line"></i> Home</a>
+      <i class="ri-arrow-right-s-line"></i>
+      <a href="https://dpgnotes.web.app/dashboard.html">Dashboard</a>
+      <i class="ri-arrow-right-s-line"></i>
+      <a href="https://dpgnotes.web.app/legal/index.html">Legal Center</a>
+      <i class="ri-arrow-right-s-line"></i>
+      <span style="color:#ffffff;">Module ${tab.id}: ${escapeHtml(tab.title)}</span>
+    </div>
+  `;
+}
+
+function buildFooterNavHtml(tab) {
+  return `
+    <!-- BLOG NAVIGATION FOOTER -->
+    <footer class="blog-nav-footer">
+      ${tab.id > 1 ? `
+        <button type="button" class="header-nav-link" onclick="window.switchTab(${tab.id - 1})">
+          <i class="ri-arrow-left-line"></i> Previous: Module ${tab.id - 1}
+        </button>
+      ` : `<div></div>`}
+      
+      <a href="https://dpgnotes.web.app/dashboard.html" class="header-nav-link" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border-color:rgba(99,102,241,0.35);">
+        <i class="ri-dashboard-line"></i> Contributor Dashboard
+      </a>
+
+      ${tab.id < 12 ? `
+        <button type="button" class="header-nav-link" style="background:linear-gradient(135deg, #6366f1, #8b5cf6); color:#ffffff; border:none;" onclick="window.switchTab(${tab.id + 1})">
+          Next: Module ${tab.id + 1} <i class="ri-arrow-right-line"></i>
+        </button>
+      ` : `<div></div>`}
+    </footer>
+  `;
+}
+
 // Render Comprehensive Hard-Coded Overview (SIMPLE BLOG FORMAT - NO CARD IN BLOG)
-function renderTabContent(tab) {
+async function renderTabContent(tab) {
   const container = document.getElementById("tabContentContainer");
   if (!container) return;
 
@@ -1138,6 +1191,25 @@ function renderTabContent(tab) {
   if (tabCache.has(tab.id)) {
     container.innerHTML = tabCache.get(tab.id);
     return;
+  }
+
+  // Attempt to load rich modular component from file
+  const compPath = COMPONENT_FILE_MAP[tab.id];
+  if (compPath) {
+    try {
+      const resp = await fetch(compPath);
+      if (resp.ok) {
+        const componentHtml = await resp.text();
+        if (componentHtml && componentHtml.includes('overview-blog-article')) {
+          const combinedHtml = buildBreadcrumbsHtml(tab) + componentHtml + buildFooterNavHtml(tab);
+          tabCache.set(tab.id, combinedHtml);
+          container.innerHTML = combinedHtml;
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn(`[OVERVIEW] Component fetch error for module ${tab.id}, falling back:`, err.message);
+    }
   }
 
   const notes = BLOG_STUDY_NOTES[tab.id] || BLOG_STUDY_NOTES[1];

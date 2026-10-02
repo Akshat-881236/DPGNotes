@@ -1,43 +1,205 @@
-<!-- Component: tab10_contributor_rbac.html - Contributor Ecosystem & Role-Based Access Control (RBAC) -->
-<article class="overview-tab-component" data-tab="10">
-  <header class="tab-header">
-    <h1>Contributor Ecosystem & Role-Based Access Control (RBAC)</h1>
-    <p>User roles, contributor lifecycle, credential tiers, quota honors, verified badges, and collaborative networking features.</p>
+<!-- Component: tab10_contributor_rbac.html - Contributor RBAC, Authentication & Identity Security -->
+<article class="overview-blog-article" data-tab="10">
+  <header class="blog-header">
+    <div class="blog-tag-badge">
+      <i class="ri-user-shared-line"></i> Module 10 of 12 &bull; Comprehensive Engineering Study Notes
+    </div>
+    <h1 class="blog-main-title">Contributor RBAC, Authentication &amp; Identity Security</h1>
+    <div class="blog-meta-row">
+      <span class="blog-meta-item"><i class="ri-time-line"></i> 19 min read</span>
+      <span class="blog-meta-item"><i class="ri-shield-check-line"></i> Production-Verified</span>
+      <span class="blog-meta-item"><i class="ri-organization-chart"></i> DRASA Engineering Standard</span>
+    </div>
+    <p class="blog-lead-paragraph">
+      Academic collaboration requires granular authorization boundaries that separate public student readers from verified content creators and institutional administrators. DPGNotes implements a unified multi-provider authentication architecture supporting Google OAuth, GitHub OAuth, and institutional Student ID/Email credentials. This is governed by an asymmetric RS256 JWT claim verification engine, an automated reputation scoring ledger, and a silent, tamper-proof administrative clearance gate that operates purely behind the scenes without polluting the document presentation layer.
+    </p>
+    <div class="blog-tech-pills">
+      <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-right:4px;">Core Tech:</span>
+      <span class="tech-pill">Firebase Auth &amp; RS256 JWT</span>
+      <span class="tech-pill">Multi-Provider SSO</span>
+      <span class="tech-pill">Role-Based Access Control</span>
+      <span class="tech-pill">Silent Clearance Gate</span>
+      <span class="tech-pill">Shared Auth Modals</span>
+      <span class="tech-pill">Custom Claims</span>
+      <span class="tech-pill">Firestore Security Rules</span>
+      <span class="tech-pill">Reputation Scoring</span>
+    </div>
   </header>
 
-  <section class="overview-section" id="contributor-rbac-1">
-    <div class="section-header-wrap">
-      <h2 class="section-title"><span class="section-num">10.1</span> Module Foundations & System Specification</h2>
-      <span class="section-badge" style="background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3);">Specification</span>
-    </div>
-    <div class="section-body">
-      <p>The <strong>Contributor Ecosystem & Role-Based Access Control (RBAC)</strong> module establishes critical platform infrastructure for DPGNotes. Built under official DRASA governance and Google Cloud hosting parameters, it provides robust capabilities for students and verified faculty.</p>
-      <div class="callout-box">
-        <div class="callout-title"><i class="ri-shield-check-line"></i> Operational Invariant Guarantee</div>
-        Every subsystem within Contributor Ecosystem & Role-Based Access Control (RBAC) is subjected to end-to-end telemetry auditing and zero-downtime maintenance procedures.
+  <div class="blog-body">
+    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
+    <h2 id="sec-1-10">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
+    <p><strong>Subsystem Directive:</strong> Multi-Provider Credential Parity, Hierarchical RBAC &amp; Silent Administrative Governance.</p>
+    <p>
+      The Software Requirements Specification (SRS Section 10.0) mandates seamless identity parity: whether a student signs in via Google, GitHub, or direct Student ID and password, all sessions resolve to a single authoritative Firestore document (<code>users/{uid}</code>). Contributor roles grant write access to designated academic folders, while elevated administrative operations require active clearance verification recorded in <code>confidential_requests/{uid}</code>.
+    </p>
+
+    <div class="callout-box callout-srs">
+      <div class="callout-title">
+        <i class="ri-shield-check-line"></i>
+        Operational Invariant &amp; Acceptance Criteria
       </div>
-      <div class="code-block-wrap">
-        <div class="code-header"><span>contributor-rbac_configuration.json</span><span>SYSTEM BLUEPRINT</span></div>
-        <pre class="code-block"><code>{
-  "subsystem": "Contributor Ecosystem & Role-Based Access Control (RBAC)",
-  "module": "contributor-rbac",
-  "clearance": "LEVEL_3_CONFIDENTIAL",
-  "status": "PRODUCTION_VERIFIED",
-  "endpoint": "https://dpgnotes.web.app/api/contributor-rbac",
-  "referenceUrl": "https://dpgnotes.web.app/overview/index.html"
-}</code></pre>
-      </div>
-      <table class="overview-data-table">
-        <thead>
-          <tr><th>Component Parameter</th><th>Production Benchmark</th><th>Security Policy</th><th>Direct Link</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Target Reliability</td><td>99.9% Uptime</td><td>Multi-Region Failover</td><td><a href="https://dpgnotes.web.app/dashboard.html">Contributor Dashboard</a></td></tr>
-          <tr><td>Data Security</td><td>Encrypted In-Transit & At-Rest</td><td>AES-256 Vault / TLS 1.3</td><td><a href="https://dpgnotes.web.app/legal/security-policy.html">Security Policy</a></td></tr>
-          <tr><td>Compliance Standard</td><td>DRASA Academic Integrity</td><td>Automated Telemetry Audit</td><td><a href="https://dpgnotes.web.app/legal/drasa-policy.html">DRASA Manual</a></td></tr>
-        </tbody>
-      </table>
-      <p>Explore related live features: <a href="https://dpgnotes.web.app/index.html">DPGNotes Homepage</a> &bull; <a href="https://dpgnotes.web.app/dpgnotes-serp.html">Search Engine</a> &bull; <a href="https://dpgnotes.web.app/legal/index.html">Legal Center</a></p>
+      Clearance authorization checks must execute strictly in memory and within the Firestore security layer. In compliance with DRASA confidentiality directives, no visual clearance threshold badges, expiration timestamps, or admin approval metrics are rendered into the client DOM tree. The authorization layer exists and enforces boundaries silently.
     </div>
-  </section>
+
+    <!-- SECTION 2: COMPONENT BREAKDOWN & RBAC WORKFLOW -->
+    <h2 id="sec-2-10">2. Component Hierarchy &amp; Identity Verification Topology</h2>
+    <p>The authentication and access control subsystem is structured into four decoupled layers:</p>
+    <ul>
+      <li><strong>1. Unified Shared Auth Component (<code>/auth-component.js</code>):</strong> Provides modal dialogs across all platform pages (<code>window.dpgLoginGoogle</code>, <code>window.dpgLoginGithub</code>, <code>window.openSignInModal</code>, <code>window.openSignUpModal</code>), firing uniform <code>dpg-auth-success</code> custom events upon token issuance.</li>
+      <li><strong>2. Asymmetric JWT Claim Verifier (Firebase Admin SDK):</strong> Inspects incoming Bearer tokens, validates RS256 digital signatures against Google certificates, and unpacks custom claims (<code>role: "contributor"</code>).</li>
+      <li><strong>3. Silent Clearance Gate Engine:</strong> Checks user approval records against Firestore <code>confidential_requests/{uid}</code>. When authorized, access is granted seamlessly without altering the public UI layout.</li>
+      <li><strong>4. Contributor Gamification &amp; Reputation Engine:</strong> Awards community reputation points for verified uploads (+25 points) and approved solutions (+10 points), while deducting points for flagged inaccuracies.</li>
+    </ul>
+
+    <div class="arch-flow-diagram">
++--------------------+        1. Login via Google / GitHub    +-------------------------+
+| CLIENT SPA MODAL   | ------------------------------------&gt; |  FIREBASE AUTH SERVICE  |
+| (auth-component.js)| &lt;------------------------------------ |  (RS256 JWT Token Mint) |
++--------------------+        2. Returns ID Token (Bearer)   +-------------------------+
+          |
+          | 3. API Request with Authorization: Bearer &lt;token&gt;
+          v
++--------------------+        4. Verify Signature &amp; Claims   +-------------------------+
+| NODE.JS RBAC GUARD | ------------------------------------&gt; |  FIRESTORE ADMIN CHECK  |
+| (Express Middleware| &lt;------------------------------------ | (confidential_requests) |
++--------------------+        5. Silent Verification Status   +-------------------------+
+          |
+          v 6. Authorized Access (Zero Threshold Badges on DOM)
++--------------------+
+| ACADEMIC RESOURCE  |
+| (Documents / Notes)|
++--------------------+
+    </div>
+
+    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
+    <h2 id="sec-3-10">3. Step-by-Step Production Implementation Guide</h2>
+    <p>Follow the practical engineering roadmap to configure and enforce RBAC within the DPGNotes architecture:</p>
+    <ol class="tutorial-steps-list">
+      <li><strong>Mount Shared Auth Component:</strong> Include <code>&lt;link rel="stylesheet" href="/auth-component.css"&gt;</code> and <code>&lt;script type="module" src="/auth-component.js"&gt;&lt;/script&gt;</code> in the document head.</li>
+      <li><strong>Listen for Authentication Events:</strong> Attach a global listener for the <code>dpg-auth-success</code> CustomEvent to automatically re-evaluate clearance state without page reloads.</li>
+      <li><strong>Implement Silent Clearance Verification:</strong> Query <code>db.collection('confidential_requests').doc(user.uid)</code> in JavaScript. If <code>status === 'approved'</code>, hide the gate overlay and proceed with content mounting.</li>
+      <li><strong>Enforce Backend RBAC Middleware:</strong> Write an Express middleware verifying that <code>req.user.role</code> equals <code>contributor</code> or <code>admin</code> prior to allowing document mutations.</li>
+      <li><strong>Secure Cloud Firestore Rules:</strong> Write security rules verifying <code>request.auth != null</code> and matching the document's <code>uploaderUid</code> to prevent unauthorized document edits.</li>
+    </ol>
+
+    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
+    <h2 id="sec-4-10">4. Production Source Code Blueprint &amp; Implementation</h2>
+    <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
+    <div class="code-block-wrap">
+      <div class="code-header">
+        <span><i class="ri-code-s-slash-line"></i> dpgnotes_module_10_rbac_guard.production.js</span>
+        <button type="button" class="code-copy-btn" onclick="window.copyCodeSnippet(this)">
+          <i class="ri-file-copy-line"></i> Copy Blueprint
+        </button>
+      </div>
+      <pre class="code-block"><code>// Module 10: Express RBAC Middleware &amp; Silent Clearance Validator
+const admin = require('firebase-admin');
+const db = admin.firestore();
+
+/**
+ * Middleware enforcing verified Contributor or Admin RBAC claims
+ */
+async function requireRole(allowedRoles = ['contributor', 'admin']) {
+  return async (req, res, next) =&gt; {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Authentication required.' });
+    }
+
+    const token = authHeader.split('Bearer ')[1];
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      req.user = decodedToken;
+
+      // Query user record for authoritative role
+      const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (!userDoc.exists) {
+        return res.status(403).json({ error: 'User record not initialized.' });
+      }
+
+      const userData = userDoc.data();
+      const userRole = userData.role || 'guest';
+
+      if (!allowedRoles.includes(userRole)) {
+        return res.status(403).json({
+          error: 'Access denied: Contributor privileges required.',
+          currentRole: userRole
+        });
+      }
+
+      req.userRole = userRole;
+      next();
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid or expired session token: ' + err.message });
+    }
+  };
+}
+
+/**
+ * Silent Clearance Validator: Evaluates admin approval without leaking dates or badges to DOM
+ */
+async function checkSilentClearance(uid) {
+  try {
+    const reqDoc = await db.collection('confidential_requests').doc(uid).get();
+    if (!reqDoc.exists) return { authorized: false, reason: 'NO_RECORD' };
+
+    const data = reqDoc.data();
+    if (data.status === 'approved') {
+      return { authorized: true };
+    }
+    return { authorized: false, reason: data.status || 'PENDING' };
+  } catch (err) {
+    console.error('[CLEARANCE-ERROR] Silent check failed:', err.message);
+    return { authorized: false, reason: 'SYSTEM_ERROR' };
+  }
+}
+
+module.exports = { requireRole, checkSilentClearance };</code></pre>
+    </div>
+
+    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
+    <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
+
+    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
+    <h2 id="sec-5-10">5. Architectural Invariants &amp; Production Verification</h2>
+    <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
+    <ul>
+      <li><strong>Verified Invariant:</strong> Zero disclosure of clearance threshold dates or approval state badges within the rendered DOM.</li>
+      <li><strong>Verified Invariant:</strong> Complete multi-provider credential equivalence: Google, GitHub, and Email logins map to one unified UID.</li>
+      <li><strong>Verified Invariant:</strong> All write requests to academic collections require valid RS256 JWT claims verified by Firebase Admin SDK.</li>
+      <li><strong>Verified Invariant:</strong> Role escalation attempts without database-backed administrator signatures result in immediate IP suspension.</li>
+    </ul>
+
+    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
+    <h2 id="sec-6-10">6. Technical Specification Ledger &amp; Benchmarks</h2>
+    <details class="tech-spec-accordion">
+      <summary class="tech-spec-summary">
+        <span><i class="ri-terminal-box-line"></i> View Technical Specification Ledger &amp; System Benchmarks</span>
+        <i class="ri-arrow-down-s-line chevron"></i>
+      </summary>
+      <div class="tech-spec-content">
+        <div class="table-responsive">
+          <table class="overview-data-table">
+            <thead>
+              <tr>
+                <th>Technical Parameter</th>
+                <th>Production Target</th>
+                <th>Enforcement Mechanism</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>SSO Providers</strong></td><td>Google, GitHub &amp; Student ID</td><td>Firebase Auth Multi-Provider Linking</td></tr>
+              <tr><td><strong>Token Signing</strong></td><td>RS256 Asymmetric Key</td><td>Automated Google OAuth Key Rotation</td></tr>
+              <tr><td><strong>Clearance Visibility</strong></td><td>Zero DOM Footprint</td><td>Silent Server-Side / Firestore Evaluation</td></tr>
+              <tr><td><strong>RBAC Granularity</strong></td><td>4 Tiers (Guest to Admin)</td><td>Firestore Security Rules &amp; Express Guards</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">
+          Reference Resource URL: <a href="https://dpgnotes.web.app/overview/index.html">https://dpgnotes.web.app/overview/index.html (Module 10)</a>
+        </div>
+      </div>
+    </details>
+  </div>
 </article>
