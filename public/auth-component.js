@@ -542,9 +542,255 @@ function startQuotaCountdown() {
   setInterval(update, 1000);
 }
 
+// ============================================================================
+// DPGNOTES HIGH-LEVEL ANTI-BYPASS & DEVTOOLS GUARDIAN ENGINE
+// Prevents inspection-mode element deletion, CSS disabling, and quota bypasses
+// ============================================================================
+let _dpgTamperObserver = null;
+let _dpgWatchdogTimer = null;
+let _dpgAntiDebugTimer = null;
+let _authBypassPermitted = false;
+
+function isQuotaLocked() {
+  return localStorage.getItem("dpg_quota_locked") === "true" ||
+         sessionStorage.getItem("dpg_quota_locked") === "true" ||
+         (typeof document !== 'undefined' && document.cookie.includes("dpg_quota_locked=true"));
+}
+
+function allowAuthUnlock() {
+  _authBypassPermitted = true;
+  try {
+    localStorage.removeItem("dpg_quota_locked");
+    sessionStorage.removeItem("dpg_quota_locked");
+    document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    localStorage.removeItem("dpg_quota_visits");
+    localStorage.removeItem("dpg_quota_pdfs");
+  } catch(e) {}
+  enforceLockdownShield(false);
+  setTimeout(() => { _authBypassPermitted = false; }, 1000);
+}
+
+// Hook Storage API to prevent removing dpg_quota_locked from console
+(function installStorageGuard() {
+  try {
+    const origLocalRemove = Storage.prototype.removeItem;
+    Storage.prototype.removeItem = function(key) {
+      if (key === 'dpg_quota_locked' && isQuotaLocked() && !_authBypassPermitted) {
+        console.warn("[DPG-SECURITY] Quota lock key tampering intercepted.");
+        return;
+      }
+      return origLocalRemove.apply(this, arguments);
+    };
+    const origLocalClear = Storage.prototype.clear;
+    Storage.prototype.clear = function() {
+      const wasLocked = isQuotaLocked();
+      const res = origLocalClear.apply(this, arguments);
+      if (wasLocked && !_authBypassPermitted) {
+        localStorage.setItem("dpg_quota_locked", "true");
+        sessionStorage.setItem("dpg_quota_locked", "true");
+        document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax";
+      }
+      return res;
+    };
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'dpg_quota_locked' && e.newValue !== 'true' && isQuotaLocked() && !_authBypassPermitted) {
+        localStorage.setItem('dpg_quota_locked', 'true');
+        sessionStorage.setItem('dpg_quota_locked', 'true');
+      }
+    });
+  } catch(e) {}
+})();
+
+// Block DevTools shortcuts on Desktop/Laptop in capture phase
+function blockDevToolsKeybindings(e) {
+  const isKeyF12 = e.key === 'F12' || e.keyCode === 123;
+  const isCtrlShiftI = (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73);
+  const isCtrlShiftJ = (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74);
+  const isCtrlShiftC = (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67);
+  const isCtrlU = (e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u' || e.keyCode === 85);
+  const isCtrlS = (e.ctrlKey || e.metaKey) && (e.key === 'S' || e.key === 's' || e.keyCode === 83);
+
+  if (isKeyF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC || isCtrlU || isCtrlS) {
+    if (isQuotaLocked() || isKeyF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC || isCtrlU) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      if (isQuotaLocked()) {
+        enforceLockdownShield(true);
+      }
+      return false;
+    }
+  }
+}
+window.addEventListener('keydown', blockDevToolsKeybindings, true);
+
+// Block ContextMenu (Right Click Inspect) when quota is locked
+window.addEventListener('contextmenu', function(e) {
+  if (isQuotaLocked()) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    return false;
+  }
+}, true);
+
+function ensureLockdownShieldElement() {
+  if (typeof document === 'undefined' || !document.body) return null;
+  let shield = document.getElementById('dpgLockdownShield');
+  if (!shield) {
+    shield = document.createElement('div');
+    shield.id = 'dpgLockdownShield';
+    shield.innerHTML = `
+      <div style="text-align:center; padding:2rem; max-width:440px; color:#f8fafc; font-family:'Outfit',sans-serif; z-index:2147483647;">
+        <div style="font-size:2.8rem; margin-bottom:1rem; color:#ef4444;"><i class="ri-shield-keyhole-fill"></i></div>
+        <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:0.5rem;">Access Boundary Enforced</h2>
+        <p style="color:#94a3b8; font-size:0.88rem; line-height:1.5;">Guest preview limit active. Please complete sign-in or create a free contributor account to resume reading.</p>
+        <button type="button" onclick="window.showQuotaReachedModal()" style="margin-top:1.2rem; background:#6366f1; color:white; border:none; padding:10px 22px; border-radius:10px; font-weight:700; cursor:pointer;">
+          Open Verification Modal
+        </button>
+      </div>
+    `;
+    document.body.insertBefore(shield, document.body.firstChild);
+  }
+  return shield;
+}
+
+function enforceLockdownShield(active) {
+  if (typeof document === 'undefined' || !document.body) return;
+
+  if (active) {
+    document.documentElement.classList.add("dpg-quota-locked-state");
+    document.body.classList.add("dpg-quota-locked-state");
+
+    ensureLockdownShieldElement();
+    injectAuthDOM();
+
+    const overlay = document.getElementById("dpgAuthOverlay");
+    if (overlay) {
+      if (!document.body.contains(overlay)) {
+        document.body.appendChild(overlay);
+      }
+      overlay.classList.add("active");
+      overlay.style.setProperty("display", "flex", "important");
+      overlay.style.setProperty("visibility", "visible", "important");
+      overlay.style.setProperty("opacity", "1", "important");
+      overlay.style.setProperty("z-index", "2147483647", "important");
+    }
+
+    // Ensure at least one auth modal is visible inside overlay
+    const anyModalVisible = ["dpgQuotaReachModal", "dpgSignInModal", "dpgSignUpModal", "dpgForgotPasswordModal"].some(mId => {
+      const el = document.getElementById(mId);
+      return el && el.style.display !== 'none';
+    });
+    if (!anyModalVisible) {
+      const qModal = document.getElementById("dpgQuotaReachModal");
+      if (qModal) qModal.style.setProperty("display", "block", "important");
+    }
+
+    // Initialize Active MutationObserver
+    if (!_dpgTamperObserver && window.MutationObserver) {
+      _dpgTamperObserver = new MutationObserver(function(mutations) {
+        if (!isQuotaLocked() || _authBypassPermitted) return;
+        let tampered = false;
+
+        for (let i = 0; i < mutations.length; i++) {
+          const m = mutations[i];
+          if (m.type === 'childList') {
+            for (let j = 0; j < m.removedNodes.length; j++) {
+              const node = m.removedNodes[j];
+              if (node && (node.id === 'dpgAuthOverlay' || node.id === 'dpgQuotaReachModal' || node.id === 'dpgLockdownShield')) {
+                tampered = true;
+                break;
+              }
+            }
+          }
+          if (m.type === 'attributes') {
+            const target = m.target;
+            if (target === document.body || target === document.documentElement) {
+              if (!target.classList.contains('dpg-quota-locked-state')) {
+                tampered = true;
+              }
+            }
+            if (target && target.id === 'dpgAuthOverlay') {
+              if (!target.classList.contains('active') || target.style.display === 'none' || target.style.visibility === 'hidden') {
+                tampered = true;
+              }
+            }
+          }
+        }
+
+        if (tampered) {
+          enforceLockdownShield(true);
+          try { console.clear(); } catch(e){}
+        }
+      });
+
+      _dpgTamperObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class', 'hidden', 'id']
+      });
+    }
+
+    // High-frequency watchdog timer (250ms)
+    if (!_dpgWatchdogTimer) {
+      _dpgWatchdogTimer = setInterval(function() {
+        if (isQuotaLocked() && !_authBypassPermitted) {
+          const ov = document.getElementById("dpgAuthOverlay");
+          const isBodyLocked = document.body && document.body.classList.contains("dpg-quota-locked-state");
+          if (!ov || !document.body.contains(ov) || !ov.classList.contains("active") || !isBodyLocked) {
+            enforceLockdownShield(true);
+          }
+        }
+      }, 250);
+    }
+
+    // Anti-debugging & DevTools timing trap (1000ms)
+    if (!_dpgAntiDebugTimer) {
+      _dpgAntiDebugTimer = setInterval(function() {
+        if (!isQuotaLocked() || _authBypassPermitted) return;
+
+        // Check if DevTools is docked on Desktop / Laptop
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+        const isDevToolsDocked = widthDiff > 160 || heightDiff > 160;
+
+        const start = performance.now();
+        (function antiInspectDebugger() { debugger; })();
+        const elapsed = performance.now() - start;
+
+        if (isDevToolsDocked || elapsed > 100) {
+          try { console.clear(); } catch(e){}
+          enforceLockdownShield(true);
+        }
+      }, 1000);
+    }
+  } else {
+    document.documentElement.classList.remove("dpg-quota-locked-state");
+    document.body.classList.remove("dpg-quota-locked-state");
+
+    if (_dpgTamperObserver) {
+      _dpgTamperObserver.disconnect();
+      _dpgTamperObserver = null;
+    }
+    if (_dpgWatchdogTimer) {
+      clearInterval(_dpgWatchdogTimer);
+      _dpgWatchdogTimer = null;
+    }
+    if (_dpgAntiDebugTimer) {
+      clearInterval(_dpgAntiDebugTimer);
+      _dpgAntiDebugTimer = null;
+    }
+
+    const shield = document.getElementById('dpgLockdownShield');
+    if (shield) shield.remove();
+  }
+}
+
 // Modal Visibility Controls (strictly non-dismissible on quota lock)
 window.closeAuthModals = function(force = false) {
-  if (!force && (localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true")) {
+  if (!force && !_authBypassPermitted && isQuotaLocked()) {
     window.showQuotaReachedModal();
     return;
   }
@@ -635,7 +881,11 @@ window.openForgotPasswordModal = function() {
 };
 
 window.showQuotaReachedModal = function() {
+  localStorage.setItem("dpg_quota_locked", "true");
+  sessionStorage.setItem("dpg_quota_locked", "true");
+  document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax";
   showModal("dpgQuotaReachModal");
+  enforceLockdownShield(true);
 };
 
 window.dpgBackToSignInStep1 = function() {
@@ -678,14 +928,9 @@ async function completeAuthSuccess(user) {
     displayName: user.displayName || user.email.split('@')[0]
   }));
 
-  // Clear guest quota locks
-  localStorage.removeItem("dpg_quota_locked");
-  sessionStorage.removeItem("dpg_quota_locked");
-  document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  localStorage.removeItem("dpg_quota_visits");
-  localStorage.removeItem("dpg_quota_pdfs");
-
-  window.closeAuthModals();
+  // Clear guest quota locks via authorized unlock method
+  allowAuthUnlock();
+  window.closeAuthModals(true);
 
   // If a hard quota overlay style was injected by legacy redirect.js, remove it
   const lockStyle = document.getElementById("quotaLockOverrideStyle");
@@ -1154,13 +1399,9 @@ window.activateVerifiedContributor = async function(customToken, data) {
 
   window._pendingSignup = null;
 
-  // Verification modal auto disappears
-  window.closeAuthModals();
-
-  // Clear guest quota locks
-  localStorage.removeItem("dpg_quota_locked");
-  sessionStorage.removeItem("dpg_quota_locked");
-  document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  // Clear guest quota locks via authorized unlock method
+  allowAuthUnlock();
+  window.closeAuthModals(true);
 
   // Landing Dashboard --> Setting tab (unlock every tab until profile completion)
   window.location.href = "dashboard.html?verified=1#settings";
@@ -1517,10 +1758,17 @@ window.dpgResendRecoveryOtp = async function() {
 };
 
 // Auto-initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", injectAuthDOM);
-} else {
+function handleAuthAutoInit() {
   injectAuthDOM();
+  if (isQuotaLocked()) {
+    window.showQuotaReachedModal();
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", handleAuthAutoInit);
+} else {
+  handleAuthAutoInit();
 }
 
 // Global Auth Guard: Can be called on pages requiring Contributor Authentication

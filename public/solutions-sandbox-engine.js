@@ -1323,12 +1323,156 @@
     }
   };
 
-  // Auth Prompt Modal for Guest Try It Access
+  // Auth Prompt Modal for Guest Try It Access (Supports ALL Auth Methods)
   let pendingTryItGroup = null;
   let pendingTryItTitle = null;
 
+  // Global listener: When user logs in via ANY method (Google, GitHub, Student ID, Email/Password, Sign Up)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('dpg-auth-success', function(e) {
+      const user = (e && e.detail && e.detail.user) || null;
+      if (user) {
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUserName", user.displayName || 'Contributor');
+        localStorage.setItem("dpgActiveUserEmail", user.email || '');
+        localStorage.setItem("dpgActiveUser", JSON.stringify({
+          uid: user.uid,
+          name: user.displayName || 'Contributor',
+          email: user.email || '',
+          photoURL: user.photoURL || ''
+        }));
+      }
+
+      window.closeTryItAuthPromptModal();
+
+      if (typeof window.checkUserRoleAndSmartAccess === 'function') {
+        window.checkUserRoleAndSmartAccess();
+      }
+
+      // Resume requested Try It session automatically
+      if (pendingTryItGroup) {
+        const grp = pendingTryItGroup;
+        const ttl = pendingTryItTitle;
+        pendingTryItGroup = null;
+        pendingTryItTitle = null;
+        setTimeout(() => {
+          if (typeof window.openTryItModal === 'function') {
+            window.openTryItModal(grp, ttl);
+          }
+        }, 150);
+      }
+    });
+  }
+
   function ensureTryItAuthModalInDom() {
     if (typeof document === 'undefined' || !document.body || document.getElementById('tryItAuthPromptModal')) return;
+
+    // Inject scoped styles for Try It modal if not already present
+    if (!document.getElementById('solTryItAuthStyles')) {
+      const styleEl = document.createElement('style');
+      styleEl.id = 'solTryItAuthStyles';
+      styleEl.innerHTML = `
+        .sol-auth-prompt-card {
+          background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.96));
+          border: 1px solid rgba(99, 102, 241, 0.35);
+          border-radius: 20px;
+          padding: 2.2rem 2rem;
+          max-width: 500px;
+          width: 92%;
+          text-align: center;
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(99, 102, 241, 0.2);
+          animation: modalFadeIn 0.25s ease;
+          box-sizing: border-box;
+          color: #f8fafc;
+          position: relative;
+        }
+        .sol-auth-prompt-icon {
+          width: 62px;
+          height: 62px;
+          border-radius: 18px;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+          border: 1px solid rgba(99, 102, 241, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1.2rem auto;
+          font-size: 2rem;
+          color: #818cf8;
+        }
+        .sol-auth-oauth-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-top: 1.2rem;
+          margin-bottom: 0.75rem;
+        }
+        .sol-auth-btn-oauth {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          border-radius: 10px;
+          padding: 11px 14px;
+          font-size: 0.92rem;
+          font-weight: 600;
+          color: #f8fafc;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: all 0.2s ease;
+          box-sizing: border-box;
+          width: 100%;
+        }
+        .sol-auth-btn-oauth:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(99, 102, 241, 0.5);
+          transform: translateY(-1px);
+        }
+        .sol-auth-btn-primary {
+          background: linear-gradient(135deg, #6366f1, #4f46e5);
+          border: 1px solid rgba(99, 102, 241, 0.6);
+          border-radius: 10px;
+          padding: 12px 18px;
+          font-size: 0.94rem;
+          font-weight: 700;
+          color: #ffffff;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          width: 100%;
+          box-sizing: border-box;
+          box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+          transition: all 0.2s ease;
+        }
+        .sol-auth-btn-primary:hover {
+          background: linear-gradient(135deg, #4f46e5, #4338ca);
+          box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+          transform: translateY(-1px);
+        }
+        .sol-auth-link {
+          color: #818cf8;
+          text-decoration: none;
+          font-weight: 600;
+          cursor: pointer;
+          transition: color 0.15s ease;
+        }
+        .sol-auth-link:hover {
+          color: #a5b4fc;
+          text-decoration: underline;
+        }
+        @media (max-width: 480px) {
+          .sol-auth-oauth-row {
+            grid-template-columns: 1fr;
+          }
+          .sol-auth-prompt-card {
+            padding: 1.8rem 1.25rem;
+          }
+        }
+      `;
+      document.head.appendChild(styleEl);
+    }
 
     const modalHtml = `
       <div class="sol-modal-overlay sol-sandbox-modal-overlay" id="tryItAuthPromptModal" style="display:none; z-index:999999;">
@@ -1338,10 +1482,10 @@
           </div>
           <h2 style="color:white; font-size:1.35rem; font-weight:800; margin-bottom:0.4rem;">Sign In Required for Try It</h2>
           <p style="color:#94a3b8; font-size:0.86rem; line-height:1.55; margin-bottom:1.2rem;">
-            <strong>Try It</strong> is an interactive developer playground. Sign in with your Google account to run live experiments, customize code, test edge cases, and save community drafts in real-time.
+            <strong>Try It</strong> is an interactive developer playground. Sign in with your contributor account to run live experiments, customize code, test edge cases, and save community drafts in real-time.
           </p>
 
-          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 14px; text-align:left; margin-bottom:1.25rem; font-size:0.8rem; color:#cbd5e1; display:flex; flex-direction:column; gap:8px;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 14px; text-align:left; margin-bottom:1.2rem; font-size:0.8rem; color:#cbd5e1; display:flex; flex-direction:column; gap:8px;">
             <div style="display:flex; align-items:center; gap:8px;">
               <i class="ri-flashlight-line" style="color:#facc15;"></i>
               <span><strong>Live In-Memory Sandbox:</strong> Edit HTML, CSS, JS with zero setup.</span>
@@ -1356,17 +1500,29 @@
             </div>
           </div>
 
-          <button type="button" class="sol-auth-prompt-btn-google" id="btnGoogleSignInTryIt" onclick="window.triggerGoogleSignInForTryIt()">
-            <svg width="18" height="18" viewBox="0 0 48 48">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            </svg>
-            <span>Sign in with Google</span>
+          <!-- OAUTH SOCIAL BUTTONS (GOOGLE & GITHUB) -->
+          <div class="sol-auth-oauth-row">
+            <button type="button" class="sol-auth-btn-oauth" id="btnGoogleSignInTryIt" onclick="window.triggerGoogleSignInForTryIt()">
+              <i class="ri-google-fill" style="color:#ea4335; font-size:1.15rem;"></i> Google
+            </button>
+            <button type="button" class="sol-auth-btn-oauth" id="btnGithubSignInTryIt" onclick="window.triggerGithubSignInForTryIt()">
+              <i class="ri-github-fill" style="font-size:1.15rem;"></i> GitHub
+            </button>
+          </div>
+
+          <!-- STUDENT ID / CONTRIBUTOR EMAIL PRIMARY SIGN IN -->
+          <button type="button" class="sol-auth-btn-primary" id="btnEmailSignInTryIt" onclick="window.triggerPasswordSignInForTryIt()">
+            <i class="ri-id-card-line" style="font-size:1.1rem; color:#ffffff;"></i> Sign In with Student ID / Contributor Email
           </button>
 
-          <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" style="margin-top:0.8rem; width:100%; justify-content:center;" onclick="window.closeTryItAuthPromptModal()">
+          <!-- SIGN UP & FORGOT PASSWORD LINKS -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.95rem; font-size:0.82rem; padding:0 4px;">
+            <span style="color:#94a3b8;">Don't have an account? <a class="sol-auth-link" onclick="window.triggerSignUpForTryIt()">Create Free Account</a></span>
+            <a class="sol-auth-link" onclick="window.triggerForgotPasswordForTryIt()" style="color:#94a3b8;">Forgot Password?</a>
+          </div>
+
+          <!-- CONTINUE AS GUEST SECONDARY OPTION -->
+          <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" style="margin-top:1.1rem; width:100%; justify-content:center;" onclick="window.closeTryItAuthPromptModal()">
             Continue as Guest (Read Only)
           </button>
         </div>
@@ -1388,15 +1544,20 @@
   window.closeTryItAuthPromptModal = function() {
     const modal = document.getElementById('tryItAuthPromptModal');
     if (modal) modal.style.display = 'none';
-    pendingTryItGroup = null;
-    pendingTryItTitle = null;
   };
 
+  // 1. Google Sign-In for Try It
   window.triggerGoogleSignInForTryIt = async function() {
+    if (typeof window.dpgLoginGoogle === 'function') {
+      window.closeTryItAuthPromptModal();
+      window.dpgLoginGoogle();
+      return;
+    }
+
     const btn = document.getElementById('btnGoogleSignInTryIt');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite;"></i> Connecting to Google...';
+      btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Google...';
     }
 
     try {
@@ -1427,15 +1588,12 @@
           photoURL: user.photoURL || ''
         }));
 
-        // Close modal
         window.closeTryItAuthPromptModal();
 
-        // Update role badge in solution header if present
         if (typeof window.checkUserRoleAndSmartAccess === 'function') {
           window.checkUserRoleAndSmartAccess();
         }
 
-        // Resume requested Try It session
         const grp = pendingTryItGroup;
         const ttl = pendingTryItTitle;
         pendingTryItGroup = null;
@@ -1449,7 +1607,7 @@
       console.error("Google Sign-In Error for Try It:", err);
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<span>Sign in with Google</span>`;
+        btn.innerHTML = `<i class="ri-google-fill" style="color:#ea4335; font-size:1.15rem;"></i> Google`;
       }
       if (typeof window.customAlert === 'function') {
         await window.customAlert("Sign in notice: " + (err.message || 'Cancelled or popup closed.'), { title: "Authentication Notice" });
@@ -1458,6 +1616,104 @@
       }
     }
   };
+
+  // 2. GitHub Sign-In for Try It
+  window.triggerGithubSignInForTryIt = async function() {
+    if (typeof window.dpgLoginGithub === 'function') {
+      window.closeTryItAuthPromptModal();
+      window.dpgLoginGithub();
+      return;
+    }
+
+    const btn = document.getElementById('btnGithubSignInTryIt');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> GitHub...';
+    }
+
+    try {
+      const auth = window.solAuth || (typeof getAuth === 'function' ? getAuth() : null);
+      const ProviderClass = window.GithubAuthProvider || (typeof GithubAuthProvider !== 'undefined' ? GithubAuthProvider : null);
+      const signInFn = window.solSignInWithPopup || (typeof signInWithPopup === 'function' ? signInWithPopup : null);
+
+      if (!auth || !ProviderClass || !signInFn) {
+        throw new Error("Authentication module is initializing. Please refresh and try again.");
+      }
+
+      const provider = new ProviderClass();
+      const result = await signInFn(auth, provider);
+      const user = result.user;
+
+      if (user) {
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUserName", user.displayName || 'Contributor');
+        localStorage.setItem("dpgActiveUserEmail", user.email || '');
+        localStorage.setItem("dpgActiveUser", JSON.stringify({
+          uid: user.uid,
+          name: user.displayName || 'Contributor',
+          email: user.email || '',
+          photoURL: user.photoURL || ''
+        }));
+
+        window.closeTryItAuthPromptModal();
+
+        if (typeof window.checkUserRoleAndSmartAccess === 'function') {
+          window.checkUserRoleAndSmartAccess();
+        }
+
+        const grp = pendingTryItGroup;
+        const ttl = pendingTryItTitle;
+        pendingTryItGroup = null;
+        pendingTryItTitle = null;
+
+        if (grp) {
+          window.openTryItModal(grp, ttl);
+        }
+      }
+    } catch (err) {
+      console.error("GitHub Sign-In Error for Try It:", err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-github-fill" style="font-size:1.15rem;"></i> GitHub`;
+      }
+      if (typeof window.customAlert === 'function') {
+        await window.customAlert("Sign in notice: " + (err.message || 'Cancelled or popup closed.'), { title: "Authentication Notice" });
+      } else {
+        alert("Sign in notice: " + (err.message || 'Cancelled or popup closed.'));
+      }
+    }
+  };
+
+  // 3. Student ID / Contributor Email + Password Sign-In
+  window.triggerPasswordSignInForTryIt = function() {
+    window.closeTryItAuthPromptModal();
+    if (typeof window.openSignInModal === 'function') {
+      window.openSignInModal(true);
+    } else {
+      window.location.href = '/index.html?action=signin';
+    }
+  };
+
+  // 4. Create Free Account (Sign Up)
+  window.triggerSignUpForTryIt = function() {
+    window.closeTryItAuthPromptModal();
+    if (typeof window.openSignUpModal === 'function') {
+      window.openSignUpModal();
+    } else {
+      window.location.href = '/index.html?action=signup';
+    }
+  };
+
+  // 5. Forgot Password
+  window.triggerForgotPasswordForTryIt = function() {
+    window.closeTryItAuthPromptModal();
+    if (typeof window.openForgotPasswordModal === 'function') {
+      window.openForgotPasswordModal();
+    } else {
+      window.location.href = '/index.html?action=forgotpassword';
+    }
+  };
+
 
   // Open Interactive Try It Playground (for Login Users)
   window.openTryItModal = function(groupId, optionalTitle) {

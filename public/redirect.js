@@ -352,6 +352,38 @@
           (document.head || document.documentElement).appendChild(st);
         }
 
+        // Anti-bypass keybinding & contextmenu interception
+        if (!window._dpgQuotaKeyListenersBound) {
+          window._dpgQuotaKeyListenersBound = true;
+          window.addEventListener('keydown', function(e) {
+            const isLocked = localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true";
+            if (!isLocked) return;
+            const code = e.keyCode || e.which;
+            const isF12 = code === 123 || e.key === 'F12';
+            const isCtrlShiftI = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 73 || e.key === 'I' || e.key === 'i');
+            const isCtrlShiftJ = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 74 || e.key === 'J' || e.key === 'j');
+            const isCtrlShiftC = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 67 || e.key === 'C' || e.key === 'c');
+            const isCtrlU = (e.ctrlKey || e.metaKey) && (code === 85 || e.key === 'u' || e.key === 'U');
+            const isCtrlS = (e.ctrlKey || e.metaKey) && (code === 83 || e.key === 's' || e.key === 'S');
+
+            if (isF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC || isCtrlU || isCtrlS) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              return false;
+            }
+          }, true);
+
+          window.addEventListener('contextmenu', function(e) {
+            const isLocked = localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true";
+            if (isLocked) {
+              e.preventDefault();
+              e.stopPropagation();
+              return false;
+            }
+          }, true);
+        }
+
         window.signInWithGoogleQuota = async function() {
           const btn = document.getElementById("lockedGoogleSignInBtn");
           if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Opening Google Sign In...';

@@ -415,3 +415,59 @@
   -webkit-box-shadow: 0 0 0px 1000px #0b1120 inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* ==========================================================================
+   IMMUTABLE GUEST QUOTA LOCKDOWN & ANTI-DEVTOOLS SHIELD
+   Strictly prevents inspection-mode bypasses, element deletions, or tampering
+   ========================================================================== */
+html.dpg-quota-locked-state,
+body.dpg-quota-locked-state {
+  overflow: hidden !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  max-height: 100vh !important;
+  position: fixed !important;
+  inset: 0 !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none !important;
+  background: #020617 !important;
+}
+
+/* Hard Concealment: Even if #dpgAuthOverlay is deleted in DevTools,
+   all sibling content is completely invisible, blurred, and unclickable! */
+body.dpg-quota-locked-state > *:not(#dpgAuthOverlay):not(#dpgLockdownShield) {
+  filter: blur(60px) brightness(0.02) !important;
+  -webkit-filter: blur(60px) brightness(0.02) !important;
+  opacity: 0.02 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  overflow: hidden !important;
+  max-height: 100vh !important;
+}
+
+/* Enforce strict lockdown on overlay when active */
+.dpg-auth-overlay.active {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 2147483647 !important;
+}
+
+/* Emergency fallback lockdown shield (instant self-healing backup) */
+#dpgLockdownShield {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #020617 !important;
+  z-index: 2147483646 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
