@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Daily Guest Access Quota Exceeded | DPGNotes</title>
+  <meta name="description" content="You have reached the free daily preview limit for guest reading on DPGNotes. Sign in to your verified contributor account for unlimited access.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="ANH.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <!-- DPGNotes Universal Unified Auth Component -->
+  <link rel="stylesheet" href="/auth-component.css">
+  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script type="module" src="/auth-component.js"></script>
+
+  <style>
+    /* Strictly Concealed & Shielded Page */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    input, textarea, button, a {
+      -webkit-user-select: auto;
+      user-select: auto;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background: radial-gradient(circle at center, rgba(30, 41, 59, 0.95), #020617 85%);
+      color: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      touch-action: pan-y;
+    }
+
+    /* Print Blocker */
+    @media print {
+      body * {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      body::after {
+        content: "Printing is strictly disabled on DPGNotes Quota Lockdown.";
+        display: block !important;
+        visibility: visible !important;
+        color: #000;
+        font-size: 24pt;
+        text-align: center;
+        margin-top: 20%;
+      }
+    }
+
+    .quota-lock-wrapper {
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1rem 3.5rem 1rem;
+    }
+
+    .quota-card {
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 24px;
+      padding: 2.4rem 2rem;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(99, 102, 241, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      text-align: center;
+      position: relative;
+      animation: quotaCardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes quotaCardFadeIn {
+      from { opacity: 0; transform: scale(0.96) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .quota-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      padding: 6px 16px;
+      border-radius: 999px;
+      color: #a5b4fc;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .quota-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.75rem;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .quota-desc {
+      color: #94a3b8;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 1.4rem;
+    }
+
+    .quota-timer-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 0.95rem;
+      margin-bottom: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .quota-timer-label {
+      font-size: 0.72rem;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .quota-countdown-digits {
+      font-family: 'Fira Code', monospace;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #818cf8;
+      letter-spacing: 3px;
+      text-shadow: 0 0 15px rgba(129, 140, 248, 0.4);
+    }
+
+    .quota-oauth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .quota-btn-oauth {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .quota-btn-oauth:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(99, 102, 241, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .quota-btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #ffffff;
+      border: none;
+      padding: 1rem 1.4rem;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.98rem;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      justify-content: center;
+      transition: all 0.2s ease;
+      margin-bottom: 1.1rem;
+      font-family: inherit;
+    }
+
+    .quota-btn-primary:hover {
+      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .quota-links-row {
+      font-size: 0.86rem;
+      color: #94a3b8;
+      margin-bottom: 0.6rem;
+    }
+
+    .quota-links-row a {
+      color: #818cf8;
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .quota-links-row a:hover {
+      color: #a5b4fc;
+      text-decoration: underline;
+    }
+
+    .quota-forgot-link {
+      font-size: 0.82rem;
+    }
+
+    .quota-forgot-link a {
+      color: #64748b;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .quota-forgot-link a:hover {
+      color: #94a3b8;
+      text-decoration: underline;
+    }
+
+    .quota-legal-footer {
+      margin-top: 1.4rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+    }
+
+    .quota-legal-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 12px;
+      font-size: 0.8rem;
+    }
+
+    .quota-legal-links a {
+      color: #a78bfa;
+      text-decoration: none;
+    }
+
+    .quota-legal-links a:hover {
+      text-decoration: underline;
+      color: #c4b5fd;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="quota-lock-wrapper">
+    <div class="quota-card" id="quotaLockCard">
+      <div class="quota-badge">
+        <i class="ri-graduation-cap-fill" style="color:#818cf8; font-size:1.05rem;"></i> Welcome to the DPG Academic Community
+      </div>
+
+      <h1 class="quota-title">
+        Glad You're Finding DPGNotes Helpful!
+      </h1>
+
+      <p class="quota-desc">
+        You've reached your free daily preview limit for guest reading. DPGNotes is built for students and educators, and is <strong style="color:white;">completely free for all verified contributors</strong>.<br>
+        Sign in to your account to enjoy continuous, <strong style="color:#818cf8;">unlimited access</strong> to verified notes, practical manuals, and exam solutions.
+      </p>
+
+      <!-- LIVE RESET COUNTDOWN TIMER -->
+      <div class="quota-timer-box">
+        <span class="quota-timer-label">Guest Preview Resets In</span>
+        <div id="quotaCountdownTimer" class="quota-countdown-digits">00:00:00</div>
+        <span style="font-size:0.7rem; color:#94a3b8;">(HH : MM : SS until midnight UTC)</span>
+      </div>
+
+      <!-- MULTI-METHOD SIGN IN ROW -->
+      <div class="quota-oauth-grid">
+        <button type="button" id="lockedGoogleSignInBtn" class="quota-btn-oauth" onclick="signInWithGoogleQuota()">
+          <i class="ri-google-fill" style="color:#ea4335; font-size:1.15rem;"></i> Google
+        </button>
+        <button type="button" id="lockedGithubSignInBtn" class="quota-btn-oauth" onclick="signInWithGithubQuota()">
+          <i class="ri-github-fill" style="font-size:1.15rem;"></i> GitHub
+        </button>
+      </div>
+
+      <button type="button" class="quota-btn-primary" onclick="triggerEmailSignIn()">
+        <i class="ri-id-card-line" style="font-size:1.2rem;"></i> Sign In with Student ID / Contributor Email
+      </button>
+
+      <div class="quota-links-row">
+        Don't have a contributor account? 
+        <a href="javascript:void(0)" onclick="triggerSignUp()">Create Free Account</a>
+      </div>
+
+      <div class="quota-forgot-link">
+        <a href="javascript:void(0)" onclick="triggerForgotPassword()">Forgot Password?</a>
+      </div>
+
+      <!-- SPONSORED NATIVE AD ON QUOTA LOCK SCREEN -->
+      <div class="native-ads" id="quotaLockAdBox" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.2rem; text-align:left; width:100%;"></div>
+
+      <!-- LEGAL NOTES COMPLETE ABSOLUTE DEEP LINKS -->
+      <div class="quota-legal-footer">
+        <div style="font-size:0.78rem; color:#64748b; font-weight:600; margin-bottom:0.6rem;">DPGNotes Legal Center Policies:</div>
+        <div class="quota-legal-links">
+          <a href="https://dpgnotes.web.app/legal/index.html#privacy" target="_blank">Privacy Policy</a>
+          <span style="color:#334155;">•</span>
+          <a href="https://dpgnotes.web.app/legal/index.html#terms" target="_blank">Terms of Use</a>
+          <span style="color:#334155;">•</span>
+          <a href="https://dpgnotes.web.app/legal/index.html#drasa" target="_blank">DRASA Regulations</a>
+          <span style="color:#334155;">•</span>
+          <a href="https://dpgnotes.web.app/legal/index.html#copyright" target="_blank">Copyright Policy</a>
+          <span style="color:#334155;">•</span>
+          <a href="https://dpgnotes.web.app/legal/index.html#disclaimer" target="_blank">Disclaimer</a>
+          <span style="color:#334155;">•</span>
+          <a href="https://dpgnotes.web.app/legal/index.html#faq" target="_blank">Legal FAQ</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ========================================================================
+    // HIGH-LEVEL SECURITY & DEVTOOLS / PRINT / SCREENSHOT / GESTURE SHIELD
+    // ========================================================================
+    (function initSecurityShield() {
+      // 1. Block DevTools key combinations in event capture phase
+      window.addEventListener('keydown', function(e) {
+        const code = e.keyCode || e.which;
+        const isF12 = code === 123 || e.key === 'F12';
+        const isCtrlShiftI = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 73 || e.key === 'I' || e.key === 'i');
+        const isCtrlShiftJ = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 74 || e.key === 'J' || e.key === 'j');
+        const isCtrlShiftC = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 67 || e.key === 'C' || e.key === 'c');
+        const isCtrlU = (e.ctrlKey || e.metaKey) && (code === 85 || e.key === 'u' || e.key === 'U');
+        const isCtrlS = (e.ctrlKey || e.metaKey) && (code === 83 || e.key === 's' || e.key === 'S');
+        const isCtrlP = (e.ctrlKey || e.metaKey) && (code === 80 || e.key === 'p' || e.key === 'P');
+        const isPrintScreen = code === 44 || e.key === 'PrintScreen';
+        const isWindowsShiftS = (e.shiftKey && (code === 83 || e.key === 'S' || e.key === 's') && (e.metaKey || e.ctrlKey));
+
+        if (isF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC || isCtrlU || isCtrlS || isCtrlP || isPrintScreen || isWindowsShiftS) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          if (isPrintScreen || isWindowsShiftS) {
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText("DPGNotes Guest Quota Lockdown Active. Sign in to continue.");
+              }
+            } catch(clipErr) {}
+          }
+          return false;
+        }
+      }, true);
+
+      // 2. Block context menu
+      window.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }, true);
+
+      // 3. Block double-finger tips & multi-touch gestures (pinch to zoom, inspection taps)
+      window.addEventListener('touchstart', function(e) {
+        if (e.touches && e.touches.length > 1) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchmove', function(e) {
+        if (e.touches && e.touches.length > 1) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, { passive: false });
+
+      window.addEventListener('gesturestart', function(e) { e.preventDefault(); }, false);
+      window.addEventListener('gesturechange', function(e) { e.preventDefault(); }, false);
+      window.addEventListener('gestureend', function(e) { e.preventDefault(); }, false);
+
+      // 4. Block Print events
+      window.addEventListener('beforeprint', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // 5. Anti-Debugging timing trap
+      setInterval(function() {
+        const start = performance.now();
+        (function antiInspectDebugger() { debugger; })();
+        const elapsed = performance.now() - start;
+        if (elapsed > 100) {
+          try { console.clear(); } catch(e){}
+        }
+      }, 1200);
+    })();
+
+    // ========================================================================
+    // LIVE RESET COUNTDOWN TIMER TO MIDNIGHT UTC
+    // ========================================================================
+    function updateCountdown() {
+      const now = new Date();
+      const midnightUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+      const diffMs = midnightUtc - now;
+
+      if (diffMs <= 0) {
+        clearQuotaLocksAndRedirect("https://dpgnotes.web.app/index.html");
+        return;
+      }
+
+      const hours = Math.floor(diffMs / 3600000);
+      const mins = Math.floor((diffMs % 3600000) / 60000);
+      const secs = Math.floor((diffMs % 60000) / 1000);
+
+      const hStr = String(hours).padStart(2, '0');
+      const mStr = String(mins).padStart(2, '0');
+      const sStr = String(secs).padStart(2, '0');
+
+      const el = document.getElementById('quotaCountdownTimer');
+      if (el) el.textContent = `${hStr}:${mStr}:${sStr}`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // ========================================================================
+    // UNLOCK & AUTHENTICATION HANDLERS
+    // ========================================================================
+    function getReturnUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const ret = params.get('returnUrl') || params.get('redirect') || params.get('next');
+      if (ret && (ret.startsWith('/') || ret.startsWith('https://dpgnotes.web.app'))) {
+        return ret;
+      }
+      return "https://dpgnotes.web.app/index.html";
+    }
+
+    function clearQuotaLocksAndRedirect(targetUrl) {
+      localStorage.removeItem("dpg_quota_locked");
+      sessionStorage.removeItem("dpg_quota_locked");
+      document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      localStorage.removeItem("dpg_quota_visits");
+      localStorage.removeItem("dpg_quota_pdfs");
+      window.location.href = targetUrl || getReturnUrl();
+    }
+
+    // Listen for global auth success event
+    window.addEventListener('dpg-auth-success', function(e) {
+      clearQuotaLocksAndRedirect();
+    });
+
+    window.triggerEmailSignIn = function() {
+      if (typeof window.openSignInModal === "function") {
+        window.openSignInModal();
+      } else {
+        window.location.href = "https://dpgnotes.web.app/index.html?action=signin&returnUrl=" + encodeURIComponent(getReturnUrl());
+      }
+    };
+
+    window.triggerSignUp = function() {
+      if (typeof window.openSignUpModal === "function") {
+        window.openSignUpModal();
+      } else {
+        window.location.href = "https://dpgnotes.web.app/index.html?action=signup&returnUrl=" + encodeURIComponent(getReturnUrl());
+      }
+    };
+
+    window.triggerForgotPassword = function() {
+      if (typeof window.openForgotPasswordModal === "function") {
+        window.openForgotPasswordModal();
+      } else {
+        window.location.href = "https://dpgnotes.web.app/index.html?action=forgot&returnUrl=" + encodeURIComponent(getReturnUrl());
+      }
+    };
+
+    // Google Sign In directly on Lockdown Page
+    window.signInWithGoogleQuota = async function() {
+      const btn = document.getElementById("lockedGoogleSignInBtn");
+      if (btn) btn.innerHTML = '<i class="ri-loader-4-line dpg-auth-spin"></i> Google...';
+      try {
+        const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
+        const { getAuth, signInWithPopup, GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
+
+        const cfg = {
+          apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+          authDomain: "dpgnotes.firebaseapp.com",
+          projectId: "dpgnotes",
+          storageBucket: "dpgnotes.firebasestorage.app",
+          messagingSenderId: "910494426039",
+          appId: "1:910494426039:web:adeae5315caaf846c43e32"
+        };
+
+        const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(cfg, "dpgnotes");
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const res = await signInWithPopup(auth, provider);
+        if (res && res.user) {
+          localStorage.setItem("dpgActiveUserUid", res.user.uid);
+          localStorage.setItem("dpgActiveUser", JSON.stringify({
+            uid: res.user.uid,
+            email: res.user.email,
+            displayName: res.user.displayName || res.user.email.split('@')[0]
+          }));
+          clearQuotaLocksAndRedirect();
+        }
+      } catch (err) {
+        console.error("Quota Google Sign In error:", err);
+        if (btn) btn.innerHTML = '<i class="ri-google-fill" style="color:#ea4335;"></i> Google';
+        alert("Sign in failed: " + (err.message || err));
+      }
+    };
+
+    // GitHub Sign In directly on Lockdown Page
+    window.signInWithGithubQuota = async function() {
+      const btn = document.getElementById("lockedGithubSignInBtn");
+      if (btn) btn.innerHTML = '<i class="ri-loader-4-line dpg-auth-spin"></i> GitHub...';
+      try {
+        const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
+        const { getAuth, signInWithPopup, GithubAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
+
+        const cfg = {
+          apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+          authDomain: "dpgnotes.firebaseapp.com",
+          projectId: "dpgnotes",
+          storageBucket: "dpgnotes.firebasestorage.app",
+          messagingSenderId: "910494426039",
+          appId: "1:910494426039:web:adeae5315caaf846c43e32"
+        };
+
+        const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(cfg, "dpgnotes");
+        const auth = getAuth(app);
+        const provider = new GithubAuthProvider();
+
+        const res = await signInWithPopup(auth, provider);
+        if (res && res.user) {
+          localStorage.setItem("dpgActiveUserUid", res.user.uid);
+          localStorage.setItem("dpgActiveUser", JSON.stringify({
+            uid: res.user.uid,
+            email: res.user.email,
+            displayName: res.user.displayName || res.user.email.split('@')[0]
+          }));
+          clearQuotaLocksAndRedirect();
+        }
+      } catch (err) {
+        console.error("Quota GitHub Sign In error:", err);
+        if (btn) btn.innerHTML = '<i class="ri-github-fill"></i> GitHub';
+        alert("Sign in failed: " + (err.message || err));
+      }
+    };
+
+    // Render Native Ad
+    setTimeout(async () => {
+      if (typeof window.renderNativeDPGAds === "function") {
+        await window.renderNativeDPGAds();
+      }
+      const adBox = document.getElementById("quotaLockAdBox");
+      if (adBox && (!adBox.children || adBox.children.length === 0) && typeof window.createDPGAdCard === "function") {
+        const fallbackQuotaAd = {
+          id: "fallback_quota_page",
+          userName: "DPGNotes Academic",
+          userAvatar: "ANH.png",
+          title: "Become a Verified DPGNotes Contributor",
+          description: "Upload academic notes, question papers, and lab manuals to support peer learning and unlock unlimited privileges.",
+          thumbnailUrl: "ANH.png",
+          targetLink: "https://dpgnotes.web.app/study-hub.html"
+        };
+        const card = window.createDPGAdCard(fallbackQuotaAd, "quota_card_" + Date.now(), "feed");
+        adBox.appendChild(card);
+      }
+    }, 400);
+  </script>
+</body>
+</html>

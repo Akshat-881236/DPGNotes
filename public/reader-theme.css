@@ -264,6 +264,124 @@ html[data-theme="light"] .sol-serp-meta-pill strong {
   color: #0f172a !important;
 }
 
+/* Light Theme Search Engine & SERP Contrast (Fixes Image 3) */
+html[data-theme="light"] .sol-google-search-bar {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+html[data-theme="light"] .sol-google-search-bar:focus-within,
+html[data-theme="light"] .sol-google-search-bar:hover {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15), 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+html[data-theme="light"] .sol-google-search-input {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sol-google-search-input::placeholder {
+  color: #64748b !important;
+}
+html[data-theme="light"] .sol-google-btn,
+html[data-theme="light"] .sol-search-btn {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+html[data-theme="light"] .sol-google-btn:hover,
+html[data-theme="light"] .sol-search-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+}
+html[data-theme="light"] .sol-search-chip {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+html[data-theme="light"] .sol-search-chip:hover {
+  background: rgba(2, 132, 199, 0.08) !important;
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+}
+html[data-theme="light"] .sol-home-brand-suffix {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sol-home-subtext {
+  color: #334155 !important;
+}
+html[data-theme="light"] .sol-topics-label {
+  color: #475569 !important;
+}
+
+/* Light Theme Global Modals & Custom Alerts / Confirms */
+html[data-theme="light"] .dpg-modal-box {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15) !important;
+}
+html[data-theme="light"] .dpg-modal-title {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-modal-text {
+  color: #334155 !important;
+}
+html[data-theme="light"] .dpg-modal-btn.cancel {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-modal-btn.cancel:hover {
+  background: #e2e8f0 !important;
+  color: #020617 !important;
+}
+
+/* Light Theme Responsiveness & Platform Rating Modals (Fixes Image 4) */
+html[data-theme="light"] #dpgResponsivenessModal,
+html[data-theme="light"] #dpgPlatformRatingModal,
+html[data-theme="light"] .dpg-rating-modal {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15), 0 0 20px rgba(99, 102, 241, 0.12) !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] #dpgResponsivenessModal h4,
+html[data-theme="light"] #dpgPlatformRatingModal h4,
+html[data-theme="light"] .dpg-rating-modal h4 {
+  color: #0f172a !important;
+}
+html[data-theme="light"] #dpgResponsivenessModal p,
+html[data-theme="light"] #dpgPlatformRatingModal p,
+html[data-theme="light"] .dpg-rating-modal p {
+  color: #334155 !important;
+}
+html[data-theme="light"] #dpgDismissRespBtn,
+html[data-theme="light"] #dpgDismissRatingBtn {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
+}
+html[data-theme="light"] #dpgDismissRespBtn:hover,
+html[data-theme="light"] #dpgDismissRatingBtn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] #dpgRespFeedbackText,
+html[data-theme="light"] #dpgRatingFeedbackText {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] #dpgRespFeedbackText::placeholder,
+html[data-theme="light"] #dpgRatingFeedbackText::placeholder {
+  color: #64748b !important;
+}
+html[data-theme="light"] .dpg-star-btn {
+  color: #94a3b8;
+}
+
 /* PDF Viewer Specific Light Theme Styles */
 html[data-theme="light"] .pdfmain {
   background: #e2e8f0 !important;

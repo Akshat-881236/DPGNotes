@@ -6,7 +6,11 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assignment Solution Viewer | DPGNotes</title>
+  <title>DPGNotes Assignment Search Engine | Verified Academic Solutions &amp; Code Sandboxes</title>
+  <meta name="description" content="DPGNotes Assignment Search Engine. Search verified academic assignment solutions, university questions, interactive code sandboxes and test cases. Built for students &amp; educators.">
+  <meta property="og:title" content="DPGNotes Assignment Search Engine | Verified Academic Solutions &amp; Code Sandboxes">
+  <meta property="og:description" content="Search verified academic assignment solutions, questions, code sandboxes and test cases on DPGNotes.">
+  <meta property="og:url" content="https://dpgnotes.web.app/AssignmentSolution/index.html">
   <link rel="icon" href="../ANH.png" type="image/png">
   <link rel="stylesheet" href="solutions-style.css?v=2.2.0">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
@@ -56,6 +60,71 @@
     .sol-serp-meta-pills { display: flex !important; flex-wrap: wrap !important; gap: 16px !important; margin: 0.75rem 0 1rem 0 !important; padding: 0.65rem 0.9rem !important; background: rgba(0, 0, 0, 0.25) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; border-radius: 10px !important; }
     .sol-serp-meta-pill { display: inline-flex !important; align-items: center !important; gap: 6px !important; font-size: 0.84rem !important; color: #cbd5e1 !important; white-space: nowrap !important; }
     .sol-serp-meta-pill strong { color: #f8fafc !important; }
+
+    /* Light Theme Color Contrast Guarantees (Fixes Image 3) */
+    html[data-theme="light"] .sol-google-search-bar {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    }
+    html[data-theme="light"] .sol-google-search-bar:focus-within,
+    html[data-theme="light"] .sol-google-search-bar:hover {
+      border-color: #0284c7 !important;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15), 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    html[data-theme="light"] .sol-google-search-input {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .sol-google-search-input::placeholder {
+      color: #64748b !important;
+    }
+    html[data-theme="light"] .sol-google-btn {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+    }
+    html[data-theme="light"] .sol-google-btn:hover {
+      background: #f1f5f9 !important;
+      border-color: #0284c7 !important;
+      color: #0284c7 !important;
+    }
+    html[data-theme="light"] .sol-search-chip {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      font-weight: 600 !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    }
+    html[data-theme="light"] .sol-search-chip:hover {
+      background: rgba(2, 132, 199, 0.08) !important;
+      border-color: #0284c7 !important;
+      color: #0284c7 !important;
+    }
+    html[data-theme="light"] #solSearchHomeView .sol-home-subtext {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] #solSearchHomeView .sol-topics-label {
+      color: #475569 !important;
+    }
+    html[data-theme="light"] .sol-serp-card {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+    }
+    html[data-theme="light"] .sol-serp-title {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .sol-serp-meta-pills {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+    html[data-theme="light"] .sol-serp-meta-pill {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .sol-serp-meta-pill strong {
+      color: #0f172a !important;
+    }
   </style>
 </head>
 <body>
@@ -94,22 +163,19 @@
   <!-- Main Solution Viewer Container -->
   <main class="sol-container">
 
-    <!-- INTERFACE 1: Google-Style Search Homepage -->
+    <!-- INTERFACE 1: DPGNotes Search Homepage -->
     <section id="solSearchHomeView" style="display:none; max-width:760px; margin:3rem auto 5rem auto; text-align:center; padding:0 1rem;">
-      <!-- Google-Style Brand Title -->
+      <!-- DPGNotes Brand Title -->
       <div style="margin-bottom:2rem;">
-        <div style="font-size:3.5rem; font-weight:800; letter-spacing:-1px; display:inline-flex; align-items:center; gap:2px; font-family:'Outfit', sans-serif;">
-          <span style="color:#4285F4;">D</span>
-          <span style="color:#EA4335;">P</span>
-          <span style="color:#FBBC05;">G</span>
-          <span style="color:#34A853;">Notes</span>
+        <div style="font-size:3.5rem; font-weight:800; letter-spacing:-1px; display:inline-flex; align-items:center; gap:4px; font-family:'Outfit', sans-serif;">
+          <span style="background:linear-gradient(135deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">DPG</span><span style="color:#f8fafc;" class="sol-home-brand-suffix">Notes</span>
         </div>
-        <div style="font-size:0.95rem; color:#94a3b8; margin-top:8px; font-weight:500;">
+        <div class="sol-home-subtext" style="font-size:0.95rem; color:#94a3b8; margin-top:8px; font-weight:500;">
           <i class="ri-search-eye-line" style="color:#38bdf8;"></i> Search verified academic assignment solutions, questions, code sandboxes &amp; test cases
         </div>
       </div>
 
-      <!-- Google-Style Rounded Search Box -->
+      <!-- DPGNotes Rounded Search Box -->
       <div style="max-width:640px; margin:0 auto 1.5rem auto;">
         <form id="homeSearchForm" onsubmit="event.preventDefault(); window.executeSolutionSearch(document.getElementById('homeSearchInput').value.trim());">
           <div class="sol-google-search-bar">
@@ -121,7 +187,7 @@
         </form>
       </div>
 
-      <!-- Google-Style Action Buttons -->
+      <!-- DPGNotes Action Buttons -->
       <div style="display:flex; justify-content:center; gap:12px; margin-bottom:2.2rem; flex-wrap:wrap;">
         <button type="button" class="sol-google-btn" onclick="window.executeSolutionSearch(document.getElementById('homeSearchInput').value.trim())">
           <i class="ri-search-line"></i> Search Solutions
@@ -133,17 +199,17 @@
 
       <!-- Popular Topic Chips -->
       <div style="margin-top:1.5rem;">
-        <span style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700;">Popular Subjects &amp; Topics:</span>
+        <span class="sol-topics-label" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.8px; color:#64748b; font-weight:700;">Popular Subjects &amp; Topics:</span>
         <div class="sol-search-chips-row" id="homePopularChips"></div>
       </div>
     </section>
 
-    <!-- INTERFACE 2: Google-Style SERP Page (Search Engine Results Page) -->
+    <!-- INTERFACE 2: DPGNotes SERP Page (Search Engine Results Page) -->
     <section id="solSerpView" style="display:none; max-width:960px; margin:0 auto; padding:1rem 1rem 4rem 1rem;">
-      <!-- Sticky / Top Google Search Header in SERP -->
+      <!-- Sticky / Top Search Header in SERP -->
       <div style="display:flex; align-items:center; gap:16px; margin-bottom:1.25rem; flex-wrap:wrap;">
         <a href="index.html" class="sol-serp-mini-brand" style="text-decoration:none; display:inline-flex; align-items:center; gap:2px; font-weight:800; font-size:1.4rem;">
-          <span style="color:#4285F4;">D</span><span style="color:#EA4335;">P</span><span style="color:#FBBC05;">G</span><span style="color:#34A853;">Notes</span>
+          <span style="background:linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">DPG</span><span style="color:#f8fafc;" class="sol-home-brand-suffix">Notes</span>
         </a>
         <form id="serpSearchForm" onsubmit="event.preventDefault(); window.executeSolutionSearch(document.getElementById('serpSearchInput').value.trim());" style="flex:1; min-width:280px;">
           <div class="sol-google-search-bar" style="height:44px;">
@@ -510,7 +576,7 @@
     }
 
     function showSearchHomeInterface() {
-      document.title = "DPGNotes Assignment Search Engine | Google-Style Academic Finder";
+      document.title = "DPGNotes Assignment Search Engine | Verified Academic Solutions, Questions & Sandboxes";
       document.getElementById('loadingState').style.display = 'none';
       document.getElementById('errorState').style.display = 'none';
       document.getElementById('solutionViewport').style.display = 'none';

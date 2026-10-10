@@ -216,21 +216,12 @@
       const activeUid = localStorage.getItem("dpgActiveUserUid");
       if (activeUid) return;
 
-      // 2. Legal Policy Pages, Utilities, and Contributor Creator Studios are strictly Exempt from Guest Quota
+      // 2. Legal Policy Pages, Quota Lockdown Screen, and Contributor Creator Studios are strictly Exempt from Guest Quota
       if (window.location.pathname.includes('/legal') || 
           window.location.href.includes('legal/index.html') ||
-          window.location.pathname.includes('ImagetoPdfConverter') ||
-          window.location.pathname.includes('PdfMetaAdder') ||
-          window.location.pathname.includes('PdfMetaAnalyzer') ||
-          window.location.pathname.includes('AssignmentCoverPageGenerator') ||
-          window.location.pathname.includes('PracticalCoverPageGenerator') ||
-          window.location.pathname.includes('AssignmentSolution/generate') ||
-          window.location.pathname.includes('AssignmentSolution/generator') ||
-          window.location.pathname.includes('PracticalSolution/generate') ||
-          window.location.pathname.includes('PracticalSolution/generator') ||
+          window.location.pathname.includes('quota-lockdown.html') ||
           window.location.pathname.includes('admin') ||
           window.location.pathname.includes('dashboard') ||
-          window.location.pathname.includes('overview') ||
           window.location.pathname.includes('train_model')) {
         return;
       }
@@ -276,12 +267,17 @@
         sessionStorage.removeItem("dpg_quota_locked");
         clearCookie("dpg_quota_locked");
       } else if (isLockedLocal || isLockedSession || isLockedCookie) {
-        // Tamper detected or lock previously set: enforce lock across all 3 layers!
+        // Tamper detected or lock previously set: enforce lock across all 3 layers & immediately bounce to quota-lockdown.html
         localStorage.setItem("dpg_quota_locked", "true");
         sessionStorage.setItem("dpg_quota_locked", "true");
         setCookie("dpg_quota_locked", "true");
         pageVisits = 99;
         pdfViews = 99;
+
+        if (!window.location.pathname.includes('quota-lockdown.html')) {
+          window.location.href = "https://dpgnotes.web.app/quota-lockdown.html?returnUrl=" + encodeURIComponent(window.location.href);
+          return;
+        }
       }
 
       if (isPdfViewer) pdfViews += 1;
@@ -300,9 +296,6 @@
         body: JSON.stringify({ guestId: guestId, action: currentAction })
       }).then(r => r.json()).then(data => {
         if (data && data.allowed === false) {
-          localStorage.setItem("dpg_quota_locked", "true");
-          sessionStorage.setItem("dpg_quota_locked", "true");
-          setCookie("dpg_quota_locked", "true");
           triggerQuotaReachedPhase();
         }
       }).catch(err => {
@@ -315,321 +308,15 @@
         sessionStorage.setItem("dpg_quota_locked", "true");
         setCookie("dpg_quota_locked", "true");
 
-        // If shared auth component modal is present on this page, trigger it directly in-place!
-        if (typeof window.showQuotaReachedModal === "function") {
-          window.showQuotaReachedModal();
+        if (window.location.pathname.includes('quota-lockdown.html')) {
           return;
         }
 
-        const isRootHome = window.location.pathname === '/' || window.location.pathname === '/index.html' || window.location.pathname.endsWith('/public/') || window.location.pathname.endsWith('/public/index.html');
-        if (!isRootHome) {
-          window.location.href = "https://dpgnotes.web.app/index.html?quotaReached=true";
-          return;
-        }
-
-        // Lock URL parameter silently if missing
-        if (!window.location.search.includes('quotaReached=true')) {
-          try { history.replaceState(null, '', '/index.html?quotaReached=true'); } catch(e){}
-        }
-
-        // 1. Immediately inject hard CSS override into head so no other DOM elements can ever render
-        if (!document.getElementById('quotaLockOverrideStyle')) {
-          const st = document.createElement('style');
-          st.id = 'quotaLockOverrideStyle';
-          st.innerHTML = `
-            body > *:not(#unnegotiableLockedQuotaScreen) {
-              display: none !important;
-            }
-            html, body {
-              margin: 0 !important;
-              padding: 0 !important;
-              overflow: hidden !important;
-              height: 100vh !important;
-              width: 100vw !important;
-              background: #020617 !important;
-            }
-          `;
-          (document.head || document.documentElement).appendChild(st);
-        }
-
-        // Anti-bypass keybinding & contextmenu interception
-        if (!window._dpgQuotaKeyListenersBound) {
-          window._dpgQuotaKeyListenersBound = true;
-          window.addEventListener('keydown', function(e) {
-            const isLocked = localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true";
-            if (!isLocked) return;
-            const code = e.keyCode || e.which;
-            const isF12 = code === 123 || e.key === 'F12';
-            const isCtrlShiftI = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 73 || e.key === 'I' || e.key === 'i');
-            const isCtrlShiftJ = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 74 || e.key === 'J' || e.key === 'j');
-            const isCtrlShiftC = (e.ctrlKey || e.metaKey) && e.shiftKey && (code === 67 || e.key === 'C' || e.key === 'c');
-            const isCtrlU = (e.ctrlKey || e.metaKey) && (code === 85 || e.key === 'u' || e.key === 'U');
-            const isCtrlS = (e.ctrlKey || e.metaKey) && (code === 83 || e.key === 's' || e.key === 'S');
-
-            if (isF12 || isCtrlShiftI || isCtrlShiftJ || isCtrlShiftC || isCtrlU || isCtrlS) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-              return false;
-            }
-          }, true);
-
-          window.addEventListener('contextmenu', function(e) {
-            const isLocked = localStorage.getItem("dpg_quota_locked") === "true" || sessionStorage.getItem("dpg_quota_locked") === "true";
-            if (isLocked) {
-              e.preventDefault();
-              e.stopPropagation();
-              return false;
-            }
-          }, true);
-        }
-
-        window.signInWithGoogleQuota = async function() {
-          const btn = document.getElementById("lockedGoogleSignInBtn");
-          if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Opening Google Sign In...';
-          try {
-            const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
-            const { getAuth, signInWithPopup, GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
-
-            const cfg = {
-              apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
-              authDomain: "dpgnotes.firebaseapp.com",
-              projectId: "dpgnotes",
-              storageBucket: "dpgnotes.firebasestorage.app",
-              messagingSenderId: "910494426039",
-              appId: "1:910494426039:web:adeae5315caaf846c43e32"
-            };
-
-            const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(cfg, "dpgnotes");
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
-
-            const res = await signInWithPopup(auth, provider);
-            if (res && res.user) {
-              localStorage.setItem("dpgActiveUserUid", res.user.uid);
-              localStorage.removeItem("dpg_quota_visits");
-              localStorage.removeItem("dpg_quota_pdfs");
-              localStorage.removeItem("dpg_quota_locked");
-              sessionStorage.removeItem("dpg_quota_locked");
-              document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
-              if (btn) btn.innerHTML = '<i class="ri-checkbox-circle-fill" style="color:#4ade80;"></i> Success! Redirecting...';
-              setTimeout(() => {
-                window.location.href = "https://dpgnotes.web.app/index.html";
-              }, 400);
-            }
-          } catch (err) {
-            console.error("Quota lock Google Sign In error:", err);
-            if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Continue with Google';
-            if (err && (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain')))) {
-              if (confirm("Google Auth requires adding 'dpgnotes.vercel.app' to Firebase Authorized Domains.\n\nRedirect to official portal (https://dpgnotes.web.app) for instant Google Auth?")) {
-                window.location.href = "https://dpgnotes.web.app/";
-              }
-            } else {
-              alert("Sign in failed: " + (err.message || err));
-            }
-          }
-        };
-
-        window.signInWithGithubQuota = async function() {
-          const btn = document.getElementById("lockedGithubSignInBtn");
-          if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Opening GitHub...';
-          try {
-            const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
-            const { getAuth, signInWithPopup, GithubAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
-
-            const cfg = {
-              apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
-              authDomain: "dpgnotes.firebaseapp.com",
-              projectId: "dpgnotes",
-              storageBucket: "dpgnotes.firebasestorage.app",
-              messagingSenderId: "910494426039",
-              appId: "1:910494426039:web:adeae5315caaf846c43e32"
-            };
-
-            const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(cfg, "dpgnotes");
-            const auth = getAuth(app);
-            const provider = new GithubAuthProvider();
-
-            const res = await signInWithPopup(auth, provider);
-            if (res && res.user) {
-              localStorage.setItem("dpgActiveUserUid", res.user.uid);
-              localStorage.removeItem("dpg_quota_visits");
-              localStorage.removeItem("dpg_quota_pdfs");
-              localStorage.removeItem("dpg_quota_locked");
-              sessionStorage.removeItem("dpg_quota_locked");
-              document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
-              if (btn) btn.innerHTML = '<i class="ri-checkbox-circle-fill" style="color:#4ade80;"></i> Success! Redirecting...';
-              setTimeout(() => {
-                window.location.href = "https://dpgnotes.web.app/index.html";
-              }, 400);
-            }
-          } catch (err) {
-            console.error("Quota lock GitHub Sign In error:", err);
-            if (btn) btn.innerHTML = '<i class="ri-github-fill"></i> Continue with GitHub';
-            alert("Sign in failed: " + (err.message || err));
-          }
-        };
-
-        function buildQuotaScreen() {
-          if (document.body) {
-            document.body.style.cssText = 'margin:0; padding:0; overflow:hidden; background:#020617; font-family:"Inter",sans-serif; color:#f8fafc; height:100vh; width:100vw; display:flex; align-items:center; justify-content:center;';
-            
-            // Hide/remove any other child elements in body
-            Array.from(document.body.children).forEach(child => {
-              if (child.id !== 'unnegotiableLockedQuotaScreen') {
-                child.style.display = 'none';
-              }
-            });
-
-            if (!document.getElementById('unnegotiableLockedQuotaScreen')) {
-              const lockedContainer = document.createElement('div');
-              lockedContainer.id = 'unnegotiableLockedQuotaScreen';
-              lockedContainer.style.cssText = 'width:100vw; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:2rem 1rem 3rem 1rem; background:radial-gradient(circle at center, rgba(30,41,59,0.95), #020617 85%); box-sizing:border-box; text-align:center; overflow-y:auto; -webkit-overflow-scrolling:touch; position:fixed; inset:0; z-index:999999;';
-
-              lockedContainer.innerHTML = `
-                <div style="background:rgba(15,23,42,0.92); border:1px solid rgba(99,102,241,0.35); border-radius:24px; padding:2.2rem 1.8rem; max-width:540px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.9); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin:auto 0; box-sizing:border-box;">
-                  <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:1rem; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.35); padding:6px 16px; border-radius:999px; color:#a5b4fc; font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-                    <i class="ri-graduation-cap-fill" style="color:#818cf8; font-size:1.05rem;"></i> Welcome to the DPG Academic Community
-                  </div>
-
-                  <h1 style="font-family:'Outfit',sans-serif; font-size:1.85rem; font-weight:800; color:white; margin-bottom:0.6rem; line-height:1.25;">
-                    Glad You're Finding DPGNotes Helpful!
-                  </h1>
-
-                  <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.3rem;">
-                    You've reached your free daily preview limit for guest reading. DPGNotes is built for students and educators, and is <strong style="color:white;">completely free for all verified contributors</strong>.<br>
-                    Sign in to your account to enjoy <strong style="color:#818cf8;">unlimited free access</strong> to verified notes, practical manuals, and exam solutions.
-                  </p>
-
-                  <!-- LIVE RESET COUNTDOWN TIMER -->
-                  <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:0.85rem; margin-bottom:1.4rem; display:flex; flex-direction:column; align-items:center; gap:4px;">
-                    <span style="font-size:0.72rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Guest Preview Resets In</span>
-                    <div id="quotaCountdownTimer" style="font-family:monospace; font-size:1.9rem; font-weight:800; color:#818cf8; letter-spacing:2px;">00:00:00</div>
-                    <span style="font-size:0.7rem; color:#94a3b8;">(HH : MM : SS until midnight UTC)</span>
-                  </div>
-
-                  <!-- MULTI-METHOD SIGN IN ROW -->
-                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-                    <button id="lockedGoogleSignInBtn" onclick="window.signInWithGoogleQuota()" style="background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.12); color:white; padding:0.85rem 1rem; border-radius:12px; font-weight:700; font-size:0.92rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s ease;">
-                      <i class="ri-google-fill" style="color:#ea4335; font-size:1.15rem;"></i> Google
-                    </button>
-                    <button id="lockedGithubSignInBtn" onclick="window.signInWithGithubQuota()" style="background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.12); color:white; padding:0.85rem 1rem; border-radius:12px; font-weight:700; font-size:0.92rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s ease;">
-                      <i class="ri-github-fill" style="font-size:1.15rem;"></i> GitHub
-                    </button>
-                  </div>
-
-                  <button type="button" onclick="window.openSignInModal ? window.openSignInModal() : (window.location.href='/index.html?action=signin')" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:0.95rem 1.4rem; border-radius:12px; font-weight:800; font-size:0.98rem; cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.45); display:inline-flex; align-items:center; gap:10px; width:100%; justify-content:center; transition:all 0.2s ease; margin-bottom:1rem;">
-                    <i class="ri-id-card-line" style="font-size:1.2rem;"></i> Sign In with Student ID / Contributor Email
-                  </button>
-
-                  <div style="font-size:0.86rem; color:#94a3b8; margin-bottom:0.6rem;">
-                    Don't have a contributor account? 
-                    <a href="javascript:void(0)" onclick="window.openSignUpModal ? window.openSignUpModal() : (window.location.href='/index.html?action=signup')" style="color:#818cf8; font-weight:700; text-decoration:none;">Create Free Account</a>
-                  </div>
-
-                  <div style="font-size:0.82rem;">
-                    <a href="javascript:void(0)" onclick="window.openForgotPasswordModal ? window.openForgotPasswordModal() : (window.location.href='/index.html?action=signin')" style="color:#64748b; text-decoration:none;">Forgot Password?</a>
-                  </div>
-
-                  <!-- SPONSORED NATIVE AD ON QUOTA LOCK SCREEN -->
-                  <div class="native-ads" id="quotaLockAdBox" data-ad-variant="feed" data-ad-count="1" style="margin-top:1.2rem; text-align:left; width:100%;"></div>
-
-                  <!-- LEGAL NOTES DEEP LINKS -->
-                  <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
-                    <div style="font-size:0.78rem; color:#64748b; font-weight:600; margin-bottom:0.6rem;">DPGNotes Legal Center Policies:</div>
-                    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px 12px; font-size:0.8rem;">
-                      <a href="https://dpgnotes.web.app/legal/index.html#privacy" target="_blank" style="color:#a78bfa; text-decoration:none;">Privacy Policy</a>
-                      <span style="color:#334155;">•</span>
-                      <a href="https://dpgnotes.web.app/legal/index.html#terms" target="_blank" style="color:#a78bfa; text-decoration:none;">Terms of Use</a>
-                      <span style="color:#334155;">•</span>
-                      <a href="https://dpgnotes.web.app/legal/index.html#drasa" target="_blank" style="color:#a78bfa; text-decoration:none;">DRASA Regulations</a>
-                      <span style="color:#334155;">•</span>
-                      <a href="https://dpgnotes.web.app/legal/index.html#copyright" target="_blank" style="color:#a78bfa; text-decoration:none;">Copyright Policy</a>
-                      <span style="color:#334155;">•</span>
-                      <a href="https://dpgnotes.web.app/legal/index.html#disclaimer" target="_blank" style="color:#a78bfa; text-decoration:none;">Disclaimer</a>
-                      <span style="color:#334155;">•</span>
-                      <a href="https://dpgnotes.web.app/legal/index.html#faq" target="_blank" style="color:#a78bfa; text-decoration:none;">Legal FAQ</a>
-                    </div>
-                  </div>
-                </div>
-              `;
-
-              document.body.appendChild(lockedContainer);
-
-              setTimeout(async () => {
-                if (typeof window.renderNativeDPGAds === "function") {
-                  await window.renderNativeDPGAds();
-                }
-                const adBox = document.getElementById("quotaLockAdBox");
-                if (adBox && (!adBox.children || adBox.children.length === 0) && typeof window.createDPGAdCard === "function") {
-                  const fallbackQuotaAd = {
-                    id: "fallback_quota_screen",
-                    userName: "DPGNotes Academic",
-                    userAvatar: "ANH.png",
-                    title: "Become a Verified DPGNotes Contributor",
-                    description: "Upload academic notes, question papers, and lab manuals to support peer learning and gain unlimited platform privileges.",
-                    thumbnailUrl: "ANH.png",
-                    targetLink: "https://dpgnotes.web.app/study-hub.html"
-                  };
-                  const card = window.createDPGAdCard(fallbackQuotaAd, "quota_card_" + Date.now(), "feed");
-                  adBox.appendChild(card);
-                }
-              }, 350);
-
-              // MutationObserver protection: Prevent users from deleting or altering the lock screen via DevTools
-              if (!window.dpgDomObserver) {
-                window.dpgDomObserver = new MutationObserver(() => {
-                  if (!document.getElementById('unnegotiableLockedQuotaScreen')) {
-                    buildQuotaScreen();
-                  }
-                });
-                window.dpgDomObserver.observe(document.body, { childList: true, subtree: false });
-              }
-            }
-          }
-        }
-
-        buildQuotaScreen();
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', buildQuotaScreen);
-        }
-        window.addEventListener('load', buildQuotaScreen);
-
-        // Start live countdown timer to midnight
-        function updateTimer() {
-          const now = new Date();
-          const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-          const diffMs = midnight - now;
-
-          if (diffMs <= 0) {
-            localStorage.removeItem("dpg_quota_visits");
-            localStorage.removeItem("dpg_quota_pdfs");
-            localStorage.removeItem("dpg_quota_locked");
-            sessionStorage.removeItem("dpg_quota_locked");
-            clearCookie("dpg_quota_locked");
-            window.location.href = "https://dpgnotes.web.app/index.html";
-            return;
-          }
-
-          const hours = Math.floor(diffMs / 3600000);
-          const mins = Math.floor((diffMs % 3600000) / 60000);
-          const secs = Math.floor((diffMs % 60000) / 1000);
-
-          const hStr = String(hours).padStart(2, '0');
-          const mStr = String(mins).padStart(2, '0');
-          const sStr = String(secs).padStart(2, '0');
-
-          const timerEl = document.getElementById('quotaCountdownTimer');
-          if (timerEl) {
-            timerEl.textContent = `${hStr}:${mStr}:${sStr}`;
-          }
-        }
-
-        updateTimer();
-        setInterval(updateTimer, 1000);
+        // Always redirect user to quota-lockdown.html with complete absolute URL
+        window.location.href = "https://dpgnotes.web.app/quota-lockdown.html?returnUrl=" + encodeURIComponent(window.location.href);
       }
+
+
 
       // Never lock out search engine crawlers (Googlebot, Bingbot, Lighthouse, Google-InspectionTool, etc.)
       const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent);

@@ -104,6 +104,28 @@
       box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
     }
 
+    /* Light Theme Support */
+    html[data-theme="light"] .dpg-modal-box {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15) !important;
+    }
+    html[data-theme="light"] .dpg-modal-title {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .dpg-modal-text {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .dpg-modal-btn.cancel {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .dpg-modal-btn.cancel:hover {
+      background: #e2e8f0 !important;
+      color: #020617 !important;
+    }
+
     @keyframes dpgPulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.08); }

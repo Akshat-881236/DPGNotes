@@ -1810,9 +1810,10 @@ async function loadDpgMetricsAdmin(forceRefresh = false) {
   }
 
   try {
-    const [visitorSnap, feedbackSnap] = await Promise.all([
+    const [visitorSnap, feedbackSnap, platformSnap] = await Promise.all([
       getDocs(query(collection(db, "visitor_metrics"), orderBy("timestamp", "desc"), limit(500))),
-      getDocs(query(collection(db, "responsiveness_feedback"), orderBy("timestamp", "desc"), limit(200)))
+      getDocs(query(collection(db, "responsiveness_feedback"), orderBy("timestamp", "desc"), limit(200))),
+      getDocs(query(collection(db, "dpgnotes_ratings"), orderBy("timestamp", "desc"), limit(200))).catch(() => ({ forEach: () => {} }))
     ]);
 
     const visitorList = [];
@@ -1821,13 +1822,19 @@ async function loadDpgMetricsAdmin(forceRefresh = false) {
     const feedbackList = [];
     feedbackSnap.forEach(d => feedbackList.push({ id: d.id, ...d.data() }));
 
+    const platformRatingsList = [];
+    if (platformSnap && platformSnap.forEach) {
+      platformSnap.forEach(d => platformRatingsList.push({ id: d.id, ...d.data() }));
+    }
+
     dpgMetricsCache = {
       data: visitorList,
       feedbacks: feedbackList,
+      platformRatings: platformRatingsList,
       loadedAt: Date.now()
     };
 
-    renderDpgMetricsUI(visitorList, feedbackList);
+    renderDpgMetricsUI(visitorList, feedbackList, platformRatingsList);
 
   } catch (err) {
     console.error("Failed to load DPGNotes metrics:", err);
@@ -1837,7 +1844,7 @@ async function loadDpgMetricsAdmin(forceRefresh = false) {
   }
 }
 
-function renderDpgMetricsUI(visitorList, feedbackList) {
+function renderDpgMetricsUI(visitorList, feedbackList, platformRatingsList = []) {
   const totalVisits = visitorList.length;
 
   // A. AI Tools vs Search Engines vs Direct
@@ -2280,6 +2287,121 @@ function renderDpgMetricsUI(visitorList, feedbackList) {
       `;
       tbody.appendChild(row);
     });
+  }
+
+  // Render Separate DPGNotes Platform Ratings
+  const platformBadge = document.getElementById("metricsPlatformRatingCountBadge");
+  if (platformBadge) {
+    platformBadge.innerText = `${platformRatingsList.length} reviews collected`;
+  }
+
+  const platformStarSummaryEl = document.getElementById("metricsPlatformStarSummarySection");
+  if (platformStarSummaryEl) {
+    const totalPlatformReviews = platformRatingsList.length;
+    let avgScore = 0;
+    const starCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    if (totalPlatformReviews > 0) {
+      let sum = 0;
+      platformRatingsList.forEach(item => {
+        const r = parseInt(item.rating, 10) || 5;
+        if (r >= 1 && r <= 5) {
+          starCounts[r]++;
+          sum += r;
+        }
+      });
+      avgScore = (sum / totalPlatformReviews).toFixed(1);
+    }
+
+    let distHtml = '';
+    [5, 4, 3, 2, 1].forEach(star => {
+      const count = starCounts[star] || 0;
+      const pct = totalPlatformReviews > 0 ? Math.round((count / totalPlatformReviews) * 100) : 0;
+      distHtml += `
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem; margin-bottom:4px;">
+          <span style="width:24px; color:#f59e0b; font-weight:700;">${star}★</span>
+          <div style="flex:1; background:rgba(255,255,255,0.06); height:6px; border-radius:3px; overflow:hidden;">
+            <div style="width:${pct}%; background:#38bdf8; height:100%; border-radius:3px;"></div>
+          </div>
+          <span style="width:36px; text-align:right; color:var(--admin-muted); font-size:0.75rem;">${count}</span>
+        </div>
+      `;
+    });
+
+    platformStarSummaryEl.innerHTML = `
+      <div style="background:rgba(15,23,42,0.6); border:1px solid var(--admin-border); border-radius:14px; padding:1.25rem; display:flex; align-items:center; gap:2rem; flex-wrap:wrap;">
+        <div style="text-align:center; padding:0 1rem; border-right:1px solid rgba(255,255,255,0.08);">
+          <div style="font-size:3rem; font-weight:800; color:#38bdf8; line-height:1;">${avgScore}</div>
+          <div style="color:#f59e0b; font-size:1.1rem; margin:4px 0;">★★★★★</div>
+          <div style="color:var(--admin-muted); font-size:0.75rem;">Based on ${totalPlatformReviews} platform ratings</div>
+        </div>
+        <div style="flex:1; min-width:240px;">
+          ${distHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  const platformTbody = document.getElementById("metricsPlatformRatingTableBody");
+  if (platformTbody) {
+    if (platformRatingsList.length === 0) {
+      platformTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--admin-muted); padding:2rem;">No platform service ratings submitted yet.</td></tr>`;
+    } else {
+      platformTbody.innerHTML = "";
+      platformRatingsList.forEach(item => {
+        const r = parseInt(item.rating, 10) || 5;
+        const starsDisplay = '★'.repeat(r) + '☆'.repeat(5 - r);
+
+        let ratingBadgeClass = 'color:#10b981;';
+        if (r <= 2) ratingBadgeClass = 'color:#ef4444;';
+        else if (r === 3) ratingBadgeClass = 'color:#f59e0b;';
+
+        const opinionText = item.opinion ? item.opinion.trim() : '';
+        let opinionCell = `<span style="color:var(--admin-muted); font-style:italic;">No written opinion</span>`;
+        if (opinionText) {
+          opinionCell = `
+            <div>
+              ${r <= 3 ? `<span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; font-size:0.72rem; margin-right:6px; border:1px solid rgba(239,68,68,0.4);"><i class="ri-alert-line"></i> Suggestion</span>` : ''}
+              <span style="color:#f8fafc; font-size:0.85rem; line-height:1.4;">${opinionText}</span>
+            </div>
+          `;
+        } else if (r <= 3) {
+          opinionCell = `<span class="badge" style="background:rgba(245,158,11,0.2); color:#fcd34d; font-size:0.72rem;">Rated ${r}★ without note</span>`;
+        }
+
+        const activePageLink = item.activePageUrl
+          ? `<a href="${item.activePageUrl}" target="_blank" style="color:#38bdf8; text-decoration:none; display:flex; align-items:center; gap:4px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.activePageUrl}"><i class="ri-external-link-line"></i> ${item.pathname || item.activePageUrl}</a>`
+          : `<span style="color:var(--admin-muted);">N/A</span>`;
+
+        const deviceStr = `<span style="font-weight:600; color:#e2e8f0;">${item.deviceType || 'Device'}</span> <span style="font-size:0.72rem; color:var(--admin-muted); display:block;">${item.country || 'Global'} (${item.city || 'N/A'})</span>`;
+
+        const userBadge = item.userMode === 'Contributor'
+          ? `<span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);">Contributor</span>`
+          : `<span class="badge" style="background:rgba(245,158,11,0.2); color:#fcd34d; border:1px solid rgba(245,158,11,0.3);">Guest</span>`;
+
+        let timeFormatted = 'Just now';
+        if (item.timestamp) {
+          try {
+            const d = item.timestamp.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
+            timeFormatted = d.toLocaleString();
+          } catch(e) {}
+        }
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>
+            <div style="${ratingBadgeClass} font-size:1.1rem; letter-spacing:1px; font-weight:700;">${starsDisplay}</div>
+            <span style="font-size:0.7rem; color:var(--admin-muted);">${r} out of 5</span>
+          </td>
+          <td>${opinionCell}</td>
+          <td>${activePageLink}</td>
+          <td>${deviceStr}</td>
+          <td>${userBadge}</td>
+          <td style="font-size:0.78rem; color:var(--admin-muted); white-space:nowrap;">${timeFormatted}</td>
+        `;
+        platformTbody.appendChild(row);
+      });
+    }
   }
 }
 

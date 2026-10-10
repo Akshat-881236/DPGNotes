@@ -884,6 +884,10 @@ window.showQuotaReachedModal = function() {
   localStorage.setItem("dpg_quota_locked", "true");
   sessionStorage.setItem("dpg_quota_locked", "true");
   document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax";
+  if (!window.location.pathname.includes('quota-lockdown.html')) {
+    window.location.href = "https://dpgnotes.web.app/quota-lockdown.html?returnUrl=" + encodeURIComponent(window.location.href);
+    return;
+  }
   showModal("dpgQuotaReachModal");
   enforceLockdownShield(true);
 };

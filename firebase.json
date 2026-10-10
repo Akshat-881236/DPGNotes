@@ -15,13 +15,7 @@
     "public":
     "public",
 
-    "redirects": [
-      {
-        "source": "/sitemap.xml",
-        "destination": "https://dpgnotes.onrender.com/sitemap.xml",
-        "type": 302
-      }
-    ],
+    "redirects": [],
 
     "ignore": [
 

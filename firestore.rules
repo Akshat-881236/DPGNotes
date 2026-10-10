@@ -149,6 +149,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    /* ---------- DPGNOTES PLATFORM & SERVICE RATINGS ---------- */
+    match /dpgnotes_ratings/{ratingId} {
+      allow read, write: if true;
+    }
+
     /* ---------- RESOURCE KNOWLEDGE ---------- */
     match /resource_knowledge/{rkId} {
       allow read, write: if true;

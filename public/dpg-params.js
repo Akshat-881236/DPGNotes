@@ -517,22 +517,93 @@
   // ==========================================================================
   // 8. CUSTOM MEDIA RESPONSIVENESS RATING MODAL (TABLET & MOBILE ONLY)
   // ==========================================================================
-  function initResponsivenessRatingModal() {
+  // Helper: Persistent Client Device ID for multi-layer tracking across refreshes/clears
+  function getClientDeviceId() {
+    let devId = null;
+    try {
+      devId = localStorage.getItem('dpg_client_device_id');
+      if (!devId) {
+        const match = document.cookie.match(/(^| )dpg_client_device_id=([^;]+)/);
+        if (match) devId = match[2];
+      }
+    } catch(e) {}
+
+    if (!devId) {
+      const rawSeed = (navigator.userAgent || '') + (navigator.hardwareConcurrency || '') + (screen.width + 'x' + screen.height) + (Intl.DateTimeFormat().resolvedOptions().timeZone || '') + Date.now() + Math.random();
+      let hash = 0;
+      for (let i = 0; i < rawSeed.length; i++) {
+        hash = ((hash << 5) - hash) + rawSeed.charCodeAt(i);
+        hash |= 0;
+      }
+      devId = 'dev_' + Math.abs(hash).toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+      try {
+        localStorage.setItem('dpg_client_device_id', devId);
+        document.cookie = `dpg_client_device_id=${devId};path=/;max-age=31536000;SameSite=Lax`;
+      } catch(e) {}
+    }
+    return devId;
+  }
+
+  const FORTNIGHT_MS = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+
+  // ==========================================================================
+  // 8. CUSTOM MEDIA RESPONSIVENESS RATING MODAL (FORTNIGHTLY / 14 DAYS)
+  // ==========================================================================
+  async function initResponsivenessRatingModal() {
     if (isCrawler) return;
 
     const deviceType = detectDeviceType();
     const isTabletOrMobile = deviceType === 'Mobile' || deviceType === 'Tablet' || window.innerWidth <= 1024;
-
-    // STRICTLY for Tablet and Mobile devices only
     if (!isTabletOrMobile) return;
 
-    // Check if already rated or recently dismissed
+    const clientDeviceId = getClientDeviceId();
+    let userUid = '';
     try {
-      if (localStorage.getItem('dpg_responsiveness_rated')) return;
+      userUid = localStorage.getItem('dpgActiveUserUid') || '';
+    } catch(e) {}
+
+    // Check fast local cache
+    try {
+      const lastRated = parseInt(localStorage.getItem('dpg_responsiveness_rated_time') || '0', 10);
+      if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return;
       if (sessionStorage.getItem('dpg_responsiveness_dismissed')) return;
     } catch(e) {}
 
-    // Show modal smoothly after 7 seconds of page interaction
+    // Firestore Verification: Fortnightly check based on previous feedback timestamp
+    try {
+      const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
+      const { getFirestore, collection, query, where, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
+      const cfg = {
+        apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+        authDomain: "dpgnotes.firebaseapp.com",
+        projectId: "dpgnotes",
+        storageBucket: "dpgnotes.firebasestorage.app",
+        messagingSenderId: "910494426039",
+        appId: "1:910494426039:web:adeae5315caaf846c43e32"
+      };
+      const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
+      const db = getFirestore(app);
+
+      let q;
+      if (userUid) {
+        q = query(collection(db, "responsiveness_feedback"), where("userId", "==", userUid), orderBy("timestamp", "desc"), limit(1));
+      } else {
+        q = query(collection(db, "responsiveness_feedback"), where("clientDeviceId", "==", clientDeviceId), orderBy("timestamp", "desc"), limit(1));
+      }
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const lastDoc = snap.docs[0].data();
+        const lastTs = lastDoc.timestamp ? (lastDoc.timestamp.toMillis ? lastDoc.timestamp.toMillis() : new Date(lastDoc.timestamp).getTime()) : 0;
+        if (lastTs && (Date.now() - lastTs < FORTNIGHT_MS)) {
+          localStorage.setItem('dpg_responsiveness_rated_time', lastTs.toString());
+          return;
+        }
+      }
+    } catch(err) {
+      // Non-blocking firestore check fallback
+    }
+
+    // Show modal smoothly after 7 seconds
     setTimeout(renderResponsivenessModal, 7000);
 
     function renderResponsivenessModal() {
@@ -540,6 +611,7 @@
 
       const modalContainer = document.createElement('div');
       modalContainer.id = 'dpgResponsivenessModal';
+      modalContainer.className = 'dpg-rating-modal';
       modalContainer.style.cssText = `
         position: fixed;
         bottom: 20px;
@@ -590,7 +662,7 @@
         </div>
         <div id="dpgRatingLabel" style="text-align:center; font-size:0.8rem; font-weight:600; color:#38bdf8; min-height:1.2rem; margin-bottom:0.5rem;">Select your rating</div>
 
-        <!-- Optional Poor Rating Feedback Box (<= 3 stars) -->
+        <!-- Optional Feedback Box for <= 3 stars -->
         <div id="dpgPoorFeedbackSection" style="display:none; margin-top:0.75rem; animation:dpgFadeIn 0.3s ease;">
           <label style="display:block; font-size:0.78rem; color:#fca5a5; margin-bottom:0.35rem; font-weight:600;">
             Help us improve! What layout or media issues did you face? (Optional):
@@ -607,15 +679,10 @@
             Later
           </button>
         </div>
-        <style>
-          @keyframes dpgFadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-          .dpg-star-btn:hover, .dpg-star-btn:active { transform: scale(1.2); }
-        </style>
       `;
 
       document.body.appendChild(modalContainer);
 
-      // Trigger enter transition
       requestAnimationFrame(() => {
         modalContainer.style.opacity = '1';
         modalContainer.style.transform = 'translateX(-50%) translateY(0)';
@@ -646,7 +713,6 @@
           submitBtn.style.opacity = '1';
           submitBtn.style.boxShadow = '0 4px 14px rgba(99,102,241,0.4)';
 
-          // If 3 stars or less, show feedback box
           if (currentRating <= 3) {
             poorSection.style.display = 'block';
             if (feedbackInput) feedbackInput.focus();
@@ -682,12 +748,11 @@
       closeBtn.addEventListener('click', dismissModal);
       dismissBtn.addEventListener('click', dismissModal);
 
-      // Submit Rating and Feedback to Firestore
       submitBtn.addEventListener('click', async () => {
         if (!currentRating) return;
 
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span style="display:inline-block; animation:dpgSpin 0.8s linear infinite;">⏳</span> Submitting...';
+        submitBtn.innerHTML = 'Submitting...';
 
         try {
           const [isIncognito, geo] = await Promise.all([
@@ -695,16 +760,12 @@
             resolveGeoLocation()
           ]);
 
-          let userUid = '';
-          try {
-            userUid = localStorage.getItem('dpgActiveUserUid') || (window.dpgAuth && window.dpgAuth.currentUser ? window.dpgAuth.currentUser.uid : '');
-          } catch(e) {}
           const userMode = userUid ? 'Contributor' : 'Guest';
 
           const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
           const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
 
-          const firebaseConfig = {
+          const cfg = {
             apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
             authDomain: "dpgnotes.firebaseapp.com",
             projectId: "dpgnotes",
@@ -712,8 +773,7 @@
             messagingSenderId: "910494426039",
             appId: "1:910494426039:web:adeae5315caaf846c43e32"
           };
-
-          const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
+          const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
           const db = getFirestore(app);
 
           const feedbackData = {
@@ -728,6 +788,7 @@
             isIncognito: Boolean(isIncognito),
             userMode: userMode,
             userId: userUid || 'Guest',
+            clientDeviceId: clientDeviceId,
             ip: geo.ip || 'Unknown',
             country: geo.country || 'Unknown',
             city: geo.city || 'N/A',
@@ -740,7 +801,7 @@
           await addDoc(collection(db, "responsiveness_feedback"), feedbackData);
 
           try {
-            localStorage.setItem('dpg_responsiveness_rated', Date.now().toString());
+            localStorage.setItem('dpg_responsiveness_rated_time', Date.now().toString());
           } catch(e) {}
 
           modalContainer.innerHTML = `
@@ -765,11 +826,400 @@
     }
   }
 
-  // Initialize responsiveness rating modal
+  // ==========================================================================
+  // 8B. DPGNOTES SERVICE RATING MODAL (TRIGGERED AFTER 2 MINUTES / FORTNIGHTLY)
+  // ==========================================================================
+  async function initPlatformRatingModal() {
+    if (isCrawler) return;
+
+    const clientDeviceId = getClientDeviceId();
+    let userUid = '';
+    try {
+      userUid = localStorage.getItem('dpgActiveUserUid') || '';
+    } catch(e) {}
+
+    // Check fast local cache
+    try {
+      const lastRated = parseInt(localStorage.getItem('dpg_platform_rated_time') || '0', 10);
+      if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return;
+      if (sessionStorage.getItem('dpg_platform_rating_dismissed')) return;
+    } catch(e) {}
+
+    // Firestore Verification: Fortnightly check based on previous feedback timestamp
+    try {
+      const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
+      const { getFirestore, collection, query, where, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
+      const cfg = {
+        apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+        authDomain: "dpgnotes.firebaseapp.com",
+        projectId: "dpgnotes",
+        storageBucket: "dpgnotes.firebasestorage.app",
+        messagingSenderId: "910494426039",
+        appId: "1:910494426039:web:adeae5315caaf846c43e32"
+      };
+      const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
+      const db = getFirestore(app);
+
+      let q;
+      if (userUid) {
+        q = query(collection(db, "dpgnotes_ratings"), where("userId", "==", userUid), orderBy("timestamp", "desc"), limit(1));
+      } else {
+        q = query(collection(db, "dpgnotes_ratings"), where("clientDeviceId", "==", clientDeviceId), orderBy("timestamp", "desc"), limit(1));
+      }
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const lastDoc = snap.docs[0].data();
+        const lastTs = lastDoc.timestamp ? (lastDoc.timestamp.toMillis ? lastDoc.timestamp.toMillis() : new Date(lastDoc.timestamp).getTime()) : 0;
+        if (lastTs && (Date.now() - lastTs < FORTNIGHT_MS)) {
+          localStorage.setItem('dpg_platform_rated_time', lastTs.toString());
+          return;
+        }
+      }
+    } catch(err) {
+      // Non-blocking firestore check fallback
+    }
+
+    renderPlatformRatingModal();
+
+    function renderPlatformRatingModal() {
+      if (document.getElementById('dpgPlatformRatingModal') || document.getElementById('dpgResponsivenessModal')) return;
+
+      const modalContainer = document.createElement('div');
+      modalContainer.id = 'dpgPlatformRatingModal';
+      modalContainer.className = 'dpg-rating-modal';
+      modalContainer.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(30px);
+        width: calc(100% - 32px);
+        max-width: 440px;
+        background: rgba(15, 23, 42, 0.96);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        border-radius: 18px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.2);
+        padding: 1.25rem 1.4rem;
+        z-index: 999999;
+        font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+        color: #f8fafc;
+        opacity: 0;
+        transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-sizing: border-box;
+      `;
+
+      modalContainer.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg, #0284c7, #38bdf8); display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; box-shadow:0 4px 10px rgba(56,189,248,0.3);">
+              <i class="ri-feedback-line" style="font-size:1.15rem;"></i>
+            </div>
+            <div>
+              <h4 style="margin:0; font-size:0.98rem; font-weight:700; color:#ffffff; letter-spacing:-0.01em;">DPGNotes Rating</h4>
+              <p style="margin:0; font-size:0.75rem; color:#94a3b8;">Tell us your Experience</p>
+            </div>
+          </div>
+          <button id="dpgCloseRatingModal" style="background:transparent; border:none; color:#64748b; font-size:1.2rem; cursor:pointer; padding:2px; line-height:1; border-radius:6px;" title="Dismiss">&times;</button>
+        </div>
+
+        <p style="margin:0 0 0.85rem 0; font-size:0.85rem; color:#cbd5e1; line-height:1.45;">
+          How satisfied are you with our services we provide you on DPGNotes?
+        </p>
+
+        <!-- Star Rating Pool -->
+        <div style="display:flex; justify-content:center; gap:10px; margin:0.8rem 0 0.6rem 0;" id="dpgPlatformStarContainer">
+          <button class="dpg-star-btn" data-rating="1" style="background:none; border:none; font-size:1.75rem; color:#475569; cursor:pointer; transition:transform 0.15s, color 0.15s; padding:0;">★</button>
+          <button class="dpg-star-btn" data-rating="2" style="background:none; border:none; font-size:1.75rem; color:#475569; cursor:pointer; transition:transform 0.15s, color 0.15s; padding:0;">★</button>
+          <button class="dpg-star-btn" data-rating="3" style="background:none; border:none; font-size:1.75rem; color:#475569; cursor:pointer; transition:transform 0.15s, color 0.15s; padding:0;">★</button>
+          <button class="dpg-star-btn" data-rating="4" style="background:none; border:none; font-size:1.75rem; color:#475569; cursor:pointer; transition:transform 0.15s, color 0.15s; padding:0;">★</button>
+          <button class="dpg-star-btn" data-rating="5" style="background:none; border:none; font-size:1.75rem; color:#475569; cursor:pointer; transition:transform 0.15s, color 0.15s; padding:0;">★</button>
+        </div>
+        <div id="dpgPlatformRatingLabel" style="text-align:center; font-size:0.8rem; font-weight:600; color:#38bdf8; min-height:1.2rem; margin-bottom:0.5rem;">Select your rating</div>
+
+        <!-- Optional Feedback Box for <= 3 stars -->
+        <div id="dpgPlatformPoorSection" style="display:none; margin-top:0.75rem; animation:dpgFadeIn 0.3s ease;">
+          <label style="display:block; font-size:0.78rem; color:#fca5a5; margin-bottom:0.35rem; font-weight:600;">
+            Help us improve! Tell your opinion (optional):
+          </label>
+          <textarea id="dpgRatingFeedbackText" rows="2" placeholder="Tell us what we can do better..." style="width:100%; box-sizing:border-box; background:rgba(0,0,0,0.35); border:1px solid rgba(239,68,68,0.4); border-radius:10px; color:#ffffff; font-family:inherit; font-size:0.82rem; padding:0.6rem; outline:none; resize:none;"></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:0.9rem;">
+          <button id="dpgSubmitRatingBtn" disabled style="flex:1; background:linear-gradient(135deg, #0284c7, #38bdf8); color:white; border:none; border-radius:10px; padding:0.65rem; font-weight:600; font-size:0.85rem; cursor:pointer; opacity:0.5; transition:all 0.2s;">
+            Submit Rating
+          </button>
+          <button id="dpgDismissRatingBtn" style="background:rgba(255,255,255,0.06); color:#cbd5e1; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:0.65rem 1rem; font-size:0.82rem; cursor:pointer;">
+            Later
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(modalContainer);
+
+      requestAnimationFrame(() => {
+        modalContainer.style.opacity = '1';
+        modalContainer.style.transform = 'translateX(-50%) translateY(0)';
+      });
+
+      let currentRating = 0;
+      const starBtns = modalContainer.querySelectorAll('.dpg-star-btn');
+      const ratingLabel = modalContainer.querySelector('#dpgPlatformRatingLabel');
+      const poorSection = modalContainer.querySelector('#dpgPlatformPoorSection');
+      const submitBtn = modalContainer.querySelector('#dpgSubmitRatingBtn');
+      const closeBtn = modalContainer.querySelector('#dpgCloseRatingModal');
+      const dismissBtn = modalContainer.querySelector('#dpgDismissRatingBtn');
+      const feedbackInput = modalContainer.querySelector('#dpgRatingFeedbackText');
+
+      const ratingDescriptions = {
+        1: '★ Needs Urgent Improvement',
+        2: '★★ Below Expectations',
+        3: '★★★ Satisfactory Service',
+        4: '★★★★ Very Helpful Platform',
+        5: '★★★★★ Outstanding Academic Platform'
+      };
+
+      starBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentRating = parseInt(btn.dataset.rating, 10);
+          updateStarDisplay(currentRating);
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+          submitBtn.style.boxShadow = '0 4px 14px rgba(56,189,248,0.4)';
+
+          if (currentRating <= 3) {
+            poorSection.style.display = 'block';
+            if (feedbackInput) feedbackInput.focus();
+          } else {
+            poorSection.style.display = 'none';
+          }
+        });
+      });
+
+      function updateStarDisplay(score) {
+        starBtns.forEach(b => {
+          const val = parseInt(b.dataset.rating, 10);
+          if (val <= score) {
+            b.style.color = '#f59e0b';
+            b.style.textShadow = '0 0 10px rgba(245, 158, 11, 0.6)';
+          } else {
+            b.style.color = '#475569';
+            b.style.textShadow = 'none';
+          }
+        });
+        ratingLabel.textContent = ratingDescriptions[score] || 'Select your rating';
+      }
+
+      function dismissModal() {
+        try {
+          sessionStorage.setItem('dpg_platform_rating_dismissed', 'true');
+        } catch(e) {}
+        modalContainer.style.opacity = '0';
+        modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
+        setTimeout(() => modalContainer.remove(), 400);
+      }
+
+      closeBtn.addEventListener('click', dismissModal);
+      dismissBtn.addEventListener('click', dismissModal);
+
+      submitBtn.addEventListener('click', async () => {
+        if (!currentRating) return;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Submitting...';
+
+        try {
+          const [isIncognito, geo] = await Promise.all([
+            detectIncognito(),
+            resolveGeoLocation()
+          ]);
+
+          const userMode = userUid ? 'Contributor' : 'Guest';
+
+          const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
+          const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
+
+          const cfg = {
+            apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+            authDomain: "dpgnotes.firebaseapp.com",
+            projectId: "dpgnotes",
+            storageBucket: "dpgnotes.firebasestorage.app",
+            messagingSenderId: "910494426039",
+            appId: "1:910494426039:web:adeae5315caaf846c43e32"
+          };
+          const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
+          const db = getFirestore(app);
+
+          const ratingData = {
+            rating: currentRating,
+            opinion: (feedbackInput && feedbackInput.value) ? feedbackInput.value.trim() : '',
+            activePageUrl: window.location.href,
+            pathname: window.location.pathname,
+            deviceType: detectDeviceType(),
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            isIncognito: Boolean(isIncognito),
+            userMode: userMode,
+            userId: userUid || 'Guest',
+            clientDeviceId: clientDeviceId,
+            ip: geo.ip || 'Unknown',
+            country: geo.country || 'Unknown',
+            city: geo.city || 'N/A',
+            timezone: (Intl && Intl.DateTimeFormat) ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
+            timestamp: serverTimestamp()
+          };
+
+          await addDoc(collection(db, "dpgnotes_ratings"), ratingData);
+
+          try {
+            localStorage.setItem('dpg_platform_rated_time', Date.now().toString());
+          } catch(e) {}
+
+          modalContainer.innerHTML = `
+            <div style="text-align:center; padding:0.5rem 0;">
+              <div style="font-size:2.2rem; color:#10b981; margin-bottom:0.4rem;">✓</div>
+              <h4 style="margin:0 0 0.3rem 0; font-size:1.05rem; color:#ffffff; font-weight:700;">Thank You!</h4>
+              <p style="margin:0; font-size:0.82rem; color:#94a3b8;">Your feedback helps us continuously improve DPGNotes for students and educators worldwide.</p>
+            </div>
+          `;
+
+          setTimeout(() => {
+            modalContainer.style.opacity = '0';
+            modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
+            setTimeout(() => modalContainer.remove(), 400);
+          }, 2500);
+
+        } catch(err) {
+          console.error('[dpg-params] Error saving DPGNotes platform rating:', err);
+          modalContainer.remove();
+        }
+      });
+    }
+  }
+
+  // ==========================================================================
+  // 8C. UNIVERSAL DYNAMIC METADATA & ABSOLUTE IN-PAGE LINK RESOLUTION
+  // ==========================================================================
+  function initDynamicPageMetadata() {
+    try {
+      const p = window.location.pathname;
+      const s = window.location.search;
+      const h = window.location.hash;
+      const urlParams = new URLSearchParams(s);
+
+      let targetTitle = document.title;
+      let targetDesc = "DPGNotes Academic Portal - Verified academic notes, practical manuals, exam solutions and university question papers.";
+
+      if (p.includes('AssignmentSolution')) {
+        const id = urlParams.get('id');
+        const q = urlParams.get('q');
+        const title = urlParams.get('title');
+        if (title) {
+          targetTitle = `${title} | DPGNotes Assignment Solution`;
+          targetDesc = `Verified academic assignment solution for ${title} with step-by-step answers and interactive code testing on DPGNotes.`;
+        } else if (q) {
+          targetTitle = `${q} - Academic Assignment Search | DPGNotes`;
+          targetDesc = `Search results for "${q}" across verified university assignment solutions and sandboxes on DPGNotes.`;
+        } else if (!id) {
+          targetTitle = "DPGNotes Assignment Search Engine | Verified Academic Solutions, Questions & Sandboxes";
+          targetDesc = "DPGNotes Assignment Search Engine. Search verified academic assignment solutions, university questions, interactive code sandboxes and test cases.";
+        }
+      } else if (p.includes('PracticalSolution')) {
+        const id = urlParams.get('id');
+        const q = urlParams.get('q');
+        const title = urlParams.get('title');
+        if (title) {
+          targetTitle = `${title} | DPGNotes Practical Lab Solution`;
+          targetDesc = `Verified academic laboratory manual and experiment code for ${title} on DPGNotes.`;
+        } else if (q) {
+          targetTitle = `${q} - Practical Lab Search | DPGNotes`;
+          targetDesc = `Search results for practical experiment "${q}" on DPGNotes Practical Lab Search Engine.`;
+        } else if (!id) {
+          targetTitle = "DPGNotes Practical Lab Search Engine | Lab Manuals, Interactive Sandboxes & Viva Solutions";
+          targetDesc = "DPGNotes Practical Lab Search Engine. Search verified academic practical lab solutions, university experiment manuals, interactive code sandboxes and viva test cases.";
+        }
+      } else if (p.includes('dpgnotes-pdf-viewer.html')) {
+        const title = urlParams.get('title');
+        const disc = urlParams.get('discipline');
+        const desc = urlParams.get('description');
+        if (title) {
+          targetTitle = `${title} | DPGNotes Academic PDF Viewer`;
+          targetDesc = desc || `Read verified academic notes and papers on ${title}${disc ? ' for ' + disc : ''} on DPGNotes.`;
+        }
+      } else if (p.includes('dpgnotes-search-engine.html') || p.includes('dpgnotes-serp.html')) {
+        const q = urlParams.get('q');
+        if (q) {
+          targetTitle = `${q} - DPGNotes Academic Search`;
+          targetDesc = `Search results for academic resources matching "${q}" on DPGNotes.`;
+        } else {
+          targetTitle = "DPGNotes Search Engine | Academic Notes, Papers & Solutions Finder";
+          targetDesc = "Search verified university academic notes, past exam papers, and practical files across all undergraduate and postgraduate semesters on DPGNotes.";
+        }
+      } else if (p.includes('overview')) {
+        targetTitle = "DPGNotes Full-Stack Architecture, SRS & Academic System Overview";
+        targetDesc = "Comprehensive technical overview, project-based full-stack documentation, and software engineering specification of the DPGNotes Academic Platform.";
+      } else if (p.includes('legal')) {
+        const hashSection = h.replace('#', '').trim();
+        if (hashSection) {
+          const cap = hashSection.charAt(0).toUpperCase() + hashSection.slice(1);
+          targetTitle = `${cap} Policy & Compliance | DPGNotes Legal Center`;
+        } else {
+          targetTitle = "DPGNotes Legal Center & Academic Compliance Policies";
+        }
+        targetDesc = "Official legal policies, privacy commitments, DRASA regulations, terms of service and compliance standards for the DPGNotes Academic Portal.";
+      }
+
+      // Apply title and meta description
+      document.title = targetTitle;
+
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.name = 'description';
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.content = targetDesc;
+
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) {
+        ogTitle = document.createElement('meta');
+        ogTitle.setAttribute('property', 'og:title');
+        document.head.appendChild(ogTitle);
+      }
+      ogTitle.content = targetTitle;
+
+      let ogDesc = document.querySelector('meta[property="og:description"]');
+      if (!ogDesc) {
+        ogDesc = document.createElement('meta');
+        ogDesc.setAttribute('property', 'og:description');
+        document.head.appendChild(ogDesc);
+      }
+      ogDesc.content = targetDesc;
+
+      // Ensure in-page navigation links with '#' contain the complete canonical URL
+      const fullOriginPath = 'https://dpgnotes.web.app' + window.location.pathname;
+      document.querySelectorAll('a[href^="#"]').forEach(a => {
+        const hashTarget = a.getAttribute('href');
+        if (hashTarget && hashTarget !== '#' && hashTarget !== '#!') {
+          a.href = fullOriginPath + hashTarget;
+        }
+      });
+
+    } catch(metaErr) {
+      console.warn('[dpg-params] Dynamic metadata generation warning:', metaErr);
+    }
+  }
+
+  // Trigger Rating Modals and Metadata Engine
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initResponsivenessRatingModal);
+    document.addEventListener('DOMContentLoaded', () => {
+      initResponsivenessRatingModal();
+      initDynamicPageMetadata();
+      setTimeout(initPlatformRatingModal, 120000); // 2 minutes trigger
+    });
   } else {
     initResponsivenessRatingModal();
+    initDynamicPageMetadata();
+    setTimeout(initPlatformRatingModal, 120000); // 2 minutes trigger
   }
 
   // ==========================================================================

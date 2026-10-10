@@ -1649,6 +1649,45 @@
             </table>
           </div>
         </div>
+
+        <!-- ROW 6: DPGNOTES PLATFORM & SERVICE RATINGS (2-MINUTE IN-APP FEEDBACK) -->
+        <div class="section-card" style="margin-top: 1.5rem;">
+          <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="margin:0; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+                <i class="ri-feedback-line" style="color:#38bdf8;"></i> DPGNotes Service & Platform Ratings (2-Min In-App Feedback)
+              </h3>
+              <p style="color:var(--admin-muted); font-size:0.82rem; margin:4px 0 0 0;">
+                General user satisfaction feedback submitted via the 2-minute "DPGNotes Rating" modal across all device form factors.
+              </p>
+            </div>
+            <span id="metricsPlatformRatingCountBadge" style="font-size:0.82rem; background:rgba(56,189,248,0.15); color:#38bdf8; padding:4px 12px; border-radius:12px; font-weight:600;">
+              0 ratings collected
+            </span>
+          </div>
+
+          <!-- Star Score Summary & Distribution -->
+          <div id="metricsPlatformStarSummarySection" style="margin: 1rem 0 1.5rem 0;"></div>
+
+          <!-- Filterable Platform Ratings Table -->
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:120px;">Rating</th>
+                  <th>User Opinion &amp; Feedback</th>
+                  <th>Active Page URL</th>
+                  <th>Device &amp; Location</th>
+                  <th>User Mode</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="metricsPlatformRatingTableBody">
+                <tr><td colspan="6" style="text-align:center; color:var(--admin-muted);">Loading DPGNotes platform ratings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- VIEW: DEVICE LOGS -->
