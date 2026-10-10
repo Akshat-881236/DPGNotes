@@ -125,6 +125,233 @@
     html[data-theme="light"] .sol-serp-meta-pill strong {
       color: #0f172a !important;
     }
+
+    /* Quick Solution Cards Section (PDF Viewer Ending Part Logic) */
+    .sol-end-recommendations {
+      margin-top: 3.5rem;
+      padding: 2rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+    }
+    html[data-theme="light"] .sol-end-recommendations {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    .sol-rec-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .sol-rec-main-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin: 0 0 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    html[data-theme="light"] .sol-rec-main-title {
+      color: #0f172a;
+    }
+    .sol-rec-sub-text {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+    html[data-theme="light"] .sol-rec-sub-text {
+      color: #475569;
+    }
+    .sol-rec-filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .sol-rec-tab-btn {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    html[data-theme="light"] .sol-rec-tab-btn {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+    .sol-rec-tab-btn:hover {
+      background: rgba(51, 65, 85, 0.9);
+      color: #ffffff;
+    }
+    html[data-theme="light"] .sol-rec-tab-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .sol-rec-tab-btn.active {
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    html[data-theme="light"] .sol-rec-tab-btn.active {
+      background: linear-gradient(135deg, #0284c7, #4f46e5);
+      border-color: #0284c7;
+      color: #ffffff;
+    }
+    .sol-rec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .sol-rec-card {
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    html[data-theme="light"] .sol-rec-card {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+    .sol-rec-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    html[data-theme="light"] .sol-rec-card:hover {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border-color: #0284c7;
+    }
+    .sol-rec-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .sol-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .sol-badge-assignment {
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    html[data-theme="light"] .sol-badge-assignment {
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: #bfdbfe;
+    }
+    .sol-badge-practical {
+      background: rgba(20, 184, 166, 0.15);
+      color: #2dd4bf;
+      border: 1px solid rgba(20, 184, 166, 0.3);
+    }
+    html[data-theme="light"] .sol-badge-practical {
+      background: #f0fdf4;
+      color: #16a34a;
+      border-color: #bbf7d0;
+    }
+    .sol-course-pill {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    html[data-theme="light"] .sol-course-pill {
+      color: #64748b;
+    }
+    .sol-rec-card-title {
+      margin: 0;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #f1f5f9;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    html[data-theme="light"] .sol-rec-card-title {
+      color: #0f172a;
+    }
+    .sol-rec-card-title a {
+      text-decoration: none;
+      color: inherit;
+    }
+    .sol-rec-author-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+    html[data-theme="light"] .sol-rec-author-row {
+      color: #475569;
+    }
+    .sol-rec-metrics-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.76rem;
+      color: #64748b;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 8px;
+      margin-top: auto;
+    }
+    html[data-theme="light"] .sol-rec-metrics-row {
+      border-top-color: #e2e8f0;
+      color: #64748b;
+    }
+    .sol-rec-btn-action {
+      margin-top: 6px;
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .sol-rec-btn-action:hover {
+      background: linear-gradient(135deg, #0369a1, #4f46e5);
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -427,6 +654,47 @@
           </button>
         </div>
       </div>
+
+      <!-- Quick Solutions Recommendations Section (Mixed Assignment & Practical) -->
+      <section id="solutionEndRecommendations" class="sol-end-recommendations" style="display:none;">
+        <div class="sol-rec-header-row">
+          <div>
+            <h2 class="sol-rec-main-title">
+              <i class="ri-compass-3-line" style="color:#2dd4bf;"></i> Quick Solution Explorer
+            </h2>
+            <p class="sol-rec-sub-text">
+              Explore related practical lab &amp; assignment code solutions across the DPGNotes curriculum.
+            </p>
+          </div>
+          <a href="../dpgnotes-serp.html?tab=solutions" class="sol-btn sol-btn-secondary sol-btn-sm" style="text-decoration:none;">
+            Browse All Solutions <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+
+        <!-- Classification Filter Tabs -->
+        <div class="sol-rec-filter-tabs">
+          <button type="button" class="sol-rec-tab-btn active" data-rec-tab="similar" onclick="window.switchRecTab('similar')">
+            <i class="ri-sparkling-fill" style="color:#2dd4bf;"></i> Similar Solutions
+          </button>
+          <button type="button" class="sol-rec-tab-btn" data-rec-tab="mostLiked" onclick="window.switchRecTab('mostLiked')">
+            <i class="ri-heart-3-fill" style="color:#f472b6;"></i> Most Liked
+          </button>
+          <button type="button" class="sol-rec-tab-btn" data-rec-tab="mostViewed" onclick="window.switchRecTab('mostViewed')">
+            <i class="ri-fire-fill" style="color:#f59e0b;"></i> Most Viewed
+          </button>
+          <button type="button" class="sol-rec-tab-btn" data-rec-tab="contributor" onclick="window.switchRecTab('contributor')">
+            <i class="ri-user-star-fill" style="color:#a855f7;"></i> More from <span id="recContribNameSpan">Contributor</span>
+          </button>
+          <button type="button" class="sol-rec-tab-btn" data-rec-tab="category" onclick="window.switchRecTab('category')">
+            <i class="ri-folder-2-fill" style="color:#10b981;"></i> More in <span id="recCategoryNameSpan">Category</span>
+          </button>
+        </div>
+
+        <!-- Quick Solutions Cards Grid -->
+        <div id="solutionRecGrid" class="sol-rec-grid">
+          <div style="color:var(--sol-text-muted); font-size:0.88rem; text-align:center; padding:2rem; grid-column:1/-1;">Loading recommended solutions...</div>
+        </div>
+      </section>
 
     </div>
 
@@ -1270,6 +1538,9 @@
           window.loadAndRenderCommunityTestCases(data.id || new URLSearchParams(window.location.search).get('id'));
         }
       }
+      if (typeof window.loadEndSolutionRecommendations === 'function') {
+        window.loadEndSolutionRecommendations(data);
+      }
     }
 
     function showPdfAttachment(url) {
@@ -1952,6 +2223,181 @@
 </body>
 </html>`;
         }
+      }
+    };
+
+    // QUICK SOLUTION CARDS SHOWCASE (MIXED ASSIGNMENT & PRACTICAL)
+    window.__solutionRecPools = {
+      similar: [],
+      mostLiked: [],
+      mostViewed: [],
+      contributor: [],
+      category: []
+    };
+
+    window.switchRecTab = function(tabName) {
+      document.querySelectorAll('.sol-rec-tab-btn').forEach(btn => {
+        if (btn.getAttribute('data-rec-tab') === tabName) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      renderRecCards(tabName);
+    };
+
+    function renderRecCards(tabName) {
+      const grid = document.getElementById("solutionRecGrid");
+      if (!grid) return;
+      const items = (window.__solutionRecPools && window.__solutionRecPools[tabName]) || [];
+      if (items.length === 0) {
+        grid.innerHTML = `
+          <div style="color:var(--sol-text-muted); font-size:0.88rem; text-align:center; padding:2rem; grid-column:1/-1;">
+            No additional solutions found in this section.
+          </div>
+        `;
+        return;
+      }
+      grid.innerHTML = items.slice(0, 6).map(item => {
+        const isPrac = item.isPractical;
+        return `
+          <div class="sol-rec-card">
+            <div class="sol-rec-card-header">
+              <span class="sol-type-badge ${isPrac ? 'sol-badge-practical' : 'sol-badge-assignment'}">
+                <i class="${isPrac ? 'ri-flask-line' : 'ri-file-code-line'}"></i>
+                ${isPrac ? 'Practical Lab' : 'Assignment Solution'}
+              </span>
+              <span class="sol-course-pill">${escapeHtml(item.course || 'Academic')}</span>
+            </div>
+            <h4 class="sol-rec-card-title">
+              <a href="${item.url}">${escapeHtml(item.title)}</a>
+            </h4>
+            <div class="sol-rec-author-row">
+              <i class="ri-user-smile-line"></i>
+              <span>${escapeHtml(item.contributor)}</span>
+            </div>
+            <div class="sol-rec-metrics-row">
+              <span title="Views"><i class="ri-eye-line" style="color:#38bdf8;"></i> ${item.views}</span>
+              <span title="Likes"><i class="ri-heart-line" style="color:#f472b6;"></i> ${item.likes}</span>
+              <span title="Runs / Tested"><i class="ri-play-circle-line" style="color:#10b981;"></i> ${item.runs}</span>
+            </div>
+            <a href="${item.url}" class="sol-rec-btn-action">
+              Read &amp; View Solution <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.loadEndSolutionRecommendations = async function(currData) {
+      const container = document.getElementById("solutionEndRecommendations");
+      if (!container || !currData) return;
+      container.style.display = "block";
+
+      const contribSpan = document.getElementById("recContribNameSpan");
+      const catSpan = document.getElementById("recCategoryNameSpan");
+      const contribName = currData.contributorName || currData.studentName || 'Contributor';
+      const categoryName = currData.course || currData.courseSec || currData.category || 'Curriculum';
+
+      if (contribSpan) contribSpan.textContent = contribName;
+      if (catSpan) catSpan.textContent = categoryName;
+
+      try {
+        if (!window.solDb || !window.solCollectionGroup || !window.solGetDocs) return;
+
+        const allSolutions = [];
+        const currId = currData.id || new URLSearchParams(window.location.search).get('id') || '';
+
+        // Query solutions from both assignment and practical collections
+        const q = window.solQuery(
+          window.solCollectionGroup(window.solDb, "solutions"),
+          window.solLimit(120)
+        );
+        const querySnap = await window.solGetDocs(q);
+
+        querySnap.docs.forEach(docSnap => {
+          const d = docSnap.data();
+          const docId = d.id || docSnap.id;
+          if (docId === currId) return; // exclude active solution
+
+          const path = docSnap.ref.path || '';
+          const isPractical = path.includes("practical_solutions") || d.type === "practical" || (docId && docId.startsWith("prac_"));
+          const contribUid = d.contributorUid || d.userId || d.uid || "";
+          const viewerBase = isPractical ? "../PracticalSolution/index.html" : "../AssignmentSolution/index.html";
+          const solUrl = `${viewerBase}?id=${encodeURIComponent(docId)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+
+          const subName = d.subjectName || d.title || 'Solution';
+          const subCode = d.subjectCode ? ` (${d.subjectCode})` : '';
+          const author = d.studentName || d.contributorName || "Verified Contributor";
+          const course = d.course || d.courseSec || d.discipline || "Academic";
+          const likesCount = Number(d.likes) || (Array.isArray(d.likedBy) ? d.likedBy.length : 0);
+          const viewsCount = Number(d.views) || 0;
+          const runsCount = Number(d.runs || d.codeRuns || d.shares || 0);
+
+          allSolutions.push({
+            id: docId,
+            isPractical: isPractical,
+            title: `${subName}${subCode}`,
+            subjectName: subName,
+            subjectCode: d.subjectCode || '',
+            course: course,
+            category: d.category || course,
+            discipline: d.discipline || course,
+            contributor: author,
+            contributorUid: contribUid,
+            likes: likesCount,
+            views: viewsCount,
+            runs: runsCount,
+            url: solUrl
+          });
+        });
+
+        // 1. Similar Solutions: matches subject or course
+        const currSub = (currData.subjectName || '').toLowerCase();
+        const currCourse = (currData.course || currData.courseSec || currData.discipline || '').toLowerCase();
+        let similar = allSolutions.filter(s => {
+          const sSub = (s.subjectName || '').toLowerCase();
+          const sCourse = (s.course || '').toLowerCase();
+          return (currSub && sSub.includes(currSub)) || (sSub && currSub.includes(sSub)) || (currCourse && sCourse.includes(currCourse));
+        });
+        if (similar.length === 0) {
+          similar = [...allSolutions].sort((a, b) => b.likes - a.likes);
+        }
+
+        // 2. Most Liked Solutions
+        const mostLiked = [...allSolutions].sort((a, b) => b.likes - a.likes);
+
+        // 3. Most Viewed Solutions
+        const mostViewed = [...allSolutions].sort((a, b) => b.views - a.views);
+
+        // 4. More from Contributor
+        const currUid = currData.contributorUid || new URLSearchParams(window.location.search).get('contributor') || '';
+        let fromContrib = allSolutions.filter(s => {
+          if (currUid && s.contributorUid === currUid) return true;
+          return s.contributor.toLowerCase() === contribName.toLowerCase();
+        });
+        if (fromContrib.length === 0) {
+          fromContrib = mostLiked;
+        }
+
+        // 5. More in Category
+        let fromCategory = allSolutions.filter(s => {
+          return (s.course && s.course.toLowerCase() === categoryName.toLowerCase()) || 
+                 (s.category && s.category.toLowerCase() === categoryName.toLowerCase());
+        });
+        if (fromCategory.length === 0) {
+          fromCategory = mostViewed;
+        }
+
+        window.__solutionRecPools = {
+          similar,
+          mostLiked,
+          mostViewed,
+          contributor: fromContrib,
+          category: fromCategory
+        };
+
+        renderRecCards('similar');
+
+      } catch (recErr) {
+        console.warn("Failed loading end solution recommendations:", recErr);
       }
     };
 

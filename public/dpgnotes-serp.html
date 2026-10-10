@@ -188,6 +188,55 @@
       animation: micPulse 1.2s infinite;
       background: #fce8e6;
     }
+    @keyframes micPulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
+      70% { transform: scale(1.18); box-shadow: 0 0 0 8px rgba(234, 67, 53, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+    }
+    .serp-suggestions-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 8px;
+      background: #ffffff;
+      border: 1px solid #dadce0;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(32,33,36,0.18);
+      max-height: 360px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+    html[data-theme="dark"] .serp-suggestions-dropdown {
+      background: #1e293b;
+      border-color: #334155;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .serp-suggestion-item {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f3f4;
+      font-size: 0.9rem;
+      color: #202124;
+      transition: background 0.15s;
+    }
+    html[data-theme="dark"] .serp-suggestion-item {
+      color: #f1f5f9;
+      border-bottom-color: #334155;
+    }
+    .serp-suggestion-item:last-child {
+      border-bottom: none;
+    }
+    .serp-suggestion-item:hover, .serp-suggestion-item.active {
+      background: #f8fafc;
+    }
+    html[data-theme="dark"] .serp-suggestion-item:hover, html[data-theme="dark"] .serp-suggestion-item.active {
+      background: #0f172a;
+    }
 
     /* Top Right Auth & Navigation Controls */
     .serp-header-actions {
@@ -1211,6 +1260,7 @@
           </button>
         </div>
       </div>
+      <div id="serpSuggestionsBox" class="serp-suggestions-dropdown"></div>
     </div>
 
     <!-- Quick Navigation & Auth Actions -->
@@ -1457,10 +1507,20 @@
     const urlParams = new URLSearchParams(window.location.search);
     const searchField = document.getElementById("serpSearchField");
     const queryLabel = document.getElementById("queryTextLabel");
-    const initialQuery = urlParams.get("q") || urlParams.get("query") || urlParams.get("tag") || "";
+    const initialQuery = urlParams.get("q") || urlParams.get("query") || urlParams.get("tag") || urlParams.get("category") || urlParams.get("discipline") || "";
 
     if (searchField) searchField.value = initialQuery;
     if (queryLabel) queryLabel.innerText = initialQuery || "All Materials";
+
+    // Auto-detect and sync filter chip from URL tag parameter
+    const initialTagParam = (urlParams.get("tag") || "").toLowerCase();
+    if (initialTagParam) {
+      if (initialTagParam.includes("sessional") || initialTagParam === "se") window.activeFilterChip = 'SE';
+      else if (initialTagParam.includes("sample") || initialTagParam === "sp") window.activeFilterChip = 'SP';
+      else if (initialTagParam.includes("university") || initialTagParam === "ue") window.activeFilterChip = 'UE';
+      else if (initialTagParam.includes("practical")) window.activeFilterChip = 'Practical Solution';
+      else if (initialTagParam.includes("assignment")) window.activeFilterChip = 'Assignment Solution';
+    }
 
     const initialTab = urlParams.get("tab");
     if (initialTab && ['all', 'ai', 'website', 'videos', 'solutions', 'contributors'].includes(initialTab.toLowerCase())) {
@@ -1472,6 +1532,7 @@
     window.clearSearchField = function() {
       if (searchField) {
         searchField.value = '';
+        hideSuggestionsBox();
         searchField.focus();
         applyFilters();
       }
@@ -1482,33 +1543,86 @@
       if (panel) panel.classList.toggle("open");
     };
 
-    // Voice Search
+    // Advanced Voice Search with Real-Time Feedback
     window.startSerpVoiceSearch = function() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Voice recognition is not supported in this browser. Please type your query.");
+        if (typeof window.dpgAlert === 'function') {
+          window.dpgAlert("Voice recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge, or type your search query.");
+        } else {
+          alert("Voice recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge, or type your search query.");
+        }
         return;
       }
       const micBtn = document.getElementById("btnSerpMic");
+      const searchWrapper = document.querySelector(".serp-search-wrapper");
       const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
-      recognition.start();
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      try {
+        recognition.start();
+      } catch (err) {
+        console.warn("Voice search start error:", err);
+        return;
+      }
 
       if (micBtn) micBtn.classList.add("listening");
-      if (searchField) searchField.placeholder = "🎙️ Listening... Speak query now";
+      if (searchWrapper) {
+        searchWrapper.style.borderColor = '#ea4335';
+        searchWrapper.style.boxShadow = '0 0 0 3px rgba(234, 67, 53, 0.25)';
+      }
+      if (searchField) {
+        searchField.placeholder = "🎙️ Listening... Speak title, topic, category or tag now";
+        searchField.focus();
+      }
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        if (searchField) searchField.value = transcript;
-        if (micBtn) micBtn.classList.remove("listening");
-        runSearch();
+        let interimText = '';
+        let finalText = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) finalText += event.results[i][0].transcript;
+          else interimText += event.results[i][0].transcript;
+        }
+        const currentTranscript = (finalText || interimText).trim();
+        if (searchField && currentTranscript) {
+          searchField.value = currentTranscript;
+          updateSuggestionsBox(currentTranscript);
+        }
+        if (finalText) {
+          if (micBtn) micBtn.classList.remove("listening");
+          if (searchWrapper) {
+            searchWrapper.style.borderColor = '';
+            searchWrapper.style.boxShadow = '';
+          }
+          hideSuggestionsBox();
+          runSearch();
+        }
       };
-      recognition.onerror = () => {
+
+      recognition.onerror = (event) => {
+        console.warn("Voice search error:", event.error);
         if (micBtn) micBtn.classList.remove("listening");
-        if (searchField) searchField.placeholder = "Search notes, solutions, PYQs...";
+        if (searchWrapper) {
+          searchWrapper.style.borderColor = '';
+          searchWrapper.style.boxShadow = '';
+        }
+        if (searchField) searchField.placeholder = "Search academic notes, solutions, PYQs, and videos...";
       };
+
       recognition.onend = () => {
         if (micBtn) micBtn.classList.remove("listening");
+        if (searchWrapper) {
+          searchWrapper.style.borderColor = '';
+          searchWrapper.style.boxShadow = '';
+        }
+        if (searchField && searchField.placeholder.includes("Listening")) {
+          searchField.placeholder = "Search academic notes, solutions, PYQs, and videos...";
+        }
+        if (searchField && searchField.value.trim()) {
+          runSearch();
+        }
       };
     };
 
@@ -1747,23 +1861,121 @@
       applyFilters();
     };
 
+    // ACADEMIC SYNONYMS & ACRONYM EXPANSION MATRIX
+    const ACADEMIC_SYNONYMS = {
+      'se': ['sessional', 'sessional exam', 'midterm', 'internal', 'sessional paper'],
+      'sessional': ['se', 'sessional exam', 'midterm', 'internal', 'sessional paper'],
+      'sessional exam': ['se', 'sessional', 'midterm', 'internal', 'sessional paper'],
+      'ue': ['university', 'university exam', 'endterm', 'final exam', 'mdu'],
+      'university': ['ue', 'university exam', 'endterm', 'final exam', 'mdu'],
+      'university exam': ['ue', 'university', 'endterm', 'final exam', 'mdu'],
+      'sp': ['sample paper', 'model paper', 'practice paper'],
+      'sample paper': ['sp', 'sample', 'model paper', 'practice paper'],
+      'sample': ['sp', 'sample paper', 'model paper'],
+      'pyq': ['previous year', 'question paper', 'past paper', 'exam paper'],
+      'pyqs': ['previous year', 'question paper', 'past paper', 'exam paper'],
+      'practical': ['lab', 'experiment', 'viva', 'code', 'manual', 'practical solution'],
+      'practicals': ['lab', 'experiment', 'viva', 'code', 'manual', 'practical solution'],
+      'assignment': ['homework', 'questions', 'answers', 'solution', 'assignment solution'],
+      'assignments': ['homework', 'questions', 'answers', 'solution', 'assignment solution'],
+      'cs': ['computer science', 'cse'],
+      'cse': ['computer science', 'cs'],
+      'it': ['information technology'],
+      'bca': ['bachelor of computer applications', 'computer applications'],
+      'bba': ['bachelor of business administration'],
+      'ai': ['artificial intelligence', 'expert system']
+    };
+
     function applyFilters() {
-      const q = (searchField ? searchField.value.trim() : '').toLowerCase();
+      const rawQ = (searchField ? searchField.value.trim() : '');
+      const q = rawQ.toLowerCase();
       const catVal = document.getElementById("filterCategory")?.value || 'ALL';
       const discVal = document.getElementById("filterDiscipline")?.value || 'ALL';
       const specVal = document.getElementById("specificFilter")?.value || 'ALL';
       const sortVal = document.getElementById("sortOrder")?.value || 'relevance';
       const chipVal = window.activeFilterChip || 'ALL';
 
+      const tokens = q ? q.split(/[\s,+-]+/).filter(t => t.length > 0) : [];
+
       let filtered = allDocs.filter(d => {
-        // 1. Search Query Match
+        // 1. Advance Multi-Field Search (Title, Description, Discipline, Category, Tags, Subject, Author)
         if (q) {
-          const titleMatch = (d.title || '').toLowerCase().includes(q);
-          const descMatch = (d.description || '').toLowerCase().includes(q);
-          const discMatch = (d.discipline || '').toLowerCase().includes(q);
-          const catMatch = (d.category || '').toLowerCase().includes(q);
-          const tagsMatch = Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q));
-          if (!titleMatch && !descMatch && !discMatch && !catMatch && !tagsMatch) return false;
+          const dTitle = (d.title || '').toLowerCase();
+          const dDesc = (d.description || '').toLowerCase();
+          const dDisc = (d.discipline || d.course || '').toLowerCase();
+          const dCat = (d.category || (d.isSolution ? d.solutionType : '') || '').toLowerCase();
+          const dSubName = (d.subjectName || '').toLowerCase();
+          const dSubCode = (d.subjectCode || '').toLowerCase();
+          const dAuthor = (d.userName || d.uploader || d.studentName || d.contributorName || '').toLowerCase();
+          const dTags = Array.isArray(d.tags) 
+            ? d.tags.map(t => String(t).toLowerCase()) 
+            : (d.tags ? [String(d.tags).toLowerCase()] : []);
+          const dTagsStr = dTags.join(' ');
+          const fullSearchText = [dTitle, dDesc, dDisc, dCat, dSubName, dSubCode, dAuthor, dTagsStr].join(' ');
+
+          let score = 0;
+
+          // Whole phrase match across fields
+          if (fullSearchText.includes(q)) score += 50;
+          if (dTitle.includes(q)) score += 40;
+          if (dTagsStr.includes(q) || dTags.includes(q)) score += 35;
+          if (dCat.includes(q)) score += 30;
+          if (dDisc.includes(q)) score += 25;
+          if (dSubCode.includes(q)) score += 35;
+          if (dAuthor.includes(q)) score += 25;
+
+          // Whole query synonym matching
+          const phraseSyns = ACADEMIC_SYNONYMS[q] || [];
+          phraseSyns.forEach(syn => {
+            if (fullSearchText.includes(syn)) score += 35;
+          });
+
+          // Individual token matching
+          let matchedTokensCount = 0;
+          tokens.forEach(tok => {
+            let hit = false;
+            if (dTitle.includes(tok)) { score += 15; hit = true; }
+            if (dTagsStr.includes(tok)) { score += 12; hit = true; }
+            if (dCat.includes(tok)) { score += 10; hit = true; }
+            if (dDisc.includes(tok)) { score += 10; hit = true; }
+            if (dSubCode.includes(tok)) { score += 15; hit = true; }
+            if (dSubName.includes(tok)) { score += 12; hit = true; }
+            if (dAuthor.includes(tok)) { score += 10; hit = true; }
+            if (dDesc.includes(tok)) { score += 5; hit = true; }
+
+            // Token-level synonym expansion
+            const tokSyns = ACADEMIC_SYNONYMS[tok] || [];
+            tokSyns.forEach(ts => {
+              if (fullSearchText.includes(ts)) {
+                score += 10;
+                hit = true;
+              }
+            });
+
+            if (hit) matchedTokensCount++;
+          });
+
+          // Acronym fast-path: Sessional Exam (SE), Sample Paper (SP), University Exam (UE)
+          if ((q === 'sessional' || q.includes('sessional') || q.includes('se')) && 
+              (dCat === 'se' || dCat.includes('sessional') || dTags.some(t => t === 'se' || t.includes('sessional')))) {
+            score += 45;
+            matchedTokensCount++;
+          }
+          if ((q === 'sample' || q.includes('sample') || q.includes('sp')) && 
+              (dCat === 'sp' || dCat.includes('sample') || dTags.some(t => t === 'sp' || t.includes('sample')))) {
+            score += 45;
+            matchedTokensCount++;
+          }
+          if ((q === 'university' || q.includes('university') || q.includes('ue')) && 
+              (dCat === 'ue' || dCat.includes('university') || dTags.some(t => t === 'ue' || t.includes('university')))) {
+            score += 45;
+            matchedTokensCount++;
+          }
+
+          if (score <= 0 || (tokens.length > 1 && matchedTokensCount === 0)) return false;
+          d._searchScore = score;
+        } else {
+          d._searchScore = 0;
         }
 
         // 2. Category Dropdown Filter
@@ -1808,7 +2020,9 @@
       });
 
       // Sort
-      if (sortVal === 'newest') {
+      if (sortVal === 'relevance' && q) {
+        filtered.sort((a, b) => (b._searchScore || 0) - (a._searchScore || 0));
+      } else if (sortVal === 'newest') {
         filtered.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
       } else if (sortVal === 'likes') {
         filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
@@ -1834,6 +2048,80 @@
       }
     });
 
+    // Real-Time Autocomplete Suggestions Box
+    function updateSuggestionsBox(val) {
+      const box = document.getElementById("serpSuggestionsBox");
+      if (!box) return;
+      if (!val || val.trim().length < 2) {
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+      }
+      const lower = val.trim().toLowerCase();
+      const matchedTitles = [];
+      const matchedCats = new Set();
+      const matchedTags = new Set();
+
+      (allDocs || []).forEach(d => {
+        const t = d.title || d.subjectName || '';
+        if (t.toLowerCase().includes(lower) && matchedTitles.length < 5) {
+          matchedTitles.push({ title: t, id: d.id, isSolution: d.isSolution });
+        }
+        if (d.category && d.category.toLowerCase().includes(lower)) matchedCats.add(d.category);
+        if (Array.isArray(d.tags)) {
+          d.tags.forEach(tg => {
+            if (tg.toLowerCase().includes(lower)) matchedTags.add(tg);
+          });
+        }
+      });
+
+      if (matchedTitles.length === 0 && matchedCats.size === 0 && matchedTags.size === 0) {
+        box.style.display = "none";
+        return;
+      }
+
+      let html = '';
+      matchedCats.forEach(c => {
+        html += `<div class="serp-suggestion-item" onclick="window.selectSuggestionQuery('${escapeHtml(c)}')">
+          <i class="ri-folder-2-line" style="color:#0284c7;"></i>
+          <span><strong>Category:</strong> ${escapeHtml(c)}</span>
+        </div>`;
+      });
+      matchedTags.forEach(tg => {
+        html += `<div class="serp-suggestion-item" onclick="window.selectSuggestionQuery('${escapeHtml(tg)}')">
+          <i class="ri-price-tag-3-line" style="color:#8b5cf6;"></i>
+          <span><strong>Tag:</strong> #${escapeHtml(tg)}</span>
+        </div>`;
+      });
+      matchedTitles.forEach(m => {
+        html += `<div class="serp-suggestion-item" onclick="window.selectSuggestionQuery('${escapeHtml(m.title)}')">
+          <i class="${m.isSolution ? 'ri-code-box-line' : 'ri-file-text-line'}" style="color:${m.isSolution ? '#0284c7' : '#10b981'};"></i>
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.title)}</span>
+        </div>`;
+      });
+
+      box.innerHTML = html;
+      box.style.display = "block";
+    }
+
+    window.selectSuggestionQuery = function(qStr) {
+      if (searchField) searchField.value = qStr;
+      hideSuggestionsBox();
+      runSearch();
+    };
+
+    function hideSuggestionsBox() {
+      const box = document.getElementById("serpSuggestionsBox");
+      if (box) box.style.display = "none";
+    }
+
+    document.addEventListener("click", (e) => {
+      const box = document.getElementById("serpSuggestionsBox");
+      if (box && !box.contains(e.target) && e.target !== searchField) {
+        box.style.display = "none";
+      }
+    });
+
     function runSearch() {
       const q = searchField ? searchField.value.trim() : '';
       if (queryLabel) queryLabel.innerText = q || 'All Materials';
@@ -1847,12 +2135,29 @@
       setTimeout(() => {
         hideLoadingStage();
         applyFilters();
-      }, 250);
+      }, 150);
     }
 
+    let searchDebounceTimer = null;
     if (searchField) {
+      searchField.addEventListener("input", () => {
+        clearTimeout(searchDebounceTimer);
+        const val = searchField.value.trim();
+        if (queryLabel) queryLabel.innerText = val || 'All Materials';
+        updateSuggestionsBox(val);
+        searchDebounceTimer = setTimeout(() => {
+          applyFilters();
+        }, 200);
+      });
+
       searchField.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") runSearch();
+        if (e.key === "Enter") {
+          clearTimeout(searchDebounceTimer);
+          hideSuggestionsBox();
+          runSearch();
+        } else if (e.key === "Escape") {
+          hideSuggestionsBox();
+        }
       });
     }
 
