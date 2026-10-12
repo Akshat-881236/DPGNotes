@@ -806,6 +806,60 @@
         <section id="uploadAdsTab" class="dashboard-tab">
           <h2>Promote & Upload Ads <i class="ri-information-line" style="font-size: 1.1rem; color: var(--primary-light); cursor: pointer; margin-left: 6px; vertical-align: middle;" title="View official DPGNotes Ads Policy & Guidelines" onclick="window.open('legal/index.html?from=contributor#ads-policy', '_blank')"></i></h2>
           
+          <!-- CONTRIBUTOR AD MONETIZATION & BILLING STATUS CARD -->
+          <div id="contributorMonetizationCard" style="background:linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border:1px solid rgba(245, 158, 11, 0.35); border-radius:14px; padding:1.2rem; margin-bottom:1.8rem; max-width:750px; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center; color:#f59e0b; font-size:1.2rem;">
+                  <i class="ri-money-dollar-circle-line"></i>
+                </div>
+                <div>
+                  <h4 style="color:white; margin:0; font-size:1.05rem;">Ads Monetization & Billing Status</h4>
+                  <span id="contribBillingCycleText" style="font-size:0.75rem; color:#94a3b8;">Active Billing Cycle: Loading...</span>
+                </div>
+              </div>
+              <span id="contribTierBadge" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#c4b5fd; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:999px;">
+                Calculating Tier...
+              </span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:1rem;">
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; text-align:center;">
+                <div style="font-size:0.72rem; color:#94a3b8;">Genuine Hovers</div>
+                <div id="contribHoversCount" style="font-size:1.15rem; font-weight:700; color:#f59e0b; margin-top:2px;">0</div>
+                <div style="font-size:0.65rem; color:var(--text-muted);">₹12 / hover</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; text-align:center;">
+                <div style="font-size:0.72rem; color:#94a3b8;">Genuine Visits</div>
+                <div id="contribVisitsCount" style="font-size:1.15rem; font-weight:700; color:#38bdf8; margin-top:2px;">0</div>
+                <div style="font-size:0.65rem; color:var(--text-muted);">₹20 / visit</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; text-align:center;">
+                <div style="font-size:0.72rem; color:#94a3b8;">Gross Charges</div>
+                <div id="contribGrossAmount" style="font-size:1.15rem; font-weight:700; color:white; margin-top:2px;">₹0</div>
+                <div style="font-size:0.65rem; color:var(--text-muted);">Before discount</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; text-align:center;">
+                <div style="font-size:0.72rem; color:#94a3b8;">Discount Saved</div>
+                <div id="contribDiscountSaved" style="font-size:1.15rem; font-weight:700; color:#10b981; margin-top:2px;">-₹0</div>
+                <div id="contribDiscountPctSub" style="font-size:0.65rem; color:#34d399;">0% Tier</div>
+              </div>
+              <div style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.35); border-radius:10px; padding:10px; text-align:center;">
+                <div style="font-size:0.72rem; color:#c4b5fd;">Net Payable</div>
+                <div id="contribNetPayable" style="font-size:1.25rem; font-weight:800; color:#ffffff; margin-top:2px;">₹0</div>
+                <div id="contribPaymentStatusSub" style="font-size:0.68rem; font-weight:700; color:#f87171;">⏳ Pending</div>
+              </div>
+            </div>
+
+            <!-- Qualification criteria progress snippet -->
+            <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 12px; font-size:0.75rem; color:#94a3b8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <span><strong>Your Portfolio:</strong> <span id="contribPortfolioStats">0 Public Docs · 0 Assignment Sols · 0 Practical Sols</span></span>
+              <a href="legal/index.html?from=contributor#ads-policy" target="_blank" style="color:#a5b4fc; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                View Monetization Policy <i class="ri-arrow-right-s-line"></i>
+              </a>
+            </div>
+          </div>
+
           <form id="uploadAdForm" class="upload-form" style="max-width:750px;">
             <div style="margin-bottom:1.2rem;">
               <label style="color:var(--text-muted); font-size:0.88rem; display:block; margin-bottom:6px;">Select Ad Platform & Category *</label>

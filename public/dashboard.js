@@ -213,6 +213,8 @@ tabBtns.forEach(btn => {
       loadPasswordVaultData();
     } else if (btn.dataset.target === "ytVideosTab") {
       loadYtVideosData();
+    } else if (btn.dataset.target === "uploadAdsTab") {
+      if (typeof loadContributorPayableAds === "function") loadContributorPayableAds();
     }
   });
 });
@@ -2882,6 +2884,90 @@ function generateAdTrackIdLocal(seedStr) {
   const positiveHash = Math.abs(hash);
   return (positiveHash % 90000000 + 10000000).toString();
 }
+
+// ============================================================================
+// CONTRIBUTOR PAYABLE ADS AMOUNT & DISCOUNT STATUS ENGINE
+// ============================================================================
+async function loadContributorPayableAds() {
+  const card = document.getElementById("contributorMonetizationCard");
+  if (!card) return;
+
+  const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
+  const uid = activeUser.uid || "";
+  const email = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase();
+
+  if (!uid) return;
+
+  try {
+    const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL !== "undefined") ? window.API_BASE_URL : "";
+    const res = await fetch(`${baseUrl}/api/contributor/payable-ads?contributorId=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+
+    if (!data || !data.success) return;
+
+    const active = data.activeMonetization || {};
+    const tier = active.tierInfo || {};
+
+    const monthCycleText = document.getElementById("contribBillingCycleText");
+    if (monthCycleText) monthCycleText.textContent = `Active Billing Cycle: ${active.month || data.currentMonth || "Current Month"}`;
+
+    const tierBadge = document.getElementById("contribTierBadge");
+    if (tierBadge) {
+      tierBadge.textContent = `${tier.discountPct || 0}% Discount (${tier.tierName || "Standard"})`;
+      if (tier.discountPct === 100) {
+        tierBadge.style.background = "rgba(168,85,247,0.25)";
+        tierBadge.style.borderColor = "rgba(168,85,247,0.5)";
+        tierBadge.style.color = "#d8b4fe";
+      } else if (tier.discountPct >= 60) {
+        tierBadge.style.background = "rgba(245,158,11,0.25)";
+        tierBadge.style.borderColor = "rgba(245,158,11,0.5)";
+        tierBadge.style.color = "#fcd34d";
+      }
+    }
+
+    if (document.getElementById("contribHoversCount")) {
+      document.getElementById("contribHoversCount").textContent = (active.totalHovers || 0).toLocaleString();
+    }
+    if (document.getElementById("contribVisitsCount")) {
+      document.getElementById("contribVisitsCount").textContent = (active.totalVisits || 0).toLocaleString();
+    }
+    if (document.getElementById("contribGrossAmount")) {
+      document.getElementById("contribGrossAmount").textContent = `₹${(active.totalGrossCharges || 0).toLocaleString()}`;
+    }
+    if (document.getElementById("contribDiscountSaved")) {
+      document.getElementById("contribDiscountSaved").textContent = `-₹${(active.totalHoverDiscount || 0).toLocaleString()}`;
+    }
+    if (document.getElementById("contribDiscountPctSub")) {
+      document.getElementById("contribDiscountPctSub").textContent = `${tier.discountPct || 0}% Off Hovers`;
+    }
+    if (document.getElementById("contribNetPayable")) {
+      document.getElementById("contribNetPayable").textContent = `₹${(active.totalNetPayable || 0).toLocaleString()}`;
+    }
+
+    const statusSub = document.getElementById("contribPaymentStatusSub");
+    if (statusSub) {
+      const st = active.status || "Pending";
+      if (st === "Paid") {
+        statusSub.textContent = "✅ Paid / Settled";
+        statusSub.style.color = "#34d399";
+      } else if (st === "Waived") {
+        statusSub.textContent = "🎁 Waived Off";
+        statusSub.style.color = "#cbd5e1";
+      } else {
+        statusSub.textContent = "⏳ Pending";
+        statusSub.style.color = "#f87171";
+      }
+    }
+
+    const portfolioStats = document.getElementById("contribPortfolioStats");
+    if (portfolioStats) {
+      portfolioStats.textContent = `${tier.publicResourcesCount || 0} Public Docs · ${tier.assignmentSolutionsCount || 0} Assignment Sols · ${tier.practicalSolutionsCount || 0} Practical Sols`;
+    }
+  } catch (err) {
+    console.warn("Could not load contributor payable ads status:", err);
+  }
+}
+window.loadContributorPayableAds = loadContributorPayableAds;
 
 let isAdSubmitting = false;
 const adForm = document.getElementById("uploadAdForm");

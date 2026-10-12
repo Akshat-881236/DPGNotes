@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Universal DPGNotes Pre-loader -->
+  <script src="/dpg-loader.js"></script>
+  <script src="https://dpgnotes.web.app/redirect.js" defer></script>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safe Destination Gateway & Ad Telemetry | DPGNotes</title>
+  <link rel="icon" href="ANH.png" type="image/png">
+  <script src="config.js"></script>
+  <script src="custom-dialogs.js"></script>
+
+  <!-- Google Fonts & Remix Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%);
+      color: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .gateway-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      max-width: 580px;
+      width: 100%;
+      padding: 2.2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(99, 102, 241, 0.15);
+      backdrop-filter: blur(16px);
+      text-align: center;
+      animation: cardFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .brand-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      text-decoration: none;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .brand-header img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+    }
+    .security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+    }
+    .security-badge.warning {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .uploader-profile-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+    .uploader-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #6366f1;
+      flex-shrink: 0;
+    }
+    .uploader-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .uploader-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .uploader-uid-sub {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ad-title-label {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 0.8rem;
+      line-height: 1.4;
+      font-family: 'Outfit', sans-serif;
+    }
+    .dest-url-box {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: #a5b4fc;
+      word-break: break-all;
+      text-align: left;
+      margin-bottom: 1.2rem;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+    .checks-grid {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+    .check-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .check-chip i {
+      color: #10b981;
+    }
+    .action-btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+    }
+    .btn-proceed {
+      flex: 1;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+    }
+    .btn-proceed:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+    .btn-cancel {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    .countdown-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 1.2rem;
+    }
+    .countdown-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #6366f1, #10b981);
+      transition: width 0.1s linear;
+    }
+    .warning-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      color: #fca5a5;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="gateway-card" id="gatewayCard">
+    <a href="index.html" class="brand-header">
+      <img src="ANH.png" alt="DPGNotes">
+      <span>DPGNotes Safety Gateway</span>
+    </a>
+
+    <!-- Security Status Badge -->
+    <div id="securityBadge" class="security-badge">
+      <i class="ri-shield-check-line"></i> Destination Verified & Encrypted
+    </div>
+
+    <!-- Ad Uploader Profile Card -->
+    <div class="uploader-profile-box" id="uploaderBox">
+      <img id="uploaderPhoto" class="uploader-avatar" src="ANH.png" alt="Uploader Avatar">
+      <div class="uploader-info">
+        <div id="uploaderName" class="uploader-name">Verified Contributor</div>
+        <div id="uploaderUid" class="uploader-uid-sub">UID: Loading...</div>
+      </div>
+      <div style="text-align:right;">
+        <span id="trackIdBadge" style="background:rgba(99,102,241,0.25); border:1px solid rgba(99,102,241,0.4); color:#c4b5fd; font-size:0.72rem; padding:3px 8px; border-radius:6px; font-family:'Fira Code', monospace; display:block; margin-bottom:3px;">Track: ---</span>
+        <span id="viewerTypeBadge" style="background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.35); color:#6ee7b7; font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700;">Guest</span>
+      </div>
+    </div>
+
+    <h3 id="adTitle" class="ad-title-label">Promoted Campaign Destination</h3>
+    <div id="destUrlBox" class="dest-url-box">Connecting...</div>
+
+    <!-- Security Checkpoints -->
+    <div class="checks-grid" id="checksGrid">
+      <span class="check-chip"><i class="ri-check-line"></i> TLS/SSL Validated</span>
+      <span class="check-chip"><i class="ri-check-line"></i> Malware Scan Clean</span>
+      <span class="check-chip"><i class="ri-check-line"></i> Ad Policy Compliance</span>
+    </div>
+
+    <!-- Warning container if suspicious -->
+    <div id="warningContainer" class="warning-box" style="display:none;"></div>
+
+    <!-- Navigation Actions -->
+    <div class="action-btn-row" id="actionRow">
+      <a href="index.html" class="btn-cancel">Return Home</a>
+      <a href="#" id="proceedBtn" class="btn-proceed">
+        Proceed Safely <span id="countdownSec">(3s)</span> <i class="ri-arrow-right-line"></i>
+      </a>
+    </div>
+
+    <!-- Countdown Progress Bar -->
+    <div class="countdown-bar-wrap" id="barWrap">
+      <div class="countdown-bar" id="countdownBar"></div>
+    </div>
+  </div>
+
+  <script>
+    (async function initRedirectGateway() {
+      const params = new URLSearchParams(window.location.search);
+      const trackId = params.get("track_id") || params.get("trackId") || "";
+      const adId = params.get("ad_id") || params.get("adId") || params.get("firebase_id") || "";
+      const rawDest = params.get("go-to") || params.get("goto") || params.get("target") || "index.html";
+
+      const proceedBtn = document.getElementById("proceedBtn");
+      const destUrlBox = document.getElementById("destUrlBox");
+      const countdownSec = document.getElementById("countdownSec");
+      const countdownBar = document.getElementById("countdownBar");
+      const warningContainer = document.getElementById("warningContainer");
+      const securityBadge = document.getElementById("securityBadge");
+      const trackIdBadge = document.getElementById("trackIdBadge");
+      const viewerTypeBadge = document.getElementById("viewerTypeBadge");
+
+      if (trackId) trackIdBadge.textContent = "Track: " + trackId;
+      destUrlBox.textContent = rawDest;
+
+      // =========================================================================
+      // 1. STRICT SECURITY & MALWARE VALIDATION
+      // =========================================================================
+      let validUrl = null;
+      let isSecurityViolation = false;
+      let violationReason = "";
+
+      try {
+        validUrl = new URL(rawDest, window.location.origin);
+      } catch (err) {
+        isSecurityViolation = true;
+        violationReason = "Malformed or invalid destination URL structure.";
+      }
+
+      if (validUrl) {
+        // Enforce safe protocols
+        const protocol = validUrl.protocol.toLowerCase();
+        if (protocol !== "http:" && protocol !== "https:") {
+          isSecurityViolation = true;
+          violationReason = `Unsafe protocol (${protocol}) rejected. Only standard HTTPS/HTTP protocols are permitted.`;
+        }
+
+        // Suspicious binary / malware extension heuristics
+        const lowerPath = validUrl.pathname.toLowerCase();
+        const forbiddenExts = [".exe", ".scr", ".bat", ".cmd", ".vbs", ".apk", ".msi", ".ps1", ".jar"];
+        if (forbiddenExts.some(ext => lowerPath.endsWith(ext))) {
+          isSecurityViolation = true;
+          violationReason = "Suspicious executable file download target detected and blocked by DPGNotes Anti-Malware Shield.";
+        }
+
+        // Suspicious raw IP with non-standard ports
+        const host = validUrl.hostname;
+        const rawIpRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+        if (rawIpRegex.test(host) && validUrl.port && !["80", "443"].includes(validUrl.port)) {
+          isSecurityViolation = true;
+          violationReason = "Raw IP destination with suspicious port detected and quarantined.";
+        }
+      }
+
+      if (isSecurityViolation) {
+        securityBadge.className = "security-badge warning";
+        securityBadge.innerHTML = '<i class="ri-error-warning-line"></i> Blocked by Security Gateway';
+        warningContainer.style.display = "block";
+        warningContainer.innerHTML = `<strong>Security Alert:</strong> ${violationReason}<br><br>The destination URL has been blocked in accordance with the DPGNotes Advertising Safety Policy.`;
+        destUrlBox.style.borderColor = "#ef4444";
+        destUrlBox.style.color = "#f87171";
+        proceedBtn.style.display = "none";
+        document.getElementById("barWrap").style.display = "none";
+        return;
+      }
+
+      proceedBtn.href = validUrl.toString();
+
+      // =========================================================================
+      // 2. VIEWER CLASSIFICATION & ADMIN CHECK
+      // =========================================================================
+      const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
+      const visitorEmail = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase();
+      const isAdminUser = visitorEmail === "akshatprasad009@gmail.com" || !!activeUser.isAdmin;
+
+      let viewerType = "Guest";
+      const ua = navigator.userAgent || "";
+      const isBot = /bot|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|linkedinbot/i.test(ua);
+
+      let botType = "";
+      if (isBot) {
+        viewerType = "Anonymous";
+        if (/googlebot/i.test(ua)) botType = "Googlebot";
+        else if (/bingbot/i.test(ua)) botType = "Bingbot";
+        else if (/duckduckbot/i.test(ua)) botType = "DuckDuckBot";
+        else if (/baiduspider/i.test(ua)) botType = "Baiduspider";
+        else if (/yandexbot/i.test(ua)) botType = "YandexBot";
+        else if (/facebookexternalhit/i.test(ua)) botType = "Facebookbot";
+        else if (/twitterbot/i.test(ua)) botType = "Twitterbot";
+        else if (/linkedinbot/i.test(ua)) botType = "LinkedInBot";
+        else botType = "Web Crawler";
+      } else if (activeUser && activeUser.uid) {
+        viewerType = "Contributor";
+      } else {
+        viewerType = "Guest";
+      }
+
+      viewerTypeBadge.textContent = viewerType + (botType ? ` (${botType})` : "");
+      if (viewerType === "Contributor") {
+        viewerTypeBadge.style.background = "rgba(99,102,241,0.25)";
+        viewerTypeBadge.style.borderColor = "rgba(99,102,241,0.4)";
+        viewerTypeBadge.style.color = "#a5b4fc";
+      }
+
+      // Guest / Device Identity Persistence
+      let guestId = localStorage.getItem("dpg_guest_id");
+      if (!guestId) {
+        guestId = "guest_" + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        localStorage.setItem("dpg_guest_id", guestId);
+      }
+      let clientDeviceId = localStorage.getItem("dpg_client_device_id");
+      if (!clientDeviceId) {
+        clientDeviceId = "dev_" + Math.random().toString(36).substr(2, 9) + "_" + screen.width + "x" + screen.height;
+        localStorage.setItem("dpg_client_device_id", clientDeviceId);
+      }
+
+      // =========================================================================
+      // 3. FETCH AD METADATA & UPLOADER PROFILE
+      // =========================================================================
+      let uploaderPhoto = "ANH.png";
+      let uploaderName = "Verified Contributor";
+      let uploaderUid = "anon_contributor";
+      let adTitleStr = "Sponsored Academic Campaign";
+
+      try {
+        if (adId && window.API_BASE_URL) {
+          const adRes = await fetch(`${window.API_BASE_URL}/api/ad-details?adId=${encodeURIComponent(adId)}`).catch(() => null);
+          if (adRes && adRes.ok) {
+            const adJson = await adRes.json();
+            if (adJson && adJson.ad) {
+              const a = adJson.ad;
+              adTitleStr = a.title || adTitleStr;
+              uploaderPhoto = a.userAvatar || a.uploaderPhoto || uploaderPhoto;
+              uploaderName = a.userName || a.uploaderName || uploaderName;
+              uploaderUid = a.userId || a.uid || a.userUid || a.createdBy || uploaderUid;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch remote ad metadata:", e);
+      }
+
+      // Fallback from localStorage map
+      try {
+        const trackMap = JSON.parse(localStorage.getItem("dpg_ad_track_map") || "{}");
+        if (trackMap[trackId] && trackMap[trackId].adTitle) {
+          adTitleStr = trackMap[trackId].adTitle;
+        }
+      } catch (e) {}
+
+      document.getElementById("adTitle").textContent = adTitleStr;
+      document.getElementById("uploaderPhoto").src = uploaderPhoto;
+      document.getElementById("uploaderName").textContent = uploaderName;
+      document.getElementById("uploaderUid").textContent = "uploader-firebase-id: " + uploaderUid;
+
+      // =========================================================================
+      // 4. DEEP ANALYTICS TELEMETRY DISPATCH (EXCLUDING ADMIN)
+      // =========================================================================
+      if (!isAdminUser) {
+        const trackingPayload = {
+          adId: adId || "global",
+          trackId: trackId || "00000000",
+          adTitle: adTitleStr,
+          destinationUrl: validUrl.toString(),
+          uploaderPhoto,
+          uploaderName,
+          uploaderUid,
+          viewerType, // 'Guest' | 'Contributor' | 'Anonymous'
+          guestId: viewerType === "Guest" ? guestId : null,
+          clientDeviceId: viewerType === "Guest" ? clientDeviceId : null,
+          contributorId: viewerType === "Contributor" ? activeUser.uid : null,
+          contributorName: viewerType === "Contributor" ? (activeUser.displayName || activeUser.name || "Contributor") : null,
+          contributorPhoto: viewerType === "Contributor" ? (activeUser.photoURL || activeUser.avatar || "ANH.png") : null,
+          contributorEmail: viewerType === "Contributor" ? visitorEmail : null,
+          botType: viewerType === "Anonymous" ? botType : null,
+          timestamp: new Date().toISOString()
+        };
+
+        // Fire-and-forget backend dispatch
+        fetch((window.API_BASE_URL || '') + '/api/ad-external-click', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(trackingPayload)
+        }).catch(err => console.warn("Ad external click telemetry error:", err));
+      } else {
+        console.log("ℹ️ Admin visit detected — external ad analytics collection bypassed as requested.");
+      }
+
+      // =========================================================================
+      // 5. TIMED REDIRECT ENGINE (3-SECOND SAFETY COUNTDOWN)
+      // =========================================================================
+      let remainingMs = 3000;
+      const totalMs = 3000;
+      const interval = 50;
+
+      const countdownTimer = setInterval(() => {
+        remainingMs -= interval;
+        const progress = Math.max(0, (remainingMs / totalMs) * 100);
+        countdownBar.style.width = progress + "%";
+        const secDisplay = Math.max(0, Math.ceil(remainingMs / 1000));
+        countdownSec.textContent = `(${secDisplay}s)`;
+
+        if (remainingMs <= 0) {
+          clearInterval(countdownTimer);
+          window.location.href = validUrl.toString();
+        }
+      }, interval);
+
+      proceedBtn.onclick = (e) => {
+        clearInterval(countdownTimer);
+      };
+    })();
+  </script>
+</body>
+</html>

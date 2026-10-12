@@ -867,6 +867,9 @@
         <a class="nav-link" onclick="switchTab('ads-analytics'); if(window.loadAdsAnalyticsAdmin) window.loadAdsAnalyticsAdmin();">
           <i class="ri-line-chart-line" style="color:#10b981;"></i> Ads Analytics
         </a>
+        <a class="nav-link" onclick="switchTab('ads-monetization'); if(window.loadAdsMonetizationAdmin) window.loadAdsMonetizationAdmin();">
+          <i class="ri-money-dollar-circle-line" style="color:#f59e0b;"></i> Ads Monetization
+        </a>
         <a class="nav-link" onclick="switchTab('videos-mgmt'); if(window.loadVideosMgmtAdmin) window.loadVideosMgmtAdmin();">
           <i class="ri-video-line" style="color:#ef4444;"></i> Videos MGMT
         </a>
@@ -2074,6 +2077,37 @@
           </table>
         </div>
 
+        <!-- Deep External Ad Gateway Telemetry Table -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-top:1.5rem; overflow-x:auto;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+            <div>
+              <h3 style="font-size:1.15rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+                <i class="ri-shield-check-line" style="color:#10b981;"></i> Safe Gateway External Ad Visit Telemetry
+              </h3>
+              <p style="color:var(--admin-text-muted); font-size:0.8rem; margin:2px 0 0 0;">Deduplicated external ad visitor telemetry with uploader identity, device tracking & average estimation</p>
+            </div>
+            <span style="font-size:0.75rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; padding:4px 10px; border-radius:999px; font-weight:700;">
+              🛡️ Anti-Malware Validated
+            </span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                <th style="padding:0.75rem;">Advertiser / Uploader</th>
+                <th style="padding:0.75rem;">Ad Campaign & Track ID</th>
+                <th style="padding:0.75rem;">Viewer Classification</th>
+                <th style="padding:0.75rem;">Visitor Identity & Device</th>
+                <th style="padding:0.75rem;">Destination URL</th>
+                <th style="padding:0.75rem;">Visit Pattern & Avg Estimation</th>
+                <th style="padding:0.75rem;">Last Visit</th>
+              </tr>
+            </thead>
+            <tbody id="deepExternalAdTableBody">
+              <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading deep external ad telemetry...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- YouTube Video Ads Telemetry & Performance -->
         <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; margin-top:1.5rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
@@ -2147,6 +2181,142 @@
           </div>
         </div>
       </section>
+
+      <!-- ADS MONETIZATION TAB -->
+      <section id="view-ads-monetization" class="view-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-size:1.5rem; color:white; font-weight:700; display:flex; align-items:center; gap:10px;">
+              <i class="ri-money-dollar-circle-line" style="color:#f59e0b;"></i> Native Ads Monetization & Contributor Charges Ledger
+            </h2>
+            <p style="color:var(--admin-text-muted); font-size:0.85rem; margin-top:2px;">
+              Monthly cycle ledger based on ₹12 per genuine hover and ₹20 per genuine visit, with verified contributor discount tiers.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input type="month" id="monetizationMonthPicker" onchange="window.loadAdsMonetizationAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:#a5b4fc; font-family:inherit; font-size:0.85rem; cursor:pointer; font-weight:600;">
+            <select id="monetizationContributorFilter" onchange="window.loadAdsMonetizationAdmin()" style="padding:0.6rem 1rem; border-radius:10px; background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); color:white; font-family:inherit; font-size:0.85rem; cursor:pointer;">
+              <option value="ALL">All Contributors</option>
+            </select>
+            <button onclick="window.loadAdsMonetizationAdmin()" class="btn-action success" style="padding:0.6rem 1rem;"><i class="ri-refresh-line"></i> Refresh Ledger</button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="stat-cards" style="margin-bottom:1.5rem;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(245,158,11,0.15); color:#f59e0b;"><i class="ri-coins-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statMonetizationGross" style="color:#f59e0b;">₹0</h3>
+              <p>Total Gross Charges</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(16,185,129,0.15); color:#10b981;"><i class="ri-percent-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statMonetizationDiscounts" style="color:#10b981;">₹0</h3>
+              <p>Total Contributor Discounts</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(99,102,241,0.15); color:#a5b4fc;"><i class="ri-wallet-3-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statMonetizationNet" style="color:#a5b4fc;">₹0</h3>
+              <p>Net Payable Amount</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(239,68,68,0.15); color:#ef4444;"><i class="ri-time-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statMonetizationPending" style="color:#ef4444;">₹0</h3>
+              <p>Pending Dues</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(34,197,94,0.15); color:#22c55e;"><i class="ri-checkbox-circle-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statMonetizationPaid" style="color:#22c55e;">₹0</h3>
+              <p>Settled / Paid</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(148,163,184,0.15); color:#94a3b8;"><i class="ri-gift-line"></i></div>
+            <div class="stat-info">
+              <h3 id="statMonetizationWaived" style="color:#cbd5e1;">₹0</h3>
+              <p>Waived Off Amount</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Policy Rules Infobox -->
+        <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1rem 1.2rem; margin-bottom:1.5rem; display:flex; align-items:flex-start; gap:12px; font-size:0.83rem; color:#cbd5e1; line-height:1.5;">
+          <i class="ri-information-fill" style="color:#6366f1; font-size:1.3rem; flex-shrink:0; margin-top:2px;"></i>
+          <div>
+            <strong style="color:#ffffff;">Monetization & Discount Formula:</strong> ₹12 per unique genuine hover (&ge;800ms) + ₹20 per unique genuine visit. Discounts on hover: <strong>20%</strong> (&ge;3 Public docs), <strong>40%</strong> (&ge;10 docs + 5 Assignment + 5 Practical), <strong>60%</strong> (&ge;25 docs + 12 Assignment + 12 Practical), <strong>80%</strong> (&ge;75 docs + 25 Assignment + 25 Practical), <strong>100%</strong> (&ge;120 docs + 45 Assignment + 45 Practical). Monthly cycles lock permanently at month-end; subsequent uploads only benefit subsequent billing cycles.
+          </div>
+        </div>
+
+        <!-- Contributor Monetization Table -->
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+            <i class="ri-table-line" style="color:#f59e0b;"></i> Contributor Monthly Billing Breakdown
+          </h3>
+          <table class="data-table">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                <th style="padding:0.75rem;">Contributor</th>
+                <th style="padding:0.75rem;">Tier & Discount</th>
+                <th style="padding:0.75rem;">Ads Count</th>
+                <th style="padding:0.75rem;">Hovers (₹12/ea)</th>
+                <th style="padding:0.75rem;">Visits (₹20/ea)</th>
+                <th style="padding:0.75rem;">Gross Charges</th>
+                <th style="padding:0.75rem;">Discount</th>
+                <th style="padding:0.75rem;">Net Payable</th>
+                <th style="padding:0.75rem;">Payment Status</th>
+                <th style="padding:0.75rem;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adsMonetizationTableBody">
+              <tr><td colspan="10" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading monetization ledger...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Monetization Status Update Modal -->
+      <div id="monetizationStatusModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(8px);">
+        <div style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:16px; max-width:480px; width:100%; padding:1.8rem; box-shadow:0 25px 60px rgba(0,0,0,0.8);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+            <h3 style="color:white; margin:0; font-size:1.2rem; display:flex; align-items:center; gap:8px;">
+              <i class="ri-edit-circle-line" style="color:#f59e0b;"></i> Update Payment Status
+            </h3>
+            <button type="button" onclick="window.closeMonetizationStatusModal()" style="background:transparent; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+          </div>
+          <div style="margin-bottom:1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
+            <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:4px;">Contributor: <strong id="modalContribName" style="color:white;"></strong></div>
+            <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:4px;">Month Cycle: <strong id="modalMonthCycle" style="color:#a5b4fc;"></strong></div>
+            <div style="font-size:0.85rem; color:#94a3b8;">Net Payable: <strong id="modalNetPayable" style="color:#10b981;"></strong></div>
+          </div>
+          <input type="hidden" id="modalContribId" value="">
+          <input type="hidden" id="modalTargetMonth" value="">
+          <div style="margin-bottom:1.2rem;">
+            <label style="color:white; font-size:0.85rem; display:block; margin-bottom:6px; font-weight:600;">Payment Status *</label>
+            <select id="modalStatusSelect" style="width:100%; padding:0.75rem; border-radius:8px; background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.9rem;">
+              <option value="Pending">⏳ Pending (Unsettled)</option>
+              <option value="Paid">✅ Paid (Settled)</option>
+              <option value="Waived">🎁 Waived Off (Complimentary)</option>
+            </select>
+          </div>
+          <div style="margin-bottom:1.5rem;">
+            <label style="color:white; font-size:0.85rem; display:block; margin-bottom:6px; font-weight:600;">Admin Note (Optional)</label>
+            <textarea id="modalStatusNote" rows="2" style="width:100%; padding:0.75rem; border-radius:8px; background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.85rem; box-sizing:border-box;" placeholder="Payment reference, transaction ID or note..."></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" onclick="window.closeMonetizationStatusModal()" style="padding:0.6rem 1.2rem; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; cursor:pointer;">Cancel</button>
+            <button type="button" onclick="window.submitUpdateMonetizationStatus()" style="padding:0.6rem 1.4rem; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; font-weight:700; cursor:pointer;">Save Changes</button>
+          </div>
+        </div>
+      </div>
 
       <!-- IN-DOCUMENT NOTES & CONTRIBUTOR ANALYTICS TAB -->
       <section id="view-notes-analytics" class="view-section">

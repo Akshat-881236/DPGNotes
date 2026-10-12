@@ -117,28 +117,63 @@
     const closeBtn = document.createElement("button");
     closeBtn.className = "dpg-ad-close-btn";
     closeBtn.innerHTML = '<i class="ri-close-line"></i>';
-    closeBtn.title = "Dismiss Ad for 2 Minutes";
+    closeBtn.disabled = true;
+    closeBtn.title = "Dismiss Ad available in 45s";
     closeBtn.style.cssText = `
-      background: rgba(0, 0, 0, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #94a3b8;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(148, 163, 184, 0.5);
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      cursor: pointer;
+      cursor: not-allowed;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.85rem;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
       padding: 0;
       outline: none;
+      opacity: 0.35;
+      pointer-events: none;
     `;
 
-    closeBtn.onmouseenter = () => { closeBtn.style.color = "#fff"; closeBtn.style.background = "#ef4444"; closeBtn.style.borderColor = "#ef4444"; };
-    closeBtn.onmouseleave = () => { closeBtn.style.color = "#94a3b8"; closeBtn.style.background = "rgba(0, 0, 0, 0.65)"; closeBtn.style.borderColor = "rgba(255, 255, 255, 0.25)"; };
+    let remainingCloseSec = 45;
+    const closeTimer = setInterval(() => {
+      remainingCloseSec--;
+      if (remainingCloseSec > 0) {
+        closeBtn.title = `Dismiss Ad available in ${remainingCloseSec}s`;
+      } else {
+        clearInterval(closeTimer);
+        closeBtn.disabled = false;
+        closeBtn.style.opacity = "1";
+        closeBtn.style.cursor = "pointer";
+        closeBtn.style.pointerEvents = "auto";
+        closeBtn.style.color = "#94a3b8";
+        closeBtn.style.background = "rgba(0, 0, 0, 0.65)";
+        closeBtn.style.borderColor = "rgba(255, 255, 255, 0.25)";
+        closeBtn.title = "Dismiss Ad (Next ad in 2m 30s)";
+        closeBtn.classList.add("dpg-close-unlocked");
+      }
+    }, 1000);
+    box._closeTimer = closeTimer;
+
+    closeBtn.onmouseenter = () => {
+      if (closeBtn.disabled) return;
+      closeBtn.style.color = "#fff";
+      closeBtn.style.background = "#ef4444";
+      closeBtn.style.borderColor = "#ef4444";
+    };
+    closeBtn.onmouseleave = () => {
+      if (closeBtn.disabled) return;
+      closeBtn.style.color = "#94a3b8";
+      closeBtn.style.background = "rgba(0, 0, 0, 0.65)";
+      closeBtn.style.borderColor = "rgba(255, 255, 255, 0.25)";
+    };
     closeBtn.onclick = (e) => {
       e.stopPropagation();
+      if (closeBtn.disabled) return;
+      clearInterval(closeTimer);
       onCloseCallback();
     };
 
@@ -185,23 +220,91 @@
 
   function buildTrackedAdTargetLink(targetUrl, adId, customTrackId) {
     const trackId = customTrackId || generateAdTrackId(adId);
-    let base = (targetUrl && typeof targetUrl === "string" && targetUrl.trim() !== "" && targetUrl.trim() !== "#") 
+    let dest = (targetUrl && typeof targetUrl === "string" && targetUrl.trim() !== "" && targetUrl.trim() !== "#") 
       ? targetUrl.trim() 
-      : "index.html";
+      : "https://dpgnotes.web.app/index.html";
     
     try {
       const map = JSON.parse(localStorage.getItem('dpg_ad_track_map') || '{}');
-      map[trackId] = { adId: adId || "global", timestamp: Date.now() };
+      map[trackId] = { adId: adId || "global", destination: dest, timestamp: Date.now() };
       localStorage.setItem('dpg_ad_track_map', JSON.stringify(map));
     } catch(e) {}
 
+    const handlerBase = "https://dpgnotes.web.app/ads-redirect-handler.html";
     try {
-      const urlObj = new URL(base, window.location.href);
-      urlObj.searchParams.set("track_id", trackId);
-      return urlObj.toString();
+      const u = new URL(handlerBase);
+      u.searchParams.set("track_id", trackId);
+      u.searchParams.set("ad_id", adId || "");
+      u.searchParams.set("go-to", dest);
+      return u.toString();
     } catch(e) {
-      const sep = base.includes("?") ? "&" : "?";
-      return `${base}${sep}track_id=${trackId}`;
+      return `${handlerBase}?track_id=${encodeURIComponent(trackId)}&ad_id=${encodeURIComponent(adId || "")}&go-to=${encodeURIComponent(dest)}`;
+    }
+  }
+
+  function attachGenuineHoverTracker(card, ad, trackId) {
+    const destBtns = card.querySelectorAll(".dpg-ad-destination-btn");
+    destBtns.forEach(btn => {
+      let hoverTimer = null;
+      let hoverStart = 0;
+      let recorded = false;
+
+      btn.addEventListener("mouseenter", (e) => {
+        if (!e.isTrusted) return; // Genuine user interaction check
+        hoverStart = Date.now();
+        hoverTimer = setTimeout(() => {
+          if (!recorded && hoverStart > 0 && (Date.now() - hoverStart >= 800)) {
+            recorded = true;
+            sendGenuineHoverTelemetry(ad, trackId);
+          }
+        }, 800);
+      });
+
+      btn.addEventListener("mouseleave", () => {
+        hoverStart = 0;
+        if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+      });
+    });
+  }
+
+  async function sendGenuineHoverTelemetry(ad, trackId) {
+    try {
+      const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
+      const email = activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "";
+      // Strictly exclude Admin visitors
+      if (email === "akshatprasad009@gmail.com" || activeUser.isAdmin) return;
+
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      const sessionKey = `dpg_hover_logged_${ad.id || trackId}_${currentMonth}`;
+      if (sessionStorage.getItem(sessionKey)) return;
+      sessionStorage.setItem(sessionKey, "1");
+
+      const guestId = localStorage.getItem("dpg_guest_id") || ("guest_" + Math.random().toString(36).substr(2, 9));
+      if (!localStorage.getItem("dpg_guest_id")) localStorage.setItem("dpg_guest_id", guestId);
+      let clientDeviceId = localStorage.getItem("dpg_client_device_id");
+      if (!clientDeviceId) {
+        clientDeviceId = "dev_" + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem("dpg_client_device_id", clientDeviceId);
+      }
+
+      const payload = {
+        adId: ad.id || "",
+        trackId: trackId || "",
+        uploaderUid: ad.userId || ad.uid || ad.userUid || ad.createdBy || "",
+        visitorUid: activeUser.uid || guestId,
+        visitorType: activeUser.uid ? "Contributor" : "Guest",
+        clientDeviceId: clientDeviceId,
+        timestamp: new Date().toISOString(),
+        month: currentMonth
+      };
+
+      fetch((window.API_BASE_URL || '') + '/api/ad-hover-telemetry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(console.warn);
+    } catch(err) {
+      console.warn("Failed to record genuine hover telemetry:", err);
     }
   }
 
@@ -253,7 +356,7 @@
       const placementKey = variant || "global";
       if (!isCoverGen) {
         try {
-          sessionStorage.setItem("dpg_ad_muted_" + placementKey, (Date.now() + 120000).toString());
+          sessionStorage.setItem("dpg_ad_muted_" + placementKey, (Date.now() + 150000).toString());
         } catch(e) {}
       }
 
@@ -264,18 +367,28 @@
       setTimeout(() => {
         card.style.display = "none";
         if (parentBox) {
-          const visibleChildren = Array.from(parentBox.children).filter(c => c.style.display !== "none");
-          if (visibleChildren.length === 0) {
-            parentBox.style.display = "none";
-          }
+          // Empty Space Removal: completely remove gap/space until re-injection
+          parentBox.style.display = "none";
+          parentBox.style.height = "0px";
+          parentBox.style.minHeight = "0px";
+          parentBox.style.margin = "0px";
+          parentBox.style.padding = "0px";
+          parentBox.classList.add("ad-slot-collapsed");
         }
       }, 350);
 
-      // Re-enable ad placement: Instant (300ms) for Cover Page Generators, 2 minutes (120,000 ms) for other pages
-      const dismissDelay = isCoverGen ? 300 : 120000;
+      // Re-enable ad placement: Instant (300ms) for Cover Page Generators, 2 minutes 30 seconds (150,000 ms) for other pages
+      const dismissDelay = isCoverGen ? 300 : 150000;
       rotationTimeout = setTimeout(async () => {
-        if (!card.isConnected || card.style.display === "none") return;
-        if (parentBox) parentBox.style.display = "";
+        if (!card.isConnected && !parentBox) return;
+        if (parentBox) {
+          parentBox.style.display = "";
+          parentBox.style.height = "";
+          parentBox.style.minHeight = "";
+          parentBox.style.margin = "";
+          parentBox.style.padding = "";
+          parentBox.classList.remove("ad-slot-collapsed");
+        }
         swapToNextAd();
       }, dismissDelay);
     }
@@ -308,7 +421,7 @@
         // For Cover Page Generators, ad progression is orchestrally controlled by startNextCoverAd()
         if (isCoverGen) return;
 
-        // Ad Rotation Delay: 2-Minute Gap (120,000 ms) for standard content pages
+        // Ad Rotation Delay: 2m 30s Gap (150,000 ms) for standard content pages
         rotationTimeout = setTimeout(async () => {
           if (!card.isConnected || card.style.display === "none") return;
           if (parentBox) parentBox.style.display = "";
@@ -338,12 +451,9 @@
             newCard.style.opacity = "1";
             newCard.style.transform = "scale(1)";
           });
-        }, 120000);
+        }, 150000);
       }, 350);
     }
-
-    const headerControls = createAdHeaderControls(dismissAdCard);
-    card.appendChild(headerControls);
 
     function getProfileLinkHtml(imgSize = "26px", fontSize = "0.78rem") {
       return `
@@ -382,7 +492,7 @@
           </div>
           <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        <a href="${finalTargetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">View <i class="ri-arrow-right-s-line"></i></a>
+        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">View <i class="ri-arrow-right-s-line"></i></a>
       `;
     } else if (variant === "footer" || variant === "bottom") {
       card.style.cssText = `
@@ -414,7 +524,7 @@
           </div>
           <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        <a href="${finalTargetLink}" target="_blank" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>
+        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>
       `;
     } else if (variant === "sidebar" || variant === "image") {
       const isLight = typeof document !== 'undefined' && document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
@@ -446,7 +556,7 @@
         </div>
 
         <h4 class="dpg-ad-title" style="font-size:0.84rem; font-weight:700; margin-bottom:4px; line-height:1.2; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.title || 'Promoted Content'}</h4>
-        <a href="${finalTargetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
+        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
     } else if (variant === "cover_video" || variant === "cover_image") {
       // Cover Page Native Ad Variant: Disabled close icon and 'i' info icon.
@@ -485,7 +595,7 @@
         <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.description || ''}</p>
         
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px;">
-          <a href="${finalTargetLink}" target="_blank" style="flex:1; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
+          <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="flex:1; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
           <button type="button" id="adSkipBtn_${containerId}" disabled style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#94a3b8; padding:8px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:not-allowed; display:inline-flex; align-items:center; gap:6px; transition:all 0.3s ease; white-space:nowrap;">
             <span id="adSkipText_${containerId}">Skip in ${skipSec}s</span>
           </button>
@@ -556,17 +666,18 @@
 
         <h4 style="font-size:0.9rem; font-weight:700; color:white; margin-bottom:4px; line-height:1.3;">${ad.title || 'Promoted Content'}</h4>
         <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.description || ''}</p>
-        <a href="${finalTargetLink}" target="_blank" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
+        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
     }
 
     // Attach Ad Controls (i info icon & ✕ close button) for standard variants (disabled for cover variants)
     if (variant !== "cover_video" && variant !== "cover_image") {
-      const controls = createAdHeaderControls(() => {
-        swapToNextAd();
-      });
+      const controls = createAdHeaderControls(dismissAdCard);
       card.appendChild(controls);
     }
+
+    // Attach Genuine Hover Tracking to all destination action buttons
+    attachGenuineHoverTracker(card, ad, trackId);
 
     // Smart Rotation & Video Lifecycle Engine
     const isVideoMediaVariant = variant !== "image" && (variant === "feed" || variant === "sidebar" || variant === "main" || variant === "cover_video") && !!vidId;
@@ -579,12 +690,12 @@
       const waitText = card.querySelector(`#adWaitText_${containerId}`);
 
       if (!isCoverGen) {
-        // Fallback 30s timer in case video is never started
+        // Fallback 45s timer in case video is never started
         rotationTimeout = setTimeout(() => {
           if (!videoLifecycleActive) {
             swapToNextAd();
           }
-        }, 30000);
+        }, 45000);
       }
 
       function startVideo(muted = true) {
@@ -651,10 +762,10 @@
         };
       }
     } else if (!isCoverGen) {
-      // Non-Video Ads OR Header/Footer Variant Ads -> 30-Second Automatic Rotation (Non-cover only)
+      // Non-Video Ads OR Header/Footer Variant Ads -> 45-Second Automatic Rotation (Non-cover only)
       rotationTimeout = setTimeout(() => {
         swapToNextAd();
-      }, 30000);
+      }, 45000);
     }
 
     return card;

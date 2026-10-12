@@ -13,7 +13,7 @@
   <meta property="og:description" content="Search verified academic assignment solutions, questions, code sandboxes and test cases on DPGNotes.">
   <meta property="og:url" content="https://dpgnotes.web.app/AssignmentSolution/index.html">
   <link rel="icon" href="../ANH.png" type="image/png">
-  <link rel="stylesheet" href="solutions-style.css?v=2.2.0">
+  <link rel="stylesheet" href="solutions-style.css?v=2.3.0">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="../config.js"></script>
   <script src="/dpg-params.js"></script>
@@ -124,6 +124,70 @@
     }
     html[data-theme="light"] .sol-serp-meta-pill strong {
       color: #0f172a !important;
+    }
+
+    /* Enhanced Assignment Solution SERP Filter Tabs */
+    .sol-serp-filter-tabs {
+      display: flex !important;
+      gap: 10px !important;
+      align-items: center !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      padding-bottom: 0.85rem !important;
+      margin-bottom: 1.35rem !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    .sol-serp-tab {
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      color: #94a3b8 !important;
+      font-size: 0.88rem !important;
+      font-weight: 600 !important;
+      font-family: 'Outfit', sans-serif !important;
+      padding: 7px 16px !important;
+      border-radius: 999px !important;
+      cursor: pointer !important;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 7px !important;
+      white-space: nowrap !important;
+      outline: none !important;
+    }
+    .sol-serp-tab:hover {
+      background: rgba(56, 189, 248, 0.15) !important;
+      border-color: rgba(56, 189, 248, 0.35) !important;
+      color: #38bdf8 !important;
+      transform: translateY(-1px) !important;
+    }
+    .sol-serp-tab.active {
+      background: rgba(56, 189, 248, 0.2) !important;
+      border-color: #38bdf8 !important;
+      color: #38bdf8 !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.3) !important;
+    }
+    .sol-serp-tab i {
+      font-size: 1rem !important;
+    }
+    html[data-theme="light"] .sol-serp-filter-tabs {
+      border-bottom-color: #e2e8f0 !important;
+    }
+    html[data-theme="light"] .sol-serp-tab {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #475569 !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    }
+    html[data-theme="light"] .sol-serp-tab:hover {
+      background: rgba(2, 132, 199, 0.08) !important;
+      border-color: #0284c7 !important;
+      color: #0284c7 !important;
+    }
+    html[data-theme="light"] .sol-serp-tab.active {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25) !important;
     }
 
     /* Quick Solution Cards Section (PDF Viewer Ending Part Logic) */

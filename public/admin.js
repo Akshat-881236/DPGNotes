@@ -1037,6 +1037,8 @@ window.switchTab = function(tabId) {
     if (typeof window.loadAdsAdmin === 'function') window.loadAdsAdmin();
   } else if (tabId === 'ads-analytics') {
     if (typeof window.loadAdsAnalyticsAdmin === 'function') window.loadAdsAnalyticsAdmin();
+  } else if (tabId === 'ads-monetization') {
+    if (typeof window.loadAdsMonetizationAdmin === 'function') window.loadAdsMonetizationAdmin();
   } else if (tabId === 'videos-mgmt') {
     if (typeof window.loadVideosMgmtAdmin === 'function') window.loadVideosMgmtAdmin();
   } else if (tabId === 'resource-analytics') {
@@ -3895,6 +3897,83 @@ async function loadAdsAnalyticsAdmin() {
       });
     }
 
+    // Render Safe Gateway Deep External Ad Telemetry Table
+    const deepTbody = document.getElementById("deepExternalAdTableBody");
+    if (deepTbody) {
+      const deepRecords = data.deepAnalytics || [];
+      if (deepRecords.length === 0) {
+        deepTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No external ad destination clicks logged yet.</td></tr>`;
+      } else {
+        deepTbody.innerHTML = "";
+        deepRecords.forEach(t => {
+          const tr = document.createElement("tr");
+
+          // Viewer Classification badge
+          let viewerBadge = `<span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; font-size:0.75rem; padding:2px 8px; border-radius:6px; font-weight:700;">Guest</span>`;
+          if (t.viewerType === "Contributor") {
+            viewerBadge = `<span style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; font-size:0.75rem; padding:2px 8px; border-radius:6px; font-weight:700;">Contributor</span>`;
+          } else if (t.viewerType === "Anonymous") {
+            viewerBadge = `<span style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#f87171; font-size:0.75rem; padding:2px 8px; border-radius:6px; font-weight:700;">Anonymous (${t.botType || 'Bot'})</span>`;
+          }
+
+          // Visitor Identity info
+          let visitorHtml = "";
+          if (t.viewerType === "Contributor") {
+            visitorHtml = `
+              <div style="font-weight:600; color:white;">${t.contributorName || 'Contributor'}</div>
+              <div style="font-size:0.75rem; color:#94a3b8;">${t.contributorEmail || ''}</div>
+              <div style="font-size:0.72rem; color:var(--admin-text-muted); font-family:monospace;">UID: ${t.contributorId || 'N/A'}</div>
+            `;
+          } else if (t.viewerType === "Anonymous") {
+            visitorHtml = `
+              <div style="font-weight:600; color:#f87171;"><i class="ri-robot-line"></i> ${t.botType || 'Web Crawler'}</div>
+              <div style="font-size:0.72rem; color:var(--admin-text-muted);">Automated Search Bot</div>
+            `;
+          } else {
+            visitorHtml = `
+              <div style="font-size:0.8rem; color:#cbd5e1; font-family:monospace;">Guest: ${t.guestId || 'guest_anon'}</div>
+              <div style="font-size:0.72rem; color:var(--admin-text-muted); font-family:monospace;">Dev: ${t.clientDeviceId || 'N/A'}</div>
+            `;
+          }
+
+          const lastVisitFormatted = t.lastVisit ? new Date(t.lastVisit).toLocaleString() : 'N/A';
+          const uploaderProfileLink = t.uploaderUid && t.uploaderUid !== 'anon_contributor' ? `profile.html?uid=${encodeURIComponent(t.uploaderUid)}` : 'profile.html';
+
+          tr.innerHTML = `
+            <td style="padding:0.75rem;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <img src="${t.uploaderPhoto || 'ANH.png'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:1px solid rgba(99,102,241,0.4);" onerror="this.src='ANH.png'">
+                <div>
+                  <a href="${uploaderProfileLink}" target="_blank" style="color:white; font-weight:700; text-decoration:none; font-size:0.85rem;" title="View Profile">${t.uploaderName || 'Contributor'}</a>
+                  <div style="font-size:0.72rem; color:var(--admin-text-muted); font-family:monospace;">${t.uploaderUid || 'N/A'}</div>
+                </div>
+              </div>
+            </td>
+            <td style="padding:0.75rem;">
+              <div style="font-weight:600; color:white; font-size:0.85rem;">${t.adTitle || 'Promoted Campaign'}</div>
+              <div style="font-size:0.74rem; color:#a5b4fc; font-family:monospace;">Track: ${t.trackId || 'N/A'}</div>
+              <div style="font-size:0.7rem; color:var(--admin-text-muted); font-family:monospace;">Ad ID: ${t.adId || 'N/A'}</div>
+            </td>
+            <td style="padding:0.75rem;">${viewerBadge}</td>
+            <td style="padding:0.75rem;">${visitorHtml}</td>
+            <td style="padding:0.75rem; max-width:220px;">
+              <a href="${t.destinationUrl || '#'}" target="_blank" style="color:#38bdf8; text-decoration:none; font-size:0.78rem; font-family:monospace; word-break:break-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                ${t.destinationUrl || 'Destination'} <i class="ri-external-link-line" style="font-size:0.7rem;"></i>
+              </a>
+            </td>
+            <td style="padding:0.75rem;">
+              <span style="font-size:0.8rem; color:#f59e0b; font-weight:600; display:block;">${t.averageEstimation || (t.visitsCount + ' visits')}</span>
+              <span style="font-size:0.72rem; color:var(--admin-text-muted);">Total visits: ${t.visitsCount || 1}</span>
+            </td>
+            <td style="padding:0.75rem; font-size:0.78rem; color:#94a3b8; white-space:nowrap;">
+              ${lastVisitFormatted}
+            </td>
+          `;
+          deepTbody.appendChild(tr);
+        });
+      }
+    }
+
     // Render YouTube Video Ads Telemetry & Engagement
     try {
       function extractAdminYtId(url) {
@@ -4014,6 +4093,289 @@ async function loadAdsAnalyticsAdmin() {
 }
 
 window.loadAdsAnalyticsAdmin = loadAdsAnalyticsAdmin;
+
+// ============================================================================
+// NATIVE ADS MONETIZATION & CONTRIBUTOR CHARGES LEDGER ENGINE
+// ============================================================================
+let adsMonetizationDataCache = null;
+
+async function loadAdsMonetizationAdmin() {
+  const monthPicker = document.getElementById("monetizationMonthPicker");
+  const contribFilter = document.getElementById("monetizationContributorFilter");
+
+  const currentMonthStr = new Date().toISOString().substring(0, 7);
+  if (monthPicker && !monthPicker.value) {
+    monthPicker.value = currentMonthStr;
+  }
+  const selectedMonth = monthPicker ? (monthPicker.value || currentMonthStr) : currentMonthStr;
+  const selectedContributor = contribFilter ? (contribFilter.value || "ALL") : "ALL";
+
+  const tbody = document.getElementById("adsMonetizationTableBody");
+  if (tbody) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);"><i class="ri-loader-4-line spin-icon"></i> Computing contributor charges & discount tiers...</td></tr>`;
+  }
+
+  try {
+    const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const res = await fetch(`${baseUrl}/api/admin/ads-monetization?month=${encodeURIComponent(selectedMonth)}&contributorId=${encodeURIComponent(selectedContributor)}`);
+    const data = await res.json();
+
+    if (!data || !data.success) {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:1.5rem; color:#f87171;">Failed to load monetization ledger: ${data?.error || 'Unknown error'}</td></tr>`;
+      return;
+    }
+
+    adsMonetizationDataCache = data;
+
+    // 1. Update Metric Cards
+    if (document.getElementById("statMonetizationGross")) {
+      document.getElementById("statMonetizationGross").textContent = `₹${(data.totalGrossCharges || 0).toLocaleString()}`;
+    }
+    if (document.getElementById("statMonetizationDiscounts")) {
+      document.getElementById("statMonetizationDiscounts").textContent = `₹${(data.totalDiscountAmount || 0).toLocaleString()}`;
+    }
+    if (document.getElementById("statMonetizationNet")) {
+      document.getElementById("statMonetizationNet").textContent = `₹${(data.totalNetPayable || 0).toLocaleString()}`;
+    }
+    if (document.getElementById("statMonetizationPending")) {
+      document.getElementById("statMonetizationPending").textContent = `₹${(data.totalPendingAmount || 0).toLocaleString()}`;
+    }
+    if (document.getElementById("statMonetizationPaid")) {
+      document.getElementById("statMonetizationPaid").textContent = `₹${(data.totalPaidAmount || 0).toLocaleString()}`;
+    }
+    if (document.getElementById("statMonetizationWaived")) {
+      document.getElementById("statMonetizationWaived").textContent = `₹${(data.totalWaivedAmount || 0).toLocaleString()}`;
+    }
+
+    // 2. Populate Contributor Filter if empty
+    if (contribFilter && contribFilter.options.length <= 1) {
+      const contributors = data.contributors || [];
+      contributors.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.contributorUid;
+        opt.textContent = `${c.contributorName} (${c.contributorEmail || c.contributorUid.substring(0, 8)})`;
+        contribFilter.appendChild(opt);
+      });
+      contribFilter.value = selectedContributor;
+    }
+
+    // 3. Render Table Rows
+    if (!tbody) return;
+    const records = data.contributors || [];
+    if (records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">No contributor ads registered or active in this billing cycle (${selectedMonth}).</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    records.forEach((c, idx) => {
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+
+      // Tier badge color & info
+      const tierInfo = c.tierInfo || {};
+      const discountPct = tierInfo.discountPct || 0;
+      let tierColor = "#94a3b8";
+      let tierBg = "rgba(148,163,184,0.15)";
+      let tierBorder = "rgba(148,163,184,0.3)";
+
+      if (discountPct === 100) {
+        tierColor = "#a855f7"; tierBg = "rgba(168,85,247,0.2)"; tierBorder = "rgba(168,85,247,0.4)";
+      } else if (discountPct === 80) {
+        tierColor = "#38bdf8"; tierBg = "rgba(56,189,248,0.2)"; tierBorder = "rgba(56,189,248,0.4)";
+      } else if (discountPct === 60) {
+        tierColor = "#f59e0b"; tierBg = "rgba(245,158,11,0.2)"; tierBorder = "rgba(245,158,11,0.4)";
+      } else if (discountPct === 40) {
+        tierColor = "#cbd5e1"; tierBg = "rgba(203,213,225,0.2)"; tierBorder = "rgba(203,213,225,0.4)";
+      } else if (discountPct === 20) {
+        tierColor = "#d97706"; tierBg = "rgba(217,119,6,0.2)"; tierBorder = "rgba(217,119,6,0.4)";
+      }
+
+      // Payment Status badge
+      const status = c.status || "Pending";
+      let statusBadge = `<span style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#f87171; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">⏳ Pending</span>`;
+      if (status === "Paid") {
+        statusBadge = `<span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.35); color:#34d399; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">✅ Paid</span>`;
+      } else if (status === "Waived") {
+        statusBadge = `<span style="background:rgba(148,163,184,0.15); border:1px solid rgba(148,163,184,0.35); color:#cbd5e1; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">🎁 Waived</span>`;
+      }
+
+      const pCount = tierInfo.publicResourcesCount || 0;
+      const aCount = tierInfo.assignmentSolutionsCount || 0;
+      const lCount = tierInfo.practicalSolutionsCount || 0;
+
+      const subRowId = `monetize_sub_${idx}`;
+
+      tr.innerHTML = `
+        <td style="padding:0.75rem;">
+          <div style="font-weight:700; color:white; font-size:0.88rem;">${c.contributorName}</div>
+          <div style="font-size:0.74rem; color:#94a3b8;">${c.contributorEmail || 'No Email'}</div>
+          <div style="font-size:0.7rem; color:var(--admin-text-muted); font-family:monospace;">UID: ${c.contributorUid}</div>
+        </td>
+        <td style="padding:0.75rem;">
+          <span style="background:${tierBg}; border:1px solid ${tierBorder}; color:${tierColor}; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700; display:inline-block;" title="${tierInfo.tierName}">
+            ${discountPct}% Discount
+          </span>
+          <div style="font-size:0.7rem; color:var(--admin-text-muted); margin-top:3px;">
+            ${pCount} Pub · ${aCount} Sol · ${lCount} Prac
+          </div>
+        </td>
+        <td style="padding:0.75rem; font-weight:700; color:#a5b4fc;">
+          <button type="button" onclick="window.toggleAdMonetizationBreakdown('${subRowId}')" style="background:transparent; border:none; color:#a5b4fc; cursor:pointer; font-weight:700; text-decoration:underline; font-size:0.85rem;" title="Toggle per-ad breakdown">
+            ${c.adsCount} Ads <i class="ri-arrow-down-s-line"></i>
+          </button>
+        </td>
+        <td style="padding:0.75rem;">
+          <div style="font-weight:700; color:#f59e0b; font-size:0.85rem;">${c.totalHovers}</div>
+          <div style="font-size:0.7rem; color:var(--admin-text-muted);">₹${c.totalGrossHover} (₹12/ea)</div>
+        </td>
+        <td style="padding:0.75rem;">
+          <div style="font-weight:700; color:#38bdf8; font-size:0.85rem;">${c.totalVisits}</div>
+          <div style="font-size:0.7rem; color:var(--admin-text-muted);">₹${c.totalGrossVisit} (₹20/ea)</div>
+        </td>
+        <td style="padding:0.75rem; font-weight:700; color:white; font-size:0.88rem;">
+          ₹${c.totalGrossCharges.toLocaleString()}
+        </td>
+        <td style="padding:0.75rem; font-weight:700; color:#10b981; font-size:0.85rem;">
+          -₹${c.totalHoverDiscount.toLocaleString()}
+        </td>
+        <td style="padding:0.75rem; font-weight:800; color:#a5b4fc; font-size:0.95rem;">
+          ₹${c.totalNetPayable.toLocaleString()}
+        </td>
+        <td style="padding:0.75rem;">
+          ${statusBadge}
+          ${c.isLocked ? `<div style="font-size:0.68rem; color:#94a3b8; margin-top:2px;"><i class="ri-lock-line"></i> Locked Cycle</div>` : ''}
+        </td>
+        <td style="padding:0.75rem;">
+          <button type="button" onclick="window.openUpdateMonetizationStatusModal('${c.contributorUid}', '${(c.contributorName || 'Contributor').replace(/'/g, "\\'")}', '${selectedMonth}', '${c.totalNetPayable}', '${status}', '${(c.note || '').replace(/'/g, "\\'")}')" class="btn-action primary" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
+            <i class="ri-edit-line"></i> Update
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      // Child row for per-ad itemized breakdown
+      const subTr = document.createElement("tr");
+      subTr.id = subRowId;
+      subTr.style.display = "none";
+      subTr.style.background = "rgba(0,0,0,0.3)";
+
+      const adsBreakdown = c.adsBreakdown || [];
+      let adsBreakdownHtml = `
+        <td colspan="10" style="padding:1rem 1.2rem;">
+          <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <i class="ri-list-settings-line" style="color:#6366f1;"></i> Itemized Ad Campaign Charges for ${c.contributorName} (${selectedMonth}):
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:0.75rem; color:#cbd5e1;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#94a3b8; text-align:left;">
+                <th style="padding:4px 8px;">Ad Campaign</th>
+                <th style="padding:4px 8px;">Track ID</th>
+                <th style="padding:4px 8px;">Unique Hovers</th>
+                <th style="padding:4px 8px;">Gross Hover</th>
+                <th style="padding:4px 8px;">Discount (${discountPct}%)</th>
+                <th style="padding:4px 8px;">Net Hover</th>
+                <th style="padding:4px 8px;">Unique Visits</th>
+                <th style="padding:4px 8px;">Visit Charges</th>
+                <th style="padding:4px 8px;">Net Ad Payable</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      if (adsBreakdown.length === 0) {
+        adsBreakdownHtml += `<tr><td colspan="9" style="padding:8px; text-align:center; color:#64748b;">No ads recorded for this contributor.</td></tr>`;
+      } else {
+        adsBreakdown.forEach(ab => {
+          adsBreakdownHtml += `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+              <td style="padding:6px 8px; font-weight:600; color:white;">${ab.title}</td>
+              <td style="padding:6px 8px; font-family:monospace; color:#a5b4fc;">${ab.trackId}</td>
+              <td style="padding:6px 8px; color:#f59e0b; font-weight:600;">${ab.uniqueHovers}</td>
+              <td style="padding:6px 8px;">₹${ab.grossHoverCharges}</td>
+              <td style="padding:6px 8px; color:#10b981;">-₹${ab.hoverDiscountAmount}</td>
+              <td style="padding:6px 8px; font-weight:600; color:white;">₹${ab.netHoverCharges}</td>
+              <td style="padding:6px 8px; color:#38bdf8; font-weight:600;">${ab.uniqueVisits}</td>
+              <td style="padding:6px 8px;">₹${ab.grossVisitCharges}</td>
+              <td style="padding:6px 8px; font-weight:700; color:#a5b4fc;">₹${ab.netAdPayable}</td>
+            </tr>
+          `;
+        });
+      }
+
+      adsBreakdownHtml += `
+            </tbody>
+          </table>
+        </td>
+      `;
+      subTr.innerHTML = adsBreakdownHtml;
+      tbody.appendChild(subTr);
+    });
+
+  } catch (err) {
+    console.error("loadAdsMonetizationAdmin error:", err);
+    if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:1.5rem; color:#f87171;">Error loading monetization ledger: ${err.message}</td></tr>`;
+  }
+}
+
+window.loadAdsMonetizationAdmin = loadAdsMonetizationAdmin;
+
+window.toggleAdMonetizationBreakdown = function(subRowId) {
+  const el = document.getElementById(subRowId);
+  if (el) {
+    el.style.display = (el.style.display === "none") ? "table-row" : "none";
+  }
+};
+
+window.openUpdateMonetizationStatusModal = function(contributorUid, contributorName, month, netPayable, currentStatus, currentNote) {
+  const modal = document.getElementById("monetizationStatusModal");
+  if (!modal) return;
+
+  document.getElementById("modalContribId").value = contributorUid;
+  document.getElementById("modalTargetMonth").value = month;
+  document.getElementById("modalContribName").textContent = contributorName;
+  document.getElementById("modalMonthCycle").textContent = month;
+  document.getElementById("modalNetPayable").textContent = `₹${Number(netPayable || 0).toLocaleString()}`;
+  document.getElementById("modalStatusSelect").value = currentStatus || "Pending";
+  document.getElementById("modalStatusNote").value = currentNote || "";
+
+  modal.style.display = "flex";
+};
+
+window.closeMonetizationStatusModal = function() {
+  const modal = document.getElementById("monetizationStatusModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.submitUpdateMonetizationStatus = async function() {
+  const contributorId = document.getElementById("modalContribId").value;
+  const month = document.getElementById("modalTargetMonth").value;
+  const status = document.getElementById("modalStatusSelect").value;
+  const note = document.getElementById("modalStatusNote").value;
+
+  if (!contributorId || !month || !status) {
+    alert("Missing required status information.");
+    return;
+  }
+
+  try {
+    const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const res = await fetch(`${baseUrl}/api/admin/update-monetization-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contributorId, month, status, note })
+    });
+    const result = await res.json();
+    if (result && result.success) {
+      window.closeMonetizationStatusModal();
+      window.loadAdsMonetizationAdmin();
+    } else {
+      alert("Failed to update status: " + (result?.error || "Unknown error"));
+    }
+  } catch (err) {
+    alert("Error updating status: " + err.message);
+  }
+};
 
 // ==========================================
 // IN-DOCUMENT NOTES & CONTRIBUTOR ANALYTICS
