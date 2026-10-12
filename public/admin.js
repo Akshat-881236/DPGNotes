@@ -4507,6 +4507,7 @@ window.closeMonetizationStatusModal = function() {
 
 window.submitUpdateMonetizationStatus = async function() {
   const contributorId = document.getElementById("modalContribId").value;
+  const contributorName = document.getElementById("modalContribName")?.textContent || "Contributor";
   const month = document.getElementById("modalTargetMonth").value;
   const status = document.getElementById("modalStatusSelect").value;
   const note = document.getElementById("modalStatusNote").value;
@@ -4521,7 +4522,7 @@ window.submitUpdateMonetizationStatus = async function() {
     const res = await fetch(`${baseUrl}/api/admin/update-monetization-status`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contributorId, month, status, note })
+      body: JSON.stringify({ contributorId, contributorName, month, status, note })
     });
     const result = await res.json();
     if (result && result.success) {

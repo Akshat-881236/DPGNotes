@@ -887,12 +887,17 @@
               </div>
             </div>
 
-            <!-- Qualification criteria progress snippet -->
-            <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 12px; font-size:0.75rem; color:#94a3b8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <!-- Qualification criteria progress snippet & Payment Action -->
+            <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px 14px; font-size:0.75rem; color:#94a3b8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
               <span><strong>Your Portfolio:</strong> <span id="contribPortfolioStats">0 Public Docs · 0 Assignment Sols · 0 Practical Sols</span></span>
-              <a href="legal/native-ads-monetization-policy.html" target="_blank" style="color:#a5b4fc; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
-                View Native Ads Monetization Policy <i class="ri-arrow-right-s-line"></i>
-              </a>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <button type="button" onclick="window.openRequestPaymentModal()" style="background:linear-gradient(135deg, #f59e0b, #d97706); border:none; color:white; font-weight:700; font-size:0.75rem; padding:6px 12px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 8px rgba(245,158,11,0.3);">
+                  <i class="ri-wallet-3-line"></i> Request Payment QR / Concession
+                </button>
+                <a href="legal/native-ads-monetization-policy.html" target="_blank" style="color:#a5b4fc; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                  View Policy <i class="ri-arrow-right-s-line"></i>
+                </a>
+              </div>
             </div>
 
             <!-- Real-Time Calculation Notice -->
@@ -1102,6 +1107,78 @@
                 💡 <strong>GitHub Tip:</strong> Paste tags directly inside <code>&lt;head&gt;...&lt;/head&gt;</code> of <code>index.html</code> (not index.htm), and ensure valid HTML tags without broken quotes.
               </p>
             </div>
+          </div>
+        </div>
+
+        <!-- NATIVE ADS OFFLINE PAYMENT & CONCESSION REQUEST MODAL -->
+        <div id="requestPaymentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; align-items:center; justify-content:center; padding:1rem;">
+          <div style="background:#0f172a; border:1px solid rgba(245,158,11,0.4); border-radius:18px; padding:1.8rem; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 25px 60px rgba(0,0,0,0.9); position:relative; font-family:inherit;">
+            <button type="button" onclick="window.closeRequestPaymentModal()" style="position:absolute; top:1.2rem; right:1.2rem; background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+            
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:1rem;">
+              <div style="width:42px; height:42px; border-radius:10px; background:rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center; color:#f59e0b; font-size:1.4rem;">
+                <i class="ri-wallet-3-line"></i>
+              </div>
+              <div>
+                <h3 style="margin:0; color:white; font-size:1.25rem;">Native Ads Payment &amp; Concession Desk</h3>
+                <span style="font-size:0.78rem; color:#94a3b8;">Manual UPI Settlement &bull; 3-Step Verification Guide</span>
+              </div>
+            </div>
+
+            <!-- 3-Step Human Guide -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:1.2rem; font-size:0.83rem; line-height:1.55; color:#cbd5e1;">
+              <div style="margin-bottom:8px;">
+                <strong style="color:#fbbf24;">Step 1:</strong> Trigger a system request below to obtain our official UPI QR Code, verified Phone Number, or ask for a fee concession on this bill.
+              </div>
+              <div style="margin-bottom:8px;">
+                <strong style="color:#38bdf8;">Step 2:</strong> Complete your payment offline via UPI, then email your payment screenshot (showing transaction ID/UTR) along with your Contributor UID, Name, Email, Contact Phone, and Month to <strong>akshatpsd2005@gmail.com</strong> and <strong>its.akshatnetworkhub23@gmail.com</strong>.
+              </div>
+              <div>
+                <strong style="color:#34d399;">Step 3:</strong> Our team checks bank records within 5 to 10 business days. When the admin marks your status as Paid (or Waived) in the portal, you will automatically receive a confirmation email.
+              </div>
+            </div>
+
+            <!-- Official Payment Channel Details Box -->
+            <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:12px; padding:12px 14px; margin-bottom:1.2rem;">
+              <div style="font-size:0.8rem; font-weight:700; color:#a5b4fc; margin-bottom:6px; display:flex; align-items:center; gap:5px;">
+                <i class="ri-shield-check-line"></i> Official DPGNotes Payment Channels:
+              </div>
+              <div style="font-size:0.85rem; color:#f8fafc; line-height:1.6;">
+                <div>&bull; <strong>Official Phone Number:</strong> <code style="background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:4px; color:#fbbf24; font-size:0.95rem;">9354020104</code> <span style="font-size:0.75rem; color:#94a3b8;">(Google Pay, PhonePe, Paytm)</span></div>
+                <div>&bull; <strong>Official UPI ID:</strong> <code style="background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:4px; color:#38bdf8; font-size:0.9rem;">its.akshatnetworkhub23@okaxis</code></div>
+                <div>&bull; <strong>Payment Proof Inboxes:</strong> <span style="color:#cbd5e1; font-size:0.8rem;">akshatpsd2005@gmail.com &bull; its.akshatnetworkhub23@gmail.com</span></div>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <form id="requestPaymentDetailsForm" onsubmit="window.submitPaymentDetailsRequest(event)">
+              <div style="margin-bottom:1rem;">
+                <label style="display:block; font-size:0.82rem; color:#94a3b8; margin-bottom:5px;">What would you like to request? *</label>
+                <select id="reqPayType" required style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.5); color:white; font-size:0.88rem;">
+                  <option value="payment_details">📲 Request Official UPI QR Code &amp; Phone Number Details</option>
+                  <option value="bill_concession">🎁 Request a Fee Concession on this Monthly Bill</option>
+                </select>
+              </div>
+
+              <div style="margin-bottom:1rem;">
+                <label style="display:block; font-size:0.82rem; color:#94a3b8; margin-bottom:5px;">Your Contact / WhatsApp Number *</label>
+                <input type="tel" id="reqPayPhone" placeholder="e.g. 9876543210" required style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.5); color:white; font-size:0.88rem; box-sizing:border-box;">
+              </div>
+
+              <div style="margin-bottom:1.2rem;">
+                <label style="display:block; font-size:0.82rem; color:#94a3b8; margin-bottom:5px;">Optional Message / Reason for Concession Request</label>
+                <textarea id="reqPayMessage" placeholder="If requesting a concession, briefly describe your student status or reason..." style="width:100%; height:80px; padding:0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.5); color:white; font-size:0.85rem; box-sizing:border-box;"></textarea>
+              </div>
+
+              <div id="reqPayFeedback" style="display:none; padding:10px 12px; border-radius:8px; font-size:0.82rem; margin-bottom:1rem;"></div>
+
+              <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" onclick="window.closeRequestPaymentModal()" style="padding:0.65rem 1.2rem; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; font-size:0.85rem; cursor:pointer;">Close</button>
+                <button type="submit" id="reqPaySubmitBtn" style="padding:0.65rem 1.4rem; border-radius:8px; background:linear-gradient(135deg,#f59e0b,#d97706); border:none; color:white; font-weight:700; font-size:0.85rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                  <i class="ri-mail-send-line"></i> Send Request via System Email
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 

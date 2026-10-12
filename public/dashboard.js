@@ -3054,8 +3054,9 @@ function showNativeAdsMonetizationModal() {
           <ul style="padding-left: 1.2rem; margin: 0;">
             <li style="margin-bottom: 4px;"><strong>Single Engagement Per Month:</strong> Strictly 1 engagement (hover OR click, whichever occurs earlier) per ad per month is billed and recorded. Subsequent entries are rejected.</li>
             <li style="margin-bottom: 4px;"><strong>Strict Portfolio Discount:</strong> Subsidy (20% to 100%) applies to both hover and visit engagements.</li>
-            <li style="margin-bottom: 4px;"><strong>Anti-Anomaly Protection:</strong> Rapid clicks/hovers (< 12 hrs gap) purge ad charges and impose a 15-day account flag.</li>
-            <li><strong>Admin Audit Exemption:</strong> Platform testing by admin accounts is strictly excluded from billing.</li>
+            <li style="margin-bottom: 4px;"><strong>Anti-Anomaly Protection:</strong> Rapid clicks/hovers (&lt; 12 hrs gap) purge ad charges and impose a 15-day account flag.</li>
+            <li style="margin-bottom: 4px;"><strong>15-Day Payment Window:</strong> Unpaid bills past the 15th of the new month temporarily pause live ads. Study materials &amp; notes always remain 100% safe.</li>
+            <li><strong>3-Step Offline Payment:</strong> Request UPI QR/Phone or a concession directly from your dashboard, make payment offline, and email screenshot proof to the admin inboxes.</li>
           </ul>
         </div>
 
@@ -3092,6 +3093,117 @@ function showNativeAdsMonetizationModal() {
     acceptBtn.addEventListener('click', () => finish(true));
   });
 }
+
+// ============================================================================
+// OFFLINE PAYMENT & CONCESSION REQUEST MODAL HANDLERS
+// ============================================================================
+window.openRequestPaymentModal = function() {
+  const modal = document.getElementById("requestPaymentModal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  const fb = document.getElementById("reqPayFeedback");
+  if (fb) { fb.style.display = "none"; fb.textContent = ""; }
+  
+  const phoneInput = document.getElementById("reqPayPhone");
+  if (phoneInput && !phoneInput.value) {
+    const savedPhone = localStorage.getItem("dpg_user_phone") || "";
+    if (savedPhone) phoneInput.value = savedPhone;
+  }
+};
+
+window.closeRequestPaymentModal = function() {
+  const modal = document.getElementById("requestPaymentModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.submitPaymentDetailsRequest = async function(e) {
+  if (e) e.preventDefault();
+  const reqType = document.getElementById("reqPayType")?.value || "payment_details";
+  const contactPhone = document.getElementById("reqPayPhone")?.value?.trim() || "";
+  const message = document.getElementById("reqPayMessage")?.value?.trim() || "";
+  const submitBtn = document.getElementById("reqPaySubmitBtn");
+  const fb = document.getElementById("reqPayFeedback");
+
+  if (!contactPhone) {
+    if (fb) {
+      fb.style.display = "block";
+      fb.style.background = "rgba(239,68,68,0.15)";
+      fb.style.border = "1px solid rgba(239,68,68,0.4)";
+      fb.style.color = "#f87171";
+      fb.textContent = "Please enter your contact / WhatsApp number.";
+    }
+    return;
+  }
+
+  const user = window.currentUser || (window.auth && window.auth.currentUser);
+  const uid = user ? user.uid : (localStorage.getItem("dpg_contributor_uid") || "anon");
+  const email = user ? (user.email || "") : (localStorage.getItem("dpg_contributor_email") || "");
+  const name = user ? (user.displayName || email.split("@")[0] || "Contributor") : "Contributor";
+  const monthRaw = document.getElementById("contribBillingCycleText")?.textContent || "";
+  const month = monthRaw.replace("Active Billing Cycle:", "").trim() || new Date().toISOString().substring(0, 7);
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Sending Request...`;
+  }
+
+  try {
+    const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL !== "undefined") ? window.API_BASE_URL : "";
+    const res = await fetch(`${baseUrl}/api/ads/request-payment-details`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contributorId: uid,
+        contributorName: name,
+        contributorEmail: email,
+        contactPhone,
+        month,
+        requestType: reqType,
+        message
+      })
+    });
+
+    const data = await res.json();
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="ri-mail-send-line"></i> Send Request via System Email`;
+    }
+
+    if (data && data.success) {
+      if (fb) {
+        fb.style.display = "block";
+        fb.style.background = "rgba(16,185,129,0.15)";
+        fb.style.border = "1px solid rgba(16,185,129,0.4)";
+        fb.style.color = "#34d399";
+        fb.innerHTML = `✓ <strong>Request Sent!</strong> Instructions emailed to <strong>${email}</strong>. Official UPI phone: <strong>9354020104</strong> & UPI ID: <code>its.akshatnetworkhub23@okaxis</code>.`;
+      }
+      setTimeout(() => {
+        window.closeRequestPaymentModal();
+      }, 5000);
+    } else {
+      if (fb) {
+        fb.style.display = "block";
+        fb.style.background = "rgba(239,68,68,0.15)";
+        fb.style.border = "1px solid rgba(239,68,68,0.4)";
+        fb.style.color = "#f87171";
+        fb.textContent = data.error || "Failed to submit request. Please email akshatpsd2005@gmail.com directly.";
+      }
+    }
+  } catch(err) {
+    console.error("Payment request submission error:", err);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="ri-mail-send-line"></i> Send Request via System Email`;
+    }
+    if (fb) {
+      fb.style.display = "block";
+      fb.style.background = "rgba(239,68,68,0.15)";
+      fb.style.border = "1px solid rgba(239,68,68,0.4)";
+      fb.style.color = "#f87171";
+      fb.textContent = "Network error while submitting request. Please email akshatpsd2005@gmail.com directly.";
+    }
+  }
+};
 
 let isAdSubmitting = false;
 const adForm = document.getElementById("uploadAdForm");
