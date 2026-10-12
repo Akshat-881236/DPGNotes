@@ -162,30 +162,40 @@
             <p>DPGNotes is committed to democratizing access to high-quality academic notes, engineering handbooks, laboratory solutions, and syllabus tools. To maintain server capacity, protect user privacy, and sustain operational reliability without charging tuition subscriptions to students, DPGNotes offers verified contributors the capability to promote high-value educational resources, coding repositories, technical blogs, and professional profiles through our ethical Native Ads engine.</p>
             <p>Unlike predatory third-party advertising networks that flood viewports with misleading pop-ups, DPGNotes Native Ads are strictly non-intrusive, academic-first, and governed by transparent unit pricing tied to verified human engagement. This policy sets forth the exact commercial terms, telemetry tracking mechanisms, academic portfolio discount subsidies, and monthly ledger locking procedures applicable to all ad campaigns created on DPGNotes.</p>
 
-            <h2>2. Dual-Interaction Unit Pricing Model</h2>
-            <p>Every active native advertisement deployed on DPGNotes is billed strictly according to a dual-interaction engagement framework. Contributors are charged only for authenticated, non-fraudulent interactions:</p>
+            <h2>2. Dual-Interaction Unit Pricing Model &amp; Single Engagement Rule</h2>
+            <p>Every active native advertisement deployed on DPGNotes is billed strictly according to a dual-interaction engagement framework. Contributors are charged only for authenticated, non-fraudulent interactions, with guest rates discounted by 50%:</p>
 
             <div class="pricing-grid">
               <div class="pricing-card">
-                <h4><i class="ri-cursor-line"></i> Genuine Hover Interaction</h4>
-                <div class="price-tag">&#8377;12 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">/ unique hover / month</span></div>
-                <p>Billed when an authentic user hovers their mouse cursor over an ad call-to-action button for a continuous dwell period of at least <strong>800 milliseconds</strong>. Fast mouse sweeps, robotic cursor emulations, and unintentional viewport passes are algorithmically filtered out.</p>
+                <h4><i class="ri-cursor-line"></i> Genuine Hover Interaction (≥ 5s)</h4>
+                <div class="price-tag">&#8377;12 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">(Contrib) / &#8377;6 (Guest)</span></div>
+                <p>Billed when an authentic user hovers their cursor over an ad call-to-action button for a continuous dwell period of at least <strong>5 continuous seconds (5000 milliseconds)</strong>. Fast mouse sweeps, robotic cursor emulations, and unintentional passes are algorithmically filtered out.</p>
               </div>
 
               <div class="pricing-card">
                 <h4><i class="ri-external-link-line"></i> Genuine Destination Visit</h4>
-                <div class="price-tag">&#8377;20 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">/ unique visit / month</span></div>
-                <p>Billed when a user deliberately clicks the advertisement's destination action button and navigates through the platform's <strong>Safe Destination Gateway</strong>. Visits are strictly deduplicated so that repeat clicks from the same user or device within the same calendar month are billed as a single unique visit.</p>
+                <div class="price-tag">&#8377;20 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">(Contrib) / &#8377;10 (Guest)</span></div>
+                <p>Billed when a user deliberately clicks the advertisement's destination action button and navigates in the same tab through the platform's <strong>Safe Destination Gateway</strong>. Direct URL pasting is classified as invalid and never counted for billing.</p>
               </div>
             </div>
 
-            <h2>3. Safe Destination Gateway &amp; Anti-Malware Protection</h2>
-            <p>To safeguard our student community against malicious redirects, phishing sites, and deceptive downloads, direct unverified external links are prohibited in all native advertisements. Every promotional link is routed through our dedicated security inspection gateway:</p>
+            <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+              <h4 style="color: #a5b4fc; margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <i class="ri-shield-check-line"></i> Strict Single Engagement per Ad per Month Rule
+              </h4>
+              <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+                For each unique verified contributor or guest visitor, exactly <strong>one billable interaction (hover OR click, whichever occurs earlier)</strong> per ad campaign per calendar month is recorded in Firestore. Subsequent interactions for the same ad from the same visitor within the same monthly cycle are permanently rejected and never billed. Guest interactions are billed at ₹6 / hover and ₹10 / visit (50% reduction) to reflect guest traffic analytics.
+              </p>
+            </div>
+
+            <h2>3. Safe Destination Gateway &amp; Same-Tab Verification</h2>
+            <p>To safeguard our student community against malicious redirects, phishing sites, and deceptive downloads, direct unverified external links are prohibited in all native advertisements. Every promotional link is routed through our dedicated security inspection gateway opened in the same tab:</p>
             <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; font-family:'Fira Code', monospace; font-size:0.85rem; color:#a5b4fc; margin:1rem 0; word-break:break-all;">
-              https://dpgnotes.web.app/ads-redirect-handler.html?track_id={TRACK_ID}&amp;ad_id={AD_ID}&amp;go-to={DESTINATION_URL}
+              https://dpgnotes.web.app/ads-redirect-handler.html?track_id={TRACK_ID}&amp;ad_id={AD_ID}&amp;go-to={DESTINATION_URL}&amp;src=dpgnotes_platform
             </div>
             <p>The Safe Destination Gateway automatically executes the following security checks prior to allowing user navigation:</p>
             <ul>
+              <li><strong>Source Origin Validation:</strong> Enforces that navigation originates directly from DPGNotes. Direct address bar entries bypass all monetization tracking and are non-billable.</li>
               <li><strong>Malware &amp; Phishing Inspection:</strong> Verification of the destination domain against real-time threat intelligence and known malicious host registries.</li>
               <li><strong>Protocol &amp; TLS Certificate Validation:</strong> Enforcement of HTTPS encryption on destination landing pages.</li>
               <li><strong>Visual Transparency &amp; Destination Preview:</strong> Presentation of the target destination domain and verified campaign information to the student before handoff.</li>
@@ -205,7 +215,7 @@
             </ul>
 
             <h2>5. Contributor Academic Portfolio Discount Matrix</h2>
-            <p>In accordance with our mission to reward students and educators who enrich the DPGNotes open repository, we provide substantial, progressive portfolio discounts applied directly against gross monthly charges. Contributors earn discounts based on verified, public educational materials submitted to the platform:</p>
+            <p>In accordance with our mission to reward students and educators who enrich the DPGNotes open repository, we provide substantial, progressive portfolio discounts applied directly against <strong>all gross monthly interaction charges (both hovers and visits)</strong>. Contributors earn discounts based on verified, public educational materials submitted to the platform:</p>
 
             <div class="table-responsive">
               <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.9rem; color:var(--text-main);">
@@ -213,29 +223,29 @@
                   <tr style="background:rgba(255,255,255,0.08); text-align:left;">
                     <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Tier Classification</th>
                     <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Verified Portfolio Qualification Criteria</th>
-                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Monthly Discount Subsidy</th>
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Monthly Discount Subsidy (All Engagements)</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(217,119,6,0.2); color:#f59e0b; border:1px solid rgba(217,119,6,0.4);">Bronze Tier</span></td>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 3 Public Uploaded Documents</td>
-                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">20% Subsidy</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">20% Off All Charges</td>
                   </tr>
                   <tr>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(148,163,184,0.2); color:#cbd5e1; border:1px solid rgba(148,163,184,0.4);">Silver Tier</span></td>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 10 Public Documents + &ge; 5 Assignment Solutions + &ge; 5 Practical Solutions</td>
-                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">40% Subsidy</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">40% Off All Charges</td>
                   </tr>
                   <tr>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">Gold Tier</span></td>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 25 Public Documents + &ge; 12 Assignment Solutions + &ge; 12 Practical Solutions</td>
-                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">60% Subsidy</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">60% Off All Charges</td>
                   </tr>
                   <tr>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4);">Diamond Tier</span></td>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 75 Public Documents + &ge; 25 Assignment Solutions + &ge; 25 Practical Solutions</td>
-                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">80% Subsidy</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">80% Off All Charges</td>
                   </tr>
                   <tr>
                     <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(168,85,247,0.25); color:#c084fc; border:1px solid rgba(168,85,247,0.5);">Platinum Tier</span></td>
@@ -246,20 +256,19 @@
               </table>
             </div>
 
-            <h2>6. Monthly Billing Cycle &amp; Immutable Ledger Locking</h2>
-            <p>Native ad campaigns operate on a strict monthly billing cycle (formatted as <code>YYYY-MM</code>). At the close of each calendar month:</p>
+            <h2>6. 12-Hour Gap Anomaly Protection &amp; 15-Day Account Flagging</h2>
+            <p>To eliminate synthetic traffic inflation and protect advertisers against abnormal interaction spikes:</p>
             <ul>
-              <li><strong>Ledger Finalization:</strong> Gross charges, portfolio discount deductions, and net payable amounts are compiled and permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
-              <li><strong>No Retrospective Alteration:</strong> If a contributor uploads additional educational resources after a monthly cycle has concluded, the elevated discount status will apply strictly to the upcoming billing cycle and will not retroactively adjust previously locked ledger records.</li>
-              <li><strong>Dashboard Visibility:</strong> Contributors can monitor their real-time estimated charges, qualification tier progress, and active billing status in the <em>Upload Ads</em> tab within the Contributor Dashboard.</li>
+              <li><strong>12-Hour Gap Anomaly Purge:</strong> When the telemetry engine detects that interactions on the same ad URL occur with a gap of less than 12 hours, all Firestore charging logs for that specific ad are immediately canceled and purged.</li>
+              <li><strong>15-Day Account Suspension Flag:</strong> The corresponding Contributor UID or Guest identity (Guest ID & Client Device ID) is placed under a 15-day Ads Flag. An Ads Violation is logged in the Admin Portal Violation Tab, and all past and future engagements during the 15-day window are permanently excluded from billing.</li>
             </ul>
 
-            <h2>7. Anti-Fraud &amp; Genuine Pattern Heuristics</h2>
-            <p>To ensure fair billing and eliminate synthetic traffic inflation, DPGNotes incorporates automated fraud detection routines:</p>
+            <h2>7. Monthly Billing Cycle &amp; Immutable Ledger Locking</h2>
+            <p>Native ad campaigns operate on a strict monthly billing cycle (formatted as <code>YYYY-MM</code>). At the close of each calendar month:</p>
             <ul>
-              <li><strong>Minimum Dwell Verification:</strong> Hover events require a sustained physical mouse pointer position for at least 800 milliseconds. Rapid cursor glides across multiple banner elements are ignored.</li>
-              <li><strong>Human Interaction Vectors:</strong> Automated bots, WebDriver selenium instances, headless browsers, and programmed script triggers are automatically flagged and purged from billing records.</li>
-              <li><strong>Device Deduplication:</strong> Multiple clicks or hovers executed from the same device, IP address, or browser session within a single monthly cycle are deduplicated.</li>
+              <li><strong>Ledger Finalization:</strong> Single-engagement interaction metrics, portfolio discount deductions, and net payable amounts are compiled and permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
+              <li><strong>No Retrospective Alteration:</strong> Uploading additional resources after a monthly cycle has concluded will qualify the contributor for elevated discounts in upcoming billing cycles, but will not retroactively adjust previously locked ledger records.</li>
+              <li><strong>Real-Time Notice:</strong> Real-time charges are displayed in the Dashboard alongside the reminder: <em>"Wait for the end of the Month to get a Finalized Round Off Monthly Ads Charge Rate"</em>.</li>
             </ul>
 
             <h2>8. Administrative Auditing Exclusions</h2>

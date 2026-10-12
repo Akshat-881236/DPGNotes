@@ -627,43 +627,44 @@
               <p>This Native Ads Monetization Policy outlines the financial terms, telemetry tracking mechanisms, billing calculations, and performance metrics applicable to promoted ad campaigns uploaded by contributors across the DPGNotes academic ecosystem.</p>
 
               <h2>1. Commercial Pricing Model & Unit Interaction Rates</h2>
-              <p>DPGNotes employs a dual-interaction monetization architecture designed to reward authentic user engagement while penalizing synthetic or deceptive clicks:</p>
+              <p>DPGNotes employs a dual-interaction monetization architecture designed to reward authentic user engagement while penalizing synthetic, accidental, or deceptive clicks:</p>
               <ul>
-                <li><strong>Genuine Hover Rate (₹12 per unique hover / month):</strong> Calculated for genuine cursor dwell events of at least 800 milliseconds on ad call-to-action buttons. Accidental mouse glides, robotic scripts, automated triggers, or synthetic browser events are rejected.</li>
-                <li><strong>Genuine Visit Rate (₹20 per unique visit / month):</strong> Calculated when a real user navigates via the Safe Destination Gateway (<code>/ads-redirect-handler.html</code>) to the advertiser's approved destination URL. Visits are strictly deduplicated so repeat visits from the same device or contributor account are logged for analytical frequency but billed as a single unique billing unit per month.</li>
+                <li><strong>Genuine Hover Rate:</strong> <strong>₹12</strong> per unique hover / month for verified contributors, and <strong>₹6</strong> (50% reduced rate) for guest visitors. Calculated strictly for authentic cursor dwell events lasting at least <strong>5 continuous seconds (5000ms)</strong> on the ad destination button. Accidental glides, quick passes, and robotic scripts are excluded.</li>
+                <li><strong>Genuine Visit Rate:</strong> <strong>₹20</strong> per unique visit / month for verified contributors, and <strong>₹10</strong> (50% reduced rate) for guest visitors. Validated when a user navigates via the Safe Destination Gateway (<code>/ads-redirect-handler.html</code>) opened from the DPGNotes platform in the same tab. Direct URL navigation is classified non-billable.</li>
+                <li><strong>Strict Single Engagement per Ad per Month Rule:</strong> For each unique verified user or guest visitor, exactly <strong>one billable engagement (hover OR click, whichever occurs earlier)</strong> per ad campaign per calendar month is recorded in Firestore. Any subsequent interaction for the same ad from the same visitor within the same monthly cycle is rejected and never billed.</li>
               </ul>
 
               <h2>2. Contributor Academic Portfolio Discount Tiers</h2>
-              <p>To support student researchers, educators, and active contributors, DPGNotes provides substantial portfolio discount subsidies applied directly against monthly hover charges based on verified public uploads:</p>
+              <p>To support student researchers, educators, and active contributors, DPGNotes provides substantial portfolio discount subsidies applied directly against <strong>all monthly ad interaction charges (both hovers and visits)</strong> based on verified public uploads:</p>
               <div class="table-responsive">
                 <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.88rem; color:var(--text-main);">
                   <thead>
                     <tr style="background:rgba(255,255,255,0.08); text-align:left;">
                       <th style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">Tier Classification</th>
                       <th style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">Qualification Criteria</th>
-                      <th style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">Subsidy / Discount</th>
+                      <th style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">Subsidy Across All Ad Charges</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#d97706; font-weight:700;">Bronze Tier</td>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">&ge; 3 Public Uploaded Documents</td>
-                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">20% Off Hover Charges</td>
+                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">20% Off All Charges</td>
                     </tr>
                     <tr>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#cbd5e1; font-weight:700;">Silver Tier</td>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">&ge; 10 Public Documents + &ge; 5 Assignment Solutions + &ge; 5 Practical Solutions</td>
-                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">40% Off Hover Charges</td>
+                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">40% Off All Charges</td>
                     </tr>
                     <tr>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#f59e0b; font-weight:700;">Gold Tier</td>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">&ge; 25 Public Documents + &ge; 12 Assignment Solutions + &ge; 12 Practical Solutions</td>
-                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">60% Off Hover Charges</td>
+                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">60% Off All Charges</td>
                     </tr>
                     <tr>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#38bdf8; font-weight:700;">Diamond Tier</td>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1);">&ge; 75 Public Documents + &ge; 25 Assignment Solutions + &ge; 25 Practical Solutions</td>
-                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">80% Off Hover Charges</td>
+                      <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">80% Off All Charges</td>
                     </tr>
                     <tr>
                       <td style="padding:8px 12px; border:1px solid rgba(255,255,255,0.1); color:#a855f7; font-weight:700;">Platinum Tier</td>
@@ -674,15 +675,23 @@
                 </table>
               </div>
 
-              <h2>3. Monthly Billing Cycle & Immutable Ledger Locking</h2>
-              <p>Each calendar month represents an isolated billing period (e.g. <code>YYYY-MM</code>). When a month closes:</p>
+              <h2>3. 12-Hour Gap Anomaly Protection & 15-Day Account Flagging</h2>
+              <p>To shield advertisers from rapid unnatural loops or malicious click inflation:</p>
               <ul>
-                <li><strong>Permanent Cycle Lock:</strong> Total genuine hovers, visits, discounts, and net payable dues are permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
-                <li><strong>Prospective Upload Benefit:</strong> Any newly uploaded resources or solutions submitted during the subsequent month will count toward that upcoming month's discount tier, and will not retroactively alter previously locked billing records.</li>
+                <li><strong>12-Hour Interaction Gap Threshold:</strong> If repeated visits or hovers on the same ad URL occur with a time gap of less than 12 hours, all Firestore charging logs for that specific ad are canceled and purged.</li>
+                <li><strong>15-Day Ads Suspension Flag:</strong> The responsible contributor UID or guest identity (Guest ID & Client Device ID) is automatically flagged for 15 days, with a Violation recorded in the Admin Portal. All historical and future interactions during this 15-day window are permanently excluded from billing.</li>
               </ul>
 
-              <h2>4. Admin Verification & Exclusions</h2>
-              <p>All internal testing, administrator preview interactions, and site audits conducted by platform administrators (including <code>its.akshatnetworkhub23@gmail.com</code> and verified admin tokens) are completely excluded from both hover and visit charges to safeguard contributor budgets.</p>
+              <h2>4. Monthly Billing Cycle & Immutable Ledger Locking</h2>
+              <p>Each calendar month represents an isolated billing period (e.g. <code>YYYY-MM</code>). When a month closes:</p>
+              <ul>
+                <li><strong>Permanent Cycle Lock:</strong> Total genuine single-engagement interactions, applied portfolio discounts, and net payable dues are permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
+                <li><strong>Prospective Upload Benefit:</strong> Newly uploaded resources submitted during subsequent months apply only to future billing cycles and will not retroactively alter previously finalized monthly statements.</li>
+                <li><strong>Real-Time Notice:</strong> Contributors are reminded: <em>Wait for the end of the Month to get a Finalized Round Off Monthly Ads Charge Rate</em> while monitoring real-time itemized breakdowns.</li>
+              </ul>
+
+              <h2>5. Admin Verification & Exclusions</h2>
+              <p>All internal testing and quality audits conducted by platform administrators (including <code>its.akshatnetworkhub23@gmail.com</code>, <code>akshatprasad009@gmail.com</code>, or the server <code>ADMIN_EMAIL</code> configuration) are completely excluded from monetization tracking and charging.</p>
             </article>
 
             <!-- Section: External Links Disclaimer -->

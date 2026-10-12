@@ -412,6 +412,96 @@
         localStorage.setItem("dpg_client_device_id", clientDeviceId);
       }
 
+      // Origin and direct URL check (Must open via DPGNotes source for billable validity)
+      const srcParam = params.get("src") || "";
+      const ref = document.referrer || "";
+      const isFromDpg = (srcParam === "dpgnotes_platform") || (ref && (ref.includes("dpgnotes") || ref.includes(window.location.host)));
+      const isDirectAccess = !isFromDpg;
+
+      if (isDirectAccess) {
+        securityBadge.className = "security-badge";
+        securityBadge.style.background = "rgba(245, 158, 11, 0.15)";
+        securityBadge.style.borderColor = "rgba(245, 158, 11, 0.4)";
+        securityBadge.style.color = "#fbbf24";
+        securityBadge.innerHTML = '<i class="ri-information-line"></i> Direct Access (Non-Billable Navigation)';
+      }
+
+      // Check if user is currently under a 15-day Ads Flag
+      let isFlagged = false;
+      const flaggedUntilStr = localStorage.getItem("dpg_ads_flagged_until");
+      if (flaggedUntilStr) {
+        const flaggedUntil = parseInt(flaggedUntilStr, 10);
+        if (Date.now() < flaggedUntil) {
+          isFlagged = true;
+        } else {
+          localStorage.removeItem("dpg_ads_flagged_until");
+        }
+      }
+
+      // 12-Hour Gap Anomaly Logging & Cancellation Engine
+      const now = Date.now();
+      let clickLogs = {};
+      try {
+        clickLogs = JSON.parse(localStorage.getItem("dpg_ad_click_logs") || "{}");
+      } catch(e) { clickLogs = {}; }
+
+      const adKey = adId || trackId || rawDest;
+      const history = clickLogs[adKey] || [];
+      const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+      let isRapidAnomaly = false;
+
+      if (history.length > 0) {
+        const lastLog = history[history.length - 1];
+        if (now - lastLog < TWELVE_HOURS_MS) {
+          isRapidAnomaly = true;
+          console.warn("⚠️ Rapid Ad Gateway visit detected (< 12 hours gap). Flagging contributor/guest for 15 days and canceling charging logs.");
+          // Flag locally for 15 days
+          const flagExpiry = now + (15 * 86400 * 1000);
+          localStorage.setItem("dpg_ads_flagged_until", flagExpiry.toString());
+          isFlagged = true;
+
+          // Dispatch Ads Violation to Firestore
+          fetch((window.API_BASE_URL || '') + '/api/ads/report-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              adId: adId || 'global',
+              trackId: trackId || '00000000',
+              reason: 'Rapid repeated ad gateway clicks (< 12 hours gap detected)',
+              visitorUid: activeUser.uid || null,
+              guestId: guestId,
+              clientDeviceId: clientDeviceId,
+              viewerType: viewerType,
+              evidence: {
+                previousTimestamp: new Date(lastLog).toISOString(),
+                currentTimestamp: new Date(now).toISOString(),
+                gapMs: now - lastLog,
+                destinationUrl: validUrl.toString()
+              }
+            })
+          }).catch(err => console.warn("Error reporting violation:", err));
+
+          // Cancel all firestore charge & engagement logs for this ad to protect advertisers
+          fetch((window.API_BASE_URL || '') + '/api/ads/cancel-engagement-anomaly', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              adId: adId || 'global',
+              visitorUid: activeUser.uid || null,
+              guestId: guestId,
+              clientDeviceId: clientDeviceId
+            })
+          }).catch(err => console.warn("Error canceling anomaly charges:", err));
+        }
+      }
+
+      // Record this visit timestamp in clickLogs
+      history.push(now);
+      clickLogs[adKey] = history.slice(-20);
+      try {
+        localStorage.setItem("dpg_ad_click_logs", JSON.stringify(clickLogs));
+      } catch(e) {}
+
       // =========================================================================
       // 3. FETCH AD METADATA & UPLOADER PROFILE
       // =========================================================================
@@ -452,9 +542,9 @@
       document.getElementById("uploaderUid").textContent = "uploader-firebase-id: " + uploaderUid;
 
       // =========================================================================
-      // 4. DEEP ANALYTICS TELEMETRY DISPATCH (EXCLUDING ADMIN)
+      // 4. DEEP ANALYTICS TELEMETRY DISPATCH (EXCLUDING ADMIN & INVALID ACCESS)
       // =========================================================================
-      if (!isAdminUser) {
+      if (!isAdminUser && !isDirectAccess && !isFlagged && !isRapidAnomaly) {
         const trackingPayload = {
           adId: adId || "global",
           trackId: trackId || "00000000",
@@ -471,6 +561,8 @@
           contributorPhoto: viewerType === "Contributor" ? (activeUser.photoURL || activeUser.avatar || "ANH.png") : null,
           contributorEmail: viewerType === "Contributor" ? visitorEmail : null,
           botType: viewerType === "Anonymous" ? botType : null,
+          isDirectAccess: false,
+          srcPlatform: 'dpgnotes_platform',
           timestamp: new Date().toISOString()
         };
 
@@ -481,7 +573,9 @@
           body: JSON.stringify(trackingPayload)
         }).catch(err => console.warn("Ad external click telemetry error:", err));
       } else {
-        console.log("ℹ️ Admin visit detected — external ad analytics collection bypassed as requested.");
+        if (isAdminUser) console.log("ℹ️ Admin visit detected — external ad analytics collection bypassed as requested.");
+        if (isDirectAccess) console.log("ℹ️ Direct gateway access detected without DPGNotes origin — ad charging bypassed.");
+        if (isFlagged || isRapidAnomaly) console.log("⚠️ Visitor flagged for ad violation — ad charge tracking bypassed.");
       }
 
       // =========================================================================

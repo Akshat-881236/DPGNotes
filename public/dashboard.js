@@ -2935,13 +2935,42 @@ async function loadContributorPayableAds() {
       document.getElementById("contribGrossAmount").textContent = `₹${(active.totalGrossCharges || 0).toLocaleString()}`;
     }
     if (document.getElementById("contribDiscountSaved")) {
-      document.getElementById("contribDiscountSaved").textContent = `-₹${(active.totalHoverDiscount || 0).toLocaleString()}`;
+      document.getElementById("contribDiscountSaved").textContent = `-₹${(active.totalDiscountSaved || active.totalHoverDiscount || 0).toLocaleString()}`;
     }
     if (document.getElementById("contribDiscountPctSub")) {
-      document.getElementById("contribDiscountPctSub").textContent = `${tier.discountPct || 0}% Off Hovers`;
+      document.getElementById("contribDiscountPctSub").textContent = `${tier.discountPct || 0}% Off All Charges`;
     }
     if (document.getElementById("contribNetPayable")) {
       document.getElementById("contribNetPayable").textContent = `₹${(active.totalNetPayable || 0).toLocaleString()}`;
+    }
+
+    const itemizedBody = document.getElementById("contribAdsItemizedTableBody");
+    if (itemizedBody) {
+      itemizedBody.innerHTML = "";
+      const breakdown = active.adBreakdown || [];
+      if (breakdown.length === 0) {
+        itemizedBody.innerHTML = `<tr><td colspan="6" style="padding: 12px; text-align: center; color: #94a3b8;">No active ad engagements recorded for this billing cycle yet.</td></tr>`;
+      } else {
+        breakdown.forEach(item => {
+          const tr = document.createElement("tr");
+          tr.style.borderBottom = "1px solid rgba(255, 255, 255, 0.05)";
+          tr.innerHTML = `
+            <td style="padding: 6px 8px; font-weight: 600; color: #f8fafc; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.adTitle || item.adId}">
+              ${item.adTitle || item.adId}
+            </td>
+            <td style="padding: 6px 8px; color: #f59e0b;">
+              <strong>${item.totalHovers || 0}</strong> <span style="font-size: 0.68rem; color: #94a3b8;">(${item.contributorHovers || 0}C / ${item.guestHovers || 0}G)</span>
+            </td>
+            <td style="padding: 6px 8px; color: #38bdf8;">
+              <strong>${item.totalVisits || 0}</strong> <span style="font-size: 0.68rem; color: #94a3b8;">(${item.contributorVisits || 0}C / ${item.guestVisits || 0}G)</span>
+            </td>
+            <td style="padding: 6px 8px; color: #e2e8f0;">₹${(item.grossCharges || 0).toLocaleString()}</td>
+            <td style="padding: 6px 8px; color: #10b981;">-₹${(item.discountSaved || 0).toLocaleString()}</td>
+            <td style="padding: 6px 8px; font-weight: 700; color: #a5b4fc;">₹${(item.netPayable || 0).toLocaleString()}</td>
+          `;
+          itemizedBody.appendChild(tr);
+        });
+      }
     }
 
     const statusSub = document.getElementById("contribPaymentStatusSub");
@@ -2988,23 +3017,23 @@ function showNativeAdsMonetizationModal() {
             <i class="ri-money-dollar-circle-fill" style="font-size: 2.2rem; color: #f59e0b;"></i>
           </div>
           <h3 class="dpg-modal-title" style="margin: 0; font-size: 1.35rem;">Native Ads Monetization Policy</h3>
-          <p class="dpg-modal-subtitle" style="font-size: 0.84rem; color: #94a3b8; margin: 4px 0 0 0;">Please review and confirm commercial terms before campaign deployment</p>
+          <p class="dpg-modal-subtitle" style="font-size: 0.84rem; color: #94a3b8; margin: 4px 0 0 0;">Please review and confirm updated commercial terms before campaign deployment</p>
         </div>
 
         <div class="dpg-policy-card" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem;">
           <div class="dpg-policy-heading" style="font-size: 0.88rem; font-weight: 700; color: #f8fafc; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <i class="ri-scales-3-line" style="color: #6366f1;"></i> Dual-Interaction Commercial Rates
+            <i class="ri-scales-3-line" style="color: #6366f1;"></i> Interaction Rates & Rules
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem;">
             <div class="dpg-policy-inner" style="background: rgba(0, 0, 0, 0.3); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
-              <div class="dpg-policy-label" style="color: #cbd5e1; font-weight: 600;">Genuine Hover</div>
-              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹12 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">/ unique mo.</span></div>
-              <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">≥ 800ms dwell on CTA button</div>
+              <div class="dpg-policy-label" style="color: #cbd5e1; font-weight: 600;">Genuine Hover (≥ 5s)</div>
+              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹12 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">(Contrib) / ₹6 (Guest)</span></div>
+              <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">Continuous 5s dwell required</div>
             </div>
             <div class="dpg-policy-inner" style="background: rgba(0, 0, 0, 0.3); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
               <div class="dpg-policy-label" style="color: #cbd5e1; font-weight: 600;">Genuine Visit</div>
-              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹20 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">/ unique mo.</span></div>
-              <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">Via Safe Gateway (Deduplicated)</div>
+              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹20 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">(Contrib) / ₹10 (Guest)</span></div>
+              <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">Via DPGNotes origin gateway</div>
             </div>
           </div>
         </div>
@@ -3023,8 +3052,9 @@ function showNativeAdsMonetizationModal() {
 
         <div class="dpg-policy-rules" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1.2rem;">
           <ul style="padding-left: 1.2rem; margin: 0;">
-            <li style="margin-bottom: 4px;"><strong>Monthly Cycle Lock:</strong> Dues are locked at month end into the immutable ledger and cannot be retroactively adjusted.</li>
-            <li style="margin-bottom: 4px;"><strong>Anti-Fraud Protection:</strong> Synthetic clicks, crawlers, and rapid sweeps are automatically rejected.</li>
+            <li style="margin-bottom: 4px;"><strong>Single Engagement Per Month:</strong> Strictly 1 engagement (hover OR click, whichever occurs earlier) per ad per month is billed and recorded. Subsequent entries are rejected.</li>
+            <li style="margin-bottom: 4px;"><strong>Strict Portfolio Discount:</strong> Subsidy (20% to 100%) applies to both hover and visit engagements.</li>
+            <li style="margin-bottom: 4px;"><strong>Anti-Anomaly Protection:</strong> Rapid clicks/hovers (< 12 hrs gap) purge ad charges and impose a 15-day account flag.</li>
             <li><strong>Admin Audit Exemption:</strong> Platform testing by admin accounts is strictly excluded from billing.</li>
           </ul>
         </div>

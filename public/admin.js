@@ -2513,22 +2513,170 @@ window.deleteSelectedDeviceLogs = async function() {
 let userViolationsCache = [];
 let unauthorizedActionsCache = [];
 
+let adsViolationsCache = [];
+
 window.switchViolationSubtab = function(tabName) {
   const btnUser = document.getElementById("subtabUserViolationsBtn");
   const btnUnauth = document.getElementById("subtabUnauthorizedActionsBtn");
+  const btnAds = document.getElementById("subtabAdsViolationsBtn");
   const contentUser = document.getElementById("subtabContentUserViolations");
   const contentUnauth = document.getElementById("subtabContentUnauthorizedActions");
+  const contentAds = document.getElementById("subtabContentAdsViolations");
+
+  [btnUser, btnUnauth, btnAds].forEach(b => b && b.classList.remove("active-subtab"));
+  [contentUser, contentUnauth, contentAds].forEach(c => c && (c.style.display = "none"));
 
   if (tabName === 'user_violations') {
     if (btnUser) btnUser.classList.add("active-subtab");
-    if (btnUnauth) btnUnauth.classList.remove("active-subtab");
     if (contentUser) contentUser.style.display = "block";
-    if (contentUnauth) contentUnauth.style.display = "none";
-  } else {
+  } else if (tabName === 'unauthorized_actions') {
     if (btnUnauth) btnUnauth.classList.add("active-subtab");
-    if (btnUser) btnUser.classList.remove("active-subtab");
     if (contentUnauth) contentUnauth.style.display = "block";
-    if (contentUser) contentUser.style.display = "none";
+  } else if (tabName === 'ads_violations') {
+    if (btnAds) btnAds.classList.add("active-subtab");
+    if (contentAds) contentAds.style.display = "block";
+    loadAdsViolationsAdmin();
+  }
+};
+
+async function loadAdsViolationsAdmin() {
+  const tbody = document.getElementById("adsViolationsTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--admin-muted);">Loading ads violation telemetry...</td></tr>`;
+
+  try {
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const res = await fetch(`${apiBase}/api/admin/ad-violations`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Failed loading ads violations");
+
+    adsViolationsCache = data.violations || [];
+
+    if (adsViolationsCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--admin-muted);">No ads telemetry violations recorded. Anti-abuse shield active.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+    const now = Date.now();
+
+    adsViolationsCache.forEach(v => {
+      const isSuspended = v.flaggedUntil && new Date(v.flaggedUntil).getTime() > now && !v.revoked;
+      const expiryFormatted = v.flaggedUntil ? new Date(v.flaggedUntil).toLocaleString() : 'N/A';
+      const createdFormatted = v.createdAt ? new Date(v.createdAt).toLocaleString() : 'N/A';
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="text-align:center;">
+          <input type="checkbox" class="ads-viol-cb" value="${v.id}">
+        </td>
+        <td style="font-family:monospace; color:#fca5a5; font-weight:700;">${v.id}</td>
+        <td>
+          <div style="font-weight:600; color:white;">Ad: ${v.adId || 'Global'}</div>
+          <div style="font-size:0.75rem; color:#a5b4fc; font-family:monospace;">Track: ${v.trackId || 'N/A'}</div>
+        </td>
+        <td>
+          <div style="font-weight:600; color:#cbd5e1;">${v.viewerType || 'Guest'}</div>
+          <div style="font-size:0.72rem; color:var(--admin-text-muted); font-family:monospace;">
+            ${v.visitorUid ? 'UID: ' + v.visitorUid : (v.guestId ? 'Guest: ' + v.guestId : 'Dev: ' + (v.clientDeviceId || 'N/A'))}
+          </div>
+        </td>
+        <td style="color:#fde68a; font-size:0.82rem; max-width:240px;">
+          ${v.reason || 'Rapid repeated interaction anomaly (< 12 hours)'}
+        </td>
+        <td>
+          ${isSuspended ? `
+            <span style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#f87171; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+              <i class="ri-forbid-line"></i> Active (${expiryFormatted})
+            </span>
+          ` : `
+            <span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">
+              ${v.revoked ? 'Revoked by Admin' : 'Expired'}
+            </span>
+          `}
+        </td>
+        <td style="font-size:0.78rem; color:#94a3b8; white-space:nowrap;">${createdFormatted}</td>
+        <td style="text-align:center;">
+          <div style="display:inline-flex; gap:6px;">
+            ${isSuspended ? `
+              <button class="btn-action warning" onclick="revokeAdsViolationFlag('${v.id}')" title="Revoke 15-day suspension flag" style="padding:4px 8px; font-size:0.75rem;">
+                <i class="ri-shield-check-line"></i> Revoke
+              </button>
+            ` : ''}
+            <button class="btn-action danger" onclick="deleteAdsViolation('${v.id}')" title="Delete log" style="padding:4px 8px; font-size:0.75rem;">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("loadAdsViolationsAdmin error:", err);
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--admin-danger);">Failed to load ads violations: ${err.message}</td></tr>`;
+  }
+}
+window.loadAdsViolationsAdmin = loadAdsViolationsAdmin;
+
+window.toggleAllAdsViolations = function(masterCb) {
+  const cbs = document.querySelectorAll(".ads-viol-cb");
+  cbs.forEach(cb => cb.checked = masterCb.checked);
+};
+
+window.deleteAdsViolation = async function(id) {
+  if (!confirm("Are you sure you want to delete this Ads Violation log?")) return;
+  try {
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const res = await fetch(`${apiBase}/api/admin/ad-violations/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [id] })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Failed deleting log");
+    loadAdsViolationsAdmin();
+  } catch (err) {
+    alert("Error deleting violation log: " + err.message);
+  }
+};
+
+window.deleteSelectedAdsViolations = async function() {
+  const checked = Array.from(document.querySelectorAll(".ads-viol-cb:checked")).map(cb => cb.value);
+  if (checked.length === 0) {
+    alert("Please select at least one violation log to delete.");
+    return;
+  }
+  if (!confirm(`Delete ${checked.length} selected violation log(s)?`)) return;
+
+  try {
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const res = await fetch(`${apiBase}/api/admin/ad-violations/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: checked })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Failed deleting logs");
+    loadAdsViolationsAdmin();
+  } catch (err) {
+    alert("Error deleting violation logs: " + err.message);
+  }
+};
+
+window.revokeAdsViolationFlag = async function(id) {
+  if (!confirm("Revoke the 15-day suspension flag for this user/guest? Future engagements will resume tracking.")) return;
+  try {
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const res = await fetch(`${apiBase}/api/admin/ad-violations/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Failed revoking flag");
+    loadAdsViolationsAdmin();
+  } catch (err) {
+    alert("Error revoking flag: " + err.message);
   }
 };
 
@@ -3555,7 +3703,7 @@ async function loadAdsAnalyticsAdmin() {
     const adOptionsListEl = document.getElementById("adDropdownOptionsList");
     if (adOptionsListEl) {
       let optionsHtml = `
-        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('ad', 'ALL', 'All Approved Ad Campaigns (${uniqueAds.length})')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:white; font-size:0.82rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('ad', 'ALL', 'All Approved Ad Campaigns (${uniqueAds.length})')" style="flex:0 0 auto; flex-shrink:0; min-height:36px; padding:8px 12px; border-radius:6px; cursor:pointer; color:white; font-size:0.84rem; line-height:1.45; display:flex; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
           📢 All Approved Ad Campaigns (${uniqueAds.length})
         </div>
       `;
@@ -3566,7 +3714,7 @@ async function loadAdsAnalyticsAdmin() {
                      (a.platform === "youtube") ? "[YouTube]" : "[Resource]";
         const itemLabel = `${pTag} ${a.title || 'Ad'}`;
         optionsHtml += `
-          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('ad', '${a.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.8rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('ad', '${a.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="flex:0 0 auto; flex-shrink:0; min-height:36px; padding:8px 12px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.82rem; line-height:1.45; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; display:flex; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
             ${itemLabel}
           </div>
         `;
@@ -4227,17 +4375,17 @@ async function loadAdsMonetizationAdmin() {
         </td>
         <td style="padding:0.75rem;">
           <div style="font-weight:700; color:#f59e0b; font-size:0.85rem;">${c.totalHovers}</div>
-          <div style="font-size:0.7rem; color:var(--admin-text-muted);">₹${c.totalGrossHover} (₹12/ea)</div>
+          <div style="font-size:0.7rem; color:var(--admin-text-muted);">₹${c.totalGrossHover} (C:${c.contributorHovers || 0} / G:${c.guestHovers || 0})</div>
         </td>
         <td style="padding:0.75rem;">
           <div style="font-weight:700; color:#38bdf8; font-size:0.85rem;">${c.totalVisits}</div>
-          <div style="font-size:0.7rem; color:var(--admin-text-muted);">₹${c.totalGrossVisit} (₹20/ea)</div>
+          <div style="font-size:0.7rem; color:var(--admin-text-muted);">₹${c.totalGrossVisit} (C:${c.contributorVisits || 0} / G:${c.guestVisits || 0})</div>
         </td>
         <td style="padding:0.75rem; font-weight:700; color:white; font-size:0.88rem;">
           ₹${c.totalGrossCharges.toLocaleString()}
         </td>
         <td style="padding:0.75rem; font-weight:700; color:#10b981; font-size:0.85rem;">
-          -₹${c.totalHoverDiscount.toLocaleString()}
+          -₹${(c.totalDiscountSaved || c.totalHoverDiscount || 0).toLocaleString()}
         </td>
         <td style="padding:0.75rem; font-weight:800; color:#a5b4fc; font-size:0.95rem;">
           ₹${c.totalNetPayable.toLocaleString()}
@@ -4271,12 +4419,12 @@ async function loadAdsMonetizationAdmin() {
               <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#94a3b8; text-align:left;">
                 <th style="padding:4px 8px;">Ad Campaign</th>
                 <th style="padding:4px 8px;">Track ID</th>
-                <th style="padding:4px 8px;">Unique Hovers</th>
+                <th style="padding:4px 8px;">Hovers (C / G)</th>
                 <th style="padding:4px 8px;">Gross Hover</th>
+                <th style="padding:4px 8px;">Visits (C / G)</th>
+                <th style="padding:4px 8px;">Gross Visit</th>
+                <th style="padding:4px 8px;">Gross Charges</th>
                 <th style="padding:4px 8px;">Discount (${discountPct}%)</th>
-                <th style="padding:4px 8px;">Net Hover</th>
-                <th style="padding:4px 8px;">Unique Visits</th>
-                <th style="padding:4px 8px;">Visit Charges</th>
                 <th style="padding:4px 8px;">Net Ad Payable</th>
               </tr>
             </thead>
@@ -4287,17 +4435,27 @@ async function loadAdsMonetizationAdmin() {
         adsBreakdownHtml += `<tr><td colspan="9" style="padding:8px; text-align:center; color:#64748b;">No ads recorded for this contributor.</td></tr>`;
       } else {
         adsBreakdown.forEach(ab => {
+          const uHovers = ab.totalHovers != null ? ab.totalHovers : ab.uniqueHovers;
+          const uVisits = ab.totalVisits != null ? ab.totalVisits : ab.uniqueVisits;
+          const cHov = ab.contributorHovers != null ? ab.contributorHovers : '-';
+          const gHov = ab.guestHovers != null ? ab.guestHovers : '-';
+          const cVis = ab.contributorVisits != null ? ab.contributorVisits : '-';
+          const gVis = ab.guestVisits != null ? ab.guestVisits : '-';
+          const gTot = ab.grossCharges != null ? ab.grossCharges : ((ab.grossHoverCharges || 0) + (ab.grossVisitCharges || 0));
+          const dSav = ab.discountSaved != null ? ab.discountSaved : (ab.hoverDiscountAmount || 0);
+          const netPay = ab.netPayable != null ? ab.netPayable : ab.netAdPayable;
+
           adsBreakdownHtml += `
             <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-              <td style="padding:6px 8px; font-weight:600; color:white;">${ab.title}</td>
+              <td style="padding:6px 8px; font-weight:600; color:white;">${ab.title || ab.adTitle}</td>
               <td style="padding:6px 8px; font-family:monospace; color:#a5b4fc;">${ab.trackId}</td>
-              <td style="padding:6px 8px; color:#f59e0b; font-weight:600;">${ab.uniqueHovers}</td>
-              <td style="padding:6px 8px;">₹${ab.grossHoverCharges}</td>
-              <td style="padding:6px 8px; color:#10b981;">-₹${ab.hoverDiscountAmount}</td>
-              <td style="padding:6px 8px; font-weight:600; color:white;">₹${ab.netHoverCharges}</td>
-              <td style="padding:6px 8px; color:#38bdf8; font-weight:600;">${ab.uniqueVisits}</td>
-              <td style="padding:6px 8px;">₹${ab.grossVisitCharges}</td>
-              <td style="padding:6px 8px; font-weight:700; color:#a5b4fc;">₹${ab.netAdPayable}</td>
+              <td style="padding:6px 8px; color:#f59e0b; font-weight:600;">${uHovers} <span style="font-size:0.68rem; color:#94a3b8;">(${cHov}C / ${gHov}G)</span></td>
+              <td style="padding:6px 8px;">₹${ab.grossHoverCharges || 0}</td>
+              <td style="padding:6px 8px; color:#38bdf8; font-weight:600;">${uVisits} <span style="font-size:0.68rem; color:#94a3b8;">(${cVis}C / ${gVis}G)</span></td>
+              <td style="padding:6px 8px;">₹${ab.grossVisitCharges || 0}</td>
+              <td style="padding:6px 8px; font-weight:600; color:white;">₹${gTot}</td>
+              <td style="padding:6px 8px; color:#10b981;">-₹${dSav}</td>
+              <td style="padding:6px 8px; font-weight:700; color:#a5b4fc;">₹${netPay}</td>
             </tr>
           `;
         });
@@ -4575,14 +4733,14 @@ async function loadResourceAnalyticsAdmin() {
     const optionsListEl = document.getElementById("resourceDropdownOptionsList");
     if (optionsListEl) {
       let optionsHtml = `
-        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('resource', 'ALL', 'All Academic Resources (${uniquePool.length})')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:white; font-size:0.82rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('resource', 'ALL', 'All Academic Resources (${uniquePool.length})')" style="flex:0 0 auto; flex-shrink:0; min-height:36px; padding:8px 12px; border-radius:6px; cursor:pointer; color:white; font-size:0.84rem; line-height:1.45; display:flex; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
           📘 All Academic Resources (${uniquePool.length})
         </div>
       `;
       uniquePool.forEach(r => {
         const itemLabel = `[${r.category}] ${r.title}`;
         optionsHtml += `
-          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('resource', '${r.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.8rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('resource', '${r.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="flex:0 0 auto; flex-shrink:0; min-height:36px; padding:8px 12px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.82rem; line-height:1.45; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; display:flex; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
             ${itemLabel}
           </div>
         `;
@@ -5562,14 +5720,14 @@ window.loadWebAnalyticsAdmin = async function() {
     const poolWebsites = data.websiteList || [];
     if (listEl) {
       let optHtml = `
-        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('web', 'ALL', 'All Registered Websites (${poolWebsites.length})')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:white; font-size:0.82rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+        <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('web', 'ALL', 'All Registered Websites (${poolWebsites.length})')" style="flex:0 0 auto; flex-shrink:0; min-height:36px; padding:8px 12px; border-radius:6px; cursor:pointer; color:white; font-size:0.84rem; line-height:1.45; display:flex; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
           🌐 All Registered Websites (${poolWebsites.length})
         </div>
       `;
       poolWebsites.forEach(w => {
         const itemLabel = w.title || w.url;
         optHtml += `
-          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('web', '${w.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="padding:6px 10px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.8rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
+          <div class="custom-dropdown-opt-item" onclick="window.selectCustomDropdownOption('web', '${w.id}', '${itemLabel.replace(/'/g, "\\'")}')" style="flex:0 0 auto; flex-shrink:0; min-height:36px; padding:8px 12px; border-radius:6px; cursor:pointer; color:#cbd5e1; font-size:0.82rem; line-height:1.45; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; display:flex; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='transparent'">
             ${itemLabel}
           </div>
         `;

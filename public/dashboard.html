@@ -894,6 +894,39 @@
                 View Native Ads Monetization Policy <i class="ri-arrow-right-s-line"></i>
               </a>
             </div>
+
+            <!-- Real-Time Calculation Notice -->
+            <div style="margin-top: 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 10px; padding: 10px 14px; font-size: 0.8rem; color: #fde68a; display: flex; align-items: center; gap: 8px;">
+              <i class="ri-time-line" style="font-size: 1.15rem; color: #f59e0b; flex-shrink: 0;"></i>
+              <span><strong>Notice:</strong> Wait for the end of the Month to get a Finalized Round Off Monthly Ads Charge Rate. Real-time rates reflect strict single-engagement telemetry before closing reconciliation.</span>
+            </div>
+
+            <!-- Real-Time Ad-Wise Monetization Breakdown Table -->
+            <div id="contribAdsItemizedTableWrap" style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px; margin-top: 12px; overflow-x: auto;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight: 700; font-size: 0.82rem; color: #e2e8f0; display: flex; align-items: center; gap: 6px;">
+                  <i class="ri-file-list-3-line" style="color: #6366f1;"></i> Real-Time Ad-Wise Monetization Breakdown
+                </span>
+                <span style="font-size:0.7rem; color:#94a3b8;">Single Engagement / Ad / Month</span>
+              </div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.76rem; text-align: left;">
+                <thead>
+                  <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8;">
+                    <th style="padding: 6px 8px;">Ad Campaign</th>
+                    <th style="padding: 6px 8px;">Hovers (C/G)</th>
+                    <th style="padding: 6px 8px;">Visits (C/G)</th>
+                    <th style="padding: 6px 8px;">Gross</th>
+                    <th style="padding: 6px 8px;">Discount</th>
+                    <th style="padding: 6px 8px;">Net Payable</th>
+                  </tr>
+                </thead>
+                <tbody id="contribAdsItemizedTableBody">
+                  <tr>
+                    <td colspan="6" style="padding: 12px; text-align: center; color: #64748b;">Loading active ad calculations...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <form id="uploadAdForm" class="upload-form" style="max-width:750px;">

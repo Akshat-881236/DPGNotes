@@ -236,9 +236,10 @@
       u.searchParams.set("track_id", trackId);
       u.searchParams.set("ad_id", adId || "");
       u.searchParams.set("go-to", dest);
+      u.searchParams.set("src", "dpgnotes_platform");
       return u.toString();
     } catch(e) {
-      return `${handlerBase}?track_id=${encodeURIComponent(trackId)}&ad_id=${encodeURIComponent(adId || "")}&go-to=${encodeURIComponent(dest)}`;
+      return `${handlerBase}?track_id=${encodeURIComponent(trackId)}&ad_id=${encodeURIComponent(adId || "")}&go-to=${encodeURIComponent(dest)}&src=dpgnotes_platform`;
     }
   }
 
@@ -252,12 +253,13 @@
       btn.addEventListener("mouseenter", (e) => {
         if (!e.isTrusted) return; // Genuine user interaction check
         hoverStart = Date.now();
+        // Rule 5: 5 seconds (5000ms) continuous hover required for genuine hover
         hoverTimer = setTimeout(() => {
-          if (!recorded && hoverStart > 0 && (Date.now() - hoverStart >= 800)) {
+          if (!recorded && hoverStart > 0 && (Date.now() - hoverStart >= 5000)) {
             recorded = true;
             sendGenuineHoverTelemetry(ad, trackId);
           }
-        }, 800);
+        }, 5000);
       });
 
       btn.addEventListener("mouseleave", () => {
@@ -275,10 +277,18 @@
       const ADMIN_EMAILS = ["its.akshatnetworkhub23@gmail.com", "akshatprasad009@gmail.com"];
       if (ADMIN_EMAILS.includes(email) || activeUser.isAdmin || activeUser.role === 'admin') return;
 
-      const currentMonth = new Date().toISOString().substring(0, 7);
-      const sessionKey = `dpg_hover_logged_${ad.id || trackId}_${currentMonth}`;
-      if (sessionStorage.getItem(sessionKey)) return;
-      sessionStorage.setItem(sessionKey, "1");
+      // Check if user/guest is currently Ads Flagged for 15 days
+      const flaggedUntil = parseInt(localStorage.getItem("dpg_ads_flagged_until") || "0", 10);
+      if (flaggedUntil > Date.now()) {
+        console.warn("User/Guest is currently Ads Flagged for 15 days. Hover engagement ignored.");
+        return;
+      }
+
+      const adKey = ad.id || trackId || "global";
+      const hoverHistory = JSON.parse(localStorage.getItem("dpg_ad_hover_history") || "{}");
+      const lastHoverTime = hoverHistory[adKey] || 0;
+      const now = Date.now();
+      const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
       const guestId = localStorage.getItem("dpg_guest_id") || ("guest_" + Math.random().toString(36).substr(2, 9));
       if (!localStorage.getItem("dpg_guest_id")) localStorage.setItem("dpg_guest_id", guestId);
@@ -288,11 +298,61 @@
         localStorage.setItem("dpg_client_device_id", clientDeviceId);
       }
 
+      // Rule 4 & 5: Check 12-hour gap between two hover events on same ad
+      if (lastHoverTime > 0 && (now - lastHoverTime) < TWELVE_HOURS) {
+        // Rapid hover anomaly detected (<12 hours)!
+        console.warn("Rapid hover anomaly detected (<12h gap). Flagging user for 15 days and canceling ad logs.");
+        const newFlaggedUntil = now + (15 * 24 * 60 * 60 * 1000);
+        localStorage.setItem("dpg_ads_flagged_until", String(newFlaggedUntil));
+
+        // 1. Log violation to backend
+        fetch((window.API_BASE_URL || '') + '/api/ads/report-violation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adId: ad.id || "",
+            trackId: trackId || "",
+            visitorUid: activeUser.uid || null,
+            visitorEmail: email || null,
+            guestId: guestId,
+            clientDeviceId: clientDeviceId,
+            violationType: "Rapid Hover Anomaly (<12h Gap)",
+            flaggedUntil: new Date(newFlaggedUntil).toISOString(),
+            timestamp: new Date().toISOString()
+          })
+        }).catch(console.warn);
+
+        // 2. Cancel all Firestore logs for that specific Ad for this active contributor and guest
+        fetch((window.API_BASE_URL || '') + '/api/ads/cancel-engagement-anomaly', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adId: ad.id || "",
+            trackId: trackId || "",
+            visitorUid: activeUser.uid || null,
+            guestId: guestId,
+            clientDeviceId: clientDeviceId
+          })
+        }).catch(console.warn);
+
+        return;
+      }
+
+      // Record hover timestamp in local pattern history
+      hoverHistory[adKey] = now;
+      localStorage.setItem("dpg_ad_hover_history", JSON.stringify(hoverHistory));
+
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      const sessionKey = `dpg_hover_logged_${ad.id || trackId}_${currentMonth}`;
+      if (sessionStorage.getItem(sessionKey)) return;
+      sessionStorage.setItem(sessionKey, "1");
+
       const payload = {
         adId: ad.id || "",
         trackId: trackId || "",
         uploaderUid: ad.userId || ad.uid || ad.userUid || ad.createdBy || "",
-        visitorUid: activeUser.uid || guestId,
+        visitorUid: activeUser.uid || null,
+        guestId: guestId,
         visitorEmail: email || null,
         visitorType: activeUser.uid ? "Contributor" : "Guest",
         clientDeviceId: clientDeviceId,
@@ -494,7 +554,7 @@
           </div>
           <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">View <i class="ri-arrow-right-s-line"></i></a>
+        <a href="${finalTargetLink}" target="_self" class="dpg-ad-destination-btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">View <i class="ri-arrow-right-s-line"></i></a>
       `;
     } else if (variant === "footer" || variant === "bottom") {
       card.style.cssText = `
@@ -526,7 +586,7 @@
           </div>
           <h4 style="font-size:0.78rem; font-weight:700; color:white; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.title || 'Promoted Content'}</h4>
         </div>
-        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>
+        <a href="${finalTargetLink}" target="_self" class="dpg-ad-destination-btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px 9px; border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; flex-shrink:0; white-space:nowrap;">Learn More <i class="ri-external-link-line"></i></a>
       `;
     } else if (variant === "sidebar" || variant === "image") {
       const isLight = typeof document !== 'undefined' && document.documentElement && document.documentElement.getAttribute('data-theme') === 'light';
@@ -558,7 +618,7 @@
         </div>
 
         <h4 class="dpg-ad-title" style="font-size:0.84rem; font-weight:700; margin-bottom:4px; line-height:1.2; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.title || 'Promoted Content'}</h4>
-        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
+        <a href="${finalTargetLink}" target="_self" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
     } else if (variant === "cover_video" || variant === "cover_image") {
       // Cover Page Native Ad Variant: Disabled close icon and 'i' info icon.
@@ -597,7 +657,7 @@
         <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.description || ''}</p>
         
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px;">
-          <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="flex:1; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
+          <a href="${finalTargetLink}" target="_self" class="dpg-ad-destination-btn" style="flex:1; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
           <button type="button" id="adSkipBtn_${containerId}" disabled style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#94a3b8; padding:8px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:not-allowed; display:inline-flex; align-items:center; gap:6px; transition:all 0.3s ease; white-space:nowrap;">
             <span id="adSkipText_${containerId}">Skip in ${skipSec}s</span>
           </button>
@@ -668,7 +728,7 @@
 
         <h4 style="font-size:0.9rem; font-weight:700; color:white; margin-bottom:4px; line-height:1.3;">${ad.title || 'Promoted Content'}</h4>
         <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:10px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${ad.description || ''}</p>
-        <a href="${finalTargetLink}" target="_blank" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
+        <a href="${finalTargetLink}" target="_self" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
     }
 

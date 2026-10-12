@@ -805,9 +805,40 @@
       color: #f8fafc;
     }
     #authCheckOverlay p {
-      color: var(--admin-muted, #94a3b8);
-      font-size: 0.9rem;
-      margin: 0;
+    /* CUSTOM SEARCHABLE TYPABLE DROPDOWN POOL COMPONENT (Fix for squished text bug) */
+    .custom-searchable-dropdown {
+      position: relative;
+    }
+    .custom-searchable-dropdown div[id$="DropdownOptionsList"] {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 4px !important;
+      max-height: 240px !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+    .custom-dropdown-opt-item {
+      flex: 0 0 auto !important;
+      flex-shrink: 0 !important;
+      min-height: 36px !important;
+      height: auto !important;
+      padding: 8px 12px !important;
+      font-size: 0.84rem !important;
+      line-height: 1.45 !important;
+      color: #cbd5e1 !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      box-sizing: border-box !important;
+      white-space: nowrap !important;
+      text-overflow: ellipsis !important;
+      overflow: hidden !important;
+      transition: background 0.2s ease, color 0.2s ease !important;
+    }
+    .custom-dropdown-opt-item:hover {
+      background: rgba(99, 102, 241, 0.25) !important;
+      color: #ffffff !important;
     }
   </style>
 </head>
@@ -1769,12 +1800,15 @@
             <h2 class="section-title"><i class="ri-shield-flash-line" style="color:#ef4444;"></i> Security Violation Telemetry Logs</h2>
             
             <!-- SPA SUB-TABS -->
-            <div style="display:flex; gap:8px; background:rgba(15,23,42,0.6); padding:4px; border-radius:10px; border:1px solid var(--admin-border);">
+            <div style="display:flex; gap:8px; background:rgba(15,23,42,0.6); padding:4px; border-radius:10px; border:1px solid var(--admin-border); flex-wrap:wrap;">
               <button class="admin-btn active-subtab" id="subtabUserViolationsBtn" onclick="switchViolationSubtab('user_violations')" style="padding:6px 14px; font-size:0.85rem; border-radius:8px;">
                 <i class="ri-group-line"></i> User Violations
               </button>
               <button class="admin-btn" id="subtabUnauthorizedActionsBtn" onclick="switchViolationSubtab('unauthorized_actions')" style="padding:6px 14px; font-size:0.85rem; border-radius:8px;">
                 <i class="ri-lock-unlock-line"></i> Unauthorized Action
+              </button>
+              <button class="admin-btn" id="subtabAdsViolationsBtn" onclick="switchViolationSubtab('ads_violations')" style="padding:6px 14px; font-size:0.85rem; border-radius:8px;">
+                <i class="ri-shield-flash-line" style="color:#f59e0b;"></i> Ads Violations
               </button>
             </div>
           </div>
@@ -1828,6 +1862,42 @@
               </thead>
               <tbody id="unauthorizedActionsTableBody">
                 <tr><td colspan="7" style="text-align:center; color:var(--admin-muted);">Loading unauthorized access violations...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- SUB-TAB 3: ADS VIOLATIONS -->
+          <div id="subtabContentAdsViolations" style="display:none; margin-top:1.5rem; overflow-x:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+              <div style="font-size:0.85rem; color:#94a3b8;">
+                <span style="color:#f59e0b; font-weight:700;"><i class="ri-shield-alert-line"></i> 15-Day Account Suspensions:</span> Flagged for rapid clicks (&lt;12h gap) or abnormal hover patterns. Engagement excluded from charges.
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="admin-btn" style="background:#ef4444; border-color:transparent; font-size:0.82rem;" onclick="deleteSelectedAdsViolations()">
+                  <i class="ri-delete-bin-line"></i> Delete Selected Logs
+                </button>
+                <button class="admin-btn" style="background:rgba(99,102,241,0.2); border-color:rgba(99,102,241,0.4); color:#a5b4fc; font-size:0.82rem;" onclick="loadAdsViolationsAdmin()">
+                  <i class="ri-refresh-line"></i> Refresh
+                </button>
+              </div>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:40px; text-align:center;">
+                    <input type="checkbox" id="selectAllAdsViolations" onchange="toggleAllAdsViolations(this)">
+                  </th>
+                  <th>Violation Case ID</th>
+                  <th>Ad Campaign / Track ID</th>
+                  <th>Visitor Classification</th>
+                  <th>Violation Reason</th>
+                  <th>Suspension Expiry (15-Days)</th>
+                  <th>Timestamp</th>
+                  <th style="text-align:center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adsViolationsTableBody">
+                <tr><td colspan="8" style="text-align:center; color:var(--admin-muted);">Loading ads violation telemetry...</td></tr>
               </tbody>
             </table>
           </div>
@@ -2252,7 +2322,14 @@
         <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1rem 1.2rem; margin-bottom:1.5rem; display:flex; align-items:flex-start; gap:12px; font-size:0.83rem; color:#cbd5e1; line-height:1.5;">
           <i class="ri-information-fill" style="color:#6366f1; font-size:1.3rem; flex-shrink:0; margin-top:2px;"></i>
           <div>
-            <strong style="color:#ffffff;">Monetization & Discount Formula:</strong> ₹12 per unique genuine hover (&ge;800ms) + ₹20 per unique genuine visit. Discounts on hover: <strong>20%</strong> (&ge;3 Public docs), <strong>40%</strong> (&ge;10 docs + 5 Assignment + 5 Practical), <strong>60%</strong> (&ge;25 docs + 12 Assignment + 12 Practical), <strong>80%</strong> (&ge;75 docs + 25 Assignment + 25 Practical), <strong>100%</strong> (&ge;120 docs + 45 Assignment + 45 Practical). Monthly cycles lock permanently at month-end; subsequent uploads only benefit subsequent billing cycles.
+            <strong style="color:#ffffff;">Monetization Rules &amp; Tier Discount Policy:</strong>
+            Contributor Rates: <strong>₹12 / hover</strong> (&ge;5s dwell) &bull; <strong>₹20 / visit</strong> (Safe Gateway). Guest Rates (50% reduced): <strong>₹6 / hover</strong> &bull; <strong>₹10 / visit</strong>.
+            <br>
+            <strong>Strict Single Engagement Rule:</strong> For each unique verified user or guest, strictly 1 interaction (hover OR click, whichever occurs earlier) per ad per month cycle is billable. Subsequent entries are rejected.
+            <br>
+            <strong>Strict Portfolio Discount:</strong> Discount applies across all charges: <strong>20%</strong> (&ge;3 Public docs), <strong>40%</strong> (&ge;10 docs + 5 Assignment + 5 Practical), <strong>60%</strong> (&ge;25 docs + 12 Assignment + 12 Practical), <strong>80%</strong> (&ge;75 docs + 25 Assignment + 25 Practical), <strong>100%</strong> (&ge;120 docs + 45 Assignment + 45 Practical).
+            <br>
+            <strong>Anti-Anomaly Shield:</strong> Rapid repeated ad interactions (&lt; 12 hrs gap) purge ad billing logs and impose a 15-day account flag. Admin accounts (its.akshatnetworkhub23@gmail.com, etc.) are strictly excluded.
           </div>
         </div>
 
