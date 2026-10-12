@@ -270,9 +270,10 @@
   async function sendGenuineHoverTelemetry(ad, trackId) {
     try {
       const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
-      const email = activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "";
+      const email = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
       // Strictly exclude Admin visitors
-      if (email === "akshatprasad009@gmail.com" || activeUser.isAdmin) return;
+      const ADMIN_EMAILS = ["its.akshatnetworkhub23@gmail.com", "akshatprasad009@gmail.com"];
+      if (ADMIN_EMAILS.includes(email) || activeUser.isAdmin || activeUser.role === 'admin') return;
 
       const currentMonth = new Date().toISOString().substring(0, 7);
       const sessionKey = `dpg_hover_logged_${ad.id || trackId}_${currentMonth}`;
@@ -292,6 +293,7 @@
         trackId: trackId || "",
         uploaderUid: ad.userId || ad.uid || ad.userUid || ad.createdBy || "",
         visitorUid: activeUser.uid || guestId,
+        visitorEmail: email || null,
         visitorType: activeUser.uid ? "Contributor" : "Guest",
         clientDeviceId: clientDeviceId,
         timestamp: new Date().toISOString(),

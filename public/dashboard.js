@@ -2969,6 +2969,100 @@ async function loadContributorPayableAds() {
 }
 window.loadContributorPayableAds = loadContributorPayableAds;
 
+// ============================================================================
+// NATIVE ADS MONETIZATION POLICY CONFIRMATION MODAL
+// ============================================================================
+function showNativeAdsMonetizationModal() {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'dpg-modal-overlay';
+
+    // Retrieve current contributor tier details if available
+    const tierBadge = document.getElementById('contribTierBadge')?.textContent || '';
+    const portfolioStats = document.getElementById('contribPortfolioStats')?.textContent || '';
+
+    overlay.innerHTML = `
+      <div class="dpg-modal-box dpg-monetization-modal-box">
+        <div style="text-align: center; margin-bottom: 1.2rem;">
+          <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
+            <i class="ri-money-dollar-circle-fill" style="font-size: 2.2rem; color: #f59e0b;"></i>
+          </div>
+          <h3 class="dpg-modal-title" style="margin: 0; font-size: 1.35rem;">Native Ads Monetization Policy</h3>
+          <p class="dpg-modal-subtitle" style="font-size: 0.84rem; color: #94a3b8; margin: 4px 0 0 0;">Please review and confirm commercial terms before campaign deployment</p>
+        </div>
+
+        <div class="dpg-policy-card" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem;">
+          <div class="dpg-policy-heading" style="font-size: 0.88rem; font-weight: 700; color: #f8fafc; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <i class="ri-scales-3-line" style="color: #6366f1;"></i> Dual-Interaction Commercial Rates
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem;">
+            <div class="dpg-policy-inner" style="background: rgba(0, 0, 0, 0.3); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
+              <div class="dpg-policy-label" style="color: #cbd5e1; font-weight: 600;">Genuine Hover</div>
+              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹12 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">/ unique mo.</span></div>
+              <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">≥ 800ms dwell on CTA button</div>
+            </div>
+            <div class="dpg-policy-inner" style="background: rgba(0, 0, 0, 0.3); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
+              <div class="dpg-policy-label" style="color: #cbd5e1; font-weight: 600;">Genuine Visit</div>
+              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹20 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">/ unique mo.</span></div>
+              <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">Via Safe Gateway (Deduplicated)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dpg-policy-card dpg-subsidy-card" style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; padding: 10px 14px; margin-bottom: 1rem; font-size: 0.82rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 700; color: #a5b4fc; display: flex; align-items: center; gap: 5px;">
+              <i class="ri-medal-line"></i> Your Portfolio Subsidy:
+            </span>
+            <span style="font-weight: 700; color: #10b981;">${tierBadge || 'Standard Academic Tier'}</span>
+          </div>
+          <div class="dpg-policy-desc" style="color: #cbd5e1; font-size: 0.78rem;">
+            ${portfolioStats ? `Verified: ${portfolioStats}` : 'Public document uploads and solution guides unlock up to 100% fee waiver.'}
+          </div>
+        </div>
+
+        <div class="dpg-policy-rules" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1.2rem;">
+          <ul style="padding-left: 1.2rem; margin: 0;">
+            <li style="margin-bottom: 4px;"><strong>Monthly Cycle Lock:</strong> Dues are locked at month end into the immutable ledger and cannot be retroactively adjusted.</li>
+            <li style="margin-bottom: 4px;"><strong>Anti-Fraud Protection:</strong> Synthetic clicks, crawlers, and rapid sweeps are automatically rejected.</li>
+            <li><strong>Admin Audit Exemption:</strong> Platform testing by admin accounts is strictly excluded from billing.</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 1.2rem; font-size: 0.82rem;">
+          <a href="legal/native-ads-monetization-policy.html" target="_blank" style="color: #a5b4fc; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+            <i class="ri-external-link-line"></i> Read Full Native Ads Monetization Policy
+          </a>
+        </div>
+
+        <div class="dpg-confirm-actions" style="margin-top: 0.5rem; display: flex; gap: 10px;">
+          <button type="button" class="dpg-modal-btn cancel" id="dpgPolicyCancelBtn" style="flex: 1;">Cancel &amp; Edit Ad</button>
+          <button type="button" class="dpg-modal-btn" id="dpgPolicyAcceptBtn" style="flex: 1.4; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);">
+            <i class="ri-check-line"></i> Accept &amp; Submit Ad
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('active'));
+
+    const cancelBtn = overlay.querySelector('#dpgPolicyCancelBtn');
+    const acceptBtn = overlay.querySelector('#dpgPolicyAcceptBtn');
+
+    const finish = (result) => {
+      overlay.classList.remove('active');
+      setTimeout(() => {
+        overlay.remove();
+        resolve(result);
+      }, 300);
+    };
+
+    cancelBtn.addEventListener('click', () => finish(false));
+    acceptBtn.addEventListener('click', () => finish(true));
+  });
+}
+
 let isAdSubmitting = false;
 const adForm = document.getElementById("uploadAdForm");
 if (adForm) {
@@ -2992,6 +3086,18 @@ if (adForm) {
   adForm.addEventListener("submit", async function(e) {
     e.preventDefault();
     if (isAdSubmitting) return;
+
+    if (!adForm.checkValidity()) {
+      adForm.reportValidity();
+      return;
+    }
+
+    // Remind contributor of Native Ads Monetization Policy with custom confirmation modal
+    const policyAccepted = await showNativeAdsMonetizationModal();
+    if (!policyAccepted) {
+      return;
+    }
+
     isAdSubmitting = true;
 
     const btn = document.getElementById("submitAdBtn");

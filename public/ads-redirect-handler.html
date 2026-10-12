@@ -367,8 +367,9 @@
       // 2. VIEWER CLASSIFICATION & ADMIN CHECK
       // =========================================================================
       const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
-      const visitorEmail = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase();
-      const isAdminUser = visitorEmail === "akshatprasad009@gmail.com" || !!activeUser.isAdmin;
+      const visitorEmail = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
+      const ADMIN_EMAILS = ["its.akshatnetworkhub23@gmail.com", "akshatprasad009@gmail.com"];
+      const isAdminUser = ADMIN_EMAILS.includes(visitorEmail) || !!activeUser.isAdmin || activeUser.role === 'admin';
 
       let viewerType = "Guest";
       const ua = navigator.userAgent || "";

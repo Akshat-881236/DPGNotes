@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
+  <script src="/dpg-loader.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../ANH.png" type="image/png" />
+  <title>Native Ads Monetization & Billing Policy | DPGNotes Legal Center</title>
+  <meta name="description" content="Official Native Ads Monetization and Contributor Billing Policy of DPGNotes. Comprehensive breakdown of the ₹12 genuine hover & ₹20 genuine visit unit economics, Safe Destination Gateway, portfolio discount tiers, monthly cycle locking, and admin audit exclusions." />
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dark.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .pricing-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.4rem;
+      transition: all 0.25s ease;
+    }
+    .pricing-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .pricing-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .pricing-card .price-tag {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #f59e0b;
+      margin: 0.4rem 0;
+      font-family: 'Outfit', sans-serif;
+    }
+    .pricing-card p {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+    .tier-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+  </style>
+  <script src="../custom-dialogs.js"></script>
+</head>
+<body class="theme-auto">
+  <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
+
+  <!-- Header -->
+  <header class="legal-header">
+    <div class="header-container">
+      <a href="../index.html" class="legal-logo">
+        <i class="ri-shield-user-fill logo-icon"></i>
+        <span>DPGNotes <span class="accent-text">Legal</span></span>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="legal-layout-container">
+    <!-- Sidebar Navigation -->
+    <aside class="legal-sidebar" id="legalSidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-group">
+          <h3 class="group-title">Overview</h3>
+          <ul class="nav-list">
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
+            <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-group">
+          <h3 class="group-title">Standalone Policies</h3>
+          <ul class="nav-list">
+            <li><a href="privacy-policy.html" class="nav-link"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
+            <li><a href="terms-conditions.html" class="nav-link"><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
+            <li><a href="cookie-policy.html" class="nav-link"><i class="bi bi-cookie"></i> Cookie Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link"><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="native-ads-monetization-policy.html" class="nav-link active"><i class="ri-money-dollar-circle-line"></i> Native Ads Monetization</a></li>
+            <li><a href="disclaimer.html" class="nav-link"><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link"><i class="ri-scales-line"></i> DRASA Regulations</a></li>
+            <li><a href="copyright-policy.html" class="nav-link"><i class="ri-copyright-line"></i> Copyright Policy</a></li>
+            <li><a href="dmca-policy.html" class="nav-link"><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
+            <li><a href="analytics-policy.html" class="nav-link"><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
+            <li><a href="security-policy.html" class="nav-link"><i class="ri-shield-check-line"></i> Security Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link"><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link"><i class="ri-external-link-line"></i> External Links</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="legal-content">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; Transparent Billing &amp; Academic Portfolio Subsidies</span>
+            </div>
+            <h1 class="document-title">DPGNotes Native Ads Monetization &amp; Billing Policy</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Effective Date: October 12, 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-NATIVE-MONETIZE-2026-V1.0</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 1.0 (Comprehensive Edition)</span>
+            </div>
+          </header>
+
+          <!-- Back to Summary Callout -->
+          <div class="summary-back-callout">
+            <div class="summary-back-content">
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#native-ads-monetization">Summary Version of this Policy in Legal Hub</a>.
+              </div>
+            </div>
+          </div>
+
+          <article class="legal-article">
+            
+            <h2>1. Commercial Purpose &amp; Academic Charter</h2>
+            <p>DPGNotes is committed to democratizing access to high-quality academic notes, engineering handbooks, laboratory solutions, and syllabus tools. To maintain server capacity, protect user privacy, and sustain operational reliability without charging tuition subscriptions to students, DPGNotes offers verified contributors the capability to promote high-value educational resources, coding repositories, technical blogs, and professional profiles through our ethical Native Ads engine.</p>
+            <p>Unlike predatory third-party advertising networks that flood viewports with misleading pop-ups, DPGNotes Native Ads are strictly non-intrusive, academic-first, and governed by transparent unit pricing tied to verified human engagement. This policy sets forth the exact commercial terms, telemetry tracking mechanisms, academic portfolio discount subsidies, and monthly ledger locking procedures applicable to all ad campaigns created on DPGNotes.</p>
+
+            <h2>2. Dual-Interaction Unit Pricing Model</h2>
+            <p>Every active native advertisement deployed on DPGNotes is billed strictly according to a dual-interaction engagement framework. Contributors are charged only for authenticated, non-fraudulent interactions:</p>
+
+            <div class="pricing-grid">
+              <div class="pricing-card">
+                <h4><i class="ri-cursor-line"></i> Genuine Hover Interaction</h4>
+                <div class="price-tag">&#8377;12 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">/ unique hover / month</span></div>
+                <p>Billed when an authentic user hovers their mouse cursor over an ad call-to-action button for a continuous dwell period of at least <strong>800 milliseconds</strong>. Fast mouse sweeps, robotic cursor emulations, and unintentional viewport passes are algorithmically filtered out.</p>
+              </div>
+
+              <div class="pricing-card">
+                <h4><i class="ri-external-link-line"></i> Genuine Destination Visit</h4>
+                <div class="price-tag">&#8377;20 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">/ unique visit / month</span></div>
+                <p>Billed when a user deliberately clicks the advertisement's destination action button and navigates through the platform's <strong>Safe Destination Gateway</strong>. Visits are strictly deduplicated so that repeat clicks from the same user or device within the same calendar month are billed as a single unique visit.</p>
+              </div>
+            </div>
+
+            <h2>3. Safe Destination Gateway &amp; Anti-Malware Protection</h2>
+            <p>To safeguard our student community against malicious redirects, phishing sites, and deceptive downloads, direct unverified external links are prohibited in all native advertisements. Every promotional link is routed through our dedicated security inspection gateway:</p>
+            <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; font-family:'Fira Code', monospace; font-size:0.85rem; color:#a5b4fc; margin:1rem 0; word-break:break-all;">
+              https://dpgnotes.web.app/ads-redirect-handler.html?track_id={TRACK_ID}&amp;ad_id={AD_ID}&amp;go-to={DESTINATION_URL}
+            </div>
+            <p>The Safe Destination Gateway automatically executes the following security checks prior to allowing user navigation:</p>
+            <ul>
+              <li><strong>Malware &amp; Phishing Inspection:</strong> Verification of the destination domain against real-time threat intelligence and known malicious host registries.</li>
+              <li><strong>Protocol &amp; TLS Certificate Validation:</strong> Enforcement of HTTPS encryption on destination landing pages.</li>
+              <li><strong>Visual Transparency &amp; Destination Preview:</strong> Presentation of the target destination domain and verified campaign information to the student before handoff.</li>
+            </ul>
+
+            <h2>4. Deep Analytics Telemetry &amp; Transparent Metrics</h2>
+            <p>When a visitor navigates via the Safe Destination Gateway, DPGNotes captures detailed telemetry parameters to provide advertisers with actionable intelligence while preserving end-user privacy:</p>
+            <ul>
+              <li><strong>Campaign Metadata:</strong> Unique Ad Tracking ID (<code>track-id</code>), Firestore Campaign ID (<code>ad-id</code>), Ad Title, and verified Uploader Name &amp; Profile Photo.</li>
+              <li><strong>Viewer Categorization:</strong>
+                <ul>
+                  <li><em>Verified Contributors:</em> Records Contributor UID, Display Name, and Profile Picture. Deduplicated so that repeat visits within the same month update visit frequency and recency timestamps without inflating billing units.</li>
+                  <li><em>Guest Users:</em> Identified by anonymized Client Device ID and Guest Session Token. Retains a single unique billing entry per calendar month.</li>
+                  <li><em>Search Engine Crawlers &amp; Bots:</em> System logs crawler classification (e.g., Googlebot, Bingbot, YandexBot) for indexing diagnostics. Automated crawler visits are permanently excluded from billing charges.</li>
+                </ul>
+              </li>
+            </ul>
+
+            <h2>5. Contributor Academic Portfolio Discount Matrix</h2>
+            <p>In accordance with our mission to reward students and educators who enrich the DPGNotes open repository, we provide substantial, progressive portfolio discounts applied directly against gross monthly charges. Contributors earn discounts based on verified, public educational materials submitted to the platform:</p>
+
+            <div class="table-responsive">
+              <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.9rem; color:var(--text-main);">
+                <thead>
+                  <tr style="background:rgba(255,255,255,0.08); text-align:left;">
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Tier Classification</th>
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Verified Portfolio Qualification Criteria</th>
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Monthly Discount Subsidy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(217,119,6,0.2); color:#f59e0b; border:1px solid rgba(217,119,6,0.4);">Bronze Tier</span></td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 3 Public Uploaded Documents</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">20% Subsidy</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(148,163,184,0.2); color:#cbd5e1; border:1px solid rgba(148,163,184,0.4);">Silver Tier</span></td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 10 Public Documents + &ge; 5 Assignment Solutions + &ge; 5 Practical Solutions</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">40% Subsidy</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">Gold Tier</span></td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 25 Public Documents + &ge; 12 Assignment Solutions + &ge; 12 Practical Solutions</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">60% Subsidy</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4);">Diamond Tier</span></td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 75 Public Documents + &ge; 25 Assignment Solutions + &ge; 25 Practical Solutions</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981; font-weight:700;">80% Subsidy</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);"><span class="tier-badge" style="background:rgba(168,85,247,0.25); color:#c084fc; border:1px solid rgba(168,85,247,0.5);">Platinum Tier</span></td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">&ge; 120 Public Documents + &ge; 45 Assignment Solutions + &ge; 45 Practical Solutions</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#c084fc; font-weight:800;">100% Free / Fully Sponsored</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2>6. Monthly Billing Cycle &amp; Immutable Ledger Locking</h2>
+            <p>Native ad campaigns operate on a strict monthly billing cycle (formatted as <code>YYYY-MM</code>). At the close of each calendar month:</p>
+            <ul>
+              <li><strong>Ledger Finalization:</strong> Gross charges, portfolio discount deductions, and net payable amounts are compiled and permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
+              <li><strong>No Retrospective Alteration:</strong> If a contributor uploads additional educational resources after a monthly cycle has concluded, the elevated discount status will apply strictly to the upcoming billing cycle and will not retroactively adjust previously locked ledger records.</li>
+              <li><strong>Dashboard Visibility:</strong> Contributors can monitor their real-time estimated charges, qualification tier progress, and active billing status in the <em>Upload Ads</em> tab within the Contributor Dashboard.</li>
+            </ul>
+
+            <h2>7. Anti-Fraud &amp; Genuine Pattern Heuristics</h2>
+            <p>To ensure fair billing and eliminate synthetic traffic inflation, DPGNotes incorporates automated fraud detection routines:</p>
+            <ul>
+              <li><strong>Minimum Dwell Verification:</strong> Hover events require a sustained physical mouse pointer position for at least 800 milliseconds. Rapid cursor glides across multiple banner elements are ignored.</li>
+              <li><strong>Human Interaction Vectors:</strong> Automated bots, WebDriver selenium instances, headless browsers, and programmed script triggers are automatically flagged and purged from billing records.</li>
+              <li><strong>Device Deduplication:</strong> Multiple clicks or hovers executed from the same device, IP address, or browser session within a single monthly cycle are deduplicated.</li>
+            </ul>
+
+            <h2>8. Administrative Auditing Exclusions</h2>
+            <p>To protect contributors from incurring charges during routine platform monitoring, quality assurance, or customer support reviews, all traffic generated by verified platform administrators is completely excluded from monetization telemetry. Specifically:</p>
+            <ul>
+              <li>Visits, hovers, and redirects performed by <code>its.akshatnetworkhub23@gmail.com</code>, <code>akshatprasad009@gmail.com</code>, or any authenticated admin token designated by the system environment (<code>ADMIN_EMAIL</code>) are bypassed automatically.</li>
+              <li>Internal administrator audits never increment billable hover counts or destination visit metrics.</li>
+            </ul>
+
+            <h2>9. Campaign Delisting &amp; Prohibited Content</h2>
+            <p>DPGNotes reserves the unconditional right to suspend, remove, or permanently delist any native ad campaign that violates our Academic Integrity Standards or Community Guidelines. Prohibited content includes:</p>
+            <ul>
+              <li>Ghostwriting services, essay mills, or commercial examination impersonation tools.</li>
+              <li>Misleading, fraudulent, deceptive, or malicious download links.</li>
+              <li>Gambling, sports betting, predatory student loans, or age-inappropriate material.</li>
+              <li>Violations of intellectual property rights, unauthorized copyright reproduction, or DMCA infringements.</li>
+            </ul>
+
+            <h2>10. Billing Settlement &amp; Grievance Redressal</h2>
+            <p>At the conclusion of each billing cycle, applicable payable amounts are displayed under the contributor's dashboard. Inquiries regarding billing statements, tier recalculations, or payment reconciliation may be submitted to our administrative grievance desk:</p>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.2rem; margin-top:1rem;">
+              <p style="margin:0 0 0.5rem 0;"><strong>Administrative Support &amp; Grievance Redressal Desk:</strong></p>
+              <p style="margin:0; color:#94a3b8; font-size:0.9rem;">Email: <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:#6366f1; text-decoration:underline;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin:0.3rem 0 0 0; color:#94a3b8; font-size:0.9rem;">DPGNotes Legal &amp; Monetization Compliance Office &bull; New Delhi, India</p>
+            </div>
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Theme toggle & Mobile menu handling
+    const savedTheme = localStorage.getItem('legal-theme') || 'auto';
+    const themeBtn = document.getElementById('themeToggleBtn');
+    applyTheme(savedTheme);
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const cur = document.body.classList.contains('theme-dark') ? 'dark' : (document.body.classList.contains('theme-light') ? 'light' : 'auto');
+        const next = cur === 'auto' ? 'light' : (cur === 'light' ? 'dark' : 'auto');
+        applyTheme(next);
+      });
+    }
+    function applyTheme(t) {
+      document.body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
+      if (t === 'dark') document.body.classList.add('theme-dark');
+      else if (t === 'light') document.body.classList.add('theme-light');
+      else document.body.classList.add('theme-auto');
+      localStorage.setItem('legal-theme', t);
+    }
+    const mobBtn = document.getElementById('mobileMenuBtn');
+    const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (mobBtn && sbar) {
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
+    }
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement, b = document.body;
+      const st = 'scrollTop', sh = 'scrollHeight';
+      const percent = (h[st]||b[st]) / ((h[sh]||b[sh]) - h.clientHeight) * 100;
+      const bar = document.getElementById('readingProgress');
+      if (bar) bar.style.width = percent + '%';
+    });
+  </script>
+  <script src="../redirect.js"></script>
+</body>
+</html>

@@ -262,7 +262,43 @@
     #authCheckOverlay p {
       color: #94a3b8;
       font-size: 0.9rem;
-      margin: 0;
+    /* Native Ads Monetization Policy Confirmation Modal Styles */
+    .dpg-monetization-modal-box {
+      max-width: 540px !important;
+      text-align: left !important;
+      padding: 1.8rem !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15) !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-modal-title {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-modal-subtitle,
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-policy-rules {
+      color: #475569 !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-policy-card {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-subsidy-card {
+      background: rgba(99, 102, 241, 0.08) !important;
+      border-color: rgba(99, 102, 241, 0.3) !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-policy-heading,
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-policy-label {
+      color: #1e293b !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-policy-inner {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+    }
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-policy-subtext,
+    html[data-theme="light"] .dpg-monetization-modal-box .dpg-policy-desc {
+      color: #64748b !important;
     }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -854,8 +890,8 @@
             <!-- Qualification criteria progress snippet -->
             <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 12px; font-size:0.75rem; color:#94a3b8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
               <span><strong>Your Portfolio:</strong> <span id="contribPortfolioStats">0 Public Docs · 0 Assignment Sols · 0 Practical Sols</span></span>
-              <a href="legal/index.html?from=contributor#ads-policy" target="_blank" style="color:#a5b4fc; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
-                View Monetization Policy <i class="ri-arrow-right-s-line"></i>
+              <a href="legal/native-ads-monetization-policy.html" target="_blank" style="color:#a5b4fc; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                View Native Ads Monetization Policy <i class="ri-arrow-right-s-line"></i>
               </a>
             </div>
           </div>
