@@ -4441,9 +4441,9 @@ async function loadAdsMonetizationAdmin() {
           const gHov = ab.guestHovers != null ? ab.guestHovers : '-';
           const cVis = ab.contributorVisits != null ? ab.contributorVisits : '-';
           const gVis = ab.guestVisits != null ? ab.guestVisits : '-';
-          const gTot = ab.grossCharges != null ? ab.grossCharges : ((ab.grossHoverCharges || 0) + (ab.grossVisitCharges || 0));
-          const dSav = ab.discountSaved != null ? ab.discountSaved : (ab.hoverDiscountAmount || 0);
-          const netPay = ab.netPayable != null ? ab.netPayable : ab.netAdPayable;
+          const gTot = ab.grossCharges != null ? ab.grossCharges : (ab.grossAdTotal != null ? ab.grossAdTotal : ((ab.grossHoverCharges || 0) + (ab.grossVisitCharges || 0)));
+          const netPay = ab.netPayable != null ? ab.netPayable : (ab.netAdPayable != null ? ab.netAdPayable : 0);
+          const dSav = ab.discountSaved != null ? ab.discountSaved : (ab.discountAdTotal != null ? ab.discountAdTotal : (ab.hoverDiscountAmount != null ? ab.hoverDiscountAmount : Math.max(0, gTot - netPay)));
 
           adsBreakdownHtml += `
             <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">

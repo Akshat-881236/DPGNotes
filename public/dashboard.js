@@ -2935,7 +2935,8 @@ async function loadContributorPayableAds() {
       document.getElementById("contribGrossAmount").textContent = `₹${(active.totalGrossCharges || 0).toLocaleString()}`;
     }
     if (document.getElementById("contribDiscountSaved")) {
-      document.getElementById("contribDiscountSaved").textContent = `-₹${(active.totalDiscountSaved || active.totalHoverDiscount || 0).toLocaleString()}`;
+      const discSaved = active.totalDiscountSaved != null ? active.totalDiscountSaved : (active.totalHoverDiscount != null ? active.totalHoverDiscount : Math.max(0, (active.totalGrossCharges || 0) - (active.totalNetPayable || 0)));
+      document.getElementById("contribDiscountSaved").textContent = `-₹${discSaved.toLocaleString()}`;
     }
     if (document.getElementById("contribDiscountPctSub")) {
       document.getElementById("contribDiscountPctSub").textContent = `${tier.discountPct || 0}% Off All Charges`;
@@ -2947,26 +2948,37 @@ async function loadContributorPayableAds() {
     const itemizedBody = document.getElementById("contribAdsItemizedTableBody");
     if (itemizedBody) {
       itemizedBody.innerHTML = "";
-      const breakdown = active.adBreakdown || [];
+      const breakdown = active.adBreakdown || active.adsBreakdown || [];
       if (breakdown.length === 0) {
         itemizedBody.innerHTML = `<tr><td colspan="6" style="padding: 12px; text-align: center; color: #94a3b8;">No active ad engagements recorded for this billing cycle yet.</td></tr>`;
       } else {
         breakdown.forEach(item => {
           const tr = document.createElement("tr");
           tr.style.borderBottom = "1px solid rgba(255, 255, 255, 0.05)";
+          const itemGross = item.grossCharges != null ? item.grossCharges : (item.grossAdTotal != null ? item.grossAdTotal : ((item.grossHoverCharges || 0) + (item.grossVisitCharges || 0)));
+          const itemNet = item.netPayable != null ? item.netPayable : (item.netAdPayable != null ? item.netAdPayable : 0);
+          const itemDiscount = item.discountSaved != null ? item.discountSaved : (item.discountAdTotal != null ? item.discountAdTotal : (item.hoverDiscountAmount != null ? item.hoverDiscountAmount : Math.max(0, itemGross - itemNet)));
+          const itemTitle = item.adTitle || item.title || item.adId || "Campaign";
+          const totHov = item.totalHovers != null ? item.totalHovers : (item.uniqueHovers != null ? item.uniqueHovers : 0);
+          const totVis = item.totalVisits != null ? item.totalVisits : (item.uniqueVisits != null ? item.uniqueVisits : 0);
+          const cHov = item.contributorHovers != null ? item.contributorHovers : (item.contribHovers != null ? item.contribHovers : 0);
+          const gHov = item.guestHovers != null ? item.guestHovers : 0;
+          const cVis = item.contributorVisits != null ? item.contributorVisits : (item.contribVisits != null ? item.contribVisits : 0);
+          const gVis = item.guestVisits != null ? item.guestVisits : 0;
+
           tr.innerHTML = `
-            <td style="padding: 6px 8px; font-weight: 600; color: #f8fafc; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.adTitle || item.adId}">
-              ${item.adTitle || item.adId}
+            <td style="padding: 6px 8px; font-weight: 600; color: #f8fafc; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${itemTitle}">
+              ${itemTitle}
             </td>
             <td style="padding: 6px 8px; color: #f59e0b;">
-              <strong>${item.totalHovers || 0}</strong> <span style="font-size: 0.68rem; color: #94a3b8;">(${item.contributorHovers || 0}C / ${item.guestHovers || 0}G)</span>
+              <strong>${totHov}</strong> <span style="font-size: 0.68rem; color: #94a3b8;">(${cHov}C / ${gHov}G)</span>
             </td>
             <td style="padding: 6px 8px; color: #38bdf8;">
-              <strong>${item.totalVisits || 0}</strong> <span style="font-size: 0.68rem; color: #94a3b8;">(${item.contributorVisits || 0}C / ${item.guestVisits || 0}G)</span>
+              <strong>${totVis}</strong> <span style="font-size: 0.68rem; color: #94a3b8;">(${cVis}C / ${gVis}G)</span>
             </td>
-            <td style="padding: 6px 8px; color: #e2e8f0;">₹${(item.grossCharges || 0).toLocaleString()}</td>
-            <td style="padding: 6px 8px; color: #10b981;">-₹${(item.discountSaved || 0).toLocaleString()}</td>
-            <td style="padding: 6px 8px; font-weight: 700; color: #a5b4fc;">₹${(item.netPayable || 0).toLocaleString()}</td>
+            <td style="padding: 6px 8px; color: #e2e8f0;">₹${itemGross.toLocaleString()}</td>
+            <td style="padding: 6px 8px; color: #10b981;">-₹${itemDiscount.toLocaleString()}</td>
+            <td style="padding: 6px 8px; font-weight: 700; color: #a5b4fc;">₹${itemNet.toLocaleString()}</td>
           `;
           itemizedBody.appendChild(tr);
         });
