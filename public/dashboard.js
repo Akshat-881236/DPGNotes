@@ -3175,7 +3175,7 @@ window.submitPaymentDetailsRequest = async function(e) {
         fb.style.background = "rgba(16,185,129,0.15)";
         fb.style.border = "1px solid rgba(16,185,129,0.4)";
         fb.style.color = "#34d399";
-        fb.innerHTML = `✓ <strong>Request Sent!</strong> Instructions emailed to <strong>${email}</strong>. Official UPI phone: <strong>9354020104</strong> & UPI ID: <code>its.akshatnetworkhub23@okaxis</code>.`;
+        fb.innerHTML = `✓ <strong>Request Sent!</strong> Instructions emailed to <strong>${email}</strong>. Official UPI phone: <strong>9953854901</strong> & UPI ID: <code>9953854901@ybl</code>.`;
       }
       setTimeout(() => {
         window.closeRequestPaymentModal();

@@ -857,6 +857,12 @@ function showModal(id) {
 }
 
 window.openSignInModal = function(forceReset = false) {
+  if ((typeof window.isContributorModeActive === "function" && window.isContributorModeActive()) || 
+      (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) || 
+      localStorage.getItem("dpgActiveUserUid")) {
+    console.log("[Auth Guard] Contributor session active. Suppressing Sign In modal.");
+    return false;
+  }
   const is2FaPending = Boolean(pendingUser && pendingEmail);
   showModal("dpgSignInModal");
   if (!is2FaPending || forceReset) {
@@ -872,10 +878,22 @@ window.openSignInModal = function(forceReset = false) {
 };
 
 window.openSignUpModal = function() {
+  if ((typeof window.isContributorModeActive === "function" && window.isContributorModeActive()) || 
+      (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) || 
+      localStorage.getItem("dpgActiveUserUid")) {
+    console.log("[Auth Guard] Contributor session active. Suppressing Sign Up modal.");
+    return false;
+  }
   showModal("dpgSignUpModal");
 };
 
 window.openForgotPasswordModal = function() {
+  if ((typeof window.isContributorModeActive === "function" && window.isContributorModeActive()) || 
+      (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) || 
+      localStorage.getItem("dpgActiveUserUid")) {
+    console.log("[Auth Guard] Contributor session active. Suppressing Forgot Password modal.");
+    return false;
+  }
   showModal("dpgForgotPasswordModal");
   window.dpgBackToRecoveryStep1();
 };
@@ -1007,7 +1025,13 @@ window.dpgLoginGithub = async function() {
 
 // Sign In with Identifier / Email + Password
 window.dpgHandleSignIn = async function(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
+  if ((typeof window.isContributorModeActive === "function" && window.isContributorModeActive()) || 
+      (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) || 
+      localStorage.getItem("dpgActiveUserUid")) {
+    console.log("[Auth Guard] Contributor session active. Sign In blocked.");
+    return false;
+  }
   clearDpgError("dpgSignInError");
 
   const rawIdentifier = document.getElementById("dpgLoginIdentifier")?.value.trim() || "";
@@ -1232,7 +1256,13 @@ window.dpgResend2FA = async function() {
 
 // Sign Up Handler
 window.dpgHandleSignUp = async function(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
+  if ((typeof window.isContributorModeActive === "function" && window.isContributorModeActive()) || 
+      (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) || 
+      localStorage.getItem("dpgActiveUserUid")) {
+    console.log("[Auth Guard] Contributor session active. Sign Up blocked.");
+    return false;
+  }
   clearDpgError("dpgSignUpError");
 
   const role = document.getElementById("dpgSignupRole")?.value || "Student";
@@ -1533,7 +1563,13 @@ window.dpgBackToSignupStep1 = function() {
 
 // Forgot Password Handler
 window.dpgHandleRecovery = async function(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
+  if ((typeof window.isContributorModeActive === "function" && window.isContributorModeActive()) || 
+      (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) || 
+      localStorage.getItem("dpgActiveUserUid")) {
+    console.log("[Auth Guard] Contributor session active. Password recovery blocked.");
+    return false;
+  }
   clearDpgError("dpgRecoveryError");
 
   const rawId = document.getElementById("dpgRecoveryIdentifier")?.value.trim() || "";

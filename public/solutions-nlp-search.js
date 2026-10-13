@@ -608,57 +608,57 @@
     const hasKey = !!currentKey;
 
     const modalHtml = `
-      <div id="solGeminiKeyModal" style="position:fixed; inset:0; z-index:999999; background:rgba(10,15,28,0.85); backdrop-filter:blur(14px); display:flex; align-items:center; justify-content:center; padding:1rem;">
-        <div style="background:linear-gradient(135deg, #141b2d, #0d121f); border:1.5px solid rgba(56,189,248,0.35); border-radius:20px; max-width:480px; width:100%; padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(56,189,248,0.2);">
+      <div id="solGeminiKeyModal" class="sol-gemini-modal-backdrop">
+        <div class="sol-gemini-modal-card">
           
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #38bdf8, #818cf8); display:flex; align-items:center; justify-content:center; color:#0f172a; font-size:1.3rem;">
+          <div class="sol-gemini-modal-header">
+            <div class="sol-gemini-modal-title-group">
+              <div class="sol-gemini-modal-icon">
                 <i class="ri-sparkling-fill"></i>
               </div>
               <div>
-                <h3 style="color:#ffffff; font-size:1.15rem; font-weight:700; margin:0;">Gemini AI Settings</h3>
-                <span style="font-size:0.78rem; color:#94a3b8;">Semantic Search Intelligence</span>
+                <h3 class="sol-gemini-modal-title">Gemini AI Settings</h3>
+                <span class="sol-gemini-modal-subtitle">Semantic Search Intelligence</span>
               </div>
             </div>
-            <button type="button" onclick="document.getElementById('solGeminiKeyModal').remove()" style="background:transparent; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; padding:4px;">
+            <button type="button" class="sol-gemini-modal-close" onclick="document.getElementById('solGeminiKeyModal').remove()">
               <i class="ri-close-line"></i>
             </button>
           </div>
 
-          <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.5; margin-bottom:1.25rem;">
+          <p class="sol-gemini-modal-desc">
             DPGNotes provides instant NLP semantic search automatically. You can optionally supply your personal <strong>Google Gemini API Key</strong> for enhanced real-time query sense generation, or rely on DPGNotes Cloud AI.
           </p>
 
-          <div style="margin-bottom:1.25rem;">
-            <label style="display:block; font-size:0.82rem; font-weight:600; color:#38bdf8; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">
+          <div class="sol-gemini-modal-body">
+            <label class="sol-gemini-modal-label">
               Google Gemini API Key (Optional)
             </label>
-            <div style="position:relative; display:flex; align-items:center;">
-              <input type="password" id="geminiKeyModalInput" value="${escapeHtml(currentKey)}" placeholder="AIzaSy..." style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 42px 10px 12px; color:#f8fafc; font-family:'Fira Code', monospace; font-size:0.85rem; outline:none;">
-              <button type="button" onclick="window.DPGNotesAI.toggleKeyVisibility()" style="position:absolute; right:10px; background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:1.1rem;">
+            <div class="sol-gemini-input-wrap">
+              <input type="password" id="geminiKeyModalInput" class="sol-gemini-modal-input" value="${escapeHtml(currentKey)}" placeholder="AIzaSy...">
+              <button type="button" class="sol-gemini-eye-btn" onclick="window.DPGNotesAI.toggleKeyVisibility()">
                 <i class="ri-eye-line" id="geminiKeyEyeIcon"></i>
               </button>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="font-size:0.76rem; color:#38bdf8; text-decoration:none;">
+            <div class="sol-gemini-status-row">
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="sol-gemini-link">
                 <i class="ri-external-link-line"></i> Get free Gemini API key
               </a>
-              <span id="geminiKeyStatusBadge" style="font-size:0.76rem; color:${hasKey ? '#10b981' : '#94a3b8'};">
+              <span id="geminiKeyStatusBadge" class="sol-gemini-badge ${hasKey ? 'active' : ''}">
                 ${hasKey ? '✓ Custom Key Active' : '● Using Cloud AI'}
               </span>
             </div>
           </div>
 
-          <div id="geminiTestStatus" style="display:none; padding:8px 12px; border-radius:8px; font-size:0.82rem; margin-bottom:1.2rem;"></div>
+          <div id="geminiTestStatus" class="sol-gemini-test-status" style="display:none; padding:8px 12px; border-radius:8px; font-size:0.82rem; margin-bottom:1.2rem;"></div>
 
-          <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <div class="sol-gemini-actions">
             ${hasKey ? `
-              <button type="button" onclick="window.DPGNotesAI.clearKey()" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; border-radius:10px; padding:8px 14px; font-size:0.85rem; font-weight:600; cursor:pointer;">
+              <button type="button" onclick="window.DPGNotesAI.clearKey()" class="sol-gemini-btn-clear">
                 Clear Key
               </button>
             ` : ''}
-            <button type="button" onclick="window.DPGNotesAI.testAndSaveKey()" id="btnSaveGeminiKey" style="background:linear-gradient(135deg, #38bdf8, #0ea5e9); border:none; color:#0f172a; border-radius:10px; padding:8px 20px; font-size:0.88rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+            <button type="button" onclick="window.DPGNotesAI.testAndSaveKey()" id="btnSaveGeminiKey" class="sol-gemini-btn-save">
               <i class="ri-save-line"></i> Save &amp; Apply
             </button>
           </div>
@@ -766,22 +766,22 @@
 
     if (isPending && !aiData) {
       containerEl.innerHTML = `
-        <div class="sol-ai-overview-card" style="background:linear-gradient(135deg, rgba(30,27,75,0.7), rgba(15,23,42,0.9)); border:1.5px solid rgba(168,85,247,0.4); border-radius:16px; padding:1.25rem 1.5rem; margin-bottom:1.5rem; box-shadow:0 8px 30px rgba(0,0,0,0.4), 0 0 20px rgba(168,85,247,0.15);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <div class="sol-ai-overview-card">
+          <div class="sol-ai-card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <div style="width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg, #a855f7, #38bdf8); display:flex; align-items:center; justify-content:center; color:#0f172a; font-size:0.95rem;">
+              <div class="sol-ai-icon-badge" style="width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg, #a855f7, #38bdf8); display:flex; align-items:center; justify-content:center; color:#0f172a; font-size:0.95rem;">
                 <i class="ri-sparkling-fill" style="animation:spin 2s linear infinite;"></i>
               </div>
-              <strong style="color:#ffffff; font-size:0.98rem; font-family:'Outfit', sans-serif;">Gemini AI Search Intelligence</strong>
-              <span style="font-size:0.75rem; background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 8px; border-radius:999px;">
+              <strong class="sol-ai-title" style="font-size:0.98rem; font-family:'Outfit', sans-serif;">Gemini AI Search Intelligence</strong>
+              <span class="sol-ai-badge" style="font-size:0.75rem; background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 8px; border-radius:999px;">
                 Synthesizing Sense...
               </span>
             </div>
-            <button type="button" onclick="window.DPGNotesAI.openApiKeyModal()" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:#94a3b8; padding:4px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+            <button type="button" class="sol-ai-btn-config" onclick="window.DPGNotesAI.openApiKeyModal()" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:#94a3b8; padding:4px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
               <i class="ri-key-2-line"></i> Gemini Key
             </button>
           </div>
-          <p style="color:#94a3b8; font-size:0.86rem; margin:0; display:flex; align-items:center; gap:8px;">
+          <p class="sol-ai-desc" style="font-size:0.86rem; margin:0; display:flex; align-items:center; gap:8px;">
             <i class="ri-brain-line" style="color:#38bdf8;"></i> Analyzing query context, semantic intent, syllabus matches &amp; test cases for <em>"${escapeHtml(queryStr)}"</em>...
           </p>
         </div>
@@ -796,52 +796,52 @@
     const isCustom = !!aiData.isCustomKey;
 
     containerEl.innerHTML = `
-      <div class="sol-ai-overview-card" style="background:linear-gradient(135deg, rgba(24,20,50,0.85), rgba(15,23,42,0.96)); border:1.5px solid rgba(168,85,247,0.45); border-radius:16px; padding:1.35rem 1.6rem; margin-bottom:1.5rem; box-shadow:0 10px 35px rgba(0,0,0,0.5), 0 0 25px rgba(168,85,247,0.2);">
+      <div class="sol-ai-overview-card">
         <!-- Top Title & Badge Bar -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:8px;">
+        <div class="sol-ai-card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg, #a855f7, #38bdf8); display:flex; align-items:center; justify-content:center; color:#0f172a; font-size:1rem; box-shadow:0 0 12px rgba(168,85,247,0.4);">
+            <div class="sol-ai-icon-badge" style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg, #a855f7, #38bdf8); display:flex; align-items:center; justify-content:center; color:#0f172a; font-size:1rem; box-shadow:0 0 12px rgba(168,85,247,0.4);">
               <i class="ri-sparkling-fill"></i>
             </div>
-            <strong style="color:#ffffff; font-size:1.02rem; font-family:'Outfit', sans-serif; letter-spacing:0.2px;">
+            <strong class="sol-ai-title" style="font-size:1.02rem; font-family:'Outfit', sans-serif; letter-spacing:0.2px;">
               Gemini AI Semantic Overview
             </strong>
-            <span style="font-size:0.74rem; background:${isCustom ? 'rgba(16,185,129,0.18)' : 'rgba(168,85,247,0.2)'}; color:${isCustom ? '#10b981' : '#c084fc'}; border:1px solid ${isCustom ? 'rgba(16,185,129,0.35)' : 'rgba(168,85,247,0.35)'}; padding:2px 8px; border-radius:999px; font-weight:600;">
+            <span class="sol-ai-badge" style="font-size:0.74rem; background:${isCustom ? 'rgba(16,185,129,0.18)' : 'rgba(168,85,247,0.2)'}; color:${isCustom ? '#10b981' : '#c084fc'}; border:1px solid ${isCustom ? 'rgba(16,185,129,0.35)' : 'rgba(168,85,247,0.35)'}; padding:2px 8px; border-radius:999px; font-weight:600;">
               ✨ ${escapeHtml(sourceLabel)}
             </span>
           </div>
 
           <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" onclick="window.DPGNotesAI.openApiKeyModal()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 10px; border-radius:8px; font-size:0.75rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-weight:500;">
+            <button type="button" class="sol-ai-btn-config" onclick="window.DPGNotesAI.openApiKeyModal()" style="border-radius:8px; font-size:0.75rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-weight:500;">
               <i class="ri-key-2-line" style="color:#38bdf8;"></i> Gemini Key
             </button>
           </div>
         </div>
 
         <!-- Interpreted Intent -->
-        <div style="font-size:0.92rem; color:#f8fafc; font-weight:600; margin-bottom:0.6rem; display:flex; align-items:flex-start; gap:8px;">
+        <div class="sol-ai-intent-row" style="font-size:0.92rem; font-weight:600; margin-bottom:0.6rem; display:flex; align-items:flex-start; gap:8px;">
           <i class="ri-focus-2-line" style="color:#38bdf8; font-size:1.1rem; margin-top:2px;"></i>
-          <span>${escapeHtml(aiData.interpretedIntent || 'Academic Search Query')}</span>
+          <span class="sol-ai-intent-text">${escapeHtml(aiData.interpretedIntent || 'Academic Search Query')}</span>
         </div>
 
         <!-- AI Summary -->
-        <p style="color:#cbd5e1; font-size:0.87rem; line-height:1.6; margin:0 0 0.85rem 0; padding-left:1.7rem;">
+        <p class="sol-ai-desc" style="font-size:0.87rem; line-height:1.6; margin:0 0 0.85rem 0; padding-left:1.7rem;">
           ${escapeHtml(aiData.aiSummary || '')}
         </p>
 
         <!-- Concept Chips & Study Tip Row -->
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.08);">
+        <div class="sol-ai-footer-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-top:0.75rem;">
           <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <span style="font-size:0.74rem; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; font-weight:600;">Concepts:</span>
+            <span class="sol-ai-concepts-label" style="font-size:0.74rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Concepts:</span>
             ${concepts.map(c => `
-              <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.25); border-radius:999px; padding:2px 8px; font-weight:500;">
+              <span class="sol-ai-concept-chip" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; border-radius:999px; padding:2px 8px; font-weight:500;">
                 <i class="ri-hashtag" style="font-size:0.7rem; opacity:0.7;"></i>${escapeHtml(c)}
               </span>
             `).join('')}
           </div>
 
           ${aiData.studyTip ? `
-            <div style="font-size:0.78rem; color:#f59e0b; display:inline-flex; align-items:center; gap:5px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:3px 8px;">
+            <div class="sol-ai-tip-box" style="font-size:0.78rem; display:inline-flex; align-items:center; gap:5px; border-radius:8px; padding:3px 8px;">
               <i class="ri-lightbulb-line"></i> <span><strong>Study Tip:</strong> ${escapeHtml(aiData.studyTip)}</span>
             </div>
           ` : ''}

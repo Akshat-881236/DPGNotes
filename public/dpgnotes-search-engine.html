@@ -44,6 +44,22 @@
       --radius-pill: 28px;
     }
 
+    html[data-theme="dark"] {
+      --bg: #0b0f19;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --border-hover: #334155;
+      --chip-bg: #111827;
+      --chip-border: #1e293b;
+      --chip-hover: #1e293b;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --primary-light: rgba(56, 189, 248, 0.15);
+      --shadow-sm: 0 1px 6px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
@@ -54,6 +70,127 @@
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
+    }
+
+    /* Dark Theme Overrides for Search Engine */
+    html[data-theme="dark"] .engine-top-nav {
+      background: #0b0f19 !important;
+      border-bottom-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .nav-brand-title {
+      color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .nav-home-btn {
+      background: #111827 !important;
+      color: #f8fafc !important;
+      border-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .nav-home-btn:hover {
+      background: #1e293b !important;
+      color: #38bdf8 !important;
+      border-color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .hero-brand-title {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .hero-subtitle {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .search-bar-wrapper {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+    }
+    html[data-theme="dark"] .search-bar-wrapper:hover,
+    html[data-theme="dark"] .search-bar-wrapper:focus-within {
+      background: #151e34 !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18), 0 4px 16px rgba(0,0,0,0.5) !important;
+    }
+    html[data-theme="dark"] .search-input {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .search-input::placeholder {
+      color: #64748b !important;
+    }
+    html[data-theme="dark"] .suggestions-dropdown {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    }
+    html[data-theme="dark"] .suggestion-item {
+      color: #f8fafc !important;
+      border-bottom-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .suggestion-item:hover,
+    html[data-theme="dark"] .suggestion-item.active {
+      background: #1e293b !important;
+    }
+    html[data-theme="dark"] .suggestion-meta {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .category-chip {
+      background: #111827 !important;
+      color: #cbd5e1 !important;
+      border-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .category-chip:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+      color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .cta-btn-primary {
+      background: #38bdf8 !important;
+      color: #0b0f19 !important;
+    }
+    html[data-theme="dark"] .cta-btn-secondary {
+      background: #111827 !important;
+      color: #f8fafc !important;
+      border-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .cta-btn-secondary:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+      color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .engine-footer {
+      background: #0b0f19 !important;
+      border-top-color: #1e293b !important;
+      color: #64748b !important;
+    }
+    html[data-theme="dark"] .engine-footer a {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .engine-footer a:hover {
+      color: #38bdf8 !important;
+    }
+    .engine-theme-toggle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .engine-theme-toggle-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    html[data-theme="dark"] .engine-theme-toggle-btn {
+      background: #111827;
+      color: #f8fafc;
+      border-color: #1e293b;
+    }
+    html[data-theme="dark"] .engine-theme-toggle-btn:hover {
+      background: #1e293b;
+      border-color: #38bdf8;
+      color: #38bdf8;
     }
 
     /* ==========================================
@@ -632,6 +769,9 @@
     </a>
 
     <div class="nav-actions">
+      <button type="button" class="engine-theme-toggle-btn" id="btnEngineThemeToggle" onclick="toggleEngineTheme()" title="Toggle Dark/Light Theme">
+        <i class="ri-moon-line" id="engineThemeIcon"></i>
+      </button>
       <!-- Home (Always Present) -->
       <a href="index.html" class="nav-home-btn" title="Back to Main Platform">
         <i class="ri-home-4-line"></i>
@@ -716,6 +856,33 @@
 
   <!-- Bottom Footer Native Sponsored Ad Banner -->
   <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="width:100%; max-width:820px; margin:1rem auto 1.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
+
+  <script>
+    // Search Engine Theme Engine (Syncs with Platform & Reader Themes)
+    (function initEngineTheme() {
+      try {
+        const savedTheme = localStorage.getItem("dpg_active_theme") || localStorage.getItem("dpgReaderTheme") || "light";
+        const isDark = savedTheme === "dark" || savedTheme === "default";
+        document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+        window.addEventListener('DOMContentLoaded', () => {
+          const icon = document.getElementById("engineThemeIcon");
+          if (icon) icon.className = isDark ? "ri-sun-line" : "ri-moon-line";
+        });
+      } catch(e) {}
+    })();
+
+    window.toggleEngineTheme = function() {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem("dpg_active_theme", next);
+        localStorage.setItem("dpgReaderTheme", next);
+      } catch(e) {}
+      const icon = document.getElementById("engineThemeIcon");
+      if (icon) icon.className = next === "dark" ? "ri-sun-line" : "ri-moon-line";
+    };
+  </script>
 
   <script src="config.js"></script>
   <script type="module">

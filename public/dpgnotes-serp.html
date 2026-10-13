@@ -54,6 +54,21 @@
       --shadow-md: 0 4px 12px rgba(32,33,36,0.12);
     }
 
+    html[data-theme="dark"] {
+      --bg: #0b0f19;
+      --bg-surface: #111827;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --border-subtle: #1e293b;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --primary-light: rgba(56, 189, 248, 0.15);
+      --link-blue: #60a5fa;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -63,6 +78,155 @@
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
+    }
+
+    /* Dark Theme Overrides for Core SERP Containers */
+    html[data-theme="dark"] .serp-header,
+    html[data-theme="dark"] .serp-tabs-bar {
+      background: #0b0f19 !important;
+      border-bottom-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .serp-brand-text {
+      background: linear-gradient(135deg, #38bdf8, #818cf8) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+    html[data-theme="dark"] .serp-search-wrapper {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+    }
+    html[data-theme="dark"] .serp-search-wrapper:hover,
+    html[data-theme="dark"] .serp-search-wrapper:focus-within {
+      background: #151e34 !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18), 0 4px 16px rgba(0,0,0,0.5) !important;
+    }
+    html[data-theme="dark"] .serp-search-input {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .serp-search-input::placeholder {
+      color: #64748b !important;
+    }
+    html[data-theme="dark"] .serp-tab-btn {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .serp-tab-btn:hover {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .serp-tab-btn.active {
+      color: #38bdf8 !important;
+      border-bottom-color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .serp-meta-bar {
+      background: #111827 !important;
+      border-bottom-color: #1e293b !important;
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .serp-meta-bar strong {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .serp-filter-panel {
+      background: #111827 !important;
+      border-bottom-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .serp-filter-panel select {
+      background: #0b0f19 !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .serp-filter-chip {
+      background: #1e293b !important;
+      color: #cbd5e1 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .serp-filter-chip:hover {
+      background: #334155 !important;
+      color: #ffffff !important;
+    }
+    html[data-theme="dark"] .serp-filter-chip.active {
+      background: rgba(56, 189, 248, 0.2) !important;
+      color: #38bdf8 !important;
+      border-color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .result-card {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+    }
+    html[data-theme="dark"] .result-card:hover {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    }
+    html[data-theme="dark"] .result-title a {
+      color: #60a5fa !important;
+    }
+    html[data-theme="dark"] .result-title a:hover {
+      color: #93c5fd !important;
+    }
+    html[data-theme="dark"] .result-snippet {
+      color: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] .result-breadcrumb-url,
+    html[data-theme="dark"] .result-domain-name {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .result-tag {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .result-btn-open {
+      background: #1e293b !important;
+      color: #38bdf8 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .result-btn-open:hover {
+      background: #38bdf8 !important;
+      color: #0b0f19 !important;
+      border-color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .serp-home-btn {
+      background: #111827 !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .serp-home-btn:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+      color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .ai-hero-card {
+      background: #111827 !important;
+      border-color: #334155 !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    }
+    html[data-theme="dark"] .ai-hero-title {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .ai-chat-card {
+      background: #111827 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .ai-chat-card h4 {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .ai-msg-bubble.assistant {
+      background: #1e1b4b !important;
+      color: #e0e7ff !important;
+      border-color: #4338ca !important;
+    }
+    html[data-theme="dark"] .ai-msg-bubble.user {
+      background: #0c4a6e !important;
+      color: #e0f2fe !important;
+      border-color: #0284c7 !important;
+    }
+    html[data-theme="dark"] .ai-input-wrapper {
+      background: #0b0f19 !important;
+      border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .ai-chat-input {
+      color: #f8fafc !important;
     }
 
     /* =======================================================
@@ -245,6 +409,36 @@
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
+    }
+
+    .serp-theme-toggle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .serp-theme-toggle-btn:hover {
+      background: var(--bg-surface);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    html[data-theme="dark"] .serp-theme-toggle-btn {
+      background: #111827;
+      color: #f8fafc;
+      border-color: #334155;
+    }
+    html[data-theme="dark"] .serp-theme-toggle-btn:hover {
+      background: #1e293b;
+      border-color: #38bdf8;
+      color: #38bdf8;
     }
 
     .serp-home-btn {
@@ -1266,6 +1460,9 @@
 
     <!-- Quick Navigation & Auth Actions -->
     <div class="serp-header-actions">
+      <button type="button" class="serp-theme-toggle-btn" id="btnSerpThemeToggle" onclick="toggleSerpTheme()" title="Toggle Dark/Light Theme">
+        <i class="ri-moon-line" id="serpThemeIcon"></i>
+      </button>
       <a href="index.html" class="serp-home-btn" title="Back to Home Platform">
         <i class="ri-home-4-line"></i>
         <span class="serp-home-text">Home</span>
@@ -1404,6 +1601,33 @@
       </div>
     </div>
   </div>
+
+  <script>
+    // SERP Theme Engine (Syncs with Platform & Reader Themes)
+    (function initSerpTheme() {
+      try {
+        const savedTheme = localStorage.getItem("dpg_active_theme") || localStorage.getItem("dpgReaderTheme") || "light";
+        const isDark = savedTheme === "dark" || savedTheme === "default";
+        document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+        window.addEventListener('DOMContentLoaded', () => {
+          const icon = document.getElementById("serpThemeIcon");
+          if (icon) icon.className = isDark ? "ri-sun-line" : "ri-moon-line";
+        });
+      } catch(e) {}
+    })();
+
+    window.toggleSerpTheme = function() {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem("dpg_active_theme", next);
+        localStorage.setItem("dpgReaderTheme", next);
+      } catch(e) {}
+      const icon = document.getElementById("serpThemeIcon");
+      if (icon) icon.className = next === "dark" ? "ri-sun-line" : "ri-moon-line";
+    };
+  </script>
 
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";

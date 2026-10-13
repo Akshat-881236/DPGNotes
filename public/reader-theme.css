@@ -920,3 +920,404 @@ html[data-theme="light"] .dpg-ad-header-controls a:hover {
   color: #1e293b !important;
 }
 
+/* ==============================================================
+   GEMINI AI SETTINGS MODAL & AI OVERVIEW THEME STYLES
+   ============================================================== */
+/* Base / Default Dark Theme */
+.sol-gemini-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(10, 15, 28, 0.85);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.sol-gemini-modal-card {
+  background: linear-gradient(135deg, #141b2d, #0d121f);
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.2);
+}
+
+.sol-gemini-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.sol-gemini-modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sol-gemini-modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #38bdf8, #818cf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  font-size: 1.3rem;
+}
+
+.sol-gemini-modal-title {
+  color: #ffffff !important;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.sol-gemini-modal-subtitle {
+  font-size: 0.78rem;
+  color: #94a3b8 !important;
+}
+
+.sol-gemini-modal-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.sol-gemini-modal-close:hover {
+  color: #ffffff;
+}
+
+.sol-gemini-modal-desc {
+  font-size: 0.88rem;
+  color: #cbd5e1 !important;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.sol-gemini-modal-body {
+  margin-bottom: 1.25rem;
+}
+
+.sol-gemini-modal-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #38bdf8 !important;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sol-gemini-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sol-gemini-modal-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px;
+  padding: 10px 42px 10px 12px;
+  color: #f8fafc !important;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.sol-gemini-modal-input:focus {
+  border-color: #38bdf8 !important;
+}
+
+.sol-gemini-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.sol-gemini-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.sol-gemini-link {
+  font-size: 0.76rem;
+  color: #38bdf8 !important;
+  text-decoration: none;
+}
+
+.sol-gemini-badge {
+  font-size: 0.76rem;
+  color: #94a3b8 !important;
+}
+
+.sol-gemini-badge.active {
+  color: #10b981 !important;
+}
+
+.sol-gemini-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.sol-gemini-btn-clear {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sol-gemini-btn-save {
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  border: none;
+  color: #0f172a !important;
+  border-radius: 10px;
+  padding: 8px 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Sol AI Overview Card Defaults (Dark) */
+.sol-ai-overview-card {
+  background: linear-gradient(135deg, rgba(24, 20, 50, 0.85), rgba(15, 23, 42, 0.96));
+  border: 1.5px solid rgba(168, 85, 247, 0.45);
+  border-radius: 16px;
+  padding: 1.35rem 1.6rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(168, 85, 247, 0.2);
+}
+
+.sol-ai-title {
+  color: #ffffff !important;
+  font-size: 1.02rem;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.sol-ai-btn-config {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1 !important;
+}
+
+.sol-ai-desc {
+  color: #cbd5e1 !important;
+}
+
+.sol-ai-intent-text {
+  color: #f8fafc !important;
+}
+
+.sol-ai-footer-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sol-ai-concepts-label {
+  color: #94a3b8 !important;
+}
+
+.sol-ai-concept-chip {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.sol-ai-tip-box {
+  color: #f59e0b !important;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* ==============================================================
+   LIGHT THEME OVERRIDES (CRISP WHITE CARD WITH HIGH CONTRAST)
+   ============================================================== */
+html[data-theme="light"] .sol-gemini-modal-backdrop {
+  background: rgba(15, 23, 42, 0.5) !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 25px rgba(2, 132, 199, 0.1) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-title {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-subtitle {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-desc {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-label {
+  color: #0284c7 !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-input {
+  background: #f8fafc !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-input:focus {
+  border-color: #0284c7 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-close {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .sol-gemini-modal-close:hover {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-gemini-eye-btn {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .sol-gemini-link {
+  color: #0284c7 !important;
+}
+
+html[data-theme="light"] .sol-gemini-badge {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .sol-gemini-badge.active {
+  color: #059669 !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sol-gemini-btn-clear {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  color: #dc2626 !important;
+}
+
+html[data-theme="light"] .sol-gemini-btn-save {
+  background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .sol-ai-overview-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .sol-ai-title {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-ai-desc {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .sol-ai-intent-text {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-ai-btn-config {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .sol-ai-btn-config:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-ai-footer-row {
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+html[data-theme="light"] .sol-ai-concepts-label {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .sol-ai-concept-chip {
+  background: #f0f9ff !important;
+  border: 1px solid #bae6fd !important;
+  color: #0284c7 !important;
+}
+
+html[data-theme="light"] .sol-ai-tip-box {
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  color: #b45309 !important;
+}
+
+/* ==============================================================
+   DARK THEME GUARANTEES (OLED & MIDNIGHT BLUE)
+   ============================================================== */
+html[data-theme="dark"] .sol-gemini-modal-title,
+html[data-theme="default"] .sol-gemini-modal-title {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .sol-gemini-modal-desc,
+html[data-theme="default"] .sol-gemini-modal-desc {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .sol-gemini-modal-input,
+html[data-theme="default"] .sol-gemini-modal-input {
+  background: #0b1120 !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .sol-ai-overview-card {
+  background: linear-gradient(135deg, #111827, #0b1120) !important;
+  border-color: rgba(168, 85, 247, 0.45) !important;
+}
+
+html[data-theme="dark"] .sol-ai-title,
+html[data-theme="default"] .sol-ai-title {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .sol-ai-desc,
+html[data-theme="default"] .sol-ai-desc {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .sol-ai-intent-text,
+html[data-theme="default"] .sol-ai-intent-text {
+  color: #f8fafc !important;
+}
+
+

@@ -147,6 +147,18 @@ let pendingSignInUser = null;
 let pendingRecoveryEmailScript = "";
 
 // ============================================================================
+// Helper: Check if contributor mode is currently active
+window.isContributorModeActive = function() {
+  try {
+    if (typeof currentUser !== "undefined" && currentUser) return true;
+    if (typeof auth !== "undefined" && auth && auth.currentUser) return true;
+    if (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) return true;
+    if (localStorage.getItem("dpgActiveUserUid") || localStorage.getItem("dpgActiveUser")) return true;
+  } catch(e) {}
+  return false;
+};
+
+// ============================================================================
 // AUTH STATE LISTENER
 // ============================================================================
 onAuthStateChanged(auth, async (user) => {
@@ -163,6 +175,11 @@ function updateNavbarAuth(user) {
   const userAvatarEl = document.getElementById("navUserAvatar");
   const userNameMobileEl = document.getElementById("navUserNameMobile");
   const userAvatarMobileEl = document.getElementById("navUserAvatarMobile");
+
+  const drawerGuestArea = document.getElementById("drawerGuestArea");
+  const drawerUserArea = document.getElementById("drawerUserArea");
+  const drawerUserName = document.getElementById("drawerUserName");
+  const drawerUserAvatar = document.getElementById("drawerUserAvatar");
 
   if (user) {
     document.documentElement.classList.add("dpg-user-authenticated");
@@ -185,10 +202,17 @@ function updateNavbarAuth(user) {
       userAreaMobile.classList.add("d-flex");
       userAreaMobile.style.setProperty("display", "flex", "important");
     }
+    if (drawerGuestArea) {
+      drawerGuestArea.style.setProperty("display", "none", "important");
+    }
+    if (drawerUserArea) {
+      drawerUserArea.style.setProperty("display", "flex", "important");
+    }
     
     const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
     if (userNameEl) userNameEl.innerText = displayName;
     if (userNameMobileEl) userNameMobileEl.innerText = displayName;
+    if (drawerUserName) drawerUserName.innerText = displayName;
 
     const avatarHtml = user.photoURL 
       ? `<img src="${user.photoURL}" alt="${displayName}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
@@ -206,6 +230,13 @@ function updateNavbarAuth(user) {
         userAvatarMobileEl.innerHTML = avatarHtml;
       } else {
         userAvatarMobileEl.innerText = avatarHtml;
+      }
+    }
+    if (drawerUserAvatar) {
+      if (user.photoURL) {
+        drawerUserAvatar.innerHTML = avatarHtml;
+      } else {
+        drawerUserAvatar.innerText = avatarHtml;
       }
     }
   } else {
@@ -227,6 +258,12 @@ function updateNavbarAuth(user) {
     if (userAreaMobile) {
       userAreaMobile.classList.add("d-none");
       userAreaMobile.style.setProperty("display", "none", "important");
+    }
+    if (drawerGuestArea) {
+      drawerGuestArea.style.removeProperty("display");
+    }
+    if (drawerUserArea) {
+      drawerUserArea.style.setProperty("display", "none", "important");
     }
   }
 }
@@ -378,7 +415,11 @@ window.logoutUser = async function() {
 // SIGN UP (EMAIL & PASSWORD)
 // ============================================================================
 window.handleEmailSignUp = async function(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
+  if (window.isContributorModeActive && window.isContributorModeActive()) {
+    console.log("[Auth Guard] Contributor session is active. Sign Up blocked.");
+    return false;
+  }
   clearScriptAuthError("signUpErrorAlert");
 
   const userType = document.getElementById("signupUserType")?.value || "";
@@ -688,7 +729,11 @@ if (signupUserTypeEl) {
 // SIGN IN (STUDENT/EMPLOYEE ID OR EMAIL + 2FA)
 // ============================================================================
 window.handlePasswordSignIn = async function(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
+  if (window.isContributorModeActive && window.isContributorModeActive()) {
+    console.log("[Auth Guard] Contributor session is active. Sign In blocked.");
+    return false;
+  }
   clearScriptAuthError("signInErrorAlert");
 
   const identifier = document.getElementById("loginIdentifier")?.value.trim() || "";
@@ -889,7 +934,11 @@ window.resend2FACode = async function() {
 // PASSWORD RECOVERY (FORGOT PASSWORD)
 // ============================================================================
 window.handlePasswordRecovery = async function(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
+  if (window.isContributorModeActive && window.isContributorModeActive()) {
+    console.log("[Auth Guard] Contributor session is active. Password recovery blocked.");
+    return false;
+  }
   clearScriptAuthError("recoveryErrorAlert");
 
   const rawId = document.getElementById("recoveryIdentifier")?.value.trim() || "";
@@ -1107,6 +1156,10 @@ window.backToRecoveryStep1Script = function() {
 // (Delegates to auth-component overlay when quota is locked or overlay exists)
 // ============================================================================
 window.openSignInModal = function() {
+  if (window.isContributorModeActive && window.isContributorModeActive()) {
+    console.log("[Auth Guard] Contributor session is active. Suppressing Sign In modal.");
+    return false;
+  }
   // Always close mobile offcanvas drawer and guest prompt first
   const drawer = document.getElementById("mobileNavDrawer");
   if (drawer && window.bootstrap) {
@@ -1172,6 +1225,10 @@ window.openSignInModal = function() {
 };
 
 window.openSignUpModal = function() {
+  if (window.isContributorModeActive && window.isContributorModeActive()) {
+    console.log("[Auth Guard] Contributor session is active. Suppressing Sign Up modal.");
+    return false;
+  }
   const drawer = document.getElementById("mobileNavDrawer");
   if (drawer && window.bootstrap) {
     const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
@@ -1217,6 +1274,10 @@ window.openSignUpModal = function() {
 };
 
 window.openForgotPasswordModal = function() {
+  if (window.isContributorModeActive && window.isContributorModeActive()) {
+    console.log("[Auth Guard] Contributor session is active. Suppressing Forgot Password modal.");
+    return false;
+  }
   const drawer = document.getElementById("mobileNavDrawer");
   if (drawer && window.bootstrap) {
     const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
@@ -1246,6 +1307,7 @@ window.openForgotPasswordModal = function() {
   const fpModal = new bootstrap.Modal(document.getElementById("forgotPasswordModal"));
   fpModal.show();
 };
+
 
 
 // ============================================================================
@@ -1762,9 +1824,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const actionParam = urlParams.get("action") || urlParams.get("auth");
   if (actionParam === "signin" || actionParam === "login") {
-    setTimeout(() => { if (window.openSignInModal) window.openSignInModal(); }, 350);
+    if (!window.isContributorModeActive || !window.isContributorModeActive()) {
+      setTimeout(() => { if (window.openSignInModal) window.openSignInModal(); }, 350);
+    }
   } else if (actionParam === "signup" || actionParam === "register") {
-    setTimeout(() => { if (window.openSignUpModal) window.openSignUpModal(); }, 350);
+    if (!window.isContributorModeActive || !window.isContributorModeActive()) {
+      setTimeout(() => { if (window.openSignUpModal) window.openSignUpModal(); }, 350);
+    }
   }
 
   // Universal WAI-ARIA modal & offcanvas focus safety listener:

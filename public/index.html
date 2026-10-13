@@ -148,16 +148,31 @@
   <style>
     /* Immediate Auth Display Rules preventing simultaneous Guest & User buttons */
     html.dpg-user-authenticated #navGuestArea,
-    html.dpg-user-authenticated #navGuestAreaMobile {
+    html.dpg-user-authenticated #navGuestAreaMobile,
+    html.dpg-user-authenticated #drawerGuestArea {
       display: none !important;
     }
-    html.dpg-user-authenticated #navUserArea {
+    html.dpg-user-authenticated #navUserArea,
+    html.dpg-user-authenticated #drawerUserArea {
       display: flex !important;
     }
     html.dpg-user-authenticated #navUserAreaMobile {
       display: flex !important;
       align-items: center !important;
       gap: 6px !important;
+    }
+    html:not(.dpg-user-authenticated) #drawerGuestArea {
+      display: flex !important;
+    }
+    html:not(.dpg-user-authenticated) #drawerUserArea {
+      display: none !important;
+    }
+    html[data-theme="light"] .drawer-user-card {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    html[data-theme="light"] #drawerUserName {
+      color: #0f172a !important;
     }
 
     .mobile-user-profile-btn {
@@ -2333,14 +2348,37 @@
         </div>
       </form>
 
-      <!-- Auth Action Links -->
-      <div class="d-flex flex-column gap-2 mb-3">
+      <!-- Guest Auth Area in Drawer -->
+      <div id="drawerGuestArea" class="d-flex flex-column gap-2 mb-3">
         <button type="button" class="btn-nav-glow w-100 justify-content-center py-2" data-bs-dismiss="offcanvas" onclick="if(this) this.blur(); openSignUpModal();">
           <i class="ri-user-add-line"></i> Create Contributor Account
         </button>
         <button type="button" class="btn-nav-ghost w-100 py-2" data-bs-dismiss="offcanvas" onclick="if(this) this.blur(); openSignInModal();">
           <i class="ri-login-box-line"></i> Contributor Sign In
         </button>
+      </div>
+
+      <!-- Signed-in Contributor Profile & Action Area in Drawer -->
+      <div id="drawerUserArea" class="flex-column gap-2 mb-3" style="display:none;">
+        <div class="drawer-user-card p-3 rounded-3 d-flex align-items-center gap-3" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);">
+          <div id="drawerUserAvatar" class="mobile-nav-avatar" style="width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #38bdf8); display:flex; align-items:center; justify-content:center; color:#ffffff; font-weight:700; font-size:1.1rem; flex-shrink:0;">
+            U
+          </div>
+          <div style="min-width:0; flex:1;">
+            <div id="drawerUserName" style="font-weight:700; font-size:0.95rem; color:#f8fafc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Contributor</div>
+            <div style="font-size:0.75rem; color:#38bdf8; display:flex; align-items:center; gap:4px;">
+              <i class="ri-checkbox-circle-fill"></i> Active Contributor
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-1">
+          <a href="dashboard.html" class="btn-nav-glow w-100 justify-content-center py-2 text-decoration-none" style="font-size:0.85rem;">
+            <i class="ri-dashboard-line"></i> Dashboard
+          </a>
+          <button type="button" class="btn-nav-ghost py-2 px-3" onclick="logoutUser()" title="Sign Out" style="color:#f87171; border-color:rgba(248,113,113,0.3); font-size:0.85rem;">
+            <i class="ri-logout-box-r-line"></i> Exit
+          </button>
+        </div>
       </div>
 
       <!-- Core Navigation Links -->
