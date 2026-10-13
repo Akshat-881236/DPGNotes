@@ -376,7 +376,7 @@
 
     const vidId = (variant === "image" || variant === "cover_image") ? "" : extractYouTubeId(ad.videoUrl);
     const profileUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
-    const profileUrl = profileUid ? `profile.html?uid=${encodeURIComponent(profileUid)}` : "profile.html";
+    const profileUrl = profileUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(profileUid)}` : "https://dpgnotes.web.app/profile.html";
     const trackId = ad.trackId || generateAdTrackId(ad.id);
     const finalTargetLink = buildTrackedAdTargetLink(ad.targetLink, ad.id, trackId);
     card.dataset.trackId = trackId;
@@ -520,7 +520,7 @@
     function getProfileLinkHtml(imgSize = "26px", fontSize = "0.78rem") {
       return `
         <a href="${profileUrl}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:inherit; cursor:pointer;" title="View ${ad.userName || 'Advertiser'}'s Profile">
-          <img src="${ad.userAvatar || 'ANH.png'}" style="width:${imgSize}; height:${imgSize}; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.25); flex-shrink:0; transition:transform 0.2s;" onmouseenter="this.style.transform='scale(1.15)'" onmouseleave="this.style.transform='scale(1)'">
+          <img src="${ad.userAvatar || 'https://dpgnotes.web.app/ANH.png'}" style="width:${imgSize}; height:${imgSize}; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.25); flex-shrink:0; transition:transform 0.2s;" onmouseenter="this.style.transform='scale(1.15)'" onmouseleave="this.style.transform='scale(1)'">
           <span class="dpg-ad-user-name" style="font-size:${fontSize}; font-weight:700; transition:color 0.2s; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ad.userName || 'Advertiser'}</span>
         </a>
       `;
@@ -545,7 +545,7 @@
       `;
       card.innerHTML = `
         <a href="${profileUrl}" target="_blank" title="View ${ad.userName || 'Advertiser'}'s Profile" style="flex-shrink:0; text-decoration:none;">
-          <img src="${ad.userAvatar || ad.thumbnailUrl || 'ANH.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid rgba(245,158,11,0.6); flex-shrink:0;">
+          <img src="${ad.userAvatar || ad.thumbnailUrl || 'https://dpgnotes.web.app/ANH.png'}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid rgba(245,158,11,0.6); flex-shrink:0;">
         </a>
         <div style="flex:1; min-width:0; overflow:hidden;">
           <div style="display:flex; align-items:center; gap:5px; margin-bottom:1px; flex-wrap:nowrap; overflow:hidden;">
@@ -577,7 +577,7 @@
       `;
       card.innerHTML = `
         <a href="${profileUrl}" target="_blank" title="View ${ad.userName || 'Advertiser'}'s Profile" style="flex-shrink:0; text-decoration:none;">
-          <img src="${ad.userAvatar || ad.thumbnailUrl || 'ANH.png'}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1.5px solid rgba(245,158,11,0.6); flex-shrink:0;">
+          <img src="${ad.userAvatar || ad.thumbnailUrl || 'https://dpgnotes.web.app/ANH.png'}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1.5px solid rgba(245,158,11,0.6); flex-shrink:0;">
         </a>
         <div style="flex:1; min-width:0; overflow:hidden;">
           <div style="display:flex; align-items:center; gap:5px; margin-bottom:1px; flex-wrap:nowrap; overflow:hidden;">
@@ -611,7 +611,7 @@
         </div>
 
         <div class="ad-media-box" id="adMediaBox_${containerId}" style="position:relative; width:100%; height:110px; border-radius:8px; overflow:hidden; margin-bottom:6px; background:#000; cursor:pointer;">
-          <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover;">
+          <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'https://dpgnotes.web.app/ANH.png'}" style="width:100%; height:100%; object-fit:cover;">
           ${vidId ? `<div id="adPlayBtn_${containerId}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:36px; height:36px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; z-index:2; cursor:pointer;"><i class="ri-play-fill"></i></div>` : ''}
           <div id="adWaitOverlay_${containerId}" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.85); color:#f59e0b; font-size:0.75rem; font-weight:700; align-items:center; justify-content:center; gap:6px; z-index:3;"><i class="ri-loader-4-line spin-icon"></i> <span id="adWaitText_${containerId}">Please wait...</span></div>
           <div id="adPlayerDiv_${containerId}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
@@ -647,7 +647,7 @@
         </div>
 
         <div class="ad-media-box" id="adMediaBox_${containerId}" style="position:relative; width:100%; height:180px; border-radius:10px; overflow:hidden; margin-bottom:8px; background:#000; cursor:pointer;">
-          <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;">
+          <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'https://dpgnotes.web.app/ANH.png'}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;">
           ${vidId ? `<div id="adPlayBtn_${containerId}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; z-index:2; cursor:pointer;"><i class="ri-play-fill"></i></div>` : ''}
           <div id="adWaitOverlay_${containerId}" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.85); color:#f59e0b; font-size:0.78rem; font-weight:700; align-items:center; justify-content:center; gap:6px; z-index:3;"><i class="ri-loader-4-line spin-icon"></i> <span id="adWaitText_${containerId}">Please wait...</span></div>
           <div id="adPlayerDiv_${containerId}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
@@ -720,7 +720,7 @@
         </div>
 
         <div class="ad-media-box" id="adMediaBox_${containerId}" style="position:relative; width:100%; height:150px; border-radius:10px; overflow:hidden; margin-bottom:8px; background:#000; cursor:pointer;">
-          <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'ANH.png'}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;">
+          <img id="adThumbImg_${containerId}" src="${ad.thumbnailUrl || 'https://dpgnotes.web.app/ANH.png'}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s ease;">
           ${vidId ? `<div id="adPlayBtn_${containerId}" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:42px; height:42px; background:rgba(0,0,0,0.7); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.3rem; z-index:2; cursor:pointer;"><i class="ri-play-fill"></i></div>` : ''}
           <div id="adWaitOverlay_${containerId}" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.85); color:#f59e0b; font-size:0.78rem; font-weight:700; align-items:center; justify-content:center; gap:6px; z-index:3;"><i class="ri-loader-4-line spin-icon"></i> <span id="adWaitText_${containerId}">Please wait...</span></div>
           <div id="adPlayerDiv_${containerId}" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>

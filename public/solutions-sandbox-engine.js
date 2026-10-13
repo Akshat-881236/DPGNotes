@@ -268,6 +268,19 @@
         var raw = document.getElementById('dpg-user-script').textContent;
         if (raw && raw.trim()) {
           var userCode = decodeURIComponent(raw);
+          // Auto-provide inert fallback target for boilerplate button/result elements if omitted in HTML
+          var origGetElementById = document.getElementById.bind(document);
+          document.getElementById = function(id) {
+            var el = origGetElementById(id);
+            if (!el && id && (String(id).startsWith('runBtn_') || String(id).startsWith('result_') || id === 'btnAction' || id === 'outputMsg')) {
+              var dummy = document.createElement('div');
+              dummy.id = id;
+              dummy.style.display = 'none';
+              document.body.appendChild(dummy);
+              return dummy;
+            }
+            return el;
+          };
           var s = document.createElement('script');
           s.textContent = userCode;
           document.body.appendChild(s);
@@ -281,17 +294,8 @@
 </html>`;
 
     if (iframe) {
-      const parent = iframe.parentNode;
-      let targetIframe = iframe;
-      if (parent) {
-        const newIframe = iframe.cloneNode(false);
-        newIframe.removeAttribute('src');
-        parent.replaceChild(newIframe, iframe);
-        targetIframe = newIframe;
-      } else {
-        iframe.removeAttribute('src');
-      }
-      targetIframe.srcdoc = assembledDoc;
+      iframe.removeAttribute('src');
+      iframe.srcdoc = assembledDoc + '\n<!-- dpg-run-' + Date.now() + ' -->';
     }
   }
   window.executeSandbox = executeSandbox;
@@ -889,10 +893,10 @@
     } else if (type === 'css') {
       snippet = `\n<div class="code-container" id="code-css-${uniqueId}" data-code-group="${uniqueId}" data-lang="css">\n<pre><code>/* CSS Code Container */\n.demo-box {\n  padding: 1.5rem;\n  background: #f8fafc;\n  border: 2px solid #38bdf8;\n  border-radius: 8px;\n}\n#btnAction {\n  background: #38bdf8;\n  color: #0f172a;\n  font-weight: bold;\n  border: none;\n  padding: 8px 16px;\n  border-radius: 6px;\n  cursor: pointer;\n}</code></pre>\n</div>\n`;
     } else if (type === 'js') {
-      snippet = `\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>// JavaScript Code Container\ndocument.getElementById('btnAction').addEventListener('click', function() {\n  console.log("Action button clicked in sandbox!");\n  document.getElementById('outputMsg').textContent = "Ran successfully at " + new Date().toLocaleTimeString();\n});</code></pre>\n</div>\n`;
+      snippet = `\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>// JavaScript Code Container\nconst btn_${uniqueId} = document.getElementById('runBtn_${uniqueId}') || document.getElementById('btnAction');\nif (btn_${uniqueId}) {\n  btn_${uniqueId}.addEventListener('click', function() {\n    console.log("Action button clicked in sandbox!");\n    const out_${uniqueId} = document.getElementById('result_${uniqueId}') || document.getElementById('outputMsg');\n    if (out_${uniqueId}) out_${uniqueId}.textContent = "Ran successfully at " + new Date().toLocaleTimeString();\n  });\n}</code></pre>\n</div>\n`;
     } else if (type === 'all') {
       // Complete linked HTML + CSS + JS package
-      snippet = `\n<!-- Linked Code Sandbox Package (Group: ${uniqueId}) -->\n<div class="code-container" id="code-html-${uniqueId}" data-code-group="${uniqueId}" data-lang="html">\n<pre><code><div class="demo-card">\n  <h2>Interactive Academic Component</h2>\n  <button id="runBtn_${uniqueId}">Execute Component</button>\n  <div id="result_${uniqueId}" style="margin-top:10px; font-weight:bold;">Output awaits trigger...</div>\n</div></code></pre>\n</div>\n\n<div class="code-container" id="code-css-${uniqueId}" data-code-group="${uniqueId}" data-lang="css">\n<pre><code>.demo-card {\n  padding: 1.25rem;\n  background: #ffffff;\n  border: 2px solid #10b981;\n  border-radius: 10px;\n  color: #1e293b;\n}\n#runBtn_${uniqueId} {\n  background: #10b981;\n  color: white;\n  border: none;\n  padding: 8px 18px;\n  border-radius: 6px;\n  font-weight: 600;\n  cursor: pointer;\n}</code></pre>\n</div>\n\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>document.getElementById('runBtn_${uniqueId}').addEventListener('click', function() {\n  console.log("Component executed with group ID: ${uniqueId}");\n  document.getElementById('result_${uniqueId}').textContent = "Live script output updated at " + new Date().toLocaleTimeString();\n});</code></pre>\n</div>\n`;
+      snippet = `\n<!-- Linked Code Sandbox Package (Group: ${uniqueId}) -->\n<div class="code-container" id="code-html-${uniqueId}" data-code-group="${uniqueId}" data-lang="html">\n<pre><code><div class="demo-card">\n  <h2>Interactive Academic Component</h2>\n  <button id="runBtn_${uniqueId}">Execute Component</button>\n  <div id="result_${uniqueId}" style="margin-top:10px; font-weight:bold;">Output awaits trigger...</div>\n</div></code></pre>\n</div>\n\n<div class="code-container" id="code-css-${uniqueId}" data-code-group="${uniqueId}" data-lang="css">\n<pre><code>.demo-card {\n  padding: 1.25rem;\n  background: #ffffff;\n  border: 2px solid #10b981;\n  border-radius: 10px;\n  color: #1e293b;\n}\n#runBtn_${uniqueId} {\n  background: #10b981;\n  color: white;\n  border: none;\n  padding: 8px 18px;\n  border-radius: 6px;\n  font-weight: 600;\n  cursor: pointer;\n}</code></pre>\n</div>\n\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>const runBtn_${uniqueId} = document.getElementById('runBtn_${uniqueId}');\nif (runBtn_${uniqueId}) {\n  runBtn_${uniqueId}.addEventListener('click', function() {\n    console.log("Component executed with group ID: ${uniqueId}");\n    const res_${uniqueId} = document.getElementById('result_${uniqueId}');\n    if (res_${uniqueId}) res_${uniqueId}.textContent = "Live script output updated at " + new Date().toLocaleTimeString();\n  });\n}</code></pre>\n</div>\n`;
     }
 
     const start = el.selectionStart;
@@ -1258,6 +1262,11 @@
   window.closeTryItModal = function() {
     const modal = document.getElementById('advancedTryItModal');
     if (modal) modal.style.display = 'none';
+    const iframe = document.getElementById('tryitSandboxIframe');
+    if (iframe) {
+      iframe.removeAttribute('src');
+      iframe.srcdoc = '';
+    }
   };
 
   window.resetTryItCode = function() {
@@ -1274,17 +1283,6 @@
     if (!iframe) return;
 
     window.clearTryItConsole();
-
-    const parent = iframe.parentNode;
-    let targetIframe = iframe;
-    if (parent) {
-      const newIframe = iframe.cloneNode(false);
-      newIframe.removeAttribute('src');
-      parent.replaceChild(newIframe, iframe);
-      targetIframe = newIframe;
-    } else {
-      iframe.removeAttribute('src');
-    }
 
     const doc = `<!DOCTYPE html>
 <html>
@@ -1340,6 +1338,19 @@
         var raw = document.getElementById('dpg-tryit-script').textContent;
         if (raw && raw.trim()) {
           var code = decodeURIComponent(raw);
+          // Auto-provide inert fallback target for boilerplate button/result elements if omitted in HTML
+          var origGetElementById = document.getElementById.bind(document);
+          document.getElementById = function(id) {
+            var el = origGetElementById(id);
+            if (!el && id && (String(id).startsWith('runBtn_') || String(id).startsWith('result_') || id === 'btnAction' || id === 'outputMsg')) {
+              var dummy = document.createElement('div');
+              dummy.id = id;
+              dummy.style.display = 'none';
+              document.body.appendChild(dummy);
+              return dummy;
+            }
+            return el;
+          };
           var s = document.createElement('script');
           s.textContent = code;
           document.body.appendChild(s);
@@ -1352,7 +1363,8 @@
 </body>
 </html>`;
 
-    targetIframe.srcdoc = doc;
+    iframe.removeAttribute('src');
+    iframe.srcdoc = doc + '\n<!-- dpg-tryit-' + Date.now() + ' -->';
     if (typeof window.recordCodeRunMetric === 'function') {
       window.recordCodeRunMetric(activeTryItGroupId);
     }

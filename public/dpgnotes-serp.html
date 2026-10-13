@@ -1951,6 +1951,7 @@
               contributorUid: contribUid,
               uid: contribUid,
               userId: contribUid,
+              photoURL: solData.photoURL || solData.profilePic || solData.userPhoto || solData.authorPhoto || solData.avatar || "",
               likes: likesCount,
               shares: sharesCount,
               views: solData.views || 0,
@@ -2437,9 +2438,14 @@
         const disciplineLabel = d.discipline || 'General';
 
         const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId || '';
+        const authorPhoto = d.photoURL || d.profilePic || d.userPhoto || d.authorPhoto || d.avatar || '';
+        const authorProfileUrl = authorUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(authorUid)}` : 'https://dpgnotes.web.app/profile.html';
+        const authorImgHtml = authorPhoto
+          ? `<img src="${authorPhoto}" alt="${escapeHtml(uploaderName)}" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px; border:1px solid #38bdf8;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`
+          : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px;">`;
         const authorHtml = authorUid 
-          ? `<a href="profile.html?uid=${encodeURIComponent(authorUid)}" class="result-author-link">${escapeHtml(uploaderName)}</a>` 
-          : `<span>${escapeHtml(uploaderName)}</span>`;
+          ? `<a href="${authorProfileUrl}" target="_blank" class="result-author-link" style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(uploaderName)}</a>` 
+          : `<span style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(uploaderName)}</span>`;
 
         const domainIconBg = isSol ? '#e0f2fe' : '#eff6ff';
         const domainIconColor = isSol ? '#0284c7' : '#1a73e8';
@@ -3000,9 +3006,14 @@
 
         const authorUid = s.contributorUid || s.userId || s.uid || '';
         const authorName = s.userName || s.uploader || 'Verified Contributor';
+        const authorPhoto = s.photoURL || s.profilePic || s.userPhoto || s.authorPhoto || s.avatar || '';
+        const authorProfileUrl = authorUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(authorUid)}` : 'https://dpgnotes.web.app/profile.html';
+        const authorImgHtml = authorPhoto
+          ? `<img src="${authorPhoto}" alt="${escapeHtml(authorName)}" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px; border:1px solid #38bdf8;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`
+          : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px;">`;
         const authorHtml = authorUid 
-          ? `<a href="profile.html?uid=${encodeURIComponent(authorUid)}" class="result-author-link">${escapeHtml(authorName)}</a>` 
-          : `<span>${escapeHtml(authorName)}</span>`;
+          ? `<a href="${authorProfileUrl}" target="_blank" class="result-author-link" style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(authorName)}</a>` 
+          : `<span style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(authorName)}</span>`;
 
         solHtml += `
           <div class="result-card">

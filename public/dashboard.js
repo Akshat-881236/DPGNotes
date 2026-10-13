@@ -3135,12 +3135,29 @@ window.submitPaymentDetailsRequest = async function(e) {
     return;
   }
 
-  const user = window.currentUser || (window.auth && window.auth.currentUser);
-  const uid = user ? user.uid : (localStorage.getItem("dpg_contributor_uid") || "anon");
-  const email = user ? (user.email || "") : (localStorage.getItem("dpg_contributor_email") || "");
-  const name = user ? (user.displayName || email.split("@")[0] || "Contributor") : "Contributor";
+  const activeUserRaw = localStorage.getItem("dpgActiveUser");
+  const activeUserObj = activeUserRaw ? JSON.parse(activeUserRaw) : {};
+  const user = (typeof currentUser !== 'undefined' && currentUser) || (typeof auth !== 'undefined' && auth.currentUser) || window.currentUser;
+  const uid = (user && user.uid) || localStorage.getItem("dpgActiveUserUid") || activeUserObj.uid || localStorage.getItem("dpg_contributor_uid") || "";
+  const email = (user && user.email) || localStorage.getItem("dpgActiveUserEmail") || activeUserObj.email || localStorage.getItem("dpg_contributor_email") || "";
+  const name = (user && user.displayName) || localStorage.getItem("dpgActiveUserName") || activeUserObj.name || (email ? email.split("@")[0] : "Contributor");
   const monthRaw = document.getElementById("contribBillingCycleText")?.textContent || "";
   const month = monthRaw.replace("Active Billing Cycle:", "").trim() || new Date().toISOString().substring(0, 7);
+
+  if (!uid || !email) {
+    if (fb) {
+      fb.style.display = "block";
+      fb.style.background = "rgba(239,68,68,0.15)";
+      fb.style.border = "1px solid rgba(239,68,68,0.4)";
+      fb.style.color = "#f87171";
+      fb.textContent = "Please ensure you are signed in to your Contributor account before submitting a request.";
+    }
+    return;
+  }
+
+  try {
+    localStorage.setItem("dpg_user_phone", contactPhone);
+  } catch(e) {}
 
   if (submitBtn) {
     submitBtn.disabled = true;

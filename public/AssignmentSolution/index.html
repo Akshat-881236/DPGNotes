@@ -2268,9 +2268,13 @@
             <h4 class="sol-rec-card-title">
               <a href="${item.url}">${escapeHtml(item.title)}</a>
             </h4>
-            <div class="sol-rec-author-row">
-              <i class="ri-user-smile-line"></i>
-              <span>${escapeHtml(item.contributor)}</span>
+            <div class="sol-rec-author-row" style="display:flex; align-items:center; gap:8px;">
+              ${item.photoURL 
+                ? `<img src="${item.photoURL}" alt="${escapeHtml(item.contributor)}" style="width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid #38bdf8;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">` 
+                : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" style="width:22px; height:22px; border-radius:50%; object-fit:cover;">`}
+              <a href="${item.profileUrl}" target="_blank" style="color:inherit; text-decoration:none; font-weight:600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                ${escapeHtml(item.contributor)}
+              </a>
             </div>
             <div class="sol-rec-metrics-row">
               <span title="Views"><i class="ri-eye-line" style="color:#38bdf8;"></i> ${item.views}</span>
@@ -2319,8 +2323,10 @@
           const path = docSnap.ref.path || '';
           const isPractical = path.includes("practical_solutions") || d.type === "practical" || (docId && docId.startsWith("prac_"));
           const contribUid = d.contributorUid || d.userId || d.uid || "";
-          const viewerBase = isPractical ? "../PracticalSolution/index.html" : "../AssignmentSolution/index.html";
+          const viewerBase = isPractical ? "https://dpgnotes.web.app/PracticalSolution/index.html" : "https://dpgnotes.web.app/AssignmentSolution/index.html";
           const solUrl = `${viewerBase}?id=${encodeURIComponent(docId)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+          const profileUrl = contribUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(contribUid)}` : "https://dpgnotes.web.app/profile.html";
+          const photoURL = d.photoURL || d.profilePic || d.userPhoto || d.authorPhoto || d.avatar || "";
 
           const subName = d.subjectName || d.title || 'Solution';
           const subCode = d.subjectCode ? ` (${d.subjectCode})` : '';
@@ -2341,6 +2347,8 @@
             discipline: d.discipline || course,
             contributor: author,
             contributorUid: contribUid,
+            photoURL: photoURL,
+            profileUrl: profileUrl,
             likes: likesCount,
             views: viewsCount,
             runs: runsCount,
