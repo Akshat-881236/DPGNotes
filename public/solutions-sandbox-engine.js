@@ -181,7 +181,10 @@
     const modal = document.getElementById('advancedSandboxModal');
     if (modal) modal.style.display = 'none';
     const iframe = document.getElementById('advancedSandboxIframe');
-    if (iframe) iframe.src = 'about:blank';
+    if (iframe) {
+      iframe.removeAttribute('src');
+      iframe.srcdoc = '';
+    }
   };
 
   window.rerunCurrentSandbox = function() {
@@ -278,9 +281,20 @@
 </html>`;
 
     if (iframe) {
-      iframe.srcdoc = assembledDoc;
+      const parent = iframe.parentNode;
+      let targetIframe = iframe;
+      if (parent) {
+        const newIframe = iframe.cloneNode(false);
+        newIframe.removeAttribute('src');
+        parent.replaceChild(newIframe, iframe);
+        targetIframe = newIframe;
+      } else {
+        iframe.removeAttribute('src');
+      }
+      targetIframe.srcdoc = assembledDoc;
     }
   }
+  window.executeSandbox = executeSandbox;
 
   // Multi-stage Sandbox Code Extractor: guarantees locating executable code even across prefixed or scoped IDs
   function extractSandboxCodeForGroup(groupId) {
@@ -652,9 +666,17 @@
     // CSS / SCSS formatting
     if (l === 'css') {
       let esc = escapeHtml(code);
-      esc = esc.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color:#64748b; font-style:italic;">$1</span>');
-      esc = esc.replace(/([a-zA-Z0-9_-]+)\s*:/g, '<span style="color:#38bdf8;">$1</span>:');
-      esc = esc.replace(/:\s*([^;{}]+);/g, ': <span style="color:#34d399;">$1</span>;');
+      const comments = [];
+      esc = esc.replace(/(\/\*[\s\S]*?\*\/)/g, (m) => {
+        comments.push(m);
+        return '___CSS_COMMENT_' + (comments.length - 1) + '___';
+      });
+      esc = esc.replace(/([a-zA-Z0-9_-]+)\s*:\s*([^;{}]+)(;|\b)/g, (match, prop, val, semi) => {
+        return `<span style="color:#38bdf8;">${prop}</span>: <span style="color:#34d399;">${val}</span>${semi}`;
+      });
+      esc = esc.replace(/___CSS_COMMENT_(\d+)___/g, (m, idx) => {
+        return `<span style="color:#64748b; font-style:italic;">${comments[Number(idx)]}</span>`;
+      });
       return esc;
     }
 
@@ -1239,6 +1261,8 @@
   };
 
   window.resetTryItCode = function() {
+    const sel = document.getElementById('tryitTestCaseSelect');
+    if (sel) sel.value = '__official__';
     window.switchTryItTestCase('__official__');
   };
 
@@ -1250,6 +1274,17 @@
     if (!iframe) return;
 
     window.clearTryItConsole();
+
+    const parent = iframe.parentNode;
+    let targetIframe = iframe;
+    if (parent) {
+      const newIframe = iframe.cloneNode(false);
+      newIframe.removeAttribute('src');
+      parent.replaceChild(newIframe, iframe);
+      targetIframe = newIframe;
+    } else {
+      iframe.removeAttribute('src');
+    }
 
     const doc = `<!DOCTYPE html>
 <html>
@@ -1317,7 +1352,7 @@
 </body>
 </html>`;
 
-    iframe.srcdoc = doc;
+    targetIframe.srcdoc = doc;
     if (typeof window.recordCodeRunMetric === 'function') {
       window.recordCodeRunMetric(activeTryItGroupId);
     }
@@ -1716,7 +1751,7 @@
 
 
   // Open Interactive Try It Playground (for Login Users)
-  window.openTryItModal = function(groupId, optionalTitle) {
+  window.openTryItModal = function(groupId, optionalTitle, optDraftId = null) {
     const userUid = localStorage.getItem("dpgActiveUserUid") || (window.solAuth && window.solAuth.currentUser && window.solAuth.currentUser.uid);
     const userRaw = localStorage.getItem("dpgActiveUser");
 
@@ -1741,13 +1776,10 @@
 
     activeTryItOriginal = { html: htmlCode, css: cssCode, js: jsCode };
 
-    document.getElementById('tryitEditorHtml').value = htmlCode;
-    document.getElementById('tryitEditorCss').value = cssCode;
-    document.getElementById('tryitEditorJs').value = jsCode;
     document.getElementById('tryitModalTitle').textContent = `Try It: ${activeTryItTitle}`;
 
-    // Populate test cases select dropdown
-    loadCommunityTestCasesForGroup(groupId);
+    // Populate test cases select dropdown synchronously & initialize editors
+    loadCommunityTestCasesForGroup(groupId, optDraftId);
 
     const modal = document.getElementById('advancedTryItModal');
     if (modal) modal.style.display = 'flex';
@@ -1886,15 +1918,70 @@
     }
   };
 
+  function renderTestCaseSelectOptions(sel, testCasesMap, selectDraftId) {
+    if (!sel) return;
+    const currentVal = selectDraftId || sel.value || '__official__';
+    sel.innerHTML = '<option value="__official__">Official Solution (Default)</option>';
+
+    const currentUid = localStorage.getItem("dpgActiveUserUid") || (window.solAuth && window.solAuth.currentUser && window.solAuth.currentUser.uid);
+
+    testCasesMap.forEach(tc => {
+      const isOwner = currentUid && (tc.contributorUid === currentUid);
+      const isPublic = (tc.mode === 'public' || (!tc.isEncrypted && tc.mode !== 'private'));
+      if (isPublic || isOwner) {
+        const opt = document.createElement('option');
+        const idVal = tc.draftId || tc.id;
+        opt.value = idVal;
+        const icon = isPublic ? '🌐' : '🔒';
+        const ownerSuffix = isOwner ? ' (Mine)' : ` (${tc.contributorName || 'Community'})`;
+        opt.textContent = `${icon} ${tc.title || 'Test Case'}${ownerSuffix}`;
+        sel.appendChild(opt);
+      }
+    });
+
+    if (currentVal && (currentVal === '__official__' || testCasesMap.has(currentVal))) {
+      sel.value = currentVal;
+    } else {
+      sel.value = '__official__';
+    }
+  }
+
+  function applyTestCaseToEditors(caseId, testCasesMap) {
+    if (caseId && caseId !== '__official__' && testCasesMap && testCasesMap.has(caseId)) {
+      const tc = testCasesMap.get(caseId);
+      const hEl = document.getElementById('tryitEditorHtml');
+      const cEl = document.getElementById('tryitEditorCss');
+      const jEl = document.getElementById('tryitEditorJs');
+      if (hEl) hEl.value = tc.htmlCode || '';
+      if (cEl) cEl.value = tc.cssCode || '';
+      if (jEl) jEl.value = tc.jsCode || '';
+    } else {
+      const hEl = document.getElementById('tryitEditorHtml');
+      const cEl = document.getElementById('tryitEditorCss');
+      const jEl = document.getElementById('tryitEditorJs');
+      if (hEl) hEl.value = (activeTryItOriginal && activeTryItOriginal.html) || '';
+      if (cEl) cEl.value = (activeTryItOriginal && activeTryItOriginal.css) || '';
+      if (jEl) jEl.value = (activeTryItOriginal && activeTryItOriginal.js) || '';
+    }
+  }
+
   async function loadCommunityTestCasesForGroup(groupId, selectDraftId = null) {
     const sel = document.getElementById('tryitTestCaseSelect');
     if (!sel) return;
 
-    sel.innerHTML = '<option value="__official__">Official Solution (Default)</option>';
-
     const testCasesMap = new Map();
 
-    // 1. Load from localStorage: scan current group + all cached testcases
+    // 1. Synchronously load from page-level community test cases cache (already fetched!)
+    if (window.__communityTestCasesCache && window.__communityTestCasesCache.size > 0) {
+      window.__communityTestCasesCache.forEach((tc, key) => {
+        const dId = tc.draftId || tc.id || key;
+        if (dId) {
+          testCasesMap.set(dId, { id: dId, draftId: dId, ...tc });
+        }
+      });
+    }
+
+    // 2. Synchronously load from localStorage
     try {
       const localList = JSON.parse(localStorage.getItem('dpg_testcases_' + groupId) || '[]');
       localList.forEach(item => {
@@ -1911,9 +1998,7 @@
             if (Array.isArray(list)) {
               list.forEach(item => {
                 const dId = item.draftId || item.id;
-                if (dId && (!groupId || item.groupId === groupId)) {
-                  testCasesMap.set(dId, item);
-                }
+                if (dId) testCasesMap.set(dId, item);
               });
             }
           }
@@ -1921,13 +2006,18 @@
       }
     } catch(e) {}
 
-    // 2. Load from Firestore: top-level collection + subcollections
+    window.__currentTestCasesMap = testCasesMap;
+
+    // Render options immediately & initialize editors synchronously!
+    renderTestCaseSelectOptions(sel, testCasesMap, selectDraftId);
+    applyTestCaseToEditors(selectDraftId || '__official__', testCasesMap);
+
+    // 3. Asynchronously background sync from Firestore and append any newly discovered test cases
     try {
       if (window.solDb && window.solGetDocs && window.solCollection) {
         const urlParams = new URLSearchParams(window.location.search);
         const solutionId = urlParams.get('id') || ('sol_' + groupId);
 
-        // A. Top-level solution_test_cases collection
         try {
           const tcCol = window.solCollection(window.solDb, "solution_test_cases");
           let snap;
@@ -1937,62 +2027,27 @@
           } else {
             snap = await window.solGetDocs(tcCol);
           }
+          let hasNew = false;
           snap.forEach(docSnap => {
             const d = docSnap.data();
-            if (!groupId || d.groupId === groupId || d.solutionId === solutionId) {
+            if (!testCasesMap.has(docSnap.id)) {
               testCasesMap.set(docSnap.id, { id: docSnap.id, draftId: docSnap.id, ...d });
+              hasNew = true;
             }
           });
+          if (hasNew) {
+            window.__currentTestCasesMap = testCasesMap;
+            renderTestCaseSelectOptions(sel, testCasesMap, sel.value);
+          }
         } catch(topErr) {
           console.warn("Firestore top-level test cases query notice:", topErr);
         }
-
-        // B. Subcollection under code-blocks/codes/sandboxes/{solutionId}_{groupId}/drafts
-        try {
-          const colRef = window.solCollection(window.solDb, "code-blocks", "codes", "sandboxes", `${solutionId}_${groupId}`, "drafts");
-          const snap = await window.solGetDocs(colRef);
-          snap.forEach(docSnap => {
-            testCasesMap.set(docSnap.id, { id: docSnap.id, draftId: docSnap.id, ...docSnap.data() });
-          });
-        } catch(subErr) {}
       }
     } catch(e) {}
-
-    const currentUid = localStorage.getItem("dpgActiveUserUid") || (window.solAuth && window.solAuth.currentUser && window.solAuth.currentUser.uid);
-
-    testCasesMap.forEach(tc => {
-      const isOwner = currentUid && (tc.contributorUid === currentUid);
-      const isPublic = (tc.mode === 'public' || (!tc.isEncrypted && tc.mode !== 'private'));
-      // Public test cases are visible to ALL users (guests, contributors, owners)
-      // Private test cases are visible only to the author/owner
-      if (isPublic || isOwner) {
-        const opt = document.createElement('option');
-        opt.value = tc.draftId || tc.id;
-        const icon = isPublic ? '🌐' : '🔒';
-        const ownerSuffix = isOwner ? ' (Mine)' : ` (${tc.contributorName || 'Community'})`;
-        opt.textContent = `${icon} ${tc.title || 'Test Case'}${ownerSuffix}`;
-        sel.appendChild(opt);
-      }
-    });
-
-    window.__currentTestCasesMap = testCasesMap;
-
-    if (selectDraftId) {
-      sel.value = selectDraftId;
-    }
   }
 
   window.switchTryItTestCase = function(caseId) {
-    if (caseId === '__official__') {
-      document.getElementById('tryitEditorHtml').value = activeTryItOriginal.html;
-      document.getElementById('tryitEditorCss').value = activeTryItOriginal.css;
-      document.getElementById('tryitEditorJs').value = activeTryItOriginal.js;
-    } else if (window.__currentTestCasesMap && window.__currentTestCasesMap.has(caseId)) {
-      const tc = window.__currentTestCasesMap.get(caseId);
-      document.getElementById('tryitEditorHtml').value = tc.htmlCode || '';
-      document.getElementById('tryitEditorCss').value = tc.cssCode || '';
-      document.getElementById('tryitEditorJs').value = tc.jsCode || '';
-    }
+    applyTestCaseToEditors(caseId, window.__currentTestCasesMap);
     window.runTryItCode();
   };
 

@@ -2093,7 +2093,7 @@
                 <button type="button" class="sol-btn sol-btn-primary sol-btn-sm" onclick="window.runCommunityTestCase('${escapeHtml(draftId)}')">
                   <i class="ri-play-circle-fill"></i> Run Sandbox
                 </button>
-                <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="window.openTryItModal('${escapeHtml(groupId)}', '${escapeHtml(title)}')">
+                <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" onclick="window.openTryItModal('${escapeHtml(groupId)}', '${escapeHtml(title)}', '${escapeHtml(draftId)}')">
                   <i class="ri-terminal-box-line"></i> Try It / Edit
                 </button>
               </div>
@@ -2183,17 +2183,22 @@
       const html = tc.htmlCode || '';
       const css = tc.cssCode || '';
       const js = tc.jsCode || '';
+      const title = `Test Case: ${tc.title || 'Community Demo'}`;
 
-      const modal = document.getElementById('advancedSandboxModal');
-      const titleEl = document.getElementById('sandboxModalTitle');
-      if (titleEl) titleEl.textContent = `Test Case: ${tc.title || 'Community Demo'}`;
+      if (typeof window.executeSandbox === 'function') {
+        window.executeSandbox(html, css, js, title, tc.groupId || 'community');
+      } else {
+        const modal = document.getElementById('advancedSandboxModal');
+        const titleEl = document.getElementById('sandboxModalTitle');
+        if (titleEl) titleEl.textContent = title;
 
-      if (modal) {
-        modal.style.display = 'flex';
-        if (typeof window.switchSandboxTab === 'function') window.switchSandboxTab('preview');
-        const iframe = document.getElementById('advancedSandboxIframe');
-        if (iframe) {
-          iframe.srcdoc = `<!DOCTYPE html>
+        if (modal) {
+          modal.style.display = 'flex';
+          if (typeof window.switchSandboxTab === 'function') window.switchSandboxTab('preview');
+          const iframe = document.getElementById('advancedSandboxIframe');
+          if (iframe) {
+            iframe.removeAttribute('src');
+            iframe.srcdoc = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -2215,6 +2220,7 @@
   <\/script>
 </body>
 </html>`;
+          }
         }
       }
     };
