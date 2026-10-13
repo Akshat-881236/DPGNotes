@@ -407,12 +407,16 @@
       display: none;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem;
-      background: var(--admin-surface);
-      border-bottom: 1px solid var(--admin-border);
+      padding: 0.85rem 1rem;
+      background: #0f111a;
+      background: rgba(15, 17, 26, 0.98);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       position: sticky;
       top: 0;
-      z-index: 900;
+      z-index: 1100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
     }
     .hamburger-btn {
       background: none;
@@ -457,7 +461,8 @@
       }
       .admin-mobile-header {
         display: flex;
-        margin-bottom: 1rem;
+        margin: -1rem -1rem 1rem -1rem;
+        width: calc(100% + 2rem);
       }
       .stat-cards {
         grid-template-columns: repeat(2, 1fr);
@@ -482,12 +487,25 @@
     }
 
     @media (max-width: 480px) {
+      .admin-main {
+        padding: 0.75rem;
+      }
+      .admin-mobile-header {
+        margin: -0.75rem -0.75rem 0.85rem -0.75rem;
+        width: calc(100% + 1.5rem);
+        padding: 0.75rem 0.85rem;
+      }
       .stat-cards {
         grid-template-columns: 1fr;
         gap: 0.6rem;
       }
       .section-card {
-        padding: 1.2rem 1rem;
+        padding: 1rem 0.85rem;
+      }
+      .monetization-policy-infobox {
+        padding: 0.85rem 0.9rem !important;
+        font-size: 0.78rem !important;
+        gap: 8px !important;
       }
     }
 
@@ -2319,50 +2337,54 @@
         </div>
 
         <!-- Policy Rules Infobox -->
-        <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1rem 1.2rem; margin-bottom:1.5rem; display:flex; align-items:flex-start; gap:12px; font-size:0.83rem; color:#cbd5e1; line-height:1.5;">
+        <div class="monetization-policy-infobox" style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1rem 1.2rem; margin-bottom:1.5rem; display:flex; align-items:flex-start; gap:12px; font-size:0.83rem; color:#cbd5e1; line-height:1.5; word-break:break-word;">
           <i class="ri-information-fill" style="color:#6366f1; font-size:1.3rem; flex-shrink:0; margin-top:2px;"></i>
           <div>
-            <strong style="color:#ffffff;">Monetization Rules &amp; Tier Discount Policy:</strong>
-            Contributor Rates: <strong>₹12 / hover</strong> (&ge;5s dwell) &bull; <strong>₹20 / visit</strong> (Safe Gateway). Guest Rates (50% reduced): <strong>₹6 / hover</strong> &bull; <strong>₹10 / visit</strong>.
-            <br>
-            <strong>Strict Single Engagement Rule:</strong> For each unique verified user or guest, strictly 1 interaction (hover OR click, whichever occurs earlier) per ad per month cycle is billable. Subsequent entries are rejected.
-            <br>
-            <strong>Strict Portfolio Discount:</strong> Discount applies across all charges: <strong>20%</strong> (&ge;3 Public docs), <strong>40%</strong> (&ge;10 docs + 5 Assignment + 5 Practical), <strong>60%</strong> (&ge;25 docs + 12 Assignment + 12 Practical), <strong>80%</strong> (&ge;75 docs + 25 Assignment + 25 Practical), <strong>100%</strong> (&ge;120 docs + 45 Assignment + 45 Practical).
-            <br>
-            <strong>Anti-Anomaly Shield:</strong> Rapid repeated ad interactions (&lt; 12 hrs gap) purge ad billing logs and impose a 15-day account flag. Admin accounts (its.akshatnetworkhub23@gmail.com, etc.) are strictly excluded.
+            <div style="font-weight:700; color:#ffffff; font-size:0.92rem; margin-bottom:4px;">Monetization Rules &amp; Tier Discount Policy:</div>
+            <div style="margin-bottom:6px;">Contributor Rates: <strong style="color:#fbbf24;">₹12 / hover</strong> (&ge;5s dwell) &bull; <strong style="color:#38bdf8;">₹20 / visit</strong> (Safe Gateway). Guest Rates (50% reduced): <strong style="color:#fbbf24;">₹6 / hover</strong> &bull; <strong style="color:#38bdf8;">₹10 / visit</strong>.</div>
+            <div style="margin-bottom:6px;"><strong style="color:#ffffff;">Strict Single Engagement Rule:</strong> For each unique verified user or guest, strictly 1 interaction (hover OR click, whichever occurs earlier) per ad per month cycle is billable. Subsequent entries are rejected.</div>
+            <div style="margin-bottom:6px;"><strong style="color:#ffffff;">Strict Portfolio Discount:</strong> Discount applies across all charges: <strong>20%</strong> (&ge;3 Public docs), <strong>40%</strong> (&ge;10 docs + 5 Assignment + 5 Practical), <strong>60%</strong> (&ge;25 docs + 12 Assignment + 12 Practical), <strong>80%</strong> (&ge;75 docs + 25 Assignment + 25 Practical), <strong>100%</strong> (&ge;120 docs + 45 Assignment + 45 Practical).</div>
+            <div><strong style="color:#ffffff;">Anti-Anomaly Shield:</strong> Rapid repeated ad interactions (&lt; 12 hrs gap) purge ad billing logs and impose a 15-day account flag. Admin accounts (its.akshatnetworkhub23@gmail.com, etc.) are strictly excluded.</div>
           </div>
         </div>
 
         <!-- Contributor Monetization Table -->
-        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
-          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
-            <i class="ri-table-line" style="color:#f59e0b;"></i> Contributor Monthly Billing Breakdown
-          </h3>
-          <table class="data-table">
-            <thead>
-              <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
-                <th style="padding:0.75rem;">Contributor</th>
-                <th style="padding:0.75rem;">Tier & Discount</th>
-                <th style="padding:0.75rem;">Ads Count</th>
-                <th style="padding:0.75rem;">Hovers (₹12/ea)</th>
-                <th style="padding:0.75rem;">Visits (₹20/ea)</th>
-                <th style="padding:0.75rem;">Gross Charges</th>
-                <th style="padding:0.75rem;">Discount</th>
-                <th style="padding:0.75rem;">Net Payable</th>
-                <th style="padding:0.75rem;">Payment Status</th>
-                <th style="padding:0.75rem;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="adsMonetizationTableBody">
-              <tr><td colspan="10" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading monetization ledger...</td></tr>
-            </tbody>
-          </table>
+        <div class="section-card" style="margin-bottom:1.5rem; padding:1.2rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:1rem;">
+            <h3 style="font-size:1.1rem; color:white; margin:0; display:flex; align-items:center; gap:8px;">
+              <i class="ri-table-line" style="color:#f59e0b;"></i> Contributor Monthly Billing Breakdown
+            </h3>
+            <span style="font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:4px;">
+              <i class="ri-arrow-left-right-line" style="color:#38bdf8;"></i> Swipe horizontally to view all columns &amp; actions
+            </span>
+          </div>
+          <div class="table-responsive-wrapper" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+            <table class="data-table" style="min-width: 880px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--admin-border); color:var(--admin-text-muted);">
+                  <th style="padding:0.75rem;">Contributor</th>
+                  <th style="padding:0.75rem;">Tier & Discount</th>
+                  <th style="padding:0.75rem;">Ads Count</th>
+                  <th style="padding:0.75rem;">Hovers (₹12/ea)</th>
+                  <th style="padding:0.75rem;">Visits (₹20/ea)</th>
+                  <th style="padding:0.75rem;">Gross Charges</th>
+                  <th style="padding:0.75rem;">Discount</th>
+                  <th style="padding:0.75rem;">Net Payable</th>
+                  <th style="padding:0.75rem;">Payment Status</th>
+                  <th style="padding:0.75rem;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="adsMonetizationTableBody">
+                <tr><td colspan="10" style="text-align:center; padding:1.5rem; color:var(--admin-text-muted);">Loading monetization ledger...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <!-- Monetization Status Update Modal -->
-      <div id="monetizationStatusModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(8px);">
-        <div style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:16px; max-width:480px; width:100%; padding:1.8rem; box-shadow:0 25px 60px rgba(0,0,0,0.8);">
+      <div id="monetizationStatusModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(8px);">
+        <div style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:16px; max-width:480px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; box-shadow:0 25px 60px rgba(0,0,0,0.85);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
             <h3 style="color:white; margin:0; font-size:1.2rem; display:flex; align-items:center; gap:8px;">
               <i class="ri-edit-circle-line" style="color:#f59e0b;"></i> Update Payment Status
@@ -2383,6 +2405,10 @@
               <option value="Paid">✅ Paid (Settled)</option>
               <option value="Waived">🎁 Waived Off (Complimentary)</option>
             </select>
+          </div>
+          <div style="margin-bottom:1.2rem;">
+            <label style="color:white; font-size:0.85rem; display:block; margin-bottom:6px; font-weight:600;">Admin Internal Note / Ref (Optional)</label>
+            <textarea id="modalStatusNote" rows="2" placeholder="e.g. UTR / Bank Ref, Concession note, settled via UPI..." style="width:100%; padding:0.6rem 0.75rem; border-radius:8px; background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.2); color:white; font-size:0.85rem; resize:vertical; font-family:inherit;"></textarea>
           </div>
           <div style="margin-bottom:1.2rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:8px 12px; font-size:0.75rem; color:#a5b4fc; display:flex; align-items:center; gap:6px;">
             <i class="ri-mail-send-line" style="font-size:1rem; color:#f59e0b;"></i>
@@ -4072,6 +4098,6 @@
       }
     }
   </script>
-  <script type="module" src="admin.js?v=3.6.2"></script>
+  <script type="module" src="admin.js?v=3.6.3"></script>
 </body>
 </html>

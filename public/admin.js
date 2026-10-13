@@ -4489,13 +4489,21 @@ window.openUpdateMonetizationStatusModal = function(contributorUid, contributorN
   const modal = document.getElementById("monetizationStatusModal");
   if (!modal) return;
 
-  document.getElementById("modalContribId").value = contributorUid;
-  document.getElementById("modalTargetMonth").value = month;
-  document.getElementById("modalContribName").textContent = contributorName;
-  document.getElementById("modalMonthCycle").textContent = month;
-  document.getElementById("modalNetPayable").textContent = `₹${Number(netPayable || 0).toLocaleString()}`;
-  document.getElementById("modalStatusSelect").value = currentStatus || "Pending";
-  document.getElementById("modalStatusNote").value = currentNote || "";
+  const contribIdEl = document.getElementById("modalContribId");
+  const monthEl = document.getElementById("modalTargetMonth");
+  const nameEl = document.getElementById("modalContribName");
+  const cycleEl = document.getElementById("modalMonthCycle");
+  const payableEl = document.getElementById("modalNetPayable");
+  const statusEl = document.getElementById("modalStatusSelect");
+  const noteEl = document.getElementById("modalStatusNote");
+
+  if (contribIdEl) contribIdEl.value = contributorUid || "";
+  if (monthEl) monthEl.value = month || "";
+  if (nameEl) nameEl.textContent = contributorName || "Contributor";
+  if (cycleEl) cycleEl.textContent = month || "";
+  if (payableEl) payableEl.textContent = `₹${Number(netPayable || 0).toLocaleString()}`;
+  if (statusEl) statusEl.value = currentStatus || "Pending";
+  if (noteEl) noteEl.value = currentNote || "";
 
   modal.style.display = "flex";
 };
@@ -4506,11 +4514,11 @@ window.closeMonetizationStatusModal = function() {
 };
 
 window.submitUpdateMonetizationStatus = async function() {
-  const contributorId = document.getElementById("modalContribId").value;
+  const contributorId = document.getElementById("modalContribId")?.value;
   const contributorName = document.getElementById("modalContribName")?.textContent || "Contributor";
-  const month = document.getElementById("modalTargetMonth").value;
-  const status = document.getElementById("modalStatusSelect").value;
-  const note = document.getElementById("modalStatusNote").value;
+  const month = document.getElementById("modalTargetMonth")?.value;
+  const status = document.getElementById("modalStatusSelect")?.value;
+  const note = document.getElementById("modalStatusNote")?.value || "";
 
   if (!contributorId || !month || !status) {
     alert("Missing required status information.");
