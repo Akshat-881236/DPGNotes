@@ -3,110 +3,398 @@
 // ============================================================================
 (function() {
   document.addEventListener('DOMContentLoaded', () => {
-    // Dynamically inject styling for the redirect warning modal
+    // Dynamically inject professional styling for the redirect warning modal
     const style = document.createElement('style');
     style.innerHTML = `
       .redirect-modal-overlay {
         position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(2, 6, 23, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        inset: 0;
+        width: 100%; height: 100%;
+        background: rgba(2, 6, 23, 0.78);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         display: flex; align-items: center; justify-content: center;
-        z-index: 999999;
+        z-index: 9999999;
         opacity: 0; pointer-events: none;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        padding: 1rem;
+        box-sizing: border-box;
       }
       .redirect-modal-overlay.active {
         opacity: 1; pointer-events: auto;
       }
       .redirect-modal-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.95));
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        position: relative;
+        background: var(--sol-surface, var(--r-surface, #0f172a));
+        border: 1px solid var(--sol-border, var(--r-border, rgba(255, 255, 255, 0.12)));
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 1px 1px rgba(255, 255, 255, 0.05);
         border-radius: 20px;
-        padding: 2.2rem;
-        max-width: 480px; width: 90%;
+        padding: 2.2rem 2.2rem 1.8rem;
+        max-width: 520px; width: 100%;
         text-align: center;
-        transform: translateY(20px);
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        color: #f8fafc;
-        font-family: 'Inter', sans-serif;
+        transform: scale(0.95) translateY(12px);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        color: var(--sol-text, var(--r-text, #f8fafc));
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        box-sizing: border-box;
       }
       .redirect-modal-overlay.active .redirect-modal-card {
-        transform: translateY(0);
+        transform: scale(1) translateY(0);
       }
-      .redirect-icon {
-        font-size: 3rem; color: #f59e0b; margin-bottom: 1rem;
-        display: inline-block; animation: pulse 2s infinite;
-      }
-      .redirect-title {
-        font-size: 1.4rem; font-weight: 800; margin-bottom: 0.8rem;
-        background: linear-gradient(135deg, #fff, #94a3b8);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      }
-      .redirect-desc {
-        color: #94a3b8; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.5rem;
-      }
-      .redirect-url-box {
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 0.8rem 1rem; border-radius: 10px;
-        font-family: monospace; font-size: 0.82rem; color: #a5b4fc;
-        word-break: break-all; text-align: left; margin-bottom: 1.5rem;
-        max-height: 80px; overflow-y: auto;
-      }
-      .redirect-actions {
-        display: flex; gap: 0.8rem; justify-content: center; margin-bottom: 1rem;
-      }
-      .redirect-btn {
-        border: none; padding: 0.75rem 1.4rem; border-radius: 10px;
-        font-weight: 700; font-size: 0.88rem; cursor: pointer;
+      .redirect-modal-close {
+        position: absolute;
+        top: 1.1rem; right: 1.1rem;
+        width: 34px; height: 34px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
         transition: all 0.2s ease;
       }
+      .redirect-modal-close:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.3);
+        transform: rotate(90deg);
+      }
+      .redirect-icon-container {
+        position: relative;
+        width: 64px; height: 64px;
+        margin: 0 auto 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .redirect-icon-glow {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0) 70%);
+        animation: redirectGlow 2.5s infinite ease-in-out;
+      }
+      .redirect-icon-shield {
+        position: relative;
+        width: 56px; height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 88, 12, 0.12));
+        border: 1.5px solid rgba(245, 158, 11, 0.4);
+        color: #f59e0b;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+      }
+      @keyframes redirectGlow {
+        0%, 100% { transform: scale(1); opacity: 0.7; }
+        50% { transform: scale(1.18); opacity: 1; }
+      }
+      .redirect-title {
+        font-size: 1.35rem; font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 0.35rem;
+        letter-spacing: -0.01em;
+      }
+      .redirect-subtitle {
+        font-size: 0.88rem;
+        color: #94a3b8;
+        line-height: 1.45;
+        margin-bottom: 1.25rem;
+      }
+      .redirect-domain-row {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap;
+      }
+      .redirect-domain-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        padding: 4px 12px; border-radius: 999px;
+        font-size: 0.82rem; font-weight: 600; color: #38bdf8;
+      }
+      .redirect-protocol-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        padding: 3px 10px; border-radius: 999px;
+        font-size: 0.74rem; font-weight: 600; color: #34d399;
+      }
+      .redirect-url-container {
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 0.65rem 0.85rem;
+        margin-bottom: 0.95rem;
+        position: relative;
+      }
+      .redirect-url-box {
+        font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.8rem;
+        color: #a5b4fc;
+        word-break: break-all;
+        text-align: left;
+        max-height: 68px;
+        overflow-y: auto;
+        flex: 1;
+        line-height: 1.4;
+        padding-right: 4px;
+      }
+      .redirect-copy-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+      }
+      .redirect-copy-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+      }
+      .redirect-notice-banner {
+        display: flex; align-items: flex-start; gap: 9px;
+        background: rgba(99, 102, 241, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.78rem;
+        line-height: 1.45;
+        color: #cbd5e1;
+        text-align: left;
+        margin-bottom: 1.35rem;
+      }
+      .redirect-notice-banner code {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1px 4px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: #38bdf8;
+      }
+      .redirect-actions {
+        display: flex; gap: 0.85rem; margin-bottom: 1.15rem;
+      }
+      .redirect-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        border: none; padding: 0.78rem 1.2rem; border-radius: 12px;
+        font-weight: 700; font-size: 0.88rem; cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 44px;
+        box-sizing: border-box;
+      }
       .redirect-btn-proceed {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        flex: 1.15;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #ffffff;
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
       }
       .redirect-btn-proceed:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 6px 22px rgba(99, 102, 241, 0.55);
+        filter: brightness(1.05);
       }
       .redirect-btn-cancel {
-        background: rgba(255, 255, 255, 0.05); color: #cbd5e1;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        flex: 1;
+        background: rgba(255, 255, 255, 0.06);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.12);
       }
       .redirect-btn-cancel:hover {
-        background: rgba(255, 255, 255, 0.1); color: white;
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      .redirect-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 0.9rem;
+        display: flex; justify-content: center;
       }
       .redirect-learn-more {
-        font-size: 0.8rem; color: #a78bfa; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 0.78rem; color: #a78bfa; text-decoration: none;
         transition: color 0.2s;
       }
       .redirect-learn-more:hover {
-        color: #f8fafc; text-decoration: underline;
+        color: #c4b5fd; text-decoration: underline;
       }
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.8; }
+
+      /* Theme Compliance: Light Mode Overrides */
+      html[data-theme="light"] .redirect-modal-overlay,
+      body[data-theme="light"] .redirect-modal-overlay,
+      .theme-light .redirect-modal-overlay {
+        background: rgba(15, 23, 42, 0.45);
+      }
+      html[data-theme="light"] .redirect-modal-card,
+      body[data-theme="light"] .redirect-modal-card,
+      .theme-light .redirect-modal-card {
+        background: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18), 0 0 1px 1px rgba(0, 0, 0, 0.06) !important;
+        color: #0f172a !important;
+      }
+      html[data-theme="light"] .redirect-modal-close,
+      body[data-theme="light"] .redirect-modal-close,
+      .theme-light .redirect-modal-close {
+        background: #f1f5f9 !important;
+        color: #64748b !important;
+        border-color: #cbd5e1 !important;
+      }
+      html[data-theme="light"] .redirect-title,
+      body[data-theme="light"] .redirect-title,
+      .theme-light .redirect-title {
+        color: #0f172a !important;
+      }
+      html[data-theme="light"] .redirect-subtitle,
+      body[data-theme="light"] .redirect-subtitle,
+      .theme-light .redirect-subtitle {
+        color: #475569 !important;
+      }
+      html[data-theme="light"] .redirect-domain-badge,
+      body[data-theme="light"] .redirect-domain-badge,
+      .theme-light .redirect-domain-badge {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #0284c7 !important;
+      }
+      html[data-theme="light"] .redirect-url-container,
+      body[data-theme="light"] .redirect-url-container,
+      .theme-light .redirect-url-container {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+      }
+      html[data-theme="light"] .redirect-url-box,
+      body[data-theme="light"] .redirect-url-box,
+      .theme-light .redirect-url-box {
+        color: #1e293b !important;
+      }
+      html[data-theme="light"] .redirect-copy-btn,
+      body[data-theme="light"] .redirect-copy-btn,
+      .theme-light .redirect-copy-btn {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+      }
+      html[data-theme="light"] .redirect-notice-banner,
+      body[data-theme="light"] .redirect-notice-banner,
+      .theme-light .redirect-notice-banner {
+        background: rgba(99, 102, 241, 0.08) !important;
+        border-color: rgba(99, 102, 241, 0.2) !important;
+        color: #334155 !important;
+      }
+      html[data-theme="light"] .redirect-btn-cancel,
+      body[data-theme="light"] .redirect-btn-cancel,
+      .theme-light .redirect-btn-cancel {
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        border-color: #cbd5e1 !important;
+      }
+      html[data-theme="light"] .redirect-footer,
+      body[data-theme="light"] .redirect-footer,
+      .theme-light .redirect-footer {
+        border-color: #e2e8f0 !important;
+      }
+      html[data-theme="light"] .redirect-learn-more,
+      body[data-theme="light"] .redirect-learn-more,
+      .theme-light .redirect-learn-more {
+        color: #4f46e5 !important;
+      }
+
+      /* Multi-Device Media Responsiveness */
+      @media (max-width: 540px) {
+        .redirect-modal-card {
+          padding: 1.4rem 1.15rem 1.25rem;
+          border-radius: 16px;
+        }
+        .redirect-title {
+          font-size: 1.18rem;
+        }
+        .redirect-subtitle {
+          font-size: 0.82rem;
+          margin-bottom: 1rem;
+        }
+        .redirect-actions {
+          flex-direction: column-reverse;
+          gap: 0.65rem;
+        }
+        .redirect-btn {
+          width: 100%;
+        }
+        .redirect-domain-row {
+          gap: 6px;
+        }
       }
     `;
     document.head.appendChild(style);
 
-    // Create Modal Element structure
+    // Create Modal Element structure with professional icons & accessible layout
     const overlay = document.createElement('div');
     overlay.className = 'redirect-modal-overlay';
     overlay.innerHTML = `
-      <div class="redirect-modal-card">
-        <div class="redirect-icon">⚠️</div>
-        <div class="redirect-title">Leaving DPGNotes</div>
-        <div class="redirect-desc">You are leaving the DPGNotes Academic Portal to visit an external site. Please make sure you trust the destination URL.</div>
-        <div class="redirect-url-box" id="redirectDestUrl">https://example.com</div>
-        <div class="redirect-actions">
-          <button class="redirect-btn redirect-btn-cancel" id="redirectCancelBtn">Stay Here</button>
-          <button class="redirect-btn redirect-btn-proceed" id="redirectProceedBtn">Proceed</button>
+      <div class="redirect-modal-card" role="dialog" aria-modal="true" aria-labelledby="redirectModalTitle">
+        <button type="button" class="redirect-modal-close" id="redirectCloseXBtn" aria-label="Close dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="redirect-header">
+          <div class="redirect-icon-container">
+            <div class="redirect-icon-glow"></div>
+            <div class="redirect-icon-shield">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M12 8v4"/>
+                <path d="M12 16h.01"/>
+              </svg>
+            </div>
+          </div>
+          <div class="redirect-title" id="redirectModalTitle">External Link Confirmation</div>
+          <div class="redirect-subtitle">You are navigating outside the verified DPGNotes Academic Network</div>
         </div>
-        <a href="#" class="redirect-learn-more" id="redirectLearnMoreLink">Learn more about our External Links Policy</a>
+
+        <div class="redirect-body">
+          <div class="redirect-domain-row">
+            <div class="redirect-domain-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span id="redirectDestHost">external-site.com</span>
+            </div>
+            <div class="redirect-protocol-badge" id="redirectProtocolBadge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span id="redirectProtocolText">HTTPS Secure</span>
+            </div>
+          </div>
+
+          <div class="redirect-url-container">
+            <div class="redirect-url-box" id="redirectDestUrl">https://example.com</div>
+            <button type="button" class="redirect-copy-btn" id="redirectCopyUrlBtn" title="Copy destination URL">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span id="redirectCopyText">Copy</span>
+            </button>
+          </div>
+
+          <div class="redirect-notice-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>DPGNotes applies an isolated <code>no-referrer</code> policy and academic UTM campaign tags. Third-party content is governed by external terms.</span>
+          </div>
+        </div>
+
+        <div class="redirect-actions">
+          <button type="button" class="redirect-btn redirect-btn-cancel" id="redirectCancelBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Stay on DPGNotes
+          </button>
+          <button type="button" class="redirect-btn redirect-btn-proceed" id="redirectProceedBtn">
+            <span>Proceed to Site</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </button>
+        </div>
+
+        <div class="redirect-footer">
+          <a href="https://dpgnotes.web.app/legal/index.html#links-policy" class="redirect-learn-more" id="redirectLearnMoreLink" target="_blank" rel="noopener noreferrer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Learn more about our External Links &amp; Referrer Policy
+          </a>
+        </div>
       </div>
     `;
     document.body.appendChild(overlay);
@@ -122,21 +410,110 @@
       learnMoreEl.setAttribute('href', getLegalLinksPolicyUrl());
     }
 
-    // Bind event handlers
-    document.getElementById('redirectCancelBtn').addEventListener('click', () => {
+    // Helper: Enrich external URLs with UTM parameters and runtime referrer URL
+    function enrichExternalUrl(targetUrlStr) {
+      try {
+        const url = new URL(targetUrlStr, window.location.href);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return targetUrlStr;
+
+        const activePage = window.location.href;
+        let campaign = 'dpgnotes_academic_portal';
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('assignmentsolution')) {
+          campaign = 'dpgnotes_assignment_solution_viewer';
+        } else if (path.includes('practicalsolution')) {
+          campaign = 'dpgnotes_practical_solution_viewer';
+        } else if (path.includes('dpgnotes-pdf-viewer') || path.includes('pdf-viewer')) {
+          campaign = 'dpgnotes_pdf_viewer';
+        } else if (path.includes('serp') || path.includes('search')) {
+          campaign = 'dpgnotes_search_engine';
+        }
+
+        url.searchParams.set('utm_source', 'dpgnotes');
+        url.searchParams.set('utm_medium', 'referral');
+        url.searchParams.set('utm_campaign', campaign);
+        url.searchParams.set('utm_referrer', activePage);
+        url.searchParams.set('utm_referrer_url', activePage);
+
+        return url.href;
+      } catch (err) {
+        return targetUrlStr;
+      }
+    }
+
+    function closeRedirectModal() {
       overlay.classList.remove('active');
-    });
-    document.getElementById('redirectProceedBtn').addEventListener('click', () => {
+      pendingUrl = '';
+    }
+
+    function proceedRedirect() {
       if (pendingUrl) {
         window.open(pendingUrl, '_blank', 'noopener,noreferrer');
       }
-      overlay.classList.remove('active');
+      closeRedirectModal();
+    }
+
+    // Bind event handlers
+    const cancelBtn = document.getElementById('redirectCancelBtn');
+    if (cancelBtn) cancelBtn.addEventListener('click', closeRedirectModal);
+
+    const closeXBtn = document.getElementById('redirectCloseXBtn');
+    if (closeXBtn) closeXBtn.addEventListener('click', closeRedirectModal);
+
+    const proceedBtn = document.getElementById('redirectProceedBtn');
+    if (proceedBtn) proceedBtn.addEventListener('click', proceedRedirect);
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        closeRedirectModal();
+      }
     });
-    document.getElementById('redirectLearnMoreLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      window.open(getLegalLinksPolicyUrl(), '_blank');
-      overlay.classList.remove('active');
+
+    document.addEventListener('keydown', (e) => {
+      if (!overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') {
+        closeRedirectModal();
+      } else if (e.key === 'Enter') {
+        proceedRedirect();
+      }
     });
+
+    const copyBtn = document.getElementById('redirectCopyUrlBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        if (!pendingUrl) return;
+        const copyText = document.getElementById('redirectCopyText');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(pendingUrl).then(() => {
+            if (copyText) {
+              copyText.textContent = 'Copied!';
+              setTimeout(() => { copyText.textContent = 'Copy'; }, 2000);
+            }
+          }).catch(() => {
+            fallbackCopy(pendingUrl, copyText);
+          });
+        } else {
+          fallbackCopy(pendingUrl, copyText);
+        }
+      });
+    }
+
+    function fallbackCopy(text, copyTextEl) {
+      const tempInp = document.createElement('textarea');
+      tempInp.value = text;
+      tempInp.style.position = 'fixed';
+      tempInp.style.opacity = '0';
+      document.body.appendChild(tempInp);
+      tempInp.select();
+      try {
+        document.execCommand('copy');
+        if (copyTextEl) {
+          copyTextEl.textContent = 'Copied!';
+          setTimeout(() => { copyTextEl.textContent = 'Copy'; }, 2000);
+        }
+      } catch(e) {}
+      document.body.removeChild(tempInp);
+    }
 
     // Intercept clicks on links globally
     document.addEventListener('click', (e) => {
@@ -199,8 +576,27 @@
         // If it is external (not in trusted internal hosts)
         if (!internalHosts.some(host => host && url.hostname.toLowerCase().includes(host.toLowerCase()))) {
           e.preventDefault();
-          pendingUrl = url.href;
-          document.getElementById('redirectDestUrl').innerText = pendingUrl;
+          const enriched = enrichExternalUrl(url.href);
+          pendingUrl = enriched;
+
+          // Ensure anchor element in DOM is updated with enriched URL and no-referrer
+          anchor.href = enriched;
+          anchor.setAttribute('referrerpolicy', 'no-referrer');
+          anchor.setAttribute('rel', 'noopener noreferrer');
+
+          // Populate modal details
+          const destEl = document.getElementById('redirectDestUrl');
+          if (destEl) destEl.textContent = pendingUrl;
+
+          const hostEl = document.getElementById('redirectDestHost');
+          if (hostEl) hostEl.textContent = url.hostname;
+
+          const protocolText = document.getElementById('redirectProtocolText');
+          if (protocolText) protocolText.textContent = url.protocol === 'https:' ? 'HTTPS Secure' : 'HTTP External';
+
+          const copyText = document.getElementById('redirectCopyText');
+          if (copyText) copyText.textContent = 'Copy';
+
           overlay.classList.add('active');
         }
       } catch (err) {

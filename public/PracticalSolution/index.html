@@ -2483,20 +2483,72 @@
       return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    (function () {
-  const links = document.querySelectorAll('a[href]');
-  const activePage = window.location.href;
-  links.forEach(function (link) {
-    const url = new URL(link.href, window.location.href);
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
-    url.searchParams.set('utm_source', 'dpgnotes');
-    url.searchParams.set('utm_medium', 'referral');
-    url.searchParams.set('utm_campaign', 'dpgnotes_practical_solution_viewer');
-    url.searchParams.set('utm_referrer', activePage);
-    link.href = url.href;
-    link.setAttribute('referrerpolicy', 'no-referrer');
-  });
-})();
+    // Continuous Academic Link Tagger: Enforces no-referrer & UTM telemetry for external URLs
+    (function initPracticalLinkTagger() {
+      const internalHosts = [
+        window.location.hostname,
+        'dpgnotes.web.app',
+        'dpgnotes.firebaseapp.com',
+        'localhost',
+        '127.0.0.1',
+        'github.io',
+        'digiindia-student-platform.onrender.com',
+        'digiindia',
+        'akshat-881236.github.io',
+        'akshat-145609.github.io'
+      ];
+
+      function tagExternalLinks(root) {
+        const container = root || document;
+        const links = container.querySelectorAll ? container.querySelectorAll('a[href]') : [];
+        const activePage = window.location.href;
+
+        links.forEach(function (link) {
+          try {
+            const rawHref = link.getAttribute('href');
+            if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('javascript:') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:') || rawHref.startsWith('blob:') || rawHref.startsWith('data:')) return;
+            const url = new URL(link.href, window.location.href);
+            if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+            if (url.origin === window.location.origin) return;
+            if (internalHosts.some(h => h && url.hostname.toLowerCase().includes(h.toLowerCase()))) return;
+
+            url.searchParams.set('utm_source', 'dpgnotes');
+            url.searchParams.set('utm_medium', 'referral');
+            url.searchParams.set('utm_campaign', 'dpgnotes_practical_solution_viewer');
+            url.searchParams.set('utm_referrer', activePage);
+            url.searchParams.set('utm_referrer_url', activePage);
+
+            link.href = url.href;
+            link.setAttribute('referrerpolicy', 'no-referrer');
+            link.setAttribute('rel', 'noopener noreferrer');
+          } catch(e) {}
+        });
+      }
+
+      // Initial tag pass
+      tagExternalLinks(document);
+
+      // MutationObserver to automatically tag dynamically rendered practicals, experiments, and SERP cards
+      if (window.MutationObserver) {
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1) {
+                if (node.tagName === 'A') tagExternalLinks({ querySelectorAll: () => [node] });
+                else tagExternalLinks(node);
+              }
+            });
+          });
+        });
+        observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      }
+
+      // Live click and hover capture ensuring runtime address bar params are always captured
+      document.addEventListener('mouseover', function(e) {
+        const a = e.target.closest && e.target.closest('a[href]');
+        if (a) tagExternalLinks({ querySelectorAll: () => [a] });
+      }, { passive: true });
+    })();
   </script>
 </body>
 </html>
