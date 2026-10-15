@@ -125,6 +125,50 @@
     html[data-theme="light"] .sol-serp-meta-pill strong {
       color: #0f172a !important;
     }
+    html[data-theme="light"] #serpStatsRow,
+    html[data-theme="light"] .sol-serp-stats-row {
+      color: #1e293b !important;
+      font-weight: 500 !important;
+    }
+    html[data-theme="light"] #serpStatsRow strong,
+    html[data-theme="light"] .sol-serp-stats-row strong {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    .sol-sense-label {
+      font-size: 0.75rem;
+      color: var(--sol-text-muted, #94a3b8);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-weight: 600;
+    }
+    .sol-concept-pill {
+      font-size: 0.74rem;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    html[data-theme="light"] .sol-sense-label {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .sol-concept-pill {
+      color: #0f172a !important;
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      font-weight: 600 !important;
+    }
+    html[data-theme="light"] .sol-serp-snippet {
+      color: #1e293b !important;
+    }
+    html[data-theme="light"] .sol-expand-q-btn {
+      color: #0284c7 !important;
+    }
+    html[data-theme="light"] .sol-expand-q-btn:hover {
+      color: #0369a1 !important;
+    }
 
     /* Enhanced Assignment Solution SERP Filter Tabs */
     .sol-serp-filter-tabs {
@@ -525,7 +569,7 @@
       <div id="serpAiOverviewBox" style="display:none; margin-bottom:1.25rem;"></div>
 
       <!-- SERP Stats Counter -->
-      <div id="serpStatsRow" style="font-size:0.85rem; color:#94a3b8; margin-bottom:1.5rem;">
+      <div id="serpStatsRow" class="sol-serp-stats-row" style="font-size:0.85rem; margin-bottom:1.5rem;">
         Loading solutions...
       </div>
 
@@ -1093,11 +1137,26 @@
         const matchPct = item._matchPercentage;
         const matchedConcepts = Array.isArray(item._matchedConcepts) ? item._matchedConcepts : [];
 
-        // Preview questions snippet
+        // Preview questions snippet with dynamic incremental expansion (Image 4)
         let qSnippet = '';
         if (Array.isArray(item.questions) && item.questions.length > 0) {
-          const previewTitles = item.questions.slice(0, 3).map((q, idx) => `Q${idx+1}: ${escapeHtml(q.title || 'Question')}`).join(' • ');
-          qSnippet = `<div class="sol-serp-snippet"><i class="ri-question-answer-line" style="color:#38bdf8; margin-right:5px;"></i>${previewTitles}${item.questions.length > 3 ? ` <span style="color:#38bdf8; font-weight:600;">+${item.questions.length - 3} more questions</span>` : ''}</div>`;
+          window.__serpQuestionsCache = window.__serpQuestionsCache || {};
+          window.__serpQuestionsShown = window.__serpQuestionsShown || {};
+          window.__serpQuestionsCache[solutionId] = item.questions;
+          window.__serpQuestionsShown[solutionId] = 3;
+          const initialPreview = item.questions.slice(0, 3).map((q, idx) => `Q${idx+1}: ${escapeHtml(q.title || 'Question')}`).join(' • ');
+          const remaining = item.questions.length - 3;
+          qSnippet = `
+            <div class="sol-serp-snippet" id="serpSnippet_${escapeHtml(solutionId)}">
+              <i class="ri-question-answer-line" style="color:#0284c7; margin-right:5px;"></i>
+              <span class="sol-snippet-text" id="serpSnippetText_${escapeHtml(solutionId)}">${initialPreview}</span>
+              ${remaining > 0 ? `
+                <a href="javascript:void(0)" class="sol-expand-q-btn" id="serpExpandBtn_${escapeHtml(solutionId)}" onclick="window.expandSerpQuestions(event, '${escapeHtml(solutionId)}', 3)" style="color:#0284c7; font-weight:700; margin-left:6px; cursor:pointer; text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                  +${remaining} more question${remaining > 1 ? 's' : ''}
+                </a>
+              ` : ''}
+            </div>
+          `;
         }
 
         return `
@@ -1127,11 +1186,11 @@
               ${escapeHtml(item.subjectName || 'Assignment Solution')}
             </a>
 
-            <!-- Matched Concept Tags if Available -->
+            <!-- Matched Concept Tags if Available (Fixes Image 3 Contrast) -->
             ${matchedConcepts.length > 0 ? `
               <div style="display:flex; gap:6px; flex-wrap:wrap; margin:0.2rem 0 0.8rem 0;">
-                <span style="font-size:0.75rem; color:#94a3b8; display:inline-flex; align-items:center; gap:3px;"><i class="ri-brain-line" style="color:#a855f7;"></i> Sense concepts:</span>
-                ${matchedConcepts.map(c => `<span style="font-size:0.74rem; color:#cbd5e1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:2px 8px; border-radius:999px;">${escapeHtml(c)}</span>`).join('')}
+                <span class="sol-sense-label"><i class="ri-brain-line" style="color:#a855f7;"></i> Sense concepts:</span>
+                ${matchedConcepts.map(c => `<span class="sol-concept-pill">${escapeHtml(c)}</span>`).join('')}
               </div>
             ` : ''}
 
@@ -1181,6 +1240,37 @@
         `;
       }).join('');
     }
+
+    // Dynamic incremental SERP question expansion (Image 4)
+    window.expandSerpQuestions = function(ev, solutionId, step = 3) {
+      if (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+      }
+      const questions = window.__serpQuestionsCache && window.__serpQuestionsCache[solutionId];
+      if (!questions || !Array.isArray(questions)) return;
+
+      const textEl = document.getElementById(`serpSnippetText_${solutionId}`);
+      const btnEl = document.getElementById(`serpExpandBtn_${solutionId}`);
+      if (!textEl) return;
+
+      window.__serpQuestionsShown = window.__serpQuestionsShown || {};
+      const currentShown = window.__serpQuestionsShown[solutionId] || 3;
+      const nextShown = Math.min(currentShown + step, questions.length);
+      window.__serpQuestionsShown[solutionId] = nextShown;
+
+      const fullText = questions.slice(0, nextShown).map((q, idx) => `Q${idx+1}: ${escapeHtml(q.title || (typeof q === 'string' ? q : 'Question'))}`).join(' • ');
+      textEl.innerHTML = fullText;
+
+      const remaining = questions.length - nextShown;
+      if (btnEl) {
+        if (remaining > 0) {
+          btnEl.textContent = `+${remaining} more question${remaining > 1 ? 's' : ''}`;
+        } else {
+          btnEl.style.display = 'none'; // peak reached
+        }
+      }
+    };
 
     // Interactive Navbar Header Search Methods
     window.toggleNavSearch = function() {
@@ -2256,6 +2346,9 @@
       }
       grid.innerHTML = items.slice(0, 6).map(item => {
         const isPrac = item.isPractical;
+        const photo = item.photoURL || (item.contributorUid && window.__dpgUserCache && window.__dpgUserCache[item.contributorUid] && window.__dpgUserCache[item.contributorUid].photoURL) || "";
+        const initial = (item.contributor || 'C').charAt(0).toUpperCase();
+
         return `
           <div class="sol-rec-card">
             <div class="sol-rec-card-header">
@@ -2264,15 +2357,22 @@
                 ${isPrac ? 'Practical Lab' : 'Assignment Solution'}
               </span>
               <span class="sol-course-pill">${escapeHtml(item.course || 'Academic')}</span>
+              ${item.matchPercentage && item.matchPercentage > 0 ? `
+                <span class="sol-match-pill" style="font-size:0.7rem; font-weight:700; color:#38bdf8; background:rgba(56,189,248,0.12); padding:2px 6px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);"><i class="ri-sparkling-fill"></i> ${item.matchPercentage}% Sense</span>
+              ` : ''}
             </div>
             <h4 class="sol-rec-card-title">
               <a href="${item.url}">${escapeHtml(item.title)}</a>
             </h4>
             <div class="sol-rec-author-row" style="display:flex; align-items:center; gap:8px;">
-              ${item.photoURL 
-                ? `<img src="${item.photoURL}" alt="${escapeHtml(item.contributor)}" style="width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid #38bdf8;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">` 
-                : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" style="width:22px; height:22px; border-radius:50%; object-fit:cover;">`}
-              <a href="${item.profileUrl}" target="_blank" style="color:inherit; text-decoration:none; font-weight:600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+              ${photo ? `
+                <img src="${photo}" alt="${escapeHtml(item.contributor)}" class="sol-rec-author-img" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1.5px solid #38bdf8; flex-shrink:0;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
+              ` : `
+                <div class="sol-rec-author-avatar-fallback" style="width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0;">
+                  ${escapeHtml(initial)}
+                </div>
+              `}
+              <a href="${item.profileUrl}" target="_blank" style="color:inherit; text-decoration:none; font-weight:600; font-size:0.85rem;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                 ${escapeHtml(item.contributor)}
               </a>
             </div>
@@ -2287,6 +2387,17 @@
           </div>
         `;
       }).join('');
+    }
+
+    // Token extraction helper for 100% Sense Match calculation
+    function extractRecSenseTokens(str) {
+      if (!str) return [];
+      const cleaned = String(str).toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const stopWords = new Set(['the','and','for','with','from','that','this','what','how','why','explain','describe','solution','assignment','practical','question','unit','notes','dpgnotes','important','answer']);
+      return cleaned.split(' ').filter(w => w.length >= 3 && !stopWords.has(w));
     }
 
     window.loadEndSolutionRecommendations = async function(currData) {
@@ -2342,6 +2453,8 @@
             title: `${subName}${subCode}`,
             subjectName: subName,
             subjectCode: d.subjectCode || '',
+            questions: d.questions || [],
+            solutions: d.solutions || d.answers || d.content || '',
             course: course,
             category: d.category || course,
             discipline: d.discipline || course,
@@ -2356,41 +2469,131 @@
           });
         });
 
-        // 1. Similar Solutions: matches subject or course
-        const currSub = (currData.subjectName || '').toLowerCase();
-        const currCourse = (currData.course || currData.courseSec || currData.discipline || '').toLowerCase();
-        let similar = allSolutions.filter(s => {
-          const sSub = (s.subjectName || '').toLowerCase();
-          const sCourse = (s.course || '').toLowerCase();
-          return (currSub && sSub.includes(currSub)) || (sSub && currSub.includes(sSub)) || (currCourse && sCourse.includes(currCourse));
+        // Pre-fetch actual contributor profile photos from users collection
+        window.__dpgUserCache = window.__dpgUserCache || {};
+        const uidsToFetch = [...new Set(allSolutions.map(s => s.contributorUid).filter(Boolean))];
+        if (currData.contributorUid && (currData.photoURL || currData.authorPhoto)) {
+          window.__dpgUserCache[currData.contributorUid] = {
+            photoURL: currData.photoURL || currData.authorPhoto,
+            name: contribName
+          };
+        }
+
+        await Promise.all(uidsToFetch.map(async (uid) => {
+          if (window.__dpgUserCache[uid]) return;
+          try {
+            if (window.solDoc && window.solGetDoc) {
+              const uSnap = await window.solGetDoc(window.solDoc(window.solDb, "users", uid));
+              if (uSnap && uSnap.exists()) {
+                const uData = uSnap.data();
+                window.__dpgUserCache[uid] = {
+                  photoURL: uData.avatarUrl || uData.profilePic || uData.photoURL || uData.avatar || "",
+                  name: uData.name || uData.displayName || ""
+                };
+              }
+            }
+          } catch(e) {}
+        }));
+
+        // Attach resolved photos
+        allSolutions.forEach(s => {
+          if (!s.photoURL && s.contributorUid && window.__dpgUserCache[s.contributorUid]) {
+            s.photoURL = window.__dpgUserCache[s.contributorUid].photoURL;
+          }
         });
+
+        // 100% SENSE MATCH CALCULATION (Title, Questions, Solution text overlap ratio)
+        const currSubTokens = new Set(extractRecSenseTokens(`${currData.subjectName || ''} ${currData.subjectCode || ''} ${currData.title || ''}`));
+        let currQText = '';
+        if (Array.isArray(currData.questions)) {
+          currData.questions.forEach(q => {
+            currQText += ' ' + (typeof q === 'string' ? q : (q.title || '') + ' ' + (q.text || '') + ' ' + (q.question || ''));
+          });
+        }
+        const currQTokens = new Set(extractRecSenseTokens(currQText));
+        let currSolText = '';
+        if (currData.solutions && typeof currData.solutions === 'object') {
+          currSolText = JSON.stringify(currData.solutions);
+        } else if (typeof currData.content === 'string') {
+          currSolText = currData.content;
+        }
+        const currSolTokens = new Set(extractRecSenseTokens(currSolText).slice(0, 100));
+
+        function setOverlap(setA, setB) {
+          if (!setA.size || !setB.size) return 0;
+          let m = 0;
+          for (const t of setA) {
+            if (setB.has(t)) m++;
+          }
+          return m / Math.min(setA.size, setB.size);
+        }
+
+        allSolutions.forEach(s => {
+          const candSubTokens = new Set(extractRecSenseTokens(`${s.subjectName || ''} ${s.subjectCode || ''} ${s.title || ''}`));
+          let candQText = '';
+          if (Array.isArray(s.questions)) {
+            s.questions.forEach(q => {
+              candQText += ' ' + (typeof q === 'string' ? q : (q.title || '') + ' ' + (q.text || '') + ' ' + (q.question || ''));
+            });
+          }
+          const candQTokens = new Set(extractRecSenseTokens(candQText));
+          let candSolText = typeof s.solutions === 'object' ? JSON.stringify(s.solutions) : String(s.solutions || '');
+          const candSolTokens = new Set(extractRecSenseTokens(candSolText).slice(0, 100));
+
+          const subRatio = setOverlap(currSubTokens, candSubTokens);
+          const qRatio = setOverlap(currQTokens, candQTokens);
+          const solRatio = setOverlap(currSolTokens, candSolTokens);
+
+          const exactCode = (currData.subjectCode && s.subjectCode && currData.subjectCode.trim().toLowerCase() === s.subjectCode.trim().toLowerCase()) ? 1.0 : 0;
+          const exactSub = (currData.subjectName && s.subjectName && currData.subjectName.trim().toLowerCase() === s.subjectName.trim().toLowerCase()) ? 1.0 : 0;
+
+          let score = 0;
+          if (exactCode || exactSub) {
+            score = 0.55 + (0.25 * qRatio) + (0.20 * solRatio);
+          } else {
+            score = (0.45 * subRatio) + (0.35 * qRatio) + (0.20 * solRatio);
+          }
+          s.similarityScore = Math.min(1.0, score);
+          s.matchPercentage = Math.round(s.similarityScore * 100);
+        });
+
+        // 1. Similar Solutions: strictly 100% match sense solution wrt Title, Questions, Solution text overlap
+        let similar = [...allSolutions]
+          .filter(s => s.similarityScore > 0)
+          .sort((a, b) => b.similarityScore - a.similarityScore);
         if (similar.length === 0) {
           similar = [...allSolutions].sort((a, b) => b.likes - a.likes);
         }
 
-        // 2. Most Liked Solutions
-        const mostLiked = [...allSolutions].sort((a, b) => b.likes - a.likes);
+        // 2. Most Liked: only focus on Similar Solutions order by number of likes
+        const mostLiked = [...similar].sort((a, b) => {
+          if (b.likes !== a.likes) return b.likes - a.likes;
+          return b.similarityScore - a.similarityScore;
+        });
 
-        // 3. Most Viewed Solutions
-        const mostViewed = [...allSolutions].sort((a, b) => b.views - a.views);
+        // 3. Most Viewed: Similar Solution filtering wrt Most View at Top
+        const mostViewed = [...similar].sort((a, b) => {
+          if (b.views !== a.views) return b.views - a.views;
+          return b.similarityScore - a.similarityScore;
+        });
 
-        // 4. More from Contributor
+        // 4. More from Author: Similar Solution uploaded by the Author/Contributor of Current Resource
         const currUid = currData.contributorUid || new URLSearchParams(window.location.search).get('contributor') || '';
         let fromContrib = allSolutions.filter(s => {
           if (currUid && s.contributorUid === currUid) return true;
-          return s.contributor.toLowerCase() === contribName.toLowerCase();
-        });
+          return s.contributor && s.contributor.toLowerCase() === contribName.toLowerCase();
+        }).sort((a, b) => b.similarityScore - a.similarityScore);
         if (fromContrib.length === 0) {
           fromContrib = mostLiked;
         }
 
-        // 5. More in Category
+        // 5. More in Course/Class (e.g. BCA-5A): All resources for BCA-5A giving Priority to Similar Solution match at Top
         let fromCategory = allSolutions.filter(s => {
           return (s.course && s.course.toLowerCase() === categoryName.toLowerCase()) || 
                  (s.category && s.category.toLowerCase() === categoryName.toLowerCase());
-        });
+        }).sort((a, b) => b.similarityScore - a.similarityScore);
         if (fromCategory.length === 0) {
-          fromCategory = mostViewed;
+          fromCategory = similar;
         }
 
         window.__solutionRecPools = {

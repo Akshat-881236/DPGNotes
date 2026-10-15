@@ -2382,13 +2382,14 @@ function renderPasswordVaultTable(items) {
     }
 
     const plainPw = item.password || item.accessPassword || "";
-    const displayPw = plainPw ? plainPw : "Not Stored";
+    const hasPw = !!plainPw;
 
     const tr = document.createElement("tr");
+    tr.className = "manage-res-row vault-row";
     tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
     tr.innerHTML = `
-      <td style="padding:0.85rem 1rem; font-weight:600; color:var(--primary-light); vertical-align:middle;">${idx + 1}</td>
-      <td style="padding:0.85rem 1rem; vertical-align:middle;">
+      <td style="padding:0.85rem 1rem; font-weight:600; color:var(--primary-light); vertical-align:middle;" data-label="#">${idx + 1}</td>
+      <td class="title-col" style="padding:0.85rem 1rem; vertical-align:middle;" data-label="Asset Information">
         <div style="font-weight:700; color:white; margin-bottom:4px; font-size:0.95rem;">${escapeHtml(item.title)}</div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:4px;">
           ${typeBadge}
@@ -2396,27 +2397,32 @@ function renderPasswordVaultTable(items) {
         </div>
         <div style="font-size:0.74rem; color:#64748b; font-family:'Fira Code',monospace;">ID: ${escapeHtml(item.id)}</div>
       </td>
-      <td style="padding:0.85rem 1rem; color:var(--text-muted); font-size:0.85rem; vertical-align:middle;">
+      <td style="padding:0.85rem 1rem; color:var(--text-muted); font-size:0.85rem; vertical-align:middle;" data-label="Category">
         ${escapeHtml(item.category)}
       </td>
-      <td style="padding:0.85rem 1rem; vertical-align:middle;">
-        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.12); padding:5px 10px; border-radius:8px;">
-          <i class="ri-key-fill" style="color:#38bdf8; font-size:0.95rem;"></i>
-          <span id="vaultPwSpan_${item.id}" style="font-family:'Fira Code', monospace; font-weight:700; color:#38bdf8; font-size:0.9rem; letter-spacing:0.5px;">${escapeHtml(displayPw)}</span>
-          ${plainPw ? `
-          <button type="button" onclick="copyVaultPassword('${escapeHtml(plainPw)}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:2px; margin-left:4px;" title="Copy Password">
-            <i class="ri-file-copy-line"></i>
-          </button>
+      <td style="padding:0.85rem 1rem; vertical-align:middle;" data-label="Access Password">
+        <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.12); padding:6px 12px; border-radius:10px;">
+          <i class="ri-key-2-fill" style="color:#38bdf8; font-size:1rem;"></i>
+          <span id="vaultPwSpan_${escapeHtml(item.id)}" data-raw-pw="${escapeHtml(plainPw)}" data-masked="true" style="font-family:'Fira Code', monospace; font-weight:700; color:#38bdf8; font-size:0.9rem; letter-spacing:1px;">
+            ${hasPw ? '••••••••' : '<span style="color:#64748b; font-weight:normal;">Not Stored</span>'}
+          </span>
+          ${hasPw ? `
+            <button type="button" onclick="window.toggleVaultPasswordMask('${escapeHtml(item.id)}')" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1rem; padding:2px; display:inline-flex; align-items:center;" title="Show/Hide Password">
+              <i class="ri-eye-line" id="vaultEye_${escapeHtml(item.id)}"></i>
+            </button>
+            <button type="button" onclick="copyVaultPassword('${escapeHtml(plainPw)}')" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1rem; padding:2px; display:inline-flex; align-items:center;" title="Copy Password">
+              <i class="ri-file-copy-line"></i>
+            </button>
           ` : ''}
         </div>
       </td>
-      <td style="padding:0.85rem 1rem; text-align:center; vertical-align:middle;">
+      <td style="padding:0.85rem 1rem; text-align:center; vertical-align:middle;" data-label="Action Panel">
         <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
-          <button onclick="openVaultChangePasswordModal('${item.id}', '${item.type}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:5px 12px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Change Password on Firestore">
+          <button onclick="openVaultChangePasswordModal('${item.id}', '${item.type}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" title="Change Password on Firestore">
             <i class="ri-edit-line"></i> Change Password
           </button>
-          <button onclick="removeVaultPasswordMakePublic('${item.id}', '${item.type}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')" style="background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#34d399; padding:5px 12px; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Remove Password, Make Public, Index in SERP, and remove from Vault">
-            <i class="ri-lock-unlock-line"></i> Remove Password (Make Public)
+          <button onclick="removeVaultPasswordMakePublic('${item.id}', '${item.type}', '${escapeHtml(item.title).replace(/'/g, "\\'")}')" style="background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.4); color:#34d399; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" title="Remove Password, Make Public, Index in SERP, and remove from Vault">
+            <i class="ri-lock-unlock-line"></i> Make Public
           </button>
         </div>
       </td>
@@ -2424,6 +2430,23 @@ function renderPasswordVaultTable(items) {
     tbody.appendChild(tr);
   });
 }
+
+window.toggleVaultPasswordMask = function(id) {
+  const span = document.getElementById(`vaultPwSpan_${id}`);
+  const eye = document.getElementById(`vaultEye_${id}`);
+  if (!span) return;
+  const raw = span.getAttribute("data-raw-pw");
+  const isMasked = span.getAttribute("data-masked") === "true";
+  if (isMasked) {
+    span.textContent = raw;
+    span.setAttribute("data-masked", "false");
+    if (eye) eye.className = "ri-eye-off-line";
+  } else {
+    span.textContent = "••••••••";
+    span.setAttribute("data-masked", "true");
+    if (eye) eye.className = "ri-eye-line";
+  }
+};
 
 window.filterPasswordVault = function() {
   const searchVal = (document.getElementById("vaultSearchInput")?.value || "").toLowerCase().trim();

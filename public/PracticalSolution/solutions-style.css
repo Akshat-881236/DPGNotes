@@ -731,31 +731,198 @@ body {
 }
 
 /* =========================================================
+   LIGHT THEME ACADEMIC TABLE CONTRAST OVERRIDES
+   Guarantees WCAG AAA Jet-Black contrast for all tables
+   ========================================================= */
+html[data-theme="light"] .sol-table,
+html[data-theme="light"] .sol-answer-content table,
+html[data-theme="light"] .sol-q-preview-content table,
+body[data-theme="light"] .sol-table,
+body[data-theme="light"] .sol-answer-content table,
+body[data-theme="light"] .sol-q-preview-content table {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .sol-table thead,
+html[data-theme="light"] .sol-answer-content table thead,
+html[data-theme="light"] .sol-q-preview-content table thead,
+body[data-theme="light"] .sol-table thead,
+body[data-theme="light"] .sol-answer-content table thead,
+body[data-theme="light"] .sol-q-preview-content table thead {
+  background: #f1f5f9 !important;
+}
+
+html[data-theme="light"] .sol-table th,
+html[data-theme="light"] .sol-answer-content table th,
+html[data-theme="light"] .sol-q-preview-content table th,
+body[data-theme="light"] .sol-table th,
+body[data-theme="light"] .sol-answer-content table th,
+body[data-theme="light"] .sol-q-preview-content table th {
+  background: #ccfbf1 !important;
+  color: #134e4a !important;
+  font-weight: 700 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-bottom: 2px solid #14b8a6 !important;
+}
+
+html[data-theme="light"] .sol-table td,
+html[data-theme="light"] .sol-answer-content table td,
+html[data-theme="light"] .sol-q-preview-content table td,
+body[data-theme="light"] .sol-table td,
+body[data-theme="light"] .sol-answer-content table td,
+body[data-theme="light"] .sol-q-preview-content table td {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .sol-table tbody tr:nth-child(even),
+html[data-theme="light"] .sol-answer-content table tbody tr:nth-child(even),
+html[data-theme="light"] .sol-q-preview-content table tbody tr:nth-child(even),
+html[data-theme="light"] .sol-table tr:nth-child(even) {
+  background: #f8fafc !important;
+}
+
+html[data-theme="light"] .sol-table tbody tr:hover,
+html[data-theme="light"] .sol-answer-content table tbody tr:hover,
+html[data-theme="light"] .sol-q-preview-content table tbody tr:hover,
+html[data-theme="light"] .sol-table tr:hover {
+  background: #f1f5f9 !important;
+}
+
+html[data-theme="light"] .sol-table th[colspan],
+html[data-theme="light"] .sol-table td[colspan],
+html[data-theme="light"] .sol-answer-content table th[colspan],
+html[data-theme="light"] .sol-answer-content table td[colspan],
+html[data-theme="light"] .sol-q-preview-content table th[colspan],
+html[data-theme="light"] .sol-q-preview-content table td[colspan] {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-table th[rowspan],
+html[data-theme="light"] .sol-table td[rowspan],
+html[data-theme="light"] .sol-answer-content table th[rowspan],
+html[data-theme="light"] .sol-answer-content table td[rowspan],
+html[data-theme="light"] .sol-q-preview-content table th[rowspan],
+html[data-theme="light"] .sol-q-preview-content table td[rowspan] {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-right: 2px solid #14b8a6 !important;
+}
+
+html[data-theme="light"] .sol-table-diff thead th:first-child,
+html[data-theme="light"] .table-diff thead th:first-child {
+  background: #ccfbf1 !important;
+  color: #0f766e !important;
+  border-right: 2px solid #14b8a6 !important;
+}
+
+html[data-theme="light"] .sol-table-diff tbody td:first-child,
+html[data-theme="light"] .table-diff tbody td:first-child {
+  background: #f0fdfa !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  border-right: 2px solid #99f6e4 !important;
+}
+
+html[data-theme="light"] .sol-table .diff-same-row,
+html[data-theme="light"] .sol-table tr.similarity,
+html[data-theme="light"] .sol-table-diff .diff-same-row,
+html[data-theme="light"] .sol-table-diff tr.similarity,
+html[data-theme="light"] .table-diff .diff-same-row,
+html[data-theme="light"] .table-diff tr.similarity {
+  background: #ecfdf5 !important;
+}
+
+html[data-theme="light"] .sol-table .diff-same-row td,
+html[data-theme="light"] .sol-table tr.similarity td,
+html[data-theme="light"] .sol-table-diff .diff-same-row td,
+html[data-theme="light"] .sol-table-diff tr.similarity td {
+  color: #064e3b !important;
+}
+
+html[data-theme="light"] .sol-table .diff-same-row td:first-child,
+html[data-theme="light"] .sol-table tr.similarity td:first-child,
+html[data-theme="light"] .sol-table-diff .diff-same-row td:first-child,
+html[data-theme="light"] .sol-table-diff tr.similarity td:first-child {
+  color: #047857 !important;
+  border-right-color: #6ee7b7 !important;
+}
+
+html[data-theme="light"] .sol-table .diff-diff-row,
+html[data-theme="light"] .sol-table tr.difference,
+html[data-theme="light"] .sol-table-diff .diff-diff-row,
+html[data-theme="light"] .sol-table-diff tr.difference,
+html[data-theme="light"] .table-diff .diff-diff-row,
+html[data-theme="light"] .table-diff tr.difference {
+  background: #fef2f2 !important;
+}
+
+html[data-theme="light"] .sol-table .diff-diff-row td,
+html[data-theme="light"] .sol-table tr.difference td,
+html[data-theme="light"] .sol-table-diff .diff-diff-row td,
+html[data-theme="light"] .sol-table-diff tr.difference td {
+  color: #7f1d1d !important;
+}
+
+html[data-theme="light"] .sol-diff-badge-diff {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fca5a5 !important;
+}
+html[data-theme="light"] .sol-diff-badge-same {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #86efac !important;
+}
+html[data-theme="light"] .sol-diff-badge-info {
+  background: #ccfbf1 !important;
+  color: #0f766e !important;
+  border: 1px solid #99f6e4 !important;
+}
+
+/* =========================================================
    MULTI-DEVICE MEDIA RESPONSIVENESS
    Graceful mobile and tablet scaling for all viewport sizes
    ========================================================= */
+.sol-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.25rem 0;
+  border-radius: 10px;
+  border: 1px solid var(--sol-border);
+}
+
 @media (max-width: 768px) {
   .sol-table-responsive {
     margin: 1rem 0;
     border-radius: 8px;
+    box-shadow: inset -6px 0 8px -4px rgba(0, 0, 0, 0.12);
   }
   .sol-table,
   .sol-answer-content table,
   .sol-q-preview-content table {
-    min-width: 460px;
+    min-width: 480px;
     font-size: 0.85rem;
+    line-height: 1.5;
   }
   .sol-table th,
   .sol-answer-content table th,
   .sol-q-preview-content table th {
-    padding: 10px 12px;
+    padding: 9px 12px;
     font-size: 0.8rem;
     letter-spacing: 0.3px;
+    white-space: nowrap;
   }
   .sol-table td,
   .sol-answer-content table td,
   .sol-q-preview-content table td {
-    padding: 10px 12px;
+    padding: 9px 12px;
     font-size: 0.85rem;
   }
 }
@@ -768,9 +935,9 @@ body {
   .sol-table,
   .sol-answer-content table,
   .sol-q-preview-content table {
-    min-width: 400px;
+    min-width: 420px;
     font-size: 0.8rem;
-    line-height: 1.5;
+    line-height: 1.45;
   }
   .sol-table th,
   .sol-answer-content table th,
