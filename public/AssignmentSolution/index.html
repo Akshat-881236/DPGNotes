@@ -2411,6 +2411,21 @@
     function escapeHtml(s) {
       return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
+
+    (function () {
+  const links = document.querySelectorAll('a[href]');
+  const activePage = window.location.href;
+  links.forEach(function (link) {
+    const url = new URL(link.href, window.location.href);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+    url.searchParams.set('utm_source', 'dpgnotes');
+    url.searchParams.set('utm_medium', 'referral');
+    url.searchParams.set('utm_campaign', 'dpgnotes_assignment_solution_viewer');
+    url.searchParams.set('utm_referrer', activePage);
+    link.href = url.href;
+    link.setAttribute('referrerpolicy', 'no-referrer');
+  });
+})();
   </script>
 </body>
 </html>
