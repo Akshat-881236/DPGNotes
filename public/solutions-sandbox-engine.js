@@ -791,6 +791,41 @@
       return buildInteractiveCodeContainerHtml(lang, codeId, groupId, codeBody);
     });
 
+    // 3. Auto-wrap bare <table> elements in responsive scrollable wrappers and ensure fallback styling
+    if (content.includes('<table')) {
+      // Step A: Ensure all <table> tags have 'sol-table' class
+      content = content.replace(/<table\b([^>]*)>/gi, function(tagMatch, attrs) {
+        if (!attrs || !attrs.trim()) {
+          return '<table class="sol-table">';
+        }
+        if (/class=["']/i.test(attrs)) {
+          if (!/sol-table/i.test(attrs)) {
+            return `<table${attrs.replace(/class=["']([^"']*)["']/i, 'class="$1 sol-table"')}>`;
+          }
+          return tagMatch;
+        }
+        return `<table class="sol-table" ${attrs}>`;
+      });
+
+      // Step B: Stash tables already enclosed inside a responsive container
+      const tableWrappers = [];
+      content = content.replace(/<div\b[^>]*class=["'][^"']*(?:sol-table-responsive|table-responsive)[^"']*["'][^>]*>[\s\S]*?<\/table>\s*<\/div>/gi, function(wrappedMatch) {
+        const ph = `___DPG_TABLE_WRAPPED_${tableWrappers.length}___`;
+        tableWrappers.push(wrappedMatch);
+        return ph;
+      });
+
+      // Step C: Wrap remaining unwrapped <table>...</table> elements in responsive scroll container
+      content = content.replace(/<table\b[\s\S]*?<\/table>/gi, function(bareTable) {
+        return `<div class="sol-table-responsive">${bareTable}</div>`;
+      });
+
+      // Step D: Restore previously wrapped tables
+      tableWrappers.forEach(function(wrapped, idx) {
+        content = content.replace(`___DPG_TABLE_WRAPPED_${idx}___`, wrapped);
+      });
+    }
+
     return content;
   };
 
@@ -892,11 +927,45 @@
       snippet = `\n<div class="code-container" id="code-html-${uniqueId}" data-code-group="${uniqueId}" data-lang="html">\n<pre><code><!-- HTML Code Container -->\n<div class="demo-box">\n  <h3>Interactive Demo</h3>\n  <button id="btnAction">Click Action</button>\n  <p id="outputMsg">Ready...</p>\n</div></code></pre>\n</div>\n`;
     } else if (type === 'css') {
       snippet = `\n<div class="code-container" id="code-css-${uniqueId}" data-code-group="${uniqueId}" data-lang="css">\n<pre><code>/* CSS Code Container */\n.demo-box {\n  padding: 1.5rem;\n  background: #f8fafc;\n  border: 2px solid #38bdf8;\n  border-radius: 8px;\n}\n#btnAction {\n  background: #38bdf8;\n  color: #0f172a;\n  font-weight: bold;\n  border: none;\n  padding: 8px 16px;\n  border-radius: 6px;\n  cursor: pointer;\n}</code></pre>\n</div>\n`;
-    } else if (type === 'js') {
+    } else if (type === 'js' || type === 'javascript') {
       snippet = `\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>// JavaScript Code Container\nconst btn_${uniqueId} = document.getElementById('runBtn_${uniqueId}') || document.getElementById('btnAction');\nif (btn_${uniqueId}) {\n  btn_${uniqueId}.addEventListener('click', function() {\n    console.log("Action button clicked in sandbox!");\n    const out_${uniqueId} = document.getElementById('result_${uniqueId}') || document.getElementById('outputMsg');\n    if (out_${uniqueId}) out_${uniqueId}.textContent = "Ran successfully at " + new Date().toLocaleTimeString();\n  });\n}</code></pre>\n</div>\n`;
     } else if (type === 'all') {
       // Complete linked HTML + CSS + JS package
       snippet = `\n<!-- Linked Code Sandbox Package (Group: ${uniqueId}) -->\n<div class="code-container" id="code-html-${uniqueId}" data-code-group="${uniqueId}" data-lang="html">\n<pre><code><div class="demo-card">\n  <h2>Interactive Academic Component</h2>\n  <button id="runBtn_${uniqueId}">Execute Component</button>\n  <div id="result_${uniqueId}" style="margin-top:10px; font-weight:bold;">Output awaits trigger...</div>\n</div></code></pre>\n</div>\n\n<div class="code-container" id="code-css-${uniqueId}" data-code-group="${uniqueId}" data-lang="css">\n<pre><code>.demo-card {\n  padding: 1.25rem;\n  background: #ffffff;\n  border: 2px solid #10b981;\n  border-radius: 10px;\n  color: #1e293b;\n}\n#runBtn_${uniqueId} {\n  background: #10b981;\n  color: white;\n  border: none;\n  padding: 8px 18px;\n  border-radius: 6px;\n  font-weight: 600;\n  cursor: pointer;\n}</code></pre>\n</div>\n\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>const runBtn_${uniqueId} = document.getElementById('runBtn_${uniqueId}');\nif (runBtn_${uniqueId}) {\n  runBtn_${uniqueId}.addEventListener('click', function() {\n    console.log("Component executed with group ID: ${uniqueId}");\n    const res_${uniqueId} = document.getElementById('result_${uniqueId}');\n    if (res_${uniqueId}) res_${uniqueId}.textContent = "Live script output updated at " + new Date().toLocaleTimeString();\n  });\n}</code></pre>\n</div>\n`;
+    } else if (type === 'table' || type === 'table-diff') {
+      snippet = `\n<!-- Responsive Difference & Similarity Matrix Table -->
+<div class="sol-table-responsive">
+  <table class="sol-table sol-table-diff">
+    <thead>
+      <tr>
+        <th style="width: 25%;">Comparison Criteria</th>
+        <th style="width: 37.5%;">Topic A (e.g. Concept 1)</th>
+        <th style="width: 37.5%;">Topic B (e.g. Concept 2)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Definition</strong></td>
+        <td>Primary definition and core premise of Topic A.</td>
+        <td>Primary definition and core premise of Topic B.</td>
+      </tr>
+      <tr>
+        <td><strong>Key Mechanism</strong></td>
+        <td>How Topic A operates or executes its internal process.</td>
+        <td>How Topic B operates or executes its internal process.</td>
+      </tr>
+      <tr>
+        <td><strong>Performance &amp; Speed</strong></td>
+        <td>High throughput with minimal overhead.</td>
+        <td>Standard throughput optimized for reliability.</td>
+      </tr>
+      <tr class="diff-same-row">
+        <td><strong>Core Similarity</strong></td>
+        <td colspan="2">Both topics share foundational computer science principles and common use cases in modern engineering.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>\n`;
     }
 
     const start = el.selectionStart;
@@ -909,6 +978,11 @@
 
     // Trigger input event to update live preview
     el.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+
+  // Dedicated Helper for Responsive Difference/Similarity Comparison Tables
+  window.insertTableSnippet = function(textareaId, contextId) {
+    return window.insertSandboxSnippet(textareaId, 'table-diff', contextId);
   };
 
   function stripHtmlTags(str) {

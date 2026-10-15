@@ -9,11 +9,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Practical Solution Generator | DPGNotes Contributor Suite</title>
   <link rel="icon" href="../ANH.png" type="image/png">
-  <link rel="stylesheet" href="solutions-style.css">
+  <link rel="stylesheet" href="solutions-style.css?v=2.3.1">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="../config.js"></script>
   <script src="../custom-dialogs.js"></script>
-  <script src="../solutions-sandbox-engine.js?v=2.0.0"></script>
+  <script src="../solutions-sandbox-engine.js?v=2.1.0"></script>
   <!-- Google AdSense SDK -->
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
@@ -712,6 +712,7 @@
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${p.id}', '<ul>\\n  <li>', '</li>\\n</ul>')">ul</button>
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${p.id}', '<code>', '</code>')">code</button>
                 <button type="button" class="sol-palette-btn" onclick="insertTag('${p.id}', '<pre><code>', '</code></pre>')">pre</button>
+                <button type="button" class="sol-palette-btn" style="color:#2dd4bf; border-color:rgba(45,212,191,0.35); background:rgba(45,212,191,0.1);" onclick="window.insertTableSnippet ? window.insertTableSnippet('code_${p.id}', '${p.id}') : window.insertSandboxSnippet('code_${p.id}', 'table', '${p.id}')" title="Insert Media-Responsive Difference / Similarity Comparison Table"><i class="ri-table-line"></i> table-diff</button>
                 <button type="button" class="sol-palette-btn" style="color:#f97316; border-color:rgba(249,115,22,0.3);" onclick="window.insertSandboxSnippet('code_${p.id}', 'html', '${p.id}')"><i class="ri-html5-fill"></i> html-box</button>
                 <button type="button" class="sol-palette-btn" style="color:#38bdf8; border-color:rgba(56,189,248,0.3);" onclick="window.insertSandboxSnippet('code_${p.id}', 'css', '${p.id}')"><i class="ri-css3-fill"></i> css-box</button>
                 <button type="button" class="sol-palette-btn" style="color:#facc15; border-color:rgba(250,204,21,0.3);" onclick="window.insertSandboxSnippet('code_${p.id}', 'js', '${p.id}')"><i class="ri-javascript-fill"></i> js-box</button>

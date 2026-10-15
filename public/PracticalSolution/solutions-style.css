@@ -494,6 +494,298 @@ body {
   color: #f472b6;
 }
 
+/* =========================================================
+   MEDIA RESPONSIVE ACADEMIC TABLES & MATRICES
+   Full fallback support for table, thead, tbody, tfoot, tr,
+   th, td, colspan, rowspan, and Difference/Similarity comparisons
+   ========================================================= */
+
+/* Responsive Table Wrapper */
+.sol-table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+  border-radius: var(--sol-radius, 10px);
+  border: 1px solid var(--sol-border);
+  background: var(--sol-surface, #111827);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Subtle scrollbar styling for webkit */
+.sol-table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+.sol-table-responsive::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+.sol-table-responsive::-webkit-scrollbar-thumb {
+  background: rgba(20, 184, 166, 0.4);
+  border-radius: 4px;
+}
+.sol-table-responsive::-webkit-scrollbar-thumb:hover {
+  background: rgba(20, 184, 166, 0.7);
+}
+
+/* Base Table Styling & Universal Fallbacks */
+.sol-table,
+.sol-answer-content table,
+.sol-q-preview-content table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--sol-text, #f8fafc);
+  min-width: 500px;
+  margin: 0;
+  text-align: left;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+/* Unnested standalone tables fallback container behavior */
+.sol-answer-content > table:not(.sol-table-responsive table),
+.sol-q-preview-content > table:not(.sol-table-responsive table) {
+  margin: 1.25rem 0;
+  border: 1px solid var(--sol-border);
+  border-radius: var(--sol-radius, 10px);
+  overflow: hidden;
+  display: table;
+}
+
+/* Table Header */
+.sol-table thead,
+.sol-answer-content table thead,
+.sol-q-preview-content table thead {
+  background: rgba(20, 184, 166, 0.14);
+}
+
+.sol-table th,
+.sol-answer-content table th,
+.sol-q-preview-content table th {
+  background: rgba(20, 184, 166, 0.12);
+  color: #5eead4;
+  font-weight: 700;
+  font-size: 0.86rem;
+  padding: 12px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--sol-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* Table Body & Cells */
+.sol-table td,
+.sol-answer-content table td,
+.sol-q-preview-content table td {
+  padding: 12px 16px;
+  border: 1px solid var(--sol-border);
+  color: #e2e8f0;
+  vertical-align: top;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Alternating zebra stripes */
+.sol-table tbody tr:nth-child(even),
+.sol-answer-content table tbody tr:nth-child(even),
+.sol-q-preview-content table tbody tr:nth-child(even),
+.sol-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Row hover effect */
+.sol-table tbody tr:hover,
+.sol-answer-content table tbody tr:hover,
+.sol-q-preview-content table tbody tr:hover,
+.sol-table tr:hover {
+  background: rgba(20, 184, 166, 0.07);
+}
+
+/* Spanning Cells: Colspan */
+.sol-table th[colspan],
+.sol-table td[colspan],
+.sol-answer-content table th[colspan],
+.sol-answer-content table td[colspan],
+.sol-q-preview-content table th[colspan],
+.sol-q-preview-content table td[colspan] {
+  font-weight: 600;
+  text-align: inherit;
+  background: rgba(20, 184, 166, 0.05);
+}
+
+/* Spanning Cells: Rowspan */
+.sol-table th[rowspan],
+.sol-table td[rowspan],
+.sol-answer-content table th[rowspan],
+.sol-answer-content table td[rowspan],
+.sol-q-preview-content table th[rowspan],
+.sol-q-preview-content table td[rowspan] {
+  vertical-align: middle;
+  font-weight: 600;
+  background: var(--sol-surface, #111827);
+  border-right: 2px solid rgba(20, 184, 166, 0.3);
+}
+
+/* Table Footer */
+.sol-table tfoot,
+.sol-answer-content table tfoot,
+.sol-q-preview-content table tfoot {
+  background: rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+}
+.sol-table tfoot td,
+.sol-answer-content table tfoot td,
+.sol-q-preview-content table tfoot td {
+  border-top: 2px solid var(--sol-border);
+  color: #cbd5e1;
+}
+
+/* =========================================================
+   DIFFERENCE & SIMILARITY COMPARISON MATRIX STYLES
+   Specialized layout for side-by-side technical comparisons
+   ========================================================= */
+.sol-table-diff,
+.table-diff {
+  border: 1px solid var(--sol-border);
+}
+
+/* First Column: Comparison Basis / Parameter */
+.sol-table-diff thead th:first-child,
+.table-diff thead th:first-child {
+  background: rgba(20, 184, 166, 0.18);
+  color: #2dd4bf;
+  width: 25%;
+  min-width: 140px;
+}
+
+.sol-table-diff tbody td:first-child,
+.table-diff tbody td:first-child {
+  font-weight: 600;
+  color: #5eead4;
+  background: rgba(20, 184, 166, 0.04);
+  border-right: 1.5px solid rgba(20, 184, 166, 0.2);
+}
+
+/* Similarity Highlights */
+.sol-table .diff-same-row,
+.sol-table tr.similarity,
+.sol-table-diff .diff-same-row,
+.sol-table-diff tr.similarity,
+.table-diff .diff-same-row,
+.table-diff tr.similarity {
+  background: rgba(16, 185, 129, 0.06) !important;
+}
+
+.sol-table .diff-same-row td:first-child,
+.sol-table tr.similarity td:first-child,
+.sol-table-diff .diff-same-row td:first-child,
+.sol-table-diff tr.similarity td:first-child {
+  color: #34d399 !important;
+  border-right-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Difference Highlights */
+.sol-table .diff-diff-row,
+.sol-table tr.difference,
+.sol-table-diff .diff-diff-row,
+.sol-table-diff tr.difference,
+.table-diff .diff-diff-row,
+.table-diff tr.difference {
+  background: rgba(20, 184, 166, 0.05) !important;
+}
+
+/* Comparison Badges */
+.sol-diff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.sol-diff-badge-diff {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.sol-diff-badge-same {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.sol-diff-badge-info {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* =========================================================
+   MULTI-DEVICE MEDIA RESPONSIVENESS
+   Graceful mobile and tablet scaling for all viewport sizes
+   ========================================================= */
+@media (max-width: 768px) {
+  .sol-table-responsive {
+    margin: 1rem 0;
+    border-radius: 8px;
+  }
+  .sol-table,
+  .sol-answer-content table,
+  .sol-q-preview-content table {
+    min-width: 460px;
+    font-size: 0.85rem;
+  }
+  .sol-table th,
+  .sol-answer-content table th,
+  .sol-q-preview-content table th {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+  }
+  .sol-table td,
+  .sol-answer-content table td,
+  .sol-q-preview-content table td {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sol-table-responsive {
+    margin: 0.85rem 0;
+    border-radius: 6px;
+  }
+  .sol-table,
+  .sol-answer-content table,
+  .sol-q-preview-content table {
+    min-width: 400px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  .sol-table th,
+  .sol-answer-content table th,
+  .sol-q-preview-content table th {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+  .sol-table td,
+  .sol-answer-content table td,
+  .sol-q-preview-content table td {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+}
+
 /* LIVE HTML EXECUTION SANDBOX */
 .sol-sandbox-wrapper {
   margin-top: 1rem;
