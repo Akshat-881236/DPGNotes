@@ -1,5 +1,5 @@
 import { getAuth, onAuthStateChanged, signOut, updatePassword, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, addDoc, getDocs, query, orderBy, where, limit, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
 // Prevent duplicate execution of dashboard module
@@ -613,11 +613,11 @@ async function loadProfile() {
       
       if (userData.linkedin) {
         document.getElementById("settingLinkedin").value = userData.linkedin;
-        socialLinksContainer.innerHTML += `<a href="${userData.linkedin}" target="_blank" style="color:#0077b5; font-size:1.5rem; text-decoration:none;" title="LinkedIn">🔗</a>`;
+        socialLinksContainer.innerHTML += `<a href="${userData.linkedin}" target="_blank" style="color:#0a66c2; font-size:1.35rem; text-decoration:none; display:inline-flex; align-items:center;" title="LinkedIn"><i class="bi bi-linkedin"></i></a>`;
       }
       if (userData.github) {
         document.getElementById("settingGithub").value = userData.github;
-        socialLinksContainer.innerHTML += `<a href="${userData.github}" target="_blank" style="color:#fff; font-size:1.5rem; text-decoration:none;" title="GitHub">🐙</a>`;
+        socialLinksContainer.innerHTML += `<a href="${userData.github}" target="_blank" style="color:#fff; font-size:1.35rem; text-decoration:none; display:inline-flex; align-items:center;" title="GitHub"><i class="bi bi-github"></i></a>`;
       }
 
       const twoFactorEl = document.getElementById("settingTwoFactorEnabled");
@@ -795,21 +795,73 @@ async function loadLeaderboard() {
 // =========================================
 // EXPLORE TAB (Cards with Like/Share)
 // =========================================
+// =========================================
+// ACADEMIC CATEGORIES CONFIGURATION FOR EXPLORE
+// =========================================
+const DASHBOARD_EXPLORE_CATEGORIES = [
+  { key: "SP", fullName: "Sample Papers & Model Sets", shortCode: "SP", icon: "ri-draft-line", accent: "#0ea5e9" },
+  { key: "SE", fullName: "Sessional Exam Papers", shortCode: "SE", icon: "ri-file-list-3-line", accent: "#6366f1" },
+  { key: "UE", fullName: "University Exam Papers", shortCode: "UE", icon: "ri-government-line", accent: "#8b5cf6" },
+  { key: "T&N", fullName: "Tutorial & Notes", shortCode: "T&N", icon: "ri-book-read-line", accent: "#10b981" },
+  { key: "EV", fullName: "Event Material", shortCode: "EV", icon: "ri-calendar-event-line", accent: "#ec4899" },
+  { key: "IQ", fullName: "Interview Questions", shortCode: "IQ", icon: "ri-question-answer-line", accent: "#f59e0b" },
+  { key: "A&LR", fullName: "Aptitude & LR", shortCode: "A&LR", icon: "ri-brain-line", accent: "#f97316" },
+  { key: "PQ", fullName: "Placement Question", shortCode: "PQ", icon: "ri-briefcase-line", accent: "#14b8a6" }
+];
+
+function matchDashboardDocCategory(cat) {
+  if (!cat) return "T&N";
+  const c = String(cat).toLowerCase().trim();
+  if (c.includes("sample") || c.includes("model") || c === "sp") return "SP";
+  if (c.includes("sessional") || c === "se") return "SE";
+  if (c.includes("university") || c.includes("semester") || c === "ue") return "UE";
+  if (c.includes("tutorial") || c.includes("notes") || c.includes("unit") || c === "t&n") return "T&N";
+  if (c.includes("event") || c === "ev") return "EV";
+  if (c.includes("interview") || c === "iq") return "IQ";
+  if (c.includes("aptitude") || c.includes("reasoning") || c === "a&lr") return "A&LR";
+  if (c.includes("placement") || c === "pq") return "PQ";
+  return "T&N";
+}
+
+// =========================================
+// EXPLORE TAB (Categorized Grids matching Image 5)
+// =========================================
 async function loadExplore() {
-  const exploreGrid = document.getElementById("exploreGrid");
-  exploreGrid.innerHTML = "<p>Loading resources...</p>";
+  const hubContainer = document.getElementById("exploreHubContainer") || document.getElementById("exploreGrid");
+  if (!hubContainer) return;
+  hubContainer.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:2rem;'><i class='ri-loader-4-line spin-icon'></i> Loading curated academic collections...</p>";
   
-  // Fetch users cache for social links
-  let usersCache = {};
+  // Fetch users cache for social links & avatars
+  let usersCache = window.__dpgUserCache || {};
   try {
     const uSnap = await getDocs(collection(db, "users"));
-    uSnap.forEach(uDoc => { usersCache[uDoc.id] = uDoc.data(); });
+    uSnap.forEach(uDoc => { 
+      const uData = uDoc.data();
+      usersCache[uDoc.id] = { uid: uDoc.id, ...uData };
+      window.__dpgUserCache[uDoc.id] = { uid: uDoc.id, ...uData };
+    });
   } catch(e) {}
+
+  // Parallel fetch documents and verified solutions
+  let docsSnap = { forEach: () => {} };
+  let solutionsSnap = { forEach: () => {} };
+  try {
+    const results = await Promise.all([
+      getDocs(query(collection(db, "documents"))),
+      getDocs(query(collectionGroup(db, "solutions"), limit(120))).catch(err => {
+        console.warn("Dashboard solutions fetch notice:", err);
+        return { forEach: () => {} };
+      })
+    ]);
+    docsSnap = results[0];
+    solutionsSnap = results[1];
+  } catch (err) {
+    console.error("Dashboard explore fetch error:", err);
+  }
   
-  const snap = await getDocs(query(collection(db, "documents")));
-  
+  // Filter approved docs
   let docsArray = [];
-  snap.forEach(doc => {
+  docsSnap.forEach(doc => {
     const d = doc.data();
     const isOwner = !!(currentUser && (
       (d.userId && d.userId === currentUser.uid) ||
@@ -820,34 +872,48 @@ async function loadExplore() {
     const isApproved = d.status === "approved" || d.isApproved === true;
     const isPrivate = d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false;
 
-    // Strict Rule: Current Contributor sees their own resources (both Public and Private).
-    // Other Contributors: Show Public resources ONLY (!isPrivate && isApproved).
     if (isOwner) {
       docsArray.push({ id: doc.id, ...d });
     } else if (!isPrivate && isApproved) {
       docsArray.push({ id: doc.id, ...d });
     }
   });
-  
-  const sortVal = document.getElementById("exploreSort") ? document.getElementById("exploreSort").value : "newest";
-  
-  docsArray.sort((a, b) => {
-    if (sortVal === "oldest") {
-      return (a.createdAt?.toMillis() || 0) - (b.createdAt?.toMillis() || 0);
-    } else if (sortVal === "likes") {
-      return (b.likes ? b.likes.length : 0) - (a.likes ? a.likes.length : 0);
-    } else if (sortVal === "shares") {
-      return (b.shareCount || 0) - (a.shareCount || 0);
-    } else {
-      // newest
-      return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
-    }
+
+  // Extract verified solutions
+  const solutions = [];
+  solutionsSnap.forEach(doc => {
+    const d = doc.data();
+    if (d.status === 'unverified' || d.isVerified === false) return;
+    solutions.push({ id: doc.id, ...d });
   });
   
-  // Apply search filter
+  // Sort values
+  const sortVal = document.getElementById("exploreSort") ? document.getElementById("exploreSort").value : "newest";
+  const sortFn = (a, b) => {
+    if (sortVal === "oldest") {
+      return (a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime()) - 
+             (b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt || 0).getTime());
+    } else if (sortVal === "likes") {
+      const likesA = Array.isArray(a.likes) ? a.likes.length : (Number(a.likes) || 0);
+      const likesB = Array.isArray(b.likes) ? b.likes.length : (Number(b.likes) || 0);
+      return likesB - likesA;
+    } else if (sortVal === "shares") {
+      return (b.shareCount || b.views || 0) - (a.shareCount || a.views || 0);
+    } else {
+      return (b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt || 0).getTime()) - 
+             (a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime());
+    }
+  };
+
+  docsArray.sort(sortFn);
+  solutions.sort(sortFn);
+  
+  // Apply search query filter if user typed in search box
   const searchInput = document.getElementById("exploreSearch");
   const queryStr = searchInput ? searchInput.value.toLowerCase().trim() : "";
-  if (queryStr) {
+  let isFiltered = Boolean(queryStr);
+
+  if (isFiltered) {
     docsArray = docsArray.filter(d =>
       (d.title || "").toLowerCase().includes(queryStr) ||
       (d.description || "").toLowerCase().includes(queryStr) ||
@@ -855,65 +921,222 @@ async function loadExplore() {
       (d.discipline || "").toLowerCase().includes(queryStr) ||
       (d.tags || []).join(" ").toLowerCase().includes(queryStr)
     );
+    solutions.splice(0, solutions.length, ...solutions.filter(s =>
+      (s.subjectName || s.title || "").toLowerCase().includes(queryStr) ||
+      (s.subjectCode || "").toLowerCase().includes(queryStr) ||
+      (s.course || "").toLowerCase().includes(queryStr) ||
+      (s.contributorName || "").toLowerCase().includes(queryStr)
+    ));
   }
 
-  exploreGrid.innerHTML = "";
-  if (docsArray.length === 0) {
-    exploreGrid.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;'>No resources found matching your search.</p>";
-    return;
-  }
-  docsArray.forEach(data => {
+  // Device-Specific Feed Count Rule:
+  // Desktop (>1024px) & Phone (<=640px): 3 Resources per stream
+  // Tablet (641px - 1024px): 4 Resources per stream (2x2 grid as shown in Image 5)
+  const isTablet = window.innerWidth >= 641 && window.innerWidth <= 1024;
+  const feedLimit = isTablet ? 4 : 3;
+
+  // Group docs by category
+  const grouped = {};
+  DASHBOARD_EXPLORE_CATEGORIES.forEach(c => { grouped[c.key] = []; });
+  docsArray.forEach(d => {
+    const catKey = matchDashboardDocCategory(d.category);
+    if (grouped[catKey]) {
+      grouped[catKey].push(d);
+    }
+  });
+
+  // Helper to render card HTML
+  function renderCardHtml(data, isSol = false) {
     const docId = data.id;
-    const likes = data.likes || [];
-    const hasLiked = currentUser ? likes.includes(currentUser.uid) : false;
-    const isApproved = data.status === "approved" || data.isApproved === true;
-    const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
-    
-    const card = document.createElement("article");
-    card.className = "resource-card";
-    card.innerHTML = `
-      <div class="card-top">
-        <span class="category">${escapeHtml(data.category || 'General')}</span>
-        <span class="discipline">${escapeHtml(data.discipline || 'General')}</span>
-      </div>
-      ${(!isApproved || isPrivate) ? `
-      <div style="display:flex; gap:6px; margin: 4px 0 8px 0; flex-wrap:wrap;">
-        ${!isApproved ? `<span style="background:rgba(245,158,11,0.22); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;"><i class="ri-time-line"></i> Pending Admin Approval</span>` : ''}
-        ${isPrivate ? `<span style="background:rgba(239,68,68,0.22); color:#f87171; border:1px solid rgba(239,68,68,0.4); padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;"><i class="ri-lock-2-line"></i> Private (Encrypted)</span>` : ''}
-      </div>` : ''}
-      <h3>${data.title}</h3>
-      <div class="card-author">
-        ${usersCache && usersCache[data.userId] && usersCache[data.userId].profilePic 
-          ? `<img src="${usersCache[data.userId].profilePic}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` 
-          : (usersCache && usersCache[data.userId] && usersCache[data.userId].photoURL ? `<img src="${usersCache[data.userId].photoURL}" class="author-avatar" alt="Avatar" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">` : `<div class="author-avatar-fallback" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">${(data.userName || "C").charAt(0).toUpperCase()}</div>`)
-        }
-        <span class="author-name" style="cursor:pointer;" onclick="window.location.href='profile.html?uid=${data.userId}'">By ${data.userName || "Contributor"}</span>
-        <div class="author-socials">
-          ${usersCache[data.userId] && usersCache[data.userId].linkedin ? `<a href="${usersCache[data.userId].linkedin}" target="_blank" title="LinkedIn">🔗</a>` : ""}
-          ${usersCache[data.userId] && usersCache[data.userId].github ? `<a href="${usersCache[data.userId].github}" target="_blank" title="GitHub">🐙</a>` : ""}
+    const likes = Array.isArray(data.likes) ? data.likes : (Number(data.likes) || []);
+    const likesCount = Array.isArray(likes) ? likes.length : Number(likes) || 0;
+    const hasLiked = currentUser && Array.isArray(likes) ? likes.includes(currentUser.uid) : false;
+    const isApproved = data.status === "approved" || data.isApproved === true || isSol;
+    const isPrivate = data.visibility === "private" || data.isPasswordProtected === true;
+
+    const authorUid = data.userId || data.uploaderId || data.uploaderUid || data.contributorUid || "";
+    const authorUser = (authorUid && usersCache[authorUid]) || null;
+    const authorName = data.userName || data.uploader || data.contributorName || (authorUser && authorUser.name) || "Verified Contributor";
+    const authorPhoto = (authorUser && (authorUser.profilePic || authorUser.photoURL || authorUser.avatarUrl)) || data.contributorPhoto || data.userPhoto || "https://dpgnotes.web.app/ANH.png";
+
+    const title = data.title || data.subjectName || "Academic Resource";
+    const discipline = data.discipline || data.course || "Computer Science";
+    const categoryName = isSol ? (data.type === 'practical' ? "Practical Solution" : "Assignment Solution") : (data.category || "Academic Notes");
+    const catColor = isSol ? (data.type === 'practical' ? "#10b981" : "#06b6d4") : "#6366f1";
+    const catIcon = isSol ? (data.type === 'practical' ? "ri-flask-line" : "ri-file-code-line") : "ri-file-text-line";
+
+    const targetUrl = isSol
+      ? (data.type === 'practical' ? `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(docId)}` : `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(docId)}`)
+      : `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${docId}&pdf=${encodeURIComponent(data.pdfUrl || '')}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(data.category || '')}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(authorName)}&docid=${encodeURIComponent(data.documentId || '')}`;
+
+    const profileUrl = authorUid ? `profile.html?uid=${encodeURIComponent(authorUid)}` : `profile.html`;
+
+    return `
+      <article class="academic-res-card" style="background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.25s, border-color 0.25s;">
+        <div>
+          <div class="res-card-top" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; gap:6px;">
+            <span class="res-badge-cat" style="color:${catColor}; border:1px solid ${catColor}40; background:${catColor}15; padding:3px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+              <i class="${catIcon}"></i> ${escapeHtml(categoryName)}
+            </span>
+            <span class="res-badge-disc" style="color:#94a3b8; font-size:0.78rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">${escapeHtml(discipline)}</span>
+          </div>
+
+          ${(!isApproved || isPrivate) ? `
+          <div style="display:flex; gap:6px; margin: 4px 0 8px 0; flex-wrap:wrap;">
+            ${!isApproved ? `<span style="background:rgba(245,158,11,0.22); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;"><i class="ri-time-line"></i> Pending Admin Approval</span>` : ''}
+            ${isPrivate ? `<span style="background:rgba(239,68,68,0.22); color:#f87171; border:1px solid rgba(239,68,68,0.4); padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;"><i class="ri-lock-2-line"></i> Private (Encrypted)</span>` : ''}
+          </div>` : ''}
+
+          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; line-height:1.4; margin:0 0 0.8rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.8rem;">
+            ${escapeHtml(title)}
+          </h3>
+
+          <!-- Contributor Avatar Photo (Clickable + 4-Second Hover Card) & Name Link -->
+          <div class="card-author" style="display:flex; align-items:center; gap:8px; margin-bottom:0.8rem;">
+            <a href="${profileUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
+              <img src="${authorPhoto}" 
+                   class="contributor-photo-trigger author-avatar-mini" 
+                   data-contrib-uid="${escapeHtml(authorUid)}" 
+                   data-contrib-name="${escapeHtml(authorName)}" 
+                   alt="${escapeHtml(authorName)}" 
+                   style="width:26px; height:26px; border-radius:50%; object-fit:cover; border:1.5px solid #6366f1; vertical-align:middle; cursor:pointer;" 
+                   onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
+            </a>
+            <a href="${profileUrl}" class="contributor-name-link" style="color:#cbd5e1; font-size:0.82rem; font-weight:600; text-decoration:none; cursor:pointer;">
+              By ${escapeHtml(authorName)}
+            </a>
+          </div>
+
+          ${data.description ? `
+            <p class="card-desc" style="font-size:0.82rem; color:#94a3b8; line-height:1.5; margin:0 0 0.8rem 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+              ${escapeHtml(data.description)}
+            </p>` : ''}
         </div>
+
+        <div>
+          <a href="${targetUrl}" target="_blank" class="open-btn" style="width:100%; display:block; text-align:center; padding:8px 12px; border-radius:10px; font-weight:700; font-size:0.85rem; text-decoration:none; margin-bottom:8px; background:linear-gradient(135deg, ${catColor}, #6366f1); color:white; border:none; box-sizing:border-box;">
+            <i class="ri-book-read-line"></i> ${isSol ? 'Read & View Solution' : 'Open PDF'}
+          </a>
+
+          <div class="card-actions" style="display:flex; justify-content:space-between; gap:8px;">
+            <button type="button" class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${docId}" data-owner="${authorUid}" data-title="${escapeHtml(title)}" style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
+              ${hasLiked ? '❤️ Liked' : '🤍 Like'} (${likesCount})
+            </button>
+            <button type="button" class="action-btn share-action share-btn" onclick="handleDashboardShare(event, '${docId}', '${title.replace(/'/g, "\\'")}', '${data.category || ''}', '${discipline.replace(/'/g, "\\'")}', '${authorName.replace(/'/g, "\\'")}', '${data.pdfUrl || ''}', '', '')" style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
+              🔗 Share
+            </button>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  // Render Streams
+  let renderedStreams = 0;
+  hubContainer.innerHTML = "";
+
+  // 1. Assignment & Practical Solutions (Only if both solutions total >= 4)
+  if (solutions.length >= 4) {
+    renderedStreams++;
+    const displaySols = solutions.slice(0, feedLimit);
+    const solSection = document.createElement("div");
+    solSection.className = "explore-vertical-grid";
+    solSection.innerHTML = `
+      <div class="explore-grid-header">
+        <div class="explore-grid-header-left">
+          <i class="ri-file-code-line" style="color:#06b6d4; font-size:1.3rem;"></i>
+          <h3>Assignment &amp; Practical Solutions</h3>
+          <span class="explore-badge-count">${solutions.length} Items</span>
+        </div>
+        <a href="dpgnotes-serp.html?tab=solutions" target="_blank" style="color:#38bdf8; font-size:0.82rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+          Explore All Solutions <i class="ri-arrow-right-line"></i>
+        </a>
       </div>
-      <p class="card-desc">${data.description}</p>
-      <div class="tags">
-        ${(data.tags || []).map(t => `<span>#${t}</span>`).join("")}
-      </div>
-      <a href="https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${data.id}&pdf=${encodeURIComponent(data.pdfUrl)}&title=${encodeURIComponent(data.title)}&category=${encodeURIComponent(data.category)}&discipline=${encodeURIComponent(data.discipline)}&uploader=${encodeURIComponent(data.userName)}&docid=${encodeURIComponent(data.documentId)}&description=${encodeURIComponent(data.description || '')}&tags=${encodeURIComponent((data.tags || []).join(', '))}" target="_blank" class="open-btn">Open PDF</a>
-      
-      <div class="card-actions">
-        <button class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${docId}" data-owner="${data.userId}" data-title="${data.title}">
-          ${hasLiked ? '❤️ Liked' : '🤍 Like'} (${likes.length})
-        </button>
-        <button class="action-btn share-action share-btn" onclick="handleDashboardShare(event, '${docId}', '${data.title.replace(/'/g, "\\'")}', '${data.category}', '${data.discipline}', '${data.userName.replace(/'/g, "\\'")}', '${data.pdfUrl}', '${data.description ? data.description.replace(/'/g, "\\'") : ""}', '${(data.tags || []).join(", ")}')">
-          🔗 Share
-        </button>
+      <div class="explore-stream-cards">
+        ${displaySols.map(s => renderCardHtml(s, true)).join('')}
       </div>
     `;
-    
-    exploreGrid.appendChild(card);
+    hubContainer.appendChild(solSection);
+  }
+
+  // 2. Sample Papers & Model Sets + All other categories (Only if category docs >= 4)
+  DASHBOARD_EXPLORE_CATEGORIES.forEach(cat => {
+    const docs = grouped[cat.key] || [];
+    if (docs.length >= 4) {
+      renderedStreams++;
+      const displayDocs = docs.slice(0, feedLimit);
+      const catSection = document.createElement("div");
+      catSection.className = "explore-vertical-grid";
+      catSection.innerHTML = `
+        <div class="explore-grid-header">
+          <div class="explore-grid-header-left">
+            <i class="${cat.icon}" style="color:${cat.accent}; font-size:1.3rem;"></i>
+            <h3>${cat.fullName}</h3>
+            <span class="explore-badge-count">${docs.length} Items</span>
+          </div>
+          <a href="dpgnotes-serp.html?category=${encodeURIComponent(cat.key)}" target="_blank" style="color:#a5b4fc; font-size:0.82rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            View More ${cat.shortCode} <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+        <div class="explore-stream-cards">
+          ${displayDocs.map(d => renderCardHtml(d, false)).join('')}
+        </div>
+      `;
+      hubContainer.appendChild(catSection);
+    }
   });
-  
+
+  // Fallback: If user searched and filtered out specific categories, or total streams is 0
+  if (renderedStreams === 0) {
+    if (docsArray.length > 0 || solutions.length > 0) {
+      const combined = [...solutions.map(s => ({ item: s, isSol: true })), ...docsArray.map(d => ({ item: d, isSol: false }))];
+      hubContainer.innerHTML = `
+        <div style="margin-bottom:1.2rem; font-size:0.9rem; color:#94a3b8;">
+          Showing <strong>${combined.length}</strong> matching search results:
+        </div>
+        <div class="explore-stream-cards">
+          ${combined.slice(0, feedLimit * 2).map(c => renderCardHtml(c.item, c.isSol)).join('')}
+        </div>
+      `;
+    } else {
+      hubContainer.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:3rem;'>No resources found matching the criteria.</p>";
+    }
+  }
+
   attachEngagementListeners();
 }
+
+// Enable touch & mouse horizontal drag for Ads Itemized breakdown table
+function initDashboardTableDragScroll() {
+  const scroller = document.getElementById("contribAdsTableScroller");
+  if (!scroller) return;
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+
+  scroller.addEventListener('mousedown', (e) => {
+    isDown = true;
+    scroller.style.cursor = 'grabbing';
+    startX = e.pageX - scroller.offsetLeft;
+    scrollLeft = scroller.scrollLeft;
+  });
+  scroller.addEventListener('mouseleave', () => {
+    isDown = false;
+    scroller.style.cursor = 'grab';
+  });
+  scroller.addEventListener('mouseup', () => {
+    isDown = false;
+    scroller.style.cursor = 'grab';
+  });
+  scroller.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - scroller.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scroller.scrollLeft = scrollLeft - walk;
+  });
+}
+setTimeout(initDashboardTableDragScroll, 1000);
 
 // =========================================
 // UPLOAD LOGIC

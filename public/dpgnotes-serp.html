@@ -23,11 +23,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   
   <!-- Core Scripts & Markdown Parsers -->
   <script src="config.js"></script>
   <script src="dpg-params.js"></script>
   <script src="custom-dialogs.js"></script>
+  <script src="contributor-hover-card.js" defer></script>
   <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
   <script src="dpg-feed.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -2441,10 +2443,10 @@
         const authorPhoto = d.photoURL || d.profilePic || d.userPhoto || d.authorPhoto || d.avatar || '';
         const authorProfileUrl = authorUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(authorUid)}` : 'https://dpgnotes.web.app/profile.html';
         const authorImgHtml = authorPhoto
-          ? `<img src="${authorPhoto}" alt="${escapeHtml(uploaderName)}" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px; border:1px solid #38bdf8;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`
-          : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px;">`;
+          ? `<img src="${authorPhoto}" alt="${escapeHtml(uploaderName)}" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(authorUid)}" data-contrib-name="${escapeHtml(uploaderName)}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:5px; border:1px solid #38bdf8; cursor:pointer;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`
+          : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(authorUid)}" data-contrib-name="${escapeHtml(uploaderName)}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:5px; cursor:pointer;">`;
         const authorHtml = authorUid 
-          ? `<a href="${authorProfileUrl}" target="_blank" class="result-author-link" style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(uploaderName)}</a>` 
+          ? `<span style="display:inline-flex; align-items:center;">${authorImgHtml}<a href="${authorProfileUrl}" target="_blank" class="result-author-link contributor-name-link">${escapeHtml(uploaderName)}</a></span>` 
           : `<span style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(uploaderName)}</span>`;
 
         const domainIconBg = isSol ? '#e0f2fe' : '#eff6ff';

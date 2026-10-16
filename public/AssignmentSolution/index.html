@@ -15,9 +15,11 @@
   <link rel="icon" href="../ANH.png" type="image/png">
   <link rel="stylesheet" href="solutions-style.css?v=2.3.1">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script src="../config.js"></script>
   <script src="/dpg-params.js"></script>
   <script src="../custom-dialogs.js"></script>
+  <script src="/contributor-hover-card.js" defer></script>
   <!-- Native DPGNotes Ads SDK -->
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
   <script src="../solutions-sandbox-engine.js?v=2.1.0"></script>
@@ -641,9 +643,9 @@
             <i class="ri-user-star-line" style="color:#f59e0b;"></i>
             <span>Faculty: <strong id="viewProfName">Dr. Rajesh Kumar</strong></span>
           </div>
-          <div class="sol-meta-item">
-            <i class="ri-shield-check-line" style="color:#10b981;"></i>
-            <span>Contributor: <strong id="viewContributorName">Verified Contributor</strong></span>
+          <div class="sol-meta-item" id="solMetaContributorWrap" style="display:inline-flex; align-items:center; gap:5px;">
+            <span id="viewContributorAvatarSlot" style="display:inline-flex; align-items:center;"></span>
+            <span>Contributor: <a href="javascript:void(0)" id="viewContributorLink" class="contributor-name-link" style="color:#38bdf8; text-decoration:none;"><strong id="viewContributorName">Verified Contributor</strong></a></span>
           </div>
           <div class="sol-meta-item">
             <i class="ri-calendar-line" style="color:#c084fc;"></i>
@@ -1128,6 +1130,8 @@
       listContainer.innerHTML = results.map(item => {
         const solutionId = item.id;
         const contribUid = item.contributorUid || '';
+        const contribPhoto = item.contributorPhoto || item.userPhoto || (window.__dpgUserCache && window.__dpgUserCache[contribUid] && (window.__dpgUserCache[contribUid].profilePic || window.__dpgUserCache[contribUid].photoURL)) || 'https://dpgnotes.web.app/ANH.png';
+        const profUrl = contribUid ? `/profile.html?uid=${encodeURIComponent(contribUid)}` : '/profile.html';
         const linkUrl = `?id=${encodeURIComponent(solutionId)}&contributor=${encodeURIComponent(contribUid)}`;
         const views = Number(item.views) || 0;
         const likes = Number(item.likes) || (Array.isArray(item.likedBy) ? item.likedBy.length : 0);
@@ -1207,9 +1211,11 @@
                 <strong>${escapeHtml(item.studentName || 'Student')}</strong>
               </div>
               <div class="sol-serp-meta-pill">
-                <i class="ri-shield-check-line" style="color:#10b981; font-size:1rem;"></i>
-                <span style="color:#94a3b8;">Contributor:</span>
-                <strong style="color:#38bdf8;">${escapeHtml(item.contributorName || 'Verified Contributor')}</strong>
+                <span style="color:#94a3b8; margin-right:4px;">Contributor:</span>
+                <a href="${profUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
+                  <img src="${contribPhoto}" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(contribUid)}" data-contrib-name="${escapeHtml(item.contributorName || 'Verified Contributor')}" alt="${escapeHtml(item.contributorName || 'Verified Contributor')}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; border:1px solid #38bdf8; vertical-align:middle; cursor:pointer; margin-right:4px;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
+                </a>
+                <a href="${profUrl}" class="contributor-name-link" style="color:#38bdf8; font-weight:700; text-decoration:none;">${escapeHtml(item.contributorName || 'Verified Contributor')}</a>
               </div>
               <div class="sol-serp-meta-pill">
                 <i class="ri-calendar-line" style="color:#c084fc; font-size:1rem;"></i>
@@ -1557,8 +1563,18 @@
       document.getElementById('viewSubjectCodeBadge').textContent = data.subjectCode || 'ACADEMIC';
       document.getElementById('viewStudentName').textContent = data.studentName || 'Student';
       document.getElementById('viewStudentId').textContent = data.studentId || '-';
-      document.getElementById('viewProfName').textContent = data.profName || '-';
-      document.getElementById('viewContributorName').textContent = data.contributorName || 'Verified Contributor';
+      const contribName = data.contributorName || 'Verified Contributor';
+      const contribUid = data.contributorUid || '';
+      const contribPhoto = data.contributorPhoto || data.userPhoto || (window.__dpgUserCache && window.__dpgUserCache[contribUid] && (window.__dpgUserCache[contribUid].profilePic || window.__dpgUserCache[contribUid].photoURL)) || 'https://dpgnotes.web.app/ANH.png';
+      const profLink = contribUid ? `/profile.html?uid=${encodeURIComponent(contribUid)}` : '/profile.html';
+
+      document.getElementById('viewContributorName').textContent = contribName;
+      const contribLinkEl = document.getElementById('viewContributorLink');
+      if (contribLinkEl) contribLinkEl.href = profLink;
+      const slot = document.getElementById('viewContributorAvatarSlot');
+      if (slot) {
+        slot.innerHTML = `<a href="${profLink}" style="display:inline-flex; align-items:center; text-decoration:none;"><img src="${contribPhoto}" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(contribUid)}" data-contrib-name="${escapeHtml(contribName)}" alt="${escapeHtml(contribName)}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:4px; border:1px solid #38bdf8; vertical-align:middle; cursor:pointer;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';"></a>`;
+      }
       document.getElementById('viewPublishDate').textContent = data.createdAt ? (typeof data.createdAt === 'string' ? data.createdAt.split('T')[0] : 'Recently') : 'N/A';
 
       // Populate Original URL Display in Password Lock Overlay
@@ -2366,13 +2382,11 @@
             </h4>
             <div class="sol-rec-author-row" style="display:flex; align-items:center; gap:8px;">
               ${photo ? `
-                <img src="${photo}" alt="${escapeHtml(item.contributor)}" class="sol-rec-author-img" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1.5px solid #38bdf8; flex-shrink:0;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
+                <img src="${photo}" alt="${escapeHtml(item.contributor)}" class="sol-rec-author-img contributor-photo-trigger" data-contrib-uid="${escapeHtml(item.contributorUid || '')}" data-contrib-name="${escapeHtml(item.contributor)}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1.5px solid #38bdf8; flex-shrink:0; cursor:pointer;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
               ` : `
-                <div class="sol-rec-author-avatar-fallback" style="width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0;">
-                  ${escapeHtml(initial)}
-                </div>
+                <img src="https://dpgnotes.web.app/ANH.png" alt="${escapeHtml(item.contributor)}" class="sol-rec-author-img contributor-photo-trigger" data-contrib-uid="${escapeHtml(item.contributorUid || '')}" data-contrib-name="${escapeHtml(item.contributor)}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1.5px solid #38bdf8; flex-shrink:0; cursor:pointer;">
               `}
-              <a href="${item.profileUrl}" target="_blank" style="color:inherit; text-decoration:none; font-weight:600; font-size:0.85rem;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+              <a href="${item.profileUrl}" class="contributor-name-link" style="color:inherit; text-decoration:none; font-weight:600; font-size:0.85rem;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                 ${escapeHtml(item.contributor)}
               </a>
             </div>

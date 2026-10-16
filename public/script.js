@@ -1430,13 +1430,24 @@ async function loadAcademicResources() {
   if (statusEl) statusEl.innerText = "Fetching academic resources...";
 
   try {
-    const [snap, solutionsSnap] = await Promise.all([
+    const [snap, solutionsSnap, usersSnap] = await Promise.all([
       getDocs(query(collection(db, "documents"), limit(150))),
       getDocs(query(collectionGroup(db, "solutions"), limit(100))).catch(err => {
         console.warn("Solutions fetch warning:", err);
         return { forEach: () => {} };
+      }),
+      getDocs(collection(db, "users")).catch(err => {
+        return { forEach: () => {} };
       })
     ]);
+
+    const usersMap = {};
+    usersSnap.forEach(u => {
+      const uData = u.data();
+      usersMap[u.id] = { uid: u.id, ...uData };
+      window.__dpgUserCache = window.__dpgUserCache || {};
+      window.__dpgUserCache[u.id] = { uid: u.id, ...uData };
+    });
 
     const grouped = {};
     ACADEMIC_CATEGORIES.forEach(c => { grouped[c.key] = []; });
@@ -1478,18 +1489,19 @@ async function loadAcademicResources() {
     let totalRendered = 0;
 
     // Render 0. Assignment & Practical Solutions (SOL)
+    // Rule: Only render if solutions have a total of 4 or more resources
     const solContainer = document.getElementById("gridContainer_SOL");
     const solCardsWrapper = document.getElementById("cardsWrapper_SOL");
     const solCountBadge = document.getElementById("countBadge_SOL");
 
-    if (solutions.length > 0) {
+    if (solutions.length >= 4) {
       totalRendered++;
       if (solContainer) solContainer.style.display = "block";
       if (solCountBadge) solCountBadge.innerText = `${solutions.length} Items`;
 
       // Sort solutions by date desc
       solutions.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-      const isTabletMode = window.innerWidth >= 768 && window.innerWidth <= 1024;
+      const isTabletMode = window.innerWidth >= 641 && window.innerWidth <= 1024;
       const solLimit = isTabletMode ? Math.min(solutions.length, 4) : 3;
       const displaySolutions = solutions.slice(0, solLimit);
 
@@ -1506,6 +1518,10 @@ async function loadAcademicResources() {
           const solIcon = isPractical ? "ri-flask-line" : "ri-file-code-line";
           const discipline = item.course || item.discipline || (item.subjectCode ? `Code: ${item.subjectCode}` : "Computer Science");
           const uploader = item.contributorName || item.userName || "Verified Contributor";
+          const authorUid = item.contributorUid || item.userId || item.uploaderId || "";
+          const userObj = usersMap[authorUid] || (window.__dpgUserCache && window.__dpgUserCache[authorUid]) || null;
+          const authorPhoto = (userObj && (userObj.profilePic || userObj.photoURL || userObj.avatarUrl)) || item.contributorPhoto || "https://dpgnotes.web.app/ANH.png";
+          const profileUrl = authorUid ? `profile.html?uid=${encodeURIComponent(authorUid)}` : `profile.html`;
           const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
           const viewerUrl = isPractical ? `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(item.id)}` : `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(item.id)}`;
 
@@ -1519,7 +1535,20 @@ async function loadAcademicResources() {
               </div>
               <h4 class="res-card-title">${title}</h4>
               <div class="res-card-meta">
-                <span><i class="ri-user-line"></i> ${uploader}</span>
+                <span style="display:inline-flex; align-items:center; gap:6px;">
+                  <a href="${profileUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
+                    <img src="${authorPhoto}" 
+                         class="contributor-photo-trigger author-avatar-mini" 
+                         data-contrib-uid="${escapeHtml(authorUid)}" 
+                         data-contrib-name="${escapeHtml(uploader)}" 
+                         alt="${escapeHtml(uploader)}" 
+                         style="width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid #38bdf8; vertical-align:middle; cursor:pointer;" 
+                         onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
+                  </a>
+                  <a href="${profileUrl}" class="contributor-name-link" style="color:inherit; font-size:0.78rem; font-weight:600; text-decoration:none;">
+                    ${uploader}
+                  </a>
+                </span>
                 <span><i class="ri-calendar-line"></i> ${date}</span>
               </div>
               <div class="res-card-actions">
@@ -1536,15 +1565,15 @@ async function loadAcademicResources() {
       if (solContainer) solContainer.style.display = "none";
     }
 
-    // Render other categories
+    // Render other categories (Sample Papers & Model Sets + All other categories only if >= 4 resources)
     ACADEMIC_CATEGORIES.forEach(cat => {
       const container = document.getElementById(`gridContainer_${cat.key}`);
       const cardsWrapper = document.getElementById(`cardsWrapper_${cat.key}`);
       const countBadge = document.getElementById(`countBadge_${cat.key}`);
       const docs = grouped[cat.key] || [];
 
-      // Requirement: For only 2 or less resources for any category, do NOT show them on index.html directly!
-      if (docs.length <= 2) {
+      // Requirement: Only show if category has 4 or more resources!
+      if (docs.length < 4) {
         if (container) container.style.display = "none";
       } else {
         totalRendered++;
@@ -1558,8 +1587,8 @@ async function loadAcademicResources() {
           return scoreB - scoreA;
         });
 
-        // In tablet media only, render at least 4 resource cards per stream when available; otherwise 3 on desktop/mobile
-        const isTabletScreen = window.innerWidth >= 768 && window.innerWidth <= 1024;
+        // In tablet media only, render 4 resource cards per stream (2x2 grid); otherwise 3 on desktop/mobile
+        const isTabletScreen = window.innerWidth >= 641 && window.innerWidth <= 1024;
         const streamLimit = isTabletScreen ? Math.min(rankedDocs.length, 4) : 3;
         const displayDocs = rankedDocs.slice(0, streamLimit);
 
@@ -1572,6 +1601,10 @@ async function loadAcademicResources() {
             const title = item.title || "Academic Resource";
             const discipline = item.discipline || "General Science";
             const uploader = item.uploader || item.userName || "Verified Contributor";
+            const authorUid = item.userId || item.uploaderId || item.uploaderUid || "";
+            const userObj = usersMap[authorUid] || (window.__dpgUserCache && window.__dpgUserCache[authorUid]) || null;
+            const authorPhoto = (userObj && (userObj.profilePic || userObj.photoURL || userObj.avatarUrl)) || item.userPhoto || "https://dpgnotes.web.app/ANH.png";
+            const profileUrl = authorUid ? `profile.html?uid=${encodeURIComponent(authorUid)}` : `profile.html`;
             const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
             const pdfUrl = item.pdfUrl || "#";
             const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat.fullName)}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(uploader)}&docid=${encodeURIComponent(item.id)}`;
@@ -1586,7 +1619,20 @@ async function loadAcademicResources() {
                 </div>
                 <h4 class="res-card-title">${title}</h4>
                 <div class="res-card-meta">
-                  <span><i class="ri-user-line"></i> ${uploader}</span>
+                  <span style="display:inline-flex; align-items:center; gap:6px;">
+                    <a href="${profileUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
+                      <img src="${authorPhoto}" 
+                           class="contributor-photo-trigger author-avatar-mini" 
+                           data-contrib-uid="${escapeHtml(authorUid)}" 
+                           data-contrib-name="${escapeHtml(uploader)}" 
+                           alt="${escapeHtml(uploader)}" 
+                           style="width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid #38bdf8; vertical-align:middle; cursor:pointer;" 
+                           onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
+                    </a>
+                    <a href="${profileUrl}" class="contributor-name-link" style="color:inherit; font-size:0.78rem; font-weight:600; text-decoration:none;">
+                      ${uploader}
+                    </a>
+                  </span>
                   <span><i class="ri-calendar-line"></i> ${date}</span>
                 </div>
                 <div class="res-card-actions">
