@@ -4386,6 +4386,7 @@ async function loadAdsMonetizationAdmin() {
         </td>
         <td style="padding:0.75rem; font-weight:700; color:#10b981; font-size:0.85rem;">
           -₹${(c.totalDiscountSaved || c.totalHoverDiscount || 0).toLocaleString()}
+          ${c.totalSubsidySaved ? `<div style="font-size:0.7rem; color:#38bdf8; font-weight:600; margin-top:2px;">Subsidy: -₹${c.totalSubsidySaved.toLocaleString()}</div>` : ''}
         </td>
         <td style="padding:0.75rem; font-weight:800; color:#a5b4fc; font-size:0.95rem;">
           ₹${c.totalNetPayable.toLocaleString()}
@@ -4425,6 +4426,7 @@ async function loadAdsMonetizationAdmin() {
                 <th style="padding:4px 8px;">Gross Visit</th>
                 <th style="padding:4px 8px;">Gross Charges</th>
                 <th style="padding:4px 8px;">Discount (${discountPct}%)</th>
+                <th style="padding:4px 8px;">Subsidy</th>
                 <th style="padding:4px 8px;">Net Ad Payable</th>
               </tr>
             </thead>
@@ -4432,7 +4434,7 @@ async function loadAdsMonetizationAdmin() {
       `;
 
       if (adsBreakdown.length === 0) {
-        adsBreakdownHtml += `<tr><td colspan="9" style="padding:8px; text-align:center; color:#64748b;">No ads recorded for this contributor.</td></tr>`;
+        adsBreakdownHtml += `<tr><td colspan="10" style="padding:8px; text-align:center; color:#64748b;">No ads recorded for this contributor.</td></tr>`;
       } else {
         adsBreakdown.forEach(ab => {
           const uHovers = ab.totalHovers != null ? ab.totalHovers : ab.uniqueHovers;
@@ -4443,7 +4445,8 @@ async function loadAdsMonetizationAdmin() {
           const gVis = ab.guestVisits != null ? ab.guestVisits : '-';
           const gTot = ab.grossCharges != null ? ab.grossCharges : (ab.grossAdTotal != null ? ab.grossAdTotal : ((ab.grossHoverCharges || 0) + (ab.grossVisitCharges || 0)));
           const netPay = ab.netPayable != null ? ab.netPayable : (ab.netAdPayable != null ? ab.netAdPayable : 0);
-          const dSav = ab.discountSaved != null ? ab.discountSaved : (ab.discountAdTotal != null ? ab.discountAdTotal : (ab.hoverDiscountAmount != null ? ab.hoverDiscountAmount : Math.max(0, gTot - netPay)));
+          const dSav = ab.discountSaved != null ? ab.discountSaved : (ab.discountAdTotal != null ? ab.discountAdTotal : (ab.hoverDiscountAmount != null ? ab.hoverDiscountAmount : 0));
+          const sSav = ab.subsidySaved != null ? ab.subsidySaved : (ab.subsidyAmount != null ? ab.subsidyAmount : 0);
 
           adsBreakdownHtml += `
             <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
@@ -4455,6 +4458,7 @@ async function loadAdsMonetizationAdmin() {
               <td style="padding:6px 8px;">₹${ab.grossVisitCharges || 0}</td>
               <td style="padding:6px 8px; font-weight:600; color:white;">₹${gTot}</td>
               <td style="padding:6px 8px; color:#10b981;">-₹${dSav}</td>
+              <td style="padding:6px 8px; color:#38bdf8;">-₹${sSav}</td>
               <td style="padding:6px 8px; font-weight:700; color:#a5b4fc;">₹${netPay}</td>
             </tr>
           `;

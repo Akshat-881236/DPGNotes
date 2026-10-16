@@ -632,6 +632,8 @@
                 <li><strong>Genuine Hover Rate:</strong> <strong>₹12</strong> per unique hover / month for verified contributors, and <strong>₹6</strong> (50% reduced rate) for guest visitors. Calculated strictly for authentic cursor dwell events lasting at least <strong>5 continuous seconds (5000ms)</strong> on the ad destination button. Accidental glides, quick passes, and robotic scripts are excluded.</li>
                 <li><strong>Genuine Visit Rate:</strong> <strong>₹20</strong> per unique visit / month for verified contributors, and <strong>₹10</strong> (50% reduced rate) for guest visitors. Validated when a user navigates via the Safe Destination Gateway (<code>/ads-redirect-handler.html</code>) opened from the DPGNotes platform in the same tab. Direct URL navigation is classified non-billable.</li>
                 <li><strong>Strict Single Engagement per Ad per Month Rule:</strong> For each unique verified user or guest visitor, exactly <strong>one billable engagement (hover OR click, whichever occurs earlier)</strong> per ad campaign per calendar month is recorded in Firestore. Any subsequent interaction for the same ad from the same visitor within the same monthly cycle is rejected and never billed.</li>
+                <li><strong>Strict Self-Interaction Exclusion:</strong> Hovers and clicks by active contributors on their own uploaded ads (or ads uploaded by linked duplicate accounts) are 100% non-billable and bypassed automatically.</li>
+                <li><strong>AI Profile Check & Identity Clustering:</strong> An AI algorithm cross-references registered accounts across email variations, names, GitHub, LinkedIn, and Settings bio details. All duplicate accounts within a cluster are treated as a single entity; only one interaction across the entire cluster is valid per ad per month.</li>
               </ul>
 
               <h2>2. Contributor Academic Portfolio Discount Tiers</h2>
@@ -675,6 +677,13 @@
                 </table>
               </div>
 
+              <h2>2.1 Advertiser Placement Subsidy Deductions</h2>
+              <p>In addition to portfolio discounts, advertisers earn direct placement subsidies when their ads are engaged on peer resources:</p>
+              <ul>
+                <li><strong>Eligible Peer Placements:</strong> Valid on another contributor's Assignment/Practical solutions, PDF resources, or platform utility and legal note pages. (Self-placements on the advertiser's own resources earn ₹0 subsidy).</li>
+                <li><strong>Subsidy Rates:</strong> Hover = <strong>₹9</strong> (Contributor) / <strong>₹3</strong> (Guest); Click = <strong>₹12</strong> (Contributor) / <strong>₹8</strong> (Guest). Applied as: <code>Net Payable = MAX(0, Gross - Tier Discount - Total Subsidy Saved)</code>.</li>
+              </ul>
+
               <h2>3. 12-Hour Gap Anomaly Protection & 15-Day Account Flagging</h2>
               <p>To shield advertisers from rapid unnatural loops or malicious click inflation:</p>
               <ul>
@@ -682,12 +691,12 @@
                 <li><strong>15-Day Ads Suspension Flag:</strong> The responsible contributor UID or guest identity (Guest ID & Client Device ID) is automatically flagged for 15 days, with a Violation recorded in the Admin Portal. All historical and future interactions during this 15-day window are permanently excluded from billing.</li>
               </ul>
 
-              <h2>4. Monthly Billing Cycle & Immutable Ledger Locking</h2>
-              <p>Each calendar month represents an isolated billing period (e.g. <code>YYYY-MM</code>). When a month closes:</p>
+              <h2>4. Monthly Billing Cycle & Finalization on the 5th of Each Month</h2>
+              <p>Each calendar month represents an isolated billing period (e.g. <code>YYYY-MM</code>):</p>
               <ul>
-                <li><strong>Permanent Cycle Lock:</strong> Total genuine single-engagement interactions, applied portfolio discounts, and net payable dues are permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
-                <li><strong>Prospective Upload Benefit:</strong> Newly uploaded resources submitted during subsequent months apply only to future billing cycles and will not retroactively alter previously finalized monthly statements.</li>
-                <li><strong>Real-Time Notice:</strong> Contributors are reminded: <em>Wait for the end of the Month to get a Finalized Round Off Monthly Ads Charge Rate</em> while monitoring real-time itemized breakdowns.</li>
+                <li><strong>Finalization on 5th of Month:</strong> On the <strong>5th day of every calendar month</strong>, the previous monthly cycle concludes, freezes permanently into the Firestore ledger (<code>ads_monetization_ledger</code>), and an automated itemized statement email is dispatched to the advertiser.</li>
+                <li><strong>Immutable Ledger:</strong> Newly uploaded resources submitted during subsequent months apply only to future billing cycles and will not retroactively alter previously finalized monthly statements.</li>
+                <li><strong>Real-Time Notice:</strong> Contributors are reminded: <em>On the 5th of each month, the previous monthly cycle concludes with bill finalization, immutable ledger locking, and an automated itemized statement dispatched to your registered email</em>.</li>
               </ul>
 
               <h2>5. 15-Day Payment Window &amp; Actions for Unpaid Bills</h2>

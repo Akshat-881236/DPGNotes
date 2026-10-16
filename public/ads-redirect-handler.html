@@ -541,10 +541,21 @@
       document.getElementById("uploaderName").textContent = uploaderName;
       document.getElementById("uploaderUid").textContent = "uploader-firebase-id: " + uploaderUid;
 
+      // Rule 2: Active Contributor clicks on their own uploaded ad are invalid
+      const isSelfClick = (activeUser && activeUser.uid && uploaderUid && activeUser.uid === uploaderUid);
+      if (isSelfClick) {
+        console.log("ℹ️ Self-click on own ad detected — non-billable navigation.");
+        securityBadge.className = "security-badge";
+        securityBadge.style.background = "rgba(99, 102, 241, 0.15)";
+        securityBadge.style.borderColor = "rgba(99, 102, 241, 0.4)";
+        securityBadge.style.color = "#a5b4fc";
+        securityBadge.innerHTML = '<i class="ri-user-follow-line"></i> Author Navigation (Self-Click Non-Billable)';
+      }
+
       // =========================================================================
       // 4. DEEP ANALYTICS TELEMETRY DISPATCH (EXCLUDING ADMIN & INVALID ACCESS)
       // =========================================================================
-      if (!isAdminUser && !isDirectAccess && !isFlagged && !isRapidAnomaly) {
+      if (!isAdminUser && !isDirectAccess && !isFlagged && !isRapidAnomaly && !isSelfClick) {
         const trackingPayload = {
           adId: adId || "global",
           trackId: trackId || "00000000",
@@ -563,6 +574,8 @@
           botType: viewerType === "Anonymous" ? botType : null,
           isDirectAccess: false,
           srcPlatform: 'dpgnotes_platform',
+          hostPage: params.get("host_page") || document.referrer || "platform",
+          hostResourceOwnerUid: params.get("host_owner") || null,
           timestamp: new Date().toISOString()
         };
 
@@ -575,6 +588,7 @@
       } else {
         if (isAdminUser) console.log("ℹ️ Admin visit detected — external ad analytics collection bypassed as requested.");
         if (isDirectAccess) console.log("ℹ️ Direct gateway access detected without DPGNotes origin — ad charging bypassed.");
+        if (isSelfClick) console.log("ℹ️ Self-click on own ad detected — ad charge tracking bypassed.");
         if (isFlagged || isRapidAnomaly) console.log("⚠️ Visitor flagged for ad violation — ad charge tracking bypassed.");
       }
 

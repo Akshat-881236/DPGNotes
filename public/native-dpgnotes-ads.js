@@ -218,7 +218,7 @@
     return eightDigit;
   }
 
-  function buildTrackedAdTargetLink(targetUrl, adId, customTrackId) {
+  function buildTrackedAdTargetLink(targetUrl, adId, customTrackId, ad) {
     const trackId = customTrackId || generateAdTrackId(adId);
     let dest = (targetUrl && typeof targetUrl === "string" && targetUrl.trim() !== "" && targetUrl.trim() !== "#") 
       ? targetUrl.trim() 
@@ -231,15 +231,22 @@
     } catch(e) {}
 
     const handlerBase = "https://dpgnotes.web.app/ads-redirect-handler.html";
+    const uploaderUid = (ad && (ad.userId || ad.uid || ad.userUid || ad.createdBy)) || "";
+    const hostPage = window.location.pathname || "platform";
+    const hostOwner = window.DPG_PAGE_RESOURCE_OWNER_UID || window.currentResourceOwnerUid || (document.body && document.body.dataset && document.body.dataset.resourceOwnerUid) || "platform_neutral";
+
     try {
       const u = new URL(handlerBase);
       u.searchParams.set("track_id", trackId);
       u.searchParams.set("ad_id", adId || "");
       u.searchParams.set("go-to", dest);
       u.searchParams.set("src", "dpgnotes_platform");
+      if (uploaderUid) u.searchParams.set("uploader_uid", uploaderUid);
+      u.searchParams.set("host_page", hostPage);
+      u.searchParams.set("host_owner", hostOwner);
       return u.toString();
     } catch(e) {
-      return `${handlerBase}?track_id=${encodeURIComponent(trackId)}&ad_id=${encodeURIComponent(adId || "")}&go-to=${encodeURIComponent(dest)}&src=dpgnotes_platform`;
+      return `${handlerBase}?track_id=${encodeURIComponent(trackId)}&ad_id=${encodeURIComponent(adId || "")}&go-to=${encodeURIComponent(dest)}&src=dpgnotes_platform&host_page=${encodeURIComponent(hostPage)}&host_owner=${encodeURIComponent(hostOwner)}`;
     }
   }
 
@@ -338,6 +345,13 @@
         return;
       }
 
+      // Rule 2: Active Contributor hovers on their own uploaded ad are invalid
+      const uploaderUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
+      if (activeUser.uid && uploaderUid && activeUser.uid === uploaderUid) {
+        console.log("Self-hover on own ad detected — non-billable interaction bypassed.");
+        return;
+      }
+
       // Record hover timestamp in local pattern history
       hoverHistory[adKey] = now;
       localStorage.setItem("dpg_ad_hover_history", JSON.stringify(hoverHistory));
@@ -347,17 +361,22 @@
       if (sessionStorage.getItem(sessionKey)) return;
       sessionStorage.setItem(sessionKey, "1");
 
+      const hostPage = window.location.pathname || "platform";
+      const hostResourceOwnerUid = window.DPG_PAGE_RESOURCE_OWNER_UID || window.currentResourceOwnerUid || (document.body && document.body.dataset && document.body.dataset.resourceOwnerUid) || "platform_neutral";
+
       const payload = {
         adId: ad.id || "",
         trackId: trackId || "",
-        uploaderUid: ad.userId || ad.uid || ad.userUid || ad.createdBy || "",
+        uploaderUid: uploaderUid,
         visitorUid: activeUser.uid || null,
         guestId: guestId,
         visitorEmail: email || null,
         visitorType: activeUser.uid ? "Contributor" : "Guest",
         clientDeviceId: clientDeviceId,
         timestamp: new Date().toISOString(),
-        month: currentMonth
+        month: currentMonth,
+        hostPage,
+        hostResourceOwnerUid
       };
 
       fetch((window.API_BASE_URL || '') + '/api/ad-hover-telemetry', {
@@ -378,7 +397,7 @@
     const profileUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
     const profileUrl = profileUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(profileUid)}` : "https://dpgnotes.web.app/profile.html";
     const trackId = ad.trackId || generateAdTrackId(ad.id);
-    const finalTargetLink = buildTrackedAdTargetLink(ad.targetLink, ad.id, trackId);
+    const finalTargetLink = buildTrackedAdTargetLink(ad.targetLink, ad.id, trackId, ad);
     card.dataset.trackId = trackId;
 
     let rotationTimeout = null;

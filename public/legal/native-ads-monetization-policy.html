@@ -188,6 +188,34 @@
               </p>
             </div>
 
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+              <h4 style="color: #34d399; margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <i class="ri-user-unfollow-line"></i> Strict Self-Interaction Prohibition &amp; Own-Ad Exclusion
+              </h4>
+              <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+                Hovers and clicks performed by the active contributor on advertisements they uploaded themselves—or advertisements uploaded by any linked or duplicate account associated with that individual—are <strong>strictly non-billable and automatically bypassed</strong>. The telemetry engine verifies active session tokens and author identifiers in real time to prevent self-inflated metrics or inadvertent owner charges.
+              </p>
+            </div>
+
+            <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+              <h4 style="color: #fbbf24; margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <i class="ri-fingerprint-line"></i> AI Profile Check Algorithm &amp; Multi-Attribute Identity Clustering
+              </h4>
+              <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+                To prevent malicious or unusual engagement exploitation through multi-accounting, DPGNotes employs an advanced <strong>AI Profile Check Algorithm</strong>. The engine cross-references registered accounts across five core identity signals:
+              </p>
+              <ul style="margin: 6px 0 0 1.2rem; font-size: 0.83rem; color: #cbd5e1; line-height: 1.5;">
+                <li><strong>Similar / Variant Email Addresses:</strong> Detection of Gmail dot modifications, plus-addressing aliases (<code>user+tag@domain</code>), and typo variations.</li>
+                <li><strong>Matching Full Names:</strong> Bigram and Dice-coefficient semantic similarity on contributor names.</li>
+                <li><strong>GitHub Profile Links:</strong> Canonical handle matching across submitted repositories.</li>
+                <li><strong>LinkedIn Profile Links:</strong> Canonical vanity handle resolution across professional profiles.</li>
+                <li><strong>Settings Bio Details:</strong> Deep token analysis on academic bios and contact details submitted via dashboard settings.</li>
+              </ul>
+              <p style="margin: 6px 0 0 0; font-size: 0.83rem; color: #cbd5e1; line-height: 1.5;">
+                All accounts clustered under the same physical identity are treated as a <strong>single entity</strong>: one valid hover or click across the entire cluster is allowed per ad per calendar month. Subsequent interactions from alternate accounts in that cluster are rejected with zero additional billing charges.
+              </p>
+            </div>
+
             <h2>3. Safe Destination Gateway &amp; Same-Tab Verification</h2>
             <p>To safeguard our student community against malicious redirects, phishing sites, and deceptive downloads, direct unverified external links are prohibited in all native advertisements. Every promotional link is routed through our dedicated security inspection gateway opened in the same tab:</p>
             <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; font-family:'Fira Code', monospace; font-size:0.85rem; color:#a5b4fc; margin:1rem 0; word-break:break-all;">
@@ -256,6 +284,29 @@
               </table>
             </div>
 
+            <!-- SECTION 5.1: ADVERTISER PLACEMENT SUBSIDY DEDUCTION -->
+            <h2>5.1 Advertiser Placement Subsidy Deduction</h2>
+            <p>In addition to portfolio tier discounts, DPGNotes rewards advertisers through a dedicated <strong>Placement Subsidy Deduction</strong> based on genuine peer engagement earned across the portal:</p>
+            <ul>
+              <li><strong>Subsidy Qualification Rules:</strong> An advertiser’s uploaded ad is valid for subsidy deduction when displayed and interacted with on:
+                <ul>
+                  <li>Another contributor’s Assignment Solution or Practical Solution page</li>
+                  <li>Another contributor’s uploaded PDF study resource</li>
+                  <li>DPGNotes platform utility tools, Legal Notes, and compliance pages</li>
+                </ul>
+              </li>
+              <li><strong>Self-Placement Ineligibility:</strong> Ads displayed on the advertiser's own uploaded PDF resources, Assignment/Practical solutions, or resources uploaded by duplicate cluster accounts do <strong>NOT</strong> qualify for subsidy deductions.</li>
+              <li><strong>Subsidy Unit Rates:</strong>
+                <ul>
+                  <li><strong>Genuine Hover Subsidy:</strong> ₹9 per valid interaction (Contributor) / ₹3 per valid interaction (Guest)</li>
+                  <li><strong>Genuine Click / Visit Subsidy:</strong> ₹12 per valid interaction (Contributor) / ₹8 per valid interaction (Guest)</li>
+                </ul>
+              </li>
+              <li><strong>Monthly Deduction Application:</strong> Total earned subsidy amount is deducted directly from the advertiser’s gross payable balance alongside their portfolio tier discount:
+                <br><code>Net Payable = MAX(0, Gross Charges - Tier Discount - Total Subsidy Saved)</code>.</li>
+              <li><strong>Monthly Interaction Limits:</strong> At most one valid interaction (hover or visit) per unique contributor or guest per ad campaign per month qualifies for the subsidy discount.</li>
+            </ul>
+
             <h2>6. 12-Hour Gap Anomaly Protection &amp; 15-Day Account Flagging</h2>
             <p>To eliminate synthetic traffic inflation and protect advertisers against abnormal interaction spikes:</p>
             <ul>
@@ -263,12 +314,21 @@
               <li><strong>15-Day Account Suspension Flag:</strong> The corresponding Contributor UID or Guest identity (Guest ID & Client Device ID) is placed under a 15-day Ads Flag. An Ads Violation is logged in the Admin Portal Violation Tab, and all past and future engagements during the 15-day window are permanently excluded from billing.</li>
             </ul>
 
-            <h2>7. Monthly Billing Cycle &amp; Immutable Ledger Locking</h2>
-            <p>Native ad campaigns operate on a strict monthly billing cycle (formatted as <code>YYYY-MM</code>). At the close of each calendar month:</p>
+            <h2>7. Monthly Billing Cycle &amp; Automated Email Statements on the 5th</h2>
+            <p>Native ad campaigns operate on a transparent calendar monthly billing cycle (<code>YYYY-MM</code>):</p>
             <ul>
-              <li><strong>Ledger Finalization:</strong> Single-engagement interaction metrics, portfolio discount deductions, and net payable amounts are compiled and permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
-              <li><strong>No Retrospective Alteration:</strong> Uploading additional resources after a monthly cycle has concluded will qualify the contributor for elevated discounts in upcoming billing cycles, but will not retroactively adjust previously locked ledger records.</li>
-              <li><strong>Real-Time Notice:</strong> Real-time charges are displayed in the Dashboard alongside the reminder: <em>"Wait for the end of the Month to get a Finalized Round Off Monthly Ads Charge Rate"</em>.</li>
+              <li><strong>Billing Cycle Conclusion on the 5th of Each Month:</strong> On the <strong>5th day of every calendar month</strong>, the previous month’s advertising cycle officially concludes. Telemetry metrics, tier concessions, and placement subsidy deductions are frozen and permanently locked into the Firestore ledger (<code>ads_monetization_ledger</code>).</li>
+              <li><strong>Automated Detailed Statement Email:</strong> An automated, itemized billing statement is dispatched directly to the advertiser’s registered email address detailing:
+                <ul>
+                  <li>Total Gross Hovers and Visits (Contributor vs Guest breakdown)</li>
+                  <li>Gross Monetization Charges</li>
+                  <li>Academic Portfolio Tier Discount Amount Saved</li>
+                  <li>Placement Subsidy Deductions</li>
+                  <li>Final Net Payable Amount &amp; UPI Settlement Guidelines</li>
+                </ul>
+              </li>
+              <li><strong>Immutable Ledger Locking:</strong> Once finalized on the 5th, previous monthly ledgers cannot be retrospectively altered. Additional resources uploaded in the new month apply toward future billing cycles.</li>
+              <li><strong>Dashboard Real-Time Visibility:</strong> The Contributor Dashboard displays real-time running estimates throughout the month alongside the reminder: <em>"On the 5th of each month, the previous monthly cycle concludes with bill finalization, immutable ledger locking, and an automated itemized statement dispatched to your registered email"</em>.</li>
             </ul>
 
             <h2>8. 15-Day Payment Window &amp; What Happens If Bills Are Unpaid</h2>

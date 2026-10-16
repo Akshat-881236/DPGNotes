@@ -3184,6 +3184,10 @@ async function loadContributorPayableAds() {
       const discSaved = active.totalDiscountSaved != null ? active.totalDiscountSaved : (active.totalHoverDiscount != null ? active.totalHoverDiscount : Math.max(0, (active.totalGrossCharges || 0) - (active.totalNetPayable || 0)));
       document.getElementById("contribDiscountSaved").textContent = `-₹${discSaved.toLocaleString()}`;
     }
+    if (document.getElementById("contribSubsidySaved")) {
+      const subsidySaved = active.totalSubsidySaved != null ? active.totalSubsidySaved : 0;
+      document.getElementById("contribSubsidySaved").textContent = `-₹${subsidySaved.toLocaleString()}`;
+    }
     if (document.getElementById("contribDiscountPctSub")) {
       document.getElementById("contribDiscountPctSub").textContent = `${tier.discountPct || 0}% Off All Charges`;
     }
@@ -3196,14 +3200,15 @@ async function loadContributorPayableAds() {
       itemizedBody.innerHTML = "";
       const breakdown = active.adBreakdown || active.adsBreakdown || [];
       if (breakdown.length === 0) {
-        itemizedBody.innerHTML = `<tr><td colspan="6" style="padding: 12px; text-align: center; color: #94a3b8;">No active ad engagements recorded for this billing cycle yet.</td></tr>`;
+        itemizedBody.innerHTML = `<tr><td colspan="7" style="padding: 12px; text-align: center; color: #94a3b8;">No active ad engagements recorded for this billing cycle yet.</td></tr>`;
       } else {
         breakdown.forEach(item => {
           const tr = document.createElement("tr");
           tr.style.borderBottom = "1px solid rgba(255, 255, 255, 0.05)";
           const itemGross = item.grossCharges != null ? item.grossCharges : (item.grossAdTotal != null ? item.grossAdTotal : ((item.grossHoverCharges || 0) + (item.grossVisitCharges || 0)));
           const itemNet = item.netPayable != null ? item.netPayable : (item.netAdPayable != null ? item.netAdPayable : 0);
-          const itemDiscount = item.discountSaved != null ? item.discountSaved : (item.discountAdTotal != null ? item.discountAdTotal : (item.hoverDiscountAmount != null ? item.hoverDiscountAmount : Math.max(0, itemGross - itemNet)));
+          const itemDiscount = item.discountSaved != null ? item.discountSaved : (item.discountAdTotal != null ? item.discountAdTotal : (item.hoverDiscountAmount != null ? item.hoverDiscountAmount : 0));
+          const itemSubsidy = item.subsidySaved != null ? item.subsidySaved : (item.subsidyAmount != null ? item.subsidyAmount : 0);
           const itemTitle = item.adTitle || item.title || item.adId || "Campaign";
           const totHov = item.totalHovers != null ? item.totalHovers : (item.uniqueHovers != null ? item.uniqueHovers : 0);
           const totVis = item.totalVisits != null ? item.totalVisits : (item.uniqueVisits != null ? item.uniqueVisits : 0);
@@ -3224,6 +3229,7 @@ async function loadContributorPayableAds() {
             </td>
             <td style="padding: 6px 8px; color: #e2e8f0;">₹${itemGross.toLocaleString()}</td>
             <td style="padding: 6px 8px; color: #10b981;">-₹${itemDiscount.toLocaleString()}</td>
+            <td style="padding: 6px 8px; color: #38bdf8;">-₹${itemSubsidy.toLocaleString()}</td>
             <td style="padding: 6px 8px; font-weight: 700; color: #a5b4fc;">₹${itemNet.toLocaleString()}</td>
           `;
           itemizedBody.appendChild(tr);

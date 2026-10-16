@@ -498,4 +498,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Dynamic Legal Ad Container Visibility Guardian: Eliminates empty whitespace when ads are unavailable
+  function checkLegalAds() {
+    document.querySelectorAll('.legal-adsense-container').forEach(container => {
+      const ins = container.querySelector('ins.adsbygoogle');
+      const hasIframe = container.querySelector('iframe');
+      const isFilled = ins && (ins.getAttribute('data-ad-status') === 'filled' || (ins.innerHTML && ins.innerHTML.trim().length > 0 && ins.offsetHeight > 10));
+      if (hasIframe || isFilled) {
+        container.classList.add('ad-active');
+      } else {
+        container.classList.remove('ad-active');
+      }
+    });
+  }
+  checkLegalAds();
+  setInterval(checkLegalAds, 1000);
+
 });

@@ -191,3 +191,46 @@ This module describes platform guidelines regarding Google AdSense integrations 
 1. Safety Warnings: Whenever a user clicks an external link (non-DPGNotes hosts), a custom security warning popup is displayed.
 2. Link Policies: Users can proceed at their own risk or return. The popup links to /legal/index.html#links-policy for policy details.
 3. Referrer Protections: External URLs are opened using noopener, noreferrer headers to protect browser tab session keys from leakage.
+
+---
+
+### MODULE 5.3: NATIVE ADS MONETIZATION, SUBSIDY DEDUCTIONS & BILLING CYCLE FINALIZATION
+1. Scope & Economics:
+   - DPGNotes charges advertisers per genuine single engagement per calendar month (whichever happens first: hover or visit).
+   - Standard Unit Rates: Contributor = ₹12 / hover, ₹20 / visit. Guest = ₹6 / hover, ₹10 / visit (50% concession).
+   - Self-Interaction Prohibition: Advertisers / contributors clicking or hovering on their own uploaded ads are 100% non-billable and bypassed automatically.
+2. Academic Portfolio Tier Concession:
+   - Bronze Tier (≥3 Docs): 20% discount across all interaction charges.
+   - Silver Tier (≥10 Docs + ≥5 Assignment Sols + ≥5 Practical Sols): 40% discount across all charges.
+   - Gold Tier (≥25 Docs + ≥12 Assignment Sols + ≥12 Practical Sols): 60% discount across all charges.
+   - Diamond Tier (≥75 Docs + ≥25 Assignment Sols + ≥25 Practical Sols): 80% discount across all charges.
+   - Platinum Tier (≥120 Docs + ≥45 Assignment Sols + ≥45 Practical Sols): 100% Free / Fully Sponsored.
+3. Placement Subsidy Deductions:
+   - Advertisers earn a direct Subsidy Deduction off their bill when their ads appear on peer resources:
+     - Eligible Placements: Another contributor's Assignment Solution, Practical Solution, PDF resource, or platform utility / legal note pages.
+     - Ineligible Placements: Ads appearing on the contributor's own solutions or PDFs (or duplicate cluster accounts) do NOT earn subsidies.
+     - Subsidy Unit Rates: ₹9 / hover (Contributor), ₹3 / hover (Guest); ₹12 / click (Contributor), ₹8 / click (Guest).
+     - Deduction Formula: `Total Net Payable = MAX(0, Gross Charges - Tier Concession - Total Subsidy Saved)`.
+     - Monthly Deduplication Limit: Max 1 valid subsidy engagement per unique user / guest per ad per month.
+4. Monthly Billing Cycle Finalization on the 5th:
+   - On the 5th day of every calendar month, the previous month's advertising cycle concludes and freezes permanently in the Firestore ledger (`ads_monetization_ledger`).
+   - An automated, itemized email statement is dispatched to the advertiser detailing gross hovers/visits, tier discounts, subsidy deductions, and net payable dues.
+   - Advertisers settle dues offline via verified UPI (9953854901@ybl) within the 15-day grace period. Study notes and academic uploads remain 100% untouched regardless of ad billing status.
+
+---
+
+### MODULE 5.4: AI PROFILE CHECK ALGORITHM, IDENTITY CLUSTERING & FRAUD PREVENTION
+1. Multi-Attribute Clustering Engine:
+   - An AI engine cross-references users to identify duplicate accounts belonging to the same individual based on:
+     - Similar/variant emails (Gmail dot-trick removal, plus-addressing, typo variations)
+     - Matching or high Dice-coefficient name similarity
+     - Matching GitHub repository profile links
+     - Matching LinkedIn vanity URLs
+     - Settings bio details and contact tokens
+2. Single-Entity Billing Treatment:
+   - All accounts grouped within an identity cluster are treated as a single entity.
+   - Only one interaction (hover or click) across the entire cluster per ad per month is valid for billing.
+   - Alternate accounts in the same cluster visiting or hovering the same ad in that monthly cycle are rejected with ₹0 charge.
+3. 12-Hour Gap Anomaly Protection & Flagging:
+   - Interactions with less than a 12-hour gap on the same ad URL trigger an anomaly purge: all charging logs for that ad are deleted and the visitor identity is flagged for 15 days.
+

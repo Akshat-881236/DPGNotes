@@ -1039,37 +1039,45 @@ table tr:hover,
 }
 
 /* =========================================================
-   AdSense & Native Ads Container
+   AdSense & Native Ads Container (Strict Zero-Space When Unavailable)
    ========================================================= */
 .legal-adsense-container {
+  display: none !important;
   width: 100%;
   max-width: 100%;
-  margin: 1.75rem auto;
-  text-align: center;
-  clear: both;
-  overflow: hidden;
-  border-radius: 12px;
-  box-sizing: border-box;
-  transition: all var(--transition-normal);
-}
-
-.legal-adsense-container:empty {
-  display: none !important;
   margin: 0 !important;
   padding: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  text-align: center;
+  clear: both;
+  box-sizing: border-box;
 }
 
+.legal-adsense-container.ad-active,
+.legal-adsense-container:has(ins[data-ad-status="filled"]),
+.legal-adsense-container:has(iframe) {
+  display: block !important;
+  height: auto !important;
+  min-height: auto !important;
+  margin: 1.75rem auto !important;
+  padding: 1rem !important;
+  background: var(--bg-active) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+}
+
+.legal-adsense-container:empty,
 .legal-adsense-container:has(ins[data-ad-status="unfilled"]:not(:has(.native-ads))),
 .legal-adsense-container.ad-unfilled:not(:has(.native-ads)) {
   display: none !important;
   margin: 0 !important;
   padding: 0 !important;
-}
-
-.legal-adsense-container:has(ins[data-ad-status="filled"]) {
-  padding: 1rem;
-  background: var(--bg-active);
-  border: 1px solid var(--border-color);
+  height: 0 !important;
+  min-height: 0 !important;
+  border: none !important;
 }
 
 /* =========================================================

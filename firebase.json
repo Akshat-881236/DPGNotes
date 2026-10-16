@@ -15,7 +15,13 @@
     "public":
     "public",
 
-    "redirects": [],
+    "redirects": [
+      {
+        "source": "/legal/advertising_policy.html",
+        "destination": "/legal/advertising-policy.html",
+        "type": 301
+      }
+    ],
 
     "ignore": [
 
