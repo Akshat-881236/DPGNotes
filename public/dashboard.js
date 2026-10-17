@@ -873,9 +873,9 @@ async function loadExplore() {
     const isPrivate = d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false;
 
     if (isOwner) {
-      docsArray.push({ id: doc.id, ...d });
+      docsArray.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: 'documents', ...d });
     } else if (!isPrivate && isApproved) {
-      docsArray.push({ id: doc.id, ...d });
+      docsArray.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: 'documents', ...d });
     }
   });
 
@@ -884,7 +884,7 @@ async function loadExplore() {
   solutionsSnap.forEach(doc => {
     const d = doc.data();
     if (d.status === 'unverified' || d.isVerified === false) return;
-    solutions.push({ id: doc.id, ...d });
+    solutions.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: (d.type === 'practical' || doc.ref.path.includes('practical')) ? 'practical_solutions' : 'assignment_solutions', ...d });
   });
   
   // Sort values
@@ -948,9 +948,10 @@ async function loadExplore() {
   // Helper to render card HTML
   function renderCardHtml(data, isSol = false) {
     const docId = data.id;
-    const likes = Array.isArray(data.likes) ? data.likes : (Number(data.likes) || []);
-    const likesCount = Array.isArray(likes) ? likes.length : Number(likes) || 0;
-    const hasLiked = currentUser && Array.isArray(likes) ? likes.includes(currentUser.uid) : false;
+    const likedByArr = Array.isArray(data.likedBy) ? data.likedBy : (Array.isArray(data.likes) ? data.likes : []);
+    const likesCount = typeof data.likes === 'number' ? data.likes : (likedByArr.length || (Number(data.likes) || 0));
+    const activeUid = (currentUser && currentUser.uid) || (auth && auth.currentUser && auth.currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
+    const hasLiked = activeUid ? likedByArr.includes(activeUid) : false;
     const isApproved = data.status === "approved" || data.isApproved === true || isSol;
     const isPrivate = data.visibility === "private" || data.isPasswordProtected === true;
 
@@ -991,7 +992,7 @@ async function loadExplore() {
             ${escapeHtml(title)}
           </h3>
 
-          <!-- Contributor Avatar Photo (Clickable + 4-Second Hover Card) & Name Link -->
+          <!-- Contributor Avatar Photo (Clickable + Hover Card) & Name Link -->
           <div class="card-author" style="display:flex; align-items:center; gap:8px; margin-bottom:0.8rem;">
             <a href="${profileUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
               <img src="${authorPhoto}" 
@@ -1019,7 +1020,14 @@ async function loadExplore() {
           </a>
 
           <div class="card-actions" style="display:flex; justify-content:space-between; gap:8px;">
-            <button type="button" class="action-btn like-action ${hasLiked ? 'liked' : ''}" data-id="${docId}" data-owner="${authorUid}" data-title="${escapeHtml(title)}" style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
+            <button type="button" class="action-btn like-action ${hasLiked ? 'liked' : ''}" 
+              data-id="${docId}" 
+              data-is-sol="${isSol ? 'true' : 'false'}" 
+              data-coll="${isSol ? (data._coll || 'solutions') : 'documents'}" 
+              data-path="${data._docRefPath || ''}" 
+              data-owner="${authorUid}" 
+              data-title="${escapeHtml(title)}" 
+              style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
               ${hasLiked ? '❤️ Liked' : '🤍 Like'} (${likesCount})
             </button>
             <button type="button" class="action-btn share-action share-btn" onclick="handleDashboardShare(event, '${docId}', '${title.replace(/'/g, "\\'")}', '${data.category || ''}', '${discipline.replace(/'/g, "\\'")}', '${authorName.replace(/'/g, "\\'")}', '${data.pdfUrl || ''}', '', '')" style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
@@ -1744,147 +1752,132 @@ if (deleteAccountBtn) {
 // =========================================
 function attachEngagementListeners() {
   document.querySelectorAll(".like-action").forEach(btn => {
+    if (btn.dataset.likeBound === "true") return;
+    btn.dataset.likeBound = "true";
+
     btn.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
 
+      const activeUser = currentUser || (auth && auth.currentUser) || (localStorage.getItem("dpgActiveUserUid") ? {
+        uid: localStorage.getItem("dpgActiveUserUid"),
+        displayName: localStorage.getItem("dpgActiveUserName") || "Verified Contributor",
+        email: localStorage.getItem("dpgActiveUserEmail") || ""
+      } : null);
+
+      if (!activeUser || !activeUser.uid) {
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Please sign in with your account to like and appreciate this resource.", { title: "Sign In Required" });
+        } else {
+          alert("Please sign in with your account to like and appreciate this resource.");
+        }
+        return;
+      }
+
       const docId = btn.dataset.id;
-      const title = btn.dataset.title;
+      const isSol = btn.dataset.isSol === "true";
+      const docPath = btn.dataset.path;
+      const ownerUid = btn.dataset.owner;
+      const title = btn.dataset.title || "Academic Resource";
       const originalHtml = btn.innerHTML;
       btn.innerText = "⏳...";
-      let newlyUseful = false;
-      let newLikesCount = 0;
-      let shareCount = 0;
+
       let userHasLiked = false;
-      
+      let newLikesCount = 0;
+      let newlyUseful = false;
+      let shareCount = 0;
+
       try {
-        const docRef = doc(db, "documents", docId);
-        
+        let docRef;
+        if (docPath && docPath.includes("/")) {
+          const parts = docPath.split("/").filter(Boolean);
+          docRef = doc(db, ...parts);
+        } else if (isSol) {
+          const coll = btn.dataset.coll || "assignment_solutions";
+          docRef = doc(db, coll, ownerUid, "solutions", docId);
+        } else {
+          docRef = doc(db, "documents", docId);
+        }
+
         await runTransaction(db, async (t) => {
           const docSnap = await t.get(docRef);
-          if (!docSnap.exists()) throw "Document missing!";
-          
-          let currentLikes = docSnap.data().likes || [];
-          shareCount = docSnap.data().shareCount || 0;
-          const usefulResourceEmailed = docSnap.data().usefulResourceEmailed || false;
-          
-          if (currentLikes.includes(currentUser.uid)) {
+          if (!docSnap.exists()) throw "Resource document not found!";
+
+          const dData = docSnap.data();
+          let likedByArr = Array.isArray(dData.likedBy) ? [...dData.likedBy] : (Array.isArray(dData.likes) ? [...dData.likes] : []);
+          let currentLikesCount = typeof dData.likes === "number" ? dData.likes : likedByArr.length;
+          shareCount = dData.shareCount || dData.shares || 0;
+          const usefulResourceEmailed = dData.usefulResourceEmailed || false;
+
+          if (likedByArr.includes(activeUser.uid)) {
             // Unlike
-            currentLikes = currentLikes.filter(id => id !== currentUser.uid);
-            t.update(docRef, { likes: currentLikes });
+            likedByArr = likedByArr.filter(id => id !== activeUser.uid);
+            currentLikesCount = Math.max(0, currentLikesCount - 1);
             userHasLiked = false;
           } else {
             // Like
-            currentLikes.push(currentUser.uid);
+            likedByArr.push(activeUser.uid);
+            currentLikesCount = currentLikesCount + 1;
             userHasLiked = true;
-            
-            const updates = { likes: currentLikes };
-            if ((currentLikes.length >= 15 || shareCount >= 5) && !usefulResourceEmailed) {
-              updates.usefulResourceEmailed = true;
-              newlyUseful = true;
-            }
-            t.update(docRef, updates);
           }
-          newLikesCount = currentLikes.length;
+
+          const updates = {};
+          if (isSol || typeof dData.likes === "number") {
+            updates.likes = currentLikesCount;
+            updates.likedBy = likedByArr;
+          } else {
+            updates.likes = likedByArr;
+            updates.likedBy = likedByArr;
+          }
+
+          if (userHasLiked && (currentLikesCount >= 15 || shareCount >= 5) && !usefulResourceEmailed) {
+            updates.usefulResourceEmailed = true;
+            newlyUseful = true;
+          }
+
+          t.update(docRef, updates);
+          newLikesCount = currentLikesCount;
         });
-        
-        // Update current button state in-place without re-rendering grid or scrolling page
+
+        // Update UI in-place
         btn.innerHTML = `${userHasLiked ? '❤️ Liked' : '🤍 Like'} (${newLikesCount})`;
         btn.classList.toggle('liked', userHasLiked);
 
-        // Notify Owner via Backend if it was a Like (not unlike)
-        if (userHasLiked) {
-           const ownerDoc = await getDoc(doc(db, "users", btn.dataset.owner));
-           if (ownerDoc.exists() && ownerDoc.data().email) {
-             const ownerEmail = ownerDoc.data().email;
-             const ownerName = ownerDoc.data().name;
-             
-             fetch(window.API_BASE_URL + "/api/email/like-notification", {
-               method: "POST",
-               headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ email: ownerEmail, resourceTitle: title, likerName: currentUser.displayName })
-             }).catch(e => console.error("Email API failed:", e));
-             
-             addDoc(collection(db, "notifications"), {
-               email: ownerEmail,
-               type: "like",
-               title: "New Like! ❤️",
-               message: `${currentUser.displayName || "Someone"} liked your resource "${title}"`,
-               createdAt: serverTimestamp()
-             }).catch(e => console.error(e));
-             
-             const qOwner = query(collection(db, "documents"));
-             const snapOwner = await getDocs(qOwner);
-             let totalLikes = 0;
-             snapOwner.forEach(d => {
-               if (d.data().userId === btn.dataset.owner && d.data().likes) {
-                 totalLikes += d.data().likes.length;
-               }
-             });
-             
-             if (totalLikes === 30) {
-                 fetch(window.API_BASE_URL + "/api/email/thirty-likes", {
-                   method: "POST",
-                   headers: { "Content-Type": "application/json" },
-                   body: JSON.stringify({ email: ownerEmail, name: ownerName })
-                 }).catch(e => console.error(e));
-                 
-                 addDoc(collection(db, "notifications"), {
-                   email: ownerEmail,
-                   type: "milestone",
-                   title: "🎉 Milestone Reached!",
-                   message: "Your resources have reached 30 total likes! Keep up the great work.",
-                   createdAt: serverTimestamp()
-                 }).catch(e => console.error(e));
-             }
-             
-             if (totalLikes === 70) {
-                 fetch(window.API_BASE_URL + "/api/email/seventy-likes", {
-                   method: "POST",
-                   headers: { "Content-Type": "application/json" },
-                   body: JSON.stringify({ email: ownerEmail, name: ownerName })
-                 }).catch(e => console.error(e));
-                 
-                 addDoc(collection(db, "notifications"), {
-                   email: ownerEmail,
-                   type: "milestone",
-                   title: "🏆 Elite Milestone Reached!",
-                   message: "Your resources have reached 70 total likes! You are an elite contributor.",
-                   createdAt: serverTimestamp()
-                 }).catch(e => console.error(e));
-             }
+        // Notify owner if newly liked
+        if (userHasLiked && ownerUid) {
+          try {
+            const ownerDoc = await getDoc(doc(db, "users", ownerUid));
+            if (ownerDoc.exists() && ownerDoc.data().email) {
+              const ownerEmail = ownerDoc.data().email;
+              const ownerName = ownerDoc.data().name;
 
-             if (newlyUseful) {
-                 fetch(window.API_BASE_URL + "/api/email/useful-resource-honour", {
-                   method: "POST",
-                   headers: { "Content-Type": "application/json" },
-                   body: JSON.stringify({ 
-                     email: ownerEmail, 
-                     name: ownerName, 
-                     resourceTitle: title, 
-                     likesCount: newLikesCount, 
-                     sharesCount: shareCount 
-                   })
-                 }).catch(e => console.error(e));
-                 
-                 addDoc(collection(db, "notifications"), {
-                   email: ownerEmail,
-                   type: "milestone",
-                   title: "🌟 Highly Useful Resource!",
-                   message: `Your resource "${title}" has been declared highly useful by the community!`,
-                   createdAt: serverTimestamp()
-                 }).catch(e => console.error(e));
-             }
-           }
+              fetch((window.API_BASE_URL || 'https://dpgnotes.onrender.com') + "/api/email/like-notification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: ownerEmail, resourceTitle: title, likerName: activeUser.displayName || "Someone" })
+              }).catch(e => console.error("Email API failed:", e));
+
+              addDoc(collection(db, "notifications"), {
+                email: ownerEmail,
+                type: "like",
+                title: "New Like! ❤️",
+                message: `${activeUser.displayName || "Someone"} liked your resource "${title}"`,
+                createdAt: serverTimestamp()
+              }).catch(e => console.error(e));
+            }
+          } catch (notifErr) {
+            console.warn("Notification error:", notifErr);
+          }
         }
 
         if (typeof loadProfile === 'function') loadProfile();
       } catch (err) {
+        console.error("Like error:", err);
         btn.innerHTML = originalHtml;
         if (window.customAlert) {
           await window.customAlert("Failed to update like status: " + (err.message || err), { title: "Error" });
         } else {
-          alert("Failed to update like status");
+          alert("Failed to update like status: " + (err.message || err));
         }
       }
     });

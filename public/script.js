@@ -55,6 +55,18 @@ const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL 
   ? window.API_BASE_URL 
   : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://dpgnotes.onrender.com');
 
+// Universal HTML sanitizer
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+window.escapeHtml = escapeHtml;
+
 // 8 Academic Classifications Definition (Image 3 Reference)
 const ACADEMIC_CATEGORIES = [
   {

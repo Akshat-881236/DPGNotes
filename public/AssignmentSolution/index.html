@@ -1642,6 +1642,8 @@
       document.getElementById('totalViewsText').textContent = views.toLocaleString();
       const likes = Number(data.likes) || (Array.isArray(data.likedBy) ? data.likedBy.length : 0);
       document.getElementById('totalLikesText').textContent = likes.toLocaleString();
+      const navLikeCountEl = document.getElementById('likeCountText');
+      if (navLikeCountEl) navLikeCountEl.textContent = likes.toLocaleString();
       const runs = Number(data.runs || data.codeRuns || 0);
       const runsEl = document.getElementById('totalRunsText');
       if (runsEl) runsEl.textContent = runs.toLocaleString();
@@ -1653,8 +1655,10 @@
       const currentUid = (window.currentUserAuth && window.currentUserAuth.uid) || localStorage.getItem("dpgActiveUserUid");
       if (currentUid && Array.isArray(data.likedBy) && data.likedBy.includes(currentUid)) {
         const likeIcon = document.getElementById('likeIcon');
-        likeIcon.className = 'ri-heart-fill';
-        likeIcon.style.color = '#f472b6';
+        if (likeIcon) {
+          likeIcon.className = 'ri-heart-fill';
+          likeIcon.style.color = '#f472b6';
+        }
       }
 
       isEncryptedDoc = !!data.isEncrypted;
@@ -2018,6 +2022,10 @@
         }
         if (countEl) {
           countEl.textContent = currentSolutionData.likes;
+        }
+        const totalLikesEl = document.getElementById('totalLikesText');
+        if (totalLikesEl) {
+          totalLikesEl.textContent = currentSolutionData.likes.toLocaleString();
         }
 
         if (typeof window.customAlert === 'function') {

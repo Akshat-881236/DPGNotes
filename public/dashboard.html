@@ -146,8 +146,14 @@
     .monetization-metrics-grid {
       display: grid !important;
       grid-template-columns: repeat(4, 1fr) !important;
-      gap: 10px !important;
+      gap: 12px !important;
       margin-bottom: 1rem !important;
+    }
+    @media (max-width: 1024px) {
+      .monetization-metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
     }
     .monetization-info-card {
       background: rgba(255, 255, 255, 0.04) !important;
@@ -164,11 +170,11 @@
       width: 100% !important;
       max-width: 100% !important;
       overflow: hidden !important;
-      border-radius: 12px !important;
-      background: rgba(0, 0, 0, 0.45) !important;
+      border-radius: 14px !important;
+      background: rgba(15, 17, 26, 0.7) !important;
       border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      padding: 12px !important;
-      margin-top: 12px !important;
+      padding: 14px !important;
+      margin-top: 14px !important;
       box-sizing: border-box !important;
     }
     .dashboard-ad-table-scroll-container {
@@ -176,33 +182,58 @@
       -webkit-overflow-scrolling: touch !important;
       touch-action: pan-x pan-y !important;
       width: 100% !important;
-      cursor: grab !important;
+      border-radius: 10px !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      background: rgba(15, 23, 42, 0.5) !important;
       scrollbar-width: thin !important;
-      scrollbar-color: #6366f1 rgba(255, 255, 255, 0.08) !important;
+      scrollbar-color: #6366f1 rgba(15, 23, 42, 0.4) !important;
       box-sizing: border-box !important;
+      cursor: grab !important;
     }
     .dashboard-ad-table-scroll-container::-webkit-scrollbar {
       height: 6px !important;
+      width: 6px !important;
     }
     .dashboard-ad-table-scroll-container::-webkit-scrollbar-thumb {
-      background: #6366f1 !important;
+      background: rgba(255, 255, 255, 0.18) !important;
       border-radius: 4px !important;
     }
+    .dashboard-ad-table-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #6366f1 !important;
+    }
     .dashboard-ad-table-scroll-container::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05) !important;
+      background: rgba(15, 23, 42, 0.4) !important;
     }
     .dashboard-ad-table {
       width: 100% !important;
-      min-width: 620px !important;
+      min-width: 720px !important;
       border-collapse: collapse !important;
       font-size: 0.82rem !important;
       text-align: left !important;
       white-space: nowrap !important;
     }
-    .dashboard-ad-table th,
+    .dashboard-ad-table thead th {
+      position: sticky !important;
+      top: 0 !important;
+      background: #151a28 !important;
+      padding: 0.85rem 1rem !important;
+      color: #94a3b8 !important;
+      font-weight: 600 !important;
+      font-size: 0.78rem !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.04em !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      z-index: 2 !important;
+      white-space: nowrap !important;
+    }
     .dashboard-ad-table td {
-      padding: 8px 12px !important;
+      padding: 0.85rem 1rem !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
       vertical-align: middle !important;
+      white-space: nowrap !important;
+    }
+    .dashboard-ad-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03) !important;
     }
 
     /* Explore Tab Categorized Resource Grids (Matches Homepage Resource Hub & Image 5) */
@@ -1047,12 +1078,10 @@
               <div class="monetization-info-card">
                 <div style="font-size:0.72rem; color:#94a3b8;">Discount Saved</div>
                 <div id="contribDiscountSaved" style="font-size:1.15rem; font-weight:700; color:#10b981; margin-top:2px;">-₹0</div>
-                <div id="contribDiscountPctSub" style="font-size:0.65rem; color:#34d399;">0% Tier</div>
-              </div>
-              <div class="monetization-info-card">
-                <div style="font-size:0.72rem; color:#94a3b8;">Subsidy Saved</div>
-                <div id="contribSubsidySaved" style="font-size:1.15rem; font-weight:700; color:#38bdf8; margin-top:2px;">-₹0</div>
-                <div style="font-size:0.65rem; color:#0284c7;">Peer Solutions &amp; Notes</div>
+                <div style="font-size:0.65rem; color:#34d399; display:flex; justify-content:center; gap:4px; flex-wrap:wrap;">
+                  <span id="contribDiscountPctSub">0% Off All Charges</span>
+                  <span id="contribSubsidySaved" style="display:none;">-₹0</span>
+                </div>
               </div>
               <div class="monetization-net-card" style="grid-column: 1 / -1; background:linear-gradient(135deg, rgba(99,102,241,0.22), rgba(139,92,246,0.18)); border:1px solid rgba(99,102,241,0.45); border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
@@ -1061,7 +1090,7 @@
                   </div>
                   <div>
                     <div style="font-size:0.78rem; color:#c4b5fd; font-weight:700;">Net Payable (Cycle Total)</div>
-                    <div id="contribPaymentStatusSub" style="font-size:0.68rem; font-weight:700; color:#f87171;">⏳ Pending Reconciliation</div>
+                    <div id="contribPaymentStatusSub" style="font-size:0.68rem; font-weight:700; color:#f87171;">⏳ Pending</div>
                   </div>
                 </div>
                 <div id="contribNetPayable" style="font-size:1.35rem; font-weight:800; color:#ffffff; font-family:'Outfit', sans-serif;">₹0</div>
