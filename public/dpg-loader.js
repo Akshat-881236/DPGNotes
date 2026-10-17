@@ -11,6 +11,10 @@
  * - Graceful lazy-loading handoff
  */
 (function() {
+  // Never show loading overlay to search engine bots, crawlers, or inspection tools
+  const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|chrome-lighthouse|lighthouse|slurp|duckduckbot|baiduspider|yandexbot|bingbot/i.test(navigator.userAgent);
+  if (isCrawler) return;
+
   const SESSION_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
   const MIN_DISPLAY_TIME_MS = 1200;           // 1.2 seconds for smooth visual experience
   const MAX_CUTOFF_TIME_MS = 12000;           // 12.0 seconds strict maximum cutoff

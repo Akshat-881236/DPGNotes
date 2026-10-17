@@ -1148,3 +1148,289 @@ table tr:hover,
   color: var(--text-primary);
 }
 
+/* ==========================================================================
+   HIGH CONTRAST LIGHT THEME SYSTEM FOR ALL DETAIL LEGAL CENTER NOTES
+   (WCAG AAA Compliant Contrast on White & Tinted Callouts)
+   ========================================================================== */
+
+/* Universal Light Theme Text Contrast */
+body:not(.theme-dark) .legal-article,
+body.theme-light .legal-article {
+  color: #1e293b;
+}
+
+body:not(.theme-dark) .legal-article p,
+body:not(.theme-dark) .legal-article li,
+body.theme-light .legal-article p,
+body.theme-light .legal-article li {
+  color: #1e293b;
+  line-height: 1.68;
+}
+
+body:not(.theme-dark) .legal-article strong,
+body:not(.theme-dark) .legal-article b,
+body.theme-light .legal-article strong,
+body.theme-light .legal-article b {
+  color: #0f172a;
+}
+
+body:not(.theme-dark) .legal-article h1,
+body:not(.theme-dark) .legal-article h2,
+body:not(.theme-dark) .legal-article h3,
+body:not(.theme-dark) .legal-article h4,
+body.theme-light .legal-article h1,
+body.theme-light .legal-article h2,
+body.theme-light .legal-article h3,
+body.theme-light .legal-article h4 {
+  color: #0f172a;
+}
+
+/* Callout Boxes - Light Mode Default */
+.legal-callout-indigo,
+.legal-box-indigo {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.35) !important;
+  border-radius: 12px;
+  padding: 1.15rem 1.35rem;
+  margin-bottom: 1.5rem;
+}
+body:not(.theme-dark) .legal-callout-indigo h3,
+body:not(.theme-dark) .legal-callout-indigo h4,
+body:not(.theme-dark) .legal-box-indigo h3,
+body:not(.theme-dark) .legal-box-indigo h4,
+body.theme-light .legal-callout-indigo h3,
+body.theme-light .legal-callout-indigo h4,
+body.theme-light .legal-box-indigo h3,
+body.theme-light .legal-box-indigo h4 {
+  color: #3730a3 !important;
+  font-weight: 700;
+}
+body:not(.theme-dark) .legal-callout-indigo p,
+body:not(.theme-dark) .legal-callout-indigo li,
+body:not(.theme-dark) .legal-box-indigo p,
+body:not(.theme-dark) .legal-box-indigo li,
+body.theme-light .legal-callout-indigo p,
+body.theme-light .legal-callout-indigo li,
+body.theme-light .legal-box-indigo p,
+body.theme-light .legal-box-indigo li {
+  color: #1e293b !important;
+}
+
+.legal-callout-emerald,
+.legal-box-emerald {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+  border-radius: 12px;
+  padding: 1.15rem 1.35rem;
+  margin-bottom: 1.5rem;
+}
+body:not(.theme-dark) .legal-callout-emerald h3,
+body:not(.theme-dark) .legal-callout-emerald h4,
+body:not(.theme-dark) .legal-box-emerald h3,
+body:not(.theme-dark) .legal-box-emerald h4,
+body.theme-light .legal-callout-emerald h3,
+body.theme-light .legal-callout-emerald h4,
+body.theme-light .legal-box-emerald h3,
+body.theme-light .legal-box-emerald h4 {
+  color: #065f46 !important;
+  font-weight: 700;
+}
+body:not(.theme-dark) .legal-callout-emerald p,
+body:not(.theme-dark) .legal-callout-emerald li,
+body:not(.theme-dark) .legal-box-emerald p,
+body:not(.theme-dark) .legal-box-emerald li,
+body.theme-light .legal-callout-emerald p,
+body.theme-light .legal-callout-emerald li,
+body.theme-light .legal-box-emerald p,
+body.theme-light .legal-box-emerald li {
+  color: #1e293b !important;
+}
+
+.legal-callout-amber,
+.legal-box-amber {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.35) !important;
+  border-radius: 12px;
+  padding: 1.15rem 1.35rem;
+  margin-bottom: 1.5rem;
+}
+body:not(.theme-dark) .legal-callout-amber h3,
+body:not(.theme-dark) .legal-callout-amber h4,
+body:not(.theme-dark) .legal-box-amber h3,
+body:not(.theme-dark) .legal-box-amber h4,
+body.theme-light .legal-callout-amber h3,
+body.theme-light .legal-callout-amber h4,
+body.theme-light .legal-box-amber h3,
+body.theme-light .legal-box-amber h4 {
+  color: #92400e !important;
+  font-weight: 700;
+}
+body:not(.theme-dark) .legal-callout-amber p,
+body:not(.theme-dark) .legal-callout-amber li,
+body:not(.theme-dark) .legal-box-amber p,
+body:not(.theme-dark) .legal-box-amber li,
+body.theme-light .legal-callout-amber p,
+body.theme-light .legal-callout-amber li,
+body.theme-light .legal-box-amber p,
+body.theme-light .legal-box-amber li {
+  color: #1e293b !important;
+}
+
+.legal-callout-sky,
+.legal-box-sky {
+  background: rgba(14, 165, 233, 0.08) !important;
+  border: 1.5px solid rgba(14, 165, 233, 0.35) !important;
+  border-radius: 12px;
+  padding: 1.15rem 1.35rem;
+  margin-bottom: 1.5rem;
+}
+body:not(.theme-dark) .legal-callout-sky h3,
+body:not(.theme-dark) .legal-callout-sky h4,
+body:not(.theme-dark) .legal-box-sky h3,
+body:not(.theme-dark) .legal-box-sky h4,
+body.theme-light .legal-callout-sky h3,
+body.theme-light .legal-callout-sky h4,
+body.theme-light .legal-box-sky h3,
+body.theme-light .legal-box-sky h4 {
+  color: #0369a1 !important;
+  font-weight: 700;
+}
+body:not(.theme-dark) .legal-callout-sky p,
+body:not(.theme-dark) .legal-callout-sky li,
+body:not(.theme-dark) .legal-box-sky p,
+body:not(.theme-dark) .legal-box-sky li,
+body.theme-light .legal-callout-sky p,
+body.theme-light .legal-callout-sky li,
+body.theme-light .legal-box-sky p,
+body.theme-light .legal-box-sky li {
+  color: #1e293b !important;
+}
+
+/* Pricing Cards - Light Mode */
+body:not(.theme-dark) .pricing-card,
+body.theme-light .pricing-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+body:not(.theme-dark) .pricing-card h4,
+body.theme-light .pricing-card h4 {
+  color: #3730a3 !important;
+}
+body:not(.theme-dark) .pricing-card .price-tag,
+body.theme-light .pricing-card .price-tag {
+  color: #b45309 !important;
+}
+body:not(.theme-dark) .pricing-card p,
+body.theme-light .pricing-card p {
+  color: #334155 !important;
+}
+
+/* Tables - Light Mode Contrast */
+body:not(.theme-dark) .table-responsive table,
+body.theme-light .table-responsive table {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+body:not(.theme-dark) .table-responsive th,
+body.theme-light .table-responsive th {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 700 !important;
+}
+body:not(.theme-dark) .table-responsive td,
+body.theme-light .table-responsive td {
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+}
+body:not(.theme-dark) .table-responsive tr:nth-child(even),
+body.theme-light .table-responsive tr:nth-child(even) {
+  background: #f8fafc !important;
+}
+
+/* Tier Badges in Light Mode */
+body:not(.theme-dark) .tier-badge[style*="#f59e0b"],
+body.theme-light .tier-badge[style*="#f59e0b"] {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+body:not(.theme-dark) .tier-badge[style*="#cbd5e1"],
+body.theme-light .tier-badge[style*="#cbd5e1"] {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+body:not(.theme-dark) .tier-badge[style*="#fbbf24"],
+body.theme-light .tier-badge[style*="#fbbf24"] {
+  background: #fef9c3 !important;
+  color: #854d0e !important;
+  border: 1px solid #fef08a !important;
+}
+body:not(.theme-dark) .tier-badge[style*="#38bdf8"],
+body.theme-light .tier-badge[style*="#38bdf8"] {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+}
+body:not(.theme-dark) .tier-badge[style*="#c084fc"],
+body.theme-light .tier-badge[style*="#c084fc"] {
+  background: #f3e8ff !important;
+  color: #6b21a8 !important;
+  border: 1px solid #e9d5ff !important;
+}
+
+/* Catch-All Inline Style Contrast Fixes for Light Mode Across ALL Legal Pages */
+body:not(.theme-dark) [style*="color: #cbd5e1"],
+body:not(.theme-dark) [style*="color:#cbd5e1"],
+body:not(.theme-dark) [style*="color: rgb(203, 213, 225)"],
+body.theme-light [style*="color: #cbd5e1"],
+body.theme-light [style*="color:#cbd5e1"],
+body.theme-light [style*="color: rgb(203, 213, 225)"] {
+  color: #1e293b !important;
+}
+
+body:not(.theme-dark) [style*="color: #a5b4fc"],
+body:not(.theme-dark) [style*="color:#a5b4fc"],
+body.theme-light [style*="color: #a5b4fc"],
+body.theme-light [style*="color:#a5b4fc"] {
+  color: #3730a3 !important;
+}
+
+body:not(.theme-dark) [style*="color: #34d399"],
+body:not(.theme-dark) [style*="color:#34d399"],
+body.theme-light [style*="color: #34d399"],
+body.theme-light [style*="color:#34d399"] {
+  color: #065f46 !important;
+}
+
+body:not(.theme-dark) [style*="color: #fbbf24"],
+body:not(.theme-dark) [style*="color:#fbbf24"],
+body.theme-light [style*="color: #fbbf24"],
+body.theme-light [style*="color:#fbbf24"] {
+  color: #92400e !important;
+}
+
+body:not(.theme-dark) [style*="color: #38bdf8"],
+body:not(.theme-dark) [style*="color:#38bdf8"],
+body.theme-light [style*="color: #38bdf8"],
+body.theme-light [style*="color:#38bdf8"] {
+  color: #0369a1 !important;
+}
+
+body:not(.theme-dark) [style*="color: #94a3b8"],
+body:not(.theme-dark) [style*="color:#94a3b8"],
+body.theme-light [style*="color: #94a3b8"],
+body.theme-light [style*="color:#94a3b8"] {
+  color: #334155 !important;
+}
+
+body:not(.theme-dark) [style*="color: #93c5fd"],
+body:not(.theme-dark) [style*="color:#93c5fd"],
+body.theme-light [style*="color: #93c5fd"],
+body.theme-light [style*="color:#93c5fd"] {
+  color: #1d4ed8 !important;
+}
+

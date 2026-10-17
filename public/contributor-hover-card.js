@@ -72,6 +72,19 @@
       transform: translateY(0) scale(1);
       pointer-events: auto;
     }
+    #dpgContributorHoverCard::before {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: 0;
+      right: 0;
+      height: 12px;
+    }
+    #dpgContributorHoverCard.flipped-top::before {
+      top: auto;
+      bottom: -12px;
+      height: 12px;
+    }
 
     /* Light Theme Adaptive Styling */
     html[data-theme="light"] #dpgContributorHoverCard {
@@ -373,12 +386,15 @@
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    let top = rect.bottom + 8;
+    let top = rect.bottom + 4;
     let left = rect.left - 20;
 
     // Flip to top if close to bottom
     if (top + cardRect.height > viewportHeight - 16) {
-      top = rect.top - cardRect.height - 8;
+      top = rect.top - cardRect.height - 4;
+      hoverCard.classList.add("flipped-top");
+    } else {
+      hoverCard.classList.remove("flipped-top");
     }
     if (top < 10) top = 10;
 
@@ -571,8 +587,12 @@
     hoverCard.classList.add("dpg-hover-active");
   }
 
-  // Card mouse events
+  // Card mouse events - Keep card active while user moves within it
   hoverCard.addEventListener("mouseenter", () => {
+    isMouseOverCard = true;
+    clearTimeout(closeTimer);
+  });
+  hoverCard.addEventListener("mouseover", () => {
     isMouseOverCard = true;
     clearTimeout(closeTimer);
   });
@@ -583,8 +603,13 @@
     if (e.relatedTarget && activeTrigger && (activeTrigger.contains(e.relatedTarget) || e.relatedTarget === activeTrigger)) {
       return;
     }
-    // Remove immediately as arrow leaves card
-    hideHoverCard();
+    // Remove if moving anywhere outside the card and trigger
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => {
+      if (!isMouseOverCard && !isMouseOverTrigger) {
+        hideHoverCard();
+      }
+    }, 220);
   });
 
   // Action Buttons Click Handlers
@@ -690,9 +715,14 @@
     if (!trigger) return;
 
     isMouseOverTrigger = true;
-    clearTimeout(hoverTimer);
     clearTimeout(closeTimer);
 
+    // If card is already showing for this exact trigger, keep it active
+    if (hoverCard.classList.contains("dpg-hover-active") && activeTrigger === trigger) {
+      return;
+    }
+
+    clearTimeout(hoverTimer);
     hoverTimer = setTimeout(() => {
       showHoverCard(trigger);
     }, DWELL_SHOW_DELAY);
@@ -702,14 +732,21 @@
     const trigger = e.target.closest(".contributor-photo-trigger, [data-contributor-photo='true'], .author-avatar-mini");
     if (!trigger) return;
 
+    isMouseOverTrigger = false;
+    clearTimeout(hoverTimer);
+
     // Check if moving into the hover card itself
     if (e.relatedTarget && (hoverCard.contains(e.relatedTarget) || e.relatedTarget === hoverCard)) {
-      isMouseOverTrigger = false;
       return;
     }
 
-    // Immediately remove hover card as arrow is removed from icon / profile photo
-    hideHoverCard();
+    // Give a grace window so cursor can smoothly transition into the hover card
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => {
+      if (!isMouseOverCard && !isMouseOverTrigger) {
+        hideHoverCard();
+      }
+    }, 220);
   });
 
   // Re-position on resize

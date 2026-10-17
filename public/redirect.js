@@ -566,11 +566,14 @@
           'dpgnotes.firebaseapp.com', 
           'localhost', 
           '127.0.0.1',
+          'akshatpsd2005',
+          'codagenda.akshatpsd2005.workers.dev',
+          'akshat-145609.github.io',
+          'akshat-881236.github.io',
+          'akshatnetworkhub',
           'github.io',
           'digiindia-student-platform.onrender.com',
-          'digiindia',
-          'akshat-881236.github.io',
-          'akshat-145609.github.io'
+          'digiindia'
         ];
         
         // If it is external (not in trusted internal hosts)
@@ -608,17 +611,26 @@
     // DPGNOTES GUEST ACCESS QUOTA ENFORCEMENT (6 Visits / 3 PDFs per day)
     // ============================================================================
     (function checkGuestQuota() {
+      // 0. Search Engine Crawlers & Bot Inspection Transparency (Googlebot, Bingbot, Google-InspectionTool, etc.)
+      const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|chrome-lighthouse|lighthouse|slurp|duckduckbot|baiduspider|yandexbot|bingbot|facebookexternalhit|whatsapp|telegram/i.test(navigator.userAgent);
+      if (isCrawler) return;
+
       // 1. Authenticated Users have Unlimited Access
       const activeUid = localStorage.getItem("dpgActiveUserUid");
       if (activeUid) return;
 
-      // 2. Legal Policy Pages, Quota Lockdown Screen, and Contributor Creator Studios are strictly Exempt from Guest Quota
-      if (window.location.pathname.includes('/legal') || 
-          window.location.href.includes('legal/index.html') ||
-          window.location.pathname.includes('quota-lockdown.html') ||
-          window.location.pathname.includes('admin') ||
-          window.location.pathname.includes('dashboard') ||
-          window.location.pathname.includes('train_model')) {
+      // 2. Search Engines, SERP, Public Portals, Legal Policy Pages, Quota Lockdown Screen, and Contributor Creator Studios are strictly Exempt from Guest Quota
+      const p = window.location.pathname.toLowerCase();
+      if (p === '' || p === '/' || p.includes('index.html') || 
+          p.includes('dpgnotes-serp.html') || 
+          p.includes('dpgnotes-search-engine.html') || 
+          p.includes('study-hub.html') || 
+          p.includes('overview') || 
+          p.includes('/legal') || 
+          p.includes('quota-lockdown.html') ||
+          p.includes('admin') || 
+          p.includes('dashboard') || 
+          p.includes('train_model')) {
         return;
       }
 
@@ -699,25 +711,19 @@
       });
 
       function triggerQuotaReachedPhase() {
+        if (isCrawler) return;
+        const curPath = window.location.pathname.toLowerCase();
+        if (curPath.includes('quota-lockdown.html') || curPath.includes('dpgnotes-serp.html') || curPath.includes('dpgnotes-search-engine.html') || curPath.includes('index.html')) {
+          return;
+        }
+
         // Enforce lock across all 3 storage layers
         localStorage.setItem("dpg_quota_locked", "true");
         sessionStorage.setItem("dpg_quota_locked", "true");
         setCookie("dpg_quota_locked", "true");
 
-        if (window.location.pathname.includes('quota-lockdown.html')) {
-          return;
-        }
-
         // Always redirect user to quota-lockdown.html with complete absolute URL
         window.location.href = "https://dpgnotes.web.app/quota-lockdown.html?returnUrl=" + encodeURIComponent(window.location.href);
-      }
-
-
-
-      // Never lock out search engine crawlers (Googlebot, Bingbot, Lighthouse, Google-InspectionTool, etc.)
-      const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent);
-      if (isCrawler) {
-        return;
       }
 
       // Check local limit first

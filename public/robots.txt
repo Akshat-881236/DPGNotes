@@ -4,6 +4,8 @@
 
 User-agent: *
 Allow: /
+Allow: /dpgnotes-serp.html
+Allow: /dpgnotes-search-engine.html
 
 # Disallow Internal Admin, Backend, Private & Quarantine Interfaces
 Disallow: /admin.html
