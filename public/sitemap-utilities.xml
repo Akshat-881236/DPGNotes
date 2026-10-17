@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- DPGNotes Academic Utilities & Document Engineering Suite -->
+  <url>
+    <loc>https://dpgnotes.web.app/AssignmentCoverPageGenerator/index.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/PracticalCoverPageGenerator/index.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/PdfMetaAdder.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/PdfMetaAnalyzer.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/ImagetoPdfConverter.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/train_model.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-video.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/dpgnotes-capstone-frontpage.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/support-contact-form.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://dpgnotes.web.app/report.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+</urlset>

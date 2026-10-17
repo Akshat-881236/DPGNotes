@@ -1,3 +1,25 @@
+# ==============================================================================
+# DPGNotes - robots.txt (Compliant with robotstxt.org & Google Search Guidelines)
+# ==============================================================================
+
 User-agent: *
 Allow: /
+
+# Disallow Internal Admin, Backend, Private & Quarantine Interfaces
+Disallow: /admin.html
+Disallow: /admin-login.html
+Disallow: /admin.js
+Disallow: /backend/
+Disallow: /api/admin/
+Disallow: /quota-lockdown.html
+Disallow: /suspension-support-contact-form.html
+Disallow: /support-contact-report.html
+Disallow: /ads-redirect-handler.html
+Disallow: /referrer_code.html
+
+# Master Sitemap Index & Child Sitemaps
 Sitemap: https://dpgnotes.web.app/sitemap.xml
+Sitemap: https://dpgnotes.web.app/sitemap-main.xml
+Sitemap: https://dpgnotes.web.app/sitemap-utilities.xml
+Sitemap: https://dpgnotes.web.app/sitemap-solutions.xml
+Sitemap: https://dpgnotes.web.app/sitemap-legal.xml

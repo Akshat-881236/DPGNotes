@@ -29,8 +29,9 @@
   <meta name="author" content="DPGNotes by Akshat Network Hub"/>
   <meta name="robots" content="index, follow"/>
   <meta name="theme-color" content="#030712"/>
+  <link rel="canonical" href="https://dpgnotes.web.app/" />
 
-  <!-- JSON-LD SCHEMA STRUCTURED DATA -->
+  <!-- JSON-LD SCHEMA STRUCTURED DATA (Google Sitelinks & Organization Hierarchy) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -39,22 +40,180 @@
     "url": "https://dpgnotes.web.app",
     "logo": "https://dpgnotes.web.app/ANH.png",
     "sameAs": [
-      "https://github.com/Akshat-881236/DPGNotes"
+      "https://github.com/Akshat-881236/DPGNotes",
+      "https://akshat-881236.github.io/AkshatNetworkHub"
     ],
-    "description": "DPGNotes provides comprehensive academic resources, university notes, previous year sessional exam papers, and placement study guides."
+    "description": "DPGNotes provides comprehensive academic resources, university notes, previous year sessional exam papers, assignment & practical solutions, and placement study guides."
   }
   </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": "https://dpgnotes.web.app/#website",
     "url": "https://dpgnotes.web.app/",
-    "name": "DPGNotes Educational Platform",
+    "name": "DPGNotes",
+    "alternateName": ["DPG Notes", "DPGNotes Educational Platform", "DPGNotes Academic Hub"],
+    "description": "Comprehensive academic hub providing university notes, sessional exam PYQs, assignment solutions, practical files, and placement study guides.",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://dpgnotes.web.app/dpgnotes-serp.html?query={search_term_string}",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://dpgnotes.web.app/dpgnotes-serp.html?query={search_term_string}"
+      },
       "query-input": "required name=search_term_string"
-    }
+    },
+    "hasPart": [
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/dashboard.html",
+        "name": "Dashboard",
+        "description": "Contributor dashboard, resource manager, monetization telemetry, and study material uploads.",
+        "url": "https://dpgnotes.web.app/dashboard.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/profile.html",
+        "name": "My Profile",
+        "description": "Verified contributor profiles, portfolio achievements, academic followers, and contributions.",
+        "url": "https://dpgnotes.web.app/profile.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/study-hub.html",
+        "name": "Frequently Viewed Resources (Study Hub)",
+        "description": "Frequently viewed academic study materials, top-rated course notes, and PYQs.",
+        "url": "https://dpgnotes.web.app/study-hub.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/AssignmentSolution/index.html",
+        "name": "Assignment Search & Solutions",
+        "description": "University assignment solutions repository with step-by-step verified explanations.",
+        "url": "https://dpgnotes.web.app/AssignmentSolution/index.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/PracticalSolution/index.html",
+        "name": "Practical Search & Solutions",
+        "description": "Computer science and engineering practical solutions, code runner, and lab files.",
+        "url": "https://dpgnotes.web.app/PracticalSolution/index.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/AssignmentSolution/generate.html",
+        "name": "Publish Assignment Solution",
+        "description": "Interactive contributor suite to publish and share verified academic assignment solutions.",
+        "url": "https://dpgnotes.web.app/AssignmentSolution/generate.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/PracticalSolution/generate.html",
+        "name": "Publish Practical Solution",
+        "description": "Interactive publisher to create, format, and share lab practical solutions.",
+        "url": "https://dpgnotes.web.app/PracticalSolution/generate.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/dpgnotes-search-engine.html",
+        "name": "DPGNotes Search Engine",
+        "description": "Fast AI-assisted semantic academic search engine for university syllabi and notes.",
+        "url": "https://dpgnotes.web.app/dpgnotes-search-engine.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/dpgnotes-serp.html",
+        "name": "Previously Viewed History & SERP",
+        "description": "Search engine result pages with watch history, filter chips, and academic streams.",
+        "url": "https://dpgnotes.web.app/dpgnotes-serp.html"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://dpgnotes.web.app/legal/index.html",
+        "name": "Legal Notes & Compliance Center",
+        "description": "DPGNotes academic policies, terms of service, privacy compliance, and copyright rules.",
+        "url": "https://dpgnotes.web.app/legal/index.html"
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "DPGNotes Key Navigation & Portals",
+    "itemListElement": [
+      {
+        "@type": "SiteNavigationElement",
+        "position": 1,
+        "name": "Dashboard",
+        "description": "Contributor dashboard to manage uploads, monetization telemetry, and study material uploads.",
+        "url": "https://dpgnotes.web.app/dashboard.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 2,
+        "name": "My Profile",
+        "description": "Verified contributor profiles, portfolio achievements, academic followers, and contributions.",
+        "url": "https://dpgnotes.web.app/profile.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 3,
+        "name": "Frequently Viewed Resources",
+        "description": "Frequently viewed academic study materials, top-rated course notes, and PYQs.",
+        "url": "https://dpgnotes.web.app/study-hub.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 4,
+        "name": "Assignment Solutions",
+        "description": "University assignment solutions repository with step-by-step verified explanations.",
+        "url": "https://dpgnotes.web.app/AssignmentSolution/index.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 5,
+        "name": "Practical Solutions",
+        "description": "Computer science and engineering practical solutions, code runner, and lab files.",
+        "url": "https://dpgnotes.web.app/PracticalSolution/index.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 6,
+        "name": "Publish Assignment",
+        "description": "Interactive contributor suite to publish and share verified academic assignment solutions.",
+        "url": "https://dpgnotes.web.app/AssignmentSolution/generate.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 7,
+        "name": "Publish Practical",
+        "description": "Interactive publisher to create, format, and share lab practical solutions.",
+        "url": "https://dpgnotes.web.app/PracticalSolution/generate.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 8,
+        "name": "DPGNotes Search Engine",
+        "description": "Fast AI-assisted semantic academic search engine for university syllabi and notes.",
+        "url": "https://dpgnotes.web.app/dpgnotes-search-engine.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 9,
+        "name": "Previously Viewed History",
+        "description": "Search engine result pages with watch history, filter chips, and academic streams.",
+        "url": "https://dpgnotes.web.app/dpgnotes-serp.html"
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 10,
+        "name": "Legal Notes",
+        "description": "DPGNotes academic policies, terms of service, privacy compliance, and copyright rules.",
+        "url": "https://dpgnotes.web.app/legal/index.html"
+      }
+    ]
   }
   </script>
 
