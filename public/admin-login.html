@@ -196,11 +196,25 @@
 
     let adminEmailGlobal = "";
 
-    // If already authenticated with valid token, redirect to dashboard
+    function getValidRedirectTarget() {
+      const p = new URLSearchParams(window.location.search);
+      const target = p.get('go-to') || p.get('redirect') || '';
+      if (!target) return "admin.html";
+      try {
+        const u = new URL(target, window.location.origin);
+        if (u.origin === window.location.origin) {
+          return u.pathname + u.search + u.hash;
+        }
+      } catch (e) {}
+      if (target.startsWith('/') && !target.startsWith('//')) return target;
+      return "admin.html";
+    }
+
+    // If already authenticated with valid token, redirect to target
     const existingToken = localStorage.getItem("adminToken");
     auth.authStateReady().then(() => {
       if (existingToken && auth.currentUser) {
-        window.location.href = "admin.html";
+        window.location.href = getValidRedirectTarget();
       }
     });
 
@@ -293,9 +307,9 @@
           }
 
           if (window.customAlert) {
-            await window.customAlert("Admin authentication successful! Redirecting to Enterprise Dashboard...", { title: "Success" });
+            await window.customAlert("Admin authentication successful! Redirecting...", { title: "Success" });
           }
-          window.location.href = "admin.html";
+          window.location.href = getValidRedirectTarget();
         } else {
           if (window.customAlert) {
             await window.customAlert(data.error || "OTP verification failed.", { title: "Authentication Failed", isDanger: true });

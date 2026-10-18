@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Quiz Generator & Authoring Studio | DPGNotes</title>
+  <meta name="description" content="Author secure, responsive academic quizzes with configurable marking schemes, integrity controls, and protected answer keys on DPGNotes." />
+  <link rel="icon" href="/ANH.png" type="image/png" />
+
+  <!-- Instant Contributor Auth Protection Check -->
+  <script>
+    (function() {
+      const uid = localStorage.getItem("dpgActiveUserUid");
+      if (!uid) {
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
+      }
+    })();
+  </script>
+
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --qz-bg: #090d16;
+      --qz-surface: rgba(17, 24, 39, 0.85);
+      --qz-surface-card: #131b2e;
+      --qz-border: rgba(255, 255, 255, 0.08);
+      --qz-primary: #6366f1;
+      --qz-primary-hover: #4f46e5;
+      --qz-primary-glow: rgba(99, 102, 241, 0.25);
+      --qz-accent: #06b6d4;
+      --qz-success: #10b981;
+      --qz-warning: #f59e0b;
+      --qz-danger: #ef4444;
+      --qz-text: #f8fafc;
+      --qz-text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background: var(--qz-bg);
+      color: var(--qz-text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding-bottom: 4rem;
+    }
+
+    /* Navbar */
+    .qz-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(10, 14, 23, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--qz-border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .qz-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .qz-brand img { width: 32px; height: 32px; border-radius: 8px; }
+
+    /* Layout */
+    .studio-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.25rem;
+    }
+
+    .studio-header {
+      margin-bottom: 2rem;
+    }
+    .studio-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Panels & Cards */
+    .qz-card {
+      background: var(--qz-surface);
+      border: 1px solid var(--qz-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      backdrop-filter: blur(20px);
+      margin-bottom: 1.75rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .card-title-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--qz-border);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .form-label {
+      color: var(--qz-text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-label .req { color: var(--qz-danger); }
+    .form-control, .form-select {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    .form-control:focus, .form-select:focus {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: var(--qz-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      color: #ffffff;
+    }
+    .form-control[readonly] {
+      background: rgba(0, 0, 0, 0.3);
+      color: #94a3b8;
+    }
+    .form-select option {
+      background: #0f172a;
+      color: #fff;
+    }
+
+    /* Range slider custom */
+    .count-display-box {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--qz-accent);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* Switch styling */
+    .form-switch .form-check-input {
+      width: 2.5em;
+      height: 1.3em;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .form-switch .form-check-input:checked {
+      background-color: var(--qz-primary);
+      border-color: var(--qz-primary);
+    }
+
+    /* Question Navigator Sticky Bar */
+    .navigator-dock {
+      position: sticky;
+      top: 76px;
+      z-index: 900;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--qz-border);
+      border-radius: 14px;
+      padding: 12px 18px;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .nav-pills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 88px;
+      overflow-y: auto;
+      flex: 1;
+      padding: 2px;
+    }
+    .q-jump-pill {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--qz-text-muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .q-jump-pill:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #fff;
+    }
+    .q-jump-pill.completed {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+    .q-jump-pill.incomplete {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    /* Question Editor Box */
+    .q-editor-card {
+      background: var(--qz-surface-card);
+      border: 1px solid var(--qz-border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .q-editor-card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    .q-num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #c7d2fe;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 0.85rem;
+    }
+    .opt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 1rem;
+    }
+    @media (max-width: 768px) {
+      .opt-grid { grid-template-columns: 1fr; }
+      .qz-navbar { padding: 1rem 1.25rem; }
+    }
+
+    .key-selector-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--qz-border);
+    }
+    .key-radio-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--qz-text-muted);
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .key-radio-btn input { display: none; }
+    .key-radio-btn.selected {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--qz-success);
+      color: #6ee7b7;
+    }
+
+    /* Buttons */
+    .btn-publish {
+      background: linear-gradient(135deg, var(--qz-primary), var(--qz-primary-hover));
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 18px var(--qz-primary-glow);
+      transition: all 0.2s;
+    }
+    .btn-publish:hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+    }
+    .btn-publish:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Modal */
+    .qz-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 1.5rem;
+    }
+    .qz-modal-card {
+      background: #111827;
+      border: 1px solid var(--qz-border);
+      border-radius: 20px;
+      padding: 2.25rem;
+      max-width: 540px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Studio Navbar -->
+  <header class="qz-navbar">
+    <a href="/index.html" class="qz-brand">
+      <img src="/ANH.png" alt="DPGNotes">
+      <span>DPGNotes <span style="color:var(--qz-primary);">Quiz Studio</span></span>
+    </a>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="/Quizes/quiz-record-and-analytics.html" class="btn btn-sm btn-outline-secondary" style="border-color:var(--qz-border); color:var(--qz-text-muted);">
+        <i class="ri-bar-chart-box-line"></i> Contributor Analytics
+      </a>
+      <a href="/dashboard.html" class="btn btn-sm btn-secondary" style="background:rgba(255,255,255,0.08); border-color:var(--qz-border);">
+        <i class="ri-dashboard-line"></i> Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="studio-container">
+
+    <div class="studio-header">
+      <div class="studio-badge">
+        <i class="ri-shield-check-fill"></i> Verified Contributor Authoring
+      </div>
+      <h1 style="font-size:2rem; font-weight:800; margin-bottom:0.4rem;">Author Academic Quiz</h1>
+      <p style="color:var(--qz-text-muted); font-size:0.95rem;">
+        Generate standardized 10–120 question examinations with configurable marking schemes, strict UMC anti-cheat detection, and zero-knowledge protected answer keys.
+      </p>
+    </div>
+
+    <!-- SECTION 1: CONTRIBUTOR IDENTITY AUTOFILL -->
+    <section class="qz-card">
+      <div class="card-title-bar">
+        <i class="ri-user-star-line" style="color:var(--qz-primary);"></i>
+        <span>1. Contributor Identity Verification</span>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label" for="authorName">Author Name</label>
+          <input type="text" id="authorName" class="form-control" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="authorStudentId">Student / Employee ID</label>
+          <input type="text" id="authorStudentId" class="form-control" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="authorCourse">Discipline / Course</label>
+          <input type="text" id="authorCourse" class="form-control" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="authorCollege">College / Institute</label>
+          <input type="text" id="authorCollege" class="form-control" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="authorUniversity">Affiliated University</label>
+          <input type="text" id="authorUniversity" class="form-control" readonly>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: METADATA & SCORING RULES -->
+    <section class="qz-card">
+      <div class="card-title-bar">
+        <i class="ri-settings-4-line" style="color:var(--qz-accent);"></i>
+        <span>2. Quiz Metadata & Examination Rules</span>
+      </div>
+      
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label" for="subjectName">Subject Name <span class="req">*</span></label>
+          <input type="text" id="subjectName" class="form-control" placeholder="e.g. Data Structures & Algorithms" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="subjectCode">Subject Code <span class="req">*</span></label>
+          <input type="text" id="subjectCode" class="form-control" placeholder="e.g. BCA-302" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="topicTags">Topic Tags (comma-separated) <span class="req">*</span></label>
+          <input type="text" id="topicTags" class="form-control" placeholder="Arrays, Trees, Graphs" required>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label" for="quizTitle">Quiz Title <span class="req">*</span></label>
+          <input type="text" id="quizTitle" class="form-control" placeholder="e.g. Mid-Term DSA Comprehensive Assessment" required>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label" for="quizDescription">Outcome / Description <span class="req">*</span></label>
+          <textarea id="quizDescription" class="form-control" rows="2" placeholder="Describe the objectives, syllabus coverage, and learning outcome of this quiz..." required></textarea>
+        </div>
+      </div>
+
+      <hr style="border-color:var(--qz-border); margin:1.5rem 0;">
+
+      <!-- Question Count Slider -->
+      <div class="row g-3 align-items-center mb-4">
+        <div class="col-md-4">
+          <label class="form-label" for="questionCountRange">Total Questions (10 – 120) <span class="req">*</span></label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <input type="range" class="form-range" id="questionCountRange" min="10" max="120" step="1" value="15" oninput="updateQuestionCount(this.value)">
+            <span class="count-display-box" id="questionCountVal">15</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="timeMinutes">Time Allocated (Minutes) <span class="req">*</span></label>
+          <select id="timeMinutes" class="form-select">
+            <option value="15">15 Minutes</option>
+            <option value="20" selected>20 Minutes</option>
+            <option value="30">30 Minutes</option>
+            <option value="45">45 Minutes</option>
+            <option value="60">60 Minutes (1 Hour)</option>
+            <option value="90">90 Minutes</option>
+            <option value="120">120 Minutes (2 Hours)</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="visibilitySelect">Quiz Visibility <span class="req">*</span></label>
+          <select id="visibilitySelect" class="form-select">
+            <option value="public" selected>Public (Discoverable in Quiz Directory)</option>
+            <option value="private">Private (Unlisted, Share Token Required)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Marking Scheme -->
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label" for="marksPerCorrect">Score Per Correct Response <span class="req">*</span></label>
+          <input type="number" id="marksPerCorrect" class="form-control" value="1.0" step="0.25" min="0.25" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="negativeMarks">Deduction Per Incorrect Response (Negative Marking)</label>
+          <input type="number" id="negativeMarks" class="form-control" value="0.25" step="0.25" min="0">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="unattemptedPenalty">Deduction Per Unanswered Question</label>
+          <input type="number" id="unattemptedPenalty" class="form-control" value="0.0" step="0.25" min="0">
+        </div>
+      </div>
+
+      <!-- Policies Switches -->
+      <div class="row g-3 mt-3">
+        <div class="col-md-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="allowChangeAnswers" checked>
+            <label class="form-check-label" for="allowChangeAnswers" style="font-size:0.85rem; font-weight:600;">
+              Allow changing answers before submit
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="immediateResult" checked onchange="toggleImmediateResultUI(this.checked)">
+            <label class="form-check-label" for="immediateResult" style="font-size:0.85rem; font-weight:600;">
+              Declare results immediately
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="strictMode" checked>
+            <label class="form-check-label" for="strictMode" style="font-size:0.85rem; font-weight:600; color:#fca5a5;">
+              <i class="ri-shield-flash-line"></i> Strict UMC Auto-Submit Policy
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: DYNAMIC QUESTION BUILDER -->
+    <section>
+      <!-- Sticky Question Navigator Bar -->
+      <div class="navigator-dock" id="navDock">
+        <div style="font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:6px;">
+          <i class="ri-compass-3-line" style="color:var(--qz-accent);"></i> Navigator:
+        </div>
+        <div class="nav-pills-wrap" id="navPillsContainer"></div>
+        <div style="font-size:0.8rem; color:var(--qz-text-muted);" id="navProgressText">
+          0 / 15 configured
+        </div>
+      </div>
+
+      <!-- Question Cards Form Container -->
+      <div id="questionsContainer"></div>
+    </section>
+
+    <!-- Publish Submission Trigger -->
+    <div style="text-align:center; margin-top:2.5rem;">
+      <button type="button" id="btnPublishQuiz" class="btn-publish" onclick="publishQuiz()">
+        <i class="ri-send-plane-fill"></i> Validate &amp; Publish Academic Quiz
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Success Modal -->
+  <div id="publishSuccessModal" class="qz-modal-overlay" style="display:none;">
+    <div class="qz-modal-card">
+      <div style="width:64px; height:64px; border-radius:50%; background:rgba(16, 185, 129, 0.15); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
+        <i class="ri-checkbox-circle-fill" style="font-size:2.4rem; color:var(--qz-success);"></i>
+      </div>
+      <h2 style="font-size:1.6rem; font-weight:800; color:white; margin-bottom:0.4rem;">Quiz Successfully Published!</h2>
+      <p style="color:var(--qz-text-muted); font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">
+        Your quiz is live, paginated across secure question documents, and protected by AES-grade answer key separation.
+      </p>
+
+      <div style="background:rgba(0,0,0,0.3); border:1px solid var(--qz-border); border-radius:10px; padding:10px 14px; margin-bottom:1.25rem; text-align:left;">
+        <label style="color:var(--qz-text-muted); font-size:0.75rem; font-weight:600; display:block; margin-bottom:4px;">EXAMINATION SHARE URL</label>
+        <input type="text" id="liveQuizUrlInput" class="form-control form-control-sm" readonly style="font-family:monospace; font-size:0.85rem;">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1rem;">
+        <button type="button" class="btn btn-outline-light btn-sm" onclick="copyQuizUrl()">
+          <i class="ri-file-copy-line"></i> Copy Link
+        </button>
+        <button type="button" class="btn btn-outline-info btn-sm" onclick="shareQuizUrl()">
+          <i class="ri-share-line"></i> Share
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; gap:10px; border-top:1px solid var(--qz-border); padding-top:1rem;">
+        <a id="previewQuizBtn" href="#" target="_blank" class="btn btn-primary btn-sm" style="flex:1;">
+          <i class="ri-external-link-line"></i> Preview Exam
+        </a>
+        <a id="analyticsQuizBtn" href="#" class="btn btn-secondary btn-sm" style="flex:1;">
+          <i class="ri-bar-chart-2-line"></i> Quiz Analytics
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Script & Logic -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc, 
+      setDoc, 
+      writeBatch, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let activeContributor = null;
+    let currentQuestionCount = 15;
+
+    // Cryptographic token generator
+    function generateSecureToken() {
+      const arr = new Uint8Array(24);
+      window.crypto.getRandomValues(arr);
+      return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // SHA-256 hash helper
+    async function sha256(str) {
+      const buffer = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Auth & Profile Autofill
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
+        return;
+      }
+      try {
+        const uSnap = await getDoc(doc(db, "users", user.uid));
+        const uData = uSnap.exists() ? uSnap.data() : {};
+
+        // Contributor verification validation
+        if (uData.isBlocked) {
+          alert("Your contributor account has been suspended.");
+          window.location.replace('/index.html');
+          return;
+        }
+
+        activeContributor = {
+          uid: user.uid,
+          name: uData.name || user.displayName || user.email.split('@')[0],
+          email: user.email,
+          studentId: uData.studentId || uData.studentIdOrEmployeeId || "DPG-CTR-" + user.uid.slice(0, 6).toUpperCase(),
+          course: uData.course || "Computer Science & Engineering",
+          collegeName: uData.collegeName || "DPG Degree College",
+          universityName: uData.universityName || "Maharshi Dayanand University (MDU)",
+          github: uData.github || "",
+          linkedin: uData.linkedin || ""
+        };
+
+        // Autofill UI
+        document.getElementById('authorName').value = activeContributor.name;
+        document.getElementById('authorStudentId').value = activeContributor.studentId;
+        document.getElementById('authorCourse').value = activeContributor.course;
+        document.getElementById('authorCollege').value = activeContributor.collegeName;
+        document.getElementById('authorUniversity').value = activeContributor.universityName;
+
+      } catch (err) {
+        console.error("Profile load error:", err);
+      }
+    });
+
+    // Dynamic Question Builder Render
+    window.updateQuestionCount = function(count) {
+      currentQuestionCount = parseInt(count, 10);
+      document.getElementById('questionCountVal').textContent = currentQuestionCount;
+      renderQuestionEditors();
+    };
+
+    function renderQuestionEditors() {
+      const container = document.getElementById('questionsContainer');
+      const navContainer = document.getElementById('navPillsContainer');
+      container.innerHTML = '';
+      navContainer.innerHTML = '';
+
+      for (let i = 1; i <= currentQuestionCount; i++) {
+        // Nav Pill
+        const pill = document.createElement('a');
+        pill.className = 'q-jump-pill';
+        pill.id = `navPill_${i}`;
+        pill.href = `#qCard_${i}`;
+        pill.textContent = i;
+        navContainer.appendChild(pill);
+
+        // Editor Card
+        const card = document.createElement('div');
+        card.className = 'q-editor-card';
+        card.id = `qCard_${i}`;
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="q-num-badge">Question ${i} of ${currentQuestionCount}</span>
+            <span id="qStatus_${i}" style="font-size:0.75rem; color:var(--qz-text-muted);">Unsaved</span>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Question Prompt / Problem Statement <span class="req">*</span></label>
+            <textarea id="qText_${i}" class="form-control" rows="2" placeholder="State question ${i} clearly..." oninput="checkQuestionConfigured(${i})"></textarea>
+          </div>
+
+          <div class="opt-grid">
+            <div>
+              <label class="form-label">Option A <span class="req">*</span></label>
+              <input type="text" id="q_${i}_optA" class="form-control" placeholder="Option A text" oninput="checkQuestionConfigured(${i})">
+            </div>
+            <div>
+              <label class="form-label">Option B <span class="req">*</span></label>
+              <input type="text" id="q_${i}_optB" class="form-control" placeholder="Option B text" oninput="checkQuestionConfigured(${i})">
+            </div>
+            <div>
+              <label class="form-label">Option C <span class="req">*</span></label>
+              <input type="text" id="q_${i}_optC" class="form-control" placeholder="Option C text" oninput="checkQuestionConfigured(${i})">
+            </div>
+            <div>
+              <label class="form-label">Option D <span class="req">*</span></label>
+              <input type="text" id="q_${i}_optD" class="form-control" placeholder="Option D text" oninput="checkQuestionConfigured(${i})">
+            </div>
+          </div>
+
+          <div class="key-selector-wrap">
+            <span style="font-size:0.82rem; font-weight:700; color:var(--qz-text-muted);">
+              <i class="ri-key-2-fill" style="color:var(--qz-warning);"></i> Correct Option:
+            </span>
+            <label class="key-radio-btn" id="lblKey_${i}_A">
+              <input type="radio" name="correctKey_${i}" value="A" onchange="selectKey(${i}, 'A')"> A
+            </label>
+            <label class="key-radio-btn" id="lblKey_${i}_B">
+              <input type="radio" name="correctKey_${i}" value="B" onchange="selectKey(${i}, 'B')"> B
+            </label>
+            <label class="key-radio-btn" id="lblKey_${i}_C">
+              <input type="radio" name="correctKey_${i}" value="C" onchange="selectKey(${i}, 'C')"> C
+            </label>
+            <label class="key-radio-btn" id="lblKey_${i}_D">
+              <input type="radio" name="correctKey_${i}" value="D" onchange="selectKey(${i}, 'D')"> D
+            </label>
+            <label class="key-radio-btn" id="lblKey_${i}_DEFERRED" style="display:${document.getElementById('immediateResult').checked ? 'none' : 'inline-flex'};">
+              <input type="radio" name="correctKey_${i}" value="DEFERRED" onchange="selectKey(${i}, 'DEFERRED')"> Deferred Key
+            </label>
+          </div>
+        `;
+        container.appendChild(card);
+      }
+      updateNavigatorProgress();
+    }
+
+    window.selectKey = function(qIndex, key) {
+      ['A', 'B', 'C', 'D', 'DEFERRED'].forEach(k => {
+        const lbl = document.getElementById(`lblKey_${qIndex}_${k}`);
+        if (lbl) lbl.classList.remove('selected');
+      });
+      const chosen = document.getElementById(`lblKey_${qIndex}_${key}`);
+      if (chosen) chosen.classList.add('selected');
+      checkQuestionConfigured(qIndex);
+    };
+
+    window.checkQuestionConfigured = function(qIndex) {
+      const txt = document.getElementById(`qText_${qIndex}`)?.value.trim();
+      const a = document.getElementById(`q_${qIndex}_optA`)?.value.trim();
+      const b = document.getElementById(`q_${qIndex}_optB`)?.value.trim();
+      const c = document.getElementById(`q_${qIndex}_optC`)?.value.trim();
+      const d = document.getElementById(`q_${qIndex}_optD`)?.value.trim();
+      const selRadio = document.querySelector(`input[name="correctKey_${qIndex}"]:checked`);
+
+      const pill = document.getElementById(`navPill_${qIndex}`);
+      const statusTxt = document.getElementById(`qStatus_${qIndex}`);
+      
+      const isComplete = txt && a && b && c && d && selRadio;
+      if (pill) {
+        pill.className = isComplete ? 'q-jump-pill completed' : 'q-jump-pill';
+      }
+      if (statusTxt) {
+        statusTxt.textContent = isComplete ? 'Complete' : 'Incomplete';
+        statusTxt.style.color = isComplete ? '#10b981' : '#94a3b8';
+      }
+      updateNavigatorProgress();
+    };
+
+    function updateNavigatorProgress() {
+      let completeCount = 0;
+      for (let i = 1; i <= currentQuestionCount; i++) {
+        const pill = document.getElementById(`navPill_${i}`);
+        if (pill && pill.classList.contains('completed')) completeCount++;
+      }
+      const progTxt = document.getElementById('navProgressText');
+      if (progTxt) progTxt.textContent = `${completeCount} / ${currentQuestionCount} configured`;
+    }
+
+    window.toggleImmediateResultUI = function(isImmediate) {
+      for (let i = 1; i <= currentQuestionCount; i++) {
+        const defBtn = document.getElementById(`lblKey_${i}_DEFERRED`);
+        if (defBtn) defBtn.style.display = isImmediate ? 'none' : 'inline-flex';
+      }
+    };
+
+    // Publish Execution
+    window.publishQuiz = async function() {
+      if (!activeContributor) {
+        alert("Please ensure your contributor session is active before publishing.");
+        return;
+      }
+
+      // Metadata validation
+      const subjectName = document.getElementById('subjectName').value.trim();
+      const subjectCode = document.getElementById('subjectCode').value.trim();
+      const topicTagsRaw = document.getElementById('topicTags').value.trim();
+      const quizTitle = document.getElementById('quizTitle').value.trim();
+      const quizDescription = document.getElementById('quizDescription').value.trim();
+      const timeMinutes = parseInt(document.getElementById('timeMinutes').value, 10);
+      const visibility = document.getElementById('visibilitySelect').value;
+      const marksPerCorrect = parseFloat(document.getElementById('marksPerCorrect').value) || 1.0;
+      const negativeMarks = parseFloat(document.getElementById('negativeMarks').value) || 0.0;
+      const unattemptedPenalty = parseFloat(document.getElementById('unattemptedPenalty').value) || 0.0;
+      const allowChangeAnswers = document.getElementById('allowChangeAnswers').checked;
+      const immediateResult = document.getElementById('immediateResult').checked;
+      const strictMode = document.getElementById('strictMode').checked;
+
+      if (!subjectName || !subjectCode || !topicTagsRaw || !quizTitle || !quizDescription) {
+        alert("Please complete all required quiz metadata fields.");
+        return;
+      }
+
+      // Question validation
+      const tags = topicTagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+      const questions = [];
+      const privateKeyMap = {};
+      let hasMissingAnswers = false;
+
+      for (let i = 1; i <= currentQuestionCount; i++) {
+        const qText = document.getElementById(`qText_${i}`).value.trim();
+        const optA = document.getElementById(`q_${i}_optA`).value.trim();
+        const optB = document.getElementById(`q_${i}_optB`).value.trim();
+        const optC = document.getElementById(`q_${i}_optC`).value.trim();
+        const optD = document.getElementById(`q_${i}_optD`).value.trim();
+        const selectedRadio = document.querySelector(`input[name="correctKey_${i}"]:checked`);
+
+        if (!qText || !optA || !optB || !optC || !optD) {
+          alert(`Question ${i} is missing prompt text or answer options.`);
+          document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+
+        if (immediateResult && (!selectedRadio || selectedRadio.value === 'DEFERRED')) {
+          alert(`Question ${i} must have a designated correct option (A, B, C, or D) because Immediate Result is enabled.`);
+          document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+
+        const correctKey = selectedRadio ? selectedRadio.value : 'DEFERRED';
+        if (correctKey === 'DEFERRED') hasMissingAnswers = true;
+
+        // Store public question payload (NO correct answer)
+        questions.push({
+          qIndex: i,
+          questionText: qText,
+          options: {
+            A: optA,
+            B: optB,
+            C: optC,
+            D: optD
+          }
+        });
+
+        // Store private answer key
+        privateKeyMap[String(i)] = correctKey;
+      }
+
+      const btn = document.getElementById('btnPublishQuiz');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Authoring &amp; Securing Quiz Payload...`;
+
+      try {
+        const quizId = 'qz_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+        const batch = writeBatch(db);
+
+        // 1. Metadata Doc: contributors/{uid}/quizzes/{quizId}
+        const quizRef = doc(db, "contributors", activeContributor.uid, "quizzes", quizId);
+        batch.set(quizRef, {
+          quizId: quizId,
+          ownerUid: activeContributor.uid,
+          ownerName: activeContributor.name,
+          ownerStudentId: activeContributor.studentId,
+          collegeName: activeContributor.collegeName,
+          universityName: activeContributor.universityName,
+          subjectName: subjectName,
+          subjectCode: subjectCode,
+          tags: tags,
+          title: quizTitle,
+          description: quizDescription,
+          totalQuestions: currentQuestionCount,
+          timeMinutes: timeMinutes,
+          durationSeconds: timeMinutes * 60,
+          marksPerCorrect: marksPerCorrect,
+          negativeMarks: negativeMarks,
+          unattemptedPenalty: unattemptedPenalty,
+          allowChangeAnswers: allowChangeAnswers,
+          immediateResult: immediateResult,
+          strictMode: strictMode,
+          isPublic: visibility === 'public',
+          status: 'published',
+          hasAnswerKey: !hasMissingAnswers,
+          answerKeyVersion: 1,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        // 2. Question Pages: contributors/{uid}/quizzes/{quizId}/questionPages/page_1..N
+        const PAGE_SIZE = 10;
+        const totalPages = Math.ceil(questions.length / PAGE_SIZE);
+        for (let p = 0; p < totalPages; p++) {
+          const slice = questions.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
+          const pageRef = doc(db, "contributors", activeContributor.uid, "quizzes", quizId, "questionPages", `page_${p + 1}`);
+          batch.set(pageRef, {
+            pageNumber: p + 1,
+            totalPages: totalPages,
+            questions: slice
+          });
+        }
+
+        // 3. Private Answer Key: contributors/{uid}/quizzes/{quizId}/privateAnswerKey/main
+        const answerKeyRef = doc(db, "contributors", activeContributor.uid, "quizzes", quizId, "privateAnswerKey", "main");
+        batch.set(answerKeyRef, {
+          quizId: quizId,
+          ownerUid: activeContributor.uid,
+          version: 1,
+          isReleased: immediateResult && !hasMissingAnswers,
+          answers: privateKeyMap,
+          updatedAt: serverTimestamp()
+        });
+
+        // 4. Initial Aggregated Analytics Doc: quizAnalytics/{quizId}
+        const analyticsRef = doc(db, "quizAnalytics", quizId);
+        batch.set(analyticsRef, {
+          quizId: quizId,
+          ownerUid: activeContributor.uid,
+          subjectName: subjectName,
+          subjectCode: subjectCode,
+          title: quizTitle,
+          totalStarts: 0,
+          totalSubmissions: 0,
+          totalAbandoned: 0,
+          averageScore: 0,
+          highestScore: 0,
+          lowestScore: 0,
+          flaggedUmcCount: 0,
+          updatedAt: serverTimestamp()
+        });
+
+        // 5. Public Search Directory Record (Only if Public)
+        if (visibility === 'public') {
+          const directoryRef = doc(db, "quizDirectory", quizId);
+          batch.set(directoryRef, {
+            quizId: quizId,
+            ownerUid: activeContributor.uid,
+            ownerName: activeContributor.name,
+            subjectName: subjectName,
+            subjectCode: subjectCode,
+            title: quizTitle,
+            description: quizDescription,
+            questionKeywords: questions.map(q => q.questionText).join(' ').slice(0, 2000),
+            tags: tags,
+            totalQuestions: currentQuestionCount,
+            timeMinutes: timeMinutes,
+            isPublic: true,
+            status: 'published',
+            createdAt: serverTimestamp()
+          });
+        }
+
+        // 6. Private Share Token (Only if Private)
+        let shareToken = "";
+        if (visibility === 'private') {
+          shareToken = generateSecureToken();
+          const tokenHash = await sha256(shareToken);
+          const shareRef = doc(db, "quizShares", tokenHash);
+          batch.set(shareRef, {
+            tokenHash: tokenHash,
+            quizId: quizId,
+            ownerUid: activeContributor.uid,
+            active: true,
+            createdAt: serverTimestamp()
+          });
+        }
+
+        // Commit all writes atomically
+        await batch.commit();
+
+        // Construct live examination URL
+        let examUrl = `${window.location.origin}/Quizes/index.html?quizId=${quizId}`;
+        if (visibility === 'private') {
+          examUrl += `&share_token=${shareToken}`;
+        }
+
+        // Show Success Modal
+        document.getElementById('liveQuizUrlInput').value = examUrl;
+        document.getElementById('previewQuizBtn').href = examUrl;
+        document.getElementById('analyticsQuizBtn').href = `/Quizes/quiz-record-and-analytics.html?quizId=${quizId}`;
+        document.getElementById('publishSuccessModal').style.display = 'flex';
+
+      } catch (err) {
+        console.error("Publication failed:", err);
+        alert("Failed to publish quiz: " + (err.message || "Unknown write error."));
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-send-plane-fill"></i> Validate &amp; Publish Academic Quiz`;
+      }
+    };
+
+    window.copyQuizUrl = function() {
+      const input = document.getElementById('liveQuizUrlInput');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      alert("Examination Link copied to clipboard!");
+    };
+
+    window.shareQuizUrl = function() {
+      const url = document.getElementById('liveQuizUrlInput').value;
+      const title = document.getElementById('quizTitle').value;
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: `Take this academic assessment on DPGNotes: ${title}`,
+          url: url
+        }).catch(console.warn);
+      } else {
+        copyQuizUrl();
+      }
+    };
+
+    // Initialize with default question count
+    renderQuestionEditors();
+  </script>
+</body>
+</html>

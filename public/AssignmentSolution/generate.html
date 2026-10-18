@@ -23,6 +23,15 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
   <!-- Native DPGNotes Ads SDK -->
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
+  <!-- Instant Contributor Auth Protection Check -->
+  <script>
+    (function() {
+      const uid = localStorage.getItem("dpgActiveUserUid");
+      if (!uid) {
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
+      }
+    })();
+  </script>
   <!-- DPGNotes Unified Shared Auth Component -->
   <link rel="stylesheet" href="/auth-component.css">
   <script type="module" src="/auth-component.js"></script>
@@ -495,7 +504,7 @@
       const uid = localStorage.getItem("dpgActiveUserUid");
       const userRaw = localStorage.getItem("dpgActiveUser");
       if (!uid) {
-        document.getElementById('authBarrierOverlay').style.display = 'flex';
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
         return false;
       }
       try {

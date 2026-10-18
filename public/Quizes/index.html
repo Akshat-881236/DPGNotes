@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>DPGNotes Quiz Portal &amp; Examination Engine</title>
+  <meta name="description" content="DPGNotes unified Quiz Portal: Explore academic mock tests, subject assessments, and take secure online examinations." />
+  <link rel="icon" href="/ANH.png" type="image/png" />
+
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --qz-bg: #090d16;
+      --qz-surface: rgba(17, 24, 39, 0.85);
+      --qz-card-bg: #111827;
+      --qz-border: rgba(255, 255, 255, 0.08);
+      --qz-primary: #6366f1;
+      --qz-primary-hover: #4f46e5;
+      --qz-primary-glow: rgba(99, 102, 241, 0.25);
+      --qz-accent: #06b6d4;
+      --qz-success: #10b981;
+      --qz-warning: #f59e0b;
+      --qz-danger: #ef4444;
+      --qz-text: #f8fafc;
+      --qz-text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background: var(--qz-bg);
+      color: var(--qz-text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .portal-nav {
+      padding: 1rem 2rem;
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--qz-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .brand-link img { width: 34px; height: 34px; border-radius: 8px; }
+
+    .portal-main {
+      flex: 1;
+      padding: 2rem 1.25rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Common Card */
+    .qz-box {
+      background: var(--qz-surface);
+      border: 1px solid var(--qz-border);
+      border-radius: 18px;
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      margin-bottom: 2rem;
+    }
+
+    /* SEARCH ENGINE VIEW STYLES */
+    .search-hero {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .search-input-wrap {
+      max-width: 640px;
+      margin: 1.5rem auto 1rem;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      padding: 14px 24px 14px 50px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--qz-primary);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    }
+    .search-icon-pos {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--qz-text-muted);
+      font-size: 1.25rem;
+    }
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 2rem;
+    }
+    .tag-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--qz-border);
+      color: var(--qz-text-muted);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tag-chip:hover, .tag-chip.active {
+      background: var(--qz-primary);
+      color: #fff;
+      border-color: var(--qz-primary);
+    }
+
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .quiz-item-card {
+      background: var(--qz-card-bg);
+      border: 1px solid var(--qz-border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .quiz-item-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
+    }
+
+    /* EXAMINATION VIEW STYLES */
+    .exam-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111827;
+      border: 1px solid var(--qz-border);
+      border-radius: 14px;
+      padding: 12px 20px;
+      margin-bottom: 1.5rem;
+      position: sticky;
+      top: 76px;
+      z-index: 800;
+    }
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 6px 16px;
+      border-radius: 10px;
+    }
+    .timer-badge.safe {
+      color: #6ee7b7;
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .exam-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 1.5rem;
+    }
+    @media (max-width: 992px) {
+      .exam-layout { grid-template-columns: 1fr; }
+    }
+
+    .option-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--qz-border);
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: all 0.15s;
+    }
+    .option-card:hover {
+      background: rgba(99, 102, 241, 0.08);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    .option-card.selected {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--qz-primary);
+      box-shadow: 0 0 0 2px var(--qz-primary);
+    }
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .option-card.selected .option-letter {
+      background: var(--qz-primary);
+      color: #fff;
+    }
+
+    /* Question Navigator Sidebar */
+    .navigator-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .q-pill-btn {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 1px solid var(--qz-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--qz-text-muted);
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .q-pill-btn.active {
+      border-color: var(--qz-primary);
+      box-shadow: 0 0 0 2px var(--qz-primary);
+    }
+    .q-pill-btn.answered {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--qz-success);
+      color: #6ee7b7;
+    }
+    .q-pill-btn.flagged {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--qz-warning);
+      color: #fde047;
+    }
+
+    /* Anti-cheat banner */
+    .umc-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 3000;
+      background: #7f1d1d;
+      border: 1px solid #ef4444;
+      color: #fee2e2;
+      padding: 14px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Scorecard Styles */
+    .score-gauge {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: conic-gradient(var(--qz-primary) var(--score-deg, 0deg), rgba(255, 255, 255, 0.08) 0deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      position: relative;
+    }
+    .score-gauge-inner {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #111827;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .review-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--qz-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .review-item.is-correct { border-left: 4px solid var(--qz-success); }
+    .review-item.is-incorrect { border-left: 4px solid var(--qz-danger); }
+    .review-item.is-unanswered { border-left: 4px solid var(--qz-warning); }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="portal-nav">
+    <a href="/index.html" class="brand-link">
+      <img src="/ANH.png" alt="DPGNotes">
+      <span>DPGNotes <span style="color:var(--qz-primary);">Examinations</span></span>
+    </a>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="/Quizes/quiz-generator.html" class="btn btn-sm btn-outline-primary" style="font-weight:600;">
+        <i class="ri-add-circle-line"></i> Author Quiz
+      </a>
+      <a href="/dashboard.html" class="btn btn-sm btn-secondary" style="background:rgba(255,255,255,0.06); border-color:var(--qz-border);">
+        <i class="ri-dashboard-line"></i> Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- UMC Alert Toast -->
+  <div id="umcToast" class="umc-toast">
+    <i class="ri-alert-fill" style="font-size:1.5rem;"></i>
+    <div>
+      <strong id="umcToastTitle">Security Interruption Detected!</strong>
+      <div id="umcToastMsg" style="font-size:0.82rem;">Activity logged for proctor inspection.</div>
+    </div>
+  </div>
+
+  <!-- Main Unified Container -->
+  <main class="portal-main">
+
+    <!-- ============================================================== -->
+    <!-- VIEW A: QUIZ DIRECTORY & SEARCH ENGINE (When no quizId in URL)  -->
+    <!-- ============================================================== -->
+    <div id="viewSearchPortal" style="display:none;">
+      <div class="search-hero">
+        <span class="badge" style="background:rgba(99, 102, 241, 0.15); border:1px solid rgba(99, 102, 241, 0.3); color:#a5b4fc; padding:6px 16px; border-radius:999px; font-size:0.82rem; margin-bottom:0.75rem;">
+          <i class="ri-compass-3-line"></i> Academic Examination Directory
+        </span>
+        <h1 style="font-size:2.4rem; font-weight:800; margin-bottom:0.5rem;">Explore &amp; Attempt Verified Quizzes</h1>
+        <p style="color:var(--qz-text-muted); font-size:1rem; max-width:600px; margin:0 auto;">
+          Practice with topic-focused assessments created by verified university educators and top student contributors.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="search-input-wrap">
+          <i class="ri-search-line search-icon-pos"></i>
+          <input type="text" id="directorySearchInput" class="search-input" placeholder="Search by subject, code (e.g. BCA-301), title, or tag..." oninput="handleSearchFilter(this.value)">
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-tags" id="subjectFilterPills">
+          <span class="tag-chip active" onclick="filterBySubject('all')">All Disciplines</span>
+          <span class="tag-chip" onclick="filterBySubject('Data Structures')">Data Structures</span>
+          <span class="tag-chip" onclick="filterBySubject('Computer Networks')">Computer Networks</span>
+          <span class="tag-chip" onclick="filterBySubject('Operating Systems')">Operating Systems</span>
+          <span class="tag-chip" onclick="filterBySubject('DBMS')">DBMS</span>
+          <span class="tag-chip" onclick="filterBySubject('Python')">Python &amp; AI</span>
+        </div>
+      </div>
+
+      <!-- Live Quizzes Grid -->
+      <div class="quiz-grid" id="quizzesDirectoryGrid">
+        <div style="grid-column: 1 / -1; text-align:center; padding:3rem; color:var(--qz-text-muted);">
+          <i class="ri-loader-4-line ri-spin" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+          Loading published examinations from directory...
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW B: CANDIDATE REGISTRATION (State: ready)                   -->
+    <!-- ============================================================== -->
+    <div id="viewCandidateReg" class="qz-box" style="display:none; max-width:680px; margin:2rem auto;">
+      <div style="text-align:center; margin-bottom:1.75rem;">
+        <span class="badge" id="examSubjectBadge" style="background:rgba(6, 182, 212, 0.15); border:1px solid rgba(6, 182, 212, 0.3); color:#67e8f9; padding:5px 14px; border-radius:999px; margin-bottom:0.5rem;">
+          SUBJECT CODE
+        </span>
+        <h2 id="examRegTitle" style="font-size:1.75rem; font-weight:800; color:#fff; margin-bottom:0.4rem;">Examination Assessment</h2>
+        <p id="examRegDesc" style="color:var(--qz-text-muted); font-size:0.9rem; line-height:1.5;">...</p>
+      </div>
+
+      <!-- Examination Rules Summary Card -->
+      <div style="background:rgba(15, 23, 42, 0.6); border:1px solid var(--qz-border); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
+        <div style="font-weight:700; font-size:0.9rem; color:#fff; margin-bottom:0.75rem;">
+          <i class="ri-information-line" style="color:var(--qz-primary);"></i> Assessment Guidelines:
+        </div>
+        <div class="row g-2" style="font-size:0.85rem; color:var(--qz-text-muted);">
+          <div class="col-6"><i class="ri-questionnaire-line"></i> Total Questions: <strong id="ruleTotalQ" style="color:#fff;">--</strong></div>
+          <div class="col-6"><i class="ri-time-line"></i> Time Limit: <strong id="ruleDuration" style="color:#fff;">-- Mins</strong></div>
+          <div class="col-6"><i class="ri-add-circle-line"></i> Correct: <strong id="ruleCorrectScore" style="color:#10b981;">+1.0</strong></div>
+          <div class="col-6"><i class="ri-indeterminate-circle-line"></i> Negative Mark: <strong id="ruleNegativeScore" style="color:#ef4444;">-0.25</strong></div>
+          <div class="col-12" id="ruleStrictNotice" style="color:#fca5a5; display:none; margin-top:4px;">
+            <i class="ri-shield-flash-line"></i> <strong>Strict Anti-Cheat Enforced:</strong> Tab switches or fullscreen exits will trigger automatic submission.
+          </div>
+        </div>
+      </div>
+
+      <form id="candidateRegForm" onsubmit="startExaminationSession(event)">
+        <h4 style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:1rem;">Candidate Details</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Full Name <span class="req">*</span></label>
+            <input type="text" id="candName" class="form-control" placeholder="Your Full Name" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Student ID / Roll No <span class="req">*</span></label>
+            <input type="text" id="candStudentId" class="form-control" placeholder="e.g. 21102901" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Course / Discipline <span class="req">*</span></label>
+            <input type="text" id="candCourse" class="form-control" placeholder="e.g. BCA / B.Tech CSE" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">College / Institute <span class="req">*</span></label>
+            <input type="text" id="candCollege" class="form-control" placeholder="e.g. DPG Degree College" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Affiliated University <span class="req">*</span></label>
+            <input type="text" id="candUniversity" class="form-control" placeholder="e.g. Maharshi Dayanand University" required>
+          </div>
+        </div>
+
+        <div class="form-check mt-3" style="font-size:0.82rem; color:var(--qz-text-muted);">
+          <input class="form-check-input" type="checkbox" id="honorCodeCheck" required>
+          <label class="form-check-label" for="honorCodeCheck">
+            I pledge to undertake this examination honestly without external aids, window-switching, or collaboration.
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-4" style="padding:12px; font-weight:700; font-size:1rem; border-radius:10px;">
+          <i class="ri-play-circle-fill"></i> Enter Fullscreen &amp; Start Assessment
+        </button>
+      </form>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW C: ACTIVE EXAMINATION ENGINE (State: in_progress)          -->
+    <!-- ============================================================== -->
+    <div id="viewExamEngine" style="display:none;">
+      
+      <!-- Top Sticky Timer & Control Bar -->
+      <div class="exam-header-bar">
+        <div>
+          <span style="font-size:0.8rem; color:var(--qz-text-muted); display:block;">EXAMINATION IN PROGRESS</span>
+          <strong id="examHeaderTitle" style="font-size:1.05rem; color:#fff;">DSA Mid-Term</strong>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <div id="examTimerBadge" class="timer-badge safe">
+            <i class="ri-timer-line"></i> <span id="timerDisplay">20:00</span>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm" onclick="confirmVoluntarySubmit()">
+            <i class="ri-check-double-line"></i> Finish Exam
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Layout -->
+      <div class="exam-layout">
+        <!-- Question Content Box -->
+        <div class="qz-box" style="margin-bottom:0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <span class="badge" id="currentQBadge" style="background:rgba(99, 102, 241, 0.15); border:1px solid rgba(99, 102, 241, 0.3); color:#c7d2fe;">
+              Question 1 of 15
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-warning" id="btnMarkReview" onclick="toggleFlagReview()">
+              <i class="ri-bookmark-line"></i> Mark for Review
+            </button>
+          </div>
+
+          <h3 id="currentQPrompt" style="font-size:1.15rem; font-weight:600; line-height:1.6; margin-bottom:1.5rem; color:#fff;">
+            Question text loading...
+          </h3>
+
+          <!-- Options List -->
+          <div id="optionsListContainer"></div>
+
+          <!-- Bottom Navigation Controls -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2rem; padding-top:1.25rem; border-top:1px solid var(--qz-border);">
+            <button type="button" class="btn btn-outline-secondary" id="btnPrevQ" onclick="navigateQuestion(-1)">
+              <i class="ri-arrow-left-s-line"></i> Previous
+            </button>
+            <button type="button" class="btn btn-link" style="color:var(--qz-text-muted); font-size:0.82rem; text-decoration:none;" onclick="clearCurrentAnswer()">
+              Clear Selection
+            </button>
+            <button type="button" class="btn btn-primary" id="btnNextQ" onclick="navigateQuestion(1)">
+              Next <i class="ri-arrow-right-s-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sidebar Question Navigator -->
+        <div class="qz-box" style="margin-bottom:0; padding:1.25rem;">
+          <h5 style="font-size:0.95rem; font-weight:700; color:#fff; margin-bottom:1rem;">Question Navigator</h5>
+          <div class="navigator-grid" id="examNavGrid"></div>
+
+          <hr style="border-color:var(--qz-border); margin:1.25rem 0;">
+
+          <!-- Legend -->
+          <div style="font-size:0.75rem; color:var(--qz-text-muted); display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:12px; height:12px; border-radius:3px; background:rgba(16, 185, 129, 0.4); border:1px solid var(--qz-success);"></span>
+              <span>Answered</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:12px; height:12px; border-radius:3px; background:rgba(245, 158, 11, 0.4); border:1px solid var(--qz-warning);"></span>
+              <span>Marked for Review</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:12px; height:12px; border-radius:3px; background:rgba(255, 255, 255, 0.08); border:1px solid var(--qz-border);"></span>
+              <span>Unattempted</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW D: RESULT & SCORECARD (State: result_available / pending) -->
+    <!-- ============================================================== -->
+    <div id="viewScorecard" class="qz-box" style="display:none; max-width:820px; margin:2rem auto;">
+      <div style="text-align:center; margin-bottom:2rem;">
+        <div id="scoreGaugeEl" class="score-gauge" style="--score-deg:0deg;">
+          <div class="score-gauge-inner">
+            <span id="scorePercentVal" style="font-size:1.6rem; font-weight:800; color:#fff;">--%</span>
+            <span style="font-size:0.75rem; color:var(--qz-text-muted);">ACCURACY</span>
+          </div>
+        </div>
+        <h2 id="scorecardStatusHeading" style="font-size:1.8rem; font-weight:800; color:#fff; margin-bottom:0.4rem;">Assessment Completed</h2>
+        <p id="scorecardStatusSub" style="color:var(--qz-text-muted); font-size:0.95rem;">Official Examination Record</p>
+      </div>
+
+      <!-- KPI Metric Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+            <div style="font-size:0.75rem; color:var(--qz-text-muted);">SCORE</div>
+            <div id="metricFinalScore" style="font-size:1.4rem; font-weight:800; color:var(--qz-accent);">0 / 0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+            <div style="font-size:0.75rem; color:var(--qz-text-muted);">CORRECT</div>
+            <div id="metricCorrect" style="font-size:1.4rem; font-weight:800; color:var(--qz-success);">0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+            <div style="font-size:0.75rem; color:var(--qz-text-muted);">INCORRECT</div>
+            <div id="metricIncorrect" style="font-size:1.4rem; font-weight:800; color:var(--qz-danger);">0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+            <div style="font-size:0.75rem; color:var(--qz-text-muted);">UNATTEMPTED</div>
+            <div id="metricUnattempted" style="font-size:1.4rem; font-weight:800; color:var(--qz-warning);">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate Metadata Audit -->
+      <div style="background:rgba(0,0,0,0.25); border:1px solid var(--qz-border); border-radius:12px; padding:1.25rem; font-size:0.85rem; margin-bottom:2rem;">
+        <div class="row g-2">
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Candidate:</span> <strong id="scCandidateName" style="color:#fff;">--</strong></div>
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Student ID:</span> <strong id="scStudentId" style="color:#fff;">--</strong></div>
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Time Taken:</span> <strong id="scDuration" style="color:#fff;">--</strong></div>
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Submission Type:</span> <strong id="scSubmissionType" style="color:#fff;">Normal</strong></div>
+          <div class="col-12" id="scUmcWarningRow" style="display:none; color:#fca5a5; margin-top:4px;">
+            <i class="ri-alert-line"></i> <strong>Proctor Notice:</strong> Monitored interruptions logged during this attempt.
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Review Container -->
+      <div id="reviewContainer">
+        <h4 style="font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:1rem;">Question By Question Review</h4>
+        <div id="reviewList"></div>
+      </div>
+
+      <div style="text-align:center; margin-top:2rem;">
+        <button type="button" class="btn btn-outline-light" onclick="window.print()">
+          <i class="ri-printer-line"></i> Print Official Scorecard
+        </button>
+        <a href="/Quizes/index.html" class="btn btn-primary" style="margin-left:12px;">
+          <i class="ri-arrow-left-line"></i> Return to Quiz Directory
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Firebase Script & Engine Module -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc, 
+      setDoc, 
+      collection, 
+      query, 
+      where, 
+      getDocs, 
+      serverTimestamp, 
+      increment, 
+      updateDoc 
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Cryptographic SHA-256 helper
+    async function sha256(str) {
+      const buffer = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // App State
+    let currentQuizId = new URLSearchParams(window.location.search).get('quizId');
+    let shareTokenParam = new URLSearchParams(window.location.search).get('share_token');
+    let quizData = null;
+    let questionsList = [];
+    let currentQIdx = 0;
+    let candidateAnswers = {};
+    let flaggedQuestions = new Set();
+    let examStartTime = 0;
+    let timerInterval = null;
+    let remainingSeconds = 0;
+    let uvcViolations = [];
+    let hasSubmitted = false;
+    let authenticatedUser = null;
+
+    // Check Authentication state
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        authenticatedUser = user;
+        // Autofill registration form if present
+        try {
+          const uSnap = await getDoc(doc(db, "users", user.uid));
+          if (uSnap.exists()) {
+            const d = uSnap.data();
+            const nm = document.getElementById('candName');
+            const sid = document.getElementById('candStudentId');
+            const crs = document.getElementById('candCourse');
+            const col = document.getElementById('candCollege');
+            const uni = document.getElementById('candUniversity');
+            if (nm && !nm.value) nm.value = d.name || user.displayName || "";
+            if (sid && !sid.value) sid.value = d.studentId || d.studentIdOrEmployeeId || "";
+            if (crs && !crs.value) crs.value = d.course || "";
+            if (col && !col.value) col.value = d.collegeName || "";
+            if (uni && !uni.value) uni.value = d.universityName || "";
+          }
+        } catch(e) {}
+      }
+    });
+
+    // ROUTING CONTROLLER
+    async function initPortal() {
+      if (!currentQuizId) {
+        // MODE A: Search Portal
+        document.getElementById('viewSearchPortal').style.display = 'block';
+        loadQuizDirectory();
+      } else {
+        // MODE B: Single Quiz Attempt Interface
+        await loadQuizForExamination(currentQuizId);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // MODE A: QUIZ DIRECTORY FUNCTIONS
+    // -------------------------------------------------------------
+    let allDirectoryQuizzes = [];
+    async function loadQuizDirectory() {
+      const grid = document.getElementById('quizzesDirectoryGrid');
+      try {
+        const qSnap = await getDocs(query(collection(db, "quizDirectory"), where("status", "==", "published")));
+        allDirectoryQuizzes = [];
+        qSnap.forEach(d => {
+          allDirectoryQuizzes.push(d.data());
+        });
+
+        if (allDirectoryQuizzes.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align:center; padding:3rem; color:var(--qz-text-muted);">
+              <i class="ri-folder-open-line" style="font-size:2.5rem; display:block; margin-bottom:0.75rem;"></i>
+              No public quizzes published yet. Be the first contributor to create one!
+            </div>
+          `;
+          return;
+        }
+
+        renderDirectoryCards(allDirectoryQuizzes);
+      } catch (err) {
+        console.error("Directory fetch error:", err);
+        grid.innerHTML = `<div style="grid-column: 1 / -1; color:#fca5a5; text-align:center;">Error loading directory: ${err.message}</div>`;
+      }
+    }
+
+    function renderDirectoryCards(quizzes) {
+      const grid = document.getElementById('quizzesDirectoryGrid');
+      grid.innerHTML = '';
+      quizzes.forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'quiz-item-card';
+        card.innerHTML = `
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <span class="badge" style="background:rgba(99, 102, 241, 0.15); border:1px solid rgba(99, 102, 241, 0.3); color:#c7d2fe; font-size:0.75rem;">
+                ${escapeHtml(q.subjectCode || 'ACADEMIC')}
+              </span>
+              <span style="font-size:0.8rem; color:var(--qz-text-muted);">
+                <i class="ri-time-line"></i> ${q.timeMinutes || 20}m
+              </span>
+            </div>
+            <h3 style="font-size:1.15rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">${escapeHtml(q.title || 'Untitled Assessment')}</h3>
+            <p style="color:var(--qz-text-muted); font-size:0.85rem; line-height:1.5; margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+              ${escapeHtml(q.description || 'No description provided.')}
+            </p>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:var(--qz-text-muted); border-top:1px solid var(--qz-border); padding-top:0.75rem; margin-bottom:1rem;">
+              <span><i class="ri-user-line"></i> ${escapeHtml(q.ownerName || 'Verified Contributor')}</span>
+              <span><i class="ri-file-list-3-line"></i> ${q.totalQuestions || 15} Qs</span>
+            </div>
+            <a href="/Quizes/index.html?quizId=${encodeURIComponent(q.quizId)}" class="btn btn-primary w-100 btn-sm" style="font-weight:700; border-radius:8px;">
+              <i class="ri-play-fill"></i> Take Assessment
+            </a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    window.handleSearchFilter = function(val) {
+      const queryStr = val.toLowerCase().trim();
+      const filtered = allDirectoryQuizzes.filter(q => 
+        (q.title || "").toLowerCase().includes(queryStr) ||
+        (q.subjectName || "").toLowerCase().includes(queryStr) ||
+        (q.subjectCode || "").toLowerCase().includes(queryStr) ||
+        (Array.isArray(q.tags) && q.tags.some(t => t.toLowerCase().includes(queryStr)))
+      );
+      renderDirectoryCards(filtered);
+    };
+
+    window.filterBySubject = function(subj) {
+      document.querySelectorAll('#subjectFilterPills .tag-chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      if (subj === 'all') {
+        renderDirectoryCards(allDirectoryQuizzes);
+      } else {
+        const filtered = allDirectoryQuizzes.filter(q => 
+          (q.subjectName || "").toLowerCase().includes(subj.toLowerCase()) ||
+          (Array.isArray(q.tags) && q.tags.some(t => t.toLowerCase().includes(subj.toLowerCase())))
+        );
+        renderDirectoryCards(filtered);
+      }
+    };
+
+    // -------------------------------------------------------------
+    // MODE B: EXAMINATION ENGINE
+    // -------------------------------------------------------------
+    async function loadQuizForExamination(quizId) {
+      try {
+        // 1. Resolve Quiz Metadata & Owner UID
+        let ownerUid = "";
+        let meta = null;
+
+        // Try public directory first
+        const dirSnap = await getDoc(doc(db, "quizDirectory", quizId));
+        if (dirSnap.exists()) {
+          meta = dirSnap.data();
+          ownerUid = meta.ownerUid;
+        }
+
+        // If private, validate share token
+        if (!meta) {
+          if (!shareTokenParam) {
+            alert("This examination is private and unlisted. A valid share token is required to enter.");
+            window.location.replace('/Quizes/index.html');
+            return;
+          }
+          const tokenHash = await sha256(shareTokenParam);
+          const shareSnap = await getDoc(doc(db, "quizShares", tokenHash));
+          if (!shareSnap.exists() || !shareSnap.data().active || shareSnap.data().quizId !== quizId) {
+            alert("Invalid, expired, or revoked examination access token.");
+            window.location.replace('/Quizes/index.html');
+            return;
+          }
+          ownerUid = shareSnap.data().ownerUid;
+        }
+
+        // Load authoritative quiz settings from contributors/{ownerUid}/quizzes/{quizId}
+        const fullSnap = await getDoc(doc(db, "contributors", ownerUid, "quizzes", quizId));
+        if (!fullSnap.exists()) {
+          alert("The requested examination could not be found or has been removed.");
+          window.location.replace('/Quizes/index.html');
+          return;
+        }
+        quizData = fullSnap.data();
+
+        // Load question pages
+        questionsList = [];
+        let p = 1;
+        while (true) {
+          const pageSnap = await getDoc(doc(db, "contributors", ownerUid, "quizzes", quizId, "questionPages", `page_${p}`));
+          if (!pageSnap.exists()) break;
+          const pageQuestions = pageSnap.data().questions || [];
+          questionsList.push(...pageQuestions);
+          p++;
+        }
+
+        if (questionsList.length === 0) {
+          alert("Examination has no configured question payload.");
+          return;
+        }
+
+        // Populate Candidate Registration View
+        document.getElementById('examSubjectBadge').textContent = `${quizData.subjectCode} • ${quizData.subjectName}`;
+        document.getElementById('examRegTitle').textContent = quizData.title;
+        document.getElementById('examRegDesc').textContent = quizData.description;
+        document.getElementById('ruleTotalQ').textContent = questionsList.length;
+        document.getElementById('ruleDuration').textContent = `${quizData.timeMinutes} Mins`;
+        document.getElementById('ruleCorrectScore').textContent = `+${quizData.marksPerCorrect}`;
+        document.getElementById('ruleNegativeScore').textContent = `-${quizData.negativeMarks}`;
+
+        if (quizData.strictMode) {
+          document.getElementById('ruleStrictNotice').style.display = 'block';
+        }
+
+        document.getElementById('viewCandidateReg').style.display = 'block';
+
+      } catch (err) {
+        console.error("Quiz load failure:", err);
+        alert("Failed to load examination: " + err.message);
+      }
+    }
+
+    // Candidate Registration Submit -> Transition to in_progress
+    window.startExaminationSession = async function(e) {
+      e.preventDefault();
+
+      // Ensure Anonymous auth if not already authenticated
+      if (!auth.currentUser) {
+        try {
+          await signInAnonymously(auth);
+        } catch (anonErr) {
+          console.warn("Anonymous auth failed, continuing session:", anonErr);
+        }
+      }
+
+      // Enter fullscreen if strict mode
+      if (quizData.strictMode && document.documentElement.requestFullscreen) {
+        try {
+          await document.documentElement.requestFullscreen();
+        } catch(fsErr) {
+          console.warn("Fullscreen request declined:", fsErr);
+        }
+      }
+
+      // Register Anti-cheat event listeners
+      bindAntiCheatSensors();
+
+      // Switch view
+      document.getElementById('viewCandidateReg').style.display = 'none';
+      document.getElementById('viewExamEngine').style.display = 'block';
+
+      // Setup exam timing
+      examStartTime = Date.now();
+      remainingSeconds = (quizData.timeMinutes || 20) * 60;
+      startExamTimer();
+
+      // Render Navigator Grid
+      renderExamNavGrid();
+
+      // Show first question
+      renderCurrentQuestion();
+
+      // Update analytics start count
+      try {
+        updateDoc(doc(db, "quizAnalytics", quizData.quizId), {
+          totalStarts: increment(1)
+        });
+      } catch(e) {}
+    };
+
+    // Timer logic
+    function startExamTimer() {
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        remainingSeconds--;
+        updateTimerDisplay();
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          autoSubmitExamination("DEADLINE_EXCEEDED");
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(remainingSeconds / 60);
+      const s = remainingSeconds % 60;
+      const display = document.getElementById('timerDisplay');
+      const badge = document.getElementById('examTimerBadge');
+      if (display) display.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      if (remainingSeconds < 180 && badge) {
+        badge.className = 'timer-badge'; // red danger
+      }
+    }
+
+    // Navigation grid
+    function renderExamNavGrid() {
+      const grid = document.getElementById('examNavGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < questionsList.length; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'q-pill-btn';
+        btn.id = `qPillBtn_${i}`;
+        btn.textContent = i + 1;
+        btn.onclick = () => jumpToQuestion(i);
+        grid.appendChild(btn);
+      }
+      updateNavPillsStatus();
+    }
+
+    function updateNavPillsStatus() {
+      for (let i = 0; i < questionsList.length; i++) {
+        const btn = document.getElementById(`qPillBtn_${i}`);
+        if (!btn) continue;
+        btn.className = 'q-pill-btn';
+        if (i === currentQIdx) btn.classList.add('active');
+        if (candidateAnswers[i] !== undefined) btn.classList.add('answered');
+        if (flaggedQuestions.has(i)) btn.classList.add('flagged');
+      }
+    }
+
+    // Render Question
+    function renderCurrentQuestion() {
+      const q = questionsList[currentQIdx];
+      document.getElementById('currentQBadge').textContent = `Question ${currentQIdx + 1} of ${questionsList.length}`;
+      document.getElementById('currentQPrompt').textContent = q.questionText;
+
+      const optsContainer = document.getElementById('optionsListContainer');
+      optsContainer.innerHTML = '';
+
+      ['A', 'B', 'C', 'D'].forEach(letter => {
+        const card = document.createElement('div');
+        card.className = 'option-card';
+        if (candidateAnswers[currentQIdx] === letter) {
+          card.classList.add('selected');
+        }
+        card.onclick = () => selectExamOption(letter);
+        card.innerHTML = `
+          <div class="option-letter">${letter}</div>
+          <div style="font-size:0.95rem; color:#fff;">${escapeHtml(q.options[letter])}</div>
+        `;
+        optsContainer.appendChild(card);
+      });
+
+      // Update button states
+      document.getElementById('btnPrevQ').disabled = currentQIdx === 0;
+      document.getElementById('btnNextQ').innerHTML = currentQIdx === questionsList.length - 1 ? 
+        'Review &amp; Finish <i class="ri-check-line"></i>' : 'Next <i class="ri-arrow-right-s-line"></i>';
+
+      // Update review flag button
+      const reviewBtn = document.getElementById('btnMarkReview');
+      if (flaggedQuestions.has(currentQIdx)) {
+        reviewBtn.innerHTML = '<i class="ri-bookmark-fill"></i> Flagged for Review';
+        reviewBtn.className = 'btn btn-sm btn-warning';
+      } else {
+        reviewBtn.innerHTML = '<i class="ri-bookmark-line"></i> Mark for Review';
+        reviewBtn.className = 'btn btn-sm btn-outline-warning';
+      }
+
+      updateNavPillsStatus();
+    }
+
+    window.selectExamOption = function(letter) {
+      if (quizData.allowChangeAnswers === false && candidateAnswers[currentQIdx] !== undefined) {
+        alert("This examination does not permit changing previously registered answers.");
+        return;
+      }
+      candidateAnswers[currentQIdx] = letter;
+      renderCurrentQuestion();
+    };
+
+    window.clearCurrentAnswer = function() {
+      if (quizData.allowChangeAnswers === false && candidateAnswers[currentQIdx] !== undefined) {
+        alert("Registered answers cannot be cleared.");
+        return;
+      }
+      delete candidateAnswers[currentQIdx];
+      renderCurrentQuestion();
+    };
+
+    window.toggleFlagReview = function() {
+      if (flaggedQuestions.has(currentQIdx)) {
+        flaggedQuestions.delete(currentQIdx);
+      } else {
+        flaggedQuestions.add(currentQIdx);
+      }
+      renderCurrentQuestion();
+    };
+
+    window.navigateQuestion = function(delta) {
+      const next = currentQIdx + delta;
+      if (next >= 0 && next < questionsList.length) {
+        currentQIdx = next;
+        renderCurrentQuestion();
+      } else if (next >= questionsList.length) {
+        confirmVoluntarySubmit();
+      }
+    };
+
+    window.jumpToQuestion = function(idx) {
+      currentQIdx = idx;
+      renderCurrentQuestion();
+    };
+
+    // -------------------------------------------------------------
+    // ANTI-CHEAT & UMC INTEGRITY ENGINE
+    // -------------------------------------------------------------
+    function bindAntiCheatSensors() {
+      // 1. Page Visibility API
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && !hasSubmitted) {
+          logUmcViolation('TAB_OR_APP_HIDDEN', 'Candidate navigated away or changed browser tab.');
+        }
+      });
+
+      // 2. Fullscreen monitor
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && !hasSubmitted && quizData.strictMode) {
+          logUmcViolation('FULLSCREEN_EXIT', 'Candidate exited proctored fullscreen environment.');
+        }
+      });
+
+      // 3. Clipboard and Context Menu Protection
+      window.addEventListener('copy', (e) => { e.preventDefault(); logUmcViolation('COPY_ATTEMPT', 'Blocked copy event.'); });
+      window.addEventListener('cut', (e) => { e.preventDefault(); logUmcViolation('CUT_ATTEMPT', 'Blocked cut event.'); });
+      window.addEventListener('paste', (e) => { e.preventDefault(); logUmcViolation('PASTE_ATTEMPT', 'Blocked paste event.'); });
+      window.addEventListener('contextmenu', (e) => { e.preventDefault(); logUmcViolation('CONTEXT_MENU_ATTEMPT', 'Right click blocked.'); });
+    }
+
+    function logUmcViolation(type, msg) {
+      uvcViolations.push({ type, timestamp: Date.now() });
+      showUmcToast(`Integrity Flag: ${type}`);
+
+      // If strict mode, immediately trigger submission
+      if (quizData.strictMode && (type === 'TAB_OR_APP_HIDDEN' || type === 'FULLSCREEN_EXIT')) {
+        autoSubmitExamination('UMC_AUTO_SUBMIT');
+      }
+    }
+
+    function showUmcToast(msg) {
+      const t = document.getElementById('umcToast');
+      document.getElementById('umcToastTitle').textContent = "Security Notice";
+      document.getElementById('umcToastMsg').textContent = msg;
+      t.style.display = 'flex';
+      setTimeout(() => { t.style.display = 'none'; }, 4000);
+    }
+
+    // -------------------------------------------------------------
+    // SUBMISSION & SCORING EXECUTION
+    // -------------------------------------------------------------
+    window.confirmVoluntarySubmit = function() {
+      const answeredCount = Object.keys(candidateAnswers).length;
+      const total = questionsList.length;
+      if (confirm(`Are you ready to submit your assessment?\nYou have answered ${answeredCount} of ${total} questions.`)) {
+        executeSubmission("VOLUNTARY_SUBMIT");
+      }
+    };
+
+    function autoSubmitExamination(reason) {
+      if (hasSubmitted) return;
+      alert(`The examination session is ending automatically.\nReason: ${reason}`);
+      executeSubmission(reason);
+    }
+
+    async function executeSubmission(submissionReason) {
+      if (hasSubmitted) return;
+      hasSubmitted = true;
+      clearInterval(timerInterval);
+
+      const candidateUid = (auth.currentUser && auth.currentUser.uid) || ("cand_" + Math.random().toString(36).substring(2, 9));
+      const attemptId = 'att_' + candidateUid.slice(0, 8) + '_' + Date.now().toString(36);
+      const durationSeconds = Math.round((Date.now() - examStartTime) / 1000);
+
+      // Scoring Execution
+      let correctCount = 0;
+      let incorrectCount = 0;
+      let unattemptedCount = 0;
+      let isResultDeclared = false;
+      let answerKey = null;
+
+      // If immediate result enabled, fetch privateAnswerKey
+      if (quizData.immediateResult) {
+        try {
+          const keySnap = await getDoc(doc(db, "contributors", quizData.ownerUid, "quizzes", quizData.quizId, "privateAnswerKey", "main"));
+          if (keySnap.exists() && keySnap.data().isReleased) {
+            answerKey = keySnap.data().answers || {};
+            isResultDeclared = true;
+          }
+        } catch(e) {
+          console.warn("Answer key check:", e);
+        }
+      }
+
+      // Compute counts
+      for (let i = 0; i < questionsList.length; i++) {
+        const chosen = candidateAnswers[i];
+        if (!chosen) {
+          unattemptedCount++;
+        } else if (answerKey && answerKey[String(i + 1)]) {
+          if (chosen === answerKey[String(i + 1)]) {
+            correctCount++;
+          } else {
+            incorrectCount++;
+          }
+        }
+      }
+
+      const marksPerCorrect = quizData.marksPerCorrect || 1.0;
+      const negativeMarks = quizData.negativeMarks || 0.0;
+      const unattemptedPenalty = quizData.unattemptedPenalty || 0.0;
+      const maxScore = questionsList.length * marksPerCorrect;
+
+      const rawScore = (correctCount * marksPerCorrect) - (incorrectCount * negativeMarks) - (unattemptedCount * unattemptedPenalty);
+      const finalScore = Math.max(0, parseFloat(rawScore.toFixed(2)));
+      const percentage = Math.max(0, parseFloat(((finalScore / maxScore) * 100).toFixed(1)));
+
+      const candName = document.getElementById('candName').value.trim() || 'Candidate';
+      const candStudentId = document.getElementById('candStudentId').value.trim() || 'N/A';
+      const candCourse = document.getElementById('candCourse').value.trim() || 'General';
+      const candCollege = document.getElementById('candCollege').value.trim() || 'N/A';
+      const candUniversity = document.getElementById('candUniversity').value.trim() || 'N/A';
+
+      // Persist Attempt to Firestore: contributors/{ownerUid}/quizzes/{quizId}/attempts/{attemptId}
+      try {
+        const attemptRef = doc(db, "contributors", quizData.ownerUid, "quizzes", quizData.quizId, "attempts", attemptId);
+        await setDoc(attemptRef, {
+          attemptId: attemptId,
+          quizId: quizData.quizId,
+          ownerUid: quizData.ownerUid,
+          candidateUid: candidateUid,
+          candidateType: auth.currentUser && !auth.currentUser.isAnonymous ? 'registered' : 'guest',
+          candidateName: candName,
+          studentId: candStudentId,
+          course: candCourse,
+          collegeName: candCollege,
+          universityName: candUniversity,
+          startedAt: new Date(examStartTime),
+          submittedAt: serverTimestamp(),
+          durationSeconds: durationSeconds,
+          answers: candidateAnswers,
+          totalQuestions: questionsList.length,
+          correctCount: correctCount,
+          incorrectCount: incorrectCount,
+          unattemptedCount: unattemptedCount,
+          maximumScore: maxScore,
+          score: finalScore,
+          percentage: percentage,
+          resultStatus: isResultDeclared ? 'available' : 'pending',
+          submissionReason: submissionReason,
+          umcFlag: uvcViolations.length > 0,
+          violationCount: uvcViolations.length,
+          violationsSummary: uvcViolations.slice(0, 10),
+          answerKeyVersion: 1
+        });
+
+        // Update aggregated analytics doc: quizAnalytics/{quizId}
+        updateDoc(doc(db, "quizAnalytics", quizData.quizId), {
+          totalSubmissions: increment(1),
+          flaggedUmcCount: uvcViolations.length > 0 ? increment(1) : increment(0),
+          updatedAt: serverTimestamp()
+        }).catch(console.warn);
+
+      } catch (err) {
+        console.error("Attempt persistence error:", err);
+      }
+
+      // Exit fullscreen if active
+      if (document.fullscreenElement && document.exitFullscreen) {
+        try { document.exitFullscreen(); } catch(e) {}
+      }
+
+      // Transition to Scorecard View
+      displayScorecard({
+        isResultDeclared,
+        finalScore,
+        maxScore,
+        percentage,
+        correctCount,
+        incorrectCount,
+        unattemptedCount,
+        candName,
+        candStudentId,
+        durationSeconds,
+        submissionReason,
+        hasUmc: uvcViolations.length > 0,
+        answerKey
+      });
+    }
+
+    function displayScorecard(res) {
+      document.getElementById('viewExamEngine').style.display = 'none';
+      document.getElementById('viewScorecard').style.display = 'block';
+
+      document.getElementById('scCandidateName').textContent = res.candName;
+      document.getElementById('scStudentId').textContent = res.candStudentId;
+      document.getElementById('scDuration').textContent = `${Math.floor(res.durationSeconds / 60)}m ${res.durationSeconds % 60}s`;
+      document.getElementById('scSubmissionType').textContent = res.submissionReason;
+
+      if (res.hasUmc) {
+        document.getElementById('scUmcWarningRow').style.display = 'block';
+      }
+
+      if (res.isResultDeclared) {
+        document.getElementById('scorePercentVal').textContent = `${res.percentage}%`;
+        document.getElementById('scoreGaugeEl').style.setProperty('--score-deg', `${(res.percentage / 100) * 360}deg`);
+        document.getElementById('metricFinalScore').textContent = `${res.finalScore} / ${res.maxScore}`;
+        document.getElementById('metricCorrect').textContent = res.correctCount;
+        document.getElementById('metricIncorrect').textContent = res.incorrectCount;
+        document.getElementById('metricUnattempted').textContent = res.unattemptedCount;
+
+        // Render Question Breakdown Review
+        const revList = document.getElementById('reviewList');
+        revList.innerHTML = '';
+        for (let i = 0; i < questionsList.length; i++) {
+          const q = questionsList[i];
+          const candChosen = candidateAnswers[i];
+          const correctLetter = res.answerKey ? res.answerKey[String(i + 1)] : null;
+          const isCorrect = candChosen && candChosen === correctLetter;
+          const isUnattempted = !candChosen;
+
+          let statusClass = isCorrect ? 'is-correct' : (isUnattempted ? 'is-unanswered' : 'is-incorrect');
+          let statusText = isCorrect ? 'Correct (+1.0)' : (isUnattempted ? 'Unattempted' : 'Incorrect (-0.25)');
+
+          const item = document.createElement('div');
+          item.className = `review-item ${statusClass}`;
+          item.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.8rem; font-weight:700;">
+              <span>Question ${i + 1}</span>
+              <span style="color:${isCorrect ? '#10b981' : (isUnattempted ? '#f59e0b' : '#ef4444')}">${statusText}</span>
+            </div>
+            <p style="font-size:0.92rem; color:#fff; margin-bottom:0.75rem;">${escapeHtml(q.questionText)}</p>
+            <div style="font-size:0.85rem; color:var(--qz-text-muted);">
+              <div>Your Answer: <strong style="color:#fff;">${candChosen ? `${candChosen}: ${escapeHtml(q.options[candChosen])}` : 'None'}</strong></div>
+              <div>Correct Option: <strong style="color:#10b981;">${correctLetter ? `${correctLetter}: ${escapeHtml(q.options[correctLetter])}` : 'Pending Evaluation'}</strong></div>
+            </div>
+          `;
+          revList.appendChild(item);
+        }
+      } else {
+        // Deferred mode
+        document.getElementById('scorePercentVal').textContent = `PENDING`;
+        document.getElementById('scorecardStatusHeading').textContent = `Assessment Submitted Successfully`;
+        document.getElementById('scorecardStatusSub').textContent = `This assessment uses deferred evaluation. Official results and scorecards will be declared once the author releases the verified answer key.`;
+        document.getElementById('metricFinalScore').textContent = `--`;
+        document.getElementById('metricCorrect').textContent = `--`;
+        document.getElementById('metricIncorrect').textContent = `--`;
+        document.getElementById('metricUnattempted').textContent = `--`;
+        document.getElementById('reviewContainer').style.display = 'none';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Launch
+    initPortal();
+  </script>
+</body>
+</html>

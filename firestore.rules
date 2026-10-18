@@ -322,6 +322,57 @@ service cloud.firestore {
     match /confidential_read_history/{historyId} {
       allow read, write: if true;
     }
+
+    /* ---------- CONTRIBUTORS & QUIZ SYSTEM ---------- */
+    match /contributors/{contributorUid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == contributorUid;
+
+      match /quizzes/{quizId} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == contributorUid;
+
+        match /questionPages/{pageId} {
+          allow read: if true;
+          allow write: if request.auth != null && request.auth.uid == contributorUid;
+        }
+
+        match /privateAnswerKey/{keyDoc} {
+          allow read: if request.auth != null && (
+            request.auth.uid == contributorUid ||
+            resource.data.isReleased == true
+          );
+          allow write: if request.auth != null && request.auth.uid == contributorUid;
+        }
+
+        match /attempts/{attemptId} {
+          allow create: if request.auth != null;
+          allow read: if request.auth != null && (
+            request.auth.uid == resource.data.candidateUid ||
+            request.auth.uid == contributorUid
+          );
+          allow update: if request.auth != null && request.auth.uid == contributorUid;
+        }
+      }
+    }
+
+    match /quizDirectory/{quizId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if request.auth != null && (resource.data.ownerUid == request.auth.uid || request.auth.uid == request.resource.data.ownerUid);
+    }
+
+    match /quizAnalytics/{quizId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if request.auth != null;
+    }
+
+    match /quizShares/{tokenHash} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     /* ---------- VALIDATION ---------- */
 
     function validateDocument() {

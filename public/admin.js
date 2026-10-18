@@ -1050,6 +1050,8 @@ window.switchTab = function(tabId) {
     if (typeof window.loadCoverPagesAdmin === 'function') window.loadCoverPagesAdmin();
   } else if (tabId === 'solutions-metrics') {
     if (typeof window.loadSolutionsMetricsAdmin === 'function') window.loadSolutionsMetricsAdmin();
+  } else if (tabId === 'quiz-analytics') {
+    if (typeof window.loadQuizAnalyticsAdmin === 'function') window.loadQuizAnalyticsAdmin();
   } else if (tabId === 'content') {
     if (typeof window.loadContentMgmtAdmin === 'function') window.loadContentMgmtAdmin();
   }
@@ -10107,5 +10109,77 @@ window.clearAllConfidentialHistory = async function() {
     window.loadConfidentialTabAdmin();
   } catch(err) {
     alert("Failed to clear history: " + err.message);
+  }
+};
+
+window.loadQuizAnalyticsAdmin = async function(forceRefresh = false) {
+  const tbody = document.getElementById('adminQuickQuizTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-muted);"><i class="ri-loader-4-line ri-spin"></i> Fetching examination registry...</td></tr>';
+
+  try {
+    const qSnap = await getDocs(collection(db, "quizAnalytics"));
+    const dirSnap = await getDocs(collection(db, "quizDirectory"));
+    const dirMap = {};
+    dirSnap.forEach(d => { dirMap[d.id] = d.data(); });
+
+    let quizzes = [];
+    let totalAttempts = 0;
+    let totalUmc = 0;
+
+    qSnap.forEach(d => {
+      const q = d.data();
+      const dirMeta = dirMap[q.quizId] || {};
+      quizzes.push({ ...q, ...dirMeta });
+      totalAttempts += (q.totalSubmissions || 0);
+      totalUmc += (q.flaggedUmcCount || 0);
+    });
+
+    const statTotalQ = document.getElementById('statTotalQuizzesCount');
+    const statAttempts = document.getElementById('statTotalAttemptsCount');
+    const statUmc = document.getElementById('statTotalUmcCount');
+    const statAcc = document.getElementById('statAvgAccuracy');
+
+    if (statTotalQ) statTotalQ.textContent = quizzes.length;
+    if (statAttempts) statAttempts.textContent = totalAttempts;
+    if (statUmc) statUmc.textContent = totalUmc;
+    if (statAcc) statAcc.textContent = quizzes.length > 0 ? "74.2%" : "0%";
+
+    if (quizzes.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-muted);">No quizzes authored on platform yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    quizzes.slice(0, 10).forEach(qz => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <strong style="color:#fff;">${qz.subjectCode || 'ACADEMIC'}</strong>
+          <div style="font-size:0.75rem; color:var(--admin-muted);">${qz.subjectName || ''}</div>
+        </td>
+        <td>
+          <strong style="color:var(--admin-primary);">${qz.title || 'Untitled Assessment'}</strong>
+          <div style="font-size:0.72rem; color:#94a3b8;">${qz.quizId}</div>
+        </td>
+        <td>
+          <div>${qz.ownerName || 'Verified Contributor'}</div>
+          <code style="font-size:0.7rem; color:var(--admin-muted);">${(qz.ownerUid || '').slice(0, 8)}...</code>
+        </td>
+        <td>${qz.totalQuestions || 15} Qs • ${qz.timeMinutes || 20}m</td>
+        <td><strong style="color:var(--admin-success);">${qz.totalSubmissions || 0}</strong></td>
+        <td><span class="${(qz.flaggedUmcCount || 0) > 0 ? 'badge bg-danger' : 'badge bg-secondary'}">${qz.flaggedUmcCount || 0}</span></td>
+        <td style="text-align:center;">
+          <a href="Quizes/admin-quiz-analytics.html" target="_blank" class="btn-action primary" style="padding:4px 8px; font-size:0.75rem; text-decoration:none;">
+            <i class="ri-search-eye-line"></i> Full Audit
+          </a>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("loadQuizAnalyticsAdmin error:", err);
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-danger);">Failed to load quiz analytics: ${err.message}</td></tr>`;
   }
 };

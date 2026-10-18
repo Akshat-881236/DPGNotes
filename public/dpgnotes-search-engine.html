@@ -803,6 +803,19 @@
     </div>
     <p class="hero-subtitle">DPG College Verified Academic Notes, Solutions &amp; Sessional Exam Hub</p>
 
+    <!-- Quick Search Mode Tabs (All, Notes, Solutions, Quizzes) -->
+    <div class="search-category-tabs" style="display:flex; justify-content:center; gap:8px; margin-bottom:1.2rem; flex-wrap:wrap;">
+      <a href="/dpgnotes-serp.html?tab=all" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+        <i class="ri-search-line"></i> All
+      </a>
+      <a href="/dpgnotes-serp.html?tab=solutions" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+        <i class="ri-code-box-line"></i> Solutions
+      </a>
+      <a href="/dpgnotes-serp.html?tab=quizzes" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(245, 158, 11, 0.15); border-color:rgba(245, 158, 11, 0.35); color:#f59e0b; font-weight:700;">
+        <i class="ri-questionnaire-line"></i> Quizzes <span style="font-size:0.65rem; background:#f59e0b; color:#000; padding:1px 5px; border-radius:6px; font-weight:800;">NEW</span>
+      </a>
+    </div>
+
     <!-- Search Box with Live Auto-suggestions (Matching Image 4) -->
     <div class="search-box-outer-container">
       <div class="search-bar-wrapper" id="searchBarWrapper">
@@ -1001,6 +1014,30 @@
         } catch(solErr) {
           console.warn("Solutions suggestion preload warning:", solErr);
         }
+
+        // Preload Quizzes from quizDirectory
+        try {
+          const qzSnap = await getDocs(collection(db, "quizDirectory"));
+          qzSnap.forEach(qzDoc => {
+            const qzData = qzDoc.data();
+            if (qzData.status === "published" || qzData.isPublic !== false) {
+              cachedDocs.push({
+                id: qzDoc.id,
+                isQuiz: true,
+                quizUrl: `/Quizes/index.html?quizId=${encodeURIComponent(qzDoc.id)}`,
+                title: qzData.title || `${qzData.subjectName} Quiz`,
+                subjectCode: qzData.subjectCode || '',
+                subjectName: qzData.subjectName || '',
+                questionKeywords: qzData.questionKeywords || '',
+                category: "Quiz",
+                discipline: qzData.subjectName || "Academic",
+                tags: ["quiz", "exam", "test", qzData.subjectCode || "", qzData.subjectName || "", ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean)
+              });
+            }
+          });
+        } catch(qzErr) {
+          console.warn("Quiz suggestion preload warning:", qzErr);
+        }
       } catch (err) {
         console.warn("Failed caching documents for suggestions:", err.message);
       }
@@ -1042,6 +1079,9 @@
         (d.title && d.title.toLowerCase().includes(q)) ||
         (d.discipline && d.discipline.toLowerCase().includes(q)) ||
         (d.category && d.category.toLowerCase().includes(q)) ||
+        (d.subjectCode && d.subjectCode.toLowerCase().includes(q)) ||
+        (d.subjectName && d.subjectName.toLowerCase().includes(q)) ||
+        (d.questionKeywords && d.questionKeywords.toLowerCase().includes(q)) ||
         (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q)))
       ).slice(0, 6);
 
@@ -1053,18 +1093,25 @@
           row.className = "suggestion-row";
           // Direct Destination navigation when clicking a document or solution!
           row.onclick = () => {
-            if (d.isSolution && d.solutionUrl) {
+            if (d.isQuiz && d.quizUrl) {
+              window.location.href = d.quizUrl;
+            } else if (d.isSolution && d.solutionUrl) {
               window.location.href = d.solutionUrl;
             } else {
               window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
             }
           };
+
+          const iconClass = d.isQuiz ? 'ri-questionnaire-line' : (d.isSolution ? 'ri-code-box-line' : 'ri-file-text-line');
+          const iconColor = d.isQuiz ? 'color:#f59e0b;' : (d.isSolution ? 'color:#0284c7;' : '');
+          const badgeStyle = d.isQuiz ? 'background:#fef3c7; color:#b45309;' : (d.isSolution ? 'background:#e0f2fe; color:#0369a1;' : '');
+
           row.innerHTML = `
             <div class="suggestion-left">
-              <i class="${d.isSolution ? 'ri-code-box-line' : 'ri-file-text-line'}" style="${d.isSolution ? 'color:#0284c7;' : ''}"></i>
+              <i class="${iconClass}" style="${iconColor}"></i>
               <span class="suggestion-text">${d.title}</span>
             </div>
-            <span class="suggestion-badge" style="${d.isSolution ? 'background:#e0f2fe; color:#0369a1;' : ''}">${d.category || 'Notes'}</span>
+            <span class="suggestion-badge" style="${badgeStyle}">${d.category || 'Notes'}</span>
           `;
           dropdown.appendChild(row);
         });

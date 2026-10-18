@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Contributor Authentication Gateway | DPGNotes</title>
+  <meta name="description" content="Secure Contributor Authentication Gateway for DPGNotes authoring tools, Quiz Generation, and academic solutions." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/ANH.png" type="image/png" />
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- RemixIcon & Bootstrap 5 Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- DPGNotes Base Config & Auth Styles -->
+  <link rel="stylesheet" href="/auth-component.css">
+
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-glow: rgba(99, 102, 241, 0.25);
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.15), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.12), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08), transparent 60%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .gateway-nav {
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(10, 13, 20, 0.6);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .brand-logo img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+
+    .gateway-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .auth-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 540px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1);
+      position: relative;
+    }
+
+    .dest-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      margin-bottom: 1.25rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 1.5rem;
+      gap: 4px;
+    }
+
+    .auth-tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 9px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .auth-tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .tab-content-panel {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-content-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 1.15rem;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .form-label span.req {
+      color: var(--danger);
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.92rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .form-select option {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .eye-toggle-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.94;
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .social-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 1.4rem 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    .social-divider::before, .social-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .social-divider span {
+      padding: 0 10px;
+    }
+
+    .oauth-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 1.2rem;
+    }
+
+    .oauth-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .oauth-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .auth-alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .auth-alert.danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .auth-alert.success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 576px) {
+      .auth-card {
+        padding: 1.75rem 1.25rem;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .gateway-nav {
+        padding: 1rem 1.25rem;
+      }
+    }
+
+    .gateway-footer {
+      padding: 1.25rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--card-border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="gateway-nav">
+    <a href="/index.html" class="brand-logo">
+      <img src="/ANH.png" alt="DPGNotes Logo">
+      <span>DPGNotes Authoring Hub</span>
+    </a>
+    <a href="/index.html" class="btn btn-outline-secondary btn-sm" style="color:var(--text-muted); border-color:var(--card-border); font-size:0.84rem;">
+      <i class="ri-home-4-line"></i> Homepage
+    </a>
+  </header>
+
+  <!-- Main Auth Gateway -->
+  <main class="gateway-container">
+    <div class="auth-card">
+
+      <!-- Destination Target Indicator -->
+      <div id="destBadge" class="dest-pill" style="display:none;">
+        <i class="ri-shield-keyhole-line"></i> Protected Resource: <strong id="destPathText">...</strong>
+      </div>
+
+      <div style="text-align:center; margin-bottom:1.4rem;">
+        <div style="width:58px; height:58px; border-radius:50%; background:rgba(99, 102, 241, 0.15); display:inline-flex; align-items:center; justify-content:center; margin-bottom:0.75rem;">
+          <i class="ri-shield-user-fill" style="font-size:1.8rem; color:var(--primary);"></i>
+        </div>
+        <h1 style="font-size:1.45rem; font-weight:800; color:#fff; margin-bottom:0.3rem;">Contributor Access Gateway</h1>
+        <p style="color:var(--text-muted); font-size:0.86rem; line-height:1.5;">
+          Access to Assignment Generators, Practical Generators, and Quiz Authoring requires an active verified contributor account.
+        </p>
+      </div>
+
+      <!-- Live Error / Success Alerts -->
+      <div id="globalAuthAlert" class="auth-alert"></div>
+
+      <!-- Authentication Mode Tabs -->
+      <nav class="auth-tabs" aria-label="Authentication modes">
+        <button type="button" class="auth-tab-btn active" id="tabBtnSignIn" onclick="switchAuthTab('signin')">
+          <i class="ri-login-box-line"></i> Sign In
+        </button>
+        <button type="button" class="auth-tab-btn" id="tabBtnSignUp" onclick="switchAuthTab('signup')">
+          <i class="ri-user-add-line"></i> Contributor Sign Up
+        </button>
+        <button type="button" class="auth-tab-btn" id="tabBtnRecovery" onclick="switchAuthTab('recovery')">
+          <i class="ri-lock-unlock-line"></i> Recovery
+        </button>
+      </nav>
+
+      <!-- ============================================== -->
+      <!-- TAB 1: SIGN IN -->
+      <!-- ============================================== -->
+      <section id="panelSignIn" class="tab-content-panel active">
+        <!-- Social OAuth Quick Connect -->
+        <div class="oauth-row">
+          <button type="button" class="oauth-btn" id="btnGoogleLogin" onclick="handleSocialAuth('google')">
+            <i class="ri-google-fill" style="color:#ea4335; font-size:1.1rem;"></i> Google
+          </button>
+          <button type="button" class="oauth-btn" id="btnGithubLogin" onclick="handleSocialAuth('github')">
+            <i class="ri-github-fill" style="color:#ffffff; font-size:1.1rem;"></i> GitHub
+          </button>
+        </div>
+
+        <div class="social-divider">
+          <span>OR SIGN IN WITH CREDENTIALS</span>
+        </div>
+
+        <form id="signInForm" onsubmit="handleFormSignIn(event)" autocomplete="on">
+          <div class="form-group">
+            <label class="form-label" for="signInIdentifier">Student ID, Employee ID, or Email <span class="req">*</span></label>
+            <input type="text" id="signInIdentifier" class="form-input" placeholder="e.g. 2112345678 or name@domain.com" required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label class="form-label" for="signInPassword" style="margin-bottom:0;">Password <span class="req">*</span></label>
+              <a href="javascript:void(0)" onclick="switchAuthTab('recovery')" style="color:#a5b4fc; font-size:0.78rem; text-decoration:none;">Forgot Password?</a>
+            </div>
+            <div class="input-wrapper">
+              <input type="password" id="signInPassword" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+              <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('signInPassword', this)" aria-label="Toggle password view">
+                <i class="ri-eye-line"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="btnSignInSubmit" class="btn-submit">
+            <i class="ri-login-circle-line"></i> Sign In to Contributor Workspace
+          </button>
+        </form>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: CONTRIBUTOR SIGN UP -->
+      <!-- ============================================== -->
+      <section id="panelSignUp" class="tab-content-panel">
+        <form id="signUpForm" onsubmit="handleFormSignUp(event)" autocomplete="off">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="signUpName">Full Name <span class="req">*</span></label>
+              <input type="text" id="signUpName" class="form-input" placeholder="e.g. Alex Sharma" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signUpEmail">Official / Student Email <span class="req">*</span></label>
+              <input type="email" id="signUpEmail" class="form-input" placeholder="alex@gmail.com" required>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="signUpUserType">Role / Status <span class="req">*</span></label>
+              <select id="signUpUserType" class="form-select" required>
+                <option value="Student" selected>Student Contributor</option>
+                <option value="Teacher">Teacher / Faculty</option>
+                <option value="Creator">Academic Creator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signUpStudentId">Roll No / Student ID <span class="req">*</span></label>
+              <input type="text" id="signUpStudentId" class="form-input" placeholder="e.g. 211029101" required>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="signUpCourse">Course / Discipline <span class="req">*</span></label>
+              <input type="text" id="signUpCourse" class="form-input" placeholder="e.g. BCA, MCA, B.Tech" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signUpCollege">College / Institute Name <span class="req">*</span></label>
+              <input type="text" id="signUpCollege" class="form-input" placeholder="e.g. DPG Degree College" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signUpUniversity">Affiliated University <span class="req">*</span></label>
+            <input type="text" id="signUpUniversity" class="form-input" placeholder="e.g. Maharshi Dayanand University (MDU)" required>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="signUpPassword">Password (min 6 chars) <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input type="password" id="signUpPassword" class="form-input" placeholder="••••••••" minlength="6" required autocomplete="new-password">
+                <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('signUpPassword', this)" aria-label="Toggle password view">
+                  <i class="ri-eye-line"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signUpConfirmPassword">Confirm Password <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input type="password" id="signUpConfirmPassword" class="form-input" placeholder="••••••••" minlength="6" required autocomplete="new-password">
+                <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('signUpConfirmPassword', this)" aria-label="Toggle password view">
+                  <i class="ri-eye-line"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-check" style="margin-bottom:1.2rem; font-size:0.82rem; color:var(--text-muted); text-align:left;">
+            <input class="form-check-input" type="checkbox" id="termsCheck" required style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2);">
+            <label class="form-check-label" for="termsCheck">
+              I agree to the DPGNotes <a href="/legal/index.html#terms" target="_blank" style="color:#818cf8;">Terms</a>, <a href="/legal/index.html#privacy" target="_blank" style="color:#818cf8;">Privacy Policy</a>, and DRASA Academic Honor Code.
+            </label>
+          </div>
+
+          <button type="submit" id="btnSignUpSubmit" class="btn-submit">
+            <i class="ri-user-star-line"></i> Register Contributor Account
+          </button>
+        </form>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: ACCOUNT RECOVERY -->
+      <!-- ============================================== -->
+      <section id="panelRecovery" class="tab-content-panel">
+        <p style="color:var(--text-muted); font-size:0.86rem; margin-bottom:1.2rem; text-align:left;">
+          Enter your registered email address or student identifier. We will immediately dispatch a secure password reset link to your primary email.
+        </p>
+
+        <form id="recoveryForm" onsubmit="handleFormRecovery(event)">
+          <div class="form-group">
+            <label class="form-label" for="recoveryIdentifier">Registered Email or Student ID <span class="req">*</span></label>
+            <input type="text" id="recoveryIdentifier" class="form-input" placeholder="e.g. student@dpgnotes.com" required>
+          </div>
+
+          <button type="submit" id="btnRecoverySubmit" class="btn-submit">
+            <i class="ri-mail-send-line"></i> Dispatch Password Reset Email
+          </button>
+
+          <div style="text-align:center; margin-top:1.2rem;">
+            <a href="javascript:void(0)" onclick="switchAuthTab('signin')" style="color:#a5b4fc; font-size:0.82rem; text-decoration:none;">
+              <i class="ri-arrow-left-line"></i> Back to Sign In
+            </a>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="gateway-footer">
+    &copy; 2026 DPGNotes Academic Network. All rights reserved. Encrypted Contributor Gateway.
+  </footer>
+
+  <!-- Firebase v12 & Auth Handler Scripts -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      createUserWithEmailAndPassword, 
+      sendPasswordResetEmail,
+      sendEmailVerification,
+      signInWithPopup, 
+      GoogleAuthProvider, 
+      GithubAuthProvider,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc, 
+      setDoc, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Helpers & Security: Extract and validate safe redirection target
+    function getSafeRedirectTarget() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let target = urlParams.get('go-to') || urlParams.get('redirect') || sessionStorage.getItem('dpg_auth_redirect') || '';
+      if (!target) return '/dashboard.html';
+
+      try {
+        const parsed = new URL(target, window.location.origin);
+        // Guarantee strict same-origin compliance to prevent open redirects
+        if (parsed.origin === window.location.origin) {
+          return parsed.pathname + parsed.search + parsed.hash;
+        }
+      } catch (e) {}
+
+      if (target.startsWith('/') && !target.startsWith('//')) {
+        return target;
+      }
+      return '/dashboard.html';
+    }
+
+    const safeTarget = getSafeRedirectTarget();
+    if (safeTarget && safeTarget !== '/dashboard.html') {
+      const badge = document.getElementById('destBadge');
+      const destText = document.getElementById('destPathText');
+      if (badge && destText) {
+        badge.style.display = 'inline-flex';
+        destText.textContent = safeTarget;
+      }
+    }
+
+    // Check action param (e.g. ?action=signup)
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialAction = urlParams.get('action');
+    if (initialAction === 'signup') {
+      switchAuthTab('signup');
+    } else if (initialAction === 'recovery' || initialAction === 'forgot') {
+      switchAuthTab('recovery');
+    }
+
+    // If user is already authenticated and verified, redirect immediately
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userSnap = await getDoc(doc(db, "users", user.uid));
+          const uData = userSnap.exists() ? userSnap.data() : null;
+          
+          // Verify contributor status
+          localStorage.setItem("dpgActiveUserUid", user.uid);
+          localStorage.setItem("dpgActiveUserEmail", user.email || "");
+          localStorage.setItem("dpgActiveUserName", user.displayName || (uData ? uData.name : "Contributor"));
+          localStorage.setItem("dpgActiveUser", JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || (uData ? uData.name : "Contributor"),
+            studentId: uData ? (uData.studentId || uData.studentIdOrEmployeeId || "") : "",
+            course: uData ? (uData.course || "") : "",
+            collegeName: uData ? (uData.collegeName || "") : "",
+            universityName: uData ? (uData.universityName || "") : ""
+          }));
+
+          showAlert("Active contributor session verified. Redirecting...", "success");
+          setTimeout(() => {
+            window.location.replace(safeTarget);
+          }, 400);
+        } catch (err) {
+          console.warn("Session check error:", err);
+        }
+      }
+    });
+
+    // Alert display helper
+    window.showAlert = function(msg, type = "danger") {
+      const alertBox = document.getElementById("globalAuthAlert");
+      if (!alertBox) return;
+      alertBox.className = `auth-alert ${type}`;
+      alertBox.innerHTML = `<i class="${type === 'danger' ? 'ri-error-warning-fill' : 'ri-checkbox-circle-fill'}"></i><span>${msg}</span>`;
+      alertBox.style.display = "flex";
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    // Tab switching
+    window.switchAuthTab = function(tabName) {
+      const tabs = ['signIn', 'signUp', 'recovery'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const panel = document.getElementById(`panel${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.classList.remove('active');
+        if (panel) panel.classList.remove('active');
+      });
+
+      const activeBtn = document.getElementById(`tabBtn${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+      const activePanel = document.getElementById(`panel${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activePanel) activePanel.classList.add('active');
+
+      const alertBox = document.getElementById("globalAuthAlert");
+      if (alertBox) alertBox.style.display = "none";
+    };
+
+    window.togglePasswordVisibility = function(inputId, iconBtn) {
+      const inp = document.getElementById(inputId);
+      if (!inp) return;
+      const isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      iconBtn.innerHTML = isPass ? '<i class="ri-eye-off-line"></i>' : '<i class="ri-eye-line"></i>';
+    };
+
+    // Social Authentication (Google & GitHub)
+    window.handleSocialAuth = async function(providerName) {
+      try {
+        let provider;
+        if (providerName === 'google') {
+          provider = new GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+        } else {
+          provider = new GithubAuthProvider();
+        }
+
+        showAlert(`Connecting to ${providerName.toUpperCase()}...`, "success");
+        const res = await signInWithPopup(auth, provider);
+        const user = res.user;
+
+        // Upsert user in Firestore
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || user.email.split('@')[0],
+            isContributor: true,
+            isVerified: true,
+            createdAt: serverTimestamp(),
+            lastLoginAt: serverTimestamp()
+          }, { merge: true });
+        } else {
+          await setDoc(userRef, {
+            lastLoginAt: serverTimestamp()
+          }, { merge: true });
+        }
+
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUserEmail", user.email || "");
+        localStorage.setItem("dpgActiveUserName", user.displayName || "");
+
+        showAlert("Authentication successful! Redirecting to authoring tool...", "success");
+        setTimeout(() => {
+          window.location.replace(safeTarget);
+        }, 500);
+      } catch (err) {
+        console.error("Social login failed:", err);
+        showAlert(err.message || "OAuth login failed. Please try again.");
+      }
+    };
+
+    // Form: Sign In
+    window.handleFormSignIn = async function(e) {
+      e.preventDefault();
+      const identifier = document.getElementById("signInIdentifier").value.trim();
+      const password = document.getElementById("signInPassword").value;
+      const btn = document.getElementById("btnSignInSubmit");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Authenticating...`;
+
+      try {
+        let emailToUse = identifier;
+        // If student ID is passed, check if it's already an email or needs lookup
+        if (!identifier.includes("@")) {
+          // If pure ID, append domain or query
+          emailToUse = identifier.toLowerCase() + "@dpgnotes.app";
+        }
+
+        const cred = await signInWithEmailAndPassword(auth, emailToUse, password);
+        const user = cred.user;
+
+        // Fetch User profile to ensure contributor credentials
+        const uSnap = await getDoc(doc(db, "users", user.uid));
+        const uData = uSnap.exists() ? uSnap.data() : null;
+
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUserEmail", user.email || "");
+        localStorage.setItem("dpgActiveUserName", user.displayName || (uData ? uData.name : "Contributor"));
+        localStorage.setItem("dpgActiveUser", JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || (uData ? uData.name : "Contributor"),
+          studentId: uData ? (uData.studentId || uData.studentIdOrEmployeeId || "") : "",
+          course: uData ? (uData.course || "") : "",
+          collegeName: uData ? (uData.collegeName || "") : "",
+          universityName: uData ? (uData.universityName || "") : ""
+        }));
+
+        showAlert("Welcome back! Loading authoring environment...", "success");
+        setTimeout(() => {
+          window.location.replace(safeTarget);
+        }, 500);
+      } catch (err) {
+        console.error("Sign in failed:", err);
+        let msg = "Invalid credentials. Please verify your ID/email and password.";
+        if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+          msg = "Account not found or password incorrect. Please check your credentials or register.";
+        } else if (err.code === "auth/wrong-password") {
+          msg = "Incorrect password. You can reset your password using the Recovery tab.";
+        }
+        showAlert(msg);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-login-circle-line"></i> Sign In to Contributor Workspace`;
+      }
+    };
+
+    // Form: Contributor Sign Up
+    window.handleFormSignUp = async function(e) {
+      e.preventDefault();
+      const name = document.getElementById("signUpName").value.trim();
+      const email = document.getElementById("signUpEmail").value.trim().toLowerCase();
+      const userType = document.getElementById("signUpUserType").value;
+      const studentId = document.getElementById("signUpStudentId").value.trim();
+      const course = document.getElementById("signUpCourse").value.trim();
+      const collegeName = document.getElementById("signUpCollege").value.trim();
+      const universityName = document.getElementById("signUpUniversity").value.trim();
+      const password = document.getElementById("signUpPassword").value;
+      const confirmPassword = document.getElementById("signUpConfirmPassword").value;
+      const btn = document.getElementById("btnSignUpSubmit");
+
+      if (password !== confirmPassword) {
+        showAlert("Passwords do not match. Please re-enter.");
+        return;
+      }
+      if (password.length < 6) {
+        showAlert("Password must be at least 6 characters long.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Registering Contributor...`;
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const user = cred.user;
+
+        // Dispatch verification email
+        try {
+          await sendEmailVerification(user);
+        } catch (evErr) {
+          console.warn("Verification email notice:", evErr);
+        }
+
+        // Write complete Contributor profile to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          name: name,
+          email: email,
+          userType: userType,
+          studentId: studentId,
+          studentIdOrEmployeeId: studentId,
+          course: course,
+          collegeName: collegeName,
+          universityName: universityName,
+          isContributor: true,
+          isVerified: true,
+          termsAccepted: true,
+          createdAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp()
+        });
+
+        localStorage.setItem("dpgActiveUserUid", user.uid);
+        localStorage.setItem("dpgActiveUserEmail", email);
+        localStorage.setItem("dpgActiveUserName", name);
+        localStorage.setItem("dpgActiveUser", JSON.stringify({
+          uid: user.uid,
+          email: email,
+          name: name,
+          studentId: studentId,
+          course: course,
+          collegeName: collegeName,
+          universityName: universityName
+        }));
+
+        showAlert("Account created successfully! Redirecting to your authoring workspace...", "success");
+        setTimeout(() => {
+          window.location.replace(safeTarget);
+        }, 800);
+      } catch (err) {
+        console.error("Sign up failed:", err);
+        let msg = err.message || "Failed to create contributor account.";
+        if (err.code === "auth/email-already-in-use") {
+          msg = "An account with this email already exists. Please Sign In instead.";
+        }
+        showAlert(msg);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-user-star-line"></i> Register Contributor Account`;
+      }
+    };
+
+    // Form: Account Recovery
+    window.handleFormRecovery = async function(e) {
+      e.preventDefault();
+      const identifier = document.getElementById("recoveryIdentifier").value.trim();
+      const btn = document.getElementById("btnRecoverySubmit");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Sending Reset Link...`;
+
+      try {
+        let emailToUse = identifier;
+        if (!identifier.includes("@")) {
+          emailToUse = identifier.toLowerCase() + "@dpgnotes.app";
+        }
+
+        await sendPasswordResetEmail(auth, emailToUse);
+        showAlert(`Password reset link dispatched to ${emailToUse}. Please check your inbox and spam folder.`, "success");
+      } catch (err) {
+        console.error("Recovery failed:", err);
+        showAlert(err.message || "Failed to send reset link. Please check the email address.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="ri-mail-send-line"></i> Dispatch Password Reset Email`;
+      }
+    };
+  </script>
+</body>
+</html>

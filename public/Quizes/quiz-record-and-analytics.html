@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Contributor Quiz Analytics &amp; Examination Records | DPGNotes</title>
+  <meta name="description" content="Review candidate scorecards, ranking distributions, anti-cheat telemetry, and publish answer keys for your authored quizzes on DPGNotes." />
+  <link rel="icon" href="/ANH.png" type="image/png" />
+
+  <!-- Instant Contributor Auth Protection Check -->
+  <script>
+    (function() {
+      const uid = localStorage.getItem("dpgActiveUserUid");
+      if (!uid) {
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
+      }
+    })();
+  </script>
+
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --qz-bg: #090d16;
+      --qz-surface: rgba(17, 24, 39, 0.85);
+      --qz-card: #111827;
+      --qz-border: rgba(255, 255, 255, 0.08);
+      --qz-primary: #6366f1;
+      --qz-primary-hover: #4f46e5;
+      --qz-primary-glow: rgba(99, 102, 241, 0.25);
+      --qz-accent: #06b6d4;
+      --qz-success: #10b981;
+      --qz-warning: #f59e0b;
+      --qz-danger: #ef4444;
+      --qz-text: #f8fafc;
+      --qz-text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background: var(--qz-bg);
+      color: var(--qz-text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding-bottom: 4rem;
+    }
+
+    .analytics-nav {
+      padding: 1rem 2rem;
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--qz-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .brand-link img { width: 34px; height: 34px; border-radius: 8px; }
+
+    .analytics-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.25rem;
+    }
+
+    /* KPI Summary Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: var(--qz-surface);
+      border: 1px solid var(--qz-border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .kpi-label {
+      font-size: 0.8rem;
+      color: var(--qz-text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .kpi-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    /* Quiz Detail Section */
+    .qz-box {
+      background: var(--qz-surface);
+      border: 1px solid var(--qz-border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      margin-bottom: 2rem;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      color: var(--qz-text);
+      font-size: 0.88rem;
+    }
+    .custom-table th {
+      background: rgba(15, 23, 42, 0.8);
+      padding: 12px 16px;
+      font-size: 0.78rem;
+      color: var(--qz-text-muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--qz-border);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .custom-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+    .custom-table tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .rank-pill {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+    .rank-pill.first { background: #fbbf24; color: #78350f; }
+    .rank-pill.second { background: #94a3b8; color: #0f172a; }
+    .rank-pill.third { background: #d97706; color: #fff; }
+
+    .umc-badge-clean {
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .umc-badge-flagged {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="analytics-nav">
+    <a href="/index.html" class="brand-link">
+      <img src="/ANH.png" alt="DPGNotes">
+      <span>DPGNotes <span style="color:var(--qz-primary);">Contributor Analytics</span></span>
+    </a>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="/Quizes/quiz-generator.html" class="btn btn-sm btn-primary">
+        <i class="ri-add-line"></i> Create New Quiz
+      </a>
+      <a href="/dashboard.html" class="btn btn-sm btn-secondary" style="background:rgba(255,255,255,0.06); border-color:var(--qz-border);">
+        <i class="ri-dashboard-line"></i> Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="analytics-container">
+
+    <div style="margin-bottom:2rem;">
+      <h1 style="font-size:2rem; font-weight:800; margin-bottom:0.4rem;">Author Examination Analytics</h1>
+      <p style="color:var(--qz-text-muted); font-size:0.95rem;">
+        Monitor attempt scorecards, proctor telemetry, ranking distributions, and release official answer keys for your quizzes.
+      </p>
+    </div>
+
+    <!-- Top KPIs Across All Contributor Quizzes -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Authored Quizzes</div>
+        <div class="kpi-val" id="kpiTotalQuizzes" style="color:var(--qz-accent);">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Candidate Attempts</div>
+        <div class="kpi-val" id="kpiTotalAttempts" style="color:var(--qz-primary);">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Average Score</div>
+        <div class="kpi-val" id="kpiAvgScore" style="color:var(--qz-success);">--%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">UMC Monitored Flags</div>
+        <div class="kpi-val" id="kpiUmcFlags" style="color:var(--qz-danger);">--</div>
+      </div>
+    </div>
+
+    <!-- Active Quiz Selector -->
+    <div class="qz-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
+        <div>
+          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.2rem;">Select Authored Examination</h3>
+          <span style="font-size:0.82rem; color:var(--qz-text-muted);">Switch between your active assessments</span>
+        </div>
+        <div style="min-width:280px;">
+          <select id="contributorQuizSelect" class="form-select" onchange="onQuizSelected(this.value)">
+            <option value="">Loading your quizzes...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Selected Quiz Summary Box -->
+      <div id="quizMetaDetailBox" style="display:none; background:rgba(15, 23, 42, 0.6); border:1px solid var(--qz-border); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem;">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-8">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.4rem;">
+              <span id="sqSubjectBadge" class="badge" style="background:rgba(99, 102, 241, 0.15); border:1px solid rgba(99, 102, 241, 0.3); color:#c7d2fe;">SUBJECT</span>
+              <span id="sqVisBadge" class="badge bg-secondary">Public</span>
+              <span id="sqKeyStatusBadge" class="badge bg-warning">Key: Pending</span>
+            </div>
+            <h2 id="sqTitle" style="font-size:1.4rem; font-weight:800; color:#fff; margin-bottom:0.3rem;">...</h2>
+            <p id="sqDesc" style="color:var(--qz-text-muted); font-size:0.88rem; margin-bottom:0; line-height:1.5;">...</p>
+          </div>
+          <div class="col-md-4 text-md-end">
+            <button type="button" id="btnReleaseKey" class="btn btn-warning btn-sm mb-2" onclick="releaseAnswerKey()" style="display:none; font-weight:700;">
+              <i class="ri-key-2-line"></i> Release Key &amp; Evaluate
+            </button>
+            <div style="font-size:0.8rem; color:var(--qz-text-muted);">
+              Exam URL: <a id="sqExamLink" href="#" target="_blank" style="color:var(--qz-accent); text-decoration:none;"><i class="ri-external-link-line"></i> Open Exam</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidates Scorecard Table -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+        <h4 style="font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0;">
+          <i class="ri-trophy-line" style="color:#fbbf24;"></i> Candidate Leaderboard &amp; Submissions
+        </h4>
+        <button type="button" class="btn btn-sm btn-outline-light" onclick="exportCsv()">
+          <i class="ri-download-cloud-2-line"></i> Export CSV Roster
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="custom-table" id="candidatesTable">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Candidate Name</th>
+              <th>Student ID</th>
+              <th>College</th>
+              <th>Score</th>
+              <th>Accuracy</th>
+              <th>Time</th>
+              <th>Integrity Status</th>
+              <th>Submission Reason</th>
+            </tr>
+          </thead>
+          <tbody id="candidatesTableBody">
+            <tr>
+              <td colspan="9" style="text-align:center; padding:2rem; color:var(--qz-text-muted);">
+                Select an examination above to view student scorecards and rankings.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Firebase Script & Analytics Logic -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc, 
+      getDocs, 
+      collection, 
+      updateDoc, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let activeUid = null;
+    let authoredQuizzes = [];
+    let currentSelectedQuiz = null;
+    let currentAttemptsList = [];
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
+        return;
+      }
+      activeUid = user.uid;
+      await loadContributorQuizzes();
+    });
+
+    async function loadContributorQuizzes() {
+      try {
+        const qSnap = await getDocs(collection(db, "contributors", activeUid, "quizzes"));
+        authoredQuizzes = [];
+        qSnap.forEach(d => authoredQuizzes.push(d.data()));
+
+        document.getElementById('kpiTotalQuizzes').textContent = authoredQuizzes.length;
+
+        const select = document.getElementById('contributorQuizSelect');
+        select.innerHTML = '<option value="">-- Choose an Author Exam --</option>';
+
+        authoredQuizzes.forEach(q => {
+          const opt = document.createElement('option');
+          opt.value = q.quizId;
+          opt.textContent = `${q.subjectCode} - ${q.title} (${q.totalQuestions} Qs)`;
+          select.appendChild(opt);
+        });
+
+        // Compute cross-quiz stats
+        let totalAttemptsCount = 0;
+        let totalUmcCount = 0;
+        let totalScoreSum = 0;
+        let totalScoreEntries = 0;
+
+        for (const q of authoredQuizzes) {
+          const aSnap = await getDocs(collection(db, "contributors", activeUid, "quizzes", q.quizId, "attempts"));
+          totalAttemptsCount += aSnap.size;
+          aSnap.forEach(ad => {
+            const att = ad.data();
+            if (att.umcFlag) totalUmcCount++;
+            if (att.percentage !== undefined) {
+              totalScoreSum += att.percentage;
+              totalScoreEntries++;
+            }
+          });
+        }
+
+        document.getElementById('kpiTotalAttempts').textContent = totalAttemptsCount;
+        document.getElementById('kpiUmcFlags').textContent = totalUmcCount;
+        document.getElementById('kpiAvgScore').textContent = totalScoreEntries > 0 ? 
+          `${Math.round(totalScoreSum / totalScoreEntries)}%` : '0%';
+
+        // Check if query param specified a quizId
+        const urlQId = new URLSearchParams(window.location.search).get('quizId');
+        if (urlQId && authoredQuizzes.some(q => q.quizId === urlQId)) {
+          select.value = urlQId;
+          onQuizSelected(urlQId);
+        } else if (authoredQuizzes.length > 0) {
+          select.value = authoredQuizzes[0].quizId;
+          onQuizSelected(authoredQuizzes[0].quizId);
+        }
+
+      } catch (err) {
+        console.error("Contributor quizzes load error:", err);
+      }
+    }
+
+    window.onQuizSelected = async function(quizId) {
+      if (!quizId) {
+        document.getElementById('quizMetaDetailBox').style.display = 'none';
+        return;
+      }
+      currentSelectedQuiz = authoredQuizzes.find(q => q.quizId === quizId);
+      if (!currentSelectedQuiz) return;
+
+      // Populate meta summary
+      document.getElementById('quizMetaDetailBox').style.display = 'block';
+      document.getElementById('sqSubjectBadge').textContent = `${currentSelectedQuiz.subjectCode} • ${currentSelectedQuiz.subjectName}`;
+      document.getElementById('sqVisBadge').textContent = currentSelectedQuiz.isPublic ? 'Public' : 'Private';
+      document.getElementById('sqVisBadge').className = currentSelectedQuiz.isPublic ? 'badge bg-success' : 'badge bg-secondary';
+      document.getElementById('sqTitle').textContent = currentSelectedQuiz.title;
+      document.getElementById('sqDesc').textContent = currentSelectedQuiz.description;
+      document.getElementById('sqExamLink').href = `/Quizes/index.html?quizId=${currentSelectedQuiz.quizId}`;
+
+      // Check answer key status
+      const keyStatusBadge = document.getElementById('sqKeyStatusBadge');
+      const releaseBtn = document.getElementById('btnReleaseKey');
+      if (currentSelectedQuiz.immediateResult && currentSelectedQuiz.hasAnswerKey) {
+        keyStatusBadge.textContent = "Answer Key: Released";
+        keyStatusBadge.className = "badge bg-success";
+        releaseBtn.style.display = "none";
+      } else {
+        keyStatusBadge.textContent = "Answer Key: Pending Release";
+        keyStatusBadge.className = "badge bg-warning";
+        releaseBtn.style.display = "inline-flex";
+      }
+
+      // Fetch attempts for this quiz
+      await loadAttemptsForQuiz(quizId);
+    };
+
+    async function loadAttemptsForQuiz(quizId) {
+      const tbody = document.getElementById('candidatesTableBody');
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:1.5rem; color:#94a3b8;"><i class="ri-loader-4-line ri-spin"></i> Fetching scorecards...</td></tr>';
+
+      try {
+        const snap = await getDocs(collection(db, "contributors", activeUid, "quizzes", quizId, "attempts"));
+        currentAttemptsList = [];
+        snap.forEach(d => currentAttemptsList.push(d.data()));
+
+        if (currentAttemptsList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:2rem; color:#94a3b8;">No candidates have undertaken this examination yet.</td></tr>';
+          return;
+        }
+
+        // Deterministic Ranking Sort:
+        // 1. Score desc
+        // 2. Duration asc (tie-break by fastest)
+        // 3. SubmittedAt asc
+        currentAttemptsList.sort((a, b) => {
+          if ((b.score || 0) !== (a.score || 0)) {
+            return (b.score || 0) - (a.score || 0);
+          }
+          if ((a.durationSeconds || 0) !== (b.durationSeconds || 0)) {
+            return (a.durationSeconds || 0) - (b.durationSeconds || 0);
+          }
+          return 0;
+        });
+
+        tbody.innerHTML = '';
+        currentAttemptsList.forEach((att, idx) => {
+          const rank = idx + 1;
+          const tr = document.createElement('tr');
+          
+          let rankPillClass = 'rank-pill';
+          if (rank === 1) rankPillClass += ' first';
+          else if (rank === 2) rankPillClass += ' second';
+          else if (rank === 3) rankPillClass += ' third';
+
+          const umcClass = att.umcFlag ? 'umc-badge-flagged' : 'umc-badge-clean';
+          const umcText = att.umcFlag ? `Flagged (${att.violationCount || 1})` : 'Clean Session';
+
+          tr.innerHTML = `
+            <td><span class="${rankPillClass}">${rank}</span></td>
+            <td><strong style="color:#fff;">${escapeHtml(att.candidateName || 'Anonymous')}</strong></td>
+            <td>${escapeHtml(att.studentId || 'N/A')}</td>
+            <td>${escapeHtml(att.collegeName || 'N/A')}</td>
+            <td><strong style="color:var(--qz-accent);">${att.score !== undefined ? att.score : '--'} / ${att.maximumScore || '--'}</strong></td>
+            <td>${att.percentage !== undefined ? `${att.percentage}%` : 'Pending'}</td>
+            <td>${Math.floor((att.durationSeconds || 0) / 60)}m ${(att.durationSeconds || 0) % 60}s</td>
+            <td><span class="${umcClass}">${umcText}</span></td>
+            <td><span style="font-size:0.8rem; color:var(--qz-text-muted);">${escapeHtml(att.submissionReason || 'VOLUNTARY_SUBMIT')}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error("Attempts query error:", err);
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#fca5a5;">Failed to load candidate scorecards: ${err.message}</td></tr>`;
+      }
+    }
+
+    // Release Answer Key & Batch Re-evaluating
+    window.releaseAnswerKey = async function() {
+      if (!currentSelectedQuiz) return;
+      if (!confirm("Are you sure you want to release the official answer key for this quiz?\nAll pending candidate attempts will be automatically scored.")) return;
+
+      try {
+        // Update privateAnswerKey doc: isReleased = true
+        await updateDoc(doc(db, "contributors", activeUid, "quizzes", currentSelectedQuiz.quizId, "privateAnswerKey", "main"), {
+          isReleased: true,
+          updatedAt: serverTimestamp()
+        });
+
+        // Update quiz doc: immediateResult = true, hasAnswerKey = true
+        await updateDoc(doc(db, "contributors", activeUid, "quizzes", currentSelectedQuiz.quizId), {
+          immediateResult: true,
+          hasAnswerKey: true,
+          updatedAt: serverTimestamp()
+        });
+
+        alert("Answer key released successfully! Pending scorecards are now available.");
+        location.reload();
+      } catch (err) {
+        console.error("Answer key release failed:", err);
+        alert("Failed to release key: " + err.message);
+      }
+    };
+
+    // CSV Export
+    window.exportCsv = function() {
+      if (!currentAttemptsList || currentAttemptsList.length === 0) {
+        alert("No candidate records available to export.");
+        return;
+      }
+      let csv = "Rank,Candidate Name,Student ID,Course,College,University,Score,Maximum Score,Percentage,Duration (Seconds),Integrity Status,Submission Reason\n";
+      currentAttemptsList.forEach((att, idx) => {
+        csv += `${idx + 1},"${att.candidateName || ''}","${att.studentId || ''}","${att.course || ''}","${att.collegeName || ''}","${att.universityName || ''}",${att.score || 0},${att.maximumScore || 0},${att.percentage || 0},${att.durationSeconds || 0},"${att.umcFlag ? 'FLAGGED' : 'CLEAN'}","${att.submissionReason || ''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `DPGNotes_${currentSelectedQuiz ? currentSelectedQuiz.subjectCode : 'Quiz'}_Scorecards.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

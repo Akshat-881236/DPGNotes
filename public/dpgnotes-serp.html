@@ -1515,6 +1515,9 @@
     <button class="serp-tab-btn" id="tab-btn-solutions" onclick="window.switchSerpTab('solutions')">
       <i class="ri-code-box-line" style="color:#0284c7;"></i> Academic Solutions
     </button>
+    <button class="serp-tab-btn" id="tab-btn-quizzes" onclick="window.switchSerpTab('quizzes')">
+      <i class="ri-questionnaire-line" style="color:#f59e0b;"></i> Quizzes
+    </button>
     <button class="serp-tab-btn" id="tab-btn-contributors" onclick="window.switchSerpTab('contributors')">
       <i class="ri-team-line" style="color:#6366f1;"></i> Contributors
     </button>
@@ -2000,7 +2003,7 @@
     // TAB SWITCHING (IMAGE 5)
     // ==========================================
     window.switchSerpTab = function(tabName) {
-      if (!['all', 'ai', 'website', 'videos', 'solutions', 'contributors'].includes(tabName)) {
+      if (!['all', 'ai', 'website', 'videos', 'solutions', 'quizzes', 'contributors'].includes(tabName)) {
         tabName = 'all';
       }
       window.activeSerpTab = tabName;
@@ -2114,6 +2117,48 @@
           });
         } catch (solErr) {
           console.warn("Solutions collectionGroup fetch error:", solErr);
+        }
+
+        // Fetch Quizzes from quizDirectory
+        try {
+          const qzSnap = await getDocs(query(collection(db, "quizDirectory"), where("status", "==", "published")));
+          qzSnap.forEach(qzDoc => {
+            const qzData = qzDoc.data();
+            const quizUrl = `/Quizes/index.html?quizId=${encodeURIComponent(qzDoc.id)}`;
+            const subName = qzData.subjectName || 'Academic Assessment';
+            const subCode = qzData.subjectCode ? ` (${qzData.subjectCode})` : '';
+            const author = qzData.ownerName || 'Verified Contributor';
+            const qCount = qzData.totalQuestions || 15;
+            const timeMin = qzData.timeMinutes || 20;
+
+            allDocs.push({
+              id: qzDoc.id,
+              isQuiz: true,
+              quizId: qzDoc.id,
+              quizUrl: quizUrl,
+              title: qzData.title || `${subName} Mock Examination`,
+              subjectName: qzData.subjectName || '',
+              subjectCode: qzData.subjectCode || '',
+              category: "Quiz",
+              discipline: qzData.subjectName || "Computer Science",
+              description: qzData.description || `Online academic quiz covering ${subName}${subCode}. Total questions: ${qCount}, Duration: ${timeMin} minutes. Author: ${author}.`,
+              userName: author,
+              uploader: author,
+              contributorUid: qzData.ownerUid || '',
+              uid: qzData.ownerUid || '',
+              userId: qzData.ownerUid || '',
+              totalQuestions: qCount,
+              timeMinutes: timeMin,
+              questionKeywords: qzData.questionKeywords || '',
+              likes: 12,
+              views: 45,
+              tags: ["quiz", "exam", "mock test", qzData.subjectCode || "", qzData.subjectName || "", ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean),
+              createdAt: qzData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
+              rawDoc: qzData
+            });
+          });
+        } catch (qzErr) {
+          console.warn("Quiz directory load warning:", qzErr);
         }
 
         // Fetch registered users for Contributors tab
@@ -2282,11 +2327,12 @@
           const dSubName = (d.subjectName || '').toLowerCase();
           const dSubCode = (d.subjectCode || '').toLowerCase();
           const dAuthor = (d.userName || d.uploader || d.studentName || d.contributorName || '').toLowerCase();
+          const dQuestions = (d.questionKeywords || '').toLowerCase();
           const dTags = Array.isArray(d.tags) 
             ? d.tags.map(t => String(t).toLowerCase()) 
             : (d.tags ? [String(d.tags).toLowerCase()] : []);
           const dTagsStr = dTags.join(' ');
-          const fullSearchText = [dTitle, dDesc, dDisc, dCat, dSubName, dSubCode, dAuthor, dTagsStr].join(' ');
+          const fullSearchText = [dTitle, dDesc, dDisc, dCat, dSubName, dSubCode, dAuthor, dTagsStr, dQuestions].join(' ');
 
           let score = 0;
 
@@ -2297,6 +2343,8 @@
           if (dCat.includes(q)) score += 30;
           if (dDisc.includes(q)) score += 25;
           if (dSubCode.includes(q)) score += 35;
+          if (dSubName.includes(q)) score += 35;
+          if (dQuestions.includes(q)) score += 40;
           if (dAuthor.includes(q)) score += 25;
 
           // Whole query synonym matching
@@ -2317,6 +2365,7 @@
             if (dSubName.includes(tok)) { score += 12; hit = true; }
             if (dAuthor.includes(tok)) { score += 10; hit = true; }
             if (dDesc.includes(tok)) { score += 5; hit = true; }
+            if (dQuestions.includes(tok)) { score += 15; hit = true; }
 
             // Token-level synonym expansion
             const tokSyns = ACADEMIC_SYNONYMS[tok] || [];
@@ -2553,11 +2602,33 @@
       else if (window.activeSerpTab === 'website') renderWebsitesTab(q);
       else if (window.activeSerpTab === 'videos') renderVideosTab(q);
       else if (window.activeSerpTab === 'solutions') renderSolutionsTab(results, q);
+      else if (window.activeSerpTab === 'quizzes') renderQuizzesTab(results, q);
       else if (window.activeSerpTab === 'contributors') renderContributorsTab(q);
       else renderAllTab(results, q);
     }
 
-    // TAB 1: ALL RESULTS (DOCUMENTS + ACADEMIC SOLUTIONS WITH ENGAGEMENT METRICS)
+    // TAB: QUIZZES ONLY
+    function renderQuizzesTab(results, q) {
+      const list = document.getElementById("resultsList");
+      const quizResults = (results || []).filter(d => Boolean(d.isQuiz));
+      const countLabel = document.getElementById("resultsCount");
+      if (countLabel) countLabel.innerText = quizResults.length;
+
+      if (quizResults.length === 0) {
+        list.innerHTML = `
+          <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
+            <i class="ri-questionnaire-line" style="font-size:3rem; color:#f59e0b;"></i>
+            <h3 style="margin:12px 0 6px 0; color:#202124;">No examination quizzes found for "${escapeHtml(q) || 'your query'}"</h3>
+            <p style="font-size:0.9rem;">Try searching by subject name (e.g. Data Structures, DBMS), subject code (e.g. BCA-301), or <a href="/Quizes/index.html" style="color:var(--primary); font-weight:600;">browse all quizzes in the Quiz Directory</a>.</p>
+          </div>
+        `;
+        return;
+      }
+
+      renderAllTab(quizResults, q);
+    }
+
+    // TAB 1: ALL RESULTS (DOCUMENTS + ACADEMIC SOLUTIONS + QUIZZES)
     function renderAllTab(results, q) {
       const list = document.getElementById("resultsList");
       if (results.length === 0) {
@@ -2573,17 +2644,20 @@
 
       let html = '';
       results.forEach(d => {
-        const uploaderName = d.userName || d.uploader || (d.isSolution ? 'Verified Contributor' : 'DPG Contributor');
+        const isQuiz = Boolean(d.isQuiz);
+        const isSol = Boolean(d.isSolution);
+        const uploaderName = d.userName || d.uploader || (isQuiz ? 'Verified Contributor' : (isSol ? 'Verified Contributor' : 'DPG Contributor'));
         const initial = uploaderName.charAt(0).toUpperCase();
 
-        const isSol = Boolean(d.isSolution);
-        const viewerUrl = d.solutionUrl || (isSol ? (d.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(d.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(d.id)}`) : `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`);
+        const viewerUrl = isQuiz 
+          ? (d.quizUrl || `/Quizes/index.html?quizId=${encodeURIComponent(d.id)}`)
+          : (d.solutionUrl || (isSol ? (d.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(d.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(d.id)}`) : `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`));
 
-        // Engagement metrics: safely compute numeric Likes and Shares, never displaying Firestore UIDs or tokens!
+        // Engagement metrics
         const totalLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
         const totalShares = typeof d.shares === 'number' ? d.shares : (Array.isArray(d.shares) ? d.shares.length : (typeof d.shareCount === 'number' ? d.shareCount : (d.views || 0)));
 
-        const categoryLabel = d.category || (isSol ? 'Academic Solution' : 'Notes');
+        const categoryLabel = d.category || (isQuiz ? 'Quiz' : (isSol ? 'Academic Solution' : 'Notes'));
         const disciplineLabel = d.discipline || 'General';
 
         const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId || '';
@@ -2596,12 +2670,14 @@
           ? `<span style="display:inline-flex; align-items:center;">${authorImgHtml}<a href="${authorProfileUrl}" target="_blank" class="result-author-link contributor-name-link">${escapeHtml(uploaderName)}</a></span>` 
           : `<span style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(uploaderName)}</span>`;
 
-        const domainIconBg = isSol ? '#e0f2fe' : '#eff6ff';
-        const domainIconColor = isSol ? '#0284c7' : '#1a73e8';
-        const domainIconBorder = isSol ? '#bae6fd' : '#bfdbfe';
+        const domainIconBg = isQuiz ? '#fef3c7' : (isSol ? '#e0f2fe' : '#eff6ff');
+        const domainIconColor = isQuiz ? '#d97706' : (isSol ? '#0284c7' : '#1a73e8');
+        const domainIconBorder = isQuiz ? '#fde68a' : (isSol ? '#bae6fd' : '#bfdbfe');
 
         let badgeHtml = '';
-        if (isSol) {
+        if (isQuiz) {
+          badgeHtml = `<span class="result-verified-pill" style="background:#fef3c7; color:#b45309; border-color:#fde68a;"><i class="ri-questionnaire-line"></i> Quiz</span>`;
+        } else if (isSol) {
           badgeHtml = d.isEncrypted
             ? `<span class="result-verified-pill" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;"><i class="ri-lock-2-line"></i> Encrypted</span>`
             : `<span class="result-verified-pill" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;"><i class="ri-code-box-line"></i> Solution</span>`;
@@ -2609,11 +2685,20 @@
           badgeHtml = `<span class="result-verified-pill"><i class="ri-shield-check-fill"></i> Verified</span>`;
         }
 
+        const btnOpenText = isQuiz 
+          ? 'Take Assessment <i class="ri-play-fill"></i>' 
+          : (isSol ? 'Open Solution <i class="ri-arrow-right-line"></i>' : 'Read Notes <i class="ri-arrow-right-line"></i>');
+
+        let extraTags = '';
+        if (isQuiz) {
+          extraTags = `<span class="result-tag" style="background:#fef3c7; color:#b45309;"><i class="ri-questionnaire-line"></i> ${d.totalQuestions || 15} Qs</span><span class="result-tag"><i class="ri-time-line"></i> ${d.timeMinutes || 20}m</span>`;
+        }
+
         html += `
           <div class="result-card">
             <div class="result-header-row">
               <div class="result-domain-icon" style="background:${domainIconBg}; color:${domainIconColor}; border-color:${domainIconBorder};">
-                ${isSol ? '<i class="ri-code-box-line"></i>' : initial}
+                ${isQuiz ? '<i class="ri-questionnaire-line"></i>' : (isSol ? '<i class="ri-code-box-line"></i>' : initial)}
               </div>
               <div class="result-domain-info">
                 <span class="result-domain-name">dpgnotes.web.app &rsaquo; ${escapeHtml(categoryLabel)}</span>
@@ -2626,17 +2711,18 @@
               <a href="${viewerUrl}">${escapeHtml(d.title)}</a>
             </h3>
 
-            <p class="result-snippet">${escapeHtml(d.description || (isSol ? 'Verified programming exercise, algorithm implementation, and lab documentation.' : 'Verified academic study material, notes, and sessional examination guidance.'))}</p>
+            <p class="result-snippet">${escapeHtml(d.description || (isQuiz ? 'Verified online academic quiz and examination assessment.' : (isSol ? 'Verified programming exercise, algorithm implementation, and lab documentation.' : 'Verified academic study material, notes, and sessional examination guidance.')))}</p>
 
             <div class="result-footer-row">
               <div class="result-tags-row">
                 <span class="result-tag"><i class="ri-folder-2-line"></i> ${escapeHtml(categoryLabel)}</span>
                 <span class="result-tag"><i class="ri-book-open-line"></i> ${escapeHtml(disciplineLabel)}</span>
+                ${extraTags}
                 <span class="result-tag result-metric-tag"><i class="ri-heart-3-fill"></i> ${totalLikes} ${totalLikes === 1 ? 'Like' : 'Likes'}</span>
                 <span class="result-tag result-metric-tag"><i class="ri-share-forward-fill"></i> ${totalShares} ${totalShares === 1 ? 'Share' : 'Shares'}</span>
               </div>
               <a href="${viewerUrl}" class="result-btn-open">
-                ${isSol ? 'Open Solution <i class="ri-arrow-right-line"></i>' : 'Read Notes <i class="ri-arrow-right-line"></i>'}
+                ${btnOpenText}
               </a>
             </div>
           </div>
