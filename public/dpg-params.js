@@ -1143,25 +1143,48 @@
 
       const runtimeSchema = {
         "@context": "https://schema.org",
-        "@type": "WebPage",
-        "@id": canonicalUrl + "#webpage",
-        "url": canonicalUrl,
-        "name": pageTitle,
-        "description": pageDesc,
-        "isPartOf": {
-          "@type": "WebSite",
-          "@id": "https://dpgnotes.web.app/#website",
-          "name": "DPGNotes",
-          "url": "https://dpgnotes.web.app/"
-        },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": formattedRating,
-          "bestRating": "5",
-          "worstRating": "1",
-          "ratingCount": ratingCount.toString(),
-          "reviewCount": ratingCount.toString()
-        }
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "@id": canonicalUrl + "#webpage",
+            "url": canonicalUrl,
+            "name": pageTitle,
+            "description": pageDesc,
+            "isPartOf": {
+              "@type": "WebSite",
+              "@id": "https://dpgnotes.web.app/#website",
+              "name": "DPGNotes",
+              "url": "https://dpgnotes.web.app/"
+            },
+            "about": {
+              "@id": "https://dpgnotes.web.app/#application"
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://dpgnotes.web.app/#application",
+            "name": "DPGNotes",
+            "url": "https://dpgnotes.web.app/",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "All",
+            "browserRequirements": "Requires JavaScript. Requires HTML5.",
+            "softwareVersion": "2.4.0",
+            "description": "Comprehensive academic learning and document engineering platform providing university notes, solutions, and exam preparation resources.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "INR"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": formattedRating,
+              "bestRating": "5",
+              "worstRating": "1",
+              "ratingCount": ratingCount.toString(),
+              "reviewCount": ratingCount.toString()
+            }
+          }
+        ]
       };
 
       schemaTag.textContent = JSON.stringify(runtimeSchema, null, 2);
