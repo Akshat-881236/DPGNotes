@@ -418,23 +418,23 @@
       <div class="row g-3 mb-3">
         <div class="col-md-6">
           <label class="form-label" for="subjectName">Subject Name <span class="req">*</span></label>
-          <input type="text" id="subjectName" class="form-control" placeholder="e.g. Data Structures & Algorithms" required>
+          <input type="text" id="subjectName" class="form-control" placeholder="e.g. Data Structures & Algorithms" required oninput="debouncedAutoSaveDraft()">
         </div>
         <div class="col-md-3">
           <label class="form-label" for="subjectCode">Subject Code <span class="req">*</span></label>
-          <input type="text" id="subjectCode" class="form-control" placeholder="e.g. BCA-302" required>
+          <input type="text" id="subjectCode" class="form-control" placeholder="e.g. BCA-302" required oninput="debouncedAutoSaveDraft()">
         </div>
         <div class="col-md-3">
           <label class="form-label" for="topicTags">Topic Tags (comma-separated) <span class="req">*</span></label>
-          <input type="text" id="topicTags" class="form-control" placeholder="Arrays, Trees, Graphs" required>
+          <input type="text" id="topicTags" class="form-control" placeholder="Arrays, Trees, Graphs" required oninput="debouncedAutoSaveDraft()">
         </div>
         <div class="col-md-12">
           <label class="form-label" for="quizTitle">Quiz Title <span class="req">*</span></label>
-          <input type="text" id="quizTitle" class="form-control" placeholder="e.g. Mid-Term DSA Comprehensive Assessment" required>
+          <input type="text" id="quizTitle" class="form-control" placeholder="e.g. Mid-Term DSA Comprehensive Assessment" required oninput="debouncedAutoSaveDraft()">
         </div>
         <div class="col-md-12">
           <label class="form-label" for="quizDescription">Outcome / Description <span class="req">*</span></label>
-          <textarea id="quizDescription" class="form-control" rows="2" placeholder="Describe the objectives, syllabus coverage, and learning outcome of this quiz..." required></textarea>
+          <textarea id="quizDescription" class="form-control" rows="2" placeholder="Describe the objectives, syllabus coverage, and learning outcome of this quiz..." required oninput="debouncedAutoSaveDraft()"></textarea>
         </div>
       </div>
 
@@ -451,7 +451,7 @@
         </div>
         <div class="col-md-4">
           <label class="form-label" for="timeMinutes">Time Allocated (Minutes) <span class="req">*</span></label>
-          <select id="timeMinutes" class="form-select">
+          <select id="timeMinutes" class="form-select" onchange="debouncedAutoSaveDraft()">
             <option value="15">15 Minutes</option>
             <option value="20" selected>20 Minutes</option>
             <option value="30">30 Minutes</option>
@@ -463,7 +463,7 @@
         </div>
         <div class="col-md-4">
           <label class="form-label" for="visibilitySelect">Quiz Visibility <span class="req">*</span></label>
-          <select id="visibilitySelect" class="form-select">
+          <select id="visibilitySelect" class="form-select" onchange="debouncedAutoSaveDraft()">
             <option value="public" selected>Public (Discoverable in Quiz Directory)</option>
             <option value="private">Private (Unlisted, Share Token Required)</option>
           </select>
@@ -474,15 +474,15 @@
       <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label" for="marksPerCorrect">Score Per Correct Response <span class="req">*</span></label>
-          <input type="number" id="marksPerCorrect" class="form-control" value="1.0" step="0.25" min="0.25" required>
+          <input type="number" id="marksPerCorrect" class="form-control" value="1.0" step="0.25" min="0.25" required oninput="debouncedAutoSaveDraft()">
         </div>
         <div class="col-md-4">
           <label class="form-label" for="negativeMarks">Deduction Per Incorrect Response (Negative Marking)</label>
-          <input type="number" id="negativeMarks" class="form-control" value="0.25" step="0.25" min="0">
+          <input type="number" id="negativeMarks" class="form-control" value="0.25" step="0.25" min="0" oninput="debouncedAutoSaveDraft()">
         </div>
         <div class="col-md-4">
           <label class="form-label" for="unattemptedPenalty">Deduction Per Unanswered Question</label>
-          <input type="number" id="unattemptedPenalty" class="form-control" value="0.0" step="0.25" min="0">
+          <input type="number" id="unattemptedPenalty" class="form-control" value="0.0" step="0.25" min="0" oninput="debouncedAutoSaveDraft()">
         </div>
       </div>
 
@@ -490,7 +490,7 @@
       <div class="row g-3 mt-3">
         <div class="col-md-4">
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="allowChangeAnswers" checked>
+            <input class="form-check-input" type="checkbox" id="allowChangeAnswers" checked onchange="debouncedAutoSaveDraft()">
             <label class="form-check-label" for="allowChangeAnswers" style="font-size:0.85rem; font-weight:600;">
               Allow changing answers before submit
             </label>
@@ -498,7 +498,7 @@
         </div>
         <div class="col-md-4">
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="immediateResult" checked onchange="toggleImmediateResultUI(this.checked)">
+            <input class="form-check-input" type="checkbox" id="immediateResult" checked onchange="toggleImmediateResultUI(this.checked); debouncedAutoSaveDraft();">
             <label class="form-check-label" for="immediateResult" style="font-size:0.85rem; font-weight:600;">
               Declare results immediately
             </label>
@@ -506,7 +506,7 @@
         </div>
         <div class="col-md-4">
           <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="strictMode" checked>
+            <input class="form-check-input" type="checkbox" id="strictMode" checked onchange="debouncedAutoSaveDraft()">
             <label class="form-check-label" for="strictMode" style="font-size:0.85rem; font-weight:600; color:#fca5a5;">
               <i class="ri-shield-flash-line"></i> Strict UMC Auto-Submit Policy
             </label>
@@ -662,11 +662,213 @@
       }
     });
 
-    // Dynamic Question Builder Render
-    window.updateQuestionCount = function(count) {
-      currentQuestionCount = parseInt(count, 10);
-      document.getElementById('questionCountVal').textContent = currentQuestionCount;
-      renderQuestionEditors();
+    // ========================================================
+    // AUTO-SAVE DRAFT & THRESHOLD-PRESERVING BUILDER
+    // ========================================================
+    let draftAutoSaveTimer = null;
+    window.debouncedAutoSaveDraft = function() {
+      clearTimeout(draftAutoSaveTimer);
+      draftAutoSaveTimer = setTimeout(saveQuizDraftToLocalStorage, 400);
+    };
+
+    function saveQuizDraftToLocalStorage() {
+      try {
+        const subName = document.getElementById('subjectName')?.value || '';
+        const subCode = document.getElementById('subjectCode')?.value || '';
+        const topicTags = document.getElementById('topicTags')?.value || '';
+        const title = document.getElementById('quizTitle')?.value || '';
+        const desc = document.getElementById('quizDescription')?.value || '';
+        const timeMinutes = document.getElementById('timeMinutes')?.value || '20';
+        const visibility = document.getElementById('visibilitySelect')?.value || 'public';
+        const marksPerCorrect = document.getElementById('marksPerCorrect')?.value || '1.0';
+        const negativeMarks = document.getElementById('negativeMarks')?.value || '0.25';
+        const unattemptedPenalty = document.getElementById('unattemptedPenalty')?.value || '0.0';
+        const allowChangeAnswers = document.getElementById('allowChangeAnswers')?.checked ?? true;
+        const immediateResult = document.getElementById('immediateResult')?.checked ?? true;
+        const strictMode = document.getElementById('strictMode')?.checked ?? true;
+
+        const questions = [];
+        let hasAnyQuestionContent = false;
+        for (let i = 1; i <= currentQuestionCount; i++) {
+          const qText = document.getElementById(`qText_${i}`)?.value || '';
+          const optA = document.getElementById(`q_${i}_optA`)?.value || '';
+          const optB = document.getElementById(`q_${i}_optB`)?.value || '';
+          const optC = document.getElementById(`q_${i}_optC`)?.value || '';
+          const optD = document.getElementById(`q_${i}_optD`)?.value || '';
+          const selRadio = document.querySelector(`input[name="correctKey_${i}"]:checked`);
+          const correctKey = selRadio ? selRadio.value : (document.getElementById(`lblKey_${i}_DEFERRED`)?.classList.contains('selected') ? 'DEFERRED' : '');
+
+          if (qText.trim() || optA.trim() || optB.trim() || optC.trim() || optD.trim() || correctKey) {
+            hasAnyQuestionContent = true;
+          }
+
+          questions.push({
+            qIndex: i,
+            qText: qText,
+            optA: optA,
+            optB: optB,
+            optC: optC,
+            optD: optD,
+            correctKey: correctKey
+          });
+        }
+
+        const hasData = subName.trim() || subCode.trim() || title.trim() || desc.trim() || topicTags.trim() || hasAnyQuestionContent;
+        if (hasData) {
+          const draftObj = {
+            subjectName: subName,
+            subjectCode: subCode,
+            topicTags: topicTags,
+            quizTitle: title,
+            quizDescription: desc,
+            questionCount: currentQuestionCount,
+            timeMinutes: timeMinutes,
+            visibility: visibility,
+            marksPerCorrect: marksPerCorrect,
+            negativeMarks: negativeMarks,
+            unattemptedPenalty: unattemptedPenalty,
+            allowChangeAnswers: allowChangeAnswers,
+            immediateResult: immediateResult,
+            strictMode: strictMode,
+            questions: questions,
+            savedAt: new Date().toISOString()
+          };
+          localStorage.setItem('dpg_quiz_generator_draft', JSON.stringify(draftObj));
+          showDraftIndicator(draftObj.savedAt);
+        }
+      } catch (err) {
+        console.warn("Draft auto-save warning:", err);
+      }
+    }
+
+    window.restoreQuizDraftFromLocalStorage = function() {
+      try {
+        const raw = localStorage.getItem('dpg_quiz_generator_draft');
+        if (!raw) return false;
+        const draft = JSON.parse(raw);
+        if (!draft) return false;
+
+        if (document.getElementById('subjectName') && draft.subjectName) document.getElementById('subjectName').value = draft.subjectName;
+        if (document.getElementById('subjectCode') && draft.subjectCode) document.getElementById('subjectCode').value = draft.subjectCode;
+        if (document.getElementById('topicTags') && draft.topicTags) document.getElementById('topicTags').value = draft.topicTags;
+        if (document.getElementById('quizTitle') && draft.quizTitle) document.getElementById('quizTitle').value = draft.quizTitle;
+        if (document.getElementById('quizDescription') && draft.quizDescription) document.getElementById('quizDescription').value = draft.quizDescription;
+        if (document.getElementById('timeMinutes') && draft.timeMinutes) document.getElementById('timeMinutes').value = draft.timeMinutes;
+        if (document.getElementById('visibilitySelect') && draft.visibility) document.getElementById('visibilitySelect').value = draft.visibility;
+        if (document.getElementById('marksPerCorrect') && draft.marksPerCorrect) document.getElementById('marksPerCorrect').value = draft.marksPerCorrect;
+        if (document.getElementById('negativeMarks') && draft.negativeMarks) document.getElementById('negativeMarks').value = draft.negativeMarks;
+        if (document.getElementById('unattemptedPenalty') && draft.unattemptedPenalty) document.getElementById('unattemptedPenalty').value = draft.unattemptedPenalty;
+        if (document.getElementById('allowChangeAnswers') && draft.allowChangeAnswers !== undefined) document.getElementById('allowChangeAnswers').checked = Boolean(draft.allowChangeAnswers);
+        if (document.getElementById('immediateResult') && draft.immediateResult !== undefined) {
+          document.getElementById('immediateResult').checked = Boolean(draft.immediateResult);
+          toggleImmediateResultUI(Boolean(draft.immediateResult));
+        }
+        if (document.getElementById('strictMode') && draft.strictMode !== undefined) document.getElementById('strictMode').checked = Boolean(draft.strictMode);
+
+        const targetCount = parseInt(draft.questionCount, 10) || 15;
+        currentQuestionCount = targetCount;
+        if (document.getElementById('questionCountRange')) document.getElementById('questionCountRange').value = targetCount;
+        if (document.getElementById('questionCountVal')) document.getElementById('questionCountVal').textContent = targetCount;
+
+        const container = document.getElementById('questionsContainer');
+        const navContainer = document.getElementById('navPillsContainer');
+        container.innerHTML = '';
+        navContainer.innerHTML = '';
+
+        const questionsData = Array.isArray(draft.questions) ? draft.questions : [];
+        for (let i = 1; i <= targetCount; i++) {
+          const qData = questionsData.find(q => q.qIndex === i) || questionsData[i - 1] || null;
+          createSingleQuestionCard(i, targetCount, container, navContainer, qData);
+        }
+
+        updateNavigatorProgress();
+        showDraftIndicator(draft.savedAt, true);
+        return true;
+      } catch (err) {
+        console.warn("Draft restore warning:", err);
+        return false;
+      }
+    };
+
+    window.discardQuizDraft = function() {
+      if (confirm("Are you sure you want to discard your saved draft and reset all fields?")) {
+        try {
+          localStorage.removeItem('dpg_quiz_generator_draft');
+        } catch(e) {}
+        const banner = document.getElementById('draftStatusBanner');
+        if (banner) banner.style.display = 'none';
+        window.location.reload();
+      }
+    };
+
+    function showDraftIndicator(timeIso, isRestored = false) {
+      let banner = document.getElementById('draftStatusBanner');
+      if (!banner) {
+        const header = document.querySelector('.studio-header');
+        if (header) {
+          banner = document.createElement('div');
+          banner.id = 'draftStatusBanner';
+          banner.style.cssText = 'background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); border-radius:12px; padding:10px 16px; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:0.85rem; color:#fde68a;';
+          header.insertAdjacentElement('afterend', banner);
+        }
+      }
+      if (banner) {
+        banner.style.display = 'flex';
+        const timeStr = timeIso ? new Date(timeIso).toLocaleTimeString() : new Date().toLocaleTimeString();
+        banner.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ri-history-line" style="color:#fbbf24; font-size:1.15rem;"></i>
+            <span>${isRestored ? 'Resumed unsaved quiz draft' : 'Draft auto-saved'} at <strong>${timeStr}</strong></span>
+          </div>
+          <button type="button" class="btn btn-sm" style="font-size:0.75rem; padding:3px 12px; border-radius:6px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-weight:600; cursor:pointer;" onclick="window.discardQuizDraft()">
+            <i class="ri-delete-bin-line"></i> Discard Draft
+          </button>
+        `;
+      }
+    }
+
+    // Dynamic Threshold-Preserving Question Count
+    window.updateQuestionCount = function(newCountVal) {
+      const newCount = parseInt(newCountVal, 10);
+      if (isNaN(newCount) || newCount < 10 || newCount > 120) return;
+
+      const oldCount = currentQuestionCount;
+      currentQuestionCount = newCount;
+      document.getElementById('questionCountVal').textContent = newCount;
+      document.getElementById('questionCountRange').value = newCount;
+
+      const container = document.getElementById('questionsContainer');
+      const navContainer = document.getElementById('navPillsContainer');
+
+      if (newCount > oldCount) {
+        // 1. Update header badges for all existing cards (preserving ALL typed prompts, options, and chosen keys!)
+        for (let i = 1; i <= oldCount; i++) {
+          const badge = document.querySelector(`#qCard_${i} .q-num-badge`);
+          if (badge) badge.textContent = `Question ${i} of ${newCount}`;
+        }
+
+        // 2. Append new questions starting from oldCount + 1 up to newCount
+        for (let i = oldCount + 1; i <= newCount; i++) {
+          createSingleQuestionCard(i, newCount, container, navContainer);
+        }
+      } else if (newCount < oldCount) {
+        // 1. Remove only the questions at the threshold from the last (oldCount down to newCount + 1)
+        for (let i = oldCount; i > newCount; i--) {
+          const card = document.getElementById(`qCard_${i}`);
+          if (card) card.remove();
+          const pill = document.getElementById(`navPill_${i}`);
+          if (pill) pill.remove();
+        }
+
+        // 2. Update header badges for remaining cards
+        for (let i = 1; i <= newCount; i++) {
+          const badge = document.querySelector(`#qCard_${i} .q-num-badge`);
+          if (badge) badge.textContent = `Question ${i} of ${newCount}`;
+        }
+      }
+
+      updateNavigatorProgress();
+      debouncedAutoSaveDraft();
     };
 
     function renderQuestionEditors() {
@@ -676,45 +878,56 @@
       navContainer.innerHTML = '';
 
       for (let i = 1; i <= currentQuestionCount; i++) {
-        // Nav Pill
-        const pill = document.createElement('a');
+        createSingleQuestionCard(i, currentQuestionCount, container, navContainer);
+      }
+      updateNavigatorProgress();
+    }
+
+    function createSingleQuestionCard(i, totalCount, container, navContainer, initialData = null) {
+      let pill = document.getElementById(`navPill_${i}`);
+      if (!pill) {
+        pill = document.createElement('a');
         pill.className = 'q-jump-pill';
         pill.id = `navPill_${i}`;
         pill.href = `#qCard_${i}`;
         pill.textContent = i;
         navContainer.appendChild(pill);
+      }
 
-        // Editor Card
-        const card = document.createElement('div');
+      let card = document.getElementById(`qCard_${i}`);
+      if (!card) {
+        card = document.createElement('div');
         card.className = 'q-editor-card';
         card.id = `qCard_${i}`;
+        const immResult = document.getElementById('immediateResult')?.checked ?? true;
+
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="q-num-badge">Question ${i} of ${currentQuestionCount}</span>
+            <span class="q-num-badge">Question ${i} of ${totalCount}</span>
             <span id="qStatus_${i}" style="font-size:0.75rem; color:var(--qz-text-muted);">Unsaved</span>
           </div>
           
           <div class="mb-3">
             <label class="form-label">Question Prompt / Problem Statement <span class="req">*</span></label>
-            <textarea id="qText_${i}" class="form-control" rows="2" placeholder="State question ${i} clearly..." oninput="checkQuestionConfigured(${i})"></textarea>
+            <textarea id="qText_${i}" class="form-control" rows="2" placeholder="State question ${i} clearly..." oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();"></textarea>
           </div>
 
           <div class="opt-grid">
             <div>
               <label class="form-label">Option A <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optA" class="form-control" placeholder="Option A text" oninput="checkQuestionConfigured(${i})">
+              <input type="text" id="q_${i}_optA" class="form-control" placeholder="Option A text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
             </div>
             <div>
               <label class="form-label">Option B <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optB" class="form-control" placeholder="Option B text" oninput="checkQuestionConfigured(${i})">
+              <input type="text" id="q_${i}_optB" class="form-control" placeholder="Option B text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
             </div>
             <div>
               <label class="form-label">Option C <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optC" class="form-control" placeholder="Option C text" oninput="checkQuestionConfigured(${i})">
+              <input type="text" id="q_${i}_optC" class="form-control" placeholder="Option C text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
             </div>
             <div>
               <label class="form-label">Option D <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optD" class="form-control" placeholder="Option D text" oninput="checkQuestionConfigured(${i})">
+              <input type="text" id="q_${i}_optD" class="form-control" placeholder="Option D text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
             </div>
           </div>
 
@@ -734,24 +947,39 @@
             <label class="key-radio-btn" id="lblKey_${i}_D">
               <input type="radio" name="correctKey_${i}" value="D" onchange="selectKey(${i}, 'D')"> D
             </label>
-            <label class="key-radio-btn" id="lblKey_${i}_DEFERRED" style="display:${document.getElementById('immediateResult').checked ? 'none' : 'inline-flex'};">
+            <label class="key-radio-btn" id="lblKey_${i}_DEFERRED" style="display:${immResult ? 'none' : 'inline-flex'};">
               <input type="radio" name="correctKey_${i}" value="DEFERRED" onchange="selectKey(${i}, 'DEFERRED')"> Deferred Key
             </label>
           </div>
         `;
         container.appendChild(card);
       }
-      updateNavigatorProgress();
+
+      if (initialData) {
+        if (initialData.qText !== undefined) document.getElementById(`qText_${i}`).value = initialData.qText;
+        if (initialData.optA !== undefined) document.getElementById(`q_${i}_optA`).value = initialData.optA;
+        if (initialData.optB !== undefined) document.getElementById(`q_${i}_optB`).value = initialData.optB;
+        if (initialData.optC !== undefined) document.getElementById(`q_${i}_optC`).value = initialData.optC;
+        if (initialData.optD !== undefined) document.getElementById(`q_${i}_optD`).value = initialData.optD;
+        if (initialData.correctKey) {
+          selectKey(i, initialData.correctKey, false);
+        }
+      }
+
+      checkQuestionConfigured(i);
     }
 
-    window.selectKey = function(qIndex, key) {
+    window.selectKey = function(qIndex, key, triggerSave = true) {
       ['A', 'B', 'C', 'D', 'DEFERRED'].forEach(k => {
         const lbl = document.getElementById(`lblKey_${qIndex}_${k}`);
         if (lbl) lbl.classList.remove('selected');
       });
       const chosen = document.getElementById(`lblKey_${qIndex}_${key}`);
       if (chosen) chosen.classList.add('selected');
+      const radio = document.querySelector(`input[name="correctKey_${qIndex}"][value="${key}"]`);
+      if (radio) radio.checked = true;
       checkQuestionConfigured(qIndex);
+      if (triggerSave) debouncedAutoSaveDraft();
     };
 
     window.checkQuestionConfigured = function(qIndex) {
@@ -985,6 +1213,13 @@
         // Commit all writes atomically
         await batch.commit();
 
+        // Clear local draft upon successful publication
+        try {
+          localStorage.removeItem('dpg_quiz_generator_draft');
+          const banner = document.getElementById('draftStatusBanner');
+          if (banner) banner.style.display = 'none';
+        } catch(e) {}
+
         // Construct live examination URL
         let examUrl = `${window.location.origin}/Quizes/index.html?quizId=${quizId}`;
         if (visibility === 'private') {
@@ -1027,8 +1262,11 @@
       }
     };
 
-    // Initialize with default question count
-    renderQuestionEditors();
+    // Initialize: Check for saved draft; if none, render default questions
+    const draftRestored = restoreQuizDraftFromLocalStorage();
+    if (!draftRestored) {
+      renderQuestionEditors();
+    }
   </script>
 </body>
 </html>
