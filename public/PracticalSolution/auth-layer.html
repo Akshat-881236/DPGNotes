@@ -6,7 +6,13 @@
   <meta name="robots" content="noindex, nofollow">
   <script>
     (function() {
-      window.location.replace('/auth-layer.html' + window.location.search + window.location.hash);
+      const params = new URLSearchParams(window.location.search);
+      if (!params.get('go-to') && !params.get('goto') && !params.get('redirect')) {
+        params.set('go-to', '/PracticalSolution/generate.html');
+      }
+      const search = params.toString() ? ('?' + params.toString()) : '';
+      const hash = window.location.hash || '';
+      window.location.replace('/auth-layer.html' + search + hash);
     })();
   </script>
 </head>

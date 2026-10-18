@@ -16,7 +16,6 @@
   <!-- RemixIcon & Bootstrap 5 Icons -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <!-- DPGNotes Base Config & Auth Styles -->
   <link rel="stylesheet" href="/auth-component.css">
@@ -24,11 +23,11 @@
   <style>
     :root {
       --bg-dark: #0a0d14;
-      --card-bg: rgba(17, 24, 39, 0.85);
-      --card-border: rgba(255, 255, 255, 0.08);
+      --card-bg: rgba(17, 24, 39, 0.92);
+      --card-border: rgba(255, 255, 255, 0.1);
       --primary: #6366f1;
       --primary-hover: #4f46e5;
-      --primary-glow: rgba(99, 102, 241, 0.25);
+      --primary-glow: rgba(99, 102, 241, 0.35);
       --accent: #06b6d4;
       --success: #10b981;
       --warning: #f59e0b;
@@ -47,9 +46,9 @@
       font-family: 'Outfit', sans-serif;
       background-color: var(--bg-dark);
       background-image: 
-        radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.15), transparent 45%),
-        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.12), transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08), transparent 60%);
+        radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.18), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.14), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1), transparent 60%);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -58,12 +57,12 @@
     }
 
     .gateway-nav {
-      padding: 1.25rem 2rem;
+      padding: 1.15rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--card-border);
-      background: rgba(10, 13, 20, 0.6);
+      background: rgba(10, 13, 20, 0.75);
       backdrop-filter: blur(12px);
     }
 
@@ -95,11 +94,11 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 20px;
-      padding: 2.5rem 2rem;
+      padding: 2.5rem 2.2rem;
       width: 100%;
       max-width: 540px;
       backdrop-filter: blur(20px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(99, 102, 241, 0.12);
       position: relative;
     }
 
@@ -107,12 +106,13 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      color: #a5b4fc;
-      padding: 5px 12px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #c7d2fe;
+      padding: 6px 14px;
       border-radius: 999px;
       font-size: 0.8rem;
+      font-weight: 600;
       margin-bottom: 1.25rem;
       max-width: 100%;
       overflow: hidden;
@@ -122,11 +122,11 @@
 
     .auth-tabs {
       display: flex;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.4);
       border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 4px;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.6rem;
       gap: 4px;
     }
 
@@ -146,25 +146,31 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      user-select: none;
+    }
+
+    .auth-tab-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .auth-tab-btn.active {
-      background: var(--primary);
-      color: #ffffff;
+      background: var(--primary) !important;
+      color: #ffffff !important;
       box-shadow: 0 4px 14px var(--primary-glow);
     }
 
     .tab-content-panel {
       display: none;
-      animation: fadeIn 0.25s ease;
+      animation: fadeIn 0.22s ease-in-out;
     }
 
     .tab-content-panel.active {
-      display: block;
+      display: block !important;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -175,8 +181,8 @@
 
     .form-label {
       display: block;
-      color: var(--text-muted);
-      font-size: 0.82rem;
+      color: #cbd5e1;
+      font-size: 0.84rem;
       font-weight: 600;
       margin-bottom: 6px;
     }
@@ -191,8 +197,8 @@
 
     .form-input, .form-select {
       width: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(15, 23, 42, 0.75);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
       border-radius: 10px;
       padding: 11px 14px;
       color: #ffffff;
@@ -202,9 +208,14 @@
       transition: all 0.2s;
     }
 
+    .form-input::placeholder {
+      color: #64748b;
+    }
+
     .form-input:focus, .form-select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
     }
 
     .form-select option {
@@ -221,14 +232,23 @@
       border: none;
       color: var(--text-muted);
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .eye-toggle-btn:hover {
+      color: #ffffff;
     }
 
     .btn-submit {
       width: 100%;
       background: linear-gradient(135deg, var(--primary), var(--primary-hover));
       border: none;
-      border-radius: 10px;
+      border-radius: 11px;
       padding: 13px;
       color: white;
       font-family: inherit;
@@ -244,8 +264,9 @@
     }
 
     .btn-submit:hover {
-      opacity: 0.94;
+      opacity: 0.95;
       transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
     }
 
     .btn-submit:disabled {
@@ -258,15 +279,16 @@
       display: flex;
       align-items: center;
       text-align: center;
-      margin: 1.4rem 0;
-      color: var(--text-muted);
+      margin: 1.3rem 0;
+      color: #64748b;
       font-size: 0.78rem;
+      letter-spacing: 0.5px;
     }
 
     .social-divider::before, .social-divider::after {
       content: '';
       flex: 1;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .social-divider span {
@@ -286,41 +308,43 @@
       justify-content: center;
       gap: 8px;
       padding: 10px 14px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 10px;
       color: var(--text);
       font-family: inherit;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .oauth-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
     }
 
     .auth-alert {
       padding: 12px 14px;
       border-radius: 10px;
-      font-size: 0.85rem;
-      margin-bottom: 1.25rem;
+      font-size: 0.86rem;
+      margin-bottom: 1.3rem;
       display: none;
       align-items: center;
       gap: 10px;
+      line-height: 1.45;
     }
 
     .auth-alert.danger {
       background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.35);
+      border: 1px solid rgba(239, 68, 68, 0.4);
       color: #fca5a5;
     }
 
     .auth-alert.success {
       background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.35);
+      border: 1px solid rgba(16, 185, 129, 0.4);
       color: #6ee7b7;
     }
 
@@ -350,6 +374,71 @@
       border-top: 1px solid var(--card-border);
     }
   </style>
+
+  <!-- Immediate Synchronous Tab & Visibility Switcher (Protects against any script delays) -->
+  <script>
+    function switchAuthTab(target) {
+      var norm = (target || 'signin').toLowerCase().replace(/[^a-z]/g, '');
+      var activeKey = 'SignIn';
+      if (norm.indexOf('up') !== -1 || norm.indexOf('reg') !== -1 || norm.indexOf('join') !== -1) {
+        activeKey = 'SignUp';
+      } else if (norm.indexOf('recov') !== -1 || norm.indexOf('reset') !== -1 || norm.indexOf('pass') !== -1 || norm.indexOf('forgot') !== -1) {
+        activeKey = 'Recovery';
+      }
+
+      var tabKeys = ['SignIn', 'SignUp', 'Recovery'];
+      for (var i = 0; i < tabKeys.length; i++) {
+        var k = tabKeys[i];
+        var btn = document.getElementById('tabBtn' + k);
+        var panel = document.getElementById('panel' + k);
+        var isActive = (k === activeKey);
+
+        if (btn) {
+          if (isActive) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+        if (panel) {
+          if (isActive) {
+            panel.classList.add('active');
+            panel.style.display = 'block';
+          } else {
+            panel.classList.remove('active');
+            panel.style.display = 'none';
+          }
+        }
+      }
+
+      var alertBox = document.getElementById("globalAuthAlert");
+      if (alertBox) alertBox.style.display = "none";
+    }
+
+    function togglePasswordVisibility(inputId, iconBtn) {
+      var inp = document.getElementById(inputId);
+      if (!inp) return;
+      var isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      iconBtn.innerHTML = isPass ? '<i class="ri-eye-off-line"></i>' : '<i class="ri-eye-line"></i>';
+    }
+
+    window.switchAuthTab = switchAuthTab;
+    window.togglePasswordVisibility = togglePasswordVisibility;
+
+    // Run tab activation as soon as DOM loads
+    document.addEventListener("DOMContentLoaded", function() {
+      var params = new URLSearchParams(window.location.search);
+      var act = params.get('action');
+      if (act === 'signup' || act === 'register') {
+        switchAuthTab('signUp');
+      } else if (act === 'recovery' || act === 'forgot' || act === 'reset') {
+        switchAuthTab('recovery');
+      } else {
+        switchAuthTab('signIn');
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -388,10 +477,10 @@
 
       <!-- Authentication Mode Tabs -->
       <nav class="auth-tabs" aria-label="Authentication modes">
-        <button type="button" class="auth-tab-btn active" id="tabBtnSignIn" onclick="switchAuthTab('signin')">
+        <button type="button" class="auth-tab-btn active" id="tabBtnSignIn" onclick="switchAuthTab('signIn')">
           <i class="ri-login-box-line"></i> Sign In
         </button>
-        <button type="button" class="auth-tab-btn" id="tabBtnSignUp" onclick="switchAuthTab('signup')">
+        <button type="button" class="auth-tab-btn" id="tabBtnSignUp" onclick="switchAuthTab('signUp')">
           <i class="ri-user-add-line"></i> Contributor Sign Up
         </button>
         <button type="button" class="auth-tab-btn" id="tabBtnRecovery" onclick="switchAuthTab('recovery')">
@@ -402,14 +491,14 @@
       <!-- ============================================== -->
       <!-- TAB 1: SIGN IN -->
       <!-- ============================================== -->
-      <section id="panelSignIn" class="tab-content-panel active">
+      <section id="panelSignIn" class="tab-content-panel active" style="display:block;">
         <!-- Social OAuth Quick Connect -->
         <div class="oauth-row">
           <button type="button" class="oauth-btn" id="btnGoogleLogin" onclick="handleSocialAuth('google')">
-            <i class="ri-google-fill" style="color:#ea4335; font-size:1.1rem;"></i> Google
+            <i class="ri-google-fill" style="color:#ea4335; font-size:1.15rem;"></i> Google
           </button>
           <button type="button" class="oauth-btn" id="btnGithubLogin" onclick="handleSocialAuth('github')">
-            <i class="ri-github-fill" style="color:#ffffff; font-size:1.1rem;"></i> GitHub
+            <i class="ri-github-fill" style="color:#ffffff; font-size:1.15rem;"></i> GitHub
           </button>
         </div>
 
@@ -420,7 +509,7 @@
         <form id="signInForm" onsubmit="handleFormSignIn(event)" autocomplete="on">
           <div class="form-group">
             <label class="form-label" for="signInIdentifier">Student ID, Employee ID, or Email <span class="req">*</span></label>
-            <input type="text" id="signInIdentifier" class="form-input" placeholder="e.g. 2112345678 or name@domain.com" required autocomplete="username">
+            <input type="text" id="signInIdentifier" class="form-input" placeholder="e.g. 211029101 or name@domain.com" required autocomplete="username">
           </div>
 
           <div class="form-group">
@@ -439,13 +528,18 @@
           <button type="submit" id="btnSignInSubmit" class="btn-submit">
             <i class="ri-login-circle-line"></i> Sign In to Contributor Workspace
           </button>
+
+          <div style="text-align:center; margin-top:1.2rem; font-size:0.84rem; color:var(--text-muted);">
+            Don't have a Contributor account? 
+            <a href="javascript:void(0)" onclick="switchAuthTab('signUp')" style="color:#a5b4fc; font-weight:600; text-decoration:none;">Sign Up Free</a>
+          </div>
         </form>
       </section>
 
       <!-- ============================================== -->
       <!-- TAB 2: CONTRIBUTOR SIGN UP -->
       <!-- ============================================== -->
-      <section id="panelSignUp" class="tab-content-panel">
+      <section id="panelSignUp" class="tab-content-panel" style="display:none;">
         <form id="signUpForm" onsubmit="handleFormSignUp(event)" autocomplete="off">
           <div class="grid-2">
             <div class="form-group">
@@ -513,28 +607,33 @@
           <div class="form-check" style="margin-bottom:1.2rem; font-size:0.82rem; color:var(--text-muted); text-align:left;">
             <input class="form-check-input" type="checkbox" id="termsCheck" required style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2);">
             <label class="form-check-label" for="termsCheck">
-              I agree to the DPGNotes <a href="/legal/index.html#terms" target="_blank" style="color:#818cf8;">Terms</a>, <a href="/legal/index.html#privacy" target="_blank" style="color:#818cf8;">Privacy Policy</a>, and DRASA Academic Honor Code.
+              I agree to the DPGNotes <a href="/legal/index.html#terms" target="_blank" style="color:#818cf8;">Terms</a>, <a href="/legal/index.html#privacy" target="_blank" style="color:#818cf8;">Privacy Policy</a>, and Academic Honor Code.
             </label>
           </div>
 
           <button type="submit" id="btnSignUpSubmit" class="btn-submit">
             <i class="ri-user-star-line"></i> Register Contributor Account
           </button>
+
+          <div style="text-align:center; margin-top:1.2rem; font-size:0.84rem; color:var(--text-muted);">
+            Already have an account? 
+            <a href="javascript:void(0)" onclick="switchAuthTab('signIn')" style="color:#a5b4fc; font-weight:600; text-decoration:none;">Sign In</a>
+          </div>
         </form>
       </section>
 
       <!-- ============================================== -->
       <!-- TAB 3: ACCOUNT RECOVERY -->
       <!-- ============================================== -->
-      <section id="panelRecovery" class="tab-content-panel">
+      <section id="panelRecovery" class="tab-content-panel" style="display:none;">
         <p style="color:var(--text-muted); font-size:0.86rem; margin-bottom:1.2rem; text-align:left;">
-          Enter your registered email address or student identifier. We will immediately dispatch a secure password reset link to your primary email.
+          Enter your registered email address or student identifier. We will immediately dispatch a secure password reset link to your verified primary email.
         </p>
 
         <form id="recoveryForm" onsubmit="handleFormRecovery(event)">
           <div class="form-group">
             <label class="form-label" for="recoveryIdentifier">Registered Email or Student ID <span class="req">*</span></label>
-            <input type="text" id="recoveryIdentifier" class="form-input" placeholder="e.g. student@dpgnotes.com" required>
+            <input type="text" id="recoveryIdentifier" class="form-input" placeholder="e.g. 211029101 or student@domain.com" required>
           </div>
 
           <button type="submit" id="btnRecoverySubmit" class="btn-submit">
@@ -542,7 +641,7 @@
           </button>
 
           <div style="text-align:center; margin-top:1.2rem;">
-            <a href="javascript:void(0)" onclick="switchAuthTab('signin')" style="color:#a5b4fc; font-size:0.82rem; text-decoration:none;">
+            <a href="javascript:void(0)" onclick="switchAuthTab('signIn')" style="color:#a5b4fc; font-size:0.82rem; text-decoration:none;">
               <i class="ri-arrow-left-line"></i> Back to Sign In
             </a>
           </div>
@@ -575,6 +674,11 @@
       doc, 
       getDoc, 
       setDoc, 
+      getDocs,
+      collection,
+      query,
+      where,
+      limit,
       serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
@@ -591,15 +695,14 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Helpers & Security: Extract and validate safe redirection target
+    // Safe redirection target extraction
     function getSafeRedirectTarget() {
       const urlParams = new URLSearchParams(window.location.search);
-      let target = urlParams.get('go-to') || urlParams.get('redirect') || sessionStorage.getItem('dpg_auth_redirect') || '';
+      let target = urlParams.get('go-to') || urlParams.get('goto') || urlParams.get('redirect') || urlParams.get('returnUrl') || sessionStorage.getItem('dpg_auth_redirect') || '';
       if (!target) return '/dashboard.html';
 
       try {
         const parsed = new URL(target, window.location.origin);
-        // Guarantee strict same-origin compliance to prevent open redirects
         if (parsed.origin === window.location.origin) {
           return parsed.pathname + parsed.search + parsed.hash;
         }
@@ -621,47 +724,7 @@
       }
     }
 
-    // Check action param (e.g. ?action=signup)
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialAction = urlParams.get('action');
-    if (initialAction === 'signup') {
-      switchAuthTab('signup');
-    } else if (initialAction === 'recovery' || initialAction === 'forgot') {
-      switchAuthTab('recovery');
-    }
-
-    // If user is already authenticated and verified, redirect immediately
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const userSnap = await getDoc(doc(db, "users", user.uid));
-          const uData = userSnap.exists() ? userSnap.data() : null;
-          
-          // Verify contributor status
-          localStorage.setItem("dpgActiveUserUid", user.uid);
-          localStorage.setItem("dpgActiveUserEmail", user.email || "");
-          localStorage.setItem("dpgActiveUserName", user.displayName || (uData ? uData.name : "Contributor"));
-          localStorage.setItem("dpgActiveUser", JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            name: user.displayName || (uData ? uData.name : "Contributor"),
-            studentId: uData ? (uData.studentId || uData.studentIdOrEmployeeId || "") : "",
-            course: uData ? (uData.course || "") : "",
-            collegeName: uData ? (uData.collegeName || "") : "",
-            universityName: uData ? (uData.universityName || "") : ""
-          }));
-
-          showAlert("Active contributor session verified. Redirecting...", "success");
-          setTimeout(() => {
-            window.location.replace(safeTarget);
-          }, 400);
-        } catch (err) {
-          console.warn("Session check error:", err);
-        }
-      }
-    });
-
-    // Alert display helper
+    // Alert helper
     window.showAlert = function(msg, type = "danger") {
       const alertBox = document.getElementById("globalAuthAlert");
       if (!alertBox) return;
@@ -671,32 +734,66 @@
       alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
 
-    // Tab switching
-    window.switchAuthTab = function(tabName) {
-      const tabs = ['signIn', 'signUp', 'recovery'];
-      tabs.forEach(t => {
-        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        const panel = document.getElementById(`panel${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        if (btn) btn.classList.remove('active');
-        if (panel) panel.classList.remove('active');
-      });
+    // Helper: Resolve student ID to email address via Firestore
+    async function resolveIdentifierToEmail(identifier) {
+      if (!identifier) return null;
+      const clean = identifier.trim();
+      if (clean.includes("@")) {
+        return clean.toLowerCase();
+      }
 
-      const activeBtn = document.getElementById(`tabBtn${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
-      const activePanel = document.getElementById(`panel${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
-      if (activeBtn) activeBtn.classList.add('active');
-      if (activePanel) activePanel.classList.add('active');
+      // Query studentId and studentIdOrEmployeeId variants
+      try {
+        const candidates = [clean, clean.toUpperCase(), clean.toLowerCase()];
+        for (const cand of candidates) {
+          const q1 = await getDocs(query(collection(db, "users"), where("studentIdOrEmployeeId", "==", cand), limit(1)));
+          if (!q1.empty) {
+            const data = q1.docs[0].data();
+            if (data && data.email) return data.email.toLowerCase();
+          }
+          const q2 = await getDocs(query(collection(db, "users"), where("studentId", "==", cand), limit(1)));
+          if (!q2.empty) {
+            const data = q2.docs[0].data();
+            if (data && data.email) return data.email.toLowerCase();
+          }
+        }
+      } catch (err) {
+        console.warn("Identifier resolution error:", err);
+      }
+      return null;
+    }
 
-      const alertBox = document.getElementById("globalAuthAlert");
-      if (alertBox) alertBox.style.display = "none";
-    };
+    // Session State Listener: ONLY redirect if user is genuinely authenticated and NOT ANONYMOUS
+    onAuthStateChanged(auth, async (user) => {
+      if (user && !user.isAnonymous) {
+        try {
+          const userSnap = await getDoc(doc(db, "users", user.uid));
+          const uData = userSnap.exists() ? userSnap.data() : null;
+          
+          localStorage.setItem("dpgActiveUserUid", user.uid);
+          localStorage.setItem("dpgActiveUserEmail", user.email || "");
+          localStorage.setItem("dpgActiveUserName", user.displayName || (uData ? uData.name : "Contributor"));
+          localStorage.setItem("dpgActiveUser", JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || (uData ? uData.name : "Contributor"),
+            studentId: uData ? (uData.studentId || uData.studentIdOrEmployeeId || "") : "",
+            userType: uData ? (uData.userType || "Student") : "Student",
+            course: uData ? (uData.course || "") : "",
+            collegeName: uData ? (uData.collegeName || "") : "",
+            universityName: uData ? (uData.universityName || "") : ""
+          }));
+          localStorage.removeItem("dpg_quota_locked");
 
-    window.togglePasswordVisibility = function(inputId, iconBtn) {
-      const inp = document.getElementById(inputId);
-      if (!inp) return;
-      const isPass = inp.type === 'password';
-      inp.type = isPass ? 'text' : 'password';
-      iconBtn.innerHTML = isPass ? '<i class="ri-eye-off-line"></i>' : '<i class="ri-eye-line"></i>';
-    };
+          showAlert("Active contributor session verified. Redirecting...", "success");
+          setTimeout(() => {
+            window.location.replace(safeTarget);
+          }, 350);
+        } catch (err) {
+          console.warn("Session check error:", err);
+        }
+      }
+    });
 
     // Social Authentication (Google & GitHub)
     window.handleSocialAuth = async function(providerName) {
@@ -716,30 +813,44 @@
         // Upsert user in Firestore
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
+        let uData = userSnap.exists() ? userSnap.data() : null;
+
         if (!userSnap.exists()) {
-          await setDoc(userRef, {
+          const newDoc = {
             uid: user.uid,
             email: user.email,
             name: user.displayName || user.email.split('@')[0],
             isContributor: true,
             isVerified: true,
+            userType: "Student",
             createdAt: serverTimestamp(),
             lastLoginAt: serverTimestamp()
-          }, { merge: true });
+          };
+          await setDoc(userRef, newDoc, { merge: true });
+          uData = newDoc;
         } else {
-          await setDoc(userRef, {
-            lastLoginAt: serverTimestamp()
-          }, { merge: true });
+          await setDoc(userRef, { lastLoginAt: serverTimestamp() }, { merge: true });
         }
 
         localStorage.setItem("dpgActiveUserUid", user.uid);
         localStorage.setItem("dpgActiveUserEmail", user.email || "");
-        localStorage.setItem("dpgActiveUserName", user.displayName || "");
+        localStorage.setItem("dpgActiveUserName", user.displayName || (uData ? uData.name : "Contributor"));
+        localStorage.setItem("dpgActiveUser", JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || (uData ? uData.name : "Contributor"),
+          studentId: uData ? (uData.studentId || uData.studentIdOrEmployeeId || "") : "",
+          userType: uData ? (uData.userType || "Student") : "Student",
+          course: uData ? (uData.course || "") : "",
+          collegeName: uData ? (uData.collegeName || "") : "",
+          universityName: uData ? (uData.universityName || "") : ""
+        }));
+        localStorage.removeItem("dpg_quota_locked");
 
-        showAlert("Authentication successful! Redirecting to authoring tool...", "success");
+        showAlert("Authentication successful! Redirecting to workspace...", "success");
         setTimeout(() => {
           window.location.replace(safeTarget);
-        }, 500);
+        }, 400);
       } catch (err) {
         console.error("Social login failed:", err);
         showAlert(err.message || "OAuth login failed. Please try again.");
@@ -758,16 +869,22 @@
 
       try {
         let emailToUse = identifier;
-        // If student ID is passed, check if it's already an email or needs lookup
         if (!identifier.includes("@")) {
-          // If pure ID, append domain or query
-          emailToUse = identifier.toLowerCase() + "@dpgnotes.app";
+          btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Finding Student ID...`;
+          const resolved = await resolveIdentifierToEmail(identifier);
+          if (!resolved) {
+            showAlert(`No registered contributor account found for Student/Employee ID "${identifier}". Please check your ID or create an account.`, "danger");
+            btn.disabled = false;
+            btn.innerHTML = `<i class="ri-login-circle-line"></i> Sign In to Contributor Workspace`;
+            return;
+          }
+          emailToUse = resolved;
         }
 
+        btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Verifying Credentials...`;
         const cred = await signInWithEmailAndPassword(auth, emailToUse, password);
         const user = cred.user;
 
-        // Fetch User profile to ensure contributor credentials
         const uSnap = await getDoc(doc(db, "users", user.uid));
         const uData = uSnap.exists() ? uSnap.data() : null;
 
@@ -779,15 +896,17 @@
           email: user.email,
           name: user.displayName || (uData ? uData.name : "Contributor"),
           studentId: uData ? (uData.studentId || uData.studentIdOrEmployeeId || "") : "",
+          userType: uData ? (uData.userType || "Student") : "Student",
           course: uData ? (uData.course || "") : "",
           collegeName: uData ? (uData.collegeName || "") : "",
           universityName: uData ? (uData.universityName || "") : ""
         }));
+        localStorage.removeItem("dpg_quota_locked");
 
-        showAlert("Welcome back! Loading authoring environment...", "success");
+        showAlert("Welcome back! Loading authoring workspace...", "success");
         setTimeout(() => {
           window.location.replace(safeTarget);
-        }, 500);
+        }, 400);
       } catch (err) {
         console.error("Sign in failed:", err);
         let msg = "Invalid credentials. Please verify your ID/email and password.";
@@ -833,14 +952,12 @@
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         const user = cred.user;
 
-        // Dispatch verification email
         try {
           await sendEmailVerification(user);
         } catch (evErr) {
           console.warn("Verification email notice:", evErr);
         }
 
-        // Write complete Contributor profile to Firestore
         await setDoc(doc(db, "users", user.uid), {
           uid: user.uid,
           name: name,
@@ -856,7 +973,7 @@
           termsAccepted: true,
           createdAt: serverTimestamp(),
           lastLoginAt: serverTimestamp()
-        });
+        }, { merge: true });
 
         localStorage.setItem("dpgActiveUserUid", user.uid);
         localStorage.setItem("dpgActiveUserEmail", email);
@@ -866,15 +983,17 @@
           email: email,
           name: name,
           studentId: studentId,
+          userType: userType,
           course: course,
           collegeName: collegeName,
           universityName: universityName
         }));
+        localStorage.removeItem("dpg_quota_locked");
 
-        showAlert("Account created successfully! Redirecting to your authoring workspace...", "success");
+        showAlert("Account created successfully! Loading authoring workspace...", "success");
         setTimeout(() => {
           window.location.replace(safeTarget);
-        }, 800);
+        }, 500);
       } catch (err) {
         console.error("Sign up failed:", err);
         let msg = err.message || "Failed to create contributor account.";
@@ -895,14 +1014,23 @@
       const btn = document.getElementById("btnRecoverySubmit");
 
       btn.disabled = true;
-      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Sending Reset Link...`;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Dispatching Link...`;
 
       try {
         let emailToUse = identifier;
         if (!identifier.includes("@")) {
-          emailToUse = identifier.toLowerCase() + "@dpgnotes.app";
+          btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Finding Email for ID...`;
+          const resolved = await resolveIdentifierToEmail(identifier);
+          if (!resolved) {
+            showAlert(`No registered account found matching Student/Employee ID "${identifier}". Please check your ID.`, "danger");
+            btn.disabled = false;
+            btn.innerHTML = `<i class="ri-mail-send-line"></i> Dispatch Password Reset Email`;
+            return;
+          }
+          emailToUse = resolved;
         }
 
+        btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Sending Password Reset Email...`;
         await sendPasswordResetEmail(auth, emailToUse);
         showAlert(`Password reset link dispatched to ${emailToUse}. Please check your inbox and spam folder.`, "success");
       } catch (err) {
