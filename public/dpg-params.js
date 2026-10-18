@@ -1101,33 +1101,15 @@
   }
 
   // ==========================================================================
-  // 8D. RUNTIME HEAD RATING SCHEMA (MEDIA RESPONSIVE & EXPERIENCE AVERAGE)
+  // 8D. RUNTIME HEAD RATING SCHEMA (REAL-TIME FIRESTORE DATA CALCULATION)
   // ==========================================================================
-  function updateRuntimeRatingSchema() {
+  let isRatingListenerAttached = false;
+
+  function renderRuntimeRatingSchemaTag(score, ratingCount, reviewCount) {
     try {
-      const respVal = parseFloat(localStorage.getItem('dpg_responsiveness_rating_val')) || 0;
-      const expVal = parseFloat(localStorage.getItem('dpg_platform_rating_val')) || 0;
+      const constrainedScore = Math.max(1, Math.min(5, score));
+      const formattedRating = constrainedScore.toFixed(1);
 
-      // Real-time calculation: Average of Media Responsive Rating & Experience Rating out of 5
-      let avgRatingScore = 4.9; // Telemetry baseline across verified student reviews
-      let ratingCount = 1280;
-
-      if (respVal > 0 && expVal > 0) {
-        avgRatingScore = (respVal + expVal) / 2;
-        ratingCount = 1282;
-      } else if (respVal > 0) {
-        avgRatingScore = (respVal + 4.9) / 2;
-        ratingCount = 1281;
-      } else if (expVal > 0) {
-        avgRatingScore = (expVal + 4.9) / 2;
-        ratingCount = 1281;
-      }
-
-      // Constrain strictly between 1.0 and 5.0
-      avgRatingScore = Math.max(1, Math.min(5, avgRatingScore));
-      const formattedRating = avgRatingScore.toFixed(1);
-
-      // Locate or create runtime JSON-LD script element in <head>
       let schemaTag = document.getElementById('dpg-runtime-rating-schema');
       if (!schemaTag) {
         schemaTag = document.createElement('script');
@@ -1180,8 +1162,8 @@
               "ratingValue": formattedRating,
               "bestRating": "5",
               "worstRating": "1",
-              "ratingCount": ratingCount.toString(),
-              "reviewCount": ratingCount.toString()
+              "ratingCount": Math.max(1, ratingCount).toString(),
+              "reviewCount": Math.max(1, reviewCount || ratingCount).toString()
             }
           }
         ]
@@ -1189,7 +1171,171 @@
 
       schemaTag.textContent = JSON.stringify(runtimeSchema, null, 2);
     } catch (e) {
-      console.warn('[dpg-params] Runtime rating schema update error:', e);
+      console.warn('[dpg-params] Error rendering runtime rating schema:', e);
+    }
+  }
+
+  async function initRealtimeFirestoreRating() {
+    let respState = { count: 0, sum: 0, reviews: 0 };
+    let expState = { count: 0, sum: 0, reviews: 0 };
+
+    function calculateAndPublish() {
+      const hasResp = respState.count > 0;
+      const hasExp = expState.count > 0;
+
+      let computedAvg = 4.9;
+      if (hasResp && hasExp) {
+        // Average rule of Rating of Both Media Responsiveness and Experience Rating
+        const avgResp = respState.sum / respState.count;
+        const avgExp = expState.sum / expState.count;
+        computedAvg = (avgResp + avgExp) / 2;
+      } else if (hasResp) {
+        computedAvg = respState.sum / respState.count;
+      } else if (hasExp) {
+        computedAvg = expState.sum / expState.count;
+      }
+
+      const totalRatings = respState.count + expState.count;
+      const totalReviews = respState.reviews + expState.reviews;
+
+      if (totalRatings > 0) {
+        try {
+          localStorage.setItem('dpg_live_firestore_rating_val', computedAvg.toFixed(2));
+          localStorage.setItem('dpg_live_firestore_rating_count', totalRatings.toString());
+          localStorage.setItem('dpg_live_firestore_review_count', (totalReviews || totalRatings).toString());
+        } catch(e) {}
+
+        renderRuntimeRatingSchemaTag(computedAvg, totalRatings, totalReviews || totalRatings);
+      }
+    }
+
+    try {
+      const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
+      const { getFirestore, collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
+
+      const cfg = {
+        apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+        authDomain: "dpgnotes.firebaseapp.com",
+        projectId: "dpgnotes",
+        storageBucket: "dpgnotes.firebasestorage.app",
+        messagingSenderId: "910494426039",
+        appId: "1:910494426039:web:adeae5315caaf846c43e32"
+      };
+      const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
+      const db = getFirestore(app);
+
+      // Realtime listener 1: Media Responsiveness Feedback
+      onSnapshot(collection(db, "responsiveness_feedback"), (snapshot) => {
+        let sum = 0, count = 0, reviews = 0;
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const r = parseFloat(d.rating);
+          if (r > 0 && r <= 5) {
+            sum += r;
+            count++;
+          }
+          if (d.feedback && typeof d.feedback === 'string' && d.feedback.trim().length > 0) {
+            reviews++;
+          }
+        });
+        respState = { count, sum, reviews };
+        calculateAndPublish();
+      }, (err) => {
+        console.warn('[dpg-params] Realtime responsiveness snapshot warning, attempting REST:', err);
+        fallbackRestFirestoreRatings(calculateAndPublish, (r, e) => { respState = r; expState = e; });
+      });
+
+      // Realtime listener 2: DPGNotes Service & Platform Ratings
+      onSnapshot(collection(db, "dpgnotes_ratings"), (snapshot) => {
+        let sum = 0, count = 0, reviews = 0;
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const r = parseFloat(d.rating);
+          if (r > 0 && r <= 5) {
+            sum += r;
+            count++;
+          }
+          if (d.opinion && typeof d.opinion === 'string' && d.opinion.trim().length > 0) {
+            reviews++;
+          }
+        });
+        expState = { count, sum, reviews };
+        calculateAndPublish();
+      }, (err) => {
+        console.warn('[dpg-params] Realtime platform ratings snapshot warning:', err);
+      });
+
+    } catch(err) {
+      console.warn('[dpg-params] Realtime Firestore import failed, using REST API:', err);
+      fallbackRestFirestoreRatings(calculateAndPublish, (r, e) => { respState = r; expState = e; });
+    }
+  }
+
+  async function fallbackRestFirestoreRatings(calculateAndPublish, setState) {
+    try {
+      const [resResp, resPlat] = await Promise.all([
+        fetch('https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/responsiveness_feedback'),
+        fetch('https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/dpgnotes_ratings')
+      ]);
+      const dataResp = await resResp.json();
+      const dataPlat = await resPlat.json();
+
+      let respSum = 0, respCount = 0, respReviews = 0;
+      if (dataResp && dataResp.documents) {
+        dataResp.documents.forEach(d => {
+          const r = d.fields && d.fields.rating ? Number(d.fields.rating.integerValue || d.fields.rating.doubleValue || 0) : 0;
+          if (r > 0 && r <= 5) { respSum += r; respCount++; }
+          if (d.fields && d.fields.feedback && d.fields.feedback.stringValue && d.fields.feedback.stringValue.trim()) respReviews++;
+        });
+      }
+
+      let platSum = 0, platCount = 0, platReviews = 0;
+      if (dataPlat && dataPlat.documents) {
+        dataPlat.documents.forEach(d => {
+          const r = d.fields && d.fields.rating ? Number(d.fields.rating.integerValue || d.fields.rating.doubleValue || 0) : 0;
+          if (r > 0 && r <= 5) { platSum += r; platCount++; }
+          if (d.fields && d.fields.opinion && d.fields.opinion.stringValue && d.fields.opinion.stringValue.trim()) platReviews++;
+        });
+      }
+
+      if (typeof setState === 'function') {
+        setState({ count: respCount, sum: respSum, reviews: respReviews }, { count: platCount, sum: platSum, reviews: platReviews });
+      }
+      if (typeof calculateAndPublish === 'function') {
+        calculateAndPublish();
+      }
+    } catch(e) {
+      console.warn('[dpg-params] REST fallback fetch error:', e);
+    }
+  }
+
+  function updateRuntimeRatingSchema() {
+    try {
+      // Step 1: Render immediately from localStorage cache (if available) so search crawlers have zero latency
+      let initialAvg = 3.6; // Current computed Firestore average
+      let initialCount = 23;
+      let initialReviews = 9;
+
+      try {
+        const cachedAvg = parseFloat(localStorage.getItem('dpg_live_firestore_rating_val'));
+        const cachedCount = parseInt(localStorage.getItem('dpg_live_firestore_rating_count'), 10);
+        const cachedRev = parseInt(localStorage.getItem('dpg_live_firestore_review_count'), 10);
+        if (cachedAvg && cachedAvg >= 1 && cachedAvg <= 5) {
+          initialAvg = cachedAvg;
+          if (cachedCount > 0) initialCount = cachedCount;
+          if (cachedRev > 0) initialReviews = cachedRev;
+        }
+      } catch(e) {}
+
+      renderRuntimeRatingSchemaTag(initialAvg, initialCount, initialReviews);
+
+      // Step 2: Establish real-time Firestore synchronization
+      if (!isRatingListenerAttached) {
+        isRatingListenerAttached = true;
+        initRealtimeFirestoreRating();
+      }
+    } catch(e) {
+      console.warn('[dpg-params] updateRuntimeRatingSchema error:', e);
     }
   }
 
