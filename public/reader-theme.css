@@ -1353,4 +1353,223 @@ html[data-theme="default"] .sol-ai-intent-text {
   color: #f8fafc !important;
 }
 
+/* ==========================================================================
+   QUIZ PORTAL, AUTHOR STUDIO & ANALYTICS WCAG CONTRAST STYLES
+   ========================================================================== */
+
+/* 1. LIGHT THEME OVERRIDES FOR QUIZ SUITE */
+html[data-theme="light"],
+body[data-theme="light"],
+body.theme-light {
+  --qz-bg: #f8fafc !important;
+  --qz-surface: #ffffff !important;
+  --qz-surface-card: #f8fafc !important;
+  --qz-card-bg: #ffffff !important;
+  --qz-card: #ffffff !important;
+  --qz-border: #cbd5e1 !important;
+  --qz-text: #0f172a !important;
+  --qz-text-muted: #334155 !important;
+  --adm-bg: #f8fafc !important;
+  --adm-surface: #ffffff !important;
+  --adm-card: #ffffff !important;
+  --adm-border: #cbd5e1 !important;
+  --adm-text: #0f172a !important;
+  --adm-muted: #334155 !important;
+}
+
+html[data-theme="light"] body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .portal-nav,
+html[data-theme="light"] .qz-navbar,
+html[data-theme="light"] .analytics-nav,
+html[data-theme="light"] .adm-navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .brand-link,
+html[data-theme="light"] .qz-brand {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .qz-box,
+html[data-theme="light"] .kpi-card,
+html[data-theme="light"] .kpi-box,
+html[data-theme="light"] .table-box,
+html[data-theme="light"] .exam-card,
+html[data-theme="light"] .exam-hero-card,
+html[data-theme="light"] .auth-card,
+html[data-theme="light"] .step-card,
+html[data-theme="light"] .question-box,
+html[data-theme="light"] .sol-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .kpi-val,
+html[data-theme="light"] .kpi-number,
+html[data-theme="light"] .exam-title,
+html[data-theme="light"] .quiz-meta-title,
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4,
+html[data-theme="light"] h5,
+html[data-theme="light"] h6 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .kpi-label,
+html[data-theme="light"] .kpi-title,
+html[data-theme="light"] .exam-desc,
+html[data-theme="light"] .exam-meta-item,
+html[data-theme="light"] p {
+  color: #334155 !important;
+}
+
+/* Light Theme Question & Options */
+html[data-theme="light"] .option-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .option-card:hover {
+  background: #f1f5f9 !important;
+  border-color: #6366f1 !important;
+}
+
+html[data-theme="light"] .option-card.selected {
+  background: rgba(99, 102, 241, 0.1) !important;
+  border-color: #4f46e5 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .option-letter {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .option-card.selected .option-letter {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+  border-color: #4f46e5 !important;
+}
+
+html[data-theme="light"] .option-content,
+html[data-theme="light"] .question-prompt {
+  color: #0f172a !important;
+}
+
+/* Light Theme Tables */
+html[data-theme="light"] .custom-table th,
+html[data-theme="light"] .data-table th {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .custom-table td,
+html[data-theme="light"] .data-table td {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+html[data-theme="light"] .custom-table tr:hover td,
+html[data-theme="light"] .data-table tr:hover td {
+  background: #f8fafc !important;
+}
+
+/* Light Theme Inputs & Form Controls */
+html[data-theme="light"] .form-control,
+html[data-theme="light"] .form-select,
+html[data-theme="light"] input[type="text"],
+html[data-theme="light"] input[type="number"],
+html[data-theme="light"] textarea {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .form-control:focus,
+html[data-theme="light"] .form-select:focus {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+html[data-theme="light"] .qz-modal-box,
+html[data-theme="light"] .modal-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* 2. OLED DARK THEME OVERRIDES */
+html[data-theme="dark"],
+body[data-theme="dark"],
+body.theme-dark {
+  --qz-bg: #030712 !important;
+  --qz-surface: #0b0f17 !important;
+  --qz-surface-card: #0b0f17 !important;
+  --qz-card-bg: #0b0f17 !important;
+  --qz-card: #0b0f17 !important;
+  --qz-border: rgba(255, 255, 255, 0.12) !important;
+  --qz-text: #ffffff !important;
+  --qz-text-muted: #9ca3af !important;
+  --adm-bg: #030712 !important;
+  --adm-surface: #0b0f17 !important;
+  --adm-card: #0b0f17 !important;
+  --adm-border: rgba(255, 255, 255, 0.12) !important;
+  --adm-text: #ffffff !important;
+  --adm-muted: #9ca3af !important;
+}
+
+html[data-theme="dark"] body {
+  background-color: #030712 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .portal-nav,
+html[data-theme="dark"] .qz-navbar,
+html[data-theme="dark"] .analytics-nav,
+html[data-theme="dark"] .adm-navbar {
+  background: #0b0f17 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-theme="dark"] .option-card {
+  background: #0b0f17 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .option-card.selected {
+  background: rgba(99, 102, 241, 0.2) !important;
+  border-color: #818cf8 !important;
+  color: #ffffff !important;
+}
+
+/* 3. DEFAULT MIDNIGHT BLUE THEME OVERRIDES */
+html[data-theme="default"],
+body[data-theme="default"],
+body.theme-auto {
+  --qz-bg: #090d16 !important;
+  --qz-surface: rgba(17, 24, 39, 0.85) !important;
+  --qz-card-bg: #111827 !important;
+  --qz-border: rgba(255, 255, 255, 0.08) !important;
+  --qz-text: #f8fafc !important;
+  --qz-text-muted: #94a3b8 !important;
+}
+
+
 

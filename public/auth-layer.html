@@ -674,6 +674,7 @@
       doc, 
       getDoc, 
       setDoc, 
+      deleteDoc,
       getDocs,
       collection,
       query,
@@ -724,6 +725,26 @@
       }
     }
 
+    // Auto-fill Sign Up Form fields from Guest Quiz candidate info if available
+    try {
+      const pendingAutofill = JSON.parse(localStorage.getItem('dpg_pending_settings_autofill') || '{}');
+      if (pendingAutofill.name && document.getElementById('signUpName')) {
+        document.getElementById('signUpName').value = pendingAutofill.name;
+      }
+      if (pendingAutofill.studentId && document.getElementById('signUpStudentId')) {
+        document.getElementById('signUpStudentId').value = pendingAutofill.studentId;
+      }
+      if (pendingAutofill.course && document.getElementById('signUpCourse')) {
+        document.getElementById('signUpCourse').value = pendingAutofill.course;
+      }
+      if (pendingAutofill.college && document.getElementById('signUpCollege')) {
+        document.getElementById('signUpCollege').value = pendingAutofill.college;
+      }
+      if (pendingAutofill.university && document.getElementById('signUpUniversity')) {
+        document.getElementById('signUpUniversity').value = pendingAutofill.university;
+      }
+    } catch(e) {}
+
     // Alert helper
     window.showAlert = function(msg, type = "danger") {
       const alertBox = document.getElementById("globalAuthAlert");
@@ -733,6 +754,104 @@
       alertBox.style.display = "flex";
       alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
+
+    // Helper: Migrate Guest Quiz Attempts to Contributor Account
+    async function migrateGuestQuizAttempts(user) {
+      if (!user || user.isAnonymous) return;
+      try {
+        const raw = localStorage.getItem('dpg_guest_quiz_attempts');
+        if (!raw) return;
+        const guestList = JSON.parse(raw);
+        if (!Array.isArray(guestList) || guestList.length === 0) return;
+
+        for (const item of guestList) {
+          if (!item.quizId || !item.ownerUid) continue;
+
+          // 1. Delete old guest attempt document from author's quiz attempts if attemptId exists
+          if (item.attemptId) {
+            try {
+              await deleteDoc(doc(db, "contributors", item.ownerUid, "quizzes", item.quizId, "attempts", item.attemptId));
+            } catch(delErr) {
+              console.warn("Could not delete old guest attempt:", delErr);
+            }
+          }
+
+          // 2. Generate new registered attempt ID under new Contributor identity
+          const newAttemptId = 'att_' + user.uid.slice(0, 8) + '_' + Date.now().toString(36);
+
+          // 3. Re-push under author's quiz attempts collection
+          try {
+            const attemptRef = doc(db, "contributors", item.ownerUid, "quizzes", item.quizId, "attempts", newAttemptId);
+            await setDoc(attemptRef, {
+              attemptId: newAttemptId,
+              quizId: item.quizId,
+              ownerUid: item.ownerUid,
+              candidateUid: user.uid,
+              candidateType: 'registered',
+              candidateName: user.displayName || item.candidateName || 'Contributor',
+              studentId: item.studentId || 'N/A',
+              course: item.course || 'N/A',
+              collegeName: item.collegeName || 'N/A',
+              universityName: item.universityName || 'N/A',
+              startedAt: new Date(item.submittedAt || Date.now()),
+              submittedAt: serverTimestamp(),
+              durationSeconds: item.durationSeconds || 0,
+              score: item.score || 0,
+              maximumScore: item.maximumScore || 0,
+              percentage: item.percentage || 0,
+              totalQuestions: item.totalQuestions || 0,
+              correctCount: item.correctCount || 0,
+              incorrectCount: item.incorrectCount || 0,
+              unattemptedCount: item.unattemptedCount || 0,
+              answers: item.answers || {},
+              resultStatus: 'available',
+              submissionReason: 'GUEST_MIGRATED',
+              umcFlag: !!item.umcFlag
+            });
+          } catch(pushErr) {
+            console.warn("Failed to re-push author attempt:", pushErr);
+          }
+
+          // 4. Push into candidate's personal attempt history: contributors/{user.uid}/myQuizAttempts/{newAttemptId}
+          try {
+            const myAttemptRef = doc(db, "contributors", user.uid, "myQuizAttempts", newAttemptId);
+            await setDoc(myAttemptRef, {
+              attemptId: newAttemptId,
+              quizId: item.quizId,
+              quizTitle: item.quizTitle || 'Assessment',
+              subjectCode: item.subjectCode || 'ACADEMIC',
+              ownerUid: item.ownerUid,
+              ownerName: 'Verified Contributor',
+              candidateUid: user.uid,
+              candidateName: user.displayName || item.candidateName || 'Contributor',
+              studentId: item.studentId || 'N/A',
+              course: item.course || 'N/A',
+              collegeName: item.collegeName || 'N/A',
+              universityName: item.universityName || 'N/A',
+              submittedAt: serverTimestamp(),
+              durationSeconds: item.durationSeconds || 0,
+              score: item.score || 0,
+              maximumScore: item.maximumScore || 0,
+              percentage: item.percentage || 0,
+              totalQuestions: item.totalQuestions || 0,
+              correctCount: item.correctCount || 0,
+              incorrectCount: item.incorrectCount || 0,
+              unattemptedCount: item.unattemptedCount || 0,
+              answers: item.answers || {},
+              umcFlag: !!item.umcFlag
+            });
+          } catch(myErr) {
+            console.warn("Failed to push myQuizAttempts:", myErr);
+          }
+        }
+
+        // Clear local guest attempts once migrated
+        localStorage.removeItem('dpg_guest_quiz_attempts');
+        console.log("Successfully migrated guest quiz attempts to contributor account:", user.uid);
+      } catch(e) {
+        console.error("Migration error:", e);
+      }
+    }
 
     // Helper: Resolve student ID to email address via Firestore
     async function resolveIdentifierToEmail(identifier) {
@@ -784,6 +903,9 @@
             universityName: uData ? (uData.universityName || "") : ""
           }));
           localStorage.removeItem("dpg_quota_locked");
+
+          // Migrate any local guest quiz attempts to this account
+          await migrateGuestQuizAttempts(user);
 
           showAlert("Active contributor session verified. Redirecting...", "success");
           setTimeout(() => {
@@ -989,6 +1111,9 @@
           universityName: universityName
         }));
         localStorage.removeItem("dpg_quota_locked");
+
+        // Migrate local guest quiz records to newly created contributor account
+        await migrateGuestQuizAttempts(user);
 
         showAlert("Account created successfully! Loading authoring workspace...", "success");
         setTimeout(() => {

@@ -24,7 +24,9 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/AssignmentSolution/solutions-style.css?v=2.3.1">
+  <link rel="stylesheet" href="/reader-theme.css">
   <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
+  <script src="/reader-theme.js"></script>
   <script src="/custom-dialogs.js"></script>
 
   <style>
@@ -573,7 +575,7 @@
       <img src="/ANH.png" alt="DPGNotes">
       <span>DPGNotes <span style="color:var(--qz-primary);">Quiz Studio</span></span>
     </a>
-    <div style="display:flex; align-items:center; gap:10px;">
+    <div class="qz-nav-actions" style="display:flex; align-items:center; gap:10px;">
       <a href="/Quizes/quiz-record-and-analytics.html" class="btn btn-sm btn-outline-secondary qz-nav-btn" style="border-color:var(--qz-border); color:var(--qz-text-muted);" title="Contributor Analytics" aria-label="Contributor Analytics">
         <i class="ri-bar-chart-box-line"></i> <span class="qz-nav-btn-text">Analytics</span>
       </a>
@@ -750,8 +752,11 @@
       <div id="questionsContainer"></div>
     </section>
 
-    <!-- Publish Submission Trigger -->
-    <div style="text-align:center; margin-top:2.5rem;">
+    <!-- Publish & Update Submission Trigger -->
+    <div style="text-align:center; margin-top:2.5rem; display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;">
+      <button type="button" id="btnDeleteQuiz" class="btn btn-outline-danger" style="display:none; padding:13px 22px; border-radius:12px; font-weight:700;" onclick="deleteCurrentQuiz()">
+        <i class="ri-delete-bin-line"></i> Delete Quiz
+      </button>
       <button type="button" id="btnPublishQuiz" class="btn-publish" onclick="publishQuiz()">
         <i class="ri-send-plane-fill"></i> Validate &amp; Publish Academic Quiz
       </button>
@@ -804,6 +809,10 @@
       doc, 
       getDoc, 
       setDoc, 
+      updateDoc,
+      deleteDoc,
+      collection,
+      getDocs,
       writeBatch, 
       serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -823,6 +832,10 @@
 
     let activeContributor = null;
     let currentQuestionCount = 15;
+    let isEditMode = false;
+    let editingQuizId = null;
+    let existingQuizOwnerUid = null;
+    let existingQuizData = null;
 
     // Cryptographic token generator
     function generateSecureToken() {
@@ -874,6 +887,18 @@
         document.getElementById('authorCourse').value = activeContributor.course;
         document.getElementById('authorCollege').value = activeContributor.collegeName;
         document.getElementById('authorUniversity').value = activeContributor.universityName;
+
+        // Check for Edit Mode in URL
+        const urlP = new URLSearchParams(window.location.search);
+        const editQId = urlP.get('edit') || (urlP.get('mode') === 'edit' ? urlP.get('quizId') : null);
+        if (editQId) {
+          await loadQuizForEditing(editQId, urlP.get('ownerUid'));
+        } else {
+          const draftRestored = restoreQuizDraftFromLocalStorage();
+          if (!draftRestored) {
+            renderQuestionEditors();
+          }
+        }
 
       } catch (err) {
         console.error("Profile load error:", err);
@@ -1292,13 +1317,22 @@
       }
 
       if (initialData) {
-        if (initialData.qText !== undefined) document.getElementById(`qText_${i}`).value = initialData.qText;
-        if (initialData.optA !== undefined) document.getElementById(`q_${i}_optA`).value = initialData.optA;
-        if (initialData.optB !== undefined) document.getElementById(`q_${i}_optB`).value = initialData.optB;
-        if (initialData.optC !== undefined) document.getElementById(`q_${i}_optC`).value = initialData.optC;
-        if (initialData.optD !== undefined) document.getElementById(`q_${i}_optD`).value = initialData.optD;
-        if (initialData.correctKey) {
-          selectKey(i, initialData.correctKey, false);
+        const promptVal = initialData.qText !== undefined ? initialData.qText : (initialData.questionText || '');
+        if (promptVal) document.getElementById(`qText_${i}`).value = promptVal;
+
+        const optA = initialData.optA !== undefined ? initialData.optA : (initialData.options ? initialData.options.A : '');
+        const optB = initialData.optB !== undefined ? initialData.optB : (initialData.options ? initialData.options.B : '');
+        const optC = initialData.optC !== undefined ? initialData.optC : (initialData.options ? initialData.options.C : '');
+        const optD = initialData.optD !== undefined ? initialData.optD : (initialData.options ? initialData.options.D : '');
+
+        if (optA) document.getElementById(`q_${i}_optA`).value = optA;
+        if (optB) document.getElementById(`q_${i}_optB`).value = optB;
+        if (optC) document.getElementById(`q_${i}_optC`).value = optC;
+        if (optD) document.getElementById(`q_${i}_optD`).value = optD;
+
+        const chosenKey = initialData.correctKey || initialData.correctOption || '';
+        if (chosenKey) {
+          selectKey(i, chosenKey, false);
         }
       }
 
@@ -1433,17 +1467,18 @@
 
       const btn = document.getElementById('btnPublishQuiz');
       btn.disabled = true;
-      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Authoring &amp; Securing Quiz Payload...`;
+      btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> ${isEditMode ? 'Updating Academic Quiz Payload...' : 'Authoring & Securing Quiz Payload...'}`;
 
       try {
-        const quizId = 'qz_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+        const quizId = isEditMode ? editingQuizId : ('qz_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7));
+        const targetOwnerUid = (isEditMode && existingQuizOwnerUid) ? existingQuizOwnerUid : activeContributor.uid;
         const batch = writeBatch(db);
 
         // 1. Metadata Doc: contributors/{uid}/quizzes/{quizId}
-        const quizRef = doc(db, "contributors", activeContributor.uid, "quizzes", quizId);
-        batch.set(quizRef, {
+        const quizRef = doc(db, "contributors", targetOwnerUid, "quizzes", quizId);
+        const quizPayload = {
           quizId: quizId,
-          ownerUid: activeContributor.uid,
+          ownerUid: targetOwnerUid,
           ownerName: activeContributor.name,
           ownerStudentId: activeContributor.studentId,
           collegeName: activeContributor.collegeName,
@@ -1465,17 +1500,25 @@
           isPublic: visibility === 'public',
           status: 'published',
           hasAnswerKey: !hasMissingAnswers,
-          answerKeyVersion: 1,
-          createdAt: serverTimestamp(),
+          answerKeyVersion: isEditMode ? ((existingQuizData?.answerKeyVersion || 1) + 1) : 1,
           updatedAt: serverTimestamp()
-        });
+        };
+
+        if (isEditMode) {
+          quizPayload.version = (existingQuizData?.version || 1) + 1;
+          batch.set(quizRef, quizPayload, { merge: true });
+        } else {
+          quizPayload.version = 1;
+          quizPayload.createdAt = serverTimestamp();
+          batch.set(quizRef, quizPayload);
+        }
 
         // 2. Question Pages: contributors/{uid}/quizzes/{quizId}/questionPages/page_1..N
         const PAGE_SIZE = 10;
         const totalPages = Math.ceil(questions.length / PAGE_SIZE);
         for (let p = 0; p < totalPages; p++) {
           const slice = questions.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
-          const pageRef = doc(db, "contributors", activeContributor.uid, "quizzes", quizId, "questionPages", `page_${p + 1}`);
+          const pageRef = doc(db, "contributors", targetOwnerUid, "quizzes", quizId, "questionPages", `page_${p + 1}`);
           batch.set(pageRef, {
             pageNumber: p + 1,
             totalPages: totalPages,
@@ -1484,40 +1527,49 @@
         }
 
         // 3. Private Answer Key: contributors/{uid}/quizzes/{quizId}/privateAnswerKey/main
-        const answerKeyRef = doc(db, "contributors", activeContributor.uid, "quizzes", quizId, "privateAnswerKey", "main");
+        const answerKeyRef = doc(db, "contributors", targetOwnerUid, "quizzes", quizId, "privateAnswerKey", "main");
         batch.set(answerKeyRef, {
           quizId: quizId,
-          ownerUid: activeContributor.uid,
-          version: 1,
+          ownerUid: targetOwnerUid,
+          version: isEditMode ? ((existingQuizData?.answerKeyVersion || 1) + 1) : 1,
           isReleased: immediateResult && !hasMissingAnswers,
           answers: privateKeyMap,
           updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
 
-        // 4. Initial Aggregated Analytics Doc: quizAnalytics/{quizId}
+        // 4. Aggregated Analytics Doc: quizAnalytics/{quizId}
         const analyticsRef = doc(db, "quizAnalytics", quizId);
-        batch.set(analyticsRef, {
-          quizId: quizId,
-          ownerUid: activeContributor.uid,
-          subjectName: subjectName,
-          subjectCode: subjectCode,
-          title: quizTitle,
-          totalStarts: 0,
-          totalSubmissions: 0,
-          totalAbandoned: 0,
-          averageScore: 0,
-          highestScore: 0,
-          lowestScore: 0,
-          flaggedUmcCount: 0,
-          updatedAt: serverTimestamp()
-        });
+        if (!isEditMode) {
+          batch.set(analyticsRef, {
+            quizId: quizId,
+            ownerUid: targetOwnerUid,
+            subjectName: subjectName,
+            subjectCode: subjectCode,
+            title: quizTitle,
+            totalStarts: 0,
+            totalSubmissions: 0,
+            totalAbandoned: 0,
+            averageScore: 0,
+            highestScore: 0,
+            lowestScore: 0,
+            flaggedUmcCount: 0,
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          batch.set(analyticsRef, {
+            subjectName: subjectName,
+            subjectCode: subjectCode,
+            title: quizTitle,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+        }
 
         // 5. Public Search Directory Record (Only if Public)
+        const directoryRef = doc(db, "quizDirectory", quizId);
         if (visibility === 'public') {
-          const directoryRef = doc(db, "quizDirectory", quizId);
           batch.set(directoryRef, {
             quizId: quizId,
-            ownerUid: activeContributor.uid,
+            ownerUid: targetOwnerUid,
             ownerName: activeContributor.name,
             subjectName: subjectName,
             subjectCode: subjectCode,
@@ -1529,29 +1581,34 @@
             timeMinutes: timeMinutes,
             isPublic: true,
             status: 'published',
-            createdAt: serverTimestamp()
-          });
+            updatedAt: serverTimestamp(),
+            ...(isEditMode ? {} : { createdAt: serverTimestamp() })
+          }, { merge: true });
+        } else {
+          try {
+            batch.delete(directoryRef);
+          } catch(e) {}
         }
 
-        // 6. Private Share Token (Only if Private)
+        // 6. Private Share Token (Only if Private and New)
         let shareToken = "";
-        if (visibility === 'private') {
+        if (visibility === 'private' && !isEditMode) {
           shareToken = generateSecureToken();
           const tokenHash = await sha256(shareToken);
           const shareRef = doc(db, "quizShares", tokenHash);
           batch.set(shareRef, {
             tokenHash: tokenHash,
             quizId: quizId,
-            ownerUid: activeContributor.uid,
+            ownerUid: targetOwnerUid,
             active: true,
             createdAt: serverTimestamp()
           });
         }
 
-        // Commit all writes atomically
+        // Commit all writes atomically (Candidate attempt records in attempts/ are 100% PRESERVED)
         await batch.commit();
 
-        // Clear local draft upon successful publication
+        // Clear local draft upon successful publication/update
         try {
           localStorage.removeItem('dpg_quiz_generator_draft');
           const banner = document.getElementById('draftStatusBanner');
@@ -1560,22 +1617,180 @@
 
         // Construct live examination URL
         let examUrl = `${window.location.origin}/Quizes/index.html?quizId=${quizId}`;
-        if (visibility === 'private') {
+        if (visibility === 'private' && shareToken) {
           examUrl += `&share_token=${shareToken}`;
         }
 
         // Show Success Modal
+        const successTitle = document.querySelector('#publishSuccessModal h2');
+        if (successTitle) {
+          successTitle.textContent = isEditMode ? "Quiz Updated Successfully!" : "Quiz Successfully Published!";
+        }
         document.getElementById('liveQuizUrlInput').value = examUrl;
         document.getElementById('previewQuizBtn').href = examUrl;
         document.getElementById('analyticsQuizBtn').href = `/Quizes/quiz-record-and-analytics.html?quizId=${quizId}`;
         document.getElementById('publishSuccessModal').style.display = 'flex';
 
       } catch (err) {
-        console.error("Publication failed:", err);
-        await customAlert("Failed to publish quiz: " + (err.message || "Unknown write error."), { title: "Publish Error", isDanger: true });
+        console.error("Publication/update failed:", err);
+        await customAlert(`Failed to ${isEditMode ? 'update' : 'publish'} quiz: ` + (err.message || "Unknown write error."), { title: isEditMode ? "Update Error" : "Publish Error", isDanger: true });
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<i class="ri-send-plane-fill"></i> Validate &amp; Publish Academic Quiz`;
+        btn.innerHTML = `<i class="ri-send-plane-fill"></i> ${isEditMode ? 'Save &amp; Update Academic Quiz' : 'Validate &amp; Publish Academic Quiz'}`;
+      }
+    };
+
+    // Load existing quiz for editing
+    async function loadQuizForEditing(quizId, optionalOwnerUid) {
+      try {
+        const ownerUid = optionalOwnerUid || activeContributor.uid;
+        const qSnap = await getDoc(doc(db, "contributors", ownerUid, "quizzes", quizId));
+        if (!qSnap.exists()) {
+          await customAlert("The requested quiz record was not found.", { title: "Quiz Not Found", isDanger: true });
+          renderQuestionEditors();
+          return;
+        }
+
+        const qData = qSnap.data();
+        const isAdmin = Boolean(localStorage.getItem("adminToken"));
+        if (qData.ownerUid !== activeContributor.uid && !isAdmin) {
+          await customAlert("Access Restricted: Only the verified author or platform administrator may edit this quiz.", { title: "Unauthorized", isDanger: true });
+          window.location.replace("/Quizes/quiz-record-and-analytics.html");
+          return;
+        }
+
+        isEditMode = true;
+        editingQuizId = quizId;
+        existingQuizOwnerUid = qData.ownerUid;
+        existingQuizData = qData;
+
+        // UI updates for edit mode
+        document.title = `Edit Quiz: ${qData.title || ''} | DPGNotes`;
+        const studioBadge = document.querySelector('.studio-badge');
+        if (studioBadge) {
+          studioBadge.innerHTML = `<i class="ri-edit-2-fill" style="color:#fbbf24;"></i> Edit Mode: Preserving Student Attempt Records`;
+          studioBadge.style.borderColor = "rgba(245,158,11,0.5)";
+          studioBadge.style.color = "#fde68a";
+        }
+        const mainHeading = document.querySelector('.studio-header h1');
+        if (mainHeading) mainHeading.textContent = `Edit Academic Quiz`;
+
+        const btnPublish = document.getElementById('btnPublishQuiz');
+        if (btnPublish) {
+          btnPublish.innerHTML = `<i class="ri-save-line"></i> Save &amp; Update Academic Quiz`;
+        }
+        const btnDelete = document.getElementById('btnDeleteQuiz');
+        if (btnDelete) {
+          btnDelete.style.display = 'inline-flex';
+        }
+
+        // Populate metadata fields
+        if (document.getElementById('subjectName')) document.getElementById('subjectName').value = qData.subjectName || '';
+        if (document.getElementById('subjectCode')) document.getElementById('subjectCode').value = qData.subjectCode || '';
+        if (document.getElementById('topicTags')) document.getElementById('topicTags').value = (qData.tags || []).join(', ');
+        if (document.getElementById('quizTitle')) document.getElementById('quizTitle').value = qData.title || '';
+        if (document.getElementById('quizDescription')) document.getElementById('quizDescription').value = qData.description || '';
+        if (document.getElementById('timeMinutes')) document.getElementById('timeMinutes').value = qData.timeMinutes || 20;
+        if (document.getElementById('visibilitySelect')) document.getElementById('visibilitySelect').value = qData.isPublic ? 'public' : 'private';
+        if (document.getElementById('marksPerCorrect')) document.getElementById('marksPerCorrect').value = qData.marksPerCorrect ?? 1.0;
+        if (document.getElementById('negativeMarks')) document.getElementById('negativeMarks').value = qData.negativeMarks ?? 0.25;
+        if (document.getElementById('unattemptedPenalty')) document.getElementById('unattemptedPenalty').value = qData.unattemptedPenalty ?? 0.0;
+        if (document.getElementById('allowChangeAnswers')) document.getElementById('allowChangeAnswers').checked = qData.allowChangeAnswers !== false;
+        if (document.getElementById('immediateResult')) {
+          document.getElementById('immediateResult').checked = Boolean(qData.immediateResult);
+          toggleImmediateResultUI(Boolean(qData.immediateResult));
+        }
+        if (document.getElementById('strictMode')) document.getElementById('strictMode').checked = Boolean(qData.strictMode);
+
+        // Fetch question pages
+        const loadedQuestions = [];
+        let p = 1;
+        while (true) {
+          const pSnap = await getDoc(doc(db, "contributors", ownerUid, "quizzes", quizId, "questionPages", `page_${p}`));
+          if (!pSnap.exists()) break;
+          loadedQuestions.push(...(pSnap.data().questions || []));
+          p++;
+        }
+
+        // Fetch answer keys
+        let loadedAnswers = {};
+        try {
+          const keySnap = await getDoc(doc(db, "contributors", ownerUid, "quizzes", quizId, "privateAnswerKey", "main"));
+          if (keySnap.exists()) {
+            loadedAnswers = keySnap.data().answers || {};
+          }
+        } catch(e) {}
+
+        const targetCount = loadedQuestions.length || qData.totalQuestions || 15;
+        currentQuestionCount = targetCount;
+        if (document.getElementById('questionCountRange')) document.getElementById('questionCountRange').value = targetCount;
+        if (document.getElementById('questionCountVal')) document.getElementById('questionCountVal').textContent = targetCount;
+
+        const container = document.getElementById('questionsContainer');
+        const navContainer = document.getElementById('navPillsContainer');
+        container.innerHTML = '';
+        navContainer.innerHTML = '';
+
+        for (let i = 1; i <= targetCount; i++) {
+          const qObj = loadedQuestions[i - 1] || null;
+          const qText = qObj ? (qObj.questionText || '') : '';
+          const opts = qObj ? (qObj.options || {}) : {};
+          const selKey = loadedAnswers[String(i)] || (qObj ? qObj.correctOption : '');
+          createSingleQuestionCard(i, targetCount, container, navContainer, {
+            qIndex: i,
+            questionText: qText,
+            options: opts,
+            correctKey: selKey
+          });
+        }
+
+        updateNavigatorProgress();
+      } catch (err) {
+        console.error("Load quiz for edit failed:", err);
+        await customAlert("Failed to load quiz details: " + err.message, { title: "Error", isDanger: true });
+        renderQuestionEditors();
+      }
+    }
+
+    // Contributor or Admin Delete Quiz
+    window.deleteCurrentQuiz = async function() {
+      if (!editingQuizId) return;
+      const confirmed = await customConfirm(
+        "Are you sure you want to permanently delete this examination?\n\nThis action will remove all questions and associated data. This action cannot be undone.",
+        { title: "Delete Examination Confirmation", confirmText: "Yes, Delete Quiz", isDanger: true }
+      );
+      if (!confirmed) return;
+
+      const btn = document.getElementById('btnDeleteQuiz');
+      if (btn) btn.disabled = true;
+
+      try {
+        const targetOwner = existingQuizOwnerUid || activeContributor.uid;
+
+        // 1. Delete question pages
+        const pageSnap = await getDocs(collection(db, "contributors", targetOwner, "quizzes", editingQuizId, "questionPages"));
+        const b1 = writeBatch(db);
+        pageSnap.forEach(d => b1.delete(d.ref));
+        await b1.commit();
+
+        // 2. Delete attempt records
+        const attSnap = await getDocs(collection(db, "contributors", targetOwner, "quizzes", editingQuizId, "attempts"));
+        const b2 = writeBatch(db);
+        attSnap.forEach(d => b2.delete(d.ref));
+        await b2.commit();
+
+        // 3. Delete key & main doc
+        try { await deleteDoc(doc(db, "contributors", targetOwner, "quizzes", editingQuizId, "privateAnswerKey", "main")); } catch(e) {}
+        await deleteDoc(doc(db, "contributors", targetOwner, "quizzes", editingQuizId));
+        try { await deleteDoc(doc(db, "quizDirectory", editingQuizId)); } catch(e) {}
+        try { await deleteDoc(doc(db, "quizAnalytics", editingQuizId)); } catch(e) {}
+
+        await customAlert("Examination and records deleted permanently.", { title: "Quiz Deleted" });
+        window.location.replace("/Quizes/quiz-record-and-analytics.html");
+      } catch (err) {
+        console.error("Deletion error:", err);
+        await customAlert("Failed to delete quiz: " + err.message, { title: "Delete Error", isDanger: true });
+        if (btn) btn.disabled = false;
       }
     };
 
@@ -1600,10 +1815,13 @@
       }
     };
 
-    // Initialize: Check for saved draft; if none, render default questions
-    const draftRestored = restoreQuizDraftFromLocalStorage();
-    if (!draftRestored) {
-      renderQuestionEditors();
+    // Initialize: Only render default if not in edit mode
+    const urlParamsCheck = new URLSearchParams(window.location.search);
+    if (!urlParamsCheck.get('edit') && urlParamsCheck.get('mode') !== 'edit') {
+      const draftRestored = restoreQuizDraftFromLocalStorage();
+      if (!draftRestored) {
+        renderQuestionEditors();
+      }
     }
   </script>
 </body>

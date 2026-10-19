@@ -7,6 +7,12 @@
   <meta name="description" content="DPGNotes unified Quiz Portal: Explore academic mock tests, subject assessments, and take secure online examinations." />
   <link rel="icon" href="/ANH.png" type="image/png" />
 
+  <!-- Anti-AI & Anti-Scraping Directives: Block Google Gemini, Claude, ChatGPT bots -->
+  <meta name="robots" content="noindex, nofollow, noai, noimageai" />
+  <meta name="googlebot" content="noindex, nofollow, noai, noimageai, notranslate" />
+  <meta name="chatgpt-user" content="noindex, noai" />
+  <meta name="claude-web" content="noindex, noai" />
+
   <!-- Google Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,8 +20,10 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/AssignmentSolution/solutions-style.css?v=2.3.1">
+  <link rel="stylesheet" href="/reader-theme.css">
   <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
   <script src="/custom-dialogs.js"></script>
+  <script src="/reader-theme.js"></script>
 
   <style>
     :root {
@@ -338,10 +346,48 @@
       display: none !important;
     }
 
+    /* Anti-cheat & Content Protection: Disable selection & dragging during examination */
+    #viewExamEngine {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      -webkit-touch-callout: none !important;
+    }
+    #viewExamEngine img {
+      pointer-events: none !important;
+      -webkit-user-drag: none !important;
+      user-drag: none !important;
+    }
+
     /* Advanced Question Prompt & Media responsiveness */
     #currentQPrompt {
       word-break: break-word;
       overflow-wrap: anywhere;
+    }
+    #currentQPrompt img,
+    .option-content img {
+      max-width: 100% !important;
+      height: auto !important;
+      border-radius: 8px;
+      display: block;
+      margin: 0.75rem 0;
+    }
+    #currentQPrompt pre,
+    .option-content pre {
+      overflow-x: auto !important;
+      max-width: 100%;
+      white-space: pre-wrap;
+      word-break: break-all;
+      border-radius: 8px;
+    }
+    #currentQPrompt table,
+    .option-content table {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      border-collapse: collapse;
+      margin: 0.75rem 0;
     }
     #currentQPrompt .sol-table-responsive,
     #currentQPrompt .sol-code-block-container {
@@ -478,6 +524,23 @@
     <div>
       <strong id="umcToastTitle">Security Interruption Detected!</strong>
       <div id="umcToastMsg" style="font-size:0.82rem;">Activity logged for proctor inspection.</div>
+    </div>
+  </div>
+
+  <!-- Anti-AI / Ask Gemini Shield Curtain Overlay -->
+  <div id="aiShieldOverlay" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(9,13,22,0.96); backdrop-filter:blur(24px); flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem;">
+    <div style="max-width:520px; background:rgba(17,24,39,0.95); border:1px solid rgba(239,68,68,0.45); border-radius:18px; padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.85);">
+      <div style="width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; color:#f87171; font-size:2rem;">
+        <i class="ri-shield-keyhole-line"></i>
+      </div>
+      <h3 style="color:#fff; font-size:1.35rem; font-weight:800; margin-bottom:0.6rem;">Security Shield Active</h3>
+      <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.55; margin-bottom:1.5rem;">
+        External side panel, Ask Gemini, developer tools, or split screen detected. Examination content has been shielded to protect academic integrity.
+        Please close the side panel or re-focus the window to resume your assessment.
+      </p>
+      <button type="button" class="btn btn-primary" onclick="dismissAiShield()" style="border-radius:10px; font-weight:700; padding:10px 24px;">
+        <i class="ri-focus-2-line"></i> Resume Examination
+      </button>
     </div>
   </div>
 
@@ -1008,6 +1071,23 @@
           document.getElementById('ruleStrictNotice').style.display = 'block';
         }
 
+        // Auto-fill Candidate Details from previous sessions or contributor profile
+        try {
+          const candAutofill = JSON.parse(localStorage.getItem('dpg_pending_settings_autofill') || '{}');
+          const activeUser = JSON.parse(localStorage.getItem('dpgActiveUser') || '{}');
+          const nameInput = document.getElementById('candName');
+          const sidInput = document.getElementById('candStudentId');
+          const courseInput = document.getElementById('candCourse');
+          const collegeInput = document.getElementById('candCollege');
+          const uniInput = document.getElementById('candUniversity');
+
+          if (nameInput && !nameInput.value) nameInput.value = candAutofill.name || activeUser.name || '';
+          if (sidInput && !sidInput.value) sidInput.value = candAutofill.studentId || activeUser.studentId || '';
+          if (courseInput && !courseInput.value) courseInput.value = candAutofill.course || activeUser.course || '';
+          if (collegeInput && !collegeInput.value) collegeInput.value = candAutofill.college || activeUser.collegeName || '';
+          if (uniInput && !uniInput.value) uniInput.value = candAutofill.university || activeUser.universityName || '';
+        } catch(e) {}
+
         document.getElementById('viewCandidateReg').style.display = 'block';
 
       } catch (err) {
@@ -1031,13 +1111,6 @@
         return;
       }
 
-      // 1. Client-Side Strict Single-Attempt Lock
-      const localAttemptKey = 'dpg_quiz_submitted_' + quizData.quizId;
-      if (localStorage.getItem(localAttemptKey)) {
-        await customAlert("Single Attempt Restriction: You have already submitted an examination attempt for this quiz on this browser. Multiple attempts are strictly disallowed.", { title: "Attempt Already Submitted", isDanger: true });
-        return;
-      }
-
       // Ensure Anonymous auth if not already authenticated
       if (!auth.currentUser) {
         try {
@@ -1047,7 +1120,8 @@
         }
       }
 
-      // 2. Authoritative Firestore Database Uniqueness Check
+      // Check Firestore database for existing attempts & retest authorization
+      let canRetest = false;
       try {
         const attemptsCol = collection(db, "contributors", quizData.ownerUid, "quizzes", quizData.quizId, "attempts");
         
@@ -1055,21 +1129,38 @@
         const qSid = query(attemptsCol, where("studentId", "==", candStudentId));
         const sidSnap = await getDocs(qSid);
         if (!sidSnap.empty) {
-          await customAlert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited.`, { title: "Attempt Already Recorded", isDanger: true });
-          return;
+          const docData = sidSnap.docs[0].data();
+          if (docData.allowedRetest === true) {
+            canRetest = true;
+          } else {
+            await customAlert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited unless the quiz author authorizes a re-test.`, { title: "Attempt Already Recorded", isDanger: true });
+            return;
+          }
         }
 
         // Authenticated user UID uniqueness query
-        if (auth.currentUser && !auth.currentUser.isAnonymous) {
+        if (!canRetest && auth.currentUser && !auth.currentUser.isAnonymous) {
           const qUid = query(attemptsCol, where("candidateUid", "==", auth.currentUser.uid));
           const uidSnap = await getDocs(qUid);
           if (!uidSnap.empty) {
-            await customAlert("Single Attempt Restriction: Your authenticated account has already completed this examination.", { title: "Attempt Already Recorded", isDanger: true });
-            return;
+            const docData = uidSnap.docs[0].data();
+            if (docData.allowedRetest === true) {
+              canRetest = true;
+            } else {
+              await customAlert("Single Attempt Restriction: Your authenticated account has already completed this examination.", { title: "Attempt Already Recorded", isDanger: true });
+              return;
+            }
           }
         }
       } catch (checkErr) {
         console.warn("Attempt uniqueness check warning:", checkErr);
+      }
+
+      // Client-Side Strict Single-Attempt Lock (Bypassed if author authorized retest)
+      const localAttemptKey = 'dpg_quiz_submitted_' + quizData.quizId;
+      if (localStorage.getItem(localAttemptKey) && !canRetest) {
+        await customAlert("Single Attempt Restriction: You have already submitted an examination attempt for this quiz on this browser. Multiple attempts are strictly disallowed.", { title: "Attempt Already Submitted", isDanger: true });
+        return;
       }
 
       // Enter fullscreen if strict mode
@@ -1259,6 +1350,9 @@
     // -------------------------------------------------------------
     // ANTI-CHEAT & UMC INTEGRITY ENGINE
     // -------------------------------------------------------------
+    let isWindowBlurred = false;
+    let antiCheatCheckInterval = null;
+
     function bindAntiCheatSensors() {
       // 1. Page Visibility API
       document.addEventListener('visibilitychange', () => {
@@ -1274,19 +1368,68 @@
         }
       });
 
-      // 3. Clipboard and Context Menu Protection
+      // 3. Ask Gemini / External AI Side Panel Detection
+      function checkSidePanelAnomaly() {
+        if (hasSubmitted) return;
+        if (document.getElementById('viewExamEngine')?.style.display === 'none') return;
+        
+        // Browsers normally have border difference < 40px. Side panels (Ask Gemini, DevTools) take > 280px.
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const shield = document.getElementById('aiShieldOverlay');
+        if (widthDiff > 280) {
+          if (shield && shield.style.display !== 'flex') {
+            shield.style.display = 'flex';
+            logUmcViolation('ASK_GEMINI_OR_SIDE_PANEL', 'External side panel or Ask Gemini detected.');
+          }
+        } else {
+          if (shield && shield.style.display === 'flex' && !isWindowBlurred) {
+            shield.style.display = 'none';
+          }
+        }
+      }
+
+      window.addEventListener('resize', checkSidePanelAnomaly);
+      if (antiCheatCheckInterval) clearInterval(antiCheatCheckInterval);
+      antiCheatCheckInterval = setInterval(checkSidePanelAnomaly, 1000);
+
+      // 4. Focus & Blur Shielding
+      window.addEventListener('blur', () => {
+        if (!hasSubmitted && document.getElementById('viewExamEngine')?.style.display !== 'none') {
+          isWindowBlurred = true;
+          const shield = document.getElementById('aiShieldOverlay');
+          if (shield) shield.style.display = 'flex';
+          logUmcViolation('WINDOW_FOCUS_LOST', 'Window lost active candidate focus.');
+        }
+      });
+
+      window.addEventListener('focus', () => {
+        isWindowBlurred = false;
+        const shield = document.getElementById('aiShieldOverlay');
+        if (shield && (window.outerWidth - window.innerWidth <= 280)) {
+          shield.style.display = 'none';
+        }
+      });
+
+      // 5. Clipboard, Context Menu, and Drag Protection
       window.addEventListener('copy', (e) => { e.preventDefault(); logUmcViolation('COPY_ATTEMPT', 'Blocked copy event.'); });
       window.addEventListener('cut', (e) => { e.preventDefault(); logUmcViolation('CUT_ATTEMPT', 'Blocked cut event.'); });
       window.addEventListener('paste', (e) => { e.preventDefault(); logUmcViolation('PASTE_ATTEMPT', 'Blocked paste event.'); });
       window.addEventListener('contextmenu', (e) => { e.preventDefault(); logUmcViolation('CONTEXT_MENU_ATTEMPT', 'Right click blocked.'); });
+      window.addEventListener('dragstart', (e) => { e.preventDefault(); });
     }
+
+    window.dismissAiShield = function() {
+      const shield = document.getElementById('aiShieldOverlay');
+      if (shield) shield.style.display = 'none';
+      window.focus();
+    };
 
     function logUmcViolation(type, msg) {
       uvcViolations.push({ type, timestamp: Date.now() });
       showUmcToast(`Integrity Flag: ${type}`);
 
       // If strict mode, immediately trigger submission
-      if (quizData.strictMode && (type === 'TAB_OR_APP_HIDDEN' || type === 'FULLSCREEN_EXIT')) {
+      if (quizData.strictMode && (type === 'TAB_OR_APP_HIDDEN' || type === 'FULLSCREEN_EXIT' || type === 'ASK_GEMINI_OR_SIDE_PANEL')) {
         autoSubmitExamination('UMC_AUTO_SUBMIT');
       }
     }
@@ -1378,15 +1521,18 @@
       const candCollege = document.getElementById('candCollege').value.trim() || 'N/A';
       const candUniversity = document.getElementById('candUniversity').value.trim() || 'N/A';
 
+      const isGuest = !auth.currentUser || auth.currentUser.isAnonymous;
+      const candidateType = isGuest ? 'guest' : 'registered';
+
       // Persist Attempt to Firestore: contributors/{ownerUid}/quizzes/{quizId}/attempts/{attemptId}
       try {
         const attemptRef = doc(db, "contributors", quizData.ownerUid, "quizzes", quizData.quizId, "attempts", attemptId);
-        await setDoc(attemptRef, {
+        const attemptData = {
           attemptId: attemptId,
           quizId: quizData.quizId,
           ownerUid: quizData.ownerUid,
           candidateUid: candidateUid,
-          candidateType: auth.currentUser && !auth.currentUser.isAnonymous ? 'registered' : 'guest',
+          candidateType: candidateType,
           candidateName: candName,
           studentId: candStudentId,
           course: candCourse,
@@ -1409,7 +1555,8 @@
           violationCount: uvcViolations.length,
           violationsSummary: uvcViolations.slice(0, 10),
           answerKeyVersion: 1
-        });
+        };
+        await setDoc(attemptRef, attemptData);
 
         // Update aggregated analytics doc: quizAnalytics/{quizId}
         updateDoc(doc(db, "quizAnalytics", quizData.quizId), {
@@ -1426,6 +1573,81 @@
             submittedAt: Date.now()
           }));
         } catch(e) {}
+
+        // If guest candidate, save attempt locally so when they sign up as contributor, records can be migrated
+        if (isGuest) {
+          try {
+            const guestAttempts = JSON.parse(localStorage.getItem('dpg_guest_quiz_attempts') || '[]');
+            guestAttempts.push({
+              attemptId: attemptId,
+              quizId: quizData.quizId,
+              quizTitle: quizData.title,
+              subjectCode: quizData.subjectCode,
+              ownerUid: quizData.ownerUid,
+              candidateName: candName,
+              studentId: candStudentId,
+              course: candCourse,
+              collegeName: candCollege,
+              universityName: candUniversity,
+              submittedAt: Date.now(),
+              durationSeconds: durationSeconds,
+              score: finalScore,
+              maximumScore: maxScore,
+              percentage: percentage,
+              totalQuestions: questionsList.length,
+              correctCount: correctCount,
+              incorrectCount: incorrectCount,
+              unattemptedCount: unattemptedCount,
+              answers: candidateAnswers,
+              umcFlag: uvcViolations.length > 0
+            });
+            localStorage.setItem('dpg_guest_quiz_attempts', JSON.stringify(guestAttempts));
+
+            // Auto-fill Settings Tab detail cache
+            localStorage.setItem('dpg_pending_settings_autofill', JSON.stringify({
+              name: candName,
+              studentId: candStudentId,
+              course: candCourse,
+              college: candCollege,
+              university: candUniversity
+            }));
+          } catch(ge) {
+            console.warn("Guest attempt local save error:", ge);
+          }
+        } else {
+          // If registered contributor, save directly to their personal history: contributors/{candidateUid}/myQuizAttempts/{attemptId}
+          try {
+            const myAttemptRef = doc(db, "contributors", candidateUid, "myQuizAttempts", attemptId);
+            await setDoc(myAttemptRef, {
+              attemptId: attemptId,
+              quizId: quizData.quizId,
+              quizTitle: quizData.title,
+              subjectCode: quizData.subjectCode,
+              ownerUid: quizData.ownerUid,
+              ownerName: quizData.authorName || 'Verified Contributor',
+              candidateUid: candidateUid,
+              candidateName: candName,
+              studentId: candStudentId,
+              course: candCourse,
+              collegeName: candCollege,
+              universityName: candUniversity,
+              submittedAt: serverTimestamp(),
+              durationSeconds: durationSeconds,
+              score: finalScore,
+              maximumScore: maxScore,
+              percentage: percentage,
+              totalQuestions: questionsList.length,
+              correctCount: correctCount,
+              incorrectCount: incorrectCount,
+              unattemptedCount: unattemptedCount,
+              answers: candidateAnswers,
+              umcFlag: uvcViolations.length > 0,
+              violationCount: uvcViolations.length
+            });
+          } catch(me) {
+            console.warn("Failed to write to myQuizAttempts:", me);
+          }
+        }
 
       } catch (err) {
         console.error("Attempt persistence error:", err);

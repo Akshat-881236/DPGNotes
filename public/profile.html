@@ -877,6 +877,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Establish Backend API Base URL
+    window.API_BASE_URL = window.API_BASE_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://dpgnotes.onrender.com');
+
     // Global Telemetry State
     let currentUser = null;
     let targetUid = "";
@@ -1503,7 +1506,19 @@
       if (typeof showToast === 'function') showToast('Disconnected from contributor', 'info');
 
       try {
-        await fetch(window.API_BASE_URL + '/api/social/disconnect', {
+        const connId1 = `${currentUser.uid}_${targetUid}`;
+        const connId2 = `${targetUid}_${currentUser.uid}`;
+        try {
+          await Promise.all([
+            deleteDoc(doc(db, "connections", connId1)),
+            deleteDoc(doc(db, "connections", connId2))
+          ]);
+        } catch (fsErr) {
+          console.warn("Direct connection delete note:", fsErr);
+        }
+
+        const apiBase = (window.API_BASE_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
+        await fetch(apiBase + '/api/social/disconnect', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId1: currentUser.uid, userId2: targetUid })

@@ -24,6 +24,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/reader-theme.css">
+  <script src="/reader-theme.js"></script>
   <script src="/custom-dialogs.js"></script>
 
   <style>
@@ -166,7 +168,7 @@
       <img src="/ANH.png" alt="DPGNotes">
       <span>DPGNotes <span style="color:var(--adm-primary);">Enterprise Proctor &amp; Quiz Telemetry</span></span>
     </a>
-    <div style="display:flex; align-items:center; gap:12px;">
+    <div class="adm-navbar-actions" style="display:flex; align-items:center; gap:12px;">
       <a href="/admin.html" class="btn btn-sm btn-outline-light">
         <i class="ri-shield-user-line"></i> Enterprise Dashboard
       </a>
@@ -265,7 +267,10 @@
       getFirestore, 
       collection, 
       getDocs, 
-      collectionGroup 
+      collectionGroup,
+      doc,
+      deleteDoc,
+      writeBatch
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -388,9 +393,14 @@
             </span>
           </td>
           <td>
-            <a href="/Quizes/index.html?quizId=${encodeURIComponent(q.quizId)}" target="_blank" class="btn btn-outline-info btn-sm" style="font-size:0.75rem;">
-              <i class="ri-eye-line"></i> Inspect Exam
-            </a>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <a href="/Quizes/index.html?quizId=${encodeURIComponent(q.quizId)}" target="_blank" class="btn btn-outline-info btn-sm" style="font-size:0.75rem;">
+                <i class="ri-eye-line"></i> Inspect
+              </a>
+              <button type="button" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem;" onclick="adminDeleteQuiz('${escapeHtml(q.quizId)}', '${escapeHtml(q.ownerUid || '')}')" title="Delete Quiz for Policy Violation">
+                <i class="ri-delete-bin-line"></i> Delete
+              </button>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);
@@ -436,6 +446,42 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    };
+
+    window.adminDeleteQuiz = async function(quizId, ownerUid) {
+      const confirmed = await customConfirm(
+        `ADMIN ACTION: Permanently delete examination "${quizId}" for institutional policy/content violation?\n\nThis will purge all question payloads, answer keys, and candidate scorecards from Firebase.`,
+        { title: "Delete Quiz for Violation", confirmText: "Yes, Delete Violation", isDanger: true }
+      );
+      if (!confirmed) return;
+
+      try {
+        if (ownerUid) {
+          // 1. Delete questions
+          const pageSnap = await getDocs(collection(db, "contributors", ownerUid, "quizzes", quizId, "questionPages"));
+          const b1 = writeBatch(db);
+          pageSnap.forEach(d => b1.delete(d.ref));
+          await b1.commit();
+
+          // 2. Delete attempts
+          const attSnap = await getDocs(collection(db, "contributors", ownerUid, "quizzes", quizId, "attempts"));
+          const b2 = writeBatch(db);
+          attSnap.forEach(d => b2.delete(d.ref));
+          await b2.commit();
+
+          try { await deleteDoc(doc(db, "contributors", ownerUid, "quizzes", quizId, "privateAnswerKey", "main")); } catch(e) {}
+          try { await deleteDoc(doc(db, "contributors", ownerUid, "quizzes", quizId)); } catch(e) {}
+        }
+
+        try { await deleteDoc(doc(db, "quizDirectory", quizId)); } catch(e) {}
+        try { await deleteDoc(doc(db, "quizAnalytics", quizId)); } catch(e) {}
+
+        await customAlert(`Examination "${quizId}" expunged permanently for policy violation.`, { title: "Quiz Deleted" });
+        loadPlatformQuizAudit();
+      } catch (err) {
+        console.error("Admin delete failed:", err);
+        await customAlert("Deletion error: " + err.message, { title: "Error", isDanger: true });
+      }
     };
 
     function escapeHtml(str) {

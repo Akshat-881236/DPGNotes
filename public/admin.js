@@ -10170,9 +10170,14 @@ window.loadQuizAnalyticsAdmin = async function(forceRefresh = false) {
         <td><strong style="color:var(--admin-success);">${qz.totalSubmissions || 0}</strong></td>
         <td><span class="${(qz.flaggedUmcCount || 0) > 0 ? 'badge bg-danger' : 'badge bg-secondary'}">${qz.flaggedUmcCount || 0}</span></td>
         <td style="text-align:center;">
-          <a href="Quizes/admin-quiz-analytics.html" target="_blank" class="btn-action primary" style="padding:4px 8px; font-size:0.75rem; text-decoration:none;">
-            <i class="ri-search-eye-line"></i> Full Audit
-          </a>
+          <div style="display:flex; justify-content:center; gap:4px;">
+            <a href="Quizes/admin-quiz-analytics.html" target="_blank" class="btn-action primary" style="padding:4px 8px; font-size:0.75rem; text-decoration:none;">
+              <i class="ri-search-eye-line"></i> Full Audit
+            </a>
+            <button type="button" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" onclick="adminDeleteQuizDirect('${qz.quizId}', '${qz.ownerUid || ''}')" title="Delete Quiz for Policy Violation">
+              <i class="ri-delete-bin-line"></i> Delete
+            </button>
+          </div>
         </td>
       `;
       tbody.appendChild(tr);
@@ -10183,3 +10188,31 @@ window.loadQuizAnalyticsAdmin = async function(forceRefresh = false) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--admin-danger);">Failed to load quiz analytics: ${err.message}</td></tr>`;
   }
 };
+
+window.adminDeleteQuizDirect = async function(quizId, ownerUid) {
+  if (!confirm(`ADMIN CONFIRMATION:\nPermanently expunge examination "${quizId}" for policy or content violations?`)) return;
+  try {
+    if (ownerUid) {
+      const pageSnap = await db.collection("contributors").doc(ownerUid).collection("quizzes").doc(quizId).collection("questionPages").get();
+      const b1 = db.batch();
+      pageSnap.forEach(d => b1.delete(d.ref));
+      await b1.commit();
+
+      const attSnap = await db.collection("contributors").doc(ownerUid).collection("quizzes").doc(quizId).collection("attempts").get();
+      const b2 = db.batch();
+      attSnap.forEach(d => b2.delete(d.ref));
+      await b2.commit();
+
+      try { await db.collection("contributors").doc(ownerUid).collection("quizzes").doc(quizId).collection("privateAnswerKey").doc("main").delete(); } catch(e) {}
+      await db.collection("contributors").doc(ownerUid).collection("quizzes").doc(quizId).delete();
+    }
+    try { await db.collection("quizDirectory").doc(quizId).delete(); } catch(e) {}
+    try { await db.collection("quizAnalytics").doc(quizId).delete(); } catch(e) {}
+    alert(`Examination "${quizId}" has been deleted.`);
+    window.loadQuizAnalyticsAdmin(true);
+  } catch (err) {
+    console.error("Direct delete failed:", err);
+    alert("Deletion failed: " + err.message);
+  }
+};
+

@@ -105,8 +105,8 @@
       return;
     }
 
-    // 2. Solution viewers navbar actions
-    const navActions = document.querySelector(".sol-navbar-actions");
+    // 2. Solution viewers & Quiz portals navbar actions
+    const navActions = document.querySelector(".sol-navbar-actions, .portal-nav-actions, .qz-nav-actions, .analytics-nav-actions, .dpg-theme-slot");
     if (navActions) {
       const controls = createControlsDOM();
       navActions.insertBefore(controls, navActions.firstChild);

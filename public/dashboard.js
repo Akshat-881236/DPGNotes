@@ -326,6 +326,106 @@ const savedTheme = localStorage.getItem("dpgTheme");
 if (savedTheme) applyTheme(savedTheme);
 
 // =========================================
+// MIGRATION: GUEST QUIZ ATTEMPTS TO CONTRIBUTOR
+// =========================================
+async function migrateGuestQuizAttempts(user) {
+  if (!user || user.isAnonymous) return;
+  try {
+    const raw = localStorage.getItem('dpg_guest_quiz_attempts');
+    if (!raw) return;
+    const guestList = JSON.parse(raw);
+    if (!Array.isArray(guestList) || guestList.length === 0) return;
+
+    for (const item of guestList) {
+      if (!item.quizId || !item.ownerUid) continue;
+
+      // 1. Delete old guest attempt document from author's quiz attempts if attemptId exists
+      if (item.attemptId) {
+        try {
+          await deleteDoc(doc(db, "contributors", item.ownerUid, "quizzes", item.quizId, "attempts", item.attemptId));
+        } catch(delErr) {
+          console.warn("Could not delete old guest attempt:", delErr);
+        }
+      }
+
+      // 2. Generate new registered attempt ID under new Contributor identity
+      const newAttemptId = 'att_' + user.uid.slice(0, 8) + '_' + Date.now().toString(36);
+
+      // 3. Re-push under author's quiz attempts collection
+      try {
+        const attemptRef = doc(db, "contributors", item.ownerUid, "quizzes", item.quizId, "attempts", newAttemptId);
+        await setDoc(attemptRef, {
+          attemptId: newAttemptId,
+          quizId: item.quizId,
+          ownerUid: item.ownerUid,
+          candidateUid: user.uid,
+          candidateType: 'registered',
+          candidateName: user.displayName || item.candidateName || 'Contributor',
+          studentId: item.studentId || 'N/A',
+          course: item.course || 'N/A',
+          collegeName: item.collegeName || 'N/A',
+          universityName: item.universityName || 'N/A',
+          startedAt: new Date(item.submittedAt || Date.now()),
+          submittedAt: serverTimestamp(),
+          durationSeconds: item.durationSeconds || 0,
+          score: item.score || 0,
+          maximumScore: item.maximumScore || 0,
+          percentage: item.percentage || 0,
+          totalQuestions: item.totalQuestions || 0,
+          correctCount: item.correctCount || 0,
+          incorrectCount: item.incorrectCount || 0,
+          unattemptedCount: item.unattemptedCount || 0,
+          answers: item.answers || {},
+          resultStatus: 'available',
+          submissionReason: 'GUEST_MIGRATED',
+          umcFlag: !!item.umcFlag
+        });
+      } catch(pushErr) {
+        console.warn("Failed to re-push author attempt:", pushErr);
+      }
+
+      // 4. Push into candidate's personal attempt history: contributors/{user.uid}/myQuizAttempts/{newAttemptId}
+      try {
+        const myAttemptRef = doc(db, "contributors", user.uid, "myQuizAttempts", newAttemptId);
+        await setDoc(myAttemptRef, {
+          attemptId: newAttemptId,
+          quizId: item.quizId,
+          quizTitle: item.quizTitle || 'Assessment',
+          subjectCode: item.subjectCode || 'ACADEMIC',
+          ownerUid: item.ownerUid,
+          ownerName: 'Verified Contributor',
+          candidateUid: user.uid,
+          candidateName: user.displayName || item.candidateName || 'Contributor',
+          studentId: item.studentId || 'N/A',
+          course: item.course || 'N/A',
+          collegeName: item.collegeName || 'N/A',
+          universityName: item.universityName || 'N/A',
+          submittedAt: serverTimestamp(),
+          durationSeconds: item.durationSeconds || 0,
+          score: item.score || 0,
+          maximumScore: item.maximumScore || 0,
+          percentage: item.percentage || 0,
+          totalQuestions: item.totalQuestions || 0,
+          correctCount: item.correctCount || 0,
+          incorrectCount: item.incorrectCount || 0,
+          unattemptedCount: item.unattemptedCount || 0,
+          answers: item.answers || {},
+          umcFlag: !!item.umcFlag
+        });
+      } catch(myErr) {
+        console.warn("Failed to push myQuizAttempts:", myErr);
+      }
+    }
+
+    // Clear local guest attempts once migrated
+    localStorage.removeItem('dpg_guest_quiz_attempts');
+    console.log("Successfully migrated guest quiz attempts to contributor account:", user.uid);
+  } catch(e) {
+    console.error("Migration error:", e);
+  }
+}
+
+// =========================================
 // AUTH STATE & BACKEND HOOKS
 // =========================================
 onAuthStateChanged(auth, async (user) => {
@@ -340,6 +440,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     localStorage.setItem("dpgActiveUserUid", user.uid);
+    migrateGuestQuizAttempts(user);
     localStorage.setItem("dpgActiveUserEmail", user.email || "");
     localStorage.setItem("dpgActiveUserName", user.displayName || "");
     localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
@@ -625,6 +726,25 @@ async function loadProfile() {
         twoFactorEl.checked = userData.twoFactorEnabled !== false;
       }
     }
+
+    // Auto-fill from imported Guest Quiz candidate profile cache if fields are empty
+    try {
+      const pendingAutofillRaw = localStorage.getItem("dpg_pending_settings_autofill");
+      if (pendingAutofillRaw) {
+        const autoData = JSON.parse(pendingAutofillRaw);
+        if (settingNameEl && (!settingNameEl.value || settingNameEl.value.trim() === "") && autoData.name) {
+          settingNameEl.value = autoData.name;
+        }
+        const settingStudentId = document.getElementById("settingStudentId");
+        if (settingStudentId && (!settingStudentId.value || settingStudentId.value.trim() === "") && autoData.studentId) {
+          settingStudentId.value = autoData.studentId;
+        }
+        const settingBio = document.getElementById("settingBio");
+        if (settingBio && (!settingBio.value || settingBio.value.trim() === "") && (autoData.course || autoData.college)) {
+          settingBio.value = `Student of ${autoData.course || 'Academic Course'} at ${autoData.college || 'DPG'} (${autoData.university || ''}).`;
+        }
+      }
+    } catch(e) {}
 
     // Profile completion validation: User Type and Student/Employee ID are mandatory
     const isProfileIncomplete = !userData.userType || !(userData.studentIdOrEmployeeId || userData.studentId);
