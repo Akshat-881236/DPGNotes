@@ -845,6 +845,7 @@ img, iframe, video, object, embed {
 .detailed-policy-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: #ffffff !important;
@@ -856,7 +857,9 @@ img, iframe, video, object, embed {
   text-decoration: none;
   transition: all var(--transition-fast);
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .detailed-policy-btn:hover {

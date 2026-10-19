@@ -154,6 +154,13 @@
         </div>
 
         <div class="sidebar-group">
+          <h3 class="group-title">Assessment & Quizzes</h3>
+          <ul class="nav-list">
+            <li><a href="#quiz-policy" class="nav-link" data-section="quiz-policy"><i class="ri-survey-line"></i> Quiz Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-group">
           <h3 class="group-title">Help & Support</h3>
           <ul class="nav-list">
             <li><a href="#faq" class="nav-link" data-section="faq"><i class="ri-questionnaire-line"></i> FAQ</a></li>
@@ -238,6 +245,13 @@
                   <h4>DRASA Policy</h4>
                   <p>Read the official Platform Suspension and Regulations guidelines governing uploads and conduct.</p>
                   <a href="#drasa" class="read-link">Read Regulations <i class="ri-arrow-right-line"></i></a>
+                </div>
+                <div class="policy-card-item">
+                  <i class="ri-survey-fill"></i>
+                  <h4>Quiz Policy</h4>
+                  <p>Learn candidate single-attempt rules, anti-cheat proctoring, score weighting, and answer key disclosures.</p>
+                  <a href="#quiz-policy" class="read-link">Read Quiz Policy <i class="ri-arrow-right-line"></i></a>
+                </div>
               </div>
 
               <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
@@ -258,7 +272,7 @@
             <!-- Section: Policy Updates -->
             <article id="updatesSection" class="policy-section">
               <h1>Recent Policy & Legal Revisions</h1>
-              <p class="subtitle">Last Updated: July 13, 2026</p>
+              <p class="subtitle">Last Updated: October 19, 2026</p>
               <p>DPGNotes periodically reviews and adjusts its policies to match compliance amendments (like the Indian Digital Personal Data Protection (DPDP) Act 2023) and new feature integrations.</p>
               <div class="update-timeline">
                 <div class="timeline-item">
@@ -270,6 +284,11 @@
                   <span class="timeline-date">May 20, 2026</span>
                   <h4>Version 2.3 - Share Link click logs integration</h4>
                   <p>Added detailed share click logging tables to the Admin Portal, enabling traffic analytics reporting on guest/uploader metrics.</p>
+                </div>
+                <div class="timeline-item">
+                  <span class="timeline-date">October 19, 2026</span>
+                  <h4>Version 2.5 - Quiz Assessment Architecture & Integrity Telemetry Release</h4>
+                  <p>Introduced the comprehensive Quiz Policy, strict candidate single-attempt verification (Student ID &amp; UID validation), proctored anti-cheat UMC event logging, deferred evaluation disclosure standards, and live examination preview tooling.</p>
                 </div>
               </div>
             </article>
@@ -748,6 +767,54 @@
               <p>Any external domain navigation is opened in a new tab with modern safety headers (e.g. <code>noopener, noreferrer</code>) to protect your browser session from security compromises.</p>
             </article>
 
+            <!-- Section: Quiz Examination Policy -->
+            <article id="quiz-policySection" class="policy-section">
+              <h1>Quiz Examination & Candidate Telemetry Policy</h1>
+              <p class="subtitle">Effective Date: October 19, 2026 &bull; Reference: POL-DPG-QUIZ-EVAL-2026-V1.0</p>
+              
+              <div class="detailed-policy-callout">
+                <div class="detailed-policy-callout-content">
+                  <i class="ri-survey-line" style="font-size:2rem; color:var(--primary);"></i>
+                  <div class="detailed-policy-callout-text">
+                    <h4>Comprehensive Quiz Policy & Analytics Informatory Available</h4>
+                    <p>Read all complete clauses, anti-cheat UMC criteria, candidate ranking metrics, and answer key release rules.</p>
+                  </div>
+                </div>
+                <a href="quiz-policy.html" class="detailed-policy-btn">Read Dedicated Quiz Policy <i class="ri-arrow-right-line"></i></a>
+              </div>
+
+              <p>This Quiz Examination Policy governs all online academic assessments, candidate scoring, proctoring telemetry, answer key disclosures, and contributor authoring standards conducted on the DPGNotes portal.</p>
+
+              <h2>1. Candidate Identity Verification & Single Attempt Rule</h2>
+              <p>To preserve institutional integrity and academic fairness, every examination enforces a strict <strong>single-attempt restriction</strong>. Re-submission or retaking a completed assessment is strictly prohibited. The system validates and binds candidate submissions across three independent integrity factors:</p>
+              <ul>
+                <li><strong>Verified Student ID:</strong> Each submission must contain a unique Student / Roll Number ID verified against existing attempts for the quiz.</li>
+                <li><strong>Authenticated Account / Guest UID:</strong> Both verified contributor sessions and guest Firebase Authentication sessions are permanently bound to their attempt record in Firestore.</li>
+                <li><strong>Workstation Session Lock:</strong> Browser local storage tokens record completed attempts to prevent unauthorized re-entry on the same client.</li>
+              </ul>
+
+              <h2>2. Anti-Cheat Monitoring & UMC Telemetry Engine</h2>
+              <p>Assessments conducted under proctored or strict mode actively record academic integrity telemetry using modern browser security APIs:</p>
+              <ul>
+                <li><strong>Tab Switching & Visibility Change:</strong> When a candidate navigates away from the examination window or switches tabs, a <code>TAB_OR_APP_HIDDEN</code> violation flag is logged. Under strict mode, tab abandonment triggers automatic immediate assessment submission.</li>
+                <li><strong>Fullscreen Compliance:</strong> Assessments configured for proctored mode require an uninterrupted fullscreen view. Exiting fullscreen mode registers a <code>FULLSCREEN_EXIT</code> integrity infraction.</li>
+                <li><strong>Clipboard & Context Menu Protection:</strong> Right-clicking, copying questions, and pasting unauthorized text are automatically intercepted and recorded as telemetry flags.</li>
+              </ul>
+
+              <h2>3. Cryptographic Answer Key Privacy & Deferred Evaluation</h2>
+              <p>To prevent answer extraction or inspect-element tampering during active examinations, public quiz payloads contain only question prompts and options. Correct answer keys are stored in a contributor-only restricted document. Authors configure assessments under one of two disclosure models:</p>
+              <ul>
+                <li><strong>Immediate Result Declaration:</strong> Candidates receive instant scoring, percentage calculations, and response breakdowns upon submission.</li>
+                <li><strong>Deferred Evaluation:</strong> Candidate responses are securely submitted in a <code>PENDING</code> evaluation state. Official scorecards and ranking metrics are declared only when the verified author officially releases the answer key.</li>
+              </ul>
+
+              <h2>4. Deterministic Scoring & Ranking Computations</h2>
+              <p>Scores are calculated deterministically using the author's configured parameters: designated score per correct response, optional negative marks for incorrect options, and unattempted question penalties. Candidate ranks are evaluated dynamically based on final score, with ties resolved deterministically by submission duration (shorter durations achieve higher priority) and zero UMC infractions.</p>
+
+              <h2>5. Contributor Authoring & Content Safety</h2>
+              <p>Quizzes authored by contributors must uphold academic accuracy and community standards. Authors may embed interactive code containers, comparison tables, and educational math. Deceptive questions, malicious script execution, copyright infringement, or examination fraud violate DPGNotes DRASA regulations and result in contributor privileges revocation.</p>
+            </article>
+
             <!-- Section: FAQ -->
             <article id="faqSection" class="policy-section">
               <h1>Legal FAQ</h1>
@@ -1067,6 +1134,8 @@
           targetId = "ads-policySection";
         } else if (targetId === "native-ads-monetization" || targetId === "ads-monetization-policy" || targetId === "monetization" || targetId === "ads-monetization") {
           targetId = "native-ads-monetizationSection";
+        } else if (targetId === "quiz-policy" || targetId === "quiz" || targetId === "quizzes") {
+          targetId = "quiz-policySection";
         } else if (!targetId.endsWith("Section") && document.getElementById(targetId + "Section")) {
           targetId = targetId + "Section";
         }

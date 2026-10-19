@@ -200,6 +200,53 @@
   .pdf-viewer-container {
     padding: 1rem;
   }
+
+  /* Detailed Policy Callout & Action Button Mobile Responsiveness */
+  .detailed-policy-callout {
+    padding: 1.1rem 1rem !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.85rem !important;
+    box-sizing: border-box !important;
+    margin: 1.25rem 0 !important;
+  }
+  .detailed-policy-callout-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .detailed-policy-callout-text {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .detailed-policy-callout-text h4 {
+    word-break: break-word !important;
+  }
+  .detailed-policy-callout-text p {
+    word-break: break-word !important;
+  }
+  .detailed-policy-btn {
+    width: 100% !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.85rem !important;
+  }
+  .summary-back-callout {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+  .summary-back-btn {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
 }
 
 @media print {

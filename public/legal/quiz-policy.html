@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
+  <script src="/dpg-loader.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../ANH.png" type="image/png" />
+  <title>Comprehensive Quiz Examination & Telemetry Policy | DPGNotes Legal Center</title>
+  <meta name="description" content="Comprehensive Quiz Policy and Assessment Analytics Informatory of DPGNotes detailing single-attempt validation, anti-cheat UMC telemetry, deferred answer keys, and deterministic scoring." />
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dark.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .compliance-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.25s ease;
+    }
+    .compliance-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .compliance-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .compliance-card p {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+  </style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
+  <script src="../custom-dialogs.js"></script>
+</head>
+<body class="theme-auto">
+  <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
+
+  <!-- Header -->
+  <header class="legal-header">
+    <div class="header-container">
+      <a href="../index.html" class="legal-logo">
+        <i class="ri-shield-user-fill logo-icon"></i>
+        <span>DPGNotes <span class="accent-text">Legal</span></span>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="legal-layout-container">
+    <!-- Sidebar Navigation -->
+    <aside class="legal-sidebar" id="legalSidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-group">
+          <h3 class="group-title">Overview</h3>
+          <ul class="nav-list">
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Legal Summary Hub</a></li>
+            <li><a href="index.html#updates" class="nav-link"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-group">
+          <h3 class="group-title">Assessment &amp; Quizzes</h3>
+          <ul class="nav-list">
+            <li><a href="quiz-policy.html" class="nav-link active"><i class="ri-survey-line"></i> Quiz Policy &amp; Analytics</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-group">
+          <h3 class="group-title">Standalone Policies</h3>
+          <ul class="nav-list">
+            <li><a href="privacy-policy.html" class="nav-link"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
+            <li><a href="terms-conditions.html" class="nav-link"><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
+            <li><a href="cookie-policy.html" class="nav-link"><i class="bi bi-cookie"></i> Cookie Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link"><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="native-ads-monetization-policy.html" class="nav-link"><i class="ri-money-dollar-circle-line"></i> Native Ads Monetization</a></li>
+            <li><a href="disclaimer.html" class="nav-link"><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link"><i class="ri-scales-line"></i> DRASA Regulations</a></li>
+            <li><a href="copyright-policy.html" class="nav-link"><i class="ri-copyright-line"></i> Copyright Policy</a></li>
+            <li><a href="dmca-policy.html" class="nav-link"><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
+            <li><a href="analytics-policy.html" class="nav-link"><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
+            <li><a href="security-policy.html" class="nav-link"><i class="ri-shield-check-line"></i> Security Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link"><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link"><i class="ri-external-link-line"></i> External Links</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="legal-content">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; DPDP Act 2023 &amp; Academic Integrity Standard</span>
+            </div>
+            <h1 class="document-title">DPGNotes Comprehensive Quiz Policy &amp; Analytics Informatory</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Last Revised: October 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-QUIZ-EVAL-2026-V1.0</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 1.0 (Comprehensive Edition)</span>
+            </div>
+          </header>
+
+          <!-- Back to Summary Callout -->
+          <div class="summary-back-callout">
+            <div class="summary-back-content">
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#quiz-policy">Summary Version of this Policy in Legal Hub</a>.
+              </div>
+            </div>
+          </div>
+
+          <article class="legal-article">
+            
+            <h2>1. Institutional Assessment Charter &amp; Educational Integrity</h2>
+            <p>The DPGNotes Quiz &amp; Examination Engine provides higher-education students, faculty, and verified contributors with a resilient, tamper-evident digital assessment platform. Built as an open academic infrastructure under Akshat Network Hub, our mission is to facilitate objective self-evaluation, continuous coursework revision, competitive mock preparation, and verified academic benchmark testing without compromising privacy or student fairness.</p>
+            <p>This comprehensive document establishes binding operational guidelines for candidates sitting for online examinations, contributors generating quiz questions, automated proctoring telemetry mechanisms, cryptographic answer key security, deterministic rank scoring, and analytical data retention under the <strong>Digital Personal Data Protection (DPDP) Act, 2023</strong>.</p>
+
+            <div class="compliance-grid">
+              <div class="compliance-card">
+                <h4><i class="ri-shield-check-line"></i> Single-Attempt Lock</h4>
+                <p>Triple validation using unique Student ID, authenticated Firebase UID, and client workstation token prevents duplicate attempts.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-eye-line"></i> Anti-Cheat Telemetry</h4>
+                <p>Page visibility events, fullscreen compliance, clipboard intercept, and inspection attempts are tracked in real time.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-lock-2-line"></i> Cryptographic Key Isolation</h4>
+                <p>Client payloads contain zero answer keys. Deferred evaluation protects keys until authors authorize release.</p>
+              </div>
+              <div class="compliance-card">
+                <h4><i class="ri-award-line"></i> Deterministic Scoring</h4>
+                <p>Mathematical scoring algorithms calculate rank, percentage, and tie-breaking by duration and zero infractions.</p>
+              </div>
+            </div>
+
+            <h2>2. Candidate Identity Verification &amp; Strict Single-Attempt Lock</h2>
+            <p>To preserve evaluation integrity and ensure meritocratic standing across competitive leaderboards, every published assessment on DPGNotes strictly enforces a <strong>single-attempt policy</strong>. Once an attempt is initiated or submitted, retakes or duplicate entries by the same individual are strictly prohibited.</p>
+            <p>The system enforces this restriction across three independent architectural layers:</p>
+            <ul>
+              <li><strong>Student / Roll Number Verification:</strong> Every candidate must submit a valid institutional Student ID or Roll Number. The scoring engine queries the quiz's Firestore attempt ledger; if the Student ID has already been recorded for this quiz, initiation is rejected immediately.</li>
+              <li><strong>Authenticated Session Binding (UID):</strong> Both verified contributor sessions and anonymous Firebase Authentication guest sessions assign an immutable <code>candidateUid</code>. This UID is bound directly to the attempt document, preventing account hopping or credential spoofing.</li>
+              <li><strong>Client Device &amp; Local Workstation Lock:</strong> Upon attempt initialization, a cryptographically generated session token is stored in browser <code>localStorage</code> (keyed by <code>quiz_attempt_{quizId}</code>). If a candidate clears session cookies or attempts to re-enter from the same browser, local token checks block duplicate assessment sessions.</li>
+            </ul>
+
+            <div class="table-responsive">
+              <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.88rem; color:var(--text-main);">
+                <thead>
+                  <tr style="background:rgba(255,255,255,0.08); text-align:left;">
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Verification Layer</th>
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Integrity Metric</th>
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Enforcement Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); font-weight:600; color:var(--primary-light);">1. Institutional ID</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Duplicate Student ID or University Roll Number across existing attempts.</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#ef4444;">Access Denied: "Attempt already submitted under this Student ID".</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); font-weight:600; color:var(--primary-light);">2. Firebase UID</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Canonical authenticated User ID (Registered or Anonymous Guest).</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#ef4444;">Database lock rejects secondary write in Firestore security rules.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); font-weight:600; color:var(--primary-light);">3. Client Token</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Local device storage attempt registry and completed status lock.</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#f59e0b;">Redirects directly to existing scorecard &amp; analytics breakdown.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2>3. Anti-Cheat Monitoring &amp; UMC Telemetry Engine</h2>
+            <p>During live examination sessions, the platform utilizes modern, non-invasive browser APIs to safeguard academic honesty. The system operates an automated <strong>Unfair Means Case (UMC) Telemetry Engine</strong> that monitors candidate workstation activity without accessing private files, camera streams, or unauthorized peripherals:</p>
+            <ul>
+              <li><strong>Tab Switching &amp; Window Blur (<code>TAB_OR_APP_HIDDEN</code>):</strong> Implemented through the W3C Page Visibility API. If a candidate minimizes the assessment window, switches tabs, or launches an external application, a telemetry event is recorded with an accurate timestamp. Under <em>Strict Proctoring Mode</em>, tab abandonment immediately terminates the examination and forces submission of current answers.</li>
+              <li><strong>Fullscreen Compliance (<code>FULLSCREEN_EXIT</code>):</strong> For assessments designated as proctored by the author, fullscreen mode is mandatory. Exiting fullscreen mode prompts an on-screen warning banner and logs a compliance infraction. Three consecutive fullscreen departures trigger automatic UMC disqualification.</li>
+              <li><strong>Clipboard &amp; Context Interception (<code>CLIPBOARD_ACCESS</code>):</strong> Copying questions, cutting text, right-clicking to inspect elements, or pasting external snippets are intercepted and disabled. Each attempt increments the candidate's violation counter.</li>
+              <li><strong>Developer Tools &amp; Keyboard Shortcutting:</strong> Shortcuts associated with browser inspection (F12, Ctrl+Shift+I, Ctrl+U) are suppressed and logged as potential tampering events.</li>
+            </ul>
+
+            <h2>4. Cryptographic Answer Key Privacy &amp; Deferred Evaluation</h2>
+            <p>Unlike conventional web quizzes where answer keys are embedded in hidden HTML attributes or JSON payloads accessible via browser DevTools, DPGNotes maintains a strict <strong>Zero-Knowledge Client Payload Architecture</strong>:</p>
+            <ul>
+              <li><strong>Client Payloads:</strong> Public quiz documents (<code>quizDirectory/{quizId}</code> and <code>questionPages/{pageId}</code>) contain solely question prompt markdown, options, code snippets, and media references. Correct option mappings are completely omitted from public network responses.</li>
+              <li><strong>Private Server Key:</strong> Correct answer keys reside exclusively in the contributor's private subcollection (<code>contributors/{uid}/quizzes/{quizId}/privateAnswerKey/main</code>), protected by Firestore Security Rules that prohibit candidate read access.</li>
+              <li><strong>Immediate vs. Deferred Disclosure:</strong>
+                <ul>
+                  <li><em>Immediate Evaluation:</em> If the author enables instant release, candidate scores and itemized solutions are calculated upon submission and rendered on the candidate's private scorecard.</li>
+                  <li><em>Deferred Evaluation:</em> For formal institution tests, candidate responses are committed in a <code>PENDING</code> evaluation state. Ranks and correct answers are withheld until the author officially publishes the key from their Contributor Dashboard, preventing early test-takers from leaking answers to peers.</li>
+                </ul>
+              </li>
+            </ul>
+
+            <h2>5. Deterministic Scoring Algorithm &amp; Tie-Breaking Policy</h2>
+            <p>Candidate performance is evaluated with complete mathematical determinism based on the author's configured parameters:</p>
+            <div class="table-responsive">
+              <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.88rem; color:var(--text-main);">
+                <thead>
+                  <tr style="background:rgba(255,255,255,0.08); text-align:left;">
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Scoring Factor</th>
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Configured Rule</th>
+                    <th style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Formulaic Impact</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); font-weight:600;">Correct Response</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Positive mark allocation (e.g. +4, +1)</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#10b981;">Added directly to raw score total.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); font-weight:600;">Incorrect Response</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Negative marking deduction (e.g. -1, -0.25)</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:#ef4444;">Subtracted from raw score total.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); font-weight:600;">Unattempted Question</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1);">Neutral (0) or optional penalty penalty</td>
+                    <td style="padding:10px 14px; border:1px solid rgba(255,255,255,0.1); color:var(--text-muted);">Recorded in candidate telemetry breakdown.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>Deterministic Tie-Breaking Protocol</h3>
+            <p>When multiple candidates achieve identical net percentage scores on the public or class leaderboard, rank ties are resolved strictly according to the following hierarchy:</p>
+            <ol>
+              <li><strong>Higher Net Score:</strong> Candidate with superior aggregate points.</li>
+              <li><strong>Lesser Duration (Speed):</strong> Candidate who completed the assessment in fewer total seconds.</li>
+              <li><strong>Zero UMC Infractions:</strong> Candidates with clean integrity telemetry receive precedence over candidates with logged infractions.</li>
+              <li><strong>Higher Correct Answer Ratio:</strong> Candidate with fewer incorrect attempts.</li>
+              <li><strong>Submission Timestamp:</strong> In the rare event of parity across all criteria, the earlier submission timestamp is assigned the higher rank.</li>
+            </ol>
+
+            <h2>6. Proctored Code Sandbox Security &amp; Runtime Disabling</h2>
+            <p>For computer science, software engineering, and technical coding quizzes, question bodies may embed live code containers (supporting HTML, CSS, JavaScript, Python, C++, and Java syntax highlighting). During an active unsubmitted examination, code sandbox execution capabilities are intentionally restricted or disabled to prevent candidates from using the browser's console as an unauthorized external compiler or sandbox escape vehicle. Full interactive execution is restored upon scorecard generation.</p>
+
+            <h2>7. Assessment Analytics, Aggregated Metrics &amp; Data Privacy</h2>
+            <p>In adherence to the <strong>DPDP Act 2023</strong> and collegiate data protection standards, examination analytics are handled with strict privacy safeguards:</p>
+            <ul>
+              <li><strong>Contributor Dashboards:</strong> Quiz authors receive aggregate insights including average completion time, median score, question difficulty discrimination index, and common misconceptions. Authors do not receive candidate private passwords, payment data, or off-platform browsing behavior.</li>
+              <li><strong>Audit Logging:</strong> Administrative overrides, answer key updates, manual score recalculations, and UMC dispute investigations generate immutable records in the platform audit log (<code>auditLogs/{eventId}</code>).</li>
+              <li><strong>Data Retention &amp; Right to Erasure:</strong> Candidate attempt records are retained for the duration of the active academic term (or until deleted by the author). Candidates may request data anonymization or removal in accordance with the DPGNotes Data Retention Policy.</li>
+            </ul>
+
+            <h2>8. Contributor Ethics, Quality Standards &amp; Redressal</h2>
+            <p>Authors who create and publish quizzes on DPGNotes must ensure all question statements, code snippets, and answer explanations are academically sound, unambiguous, and free from copyright infringement or defamatory language. Quizzes exhibiting malicious script injection, misleading distractors, or academic fraud will be purged, and responsible contributor accounts will be subject to permanent suspension under DRASA regulations.</p>
+            <p>Students or faculty members who identify inaccuracies or unfair question formulation may lodge an official review through the <a href="../support-contact-form.html" style="color:var(--primary); font-weight:600;">Grievance Redressal Desk</a> referencing the specific <code>quizId</code>.</p>
+
+          </article>
+
+          <!-- Dynamic Legal AdSense Container -->
+          <div class="legal-adsense-container" style="margin: 2rem 0; min-height: 100px;">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-5515547448097504"
+                 data-ad-slot="9988776655"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+          </div>
+
+          <!-- Document Footer -->
+          <footer class="document-footer" style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: var(--text-muted);">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+              <span>&copy; 2026 DPGNotes. All rights reserved.</span>
+              <span>Operated under Akshat Network Hub &bull; Legal Center</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Client-side Scripts -->
+  <script>
+    const themeBtn = document.getElementById('themeToggleBtn');
+    const savedTheme = localStorage.getItem('legal-theme') || 'auto';
+    applyTheme(savedTheme);
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const cur = document.body.classList.contains('theme-dark') ? 'dark' : (document.body.classList.contains('theme-light') ? 'light' : 'auto');
+        const next = cur === 'auto' ? 'light' : (cur === 'light' ? 'dark' : 'auto');
+        applyTheme(next);
+      });
+    }
+    function applyTheme(t) {
+      document.body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
+      if (t === 'dark') document.body.classList.add('theme-dark');
+      else if (t === 'light') document.body.classList.add('theme-light');
+      else document.body.classList.add('theme-auto');
+      localStorage.setItem('legal-theme', t);
+    }
+    const mobBtn = document.getElementById('mobileMenuBtn');
+    const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (mobBtn && sbar) {
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
+    }
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement, b = document.body;
+      const st = 'scrollTop', sh = 'scrollHeight';
+      const percent = (h[st]||b[st]) / ((h[sh]||b[sh]) - h.clientHeight) * 100;
+      const bar = document.getElementById('readingProgress');
+      if (bar) bar.style.width = percent + '%';
+    });
+
+    // Dynamic Legal Ad Container Visibility Guardian: Eliminates empty whitespace when ads are unavailable
+    function checkLegalAds() {
+      document.querySelectorAll('.legal-adsense-container').forEach(container => {
+        const ins = container.querySelector('ins.adsbygoogle');
+        const hasIframe = container.querySelector('iframe');
+        const isFilled = ins && (ins.getAttribute('data-ad-status') === 'filled' || (ins.innerHTML && ins.innerHTML.trim().length > 0 && ins.offsetHeight > 10));
+        if (hasIframe || isFilled) {
+          container.classList.add('ad-active');
+        } else {
+          container.classList.remove('ad-active');
+        }
+      });
+    }
+    checkLegalAds();
+    setInterval(checkLegalAds, 1000);
+  </script>
+  <script src="../redirect.js"></script>
+</body>
+</html>
