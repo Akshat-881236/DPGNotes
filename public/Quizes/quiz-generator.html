@@ -152,12 +152,6 @@
       border-top-left-radius: 0;
       border-top-right-radius: 0;
     }
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--qz-border);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
     .qz-brand {
       display: flex;
       align-items: center;
@@ -353,12 +347,142 @@
     .opt-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 16px;
       margin-top: 1rem;
     }
-    @media (max-width: 768px) {
+    .opt-col {
+      display: flex;
+      flex-direction: column;
+    }
+    @media (max-width: 992px) {
       .opt-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
       .qz-navbar { padding: 1rem 1.25rem; }
+    }
+
+    /* Candidate Real-Time Live Examination Preview */
+    .quiz-exam-preview-container {
+      margin-top: 1.5rem;
+      background: rgba(10, 14, 26, 0.95);
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+    }
+    .quiz-exam-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      background: rgba(99, 102, 241, 0.12);
+      border-bottom: 1px solid rgba(99, 102, 241, 0.25);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .quiz-exam-preview-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #a5b4fc;
+    }
+    .quiz-exam-preview-sub {
+      font-size: 0.74rem;
+      color: #94a3b8;
+    }
+    .quiz-exam-preview-body {
+      padding: 1.25rem;
+    }
+    .quiz-exam-preview-prompt {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #f8fafc;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .quiz-exam-preview-prompt p:last-child {
+      margin-bottom: 0;
+    }
+    .quiz-exam-preview-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .preview-exam-option-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .preview-exam-option-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(99, 102, 241, 0.35);
+      transform: translateY(-1px);
+    }
+    .preview-exam-option-card.is-correct-key {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
+    }
+    .preview-option-letter {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: all 0.2s;
+    }
+    .preview-exam-option-card.is-correct-key .preview-option-letter {
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+    .preview-option-content {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.95rem;
+      color: #f1f5f9;
+      line-height: 1.6;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .preview-option-content p:last-child {
+      margin-bottom: 0;
+    }
+    .preview-correct-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      white-space: nowrap;
+      margin-left: auto;
+      align-self: center;
     }
 
     .key-selector-wrap {
@@ -981,24 +1105,8 @@
       updateNavigatorProgress();
     }
 
-    // Helper to render quick tools toolbar
-    function renderQuickToolsPalette(targetId, contextId, isCompact = false) {
-      if (isCompact) {
-        return `
-          <div class="sol-palette sol-palette-compact">
-            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<strong>', '</strong>')" title="Bold"><strong>B</strong></button>
-            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<code>', '</code>')" title="Inline Code">code</button>
-            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<pre><code>', '</code></pre>')" title="Code Block">pre</button>
-            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<p>', '</p>')" title="Paragraph">p</button>
-            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<a href=&quot;https://...&quot; target=&quot;_blank&quot;>', '</a>')" title="Link"><i class="ri-link"></i></button>
-            <button type="button" class="sol-palette-btn" style="color:#a78bfa;" onclick="insertQuizTableSnippet('${targetId}', '${contextId}')" title="Insert Table"><i class="ri-table-line"></i> table</button>
-            <button type="button" class="sol-palette-btn" style="color:#f97316;" onclick="insertQuizSandboxSnippet('${targetId}', 'html', '${contextId}')" title="HTML Box"><i class="ri-html5-fill"></i> html</button>
-            <button type="button" class="sol-palette-btn" style="color:#38bdf8;" onclick="insertQuizSandboxSnippet('${targetId}', 'css', '${contextId}')" title="CSS Box"><i class="ri-css3-fill"></i> css</button>
-            <button type="button" class="sol-palette-btn" style="color:#facc15;" onclick="insertQuizSandboxSnippet('${targetId}', 'js', '${contextId}')" title="JS Box"><i class="ri-javascript-fill"></i> js</button>
-          </div>
-        `;
-      }
-
+    // Helper to render quick tools toolbar matching Assignment / Practical Solution Generator
+    function renderQuickToolsPalette(targetId, contextId) {
       return `
         <div class="sol-palette">
           <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<h1>', '</h1>')">h1</button>
@@ -1052,35 +1160,47 @@
     };
 
     window.updateQuestionLivePreview = function(i) {
-      const pBox = document.getElementById(`preview_content_${i}`);
-      if (!pBox) return;
+      const promptBox = document.getElementById(`preview_prompt_${i}`);
+      const optionsBox = document.getElementById(`preview_options_${i}`);
+      if (!promptBox || !optionsBox) return;
+
       const qText = document.getElementById(`qText_${i}`)?.value || '';
       const a = document.getElementById(`q_${i}_optA`)?.value || '';
       const b = document.getElementById(`q_${i}_optB`)?.value || '';
       const c = document.getElementById(`q_${i}_optC`)?.value || '';
       const d = document.getElementById(`q_${i}_optD`)?.value || '';
+      const selectedRadio = document.querySelector(`input[name="correctKey_${i}"]:checked`);
+      const selectedKey = selectedRadio ? selectedRadio.value : '';
 
-      if (!qText.trim() && !a.trim() && !b.trim() && !c.trim() && !d.trim()) {
-        pBox.innerHTML = '<em style="color:#64748b;">Formatted question prompt and options will render here in real time...</em>';
-        return;
-      }
+      const formatFn = (raw, ctx) => {
+        if (!raw || !raw.trim()) return '';
+        if (typeof window.formatSolutionContent === 'function') {
+          return window.formatSolutionContent(raw, ctx);
+        }
+        return escapeHtml(raw);
+      };
 
-      const formatFn = typeof window.formatSolutionContent === 'function' ? window.formatSolutionContent : escapeHtml;
       const promptHtml = formatFn(qText, `prev_q_${i}`);
-      const aHtml = formatFn(a, `prev_optA_${i}`);
-      const bHtml = formatFn(b, `prev_optB_${i}`);
-      const cHtml = formatFn(c, `prev_optC_${i}`);
-      const dHtml = formatFn(d, `prev_optD_${i}`);
+      promptBox.innerHTML = promptHtml || '<em style="color:#64748b; font-size:0.92rem;">(Type your question prompt / problem statement above to see it formatted live here...)</em>';
 
-      pBox.innerHTML = `
-        <div style="font-weight:600; margin-bottom:0.75rem;">${promptHtml || '<span style="color:#64748b;">(No prompt entered yet)</span>'}</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.85rem;">
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>A:</strong> ${aHtml}</div>
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>B:</strong> ${bHtml}</div>
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>C:</strong> ${cHtml}</div>
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>D:</strong> ${dHtml}</div>
-        </div>
-      `;
+      const optData = [
+        { letter: 'A', text: a },
+        { letter: 'B', text: b },
+        { letter: 'C', text: c },
+        { letter: 'D', text: d }
+      ];
+
+      optionsBox.innerHTML = optData.map(opt => {
+        const isCorrect = (selectedKey === opt.letter);
+        const formattedContent = formatFn(opt.text, `prev_opt_${opt.letter}_${i}`) || `<span style="color:#64748b; font-style:italic;">Option ${opt.letter} text...</span>`;
+        return `
+          <div class="preview-exam-option-card ${isCorrect ? 'is-correct-key' : ''}" onclick="selectKey(${i}, '${opt.letter}')" title="Click to designate Option ${opt.letter} as correct key">
+            <div class="preview-option-letter">${opt.letter}</div>
+            <div class="preview-option-content">${formattedContent}</div>
+            ${isCorrect ? `<span class="preview-correct-pill"><i class="ri-checkbox-circle-fill"></i> Designated Key</span>` : ''}
+          </div>
+        `;
+      }).join('');
     };
 
     function renderQuestionEditors() {
@@ -1120,49 +1240,33 @@
           </div>
           
           <div class="mb-3">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <label class="form-label" style="margin-bottom:0;">Question Prompt / Problem Statement <span class="req">*</span></label>
-              <span style="font-size:0.75rem; color:var(--qz-text-muted);">Quick formatting tools (HTML, code, diff-table supported)</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+              <label class="form-label mb-0" style="font-weight:700;">Question Prompt / Problem Statement <span class="req">*</span></label>
+              <span style="font-size:0.75rem; color:#94a3b8;">Use quick tools below or type HTML/Markdown</span>
             </div>
             <div class="sol-editor-box">
-              ${renderQuickToolsPalette(`qText_${i}`, `qz_q_${i}`, false)}
+              ${renderQuickToolsPalette(`qText_${i}`, `qz_q_${i}`)}
               <textarea id="qText_${i}" class="form-control" rows="3" placeholder="State question ${i} clearly. Format code, tables, or diffs with quick tools above..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
             </div>
           </div>
 
           <div class="opt-grid">
-            <div>
-              <label class="form-label">Option A <span class="req">*</span></label>
-              <div class="sol-editor-box">
-                ${renderQuickToolsPalette(`q_${i}_optA`, `qz_optA_${i}`, true)}
-                <textarea id="q_${i}_optA" class="form-control" rows="2" placeholder="Option A text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
+            ${['A', 'B', 'C', 'D'].map(letter => `
+              <div class="opt-col">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+                  <label class="form-label mb-0" style="font-weight:700;">Option ${letter} <span class="req">*</span></label>
+                  <span style="font-size:0.72rem; color:#94a3b8;">Use quick tools below or type HTML/Markdown</span>
+                </div>
+                <div class="sol-editor-box">
+                  ${renderQuickToolsPalette(`q_${i}_opt${letter}`, `qz_opt${letter}_${i}`)}
+                  <textarea id="q_${i}_opt${letter}" class="form-control" rows="3" placeholder="Option ${letter} text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
+                </div>
               </div>
-            </div>
-            <div>
-              <label class="form-label">Option B <span class="req">*</span></label>
-              <div class="sol-editor-box">
-                ${renderQuickToolsPalette(`q_${i}_optB`, `qz_optB_${i}`, true)}
-                <textarea id="q_${i}_optB" class="form-control" rows="2" placeholder="Option B text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
-              </div>
-            </div>
-            <div>
-              <label class="form-label">Option C <span class="req">*</span></label>
-              <div class="sol-editor-box">
-                ${renderQuickToolsPalette(`q_${i}_optC`, `qz_optC_${i}`, true)}
-                <textarea id="q_${i}_optC" class="form-control" rows="2" placeholder="Option C text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
-              </div>
-            </div>
-            <div>
-              <label class="form-label">Option D <span class="req">*</span></label>
-              <div class="sol-editor-box">
-                ${renderQuickToolsPalette(`q_${i}_optD`, `qz_optD_${i}`, true)}
-                <textarea id="q_${i}_optD" class="form-control" rows="2" placeholder="Option D text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
-              </div>
-            </div>
+            `).join('')}
           </div>
 
           <div class="key-selector-wrap">
-            <span style="font-size:0.82rem; font-weight:700; color:var(--qz-text-muted);">
+            <span style="font-size:0.85rem; font-weight:700; color:var(--qz-text-muted);">
               <i class="ri-key-2-fill" style="color:var(--qz-warning);"></i> Correct Option:
             </span>
             <label class="key-radio-btn" id="lblKey_${i}_A">
@@ -1182,14 +1286,17 @@
             </label>
           </div>
 
-          <!-- Per-Question Real-Time Live Preview -->
-          <div class="sol-q-preview-box mt-3" id="preview_box_${i}" style="border:1px solid var(--qz-border); border-radius:12px; background:rgba(15,23,42,0.65); padding:1rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:#94a3b8; margin-bottom:8px;">
-              <span><i class="ri-eye-line" style="color:var(--qz-accent);"></i> Live Formatted Preview (Q${i})</span>
-              <span style="font-size:0.72rem; color:#64748b;">Interactive tables, diffs, code highlight</span>
+          <!-- Per-Question Real-Time Live Examination Preview -->
+          <div class="quiz-exam-preview-container" id="preview_box_${i}">
+            <div class="quiz-exam-preview-header">
+              <div class="quiz-exam-preview-badge">
+                <i class="ri-eye-fill" style="color:var(--qz-accent);"></i> Candidate Live Exam View — Question ${i} of ${totalCount}
+              </div>
+              <span class="quiz-exam-preview-sub">Interactive candidate preview (reflects real examination layout)</span>
             </div>
-            <div id="preview_content_${i}" style="font-size:0.92rem; color:#f8fafc; min-height:24px;">
-              <em style="color:#64748b;">Live formatted prompt and options preview will appear here as you type...</em>
+            <div class="quiz-exam-preview-body">
+              <div class="quiz-exam-preview-prompt" id="preview_prompt_${i}"></div>
+              <div class="quiz-exam-preview-options" id="preview_options_${i}"></div>
             </div>
           </div>
         `;
@@ -1221,6 +1328,7 @@
       const radio = document.querySelector(`input[name="correctKey_${qIndex}"][value="${key}"]`);
       if (radio) radio.checked = true;
       checkQuestionConfigured(qIndex);
+      updateQuestionLivePreview(qIndex);
       if (triggerSave) debouncedAutoSaveDraft();
     };
 
