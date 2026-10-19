@@ -13,6 +13,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/AssignmentSolution/solutions-style.css?v=2.3.1">
+  <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
 
   <style>
     :root {
@@ -65,6 +67,70 @@
       font-size: 1.25rem;
     }
     .brand-link img { width: 34px; height: 34px; border-radius: 8px; }
+
+    .portal-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      white-space: nowrap;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn-dash {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--qz-border);
+      color: var(--qz-text);
+    }
+    .nav-btn-dash:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* Mobile Icon-Only Strategy for Header Buttons */
+    @media (max-width: 576px) {
+      .portal-nav {
+        padding: 0.65rem 0.85rem;
+      }
+      .brand-link {
+        font-size: 1.05rem;
+        gap: 8px;
+      }
+      .brand-link img {
+        width: 28px;
+        height: 28px;
+      }
+      .nav-btn-text {
+        display: none !important;
+      }
+      .nav-action-btn {
+        padding: 7px 11px;
+        font-size: 1.15rem;
+      }
+      .nav-action-btn i {
+        margin: 0;
+      }
+    }
+    @media (min-width: 577px) and (max-width: 768px) {
+      .portal-nav {
+        padding: 0.75rem 1.25rem;
+      }
+      .brand-link {
+        font-size: 1.15rem;
+      }
+      .nav-action-btn {
+        padding: 5px 12px;
+        font-size: 0.82rem;
+      }
+      .nav-btn-text {
+        display: inline;
+      }
+    }
 
     .portal-main {
       flex: 1;
@@ -206,7 +272,7 @@
 
     .option-card {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
       padding: 14px 18px;
       border-radius: 12px;
@@ -228,6 +294,7 @@
     .option-letter {
       width: 28px;
       height: 28px;
+      min-width: 28px;
       border-radius: 6px;
       background: rgba(255, 255, 255, 0.08);
       display: flex;
@@ -235,10 +302,65 @@
       justify-content: center;
       font-weight: 700;
       font-size: 0.85rem;
+      margin-top: 2px;
+      flex-shrink: 0;
     }
     .option-card.selected .option-letter {
       background: var(--qz-primary);
       color: #fff;
+    }
+    .option-content {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.95rem;
+      color: #fff;
+      line-height: 1.6;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .option-content p:last-child {
+      margin-bottom: 0;
+    }
+    .option-content .sol-table-responsive {
+      margin: 0.5rem 0;
+    }
+    .option-content .sol-code-block-container {
+      margin: 0.5rem 0;
+    }
+
+    /* Suppress Code Execution / Run buttons during Active Exam */
+    #viewExamEngine .sol-code-run-btn,
+    #viewExamEngine .sol-code-try-btn,
+    #viewExamEngine .sol-palette-btn,
+    #viewExamEngine .sol-run-btn,
+    #viewExamEngine .sol-sandbox-run-btn {
+      display: none !important;
+    }
+
+    /* Advanced Question Prompt & Media responsiveness */
+    #currentQPrompt {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    #currentQPrompt .sol-table-responsive,
+    #currentQPrompt .sol-code-block-container {
+      margin: 1rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .option-card {
+        padding: 10px 14px;
+        gap: 10px;
+      }
+      .option-letter {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        font-size: 0.78rem;
+      }
+      .option-content {
+        font-size: 0.88rem;
+      }
     }
 
     /* Question Navigator Sidebar */
@@ -339,12 +461,12 @@
       <img src="/ANH.png" alt="DPGNotes">
       <span>DPGNotes <span style="color:var(--qz-primary);">Examinations</span></span>
     </a>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <a href="/Quizes/quiz-generator.html" class="btn btn-sm btn-outline-primary" style="font-weight:600;">
-        <i class="ri-add-circle-line"></i> Author Quiz
+    <div class="portal-nav-actions">
+      <a href="/Quizes/quiz-generator.html" class="btn btn-sm btn-outline-primary nav-action-btn" title="Create Quiz" aria-label="Create Quiz">
+        <i class="ri-add-circle-line"></i> <span class="nav-btn-text">Create Quiz</span>
       </a>
-      <a href="/dashboard.html" class="btn btn-sm btn-secondary" style="background:rgba(255,255,255,0.06); border-color:var(--qz-border);">
-        <i class="ri-dashboard-line"></i> Dashboard
+      <a href="/dashboard.html" class="btn btn-sm btn-secondary nav-action-btn nav-btn-dash" title="Dashboard" aria-label="Dashboard">
+        <i class="ri-dashboard-line"></i> <span class="nav-btn-text">Dashboard</span>
       </a>
     </div>
   </header>
@@ -723,16 +845,6 @@
           allDirectoryQuizzes.push(d.data());
         });
 
-        if (allDirectoryQuizzes.length === 0) {
-          grid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align:center; padding:3rem; color:var(--qz-text-muted);">
-              <i class="ri-folder-open-line" style="font-size:2.5rem; display:block; margin-bottom:0.75rem;"></i>
-              No public quizzes published yet. Be the first contributor to create one!
-            </div>
-          `;
-          return;
-        }
-
         renderDirectoryCards(allDirectoryQuizzes);
       } catch (err) {
         console.error("Directory fetch error:", err);
@@ -743,6 +855,25 @@
     function renderDirectoryCards(quizzes) {
       const grid = document.getElementById('quizzesDirectoryGrid');
       grid.innerHTML = '';
+
+      if (!quizzes || quizzes.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding:3.5rem 1.5rem; color:var(--qz-text-muted);">
+            <div style="width:68px; height:68px; margin:0 auto 1.25rem; border-radius:50%; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); display:flex; align-items:center; justify-content:center;">
+              <i class="ri-folder-open-line" style="font-size:2rem; color:var(--qz-primary);"></i>
+            </div>
+            <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.5rem;">No Examinations Found</h3>
+            <p style="font-size:0.95rem; max-width:500px; margin:0 auto 1.25rem; line-height:1.5;">
+              No public quizzes published yet. Be the first contributor to create one!
+            </p>
+            <a href="/Quizes/quiz-generator.html" class="btn btn-primary btn-sm" style="font-weight:700; border-radius:8px; padding:8px 18px;">
+              <i class="ri-add-circle-line"></i> Create Quiz
+            </a>
+          </div>
+        `;
+        return;
+      }
+
       quizzes.forEach(q => {
         const card = document.createElement('div');
         card.className = 'quiz-item-card';
@@ -788,13 +919,18 @@
 
     window.filterBySubject = function(subj) {
       document.querySelectorAll('#subjectFilterPills .tag-chip').forEach(c => c.classList.remove('active'));
-      event.target.classList.add('active');
+      if (window.event && window.event.target) {
+        window.event.target.classList.add('active');
+      }
       if (subj === 'all') {
         renderDirectoryCards(allDirectoryQuizzes);
       } else {
+        const queryTerm = subj.toLowerCase();
         const filtered = allDirectoryQuizzes.filter(q => 
-          (q.subjectName || "").toLowerCase().includes(subj.toLowerCase()) ||
-          (Array.isArray(q.tags) && q.tags.some(t => t.toLowerCase().includes(subj.toLowerCase())))
+          (q.subjectName || "").toLowerCase().includes(queryTerm) ||
+          (q.subjectCode || "").toLowerCase().includes(queryTerm) ||
+          (q.title || "").toLowerCase().includes(queryTerm) ||
+          (Array.isArray(q.tags) && q.tags.some(t => t.toLowerCase().includes(queryTerm)))
         );
         renderDirectoryCards(filtered);
       }
@@ -883,6 +1019,24 @@
     window.startExaminationSession = async function(e) {
       e.preventDefault();
 
+      const candName = document.getElementById('candName').value.trim();
+      const candStudentId = document.getElementById('candStudentId').value.trim();
+      const candCourse = document.getElementById('candCourse').value.trim();
+      const candCollege = document.getElementById('candCollege').value.trim();
+      const candUniversity = document.getElementById('candUniversity').value.trim();
+
+      if (!candName || !candStudentId || !candCourse || !candCollege || !candUniversity) {
+        alert("Please complete all candidate identification fields before beginning.");
+        return;
+      }
+
+      // 1. Client-Side Strict Single-Attempt Lock
+      const localAttemptKey = 'dpg_quiz_submitted_' + quizData.quizId;
+      if (localStorage.getItem(localAttemptKey)) {
+        alert("Single Attempt Restriction: You have already submitted an examination attempt for this quiz on this browser. Multiple attempts are strictly disallowed.");
+        return;
+      }
+
       // Ensure Anonymous auth if not already authenticated
       if (!auth.currentUser) {
         try {
@@ -890,6 +1044,31 @@
         } catch (anonErr) {
           console.warn("Anonymous auth failed, continuing session:", anonErr);
         }
+      }
+
+      // 2. Authoritative Firestore Database Uniqueness Check
+      try {
+        const attemptsCol = collection(db, "contributors", quizData.ownerUid, "quizzes", quizData.quizId, "attempts");
+        
+        // Strict Student ID uniqueness query
+        const qSid = query(attemptsCol, where("studentId", "==", candStudentId));
+        const sidSnap = await getDocs(qSid);
+        if (!sidSnap.empty) {
+          alert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited.`);
+          return;
+        }
+
+        // Authenticated user UID uniqueness query
+        if (auth.currentUser && !auth.currentUser.isAnonymous) {
+          const qUid = query(attemptsCol, where("candidateUid", "==", auth.currentUser.uid));
+          const uidSnap = await getDocs(qUid);
+          if (!uidSnap.empty) {
+            alert("Single Attempt Restriction: Your authenticated account has already completed this examination.");
+            return;
+          }
+        }
+      } catch (checkErr) {
+        console.warn("Attempt uniqueness check warning:", checkErr);
       }
 
       // Enter fullscreen if strict mode
@@ -978,11 +1157,22 @@
       }
     }
 
+    // Helper for formatting rich HTML / Code / Markdown
+    function renderRichQuizText(rawStr, contextId) {
+      if (!rawStr) return '';
+      if (typeof window.formatSolutionContent === 'function') {
+        return window.formatSolutionContent(rawStr, contextId);
+      }
+      return escapeHtml(rawStr);
+    }
+
     // Render Question
     function renderCurrentQuestion() {
       const q = questionsList[currentQIdx];
       document.getElementById('currentQBadge').textContent = `Question ${currentQIdx + 1} of ${questionsList.length}`;
-      document.getElementById('currentQPrompt').textContent = q.questionText;
+      
+      const promptEl = document.getElementById('currentQPrompt');
+      promptEl.innerHTML = renderRichQuizText(q.questionText || '', `exam_q_${currentQIdx}`);
 
       const optsContainer = document.getElementById('optionsListContainer');
       optsContainer.innerHTML = '';
@@ -994,9 +1184,13 @@
           card.classList.add('selected');
         }
         card.onclick = () => selectExamOption(letter);
+
+        const rawOpt = (q.options && q.options[letter]) || '';
+        const optHtml = renderRichQuizText(rawOpt, `exam_opt_${currentQIdx}_${letter}`);
+
         card.innerHTML = `
           <div class="option-letter">${letter}</div>
-          <div style="font-size:0.95rem; color:#fff;">${escapeHtml(q.options[letter])}</div>
+          <div class="option-content">${optHtml}</div>
         `;
         optsContainer.appendChild(card);
       });
@@ -1219,6 +1413,15 @@
           updatedAt: serverTimestamp()
         }).catch(console.warn);
 
+        // Store client-side single attempt lock
+        try {
+          localStorage.setItem('dpg_quiz_submitted_' + quizData.quizId, JSON.stringify({
+            attemptId: attemptId,
+            studentId: candStudentId,
+            submittedAt: Date.now()
+          }));
+        } catch(e) {}
+
       } catch (err) {
         console.error("Attempt persistence error:", err);
       }
@@ -1280,6 +1483,12 @@
           let statusClass = isCorrect ? 'is-correct' : (isUnattempted ? 'is-unanswered' : 'is-incorrect');
           let statusText = isCorrect ? 'Correct (+1.0)' : (isUnattempted ? 'Unattempted' : 'Incorrect (-0.25)');
 
+          const qTextHtml = renderRichQuizText(q.questionText || '', `rev_q_${i}`);
+          const candVal = candChosen && q.options ? q.options[candChosen] : '';
+          const corrVal = correctLetter && q.options ? q.options[correctLetter] : '';
+          const userAnsHtml = candChosen ? `${candChosen}: ` + renderRichQuizText(candVal, `rev_u_${i}`) : 'None';
+          const corrAnsHtml = correctLetter ? `${correctLetter}: ` + renderRichQuizText(corrVal, `rev_c_${i}`) : 'Pending Evaluation';
+
           const item = document.createElement('div');
           item.className = `review-item ${statusClass}`;
           item.innerHTML = `
@@ -1287,10 +1496,10 @@
               <span>Question ${i + 1}</span>
               <span style="color:${isCorrect ? '#10b981' : (isUnattempted ? '#f59e0b' : '#ef4444')}">${statusText}</span>
             </div>
-            <p style="font-size:0.92rem; color:#fff; margin-bottom:0.75rem;">${escapeHtml(q.questionText)}</p>
+            <div style="font-size:0.95rem; color:#fff; margin-bottom:0.75rem;">${qTextHtml}</div>
             <div style="font-size:0.85rem; color:var(--qz-text-muted);">
-              <div>Your Answer: <strong style="color:#fff;">${candChosen ? `${candChosen}: ${escapeHtml(q.options[candChosen])}` : 'None'}</strong></div>
-              <div>Correct Option: <strong style="color:#10b981;">${correctLetter ? `${correctLetter}: ${escapeHtml(q.options[correctLetter])}` : 'Pending Evaluation'}</strong></div>
+              <div style="margin-bottom:6px;">Your Answer: <div style="color:#fff; display:inline-block;">${userAnsHtml}</div></div>
+              <div>Correct Option: <div style="color:#10b981; display:inline-block;">${corrAnsHtml}</div></div>
             </div>
           `;
           revList.appendChild(item);
@@ -1307,6 +1516,18 @@
         document.getElementById('reviewContainer').style.display = 'none';
       }
     }
+
+    // Suppress code sandbox execution during active proctored examination
+    const origRunSandbox = window.runSandboxFromGroup;
+    window.runSandboxFromGroup = function(groupId, title) {
+      if (!hasSubmitted && document.getElementById('viewExamEngine')?.style.display !== 'none') {
+        alert("Interactive sandbox execution is disabled during the active examination.");
+        return;
+      }
+      if (typeof origRunSandbox === 'function') {
+        origRunSandbox(groupId, title);
+      }
+    };
 
     function escapeHtml(str) {
       if (!str) return '';

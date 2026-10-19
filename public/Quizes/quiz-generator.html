@@ -23,6 +23,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/AssignmentSolution/solutions-style.css?v=2.3.1">
+  <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
 
   <style>
     :root {
@@ -58,6 +60,97 @@
       align-items: center;
       padding: 1rem 2rem;
       background: rgba(10, 14, 23, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--qz-border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .qz-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    @media (max-width: 576px) {
+      .qz-navbar {
+        padding: 0.65rem 0.85rem;
+      }
+      .qz-brand {
+        font-size: 1.05rem;
+      }
+      .qz-brand img {
+        width: 28px;
+        height: 28px;
+      }
+      .qz-nav-btn-text {
+        display: none !important;
+      }
+      .qz-nav-btn {
+        padding: 6px 10px;
+        font-size: 1.1rem;
+      }
+    }
+    @media (min-width: 577px) and (max-width: 768px) {
+      .qz-navbar {
+        padding: 0.75rem 1.25rem;
+      }
+      .qz-nav-btn {
+        padding: 5px 12px;
+        font-size: 0.82rem;
+      }
+      .qz-nav-btn-text {
+        display: inline;
+      }
+    }
+
+    /* Quick Tools Styling within Quiz Builder */
+    .sol-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--qz-border);
+      border-bottom: none;
+      padding: 6px 10px;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+    .sol-palette-compact {
+      padding: 4px 8px;
+      gap: 4px;
+    }
+    .sol-palette-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.74rem;
+      padding: 2px 7px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      line-height: 1.4;
+    }
+    .sol-palette-btn:hover {
+      background: rgba(99, 102, 241, 0.25);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .sol-palette-btn.ad-btn {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .sol-editor-box {
+      position: relative;
+    }
+    .sol-editor-box textarea.form-control {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--qz-border);
       position: sticky;
@@ -355,12 +448,12 @@
       <img src="/ANH.png" alt="DPGNotes">
       <span>DPGNotes <span style="color:var(--qz-primary);">Quiz Studio</span></span>
     </a>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <a href="/Quizes/quiz-record-and-analytics.html" class="btn btn-sm btn-outline-secondary" style="border-color:var(--qz-border); color:var(--qz-text-muted);">
-        <i class="ri-bar-chart-box-line"></i> Contributor Analytics
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a href="/Quizes/quiz-record-and-analytics.html" class="btn btn-sm btn-outline-secondary qz-nav-btn" style="border-color:var(--qz-border); color:var(--qz-text-muted);" title="Contributor Analytics" aria-label="Contributor Analytics">
+        <i class="ri-bar-chart-box-line"></i> <span class="qz-nav-btn-text">Analytics</span>
       </a>
-      <a href="/dashboard.html" class="btn btn-sm btn-secondary" style="background:rgba(255,255,255,0.08); border-color:var(--qz-border);">
-        <i class="ri-dashboard-line"></i> Dashboard
+      <a href="/dashboard.html" class="btn btn-sm btn-secondary qz-nav-btn" style="background:rgba(255,255,255,0.08); border-color:var(--qz-border);" title="Dashboard" aria-label="Dashboard">
+        <i class="ri-dashboard-line"></i> <span class="qz-nav-btn-text">Dashboard</span>
       </a>
     </div>
   </header>
@@ -883,6 +976,120 @@
       updateNavigatorProgress();
     }
 
+    // Helper to render quick tools toolbar
+    function renderQuickToolsPalette(targetId, contextId, isCompact = false) {
+      if (isCompact) {
+        return `
+          <div class="sol-palette sol-palette-compact">
+            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<strong>', '</strong>')" title="Bold"><strong>B</strong></button>
+            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<code>', '</code>')" title="Inline Code">code</button>
+            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<pre><code>', '</code></pre>')" title="Code Block">pre</button>
+            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<p>', '</p>')" title="Paragraph">p</button>
+            <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<a href=&quot;https://...&quot; target=&quot;_blank&quot;>', '</a>')" title="Link"><i class="ri-link"></i></button>
+            <button type="button" class="sol-palette-btn" style="color:#a78bfa;" onclick="insertQuizTableSnippet('${targetId}', '${contextId}')" title="Insert Table"><i class="ri-table-line"></i> table</button>
+            <button type="button" class="sol-palette-btn" style="color:#f97316;" onclick="insertQuizSandboxSnippet('${targetId}', 'html', '${contextId}')" title="HTML Box"><i class="ri-html5-fill"></i> html</button>
+            <button type="button" class="sol-palette-btn" style="color:#38bdf8;" onclick="insertQuizSandboxSnippet('${targetId}', 'css', '${contextId}')" title="CSS Box"><i class="ri-css3-fill"></i> css</button>
+            <button type="button" class="sol-palette-btn" style="color:#facc15;" onclick="insertQuizSandboxSnippet('${targetId}', 'js', '${contextId}')" title="JS Box"><i class="ri-javascript-fill"></i> js</button>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="sol-palette">
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<h1>', '</h1>')">h1</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<h2>', '</h2>')">h2</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<h3>', '</h3>')">h3</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<p>', '</p>')">p</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<strong>', '</strong>')">bold</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<a href=&quot;https://...&quot; target=&quot;_blank&quot;>', '</a>')">link</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<ol>\\n  <li>', '</li>\\n</ol>')">ol</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<ul>\\n  <li>', '</li>\\n</ul>')">ul</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<code>', '</code>')">code</button>
+          <button type="button" class="sol-palette-btn" onclick="insertQuizTag('${targetId}', '<pre><code>', '</code></pre>')">pre</button>
+          <button type="button" class="sol-palette-btn" style="color:#a78bfa; border-color:rgba(167,139,250,0.35); background:rgba(167,139,250,0.1);" onclick="insertQuizTableSnippet('${targetId}', '${contextId}')" title="Insert Responsive Difference / Comparison Table"><i class="ri-table-line"></i> table-diff</button>
+          <button type="button" class="sol-palette-btn" style="color:#f97316; border-color:rgba(249,115,22,0.3);" onclick="insertQuizSandboxSnippet('${targetId}', 'html', '${contextId}')"><i class="ri-html5-fill"></i> html-box</button>
+          <button type="button" class="sol-palette-btn" style="color:#38bdf8; border-color:rgba(56,189,248,0.3);" onclick="insertQuizSandboxSnippet('${targetId}', 'css', '${contextId}')"><i class="ri-css3-fill"></i> css-box</button>
+          <button type="button" class="sol-palette-btn" style="color:#facc15; border-color:rgba(250,204,21,0.3);" onclick="insertQuizSandboxSnippet('${targetId}', 'js', '${contextId}')"><i class="ri-javascript-fill"></i> js-box</button>
+          <button type="button" class="sol-palette-btn" style="background:rgba(16,185,129,0.15); color:#34d399; border-color:rgba(16,185,129,0.3);" onclick="insertQuizSandboxSnippet('${targetId}', 'all', '${contextId}')"><i class="ri-play-circle-fill"></i> html-css-js-sandbox</button>
+          <button type="button" class="sol-palette-btn ad-btn" onclick="insertQuizTag('${targetId}', '<div class=&quot;adsense-slot-wrapper&quot;><!-- AdSense Slot --></div>\\n', '')">adsense-ad</button>
+          <button type="button" class="sol-palette-btn ad-btn" onclick="insertQuizTag('${targetId}', '<div class=&quot;native-ad-wrapper&quot;><!-- Native Ad --></div>\\n', '')">native-ad</button>
+        </div>
+      `;
+    }
+
+    window.insertQuizTag = function(targetId, openTag, closeTag) {
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      const start = el.selectionStart || 0;
+      const end = el.selectionEnd || 0;
+      const val = el.value || '';
+      const selected = val.substring(start, end) || 'Text here';
+      const replacement = openTag + selected + closeTag;
+      el.value = val.substring(0, start) + replacement + val.substring(end);
+      el.focus();
+      el.selectionStart = start + openTag.length;
+      el.selectionEnd = start + openTag.length + selected.length;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    window.insertQuizTableSnippet = function(targetId, contextId) {
+      if (typeof window.insertTableSnippet === 'function') {
+        window.insertTableSnippet(targetId, contextId);
+      } else if (typeof window.insertSandboxSnippet === 'function') {
+        window.insertSandboxSnippet(targetId, 'table-diff', contextId);
+      }
+    };
+
+    window.insertQuizSandboxSnippet = function(targetId, type, contextId) {
+      if (typeof window.insertSandboxSnippet === 'function') {
+        window.insertSandboxSnippet(targetId, type, contextId);
+      }
+    };
+
+    window.updateQuestionLivePreview = function(i) {
+      const pBox = document.getElementById(`preview_content_${i}`);
+      if (!pBox) return;
+      const qText = document.getElementById(`qText_${i}`)?.value || '';
+      const a = document.getElementById(`q_${i}_optA`)?.value || '';
+      const b = document.getElementById(`q_${i}_optB`)?.value || '';
+      const c = document.getElementById(`q_${i}_optC`)?.value || '';
+      const d = document.getElementById(`q_${i}_optD`)?.value || '';
+
+      if (!qText.trim() && !a.trim() && !b.trim() && !c.trim() && !d.trim()) {
+        pBox.innerHTML = '<em style="color:#64748b;">Formatted question prompt and options will render here in real time...</em>';
+        return;
+      }
+
+      const formatFn = typeof window.formatSolutionContent === 'function' ? window.formatSolutionContent : escapeHtml;
+      const promptHtml = formatFn(qText, `prev_q_${i}`);
+      const aHtml = formatFn(a, `prev_optA_${i}`);
+      const bHtml = formatFn(b, `prev_optB_${i}`);
+      const cHtml = formatFn(c, `prev_optC_${i}`);
+      const dHtml = formatFn(d, `prev_optD_${i}`);
+
+      pBox.innerHTML = `
+        <div style="font-weight:600; margin-bottom:0.75rem;">${promptHtml || '<span style="color:#64748b;">(No prompt entered yet)</span>'}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.85rem;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>A:</strong> ${aHtml}</div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>B:</strong> ${bHtml}</div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>C:</strong> ${cHtml}</div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:8px; padding:6px 10px;"><strong>D:</strong> ${dHtml}</div>
+        </div>
+      `;
+    };
+
+    function renderQuestionEditors() {
+      const container = document.getElementById('questionsContainer');
+      const navContainer = document.getElementById('navPillsContainer');
+      container.innerHTML = '';
+      navContainer.innerHTML = '';
+
+      for (let i = 1; i <= currentQuestionCount; i++) {
+        createSingleQuestionCard(i, currentQuestionCount, container, navContainer);
+      }
+      updateNavigatorProgress();
+    }
+
     function createSingleQuestionCard(i, totalCount, container, navContainer, initialData = null) {
       let pill = document.getElementById(`navPill_${i}`);
       if (!pill) {
@@ -908,26 +1115,44 @@
           </div>
           
           <div class="mb-3">
-            <label class="form-label">Question Prompt / Problem Statement <span class="req">*</span></label>
-            <textarea id="qText_${i}" class="form-control" rows="2" placeholder="State question ${i} clearly..." oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();"></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label class="form-label" style="margin-bottom:0;">Question Prompt / Problem Statement <span class="req">*</span></label>
+              <span style="font-size:0.75rem; color:var(--qz-text-muted);">Quick formatting tools (HTML, code, diff-table supported)</span>
+            </div>
+            <div class="sol-editor-box">
+              ${renderQuickToolsPalette(`qText_${i}`, `qz_q_${i}`, false)}
+              <textarea id="qText_${i}" class="form-control" rows="3" placeholder="State question ${i} clearly. Format code, tables, or diffs with quick tools above..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
+            </div>
           </div>
 
           <div class="opt-grid">
             <div>
               <label class="form-label">Option A <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optA" class="form-control" placeholder="Option A text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
+              <div class="sol-editor-box">
+                ${renderQuickToolsPalette(`q_${i}_optA`, `qz_optA_${i}`, true)}
+                <textarea id="q_${i}_optA" class="form-control" rows="2" placeholder="Option A text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
+              </div>
             </div>
             <div>
               <label class="form-label">Option B <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optB" class="form-control" placeholder="Option B text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
+              <div class="sol-editor-box">
+                ${renderQuickToolsPalette(`q_${i}_optB`, `qz_optB_${i}`, true)}
+                <textarea id="q_${i}_optB" class="form-control" rows="2" placeholder="Option B text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
+              </div>
             </div>
             <div>
               <label class="form-label">Option C <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optC" class="form-control" placeholder="Option C text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
+              <div class="sol-editor-box">
+                ${renderQuickToolsPalette(`q_${i}_optC`, `qz_optC_${i}`, true)}
+                <textarea id="q_${i}_optC" class="form-control" rows="2" placeholder="Option C text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
+              </div>
             </div>
             <div>
               <label class="form-label">Option D <span class="req">*</span></label>
-              <input type="text" id="q_${i}_optD" class="form-control" placeholder="Option D text" oninput="checkQuestionConfigured(${i}); debouncedAutoSaveDraft();">
+              <div class="sol-editor-box">
+                ${renderQuickToolsPalette(`q_${i}_optD`, `qz_optD_${i}`, true)}
+                <textarea id="q_${i}_optD" class="form-control" rows="2" placeholder="Option D text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
+              </div>
             </div>
           </div>
 
@@ -951,6 +1176,17 @@
               <input type="radio" name="correctKey_${i}" value="DEFERRED" onchange="selectKey(${i}, 'DEFERRED')"> Deferred Key
             </label>
           </div>
+
+          <!-- Per-Question Real-Time Live Preview -->
+          <div class="sol-q-preview-box mt-3" id="preview_box_${i}" style="border:1px solid var(--qz-border); border-radius:12px; background:rgba(15,23,42,0.65); padding:1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:#94a3b8; margin-bottom:8px;">
+              <span><i class="ri-eye-line" style="color:var(--qz-accent);"></i> Live Formatted Preview (Q${i})</span>
+              <span style="font-size:0.72rem; color:#64748b;">Interactive tables, diffs, code highlight</span>
+            </div>
+            <div id="preview_content_${i}" style="font-size:0.92rem; color:#f8fafc; min-height:24px;">
+              <em style="color:#64748b;">Live formatted prompt and options preview will appear here as you type...</em>
+            </div>
+          </div>
         `;
         container.appendChild(card);
       }
@@ -967,6 +1203,7 @@
       }
 
       checkQuestionConfigured(i);
+      updateQuestionLivePreview(i);
     }
 
     window.selectKey = function(qIndex, key, triggerSave = true) {
