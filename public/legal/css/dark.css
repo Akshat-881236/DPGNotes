@@ -1,13 +1,20 @@
-/* Dark Theme Override Variables */
-.theme-dark {
+/* ==============================================================================
+   DPGNotes Legal Center — Dark & Default Blue Theme High-Contrast System
+   WCAG AAA Compliant Text Visibility Across All Detail Legal Notes
+   ============================================================================== */
+
+/* Dark & Default Blue Theme Override Variables */
+.theme-dark,
+.theme-auto,
+body:not(.theme-light) {
   --bg-primary: #090d16;
   --bg-secondary: #111827;
   --bg-active: #1f2937;
   --border-color: #374151;
   
-  --text-primary: #f9fafb;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
   
   --primary: #6366f1;
   --primary-hover: #4f46e5;
@@ -18,126 +25,460 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
 }
 
-.theme-dark .legal-header {
-  background-color: rgba(17, 24, 39, 0.85);
+.theme-dark .legal-header,
+.theme-auto .legal-header,
+body:not(.theme-light) .legal-header {
+  background-color: rgba(17, 24, 39, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.theme-dark .nav-link:hover, .theme-dark .nav-link.active {
-  color: #fff;
+.theme-dark .nav-link:hover, 
+.theme-dark .nav-link.active,
+.theme-auto .nav-link:hover, 
+.theme-auto .nav-link.active,
+body:not(.theme-light) .nav-link:hover,
+body:not(.theme-light) .nav-link.active {
+  color: #fff !important;
   background-color: var(--primary-light);
 }
 
-.theme-dark .nav-link:hover i, .theme-dark .nav-link.active i {
-  color: var(--primary);
+.theme-dark .nav-link:hover i, 
+.theme-dark .nav-link.active i,
+.theme-auto .nav-link:hover i, 
+.theme-auto .nav-link.active i,
+body:not(.theme-light) .nav-link:hover i,
+body:not(.theme-light) .nav-link.active i {
+  color: #a5b4fc !important;
 }
 
-.theme-dark .search-result-item:hover, .theme-dark .search-result-item.selected {
+.theme-dark .search-result-item:hover, 
+.theme-dark .search-result-item.selected,
+.theme-auto .search-result-item:hover, 
+.theme-auto .search-result-item.selected,
+body:not(.theme-light) .search-result-item:hover,
+body:not(.theme-light) .search-result-item.selected {
   background-color: var(--bg-active);
 }
 
-.theme-dark .search-modal {
-  background-color: rgba(0, 0, 0, 0.6);
+.theme-dark .search-modal,
+.theme-auto .search-modal,
+body:not(.theme-light) .search-modal {
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
-/* System preferences auto-dark selector */
-@media (prefers-color-scheme: dark) {
-  .theme-auto {
-    --bg-primary: #090d16;
-    --bg-secondary: #111827;
-    --bg-active: #1f2937;
-    --border-color: #374151;
-    
-    --text-primary: #f9fafb;
-    --text-secondary: #d1d5db;
-    --text-muted: #9ca3af;
-    
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --primary-light: rgba(99, 102, 241, 0.15);
-    
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  }
-  
-  .theme-auto .legal-header {
-    background-color: rgba(17, 24, 39, 0.85);
-  }
-  
-  .theme-auto .nav-link:hover, .theme-auto .nav-link.active {
-    color: #fff;
-    background-color: var(--primary-light);
-  }
+/* Document Header & Meta Contrast */
+.theme-dark .document-title,
+.theme-auto .document-title,
+body:not(.theme-light) .document-title,
+.theme-dark .policy-section h1,
+.theme-auto .policy-section h1,
+body:not(.theme-light) .policy-section h1 {
+  color: #ffffff !important;
+  font-weight: 800;
 }
 
-/* Dark Mode Table & Component Styles */
+.theme-dark .doc-badge,
+.theme-auto .doc-badge,
+body:not(.theme-light) .doc-badge {
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #c7d2fe !important;
+  border: 1px solid rgba(99, 102, 241, 0.35) !important;
+}
+
+.theme-dark .document-meta,
+.theme-auto .document-meta,
+body:not(.theme-light) .document-meta {
+  color: #94a3b8 !important;
+}
+
+.theme-dark .document-meta .meta-item,
+.theme-auto .document-meta .meta-item,
+body:not(.theme-light) .document-meta .meta-item {
+  color: #cbd5e1 !important;
+}
+
+.theme-dark .document-meta .meta-item i,
+.theme-auto .document-meta .meta-item i,
+body:not(.theme-light) .document-meta .meta-item i {
+  color: #a5b4fc !important;
+}
+
+/* ==============================================================================
+   High-Contrast Typography for All Detail Legal Notes (Default Blue & Dark Theme)
+   ============================================================================== */
+.theme-dark .legal-article,
+.theme-auto .legal-article,
+body:not(.theme-light) .legal-article {
+  color: #cbd5e1 !important;
+  font-size: 0.96rem;
+  line-height: 1.72;
+}
+
+.theme-dark .legal-article h1,
+.theme-dark .legal-article h2,
+.theme-dark .legal-article h3,
+.theme-dark .legal-article h4,
+.theme-dark .legal-article h5,
+.theme-dark .legal-article h6,
+.theme-auto .legal-article h1,
+.theme-auto .legal-article h2,
+.theme-auto .legal-article h3,
+.theme-auto .legal-article h4,
+.theme-auto .legal-article h5,
+.theme-auto .legal-article h6,
+body:not(.theme-light) .legal-article h1,
+body:not(.theme-light) .legal-article h2,
+body:not(.theme-light) .legal-article h3,
+body:not(.theme-light) .legal-article h4,
+body:not(.theme-light) .legal-article h5,
+body:not(.theme-light) .legal-article h6,
+.theme-dark .policy-section h2,
+.theme-auto .policy-section h2,
+body:not(.theme-light) .policy-section h2 {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+}
+
+.theme-dark .legal-article p,
+.theme-auto .legal-article p,
+body:not(.theme-light) .legal-article p,
+.theme-dark .policy-section p,
+.theme-auto .policy-section p,
+body:not(.theme-light) .policy-section p {
+  color: #cbd5e1 !important;
+  line-height: 1.72 !important;
+}
+
+.theme-dark .legal-article li,
+.theme-auto .legal-article li,
+body:not(.theme-light) .legal-article li,
+.theme-dark .policy-section li,
+.theme-auto .policy-section li,
+body:not(.theme-light) .policy-section li {
+  color: #cbd5e1 !important;
+  line-height: 1.68 !important;
+}
+
+.theme-dark .legal-article strong,
+.theme-dark .legal-article b,
+.theme-auto .legal-article strong,
+.theme-auto .legal-article b,
+body:not(.theme-light) .legal-article strong,
+body:not(.theme-light) .legal-article b,
+.theme-dark .policy-section strong,
+.theme-auto .policy-section strong,
+body:not(.theme-light) .policy-section strong {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.theme-dark .legal-article a,
+.theme-auto .legal-article a,
+body:not(.theme-light) .legal-article a,
+.theme-dark .policy-section a,
+.theme-auto .policy-section a,
+body:not(.theme-light) .policy-section a {
+  color: #818cf8 !important;
+  text-decoration: underline !important;
+}
+
+.theme-dark .legal-article a:hover,
+.theme-auto .legal-article a:hover,
+body:not(.theme-light) .legal-article a:hover {
+  color: #a5b4fc !important;
+}
+
+.theme-dark .legal-article code,
+.theme-auto .legal-article code,
+body:not(.theme-light) .legal-article code {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: #c7d2fe !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  border-radius: 4px;
+}
+
+/* Summary Back Callout in Dark / Default Blue Theme */
+.theme-dark .summary-back-callout,
+.theme-auto .summary-back-callout,
+body:not(.theme-light) .summary-back-callout {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border: 1px dashed rgba(99, 102, 241, 0.4) !important;
+}
+
+.theme-dark .summary-back-content,
+.theme-dark .summary-back-text,
+.theme-auto .summary-back-content,
+.theme-auto .summary-back-text,
+body:not(.theme-light) .summary-back-content,
+body:not(.theme-light) .summary-back-text {
+  color: #cbd5e1 !important;
+  font-size: 0.92rem;
+}
+
+.theme-dark .summary-back-content i,
+.theme-auto .summary-back-content i,
+body:not(.theme-light) .summary-back-content i {
+  color: #38bdf8 !important;
+}
+
+.theme-dark .summary-back-content a,
+.theme-dark .summary-back-link,
+.theme-dark .summary-back-text a,
+.theme-auto .summary-back-content a,
+.theme-auto .summary-back-link,
+.theme-auto .summary-back-text a,
+body:not(.theme-light) .summary-back-content a,
+body:not(.theme-light) .summary-back-link,
+body:not(.theme-light) .summary-back-text a {
+  color: #a5b4fc !important;
+  font-weight: 600 !important;
+  text-decoration: underline !important;
+}
+
+/* Compliance Cards in Dark / Default Blue Theme */
+.theme-dark .compliance-card,
+.theme-auto .compliance-card,
+body:not(.theme-light) .compliance-card {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border: 1px solid rgba(99, 102, 241, 0.28) !important;
+}
+
+.theme-dark .compliance-card:hover,
+.theme-auto .compliance-card:hover,
+body:not(.theme-light) .compliance-card:hover {
+  background: rgba(99, 102, 241, 0.14) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+}
+
+.theme-dark .compliance-card h4,
+.theme-auto .compliance-card h4,
+body:not(.theme-light) .compliance-card h4 {
+  color: #a5b4fc !important;
+  font-weight: 700 !important;
+}
+
+.theme-dark .compliance-card h4 i,
+.theme-auto .compliance-card h4 i,
+body:not(.theme-light) .compliance-card h4 i {
+  color: #818cf8 !important;
+}
+
+.theme-dark .compliance-card p,
+.theme-auto .compliance-card p,
+body:not(.theme-light) .compliance-card p {
+  color: #cbd5e1 !important;
+}
+
+/* Themed Callout Boxes in Dark / Default Blue Theme */
+.theme-dark .legal-callout-indigo,
+.theme-dark .legal-box-indigo,
+.theme-auto .legal-callout-indigo,
+.theme-auto .legal-box-indigo,
+body:not(.theme-light) .legal-callout-indigo,
+body:not(.theme-light) .legal-box-indigo {
+  background: rgba(99, 102, 241, 0.12) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.45) !important;
+}
+.theme-dark .legal-callout-indigo h3,
+.theme-dark .legal-callout-indigo h4,
+.theme-dark .legal-box-indigo h3,
+.theme-dark .legal-box-indigo h4,
+.theme-auto .legal-callout-indigo h3,
+.theme-auto .legal-callout-indigo h4,
+.theme-auto .legal-box-indigo h3,
+.theme-auto .legal-box-indigo h4,
+body:not(.theme-light) .legal-callout-indigo h3,
+body:not(.theme-light) .legal-callout-indigo h4,
+body:not(.theme-light) .legal-box-indigo h3,
+body:not(.theme-light) .legal-box-indigo h4 {
+  color: #c7d2fe !important;
+}
+.theme-dark .legal-callout-indigo p,
+.theme-dark .legal-callout-indigo li,
+.theme-dark .legal-box-indigo p,
+.theme-dark .legal-box-indigo li,
+.theme-auto .legal-callout-indigo p,
+.theme-auto .legal-callout-indigo li,
+.theme-auto .legal-box-indigo p,
+.theme-auto .legal-box-indigo li,
+body:not(.theme-light) .legal-callout-indigo p,
+body:not(.theme-light) .legal-callout-indigo li,
+body:not(.theme-light) .legal-box-indigo p,
+body:not(.theme-light) .legal-box-indigo li {
+  color: #e2e8f0 !important;
+}
+
+.theme-dark .legal-callout-emerald,
+.theme-dark .legal-box-emerald,
+.theme-auto .legal-callout-emerald,
+.theme-auto .legal-box-emerald,
+body:not(.theme-light) .legal-callout-emerald,
+body:not(.theme-light) .legal-box-emerald {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.45) !important;
+}
+.theme-dark .legal-callout-emerald h3,
+.theme-dark .legal-callout-emerald h4,
+.theme-dark .legal-box-emerald h3,
+.theme-dark .legal-box-emerald h4,
+.theme-auto .legal-callout-emerald h3,
+.theme-auto .legal-callout-emerald h4,
+.theme-auto .legal-box-emerald h3,
+.theme-auto .legal-box-emerald h4,
+body:not(.theme-light) .legal-callout-emerald h3,
+body:not(.theme-light) .legal-callout-emerald h4,
+body:not(.theme-light) .legal-box-emerald h3,
+body:not(.theme-light) .legal-box-emerald h4 {
+  color: #a7f3d0 !important;
+}
+.theme-dark .legal-callout-emerald p,
+.theme-dark .legal-callout-emerald li,
+.theme-dark .legal-box-emerald p,
+.theme-dark .legal-box-emerald li,
+.theme-auto .legal-callout-emerald p,
+.theme-auto .legal-callout-emerald li,
+.theme-auto .legal-box-emerald p,
+.theme-auto .legal-box-emerald li,
+body:not(.theme-light) .legal-callout-emerald p,
+body:not(.theme-light) .legal-callout-emerald li,
+body:not(.theme-light) .legal-box-emerald p,
+body:not(.theme-light) .legal-box-emerald li {
+  color: #e2e8f0 !important;
+}
+
+.theme-dark .legal-callout-amber,
+.theme-dark .legal-box-amber,
+.theme-auto .legal-callout-amber,
+.theme-auto .legal-box-amber,
+body:not(.theme-light) .legal-callout-amber,
+body:not(.theme-light) .legal-box-amber {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
+}
+.theme-dark .legal-callout-amber h3,
+.theme-dark .legal-callout-amber h4,
+.theme-dark .legal-box-amber h3,
+.theme-dark .legal-box-amber h4,
+.theme-auto .legal-callout-amber h3,
+.theme-auto .legal-callout-amber h4,
+.theme-auto .legal-box-amber h3,
+.theme-auto .legal-box-amber h4,
+body:not(.theme-light) .legal-callout-amber h3,
+body:not(.theme-light) .legal-callout-amber h4,
+body:not(.theme-light) .legal-box-amber h3,
+body:not(.theme-light) .legal-box-amber h4 {
+  color: #fde68a !important;
+}
+.theme-dark .legal-callout-amber p,
+.theme-dark .legal-callout-amber li,
+.theme-dark .legal-box-amber p,
+.theme-dark .legal-box-amber li,
+.theme-auto .legal-callout-amber p,
+.theme-auto .legal-callout-amber li,
+.theme-auto .legal-box-amber p,
+.theme-auto .legal-box-amber li,
+body:not(.theme-light) .legal-callout-amber p,
+body:not(.theme-light) .legal-callout-amber li,
+body:not(.theme-light) .legal-box-amber p,
+body:not(.theme-light) .legal-box-amber li {
+  color: #e2e8f0 !important;
+}
+
+.theme-dark .legal-callout-sky,
+.theme-dark .legal-box-sky,
+.theme-auto .legal-callout-sky,
+.theme-auto .legal-box-sky,
+body:not(.theme-light) .legal-callout-sky,
+body:not(.theme-light) .legal-box-sky {
+  background: rgba(14, 165, 233, 0.12) !important;
+  border: 1.5px solid rgba(14, 165, 233, 0.45) !important;
+}
+.theme-dark .legal-callout-sky h3,
+.theme-dark .legal-callout-sky h4,
+.theme-dark .legal-box-sky h3,
+.theme-dark .legal-box-sky h4,
+.theme-auto .legal-callout-sky h3,
+.theme-auto .legal-callout-sky h4,
+.theme-auto .legal-box-sky h3,
+.theme-auto .legal-box-sky h4,
+body:not(.theme-light) .legal-callout-sky h3,
+body:not(.theme-light) .legal-callout-sky h4,
+body:not(.theme-light) .legal-box-sky h3,
+body:not(.theme-light) .legal-box-sky h4 {
+  color: #bae6fd !important;
+}
+.theme-dark .legal-callout-sky p,
+.theme-dark .legal-callout-sky li,
+.theme-dark .legal-box-sky p,
+.theme-dark .legal-box-sky li,
+.theme-auto .legal-callout-sky p,
+.theme-auto .legal-callout-sky li,
+.theme-auto .legal-box-sky p,
+.theme-auto .legal-box-sky li,
+body:not(.theme-light) .legal-callout-sky p,
+body:not(.theme-light) .legal-callout-sky li,
+body:not(.theme-light) .legal-box-sky p,
+body:not(.theme-light) .legal-box-sky li {
+  color: #e2e8f0 !important;
+}
+
+/* ==============================================================================
+   Dark & Default Blue Mode Tables & Component Styles
+   ============================================================================== */
 .theme-dark .table-responsive,
-body.theme-dark .table-responsive {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(17, 24, 39, 0.6);
+.theme-auto .table-responsive,
+body:not(.theme-light) .table-responsive {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(17, 24, 39, 0.6) !important;
+}
+
+.theme-dark .table-responsive table,
+.theme-auto .table-responsive table,
+body:not(.theme-light) .table-responsive table {
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 .theme-dark th,
-body.theme-dark th {
-  background: rgba(99, 102, 241, 0.18);
-  color: #f8fafc;
-  border-bottom-color: rgba(255, 255, 255, 0.15);
+.theme-auto th,
+body:not(.theme-light) th {
+  background: rgba(99, 102, 241, 0.22) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  font-weight: 700 !important;
 }
 
 .theme-dark td,
-body.theme-dark td {
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
+.theme-auto td,
+body:not(.theme-light) td {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
 }
 
 .theme-dark table tr:nth-child(even),
-body.theme-dark table tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.025);
+.theme-auto table tr:nth-child(even),
+body:not(.theme-light) table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.028) !important;
 }
 
 .theme-dark table tr:hover,
-body.theme-dark table tr:hover {
-  background: rgba(99, 102, 241, 0.08);
+.theme-auto table tr:hover,
+body:not(.theme-light) table tr:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
 }
 
 .theme-dark .legal-adsense-container:has(ins[data-ad-status="filled"]),
-body.theme-dark .legal-adsense-container:has(ins[data-ad-status="filled"]) {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.12);
+.theme-auto .legal-adsense-container:has(ins[data-ad-status="filled"]),
+body:not(.theme-light) .legal-adsense-container:has(ins[data-ad-status="filled"]) {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 .theme-dark .legal-contact-card,
-body.theme-dark .legal-contact-card {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-@media (prefers-color-scheme: dark) {
-  .theme-auto .table-responsive {
-    border-color: rgba(255, 255, 255, 0.12);
-    background: rgba(17, 24, 39, 0.6);
-  }
-  .theme-auto th {
-    background: rgba(99, 102, 241, 0.18);
-    color: #f8fafc;
-    border-bottom-color: rgba(255, 255, 255, 0.15);
-  }
-  .theme-auto td {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
-  }
-  .theme-auto table tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.025);
-  }
-  .theme-auto table tr:hover {
-    background: rgba(99, 102, 241, 0.08);
-  }
-  .theme-auto .legal-adsense-container:has(ins[data-ad-status="filled"]) {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.12);
-  }
-  .theme-auto .legal-contact-card {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.12);
-  }
+.theme-auto .legal-contact-card,
+body:not(.theme-light) .legal-contact-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
