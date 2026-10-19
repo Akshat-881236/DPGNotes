@@ -1203,18 +1203,6 @@
       }).join('');
     };
 
-    function renderQuestionEditors() {
-      const container = document.getElementById('questionsContainer');
-      const navContainer = document.getElementById('navPillsContainer');
-      container.innerHTML = '';
-      navContainer.innerHTML = '';
-
-      for (let i = 1; i <= currentQuestionCount; i++) {
-        createSingleQuestionCard(i, currentQuestionCount, container, navContainer);
-      }
-      updateNavigatorProgress();
-    }
-
     function createSingleQuestionCard(i, totalCount, container, navContainer, initialData = null) {
       let pill = document.getElementById(`navPill_${i}`);
       if (!pill) {

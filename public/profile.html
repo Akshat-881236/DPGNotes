@@ -672,7 +672,7 @@
 
             <!-- Follow button with dropdown -->
             <div style="position:relative; display:inline-flex;" id="followBtnWrapper">
-              <button class="social-btn btn-follow" id="followBtn" onclick="toggleFollow()" style="border-radius:8px 0 0 8px; border-right:none;">
+              <button class="social-btn btn-follow" id="followBtn" onclick="toggleFollow()" style="border-radius:8px;">
                 <i class="ri-user-add-line" id="followBtnIcon"></i> <span id="followBtnText">Follow</span>
               </button>
               <button id="followDropdownToggle" onclick="toggleFollowDropdown()" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); border-left:1px solid rgba(255,255,255,0.1); color:#a78bfa; padding:0.5rem 0.6rem; border-radius:0 8px 8px 0; cursor:pointer; display:none;">
@@ -841,13 +841,13 @@
           <div class="dm-header-status" id="dmHeaderStatus">Live</div>
         </div>
 
-        <div class="dm-messages-area" id="dmMessagesBox">
-          <div class="dm-locked-overlay" id="dmLockedMessage">
-            <i class="ri-chat-lock-line"></i>
-            <h4>Conversations Restricted</h4>
-            <p style="font-size: 0.8rem;">You can only send messages once you are both Connected.</p>
-          </div>
+        <div class="dm-locked-overlay" id="dmLockedMessage" style="display: none;">
+          <i class="ri-chat-lock-line"></i>
+          <h4>Conversations Restricted</h4>
+          <p style="font-size: 0.8rem;">You can only send messages once you are both Connected.</p>
         </div>
+
+        <div class="dm-messages-area" id="dmMessagesBox"></div>
 
         <div class="dm-input-row" id="dmInputArea" style="display: none;">
           <input type="text" class="dm-input" id="dmInputField" placeholder="Write a message... (Auto-deleted after 14 days)" onkeydown="if(event.key==='Enter') sendDirectMessage()">
@@ -1371,12 +1371,13 @@
           followBtn.style.borderColor = "rgba(99,102,241,0.5)";
           followBtn.style.borderRadius = "8px 0 0 8px";
           followBtn.style.borderRight = "none";
-          followBtn.onclick = null; // handled via dropdown
+          followBtn.onclick = toggleFollow;
           if (followDropdownToggle) followDropdownToggle.style.display = "inline-flex";
         } else {
           followBtnText.textContent = "Follow";
           followBtnIcon.className = "ri-user-add-line";
           followBtn.style.background = "";
+          followBtn.style.borderColor = "";
           followBtn.style.borderRadius = "8px";
           followBtn.style.borderRight = "";
           followBtn.onclick = toggleFollow;
@@ -1390,7 +1391,7 @@
         const connectDropdownToggle = document.getElementById("connectDropdownToggle");
         const banner = document.getElementById("connectApprovalBanner");
 
-        if (state.connection && state.connection.status !== 'rejected') {
+        if (state.connection && state.connection.status !== 'rejected' && state.connection.status !== 'disconnected') {
           if (state.connection.status === 'accepted') {
             connectBtnText.textContent = "Connected";
             connectBtnIcon.className = "ri-user-follow-line";
@@ -1398,7 +1399,7 @@
             connectBtn.style.borderColor = "rgba(16,185,129,0.5)";
             connectBtn.style.borderRadius = "8px 0 0 8px";
             connectBtn.style.borderRight = "none";
-            connectBtn.onclick = null;
+            connectBtn.onclick = toggleConnectDropdown;
             connectBtn.disabled = false;
             connectBtn.style.display = "";
             if (banner) banner.style.display = "none";
@@ -1413,20 +1414,34 @@
               connectBtn.style.borderRadius = "8px";
               connectBtn.style.borderRight = "";
               connectBtn.disabled = true;
+              connectBtn.onclick = null;
               connectBtn.style.display = "";
               if (banner) banner.style.display = "none";
               if (connectDropdownToggle) connectDropdownToggle.style.display = "none";
             } else {
-              connectBtn.style.display = "none";
-              document.getElementById("bannerRequesterName").innerText = targetProfile.name;
-              banner.style.display = "flex";
+              connectBtnText.textContent = "Accept";
+              connectBtnIcon.className = "ri-check-line";
+              connectBtn.style.background = "rgba(16,185,129,0.25)";
+              connectBtn.style.borderColor = "rgba(16,185,129,0.5)";
+              connectBtn.style.borderRadius = "8px";
+              connectBtn.style.borderRight = "";
+              connectBtn.disabled = false;
+              connectBtn.style.display = "";
+              connectBtn.onclick = () => respondConnectionRequest('accepted');
+              if (connectDropdownToggle) connectDropdownToggle.style.display = "none";
+              if (banner) {
+                const reqName = document.getElementById("bannerRequesterName");
+                if (reqName) reqName.innerText = (targetProfile && targetProfile.name) || "Contributor";
+                banner.style.display = "flex";
+              }
             }
           }
         } else {
-          // No connection or rejected — reset to default Connect state
+          // No connection or rejected/disconnected — reset to default Connect state
           connectBtnText.textContent = "Connect";
           connectBtnIcon.className = "ri-user-shared-line";
           connectBtn.style.background = "";
+          connectBtn.style.borderColor = "";
           connectBtn.style.borderRadius = "8px";
           connectBtn.style.borderRight = "";
           connectBtn.disabled = false;
@@ -1468,14 +1483,36 @@
       if (!currentUser) return;
       const menu = document.getElementById("connectDropdownMenu");
       if (menu) menu.style.display = "none";
+
+      // Optimistic UI update immediately to 'Connect'
+      const connectBtn = document.getElementById("connectBtn");
+      const connectBtnText = document.getElementById("connectBtnText");
+      const connectBtnIcon = document.getElementById("connectBtnIcon");
+      const connectDropdownToggle = document.getElementById("connectDropdownToggle");
+      if (connectBtnText) connectBtnText.textContent = "Connect";
+      if (connectBtnIcon) connectBtnIcon.className = "ri-user-shared-line";
+      if (connectBtn) {
+        connectBtn.style.background = "";
+        connectBtn.style.borderColor = "";
+        connectBtn.style.borderRadius = "8px";
+        connectBtn.style.borderRight = "";
+        connectBtn.disabled = false;
+        connectBtn.onclick = handleConnectClick;
+      }
+      if (connectDropdownToggle) connectDropdownToggle.style.display = "none";
+      if (typeof showToast === 'function') showToast('Disconnected from contributor', 'info');
+
       try {
-        await fetch(window.API_BASE_URL + '/api/social/connect-respond', {
+        await fetch(window.API_BASE_URL + '/api/social/disconnect', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ senderId: targetUid, receiverId: currentUser.uid, status: 'rejected' })
+          body: JSON.stringify({ userId1: currentUser.uid, userId2: targetUid })
         });
         await updateSocialButtonStates();
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error("Disconnect request failed:", e);
+        await updateSocialButtonStates();
+      }
     };
 
     // Close dropdowns on outside click
@@ -1538,29 +1575,84 @@
       if (!currentUser) return;
       const followBtn = document.getElementById('followBtn');
       const followBtnText = document.getElementById('followBtnText');
-      if (followBtn) { followBtn.disabled = true; }
+      const followBtnIcon = document.getElementById('followBtnIcon');
+      const followDropdownToggle = document.getElementById('followDropdownToggle');
+      const followersCountEl = document.getElementById('followersCount');
+      const followMenu = document.getElementById("followDropdownMenu");
+      if (followMenu) followMenu.style.display = "none";
+
+      const isCurrentlyFollowing = followBtnText && followBtnText.textContent.trim().toLowerCase() === 'following';
+      const prevFollowerCount = parseInt(followersCountEl?.innerText || '0', 10);
+
+      // Instant Optimistic Feedback (0ms delay)
+      if (isCurrentlyFollowing) {
+        if (followBtnText) followBtnText.textContent = 'Follow';
+        if (followBtnIcon) followBtnIcon.className = 'ri-user-add-line';
+        if (followBtn) {
+          followBtn.style.background = '';
+          followBtn.style.borderColor = '';
+          followBtn.style.borderRadius = '8px';
+          followBtn.style.borderRight = '';
+          followBtn.onclick = toggleFollow;
+        }
+        if (followDropdownToggle) followDropdownToggle.style.display = 'none';
+        if (followersCountEl) followersCountEl.innerText = Math.max(0, prevFollowerCount - 1);
+        if (typeof showToast === 'function') showToast('Unfollowed contributor', 'info');
+      } else {
+        if (followBtnText) followBtnText.textContent = 'Following';
+        if (followBtnIcon) followBtnIcon.className = 'ri-user-follow-line';
+        if (followBtn) {
+          followBtn.style.background = 'rgba(99,102,241,0.25)';
+          followBtn.style.borderColor = 'rgba(99,102,241,0.5)';
+          followBtn.style.borderRadius = '8px 0 0 8px';
+          followBtn.style.borderRight = 'none';
+          followBtn.onclick = toggleFollow;
+        }
+        if (followDropdownToggle) followDropdownToggle.style.display = 'inline-flex';
+        if (followersCountEl) followersCountEl.innerText = prevFollowerCount + 1;
+        if (typeof showToast === 'function') showToast('Following contributor! 👤', 'success');
+      }
+
       try {
         const res = await fetch(window.API_BASE_URL + '/api/social/follow', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             followerId: currentUser.uid,
-            followerName: currentUser.displayName || currentUser.email.split('@')[0],
+            followerName: currentUser.displayName || (currentUser.email && currentUser.email.split('@')[0]) || 'Contributor',
             followingId: targetUid,
-            followingName: targetProfile.name
+            followingName: (targetProfile && targetProfile.name) || 'Contributor'
           })
         });
-        if (res.ok) await updateSocialButtonStates();
-      } catch (err) { console.error(err); }
-      finally { if (followBtn) followBtn.disabled = false; }
+        if (!res.ok) {
+          await updateSocialButtonStates();
+        }
+      } catch (err) {
+        console.error("Follow toggle failed:", err);
+        await updateSocialButtonStates();
+      }
     };
 
     window.sendConnectionRequest = async function() {
       if (!currentUser) return;
       const btn = document.getElementById("connectBtn");
       const connectBtnText = document.getElementById('connectBtnText');
-      if (btn) btn.disabled = true;
-      if (connectBtnText) connectBtnText.textContent = 'Sending...';
+      const connectBtnIcon = document.getElementById('connectBtnIcon');
+      const connectDropdownToggle = document.getElementById('connectDropdownToggle');
+
+      // Instant optimistic update to Pending
+      if (connectBtnText) connectBtnText.textContent = 'Pending';
+      if (connectBtnIcon) connectBtnIcon.className = 'ri-time-line';
+      if (btn) {
+        btn.style.background = "rgba(245,158,11,0.15)";
+        btn.style.borderColor = "rgba(245,158,11,0.4)";
+        btn.style.borderRadius = "8px";
+        btn.style.borderRight = "";
+        btn.disabled = true;
+        btn.onclick = null;
+      }
+      if (connectDropdownToggle) connectDropdownToggle.style.display = "none";
+      if (typeof showToast === 'function') showToast('Connection request sent! 👋', 'success');
 
       try {
         const res = await fetch(window.API_BASE_URL + '/api/social/connect-request', {
@@ -1568,40 +1660,80 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             senderId: currentUser.uid,
-            senderName: currentUser.displayName || currentUser.email.split('@')[0],
-            senderEmail: currentUser.email,
+            senderName: currentUser.displayName || (currentUser.email && currentUser.email.split('@')[0]) || 'Contributor',
+            senderEmail: currentUser.email || '',
             receiverId: targetUid,
-            receiverName: targetProfile.name,
-            receiverEmail: targetProfile.email
+            receiverName: (targetProfile && targetProfile.name) || 'Contributor',
+            receiverEmail: (targetProfile && targetProfile.email) || ''
           })
         });
-        if (res.ok) {
-          showToast('Connection request sent! 👋', 'success');
-          await updateSocialButtonStates();
-        } else {
-          if (btn) btn.disabled = false;
+        if (!res.ok) {
+          if (btn) {
+            btn.disabled = false;
+            btn.onclick = handleConnectClick;
+          }
           if (connectBtnText) connectBtnText.textContent = 'Connect';
+          if (connectBtnIcon) connectBtnIcon.className = 'ri-user-shared-line';
         }
       } catch (err) {
-        console.error(err);
-        if (btn) btn.disabled = false;
+        console.error("Connection request error:", err);
+        if (btn) {
+          btn.disabled = false;
+          btn.onclick = handleConnectClick;
+        }
         if (connectBtnText) connectBtnText.textContent = 'Connect';
+        if (connectBtnIcon) connectBtnIcon.className = 'ri-user-shared-line';
       }
     };
 
     window.respondConnectionRequest = async function(status) {
       if (!currentUser) return;
+      const banner = document.getElementById("connectApprovalBanner");
+      if (banner) banner.style.display = "none";
+
+      const connectBtn = document.getElementById("connectBtn");
+      const connectBtnText = document.getElementById("connectBtnText");
+      const connectBtnIcon = document.getElementById("connectBtnIcon");
+      const connectDropdownToggle = document.getElementById("connectDropdownToggle");
+
+      if (status === 'accepted') {
+        if (connectBtnText) connectBtnText.textContent = "Connected";
+        if (connectBtnIcon) connectBtnIcon.className = "ri-user-follow-line";
+        if (connectBtn) {
+          connectBtn.style.background = "rgba(16,185,129,0.2)";
+          connectBtn.style.borderColor = "rgba(16,185,129,0.5)";
+          connectBtn.style.borderRadius = "8px 0 0 8px";
+          connectBtn.style.borderRight = "none";
+          connectBtn.onclick = toggleConnectDropdown;
+          connectBtn.disabled = false;
+        }
+        if (connectDropdownToggle) connectDropdownToggle.style.display = "inline-flex";
+        if (typeof showToast === 'function') showToast('Connection accepted! 🤝', 'success');
+      } else {
+        if (connectBtnText) connectBtnText.textContent = "Connect";
+        if (connectBtnIcon) connectBtnIcon.className = "ri-user-shared-line";
+        if (connectBtn) {
+          connectBtn.style.background = "";
+          connectBtn.style.borderColor = "";
+          connectBtn.style.borderRadius = "8px";
+          connectBtn.style.borderRight = "";
+          connectBtn.disabled = false;
+          connectBtn.onclick = handleConnectClick;
+        }
+        if (connectDropdownToggle) connectDropdownToggle.style.display = "none";
+        if (typeof showToast === 'function') showToast('Connection declined', 'info');
+      }
+
       try {
         const res = await fetch(window.API_BASE_URL + '/api/social/connect-respond', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ senderId: targetUid, receiverId: currentUser.uid, status })
         });
-        if (res.ok) {
-          document.getElementById("connectApprovalBanner").style.display = "none";
-          updateSocialButtonStates();
-        }
-      } catch (err) { console.error(err); }
+        await updateSocialButtonStates();
+      } catch (err) {
+        console.error("Connect response failed:", err);
+      }
     };
 
     // Load DM chat history - simple text bubbles without profile photos
@@ -1617,14 +1749,14 @@
         if (!res.ok) return;
         const messages = await res.json();
         const box = document.getElementById("dmMessagesBox");
-        if (!box) return;
-        document.getElementById("dmLockedMessage").style.display = "none";
+        const dmLck = document.getElementById("dmLockedMessage");
+        if (dmLck) dmLck.style.display = "none";
         box.innerHTML = "";
         messages.forEach(msg => {
           const isSender = msg.senderId === currentUser.uid;
           const wrapper = document.createElement("div");
           wrapper.style.cssText = `display:flex; flex-direction:column; align-items:${isSender ? 'flex-end' : 'flex-start'}; margin:0.35rem 0;`;
-          const senderLabel = isSender ? 'You' : (msg.senderName || targetProfile.name);
+          const senderLabel = isSender ? 'You' : (msg.senderName || (targetProfile && targetProfile.name) || 'Contributor');
           wrapper.innerHTML = `
             <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-bottom:3px;">${senderLabel}</span>
             <div style="max-width:78%; padding:0.55rem 0.9rem; border-radius:${isSender ? '14px 14px 4px 14px' : '14px 14px 14px 4px'}; background:${isSender ? 'linear-gradient(135deg,var(--primary),var(--primary-light))' : 'rgba(255,255,255,0.07)'}; color:${isSender ? 'white' : '#cbd5e1'}; font-size:0.87rem; line-height:1.55;">${formatBioContent(msg.text)}</div>
