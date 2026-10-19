@@ -25,6 +25,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/AssignmentSolution/solutions-style.css?v=2.3.1">
   <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
+  <script src="/custom-dialogs.js"></script>
 
   <style>
     :root {
@@ -726,7 +727,7 @@
 
         // Contributor verification validation
         if (uData.isBlocked) {
-          alert("Your contributor account has been suspended.");
+          await customAlert("Your contributor account has been suspended.", { title: "Account Suspended", isDanger: true });
           window.location.replace('/index.html');
           return;
         }
@@ -883,8 +884,12 @@
       }
     };
 
-    window.discardQuizDraft = function() {
-      if (confirm("Are you sure you want to discard your saved draft and reset all fields?")) {
+    window.discardQuizDraft = async function() {
+      const confirmed = await customConfirm(
+        "Are you sure you want to discard your saved draft and reset all fields?",
+        { title: "Discard Draft", isDanger: true, confirmText: "Yes, Discard", cancelText: "Keep Draft" }
+      );
+      if (confirmed) {
         try {
           localStorage.removeItem('dpg_quiz_generator_draft');
         } catch(e) {}
@@ -1261,7 +1266,7 @@
     // Publish Execution
     window.publishQuiz = async function() {
       if (!activeContributor) {
-        alert("Please ensure your contributor session is active before publishing.");
+        await customAlert("Please ensure your contributor session is active before publishing.", { title: "Session Required" });
         return;
       }
 
@@ -1281,7 +1286,7 @@
       const strictMode = document.getElementById('strictMode').checked;
 
       if (!subjectName || !subjectCode || !topicTagsRaw || !quizTitle || !quizDescription) {
-        alert("Please complete all required quiz metadata fields.");
+        await customAlert("Please complete all required quiz metadata fields.", { title: "Required Fields Missing" });
         return;
       }
 
@@ -1300,13 +1305,13 @@
         const selectedRadio = document.querySelector(`input[name="correctKey_${i}"]:checked`);
 
         if (!qText || !optA || !optB || !optC || !optD) {
-          alert(`Question ${i} is missing prompt text or answer options.`);
+          await customAlert(`Question ${i} is missing prompt text or answer options.`, { title: "Incomplete Question" });
           document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
           return;
         }
 
         if (immediateResult && (!selectedRadio || selectedRadio.value === 'DEFERRED')) {
-          alert(`Question ${i} must have a designated correct option (A, B, C, or D) because Immediate Result is enabled.`);
+          await customAlert(`Question ${i} must have a designated correct option (A, B, C, or D) because Immediate Result is enabled.`, { title: "Answer Key Required" });
           document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
           return;
         }
@@ -1471,18 +1476,18 @@
 
       } catch (err) {
         console.error("Publication failed:", err);
-        alert("Failed to publish quiz: " + (err.message || "Unknown write error."));
+        await customAlert("Failed to publish quiz: " + (err.message || "Unknown write error."), { title: "Publish Error", isDanger: true });
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i class="ri-send-plane-fill"></i> Validate &amp; Publish Academic Quiz`;
       }
     };
 
-    window.copyQuizUrl = function() {
+    window.copyQuizUrl = async function() {
       const input = document.getElementById('liveQuizUrlInput');
       input.select();
       navigator.clipboard.writeText(input.value);
-      alert("Examination Link copied to clipboard!");
+      await customAlert("Examination Link copied to clipboard!", { title: "Link Copied" });
     };
 
     window.shareQuizUrl = function() {

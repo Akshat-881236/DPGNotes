@@ -15,6 +15,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/AssignmentSolution/solutions-style.css?v=2.3.1">
   <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
+  <script src="/custom-dialogs.js"></script>
 
   <style>
     :root {
@@ -955,14 +956,14 @@
         // If private, validate share token
         if (!meta) {
           if (!shareTokenParam) {
-            alert("This examination is private and unlisted. A valid share token is required to enter.");
+            await customAlert("This examination is private and unlisted. A valid share token is required to enter.", { title: "Private Assessment", isDanger: true });
             window.location.replace('/Quizes/index.html');
             return;
           }
           const tokenHash = await sha256(shareTokenParam);
           const shareSnap = await getDoc(doc(db, "quizShares", tokenHash));
           if (!shareSnap.exists() || !shareSnap.data().active || shareSnap.data().quizId !== quizId) {
-            alert("Invalid, expired, or revoked examination access token.");
+            await customAlert("Invalid, expired, or revoked examination access token.", { title: "Access Denied", isDanger: true });
             window.location.replace('/Quizes/index.html');
             return;
           }
@@ -972,7 +973,7 @@
         // Load authoritative quiz settings from contributors/{ownerUid}/quizzes/{quizId}
         const fullSnap = await getDoc(doc(db, "contributors", ownerUid, "quizzes", quizId));
         if (!fullSnap.exists()) {
-          alert("The requested examination could not be found or has been removed.");
+          await customAlert("The requested examination could not be found or has been removed.", { title: "Assessment Not Found", isDanger: true });
           window.location.replace('/Quizes/index.html');
           return;
         }
@@ -990,7 +991,7 @@
         }
 
         if (questionsList.length === 0) {
-          alert("Examination has no configured question payload.");
+          await customAlert("Examination has no configured question payload.", { title: "Payload Empty", isDanger: true });
           return;
         }
 
@@ -1011,7 +1012,7 @@
 
       } catch (err) {
         console.error("Quiz load failure:", err);
-        alert("Failed to load examination: " + err.message);
+        await customAlert("Failed to load examination: " + err.message, { title: "Load Error", isDanger: true });
       }
     }
 
@@ -1026,14 +1027,14 @@
       const candUniversity = document.getElementById('candUniversity').value.trim();
 
       if (!candName || !candStudentId || !candCourse || !candCollege || !candUniversity) {
-        alert("Please complete all candidate identification fields before beginning.");
+        await customAlert("Please complete all candidate identification fields before beginning.", { title: "Required Information" });
         return;
       }
 
       // 1. Client-Side Strict Single-Attempt Lock
       const localAttemptKey = 'dpg_quiz_submitted_' + quizData.quizId;
       if (localStorage.getItem(localAttemptKey)) {
-        alert("Single Attempt Restriction: You have already submitted an examination attempt for this quiz on this browser. Multiple attempts are strictly disallowed.");
+        await customAlert("Single Attempt Restriction: You have already submitted an examination attempt for this quiz on this browser. Multiple attempts are strictly disallowed.", { title: "Attempt Already Submitted", isDanger: true });
         return;
       }
 
@@ -1054,7 +1055,7 @@
         const qSid = query(attemptsCol, where("studentId", "==", candStudentId));
         const sidSnap = await getDocs(qSid);
         if (!sidSnap.empty) {
-          alert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited.`);
+          await customAlert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited.`, { title: "Attempt Already Recorded", isDanger: true });
           return;
         }
 
@@ -1063,7 +1064,7 @@
           const qUid = query(attemptsCol, where("candidateUid", "==", auth.currentUser.uid));
           const uidSnap = await getDocs(qUid);
           if (!uidSnap.empty) {
-            alert("Single Attempt Restriction: Your authenticated account has already completed this examination.");
+            await customAlert("Single Attempt Restriction: Your authenticated account has already completed this examination.", { title: "Attempt Already Recorded", isDanger: true });
             return;
           }
         }
@@ -1213,18 +1214,18 @@
       updateNavPillsStatus();
     }
 
-    window.selectExamOption = function(letter) {
+    window.selectExamOption = async function(letter) {
       if (quizData.allowChangeAnswers === false && candidateAnswers[currentQIdx] !== undefined) {
-        alert("This examination does not permit changing previously registered answers.");
+        await customAlert("This examination does not permit changing previously registered answers.", { title: "Answer Locked" });
         return;
       }
       candidateAnswers[currentQIdx] = letter;
       renderCurrentQuestion();
     };
 
-    window.clearCurrentAnswer = function() {
+    window.clearCurrentAnswer = async function() {
       if (quizData.allowChangeAnswers === false && candidateAnswers[currentQIdx] !== undefined) {
-        alert("Registered answers cannot be cleared.");
+        await customAlert("Registered answers cannot be cleared.", { title: "Answer Locked" });
         return;
       }
       delete candidateAnswers[currentQIdx];
@@ -1301,17 +1302,21 @@
     // -------------------------------------------------------------
     // SUBMISSION & SCORING EXECUTION
     // -------------------------------------------------------------
-    window.confirmVoluntarySubmit = function() {
+    window.confirmVoluntarySubmit = async function() {
       const answeredCount = Object.keys(candidateAnswers).length;
       const total = questionsList.length;
-      if (confirm(`Are you ready to submit your assessment?\nYou have answered ${answeredCount} of ${total} questions.`)) {
+      const confirmed = await customConfirm(
+        `Are you ready to submit your assessment?\nYou have answered ${answeredCount} of ${total} questions.`,
+        { title: "Submit Assessment", confirmText: "Submit Now", cancelText: "Review Answers" }
+      );
+      if (confirmed) {
         executeSubmission("VOLUNTARY_SUBMIT");
       }
     };
 
-    function autoSubmitExamination(reason) {
+    async function autoSubmitExamination(reason) {
       if (hasSubmitted) return;
-      alert(`The examination session is ending automatically.\nReason: ${reason}`);
+      await customAlert(`The examination session is ending automatically.\nReason: ${reason}`, { title: "Session Concluded", isDanger: true });
       executeSubmission(reason);
     }
 
@@ -1519,9 +1524,9 @@
 
     // Suppress code sandbox execution during active proctored examination
     const origRunSandbox = window.runSandboxFromGroup;
-    window.runSandboxFromGroup = function(groupId, title) {
+    window.runSandboxFromGroup = async function(groupId, title) {
       if (!hasSubmitted && document.getElementById('viewExamEngine')?.style.display !== 'none') {
-        alert("Interactive sandbox execution is disabled during the active examination.");
+        await customAlert("Interactive sandbox execution is disabled during the active examination.", { title: "Sandbox Disabled" });
         return;
       }
       if (typeof origRunSandbox === 'function') {
