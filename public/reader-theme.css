@@ -1514,6 +1514,83 @@ html[data-theme="light"] .modal-content {
   border: 1px solid #cbd5e1 !important;
 }
 
+/* Light Theme Scorecard & Examination Result Contrast */
+html[data-theme="light"] #viewScorecard,
+html[data-theme="light"] .qz-box {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] #scorecardStatusHeading,
+html[data-theme="light"] #reviewContainer h4 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] #scorecardStatusSub {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .score-gauge-inner {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] #scorePercentVal {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .kpi-metric-box {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sc-audit-card {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sc-data-val {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .btn-scorecard-print {
+  color: #0f172a !important;
+  border: 1.5px solid #94a3b8 !important;
+  background: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .btn-scorecard-print:hover {
+  background: #e2e8f0 !important;
+  color: #000000 !important;
+  border-color: #64748b !important;
+}
+
+html[data-theme="light"] .review-item {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+}
+
+html[data-theme="light"] .review-item.is-correct {
+  border-left: 4px solid #10b981 !important;
+}
+
+html[data-theme="light"] .review-item.is-incorrect {
+  border-left: 4px solid #ef4444 !important;
+}
+
+html[data-theme="light"] .review-item.is-unanswered {
+  border-left: 4px solid #f59e0b !important;
+}
+
+html[data-theme="light"] .rev-q-text,
+html[data-theme="light"] .rev-ans-text {
+  color: #0f172a !important;
+}
+
 /* 2. OLED DARK THEME OVERRIDES */
 html[data-theme="dark"],
 body[data-theme="dark"],

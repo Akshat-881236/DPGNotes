@@ -962,19 +962,25 @@ async function loadExplore() {
     });
   } catch(e) {}
 
-  // Parallel fetch documents and verified solutions
+  // Parallel fetch documents, verified solutions, and published quizzes
   let docsSnap = { forEach: () => {} };
   let solutionsSnap = { forEach: () => {} };
+  let quizzesSnap = { forEach: () => {} };
   try {
     const results = await Promise.all([
       getDocs(query(collection(db, "documents"))),
       getDocs(query(collectionGroup(db, "solutions"), limit(120))).catch(err => {
         console.warn("Dashboard solutions fetch notice:", err);
         return { forEach: () => {} };
+      }),
+      getDocs(query(collection(db, "quizDirectory"), where("status", "==", "published"))).catch(err => {
+        console.warn("Dashboard quizzes fetch notice:", err);
+        return { forEach: () => {} };
       })
     ]);
     docsSnap = results[0];
     solutionsSnap = results[1];
+    quizzesSnap = results[2];
   } catch (err) {
     console.error("Dashboard explore fetch error:", err);
   }
@@ -1006,6 +1012,13 @@ async function loadExplore() {
     if (d.status === 'unverified' || d.isVerified === false) return;
     solutions.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: (d.type === 'practical' || doc.ref.path.includes('practical')) ? 'practical_solutions' : 'assignment_solutions', ...d });
   });
+
+  // Extract published quizzes
+  const quizzes = [];
+  quizzesSnap.forEach(doc => {
+    const d = doc.data();
+    quizzes.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: 'quizDirectory', isQuiz: true, ...d });
+  });
   
   // Sort values
   const sortVal = document.getElementById("exploreSort") ? document.getElementById("exploreSort").value : "newest";
@@ -1027,6 +1040,7 @@ async function loadExplore() {
 
   docsArray.sort(sortFn);
   solutions.sort(sortFn);
+  quizzes.sort(sortFn);
   
   // Apply search query filter if user typed in search box
   const searchInput = document.getElementById("exploreSearch");
@@ -1047,6 +1061,14 @@ async function loadExplore() {
       (s.course || "").toLowerCase().includes(queryStr) ||
       (s.contributorName || "").toLowerCase().includes(queryStr)
     ));
+    quizzes.splice(0, quizzes.length, ...quizzes.filter(q =>
+      (q.title || "").toLowerCase().includes(queryStr) ||
+      (q.subjectName || "").toLowerCase().includes(queryStr) ||
+      (q.subjectCode || "").toLowerCase().includes(queryStr) ||
+      (q.description || "").toLowerCase().includes(queryStr) ||
+      (q.ownerName || "").toLowerCase().includes(queryStr) ||
+      (Array.isArray(q.tags) ? q.tags.join(" ") : "").toLowerCase().includes(queryStr)
+    ));
   }
 
   // Device-Specific Feed Count Rule:
@@ -1066,29 +1088,32 @@ async function loadExplore() {
   });
 
   // Helper to render card HTML
-  function renderCardHtml(data, isSol = false) {
+  function renderCardHtml(data, isSol = false, isQuiz = false) {
+    const isQuizCard = isQuiz || Boolean(data.isQuiz);
     const docId = data.id;
     const likedByArr = Array.isArray(data.likedBy) ? data.likedBy : (Array.isArray(data.likes) ? data.likes : []);
     const likesCount = typeof data.likes === 'number' ? data.likes : (likedByArr.length || (Number(data.likes) || 0));
     const activeUid = (currentUser && currentUser.uid) || (auth && auth.currentUser && auth.currentUser.uid) || localStorage.getItem("dpgActiveUserUid");
     const hasLiked = activeUid ? likedByArr.includes(activeUid) : false;
-    const isApproved = data.status === "approved" || data.isApproved === true || isSol;
+    const isApproved = data.status === "approved" || data.isApproved === true || isSol || isQuizCard;
     const isPrivate = data.visibility === "private" || data.isPasswordProtected === true;
 
-    const authorUid = data.userId || data.uploaderId || data.uploaderUid || data.contributorUid || "";
+    const authorUid = data.userId || data.uploaderId || data.uploaderUid || data.contributorUid || data.ownerUid || "";
     const authorUser = (authorUid && usersCache[authorUid]) || null;
-    const authorName = data.userName || data.uploader || data.contributorName || (authorUser && authorUser.name) || "Verified Contributor";
+    const authorName = data.userName || data.uploader || data.contributorName || data.ownerName || (authorUser && authorUser.name) || "Verified Contributor";
     const authorPhoto = (authorUser && (authorUser.profilePic || authorUser.photoURL || authorUser.avatarUrl)) || data.contributorPhoto || data.userPhoto || "https://dpgnotes.web.app/ANH.png";
 
     const title = data.title || data.subjectName || "Academic Resource";
-    const discipline = data.discipline || data.course || "Computer Science";
-    const categoryName = isSol ? (data.type === 'practical' ? "Practical Solution" : "Assignment Solution") : (data.category || "Academic Notes");
-    const catColor = isSol ? (data.type === 'practical' ? "#10b981" : "#06b6d4") : "#6366f1";
-    const catIcon = isSol ? (data.type === 'practical' ? "ri-flask-line" : "ri-file-code-line") : "ri-file-text-line";
+    const discipline = data.discipline || data.course || data.subjectName || "Computer Science";
+    const categoryName = isQuizCard ? "Examination Quiz" : (isSol ? (data.type === 'practical' ? "Practical Solution" : "Assignment Solution") : (data.category || "Academic Notes"));
+    const catColor = isQuizCard ? "#f59e0b" : (isSol ? (data.type === 'practical' ? "#10b981" : "#06b6d4") : "#6366f1");
+    const catIcon = isQuizCard ? "ri-questionnaire-line" : (isSol ? (data.type === 'practical' ? "ri-flask-line" : "ri-file-code-line") : "ri-file-text-line");
 
-    const targetUrl = isSol
-      ? (data.type === 'practical' ? `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(docId)}` : `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(docId)}`)
-      : `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${docId}&pdf=${encodeURIComponent(data.pdfUrl || '')}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(data.category || '')}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(authorName)}&docid=${encodeURIComponent(data.documentId || '')}`;
+    const targetUrl = isQuizCard
+      ? `https://dpgnotes.web.app/Quizes/index.html?quizId=${encodeURIComponent(docId)}`
+      : (isSol
+        ? (data.type === 'practical' ? `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(docId)}` : `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(docId)}`)
+        : `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${docId}&pdf=${encodeURIComponent(data.pdfUrl || '')}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(data.category || '')}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(authorName)}&docid=${encodeURIComponent(data.documentId || '')}`);
 
     const profileUrl = authorUid ? `profile.html?uid=${encodeURIComponent(authorUid)}` : `profile.html`;
 
@@ -1136,7 +1161,7 @@ async function loadExplore() {
 
         <div>
           <a href="${targetUrl}" target="_blank" class="open-btn" style="width:100%; display:block; text-align:center; padding:8px 12px; border-radius:10px; font-weight:700; font-size:0.85rem; text-decoration:none; margin-bottom:8px; background:linear-gradient(135deg, ${catColor}, #6366f1); color:white; border:none; box-sizing:border-box;">
-            <i class="ri-book-read-line"></i> ${isSol ? 'Read & View Solution' : 'Open PDF'}
+            ${isQuizCard ? `<i class="ri-play-fill"></i> Take Assessment (${data.totalQuestions || 15} Qs &bull; ${data.timeMinutes || 20}m)` : (isSol ? '<i class="ri-book-read-line"></i> Read & View Solution' : '<i class="ri-book-read-line"></i> Open PDF')}
           </a>
 
           <div class="card-actions" style="display:flex; justify-content:space-between; gap:8px;">
@@ -1162,6 +1187,30 @@ async function loadExplore() {
   // Render Streams
   let renderedStreams = 0;
   hubContainer.innerHTML = "";
+
+  // 0. Interactive Examination Quizzes Stream
+  if (quizzes.length > 0 && !isFiltered) {
+    renderedStreams++;
+    const displayQuizzes = quizzes.slice(0, feedLimit);
+    const qzSection = document.createElement("div");
+    qzSection.className = "explore-vertical-grid";
+    qzSection.innerHTML = `
+      <div class="explore-grid-header">
+        <div class="explore-grid-header-left">
+          <i class="ri-questionnaire-line" style="color:#f59e0b; font-size:1.3rem;"></i>
+          <h3>Interactive Examination Quizzes</h3>
+          <span class="explore-badge-count" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">${quizzes.length} Quizzes</span>
+        </div>
+        <a href="dpgnotes-serp.html?tab=quizzes" target="_blank" style="color:#f59e0b; font-size:0.82rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+          Explore All Quizzes <i class="ri-arrow-right-line"></i>
+        </a>
+      </div>
+      <div class="explore-stream-cards">
+        ${displayQuizzes.map(q => renderCardHtml(q, false, true)).join('')}
+      </div>
+    `;
+    hubContainer.appendChild(qzSection);
+  }
 
   // 1. Assignment & Practical Solutions (Only if both solutions total >= 4)
   if (solutions.length >= 4) {
@@ -1215,19 +1264,23 @@ async function loadExplore() {
   });
 
   // Fallback: If user searched and filtered out specific categories, or total streams is 0
-  if (renderedStreams === 0) {
-    if (docsArray.length > 0 || solutions.length > 0) {
-      const combined = [...solutions.map(s => ({ item: s, isSol: true })), ...docsArray.map(d => ({ item: d, isSol: false }))];
+  if (renderedStreams === 0 || isFiltered) {
+    const combined = [
+      ...quizzes.map(q => ({ item: q, isSol: false, isQuiz: true })),
+      ...solutions.map(s => ({ item: s, isSol: true, isQuiz: false })),
+      ...docsArray.map(d => ({ item: d, isSol: false, isQuiz: false }))
+    ];
+    if (combined.length > 0) {
       hubContainer.innerHTML = `
         <div style="margin-bottom:1.2rem; font-size:0.9rem; color:#94a3b8;">
-          Showing <strong>${combined.length}</strong> matching search results:
+          Showing <strong>${combined.length}</strong> matching search results (Notes, Solutions & Quizzes):
         </div>
         <div class="explore-stream-cards">
-          ${combined.slice(0, feedLimit * 2).map(c => renderCardHtml(c.item, c.isSol)).join('')}
+          ${combined.slice(0, feedLimit * 3).map(c => renderCardHtml(c.item, c.isSol, c.isQuiz)).join('')}
         </div>
       `;
     } else {
-      hubContainer.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:3rem;'>No resources found matching the criteria.</p>";
+      hubContainer.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:3rem;'>No resources or quizzes found matching the criteria.</p>";
     }
   }
 

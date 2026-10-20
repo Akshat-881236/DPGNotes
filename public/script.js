@@ -1442,13 +1442,17 @@ async function loadAcademicResources() {
   if (statusEl) statusEl.innerText = "Fetching academic resources...";
 
   try {
-    const [snap, solutionsSnap, usersSnap] = await Promise.all([
+    const [snap, solutionsSnap, usersSnap, quizzesSnap] = await Promise.all([
       getDocs(query(collection(db, "documents"), limit(150))),
       getDocs(query(collectionGroup(db, "solutions"), limit(100))).catch(err => {
         console.warn("Solutions fetch warning:", err);
         return { forEach: () => {} };
       }),
       getDocs(collection(db, "users")).catch(err => {
+        return { forEach: () => {} };
+      }),
+      getDocs(query(collection(db, "quizDirectory"), where("status", "==", "published"))).catch(err => {
+        console.warn("Quiz directory fetch warning:", err);
         return { forEach: () => {} };
       })
     ]);
@@ -1487,6 +1491,15 @@ async function loadAcademicResources() {
       solutions.push(solObj);
       window._allSolutionsCache.push(solObj);
     });
+
+    // Populate published quizzes
+    window._allQuizzesCache = [];
+    if (quizzesSnap && typeof quizzesSnap.forEach === 'function') {
+      quizzesSnap.forEach(d => {
+        const qData = d.data();
+        window._allQuizzesCache.push({ id: d.id, isQuiz: true, ...qData });
+      });
+    }
 
     if (statusEl) statusEl.style.display = "none";
 
@@ -1708,10 +1721,19 @@ function setupHomepageLiveSearch() {
         (s.contributorName && s.contributorName.toLowerCase().includes(q))
       ).slice(0, 3);
 
-      const totalMatches = [...docMatches, ...solMatches];
+      const quizMatches = (window._allQuizzesCache || []).filter(qz =>
+        (qz.title && qz.title.toLowerCase().includes(q)) ||
+        (qz.subjectName && qz.subjectName.toLowerCase().includes(q)) ||
+        (qz.subjectCode && qz.subjectCode.toLowerCase().includes(q)) ||
+        (qz.description && qz.description.toLowerCase().includes(q)) ||
+        (qz.ownerName && qz.ownerName.toLowerCase().includes(q)) ||
+        (Array.isArray(qz.tags) && qz.tags.some(t => t.toLowerCase().includes(q)))
+      ).slice(0, 3);
+
+      const totalMatches = [...docMatches, ...solMatches, ...quizMatches];
 
       if (totalMatches.length === 0) {
-        panel.innerHTML = '<div class="no-results-item">No matching documents or solutions found.</div>';
+        panel.innerHTML = '<div class="no-results-item">No matching documents, solutions, or quizzes found.</div>';
       } else {
         panel.innerHTML = "";
         // Render document matches
@@ -1753,6 +1775,29 @@ function setupHomepageLiveSearch() {
               </div>
             </div>
             <i class="ri-arrow-right-line suggestion-arrow"></i>
+          `;
+          panel.appendChild(item);
+        });
+
+        // Render quiz matches
+        quizMatches.forEach(qz => {
+          const viewerUrl = `Quizes/index.html?quizId=${encodeURIComponent(qz.id)}`;
+          const title = qz.title || `${qz.subjectName || 'Academic'} Assessment`;
+          const subCode = qz.subjectCode ? ` [${qz.subjectCode}]` : '';
+
+          const item = document.createElement("a");
+          item.className = "suggestion-item quiz-suggestion-item";
+          item.href = viewerUrl;
+          item.innerHTML = `
+            <div class="suggestion-info">
+              <div class="suggestion-title">${title}${subCode}</div>
+              <div class="suggestion-meta">
+                <span style="color:#f59e0b; font-weight:700;"><i class="ri-questionnaire-line"></i> Quiz (${qz.totalQuestions || 15} Qs)</span>
+                <span><i class="ri-time-line"></i> ${qz.timeMinutes || 20}m</span>
+                <span><i class="ri-user-line"></i> ${qz.ownerName || 'Verified Contributor'}</span>
+              </div>
+            </div>
+            <i class="ri-play-fill suggestion-arrow" style="color:#f59e0b;"></i>
           `;
           panel.appendChild(item);
         });

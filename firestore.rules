@@ -345,15 +345,25 @@ service cloud.firestore {
           allow write: if request.auth != null && request.auth.uid == contributorUid;
         }
 
-        match /attempts/{attemptId} {
+                match /attempts/{attemptId} {
           allow create: if request.auth != null;
-          allow read: if request.auth != null && (
-            request.auth.uid == resource.data.candidateUid ||
-            request.auth.uid == contributorUid
+          allow read: if request.auth != null;
+          allow update, delete: if request.auth != null && (
+            request.auth.uid == contributorUid ||
+            request.auth.uid == resource.data.candidateUid
           );
-          allow update: if request.auth != null && request.auth.uid == contributorUid;
         }
       }
+    }
+
+    /* ---------- QUIZ ATTEMPTS LOOKUP & DEDUPLICATION ---------- */
+    match /quizAttemptsLookup/{lookupId} {
+      allow read, write: if request.auth != null;
+    }
+
+    /* ---------- QUIZ DEVICE & IP TRACKING ---------- */
+        match /quiz_device_tracking/{trackId} {
+      allow read, write: if true;
     }
 
     match /quizDirectory/{quizId} {

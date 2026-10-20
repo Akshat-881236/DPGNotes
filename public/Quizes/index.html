@@ -740,36 +740,36 @@
       <div style="text-align:center; margin-bottom:2rem;">
         <div id="scoreGaugeEl" class="score-gauge" style="--score-deg:0deg;">
           <div class="score-gauge-inner">
-            <span id="scorePercentVal" style="font-size:1.6rem; font-weight:800; color:#fff;">--%</span>
+            <span id="scorePercentVal" style="font-size:1.6rem; font-weight:800; color:var(--qz-text);">--%</span>
             <span style="font-size:0.75rem; color:var(--qz-text-muted);">ACCURACY</span>
           </div>
         </div>
-        <h2 id="scorecardStatusHeading" style="font-size:1.8rem; font-weight:800; color:#fff; margin-bottom:0.4rem;">Assessment Completed</h2>
+        <h2 id="scorecardStatusHeading" style="font-size:1.8rem; font-weight:800; color:var(--qz-text); margin-bottom:0.4rem;">Assessment Completed</h2>
         <p id="scorecardStatusSub" style="color:var(--qz-text-muted); font-size:0.95rem;">Official Examination Record</p>
       </div>
 
       <!-- KPI Metric Cards -->
       <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+          <div class="kpi-metric-box" style="border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
             <div style="font-size:0.75rem; color:var(--qz-text-muted);">SCORE</div>
             <div id="metricFinalScore" style="font-size:1.4rem; font-weight:800; color:var(--qz-accent);">0 / 0</div>
           </div>
         </div>
         <div class="col-md-3 col-6">
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+          <div class="kpi-metric-box" style="border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
             <div style="font-size:0.75rem; color:var(--qz-text-muted);">CORRECT</div>
             <div id="metricCorrect" style="font-size:1.4rem; font-weight:800; color:var(--qz-success);">0</div>
           </div>
         </div>
         <div class="col-md-3 col-6">
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+          <div class="kpi-metric-box" style="border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
             <div style="font-size:0.75rem; color:var(--qz-text-muted);">INCORRECT</div>
             <div id="metricIncorrect" style="font-size:1.4rem; font-weight:800; color:var(--qz-danger);">0</div>
           </div>
         </div>
         <div class="col-md-3 col-6">
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
+          <div class="kpi-metric-box" style="border:1px solid var(--qz-border); border-radius:12px; padding:1rem; text-align:center;">
             <div style="font-size:0.75rem; color:var(--qz-text-muted);">UNATTEMPTED</div>
             <div id="metricUnattempted" style="font-size:1.4rem; font-weight:800; color:var(--qz-warning);">0</div>
           </div>
@@ -777,13 +777,13 @@
       </div>
 
       <!-- Candidate Metadata Audit -->
-      <div style="background:rgba(0,0,0,0.25); border:1px solid var(--qz-border); border-radius:12px; padding:1.25rem; font-size:0.85rem; margin-bottom:2rem;">
+      <div class="sc-audit-card" style="border:1px solid var(--qz-border); border-radius:12px; padding:1.25rem; font-size:0.85rem; margin-bottom:2rem;">
         <div class="row g-2">
-          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Candidate:</span> <strong id="scCandidateName" style="color:#fff;">--</strong></div>
-          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Student ID:</span> <strong id="scStudentId" style="color:#fff;">--</strong></div>
-          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Time Taken:</span> <strong id="scDuration" style="color:#fff;">--</strong></div>
-          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Submission Type:</span> <strong id="scSubmissionType" style="color:#fff;">Normal</strong></div>
-          <div class="col-12" id="scUmcWarningRow" style="display:none; color:#fca5a5; margin-top:4px;">
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Candidate:</span> <strong id="scCandidateName" class="sc-data-val">--</strong></div>
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Student ID:</span> <strong id="scStudentId" class="sc-data-val">--</strong></div>
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Time Taken:</span> <strong id="scDuration" class="sc-data-val">--</strong></div>
+          <div class="col-md-6"><span style="color:var(--qz-text-muted);">Submission Type:</span> <strong id="scSubmissionType" class="sc-data-val">Normal</strong></div>
+          <div class="col-12" id="scUmcWarningRow" style="display:none; color:#f87171; margin-top:4px;">
             <i class="ri-alert-line"></i> <strong>Proctor Notice:</strong> Monitored interruptions logged during this attempt.
           </div>
         </div>
@@ -791,12 +791,12 @@
 
       <!-- Question Review Container -->
       <div id="reviewContainer">
-        <h4 style="font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:1rem;">Question By Question Review</h4>
+        <h4 style="font-size:1.1rem; font-weight:700; color:var(--qz-text); margin-bottom:1rem;">Question By Question Review</h4>
         <div id="reviewList"></div>
       </div>
 
       <div style="text-align:center; margin-top:2rem;">
-        <button type="button" class="btn btn-outline-light" onclick="window.print()">
+        <button type="button" id="btnPrintScorecard" class="btn btn-outline-secondary btn-scorecard-print" onclick="window.print()">
           <i class="ri-printer-line"></i> Print Official Scorecard
         </button>
         <a href="/Quizes/index.html" class="btn btn-primary" style="margin-left:12px;">
@@ -843,6 +843,31 @@
       const buffer = new TextEncoder().encode(str);
       const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
       return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Hardware Signature & Guest Identity Trackers
+    function getOrCreateDeviceClientId() {
+      let devId = localStorage.getItem('dpg_quiz_device_id');
+      if (!devId) {
+        devId = 'dev_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+        try {
+          localStorage.setItem('dpg_quiz_device_id', devId);
+          document.cookie = `dpg_quiz_device_id=${devId}; path=/; max-age=31536000; SameSite=Lax`;
+        } catch(e) {}
+      }
+      return devId;
+    }
+
+    function getOrCreateGuestId() {
+      let gId = localStorage.getItem('dpg_guest_uid');
+      if (!gId) {
+        gId = 'guest_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+        try {
+          localStorage.setItem('dpg_guest_uid', gId);
+          document.cookie = `dpg_guest_uid=${gId}; path=/; max-age=31536000; SameSite=Lax`;
+        } catch(e) {}
+      }
+      return gId;
     }
 
     // App State
@@ -1120,43 +1145,106 @@
         }
       }
 
-      // Check Firestore database for existing attempts & retest authorization
+      const safeSid = candStudentId.toLowerCase().replace(/[^a-zA-Z0-9_\-]/g, '_');
+      const devClientId = getOrCreateDeviceClientId();
+      const safeDev = devClientId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+      const isAuthCandidate = auth.currentUser && !auth.currentUser.isAnonymous;
+      const candidateUid = auth.currentUser ? auth.currentUser.uid : null;
       let canRetest = false;
+
+      // 1. Direct O(1) Lookup via quizAttemptsLookup Collection
       try {
-        const attemptsCol = collection(db, "contributors", quizData.ownerUid, "quizzes", quizData.quizId, "attempts");
-        
-        // Strict Student ID uniqueness query
-        const qSid = query(attemptsCol, where("studentId", "==", candStudentId));
-        const sidSnap = await getDocs(qSid);
-        if (!sidSnap.empty) {
-          const docData = sidSnap.docs[0].data();
-          if (docData.allowedRetest === true) {
+        // A. Student ID Lookup
+        const sidDoc = await getDoc(doc(db, "quizAttemptsLookup", `${quizData.quizId}_sid_${safeSid}`));
+        if (sidDoc.exists()) {
+          const dData = sidDoc.data();
+          if (dData.allowedRetest === true) {
             canRetest = true;
           } else {
-            await customAlert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited unless the quiz author authorizes a re-test.`, { title: "Attempt Already Recorded", isDanger: true });
+            await customAlert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited unless authorized by the quiz author.`, { title: "Attempt Already Recorded", isDanger: true });
             return;
           }
         }
 
-        // Authenticated user UID uniqueness query
-        if (!canRetest && auth.currentUser && !auth.currentUser.isAnonymous) {
-          const qUid = query(attemptsCol, where("candidateUid", "==", auth.currentUser.uid));
-          const uidSnap = await getDocs(qUid);
-          if (!uidSnap.empty) {
-            const docData = uidSnap.docs[0].data();
-            if (docData.allowedRetest === true) {
+        // B. Device Client ID Lookup (Blocks Incognito/Multiple Tabs on Same Device)
+        if (!canRetest && safeDev) {
+          const devDoc = await getDoc(doc(db, "quizAttemptsLookup", `${quizData.quizId}_dev_${safeDev}`));
+          if (devDoc.exists()) {
+            const dData = devDoc.data();
+            if (dData.allowedRetest === true) {
               canRetest = true;
             } else {
-              await customAlert("Single Attempt Restriction: Your authenticated account has already completed this examination.", { title: "Attempt Already Recorded", isDanger: true });
+              await customAlert(`Single Attempt Restriction: This device has already completed an attempt for this examination (Candidate: ${dData.candidateName || 'Student'}). Multiple submissions from the same hardware are prohibited.`, { title: "Device Attempt Exists", isDanger: true });
               return;
             }
           }
         }
-      } catch (checkErr) {
-        console.warn("Attempt uniqueness check warning:", checkErr);
+
+        // C. Authenticated Contributor Account Lookup
+        if (!canRetest && isAuthCandidate && candidateUid) {
+          const uidDoc = await getDoc(doc(db, "quizAttemptsLookup", `${quizData.quizId}_uid_${candidateUid}`));
+          if (uidDoc.exists()) {
+            const dData = uidDoc.data();
+            if (dData.allowedRetest === true) {
+              canRetest = true;
+            } else {
+              await customAlert("Single Attempt Restriction: Your authenticated contributor account has already submitted an attempt for this quiz.", { title: "Account Attempt Exists", isDanger: true });
+              return;
+            }
+          }
+        }
+      } catch (lookupErr) {
+        console.warn("Direct lookup check warning:", lookupErr);
       }
 
-      // Client-Side Strict Single-Attempt Lock (Bypassed if author authorized retest)
+      // 2. Query attempts subcollection if permitted
+      if (!canRetest) {
+        try {
+          const attemptsCol = collection(db, "contributors", quizData.ownerUid, "quizzes", quizData.quizId, "attempts");
+          const qSid = query(attemptsCol, where("studentId", "==", candStudentId));
+          const sidSnap = await getDocs(qSid);
+          if (!sidSnap.empty) {
+            const docData = sidSnap.docs[0].data();
+            if (docData.allowedRetest === true) {
+              canRetest = true;
+            } else {
+              await customAlert(`Single Attempt Restriction: An examination record with Student ID "${candStudentId}" has already been submitted for this quiz. Re-submission is prohibited.`, { title: "Attempt Already Recorded", isDanger: true });
+              return;
+            }
+          }
+        } catch (checkErr) {
+          console.warn("Attempt uniqueness check warning:", checkErr);
+        }
+      }
+
+      // 3. Backend IP & telemetry validation via /api/quiz/check-attempt
+      if (!canRetest) {
+        try {
+          const checkRes = await fetch('/api/quiz/check-attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              quizId: quizData.quizId,
+              studentId: candStudentId,
+              candidateUid: isAuthCandidate ? candidateUid : null,
+              candidateType: isAuthCandidate ? 'registered' : 'guest',
+              deviceClientId: devClientId,
+              guestId: getOrCreateGuestId()
+            })
+          });
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            if (checkData && checkData.allowed === false) {
+              await customAlert(checkData.blockReason || "Single Attempt Restriction: You have already attempted this quiz.", { title: "Attempt Blocked", isDanger: true });
+              return;
+            }
+          }
+        } catch(netErr) {
+          console.warn("Backend check-attempt notice:", netErr);
+        }
+      }
+
+      // 4. Client-Side Strict Single-Attempt Lock (Bypassed if author authorized retest)
       const localAttemptKey = 'dpg_quiz_submitted_' + quizData.quizId;
       if (localStorage.getItem(localAttemptKey) && !canRetest) {
         await customAlert("Single Attempt Restriction: You have already submitted an examination attempt for this quiz on this browser. Multiple attempts are strictly disallowed.", { title: "Attempt Already Submitted", isDanger: true });
@@ -1649,6 +1737,83 @@
           }
         }
 
+        // 1. Write lock documents to quizAttemptsLookup
+        const safeSid = candStudentId.toLowerCase().replace(/[^a-zA-Z0-9_\-]/g, '_');
+        const devClientId = getOrCreateDeviceClientId();
+        const safeDev = devClientId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+        try {
+          await setDoc(doc(db, "quizAttemptsLookup", `${quizData.quizId}_sid_${safeSid}`), {
+            quizId: quizData.quizId,
+            studentId: candStudentId,
+            candidateName: candName,
+            collegeName: candCollege,
+            universityName: candUniversity,
+            candidateUid: candidateUid,
+            candidateType: candidateType,
+            deviceClientId: devClientId,
+            guestId: getOrCreateGuestId(),
+            attemptId: attemptId,
+            allowedRetest: false,
+            timestamp: serverTimestamp()
+          }, { merge: true });
+
+          if (safeDev) {
+            await setDoc(doc(db, "quizAttemptsLookup", `${quizData.quizId}_dev_${safeDev}`), {
+              quizId: quizData.quizId,
+              studentId: candStudentId,
+              candidateName: candName,
+              deviceClientId: devClientId,
+              attemptId: attemptId,
+              allowedRetest: false,
+              timestamp: serverTimestamp()
+            }, { merge: true });
+          }
+
+          if (!isGuest && candidateUid) {
+            await setDoc(doc(db, "quizAttemptsLookup", `${quizData.quizId}_uid_${candidateUid}`), {
+              quizId: quizData.quizId,
+              studentId: candStudentId,
+              candidateUid: candidateUid,
+              attemptId: attemptId,
+              allowedRetest: false,
+              timestamp: serverTimestamp()
+            }, { merge: true });
+          }
+        } catch(lookupErr) {
+          console.warn("Write to quizAttemptsLookup error:", lookupErr);
+        }
+
+        // 2. Dispatch telemetry and IP tracking to Node backend & Python tracker service
+        try {
+          fetch('/api/quiz/track-attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              quizId: quizData.quizId,
+              attemptId: attemptId,
+              candidateType: candidateType,
+              candidateUid: candidateUid,
+              studentId: candStudentId,
+              candidateName: candName,
+              collegeName: candCollege,
+              universityName: candUniversity,
+              guestId: getOrCreateGuestId(),
+              deviceClientId: devClientId,
+              score: finalScore,
+              maximumScore: maxScore,
+              percentage: percentage,
+              umcFlag: uvcViolations.length > 0,
+              hardwareInfo: {
+                screenWidth: window.screen.width,
+                screenHeight: window.screen.height,
+                platform: navigator.platform || '',
+                language: navigator.language || ''
+              }
+            })
+          }).catch(console.warn);
+        } catch(tErr) {}
+
       } catch (err) {
         console.error("Attempt persistence error:", err);
       }
@@ -1723,10 +1888,10 @@
               <span>Question ${i + 1}</span>
               <span style="color:${isCorrect ? '#10b981' : (isUnattempted ? '#f59e0b' : '#ef4444')}">${statusText}</span>
             </div>
-            <div style="font-size:0.95rem; color:#fff; margin-bottom:0.75rem;">${qTextHtml}</div>
+            <div class="rev-q-text" style="font-size:0.95rem; color:var(--qz-text); margin-bottom:0.75rem;">${qTextHtml}</div>
             <div style="font-size:0.85rem; color:var(--qz-text-muted);">
-              <div style="margin-bottom:6px;">Your Answer: <div style="color:#fff; display:inline-block;">${userAnsHtml}</div></div>
-              <div>Correct Option: <div style="color:#10b981; display:inline-block;">${corrAnsHtml}</div></div>
+              <div style="margin-bottom:6px;">Your Answer: <div class="rev-ans-text" style="color:var(--qz-text); display:inline-block; font-weight:600;">${userAnsHtml}</div></div>
+              <div>Correct Option: <div style="color:#10b981; display:inline-block; font-weight:600;">${corrAnsHtml}</div></div>
             </div>
           `;
           revList.appendChild(item);
