@@ -1591,6 +1591,27 @@ html[data-theme="light"] .rev-ans-text {
   color: #0f172a !important;
 }
 
+html[data-theme="light"] #cameraProctorSetupCard {
+  background: #f8fafc !important;
+  border-color: #93c5fd !important;
+}
+
+html[data-theme="light"] #cameraProctorSetupCard div[style*="font-weight:700"] {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .proctor-cam-tile {
+  background: #ffffff !important;
+  border-color: #94a3b8 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .proctor-cam-footer {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-top-color: #e2e8f0 !important;
+}
+
 /* 2. OLED DARK THEME OVERRIDES */
 html[data-theme="dark"],
 body[data-theme="dark"],

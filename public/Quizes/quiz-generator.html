@@ -708,15 +708,15 @@
 
       <!-- Policies Switches -->
       <div class="row g-3 mt-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="allowChangeAnswers" checked onchange="debouncedAutoSaveDraft()">
             <label class="form-check-label" for="allowChangeAnswers" style="font-size:0.85rem; font-weight:600;">
-              Allow changing answers before submit
+              Allow changing answers
             </label>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="immediateResult" checked onchange="toggleImmediateResultUI(this.checked); debouncedAutoSaveDraft();">
             <label class="form-check-label" for="immediateResult" style="font-size:0.85rem; font-weight:600;">
@@ -724,11 +724,19 @@
             </label>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="strictMode" checked onchange="debouncedAutoSaveDraft()">
             <label class="form-check-label" for="strictMode" style="font-size:0.85rem; font-weight:600; color:#fca5a5;">
-              <i class="ri-shield-flash-line"></i> Strict UMC Auto-Submit Policy
+              <i class="ri-shield-flash-line"></i> Strict UMC Auto-Submit
+            </label>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="liveCameraProctoring" checked onchange="debouncedAutoSaveDraft()">
+            <label class="form-check-label" for="liveCameraProctoring" style="font-size:0.85rem; font-weight:600; color:#38bdf8;">
+              <i class="ri-camera-lens-line"></i> Live AI Camera Proctoring
             </label>
           </div>
         </div>
@@ -929,6 +937,7 @@
         const allowChangeAnswers = document.getElementById('allowChangeAnswers')?.checked ?? true;
         const immediateResult = document.getElementById('immediateResult')?.checked ?? true;
         const strictMode = document.getElementById('strictMode')?.checked ?? true;
+        const liveCameraProctoring = document.getElementById('liveCameraProctoring')?.checked ?? true;
 
         const questions = [];
         let hasAnyQuestionContent = false;
@@ -973,6 +982,7 @@
             allowChangeAnswers: allowChangeAnswers,
             immediateResult: immediateResult,
             strictMode: strictMode,
+            liveCameraProctoring: liveCameraProctoring,
             questions: questions,
             savedAt: new Date().toISOString()
           };
@@ -1007,6 +1017,7 @@
           toggleImmediateResultUI(Boolean(draft.immediateResult));
         }
         if (document.getElementById('strictMode') && draft.strictMode !== undefined) document.getElementById('strictMode').checked = Boolean(draft.strictMode);
+        if (document.getElementById('liveCameraProctoring') && draft.liveCameraProctoring !== undefined) document.getElementById('liveCameraProctoring').checked = Boolean(draft.liveCameraProctoring);
 
         const targetCount = parseInt(draft.questionCount, 10) || 15;
         currentQuestionCount = targetCount;
@@ -1414,6 +1425,7 @@
       const allowChangeAnswers = document.getElementById('allowChangeAnswers').checked;
       const immediateResult = document.getElementById('immediateResult').checked;
       const strictMode = document.getElementById('strictMode').checked;
+      const liveCameraProctoring = document.getElementById('liveCameraProctoring')?.checked ?? true;
 
       if (!subjectName || !subjectCode || !topicTagsRaw || !quizTitle || !quizDescription) {
         await customAlert("Please complete all required quiz metadata fields.", { title: "Required Fields Missing" });
@@ -1497,6 +1509,7 @@
           allowChangeAnswers: allowChangeAnswers,
           immediateResult: immediateResult,
           strictMode: strictMode,
+          liveCameraProctoring: liveCameraProctoring,
           isPublic: visibility === 'public',
           status: 'published',
           hasAnswerKey: !hasMissingAnswers,
@@ -1579,6 +1592,7 @@
             tags: tags,
             totalQuestions: currentQuestionCount,
             timeMinutes: timeMinutes,
+            liveCameraProctoring: liveCameraProctoring,
             isPublic: true,
             status: 'published',
             updatedAt: serverTimestamp(),
@@ -1701,6 +1715,7 @@
           toggleImmediateResultUI(Boolean(qData.immediateResult));
         }
         if (document.getElementById('strictMode')) document.getElementById('strictMode').checked = Boolean(qData.strictMode);
+        if (document.getElementById('liveCameraProctoring')) document.getElementById('liveCameraProctoring').checked = (qData.liveCameraProctoring !== false);
 
         // Fetch question pages
         const loadedQuestions = [];
