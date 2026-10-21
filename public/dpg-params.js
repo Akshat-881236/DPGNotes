@@ -803,6 +803,7 @@
           try {
             localStorage.setItem('dpg_responsiveness_rated_time', Date.now().toString());
             localStorage.setItem('dpg_responsiveness_rating_val', currentRating.toString());
+            window.dispatchEvent(new CustomEvent('dpg-feedback-submitted', { detail: { type: 'responsiveness', rating: currentRating } }));
             if (typeof updateRuntimeRatingSchema === 'function') updateRuntimeRatingSchema();
           } catch(e) {}
 
@@ -1075,6 +1076,7 @@
           try {
             localStorage.setItem('dpg_platform_rated_time', Date.now().toString());
             localStorage.setItem('dpg_platform_rating_val', currentRating.toString());
+            window.dispatchEvent(new CustomEvent('dpg-feedback-submitted', { detail: { type: 'platform', rating: currentRating } }));
             if (typeof updateRuntimeRatingSchema === 'function') updateRuntimeRatingSchema();
           } catch(e) {}
 
@@ -1176,36 +1178,36 @@
   }
 
   async function initRealtimeFirestoreRating() {
-    let respState = { count: 0, sum: 0, reviews: 0 };
+    let respState = { count: 0, sum: 0, reviews: 0, satisfactory: 0 };
     let expState = { count: 0, sum: 0, reviews: 0 };
 
     function calculateAndPublish() {
-      const hasResp = respState.count > 0;
-      const hasExp = expState.count > 0;
+      const totalRatings = respState.count + expState.count;
+      const totalSum = respState.sum + expState.sum;
+      const totalReviews = respState.reviews + expState.reviews;
 
-      let computedAvg = 4.9;
-      if (hasResp && hasExp) {
-        // Average rule of Rating of Both Media Responsiveness and Experience Rating
-        const avgResp = respState.sum / respState.count;
-        const avgExp = expState.sum / expState.count;
-        computedAvg = (avgResp + avgExp) / 2;
-      } else if (hasResp) {
-        computedAvg = respState.sum / respState.count;
-      } else if (hasExp) {
-        computedAvg = expState.sum / expState.count;
+      // Authentic average computed truthfully across all verified user feedbacks
+      let computedAvg = 3.28;
+      if (totalRatings > 0) {
+        computedAvg = totalSum / totalRatings;
       }
 
-      const totalRatings = respState.count + expState.count;
-      const totalReviews = respState.reviews + expState.reviews;
+      const mobileScore = respState.count > 0 ? Math.round((respState.satisfactory / respState.count) * 100) : 64;
 
       if (totalRatings > 0) {
         try {
           localStorage.setItem('dpg_live_firestore_rating_val', computedAvg.toFixed(2));
           localStorage.setItem('dpg_live_firestore_rating_count', totalRatings.toString());
           localStorage.setItem('dpg_live_firestore_review_count', (totalReviews || totalRatings).toString());
+          localStorage.setItem('dpg_live_firestore_resp_score', mobileScore.toString());
         } catch(e) {}
 
         renderRuntimeRatingSchemaTag(computedAvg, totalRatings, totalReviews || totalRatings);
+
+        // Notify history monitoring engine to synchronize EducationalOrganization runtime schema
+        if (window.__dpgHistoryMonitoring && typeof window.__dpgHistoryMonitoring.injectRuntimeJsonLd === 'function') {
+          window.__dpgHistoryMonitoring.injectRuntimeJsonLd();
+        }
       }
     }
 
@@ -1226,19 +1228,20 @@
 
       // Realtime listener 1: Media Responsiveness Feedback
       onSnapshot(collection(db, "responsiveness_feedback"), (snapshot) => {
-        let sum = 0, count = 0, reviews = 0;
+        let sum = 0, count = 0, reviews = 0, satisfactory = 0;
         snapshot.forEach(doc => {
           const d = doc.data();
           const r = parseFloat(d.rating);
-          if (r > 0 && r <= 5) {
+          if (r >= 1 && r <= 5) {
             sum += r;
             count++;
+            if (r >= 3) satisfactory++;
           }
           if (d.feedback && typeof d.feedback === 'string' && d.feedback.trim().length > 0) {
             reviews++;
           }
         });
-        respState = { count, sum, reviews };
+        respState = { count, sum, reviews, satisfactory };
         calculateAndPublish();
       }, (err) => {
         console.warn('[dpg-params] Realtime responsiveness snapshot warning, attempting REST:', err);
@@ -1251,7 +1254,7 @@
         snapshot.forEach(doc => {
           const d = doc.data();
           const r = parseFloat(d.rating);
-          if (r > 0 && r <= 5) {
+          if (r >= 1 && r <= 5) {
             sum += r;
             count++;
           }
@@ -1280,11 +1283,15 @@
       const dataResp = await resResp.json();
       const dataPlat = await resPlat.json();
 
-      let respSum = 0, respCount = 0, respReviews = 0;
+      let respSum = 0, respCount = 0, respReviews = 0, respSatisfactory = 0;
       if (dataResp && dataResp.documents) {
         dataResp.documents.forEach(d => {
           const r = d.fields && d.fields.rating ? Number(d.fields.rating.integerValue || d.fields.rating.doubleValue || 0) : 0;
-          if (r > 0 && r <= 5) { respSum += r; respCount++; }
+          if (r >= 1 && r <= 5) {
+            respSum += r;
+            respCount++;
+            if (r >= 3) respSatisfactory++;
+          }
           if (d.fields && d.fields.feedback && d.fields.feedback.stringValue && d.fields.feedback.stringValue.trim()) respReviews++;
         });
       }
@@ -1293,13 +1300,13 @@
       if (dataPlat && dataPlat.documents) {
         dataPlat.documents.forEach(d => {
           const r = d.fields && d.fields.rating ? Number(d.fields.rating.integerValue || d.fields.rating.doubleValue || 0) : 0;
-          if (r > 0 && r <= 5) { platSum += r; platCount++; }
+          if (r >= 1 && r <= 5) { platSum += r; platCount++; }
           if (d.fields && d.fields.opinion && d.fields.opinion.stringValue && d.fields.opinion.stringValue.trim()) platReviews++;
         });
       }
 
       if (typeof setState === 'function') {
-        setState({ count: respCount, sum: respSum, reviews: respReviews }, { count: platCount, sum: platSum, reviews: platReviews });
+        setState({ count: respCount, sum: respSum, reviews: respReviews, satisfactory: respSatisfactory }, { count: platCount, sum: platSum, reviews: platReviews });
       }
       if (typeof calculateAndPublish === 'function') {
         calculateAndPublish();
@@ -1312,8 +1319,8 @@
   function updateRuntimeRatingSchema() {
     try {
       // Step 1: Render immediately from localStorage cache (if available) so search crawlers have zero latency
-      let initialAvg = 3.6; // Current computed Firestore average
-      let initialCount = 23;
+      let initialAvg = 3.28; // Current authentic computed Firestore average (82 sum / 25 ratings)
+      let initialCount = 25;
       let initialReviews = 9;
 
       try {

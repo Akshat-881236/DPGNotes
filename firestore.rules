@@ -154,6 +154,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    /* ---------- SITE METADATA & LIVE AGGREGATE RATINGS ---------- */
+    match /site_metadata/{metaId} {
+      allow read, write: if true;
+    }
+
     /* ---------- RESOURCE KNOWLEDGE ---------- */
     match /resource_knowledge/{rkId} {
       allow read, write: if true;
