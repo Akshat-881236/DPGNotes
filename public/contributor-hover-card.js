@@ -172,11 +172,15 @@
       color: #cbd5e1;
       margin-bottom: 12px;
       display: -webkit-box;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 4;
       -webkit-box-orient: vertical;
       overflow: hidden;
       min-height: 2.4rem;
       word-break: break-word;
+    }
+    .dpg-hover-bio p {
+      margin: 0;
+      display: inline;
     }
     .dpg-hover-bio strong,
     .dpg-hover-bio b {
@@ -454,91 +458,222 @@
     hoverCard.style.left = `${left}px`;
   }
 
-  // Populate data into the card
+  // Helper: Parse Firestore REST API document format to clean JavaScript object
+  function parseFirestoreDoc(doc) {
+    if (!doc || !doc.fields) return null;
+    const obj = {};
+    for (const [key, val] of Object.entries(doc.fields)) {
+      if (val.stringValue !== undefined) obj[key] = val.stringValue;
+      else if (val.booleanValue !== undefined) obj[key] = val.booleanValue;
+      else if (val.integerValue !== undefined) obj[key] = Number(val.integerValue);
+      else if (val.doubleValue !== undefined) obj[key] = Number(val.doubleValue);
+      else if (val.timestampValue !== undefined) obj[key] = val.timestampValue;
+      else if (val.nullValue !== undefined) obj[key] = null;
+    }
+    obj.uid = doc.name ? doc.name.split('/').pop() : '';
+    return obj;
+  }
+
+  // Universal profile resolver with multi-layer fallback (Memory Cache -> Firestore SDK -> Firestore REST -> Render API)
+  async function resolveUserProfile(uid, nameFallback) {
+    // 1. If valid user in window.__dpgUserCache with bio, return immediately
+    if (uid && window.__dpgUserCache[uid] && window.__dpgUserCache[uid].bio) {
+      return window.__dpgUserCache[uid];
+    }
+
+    // 2. Try match by name if UID missing or in cache
+    if (!uid && nameFallback && window.__dpgUserCache) {
+      const match = Object.values(window.__dpgUserCache).find(u => u && u.name && u.name.toLowerCase() === nameFallback.toLowerCase() && u.bio);
+      if (match) return match;
+    }
+
+    // 3. Try Firestore SDK if present on page
+    if (uid) {
+      try {
+        const db = window.solDb || window.db || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
+        if (db && window.solGetDoc && window.solDoc) {
+          const snap = await window.solGetDoc(window.solDoc(db, "users", uid));
+          if (snap && snap.exists()) {
+            const data = snap.data();
+            const fullUser = {
+              uid: uid,
+              ...data,
+              photoURL: data.avatarUrl || data.profilePic || data.photoURL || data.avatar || "",
+              name: data.name || data.displayName || nameFallback || "Verified Contributor"
+            };
+            window.__dpgUserCache[uid] = fullUser;
+            return fullUser;
+          }
+        } else if (db && typeof db.collection === 'function') {
+          const snap = await db.collection("users").doc(uid).get();
+          if (snap && snap.exists) {
+            const data = snap.data();
+            const fullUser = {
+              uid: uid,
+              ...data,
+              photoURL: data.avatarUrl || data.profilePic || data.photoURL || data.avatar || "",
+              name: data.name || data.displayName || nameFallback || "Verified Contributor"
+            };
+            window.__dpgUserCache[uid] = fullUser;
+            return fullUser;
+          }
+        }
+      } catch(e) {}
+
+      // 4. Try Firestore REST API (Works universally on all static and dynamic pages with zero dependencies)
+      try {
+        const res = await fetch(`https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/users/${encodeURIComponent(uid)}`);
+        if (res.ok) {
+          const raw = await res.json();
+          const data = parseFirestoreDoc(raw);
+          if (data) {
+            const fullUser = {
+              uid: uid,
+              ...data,
+              photoURL: data.avatarUrl || data.profilePic || data.photoURL || data.avatar || "",
+              name: data.name || data.displayName || nameFallback || "Verified Contributor"
+            };
+            window.__dpgUserCache[uid] = fullUser;
+            return fullUser;
+          }
+        }
+      } catch(e) {}
+    }
+
+    // 5. Fallback: Query render social list-profiles or by name lookup
+    try {
+      const res = await fetch((window.API_BASE_URL || 'https://dpgnotes.onrender.com') + '/api/social/list-profiles');
+      if (res.ok) {
+        const list = await res.json();
+        list.forEach(p => {
+          window.__dpgUserCache[p.uid] = { ...(window.__dpgUserCache[p.uid] || {}), ...p };
+        });
+        if (uid && window.__dpgUserCache[uid] && window.__dpgUserCache[uid].bio) return window.__dpgUserCache[uid];
+        if (nameFallback) {
+          const match = Object.values(window.__dpgUserCache).find(u => u && u.name && u.name.toLowerCase() === nameFallback.toLowerCase());
+          if (match) return match;
+        }
+      }
+    } catch(e) {}
+
+    return (uid && window.__dpgUserCache[uid]) || null;
+  }
+
+  // Format rich bio markup and HTML
+  function formatHoverBioMarkup(rawBio) {
+    if (!rawBio) return "Verified academic author & study material contributor on DPGNotes.";
+    let s = String(rawBio).trim();
+
+    // 1. Sanitize dangerous HTML tags and script handlers while preserving safe formatting tags
+    s = s.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+         .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+         .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+         .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+         .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+         .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+         .replace(/\son\w+\s*=\s*[^>\s]+/gi, '')
+         .replace(/javascript:/gi, '');
+
+    // 2. Unify paragraph tags to clean inline line breaks without excessive vertical whitespace
+    s = s.replace(/<\/p>\s*<p[^>]*>/gi, '<br>')
+         .replace(/<p[^>]*>/gi, '')
+         .replace(/<\/p>/gi, '<br>');
+
+    // 3. Parse Markdown Bold: **text** or __text__
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+    // 4. Parse Markdown Italic: *text* or _text_
+    s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    s = s.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+    // 5. Parse Inline Code: `code`
+    s = s.replace(/`([^`]+)`/g, '<code class="dpg-hover-code">$1</code>');
+
+    // 6. Parse Markdown Links: [text](url)
+    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="dpg-hover-bio-link">$1</a>');
+
+    // 7. Ensure existing HTML <a> tags open safely in a new tab
+    s = s.replace(/<a\s+(?:[^>]*?\s+)?href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, '<a href="$1" target="_blank" rel="noopener noreferrer" class="dpg-hover-bio-link">$2</a>');
+
+    // 8. Clean line breaks
+    s = s.replace(/\r\n|\r|\n/g, '<br>');
+    s = s.replace(/(<br\s*\/?>\s*){2,}/gi, '<br>');
+    s = s.replace(/^(<br\s*\/?>)+|(<br\s*\/?>)+$/gi, '').trim();
+
+    return s;
+  }
+
+  // Populate data into the card with optimistic paint + asynchronous enrichment
   async function populateCardData(uid, nameFallback, photoFallback) {
     currentTargetUid = uid || "";
     const activeUid = getActiveUserUid();
 
-    let user = window.__dpgUserCache[uid] || null;
-
-    // If not cached, attempt background fetch
-    if (!user && uid) {
-      try {
-        const res = await fetch((window.API_BASE_URL || 'https://dpgnotes.onrender.com') + '/api/social/list-profiles');
-        if (res.ok) {
-          const list = await res.json();
-          list.forEach(p => {
-            window.__dpgUserCache[p.uid] = p;
-          });
-          user = window.__dpgUserCache[uid];
-        }
-      } catch (err) {
-        console.warn("[HoverCard] Profile fetch warning:", err);
-      }
+    let existingCached = (uid && window.__dpgUserCache[uid]) || null;
+    if (!existingCached && nameFallback && window.__dpgUserCache) {
+      existingCached = Object.values(window.__dpgUserCache).find(u => u && u.name && u.name.toLowerCase() === nameFallback.toLowerCase());
     }
 
-    const name = (user && (user.name || user.displayName)) || nameFallback || "Verified Contributor";
-    const photo = (user && (user.avatarUrl || user.profilePic || user.photoURL)) || photoFallback || "";
-    const bioRaw = (user && user.bio) || "Verified academic author & study material contributor on DPGNotes.";
-    const linkedin = (user && user.linkedin) || "";
-    const github = (user && user.github) || "";
-    const role = (user && (user.discipline || user.role)) || "Academic Contributor";
+    // A. Instant Optimistic Render
+    const initialName = (existingCached && (existingCached.name || existingCached.displayName)) || nameFallback || "Verified Contributor";
+    const initialPhoto = (existingCached && (existingCached.avatarUrl || existingCached.profilePic || existingCached.photoURL)) || photoFallback || "";
+    const initialBio = (existingCached && existingCached.bio) || "Verified academic author & study material contributor on DPGNotes.";
+    const initialRole = (existingCached && (existingCached.discipline || existingCached.role)) || 
+                        (existingCached && existingCached.userType && existingCached.college ? `${existingCached.userType} · ${existingCached.college}` :
+                        (existingCached && existingCached.userType === 'Student' ? 'BCA Student · Academic Contributor' : 
+                        (existingCached && existingCached.userType ? `${existingCached.userType} · Academic Contributor` : "Academic Contributor")));
 
-    function formatHoverBioMarkup(rawBio) {
-      if (!rawBio) return "Verified academic author & study material contributor on DPGNotes.";
-      let s = String(rawBio).trim();
+    document.getElementById("dpgHoverName").textContent = initialName;
+    document.getElementById("dpgHoverRole").textContent = initialRole;
+    document.getElementById("dpgHoverBio").innerHTML = formatHoverBioMarkup(initialBio);
 
-      // 1. Sanitize dangerous HTML tags and script handlers while preserving safe formatting tags
-      s = s.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-           .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-           .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
-           .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
-           .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-           .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
-           .replace(/\son\w+\s*=\s*[^>\s]+/gi, '')
-           .replace(/javascript:/gi, '');
-
-      // 2. Parse Markdown Bold: **text** or __text__
-      s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-      s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-
-      // 3. Parse Markdown Italic: *text* or _text_
-      s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-      s = s.replace(/_([^_]+)_/g, '<em>$1</em>');
-
-      // 4. Parse Inline Code: `code`
-      s = s.replace(/`([^`]+)`/g, '<code class="dpg-hover-code">$1</code>');
-
-      // 5. Parse Markdown Links: [text](url)
-      s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="dpg-hover-bio-link">$1</a>');
-
-      // 6. Line breaks
-      s = s.replace(/\r\n|\r|\n/g, '<br>');
-
-      return s;
-    }
-
-    // Update Elements
-    document.getElementById("dpgHoverName").textContent = name;
-    document.getElementById("dpgHoverRole").textContent = role;
-    document.getElementById("dpgHoverBio").innerHTML = formatHoverBioMarkup(bioRaw);
-
-    // Avatar
     const avatarWrap = document.getElementById("dpgHoverAvatarWrap");
-    if (photo) {
-      avatarWrap.innerHTML = `<img src="${photo}" alt="${name}" class="dpg-hover-avatar" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`;
+    if (initialPhoto) {
+      avatarWrap.innerHTML = `<img src="${initialPhoto}" alt="${initialName}" class="dpg-hover-avatar" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`;
     } else {
-      const initial = (name || "C").charAt(0).toUpperCase();
+      const initial = (initialName || "C").charAt(0).toUpperCase();
       avatarWrap.innerHTML = `<div class="dpg-hover-avatar-fallback">${initial}</div>`;
     }
 
-    // Social Links
+    renderCardSocials(existingCached);
+    renderCardActionButtons(uid, activeUid);
+
+    // B. Asynchronous Enrichment: Resolve complete profile from Firestore if missing rich fields
+    if (!existingCached || !existingCached.bio || !existingCached.discipline) {
+      const fullUser = await resolveUserProfile(uid, nameFallback);
+      if (fullUser && currentTargetUid === (uid || "")) {
+        const finalName = fullUser.name || fullUser.displayName || initialName;
+        const finalPhoto = fullUser.avatarUrl || fullUser.profilePic || fullUser.photoURL || initialPhoto;
+        const finalBio = fullUser.bio || initialBio;
+        const finalRole = fullUser.discipline || fullUser.role || 
+                          (fullUser.userType && fullUser.college ? `${fullUser.userType} · ${fullUser.college}` :
+                          (fullUser.userType === 'Student' ? 'BCA Student · Academic Contributor' : 
+                          (fullUser.userType ? `${fullUser.userType} · Academic Contributor` : initialRole)));
+
+        document.getElementById("dpgHoverName").textContent = finalName;
+        document.getElementById("dpgHoverRole").textContent = finalRole;
+        document.getElementById("dpgHoverBio").innerHTML = formatHoverBioMarkup(finalBio);
+
+        if (finalPhoto && finalPhoto !== initialPhoto) {
+          avatarWrap.innerHTML = `<img src="${finalPhoto}" alt="${finalName}" class="dpg-hover-avatar" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`;
+        }
+
+        renderCardSocials(fullUser);
+        renderCardActionButtons(fullUser.uid || uid, activeUid);
+      }
+    }
+  }
+
+  function renderCardSocials(user) {
     const liEl = document.getElementById("dpgHoverLinkedin");
     const ghEl = document.getElementById("dpgHoverGithub");
     const emptySocials = document.getElementById("dpgHoverSocialsEmpty");
 
+    const linkedin = user && user.linkedin;
+    const github = user && user.github;
     let hasSocial = false;
-    const isUserVerifiedContributor = !!(user && (user.isVerified || user.verified || user.tier === 'contributor' || user.role === 'contributor' || user.status === 'verified' || (user.uploadedCount && Number(user.uploadedCount) > 0)));
+
+    const isUserVerifiedContributor = !!(user && (user.isVerified || user.verified || user.tier === 'contributor' || user.role === 'contributor' || user.status === 'verified' || user.status === 'active' || (user.uploadedCount && Number(user.uploadedCount) > 0)));
 
     if (linkedin && linkedin.startsWith("http")) {
       liEl.href = linkedin;
@@ -571,14 +706,15 @@
     } else {
       ghEl.style.display = "none";
     }
-    emptySocials.style.display = hasSocial ? "none" : "inline";
 
-    // Quick Profile URL
+    emptySocials.style.display = hasSocial ? "none" : "inline";
+  }
+
+  function renderCardActionButtons(uid, activeUid) {
     const profBtn = document.getElementById("dpgHoverBtnProfile");
     const baseUrl = window.location.origin || "https://dpgnotes.web.app";
     profBtn.href = uid ? `${baseUrl}/profile.html?uid=${encodeURIComponent(uid)}` : `${baseUrl}/profile.html`;
 
-    // Connect & Follow Buttons
     const connBtn = document.getElementById("dpgHoverBtnConnect");
     const followBtn = document.getElementById("dpgHoverBtnFollow");
     const selfBadge = document.getElementById("dpgHoverSelfBadge");
@@ -593,14 +729,12 @@
       connBtn.style.display = "inline-flex";
       followBtn.style.display = "inline-flex";
 
-      // Initialize Button Labels based on relationship cache
       const isFollowing = window.__dpgFollowingCache[uid] || false;
       const isConnected = window.__dpgConnectedCache[uid] || false;
 
       updateFollowBtnUI(isFollowing);
       updateConnectBtnUI(isConnected);
 
-      // Async relationship state check if logged in
       if (activeUid && uid) {
         checkRelationshipState(activeUid, uid);
       }
@@ -675,9 +809,24 @@
   function showHoverCard(triggerEl) {
     if (!triggerEl) return;
     activeTrigger = triggerEl;
-    const uid = triggerEl.getAttribute("data-contrib-uid") || triggerEl.dataset.contribUid || "";
-    const name = triggerEl.getAttribute("data-contrib-name") || triggerEl.dataset.contribName || "";
-    const photo = triggerEl.getAttribute("src") || triggerEl.getAttribute("data-contrib-photo") || "";
+
+    // Detect UID, Name, and Photo from element or nearby avatar/meta
+    let uid = triggerEl.getAttribute("data-contrib-uid") || triggerEl.dataset.contribUid || "";
+    let name = triggerEl.getAttribute("data-contrib-name") || triggerEl.dataset.contribName || "";
+    let photo = triggerEl.getAttribute("src") || triggerEl.getAttribute("data-contrib-photo") || "";
+
+    if (!uid) {
+      const nearTrigger = triggerEl.parentElement?.querySelector(".contributor-photo-trigger, [data-contrib-uid]");
+      if (nearTrigger) {
+        uid = nearTrigger.getAttribute("data-contrib-uid") || nearTrigger.dataset.contribUid || "";
+        if (!photo) photo = nearTrigger.getAttribute("src") || nearTrigger.getAttribute("data-contrib-photo") || "";
+        if (!name) name = nearTrigger.getAttribute("data-contrib-name") || nearTrigger.dataset.contribName || "";
+      }
+    }
+
+    if (!name && triggerEl.classList.contains("contributor-name-link")) {
+      name = triggerEl.textContent.trim();
+    }
 
     populateCardData(uid, name, photo);
     positionHoverCard(triggerEl);
@@ -805,10 +954,10 @@
     }
   });
 
-  // Global Event Delegation for Contributor Photo Hover
-  // Triggers ONLY when arrow is kept on Profile photo
+  // Global Event Delegation for Contributor Photo & Name Link Hover
+  // Triggers smoothly when hovering over contributor avatar or contributor name
   document.addEventListener("mouseover", (e) => {
-    const trigger = e.target.closest(".contributor-photo-trigger, [data-contributor-photo='true'], .author-avatar-mini");
+    const trigger = e.target.closest(".contributor-photo-trigger, [data-contributor-photo='true'], .author-avatar-mini, .contributor-name-link, [data-contrib-uid]");
     if (!trigger) return;
 
     isMouseOverTrigger = true;
@@ -826,7 +975,7 @@
   });
 
   document.addEventListener("mouseout", (e) => {
-    const trigger = e.target.closest(".contributor-photo-trigger, [data-contributor-photo='true'], .author-avatar-mini");
+    const trigger = e.target.closest(".contributor-photo-trigger, [data-contributor-photo='true'], .author-avatar-mini, .contributor-name-link, [data-contrib-uid]");
     if (!trigger) return;
 
     isMouseOverTrigger = false;

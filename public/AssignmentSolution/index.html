@@ -1217,7 +1217,7 @@
                 <a href="${profUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
                   <img src="${contribPhoto}" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(contribUid)}" data-contrib-name="${escapeHtml(item.contributorName || 'Verified Contributor')}" alt="${escapeHtml(item.contributorName || 'Verified Contributor')}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; border:1px solid #38bdf8; vertical-align:middle; cursor:pointer; margin-right:4px;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
                 </a>
-                <a href="${profUrl}" class="contributor-name-link" style="color:#38bdf8; font-weight:700; text-decoration:none;">${escapeHtml(item.contributorName || 'Verified Contributor')}</a>
+                <a href="${profUrl}" class="contributor-name-link" data-contrib-uid="${escapeHtml(contribUid)}" data-contrib-name="${escapeHtml(item.contributorName || 'Verified Contributor')}" style="color:#38bdf8; font-weight:700; text-decoration:none;">${escapeHtml(item.contributorName || 'Verified Contributor')}</a>
               </div>
               <div class="sol-serp-meta-pill">
                 <i class="ri-calendar-line" style="color:#c084fc; font-size:1rem;"></i>
@@ -1572,7 +1572,11 @@
 
       document.getElementById('viewContributorName').textContent = contribName;
       const contribLinkEl = document.getElementById('viewContributorLink');
-      if (contribLinkEl) contribLinkEl.href = profLink;
+      if (contribLinkEl) {
+        contribLinkEl.href = profLink;
+        contribLinkEl.setAttribute("data-contrib-uid", contribUid);
+        contribLinkEl.setAttribute("data-contrib-name", contribName);
+      }
       const slot = document.getElementById('viewContributorAvatarSlot');
       if (slot) {
         slot.innerHTML = `<a href="${profLink}" style="display:inline-flex; align-items:center; text-decoration:none;"><img src="${contribPhoto}" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(contribUid)}" data-contrib-name="${escapeHtml(contribName)}" alt="${escapeHtml(contribName)}" style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:4px; border:1px solid #38bdf8; vertical-align:middle; cursor:pointer;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';"></a>`;
@@ -2396,7 +2400,7 @@
               ` : `
                 <img src="https://dpgnotes.web.app/ANH.png" alt="${escapeHtml(item.contributor)}" class="sol-rec-author-img contributor-photo-trigger" data-contrib-uid="${escapeHtml(item.contributorUid || '')}" data-contrib-name="${escapeHtml(item.contributor)}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1.5px solid #38bdf8; flex-shrink:0; cursor:pointer;">
               `}
-              <a href="${item.profileUrl}" class="contributor-name-link" style="color:inherit; text-decoration:none; font-weight:600; font-size:0.85rem;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+              <a href="${item.profileUrl}" class="contributor-name-link" data-contrib-uid="${escapeHtml(item.contributorUid || '')}" data-contrib-name="${escapeHtml(item.contributor)}" style="color:inherit; text-decoration:none; font-weight:600; font-size:0.85rem;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                 ${escapeHtml(item.contributor)}
               </a>
             </div>
@@ -2493,26 +2497,33 @@
           });
         });
 
-        // Pre-fetch actual contributor profile photos from users collection
+        // Pre-fetch complete contributor profiles from users collection into global cache
         window.__dpgUserCache = window.__dpgUserCache || {};
-        const uidsToFetch = [...new Set(allSolutions.map(s => s.contributorUid).filter(Boolean))];
-        if (currData.contributorUid && (currData.photoURL || currData.authorPhoto)) {
+        const uidsToFetch = [...new Set([
+          currData.contributorUid,
+          ...allSolutions.map(s => s.contributorUid)
+        ].filter(Boolean))];
+
+        if (currData.contributorUid && !window.__dpgUserCache[currData.contributorUid]) {
           window.__dpgUserCache[currData.contributorUid] = {
-            photoURL: currData.photoURL || currData.authorPhoto,
+            uid: currData.contributorUid,
+            photoURL: currData.photoURL || currData.authorPhoto || "",
             name: contribName
           };
         }
 
         await Promise.all(uidsToFetch.map(async (uid) => {
-          if (window.__dpgUserCache[uid]) return;
+          if (window.__dpgUserCache[uid] && window.__dpgUserCache[uid].bio) return;
           try {
-            if (window.solDoc && window.solGetDoc) {
+            if (window.solDoc && window.solGetDoc && window.solDb) {
               const uSnap = await window.solGetDoc(window.solDoc(window.solDb, "users", uid));
               if (uSnap && uSnap.exists()) {
                 const uData = uSnap.data();
                 window.__dpgUserCache[uid] = {
+                  uid: uid,
+                  ...uData,
                   photoURL: uData.avatarUrl || uData.profilePic || uData.photoURL || uData.avatar || "",
-                  name: uData.name || uData.displayName || ""
+                  name: uData.name || uData.displayName || (window.__dpgUserCache[uid] ? window.__dpgUserCache[uid].name : "")
                 };
               }
             }
