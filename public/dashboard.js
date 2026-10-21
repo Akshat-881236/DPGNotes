@@ -973,7 +973,7 @@ async function loadExplore() {
         console.warn("Dashboard solutions fetch notice:", err);
         return { forEach: () => {} };
       }),
-      getDocs(query(collection(db, "quizDirectory"), where("status", "==", "published"))).catch(err => {
+      getDocs(collection(db, "quizDirectory")).catch(err => {
         console.warn("Dashboard quizzes fetch notice:", err);
         return { forEach: () => {} };
       })
@@ -1017,6 +1017,7 @@ async function loadExplore() {
   const quizzes = [];
   quizzesSnap.forEach(doc => {
     const d = doc.data();
+    if (d.isPublic === false || d.status === 'archived') return;
     quizzes.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: 'quizDirectory', isQuiz: true, ...d });
   });
   

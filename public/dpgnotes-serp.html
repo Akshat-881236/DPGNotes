@@ -1896,7 +1896,7 @@
     }
 
     const initialTab = urlParams.get("tab");
-    if (initialTab && ['all', 'ai', 'website', 'videos', 'solutions', 'contributors'].includes(initialTab.toLowerCase())) {
+    if (initialTab && ['all', 'ai', 'website', 'videos', 'solutions', 'contributors', 'quizzes'].includes(initialTab.toLowerCase())) {
       window.activeSerpTab = initialTab.toLowerCase();
     } else {
       window.activeSerpTab = 'all';
@@ -2119,44 +2119,57 @@
           console.warn("Solutions collectionGroup fetch error:", solErr);
         }
 
-        // Fetch Quizzes from quizDirectory
+        // Fetch Quizzes from quizDirectory and collectionGroup(quizzes)
         try {
-          const qzSnap = await getDocs(query(collection(db, "quizDirectory"), where("status", "==", "published")));
-          qzSnap.forEach(qzDoc => {
-            const qzData = qzDoc.data();
-            const quizUrl = `/Quizes/index.html?quizId=${encodeURIComponent(qzDoc.id)}`;
-            const subName = qzData.subjectName || 'Academic Assessment';
+          const processedQuizIds = new Set();
+          const ingestQuizDoc = (qzId, qzData) => {
+            if (!qzData || processedQuizIds.has(qzId)) return;
+            if (qzData.isPublic === false || qzData.status === 'archived') return;
+            processedQuizIds.add(qzId);
+
+            const quizUrl = `/Quizes/index.html?quizId=${encodeURIComponent(qzId)}`;
+            const subName = qzData.subjectName || qzData.subject || 'Academic Assessment';
             const subCode = qzData.subjectCode ? ` (${qzData.subjectCode})` : '';
-            const author = qzData.ownerName || 'Verified Contributor';
-            const qCount = qzData.totalQuestions || 15;
+            const author = qzData.ownerName || qzData.authorName || 'Verified Contributor';
+            const qCount = qzData.totalQuestions || (Array.isArray(qzData.questions) ? qzData.questions.length : 15);
             const timeMin = qzData.timeMinutes || 20;
 
             allDocs.push({
-              id: qzDoc.id,
+              id: qzId,
               isQuiz: true,
-              quizId: qzDoc.id,
+              quizId: qzId,
               quizUrl: quizUrl,
               title: qzData.title || `${subName} Mock Examination`,
-              subjectName: qzData.subjectName || '',
+              subjectName: subName,
               subjectCode: qzData.subjectCode || '',
               category: "Quiz",
-              discipline: qzData.subjectName || "Computer Science",
+              discipline: qzData.discipline || subName || "Computer Science",
               description: qzData.description || `Online academic quiz covering ${subName}${subCode}. Total questions: ${qCount}, Duration: ${timeMin} minutes. Author: ${author}.`,
               userName: author,
               uploader: author,
-              contributorUid: qzData.ownerUid || '',
-              uid: qzData.ownerUid || '',
-              userId: qzData.ownerUid || '',
+              contributorUid: qzData.ownerUid || qzData.contributorUid || '',
+              uid: qzData.ownerUid || qzData.contributorUid || '',
+              userId: qzData.ownerUid || qzData.contributorUid || '',
               totalQuestions: qCount,
               timeMinutes: timeMin,
               questionKeywords: qzData.questionKeywords || '',
-              likes: 12,
-              views: 45,
-              tags: ["quiz", "exam", "mock test", qzData.subjectCode || "", qzData.subjectName || "", ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean),
+              likes: qzData.likes || 12,
+              views: qzData.views || 45,
+              tags: ["quiz", "exam", "mock test", "assessment", qzData.subjectCode || "", subName, ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean),
               createdAt: qzData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
               rawDoc: qzData
             });
-          });
+          };
+
+          const qzSnap = await getDocs(collection(db, "quizDirectory"));
+          qzSnap.forEach(qzDoc => ingestQuizDoc(qzDoc.id, qzDoc.data()));
+
+          try {
+            const groupSnap = await getDocs(collectionGroup(db, "quizzes"));
+            groupSnap.forEach(gDoc => ingestQuizDoc(gDoc.id, gDoc.data()));
+          } catch(cgErr) {
+            console.warn("Quiz collectionGroup fetch fallback notice:", cgErr);
+          }
         } catch (qzErr) {
           console.warn("Quiz directory load warning:", qzErr);
         }
@@ -2303,7 +2316,23 @@
       'it': ['information technology'],
       'bca': ['bachelor of computer applications', 'computer applications'],
       'bba': ['bachelor of business administration'],
-      'ai': ['artificial intelligence', 'expert system']
+      'nptel': ['national programme on technology enhanced learning', 'swayam', 'mooc', 'online course', 'assignment', 'quiz', 'certification', 'iit', 'computer science', 'programming', 'cs', 'it'],
+      'swayam': ['nptel', 'mooc', 'online course', 'certification', 'assignment', 'quiz', 'mhrd'],
+      'dsa': ['data structures', 'algorithms', 'data structures and algorithms', 'arrays', 'linked list', 'trees', 'graphs', 'stack', 'queue'],
+      'dbms': ['database management system', 'database', 'sql', 'rdbms', 'queries', 'normalization'],
+      'os': ['operating system', 'operating systems', 'process scheduling', 'threads', 'linux', 'memory management'],
+      'cn': ['computer networks', 'networking', 'tcp/ip', 'osi model', 'protocols', 'routing'],
+      'coa': ['computer organization and architecture', 'computer architecture', 'microprocessor'],
+      'oops': ['object oriented programming', 'oop', 'c++', 'java', 'classes', 'inheritance', 'polymorphism'],
+      'toc': ['theory of computation', 'automata', 'turing machine', 'cfg'],
+      'cd': ['compiler design', 'compiler', 'parsing', 'syntax'],
+      'ai': ['artificial intelligence', 'machine learning', 'neural networks', 'deep learning', 'expert system'],
+      'ml': ['machine learning', 'deep learning', 'data science', 'ai', 'python'],
+      'gate': ['graduate aptitude test in engineering', 'engineering', 'computer science', 'cs', 'gate exam'],
+      'quiz': ['examination', 'mock test', 'test', 'mcq', 'questions', 'assessment', 'quiz portal'],
+      'quizzes': ['quiz', 'examination', 'mock test', 'test', 'mcq', 'questions', 'assessment', 'quiz portal'],
+      'exam': ['examination', 'sessional', 'midterm', 'final', 'quiz', 'test', 'mock test'],
+      'mock': ['quiz', 'mock test', 'practice test', 'examination']
     };
 
     function applyFilters() {
@@ -2371,10 +2400,18 @@
             const tokSyns = ACADEMIC_SYNONYMS[tok] || [];
             tokSyns.forEach(ts => {
               if (fullSearchText.includes(ts)) {
-                score += 10;
+                score += 15;
                 hit = true;
               }
             });
+
+            // Prefix and word-boundary matching for tokens >= 3 chars
+            if (!hit && tok.length >= 3) {
+              if (fullSearchText.split(/[\s,._\-()]+/).some(w => w.startsWith(tok) || tok.startsWith(w))) {
+                score += 15;
+                hit = true;
+              }
+            }
 
             if (hit) matchedTokensCount++;
           });
@@ -2443,6 +2480,23 @@
         return true;
       });
 
+      // Intelligent Relaxed Fallback: If 0 direct token hits, surface relevant related quizzes and coursework
+      window.__isRelaxedFallback = false;
+      if (filtered.length === 0 && q) {
+        const qTokens = tokens.filter(t => t.length >= 2);
+        const broad = allDocs.filter(d => {
+          const ft = `${d.title || ''} ${d.description || ''} ${d.discipline || ''} ${d.category || ''} ${(Array.isArray(d.tags) ? d.tags.join(' ') : '')} ${d.subjectName || ''}`.toLowerCase();
+          return qTokens.some(tok => ft.includes(tok.slice(0, 3))) || (d.isQuiz && (ft.includes('computer') || ft.includes('academic') || ft.includes('mock')));
+        });
+        if (broad.length > 0) {
+          filtered = broad;
+          window.__isRelaxedFallback = true;
+        } else {
+          filtered = allDocs.filter(d => Boolean(d.isQuiz) || (d.views && d.views > 20)).slice(0, 15);
+          window.__isRelaxedFallback = true;
+        }
+      }
+
       // Sort
       if (sortVal === 'relevance' && q) {
         filtered.sort((a, b) => (b._searchScore || 0) - (a._searchScore || 0));
@@ -2505,6 +2559,17 @@
       }
 
       let html = '';
+      if (window.__isRelaxedFallback && q) {
+        html += `
+          <div class="serp-relaxed-notice" style="background:rgba(99,102,241,0.08); border:1.5px solid rgba(99,102,241,0.25); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:12px;">
+            <i class="ri-compass-discover-line" style="font-size:1.4rem; color:var(--primary,#6366f1); flex-shrink:0;"></i>
+            <div>
+              <div style="font-weight:700; color:var(--text,#1e293b); font-size:0.95rem;">Exploring Academic Matches for "${escapeHtml(q)}"</div>
+              <div style="font-size:0.84rem; color:#64748b; margin-top:2px;">Showing verified examinations, quizzes, sessional papers, and coursework in related topics.</div>
+            </div>
+          </div>
+        `;
+      }
       matchedCats.forEach(c => {
         html += `<div class="serp-suggestion-item" onclick="window.selectSuggestionQuery('${escapeHtml(c)}')">
           <i class="ri-folder-2-line" style="color:#0284c7;"></i>
@@ -2643,6 +2708,17 @@
       }
 
       let html = '';
+      if (window.__isRelaxedFallback && q) {
+        html += `
+          <div class="serp-relaxed-notice" style="background:rgba(99,102,241,0.08); border:1.5px solid rgba(99,102,241,0.25); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:12px;">
+            <i class="ri-compass-discover-line" style="font-size:1.4rem; color:var(--primary,#6366f1); flex-shrink:0;"></i>
+            <div>
+              <div style="font-weight:700; color:var(--text,#1e293b); font-size:0.95rem;">Exploring Academic Matches for "${escapeHtml(q)}"</div>
+              <div style="font-size:0.84rem; color:#64748b; margin-top:2px;">Showing verified examinations, quizzes, sessional papers, and coursework in related topics.</div>
+            </div>
+          </div>
+        `;
+      }
       results.forEach(d => {
         const isQuiz = Boolean(d.isQuiz);
         const isSol = Boolean(d.isSolution);
@@ -3091,7 +3167,24 @@
           academicVideos = predefined.map(p => ({ ...p, isSponsored: false, views: 0, likes: [], shares: 0 }));
         }
 
-        // Sort boosted videos to top
+        // Intelligent Relaxed Fallback: If 0 direct token hits, surface relevant related quizzes and coursework
+      window.__isRelaxedFallback = false;
+      if (filtered.length === 0 && q) {
+        const qTokens = tokens.filter(t => t.length >= 2);
+        const broad = allDocs.filter(d => {
+          const ft = `${d.title || ''} ${d.description || ''} ${d.discipline || ''} ${d.category || ''} ${(Array.isArray(d.tags) ? d.tags.join(' ') : '')} ${d.subjectName || ''}`.toLowerCase();
+          return qTokens.some(tok => ft.includes(tok.slice(0, 3))) || (d.isQuiz && (ft.includes('computer') || ft.includes('academic') || ft.includes('mock')));
+        });
+        if (broad.length > 0) {
+          filtered = broad;
+          window.__isRelaxedFallback = true;
+        } else {
+          filtered = allDocs.filter(d => Boolean(d.isQuiz) || (d.views && d.views > 20)).slice(0, 15);
+          window.__isRelaxedFallback = true;
+        }
+      }
+
+      // Sort boosted videos to top
         academicVideos.sort((a, b) => (b.boosted ? 1 : 0) - (a.boosted ? 1 : 0));
 
         // 2. Fetch video ads from 'user_ads' collection

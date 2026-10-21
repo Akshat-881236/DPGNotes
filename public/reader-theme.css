@@ -1669,5 +1669,311 @@ body.theme-auto {
   --qz-text-muted: #94a3b8 !important;
 }
 
+/* ============================================================== */
+/* 4. UNIVERSAL RESPONSIVE HEADER & MOVABLE GRID LAYOUT          */
+/* ============================================================== */
+.portal-nav,
+.qz-navbar,
+.analytics-nav,
+.adm-navbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  padding: 0.75rem 1.5rem !important;
+  background: var(--qz-card-bg, #090d16);
+  border-bottom: 1px solid var(--qz-border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.2s ease;
+}
+.portal-nav-actions,
+.qz-nav-actions,
+.analytics-nav-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Icon-based Reader Controls & Font Scalers */
+.dpg-reader-controls {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 999px !important;
+  padding: 3px 6px !important;
+  backdrop-filter: blur(12px) !important;
+  flex-wrap: wrap !important;
+}
+.dpg-rc-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 5px 10px !important;
+  border-radius: 999px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+  color: #cbd5e1 !important;
+  background: transparent !important;
+  transition: all 0.18s ease !important;
+  line-height: 1 !important;
+}
+.dpg-rc-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+.dpg-rc-btn.active {
+  background: #6366f1 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
+}
+.dpg-rc-divider {
+  width: 1px !important;
+  height: 16px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  margin: 0 2px !important;
+  display: inline-block !important;
+}
+
+@media (max-width: 768px) {
+  .portal-nav,
+  .qz-navbar,
+  .analytics-nav {
+    padding: 0.5rem 0.75rem !important;
+  }
+  .portal-nav-actions,
+  .qz-nav-actions,
+  .analytics-nav-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+  }
+  .dpg-rc-theme-text {
+    display: none !important;
+  }
+  .dpg-rc-btn {
+    padding: 6px 8px !important;
+  }
+}
+
+/* ============================================================== */
+/* 5. LIGHT THEME CONTRAST & ACCESSIBILITY GUARANTEES             */
+/* ============================================================== */
+html[data-theme="light"] .dpg-reader-controls {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="light"] .dpg-rc-btn {
+  color: #334155 !important;
+  background: transparent !important;
+}
+html[data-theme="light"] .dpg-rc-btn:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-rc-btn.active {
+  background: #4338ca !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(67, 56, 202, 0.3) !important;
+}
+html[data-theme="light"] .dpg-rc-divider {
+  background: #cbd5e1 !important;
+}
+
+/* Dashboard Button High Contrast (Fixes Image 5 & 4) */
+html[data-theme="light"] .nav-btn-dash,
+html[data-theme="light"] .qz-nav-btn,
+html[data-theme="light"] .btn-secondary,
+html[data-theme="light"] a[href*="dashboard.html"] {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+html[data-theme="light"] .nav-btn-dash:hover,
+html[data-theme="light"] .qz-nav-btn:hover,
+html[data-theme="light"] .btn-secondary:hover,
+html[data-theme="light"] a[href*="dashboard.html"]:hover {
+  background: #e2e8f0 !important;
+  color: #000000 !important;
+  border-color: #94a3b8 !important;
+}
+html[data-theme="light"] .nav-btn-dash i,
+html[data-theme="light"] .qz-nav-btn i,
+html[data-theme="light"] a[href*="dashboard.html"] i {
+  color: #4338ca !important;
+}
+
+/* Navigator Section Contrast (Fixes Navigator Issue in Light Theme) */
+html[data-theme="light"] .navigator-dock {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .navigator-dock > div,
+html[data-theme="light"] .navigator-dock span,
+html[data-theme="light"] .navigator-dock strong {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .nav-pills-wrap .nav-dock-pill,
+html[data-theme="light"] .q-pill-btn {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+html[data-theme="light"] .q-pill-btn.active,
+html[data-theme="light"] .nav-dock-pill.active {
+  background: #4338ca !important;
+  border-color: #4338ca !important;
+  color: #ffffff !important;
+}
+html[data-theme="light"] .q-pill-btn.answered {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: #10b981 !important;
+  color: #047857 !important;
+}
+html[data-theme="light"] .q-pill-btn.flagged {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: #f59e0b !important;
+  color: #b45309 !important;
+}
+
+/* Candidate Scorecard Audit Box (Fixes Image 1) */
+html[data-theme="light"] .sc-audit-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sc-audit-card span {
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+html[data-theme="light"] .sc-audit-card strong,
+html[data-theme="light"] .sc-data-val {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+html[data-theme="light"] .btn-scorecard-print {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid #64748b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="light"] .btn-scorecard-print:hover {
+  background: #f1f5f9 !important;
+  color: #000000 !important;
+  border-color: #334155 !important;
+}
+
+/* ============================================================== */
+/* 6. QUIZ MODE ACTIVE LAYOUT & CODE CONTAINER RESPONSIVENESS     */
+/* ============================================================== */
+.exam-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 300px !important;
+  gap: 1.5rem !important;
+}
+.exam-layout > div {
+  min-width: 0 !important;
+}
+@media (max-width: 992px) {
+  .exam-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Code Container & Formatting Tools in Quiz Mode */
+.sol-code-block-container,
+.code-container,
+#currentQPrompt pre,
+.option-content pre {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  border-radius: 10px !important;
+  margin: 0.85rem 0 !important;
+  box-sizing: border-box !important;
+}
+#currentQPrompt code,
+.option-content code {
+  word-break: break-word;
+  font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+}
+html[data-theme="light"] .sol-code-block-container,
+html[data-theme="light"] .code-container,
+html[data-theme="light"] #currentQPrompt pre,
+html[data-theme="light"] .option-content pre {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sol-code-block-header {
+  background: #f1f5f9 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sol-code-lang-badge {
+  background: #e2e8f0 !important;
+  color: #4338ca !important;
+}
+html[data-theme="dark"] .sol-code-block-container,
+html[data-theme="dark"] .code-container,
+html[data-theme="dark"] #currentQPrompt pre,
+html[data-theme="dark"] .option-content pre {
+  background: #0d1117 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+/* Responsive Option Cards in Quiz Mode */
+.option-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+.option-content {
+  min-width: 0 !important;
+  flex: 1 !important;
+  word-break: break-word !important;
+}
+html[data-theme="light"] .option-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .option-card:hover {
+  background: #f8fafc !important;
+  border-color: #4338ca !important;
+}
+html[data-theme="light"] .option-card.selected {
+  background: rgba(67, 56, 202, 0.08) !important;
+  border-color: #4338ca !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .option-letter {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #4338ca !important;
+}
+html[data-theme="light"] .option-card.selected .option-letter {
+  background: #4338ca !important;
+  color: #ffffff !important;
+}
+
 
 

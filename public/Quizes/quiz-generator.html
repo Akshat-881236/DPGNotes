@@ -268,7 +268,7 @@
       position: sticky;
       top: 76px;
       z-index: 900;
-      background: rgba(15, 23, 42, 0.95);
+      background: var(--qz-surface, rgba(15, 23, 42, 0.95));
       backdrop-filter: blur(16px);
       border: 1px solid var(--qz-border);
       border-radius: 14px;
@@ -278,7 +278,8 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      color: var(--qz-text);
     }
     .nav-pills-wrap {
       display: flex;
@@ -576,10 +577,10 @@
       <span>DPGNotes <span style="color:var(--qz-primary);">Quiz Studio</span></span>
     </a>
     <div class="qz-nav-actions" style="display:flex; align-items:center; gap:10px;">
-      <a href="/Quizes/quiz-record-and-analytics.html" class="btn btn-sm btn-outline-secondary qz-nav-btn" style="border-color:var(--qz-border); color:var(--qz-text-muted);" title="Contributor Analytics" aria-label="Contributor Analytics">
+      <a href="/Quizes/quiz-record-and-analytics.html" class="btn btn-sm btn-outline-secondary qz-nav-btn" title="Contributor Analytics" aria-label="Contributor Analytics">
         <i class="ri-bar-chart-box-line"></i> <span class="qz-nav-btn-text">Analytics</span>
       </a>
-      <a href="/dashboard.html" class="btn btn-sm btn-secondary qz-nav-btn" style="background:rgba(255,255,255,0.08); border-color:var(--qz-border);" title="Dashboard" aria-label="Dashboard">
+      <a href="/dashboard.html" class="btn btn-sm btn-secondary qz-nav-btn nav-btn-dash" title="Dashboard" aria-label="Dashboard">
         <i class="ri-dashboard-line"></i> <span class="qz-nav-btn-text">Dashboard</span>
       </a>
     </div>

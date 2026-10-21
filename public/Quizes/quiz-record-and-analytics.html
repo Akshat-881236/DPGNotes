@@ -253,7 +253,7 @@
       <a href="/Quizes/quiz-generator.html" class="btn btn-sm btn-primary">
         <i class="ri-add-line"></i> Create New Quiz
       </a>
-      <a href="/dashboard.html" class="btn btn-sm btn-secondary" style="background:rgba(255,255,255,0.06); border-color:var(--qz-border);">
+      <a href="/dashboard.html" class="btn btn-sm btn-secondary nav-btn-dash" title="Dashboard" aria-label="Dashboard">
         <i class="ri-dashboard-line"></i> Dashboard
       </a>
     </div>
@@ -1058,13 +1058,25 @@
         batch.update(authorReqRef, { status: newStatus, respondedAt: serverTimestamp() });
         batch.update(globalReqRef, { status: newStatus, respondedAt: serverTimestamp() });
 
-        // If accepted, grant retest on the candidate's attempt record
-        if (newStatus === 'accepted' && quizId && attemptId) {
-          const attemptRef = doc(db, "contributors", activeUid, "quizzes", quizId, "attempts", attemptId);
-          batch.update(attemptRef, {
-            allowedRetest: true,
-            retestGrantedAt: serverTimestamp()
-          });
+        // If accepted, grant retest on the candidate's attempt record & clear locks
+        const req = incomingRequestsList.find(r => r.requestId === requestId);
+        if (newStatus === 'accepted' && quizId) {
+          if (attemptId) {
+            const attemptRef = doc(db, "contributors", activeUid, "quizzes", quizId, "attempts", attemptId);
+            batch.update(attemptRef, {
+              allowedRetest: true,
+              retestGrantedAt: serverTimestamp()
+            });
+          }
+          if (req) {
+            if (req.studentId && req.studentId !== "N/A") {
+              const safeSid = req.studentId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+              batch.set(doc(db, "quizAttemptsLookup", `${quizId}_sid_${safeSid}`), { allowedRetest: true }, { merge: true });
+            }
+            if (req.candidateUid) {
+              batch.set(doc(db, "quizAttemptsLookup", `${quizId}_uid_${req.candidateUid}`), { allowedRetest: true }, { merge: true });
+            }
+          }
         }
 
         await batch.commit();
@@ -1079,21 +1091,36 @@
     // Purge candidate attempt from Firestore so student can retake completely fresh
     window.purgeCandidateAttempt = async function(quizId, attemptId, requestId) {
       const confirmed = await customConfirm(
-        "Permanently purge candidate attempt document from database?\n\nThis will remove their old submission so they can take the examination fresh.",
+        "Permanently purge candidate attempt document from database?\n\nThis will remove their old submission and clear all hardware/student locks so they can take the examination fresh.",
         { title: "Purge Candidate Attempt", confirmText: "Yes, Purge Record", isDanger: true }
       );
       if (!confirmed) return;
 
       try {
-        if (quizId && attemptId) {
-          await deleteDoc(doc(db, "contributors", activeUid, "quizzes", quizId, "attempts", attemptId));
+        const req = incomingRequestsList.find(r => r.requestId === requestId);
+        if (quizId) {
+          if (attemptId) {
+            await deleteDoc(doc(db, "contributors", activeUid, "quizzes", quizId, "attempts", attemptId)).catch(console.warn);
+          }
+          if (req) {
+            if (req.studentId && req.studentId !== "N/A") {
+              const safeSid = req.studentId.replace(/[^a-zA-Z0-9_\-]/g, '_');
+              await deleteDoc(doc(db, "quizAttemptsLookup", `${quizId}_sid_${safeSid}`)).catch(console.warn);
+            }
+            if (req.candidateUid) {
+              await deleteDoc(doc(db, "quizAttemptsLookup", `${quizId}_uid_${req.candidateUid}`)).catch(console.warn);
+              if (attemptId) {
+                await deleteDoc(doc(db, "contributors", req.candidateUid, "myQuizAttempts", attemptId)).catch(console.warn);
+              }
+            }
+          }
         }
         await updateDoc(doc(db, "contributors", activeUid, "retestRequests", requestId), {
           status: 'accepted_purged',
           purgedAt: serverTimestamp()
         });
 
-        await customAlert("Candidate attempt has been purged and lock cleared.", { title: "Scorecard Purged" });
+        await customAlert("Candidate attempt has been purged and all hardware/student locks cleared.", { title: "Scorecard Purged" });
         await loadRetestRequests();
       } catch (err) {
         console.error("Purge candidate error:", err);

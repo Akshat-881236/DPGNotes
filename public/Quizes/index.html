@@ -816,7 +816,7 @@
             </button>
           </div>
 
-          <h3 id="currentQPrompt" style="font-size:1.15rem; font-weight:600; line-height:1.6; margin-bottom:1.5rem; color:#fff;">
+          <h3 id="currentQPrompt" style="font-size:1.15rem; font-weight:600; line-height:1.6; margin-bottom:1.5rem; color:var(--qz-text);">
             Question text loading...
           </h3>
 
@@ -861,7 +861,7 @@
             </div>
           </div>
 
-          <h5 style="font-size:0.95rem; font-weight:700; color:#fff; margin-bottom:1rem;">Question Navigator</h5>
+          <h5 style="font-size:0.95rem; font-weight:700; color:var(--qz-text); margin-bottom:1rem;">Question Navigator</h5>
           <div class="navigator-grid" id="examNavGrid"></div>
 
           <hr style="border-color:var(--qz-border); margin:1.25rem 0;">
@@ -1039,10 +1039,18 @@
     let hasSubmitted = false;
     let authenticatedUser = null;
 
-    // Live AI Camera Proctoring State (Zero Video Stored)
+    // Live AI Camera & Audio Proctoring State (Zero Video/Audio Stored)
     let liveMediaStream = null;
     let proctorInterval = null;
     let isCameraVerified = false;
+    let audioContext = null;
+    let audioAnalyser = null;
+    let speechRecognitionInstance = null;
+    let audioViolationStreak = 0;
+    let voiceModalWarningsGiven = 0;
+    const MAX_VOICE_WARNINGS = 3;
+    let isVoiceWarningModalActive = false;
+
     let proctorStreaks = {
       noFace: 0,
       multipleFaces: 0,
@@ -1083,6 +1091,92 @@
       } catch(e) {}
     }
 
+    // Non-punitive, transparent Custom Modal voice notification (3 Free Warnings before any penalty)
+    async function triggerVoiceNotice(reason) {
+      if (hasSubmitted || isVoiceWarningModalActive) return;
+
+      if (voiceModalWarningsGiven < MAX_VOICE_WARNINGS) {
+        voiceModalWarningsGiven++;
+        isVoiceWarningModalActive = true;
+        playProctorWarningSound();
+
+        await customAlert(
+          `Voice activity or verbal communication was detected in your assessment environment (${reason}).\n\nPlease maintain complete silence during the examination. Audio telemetry is actively inspected.\n\n(Informational Notice ${voiceModalWarningsGiven} of ${MAX_VOICE_WARNINGS})`,
+          { title: "Audio Environment Notice", confirmText: "I Understand & Will Maintain Silence" }
+        );
+        isVoiceWarningModalActive = false;
+      }
+    }
+
+    // Initialize Web Audio API and Speech Recognition Proctoring
+    function initAudioProctoring() {
+      if (!liveMediaStream) return;
+      const audioTracks = liveMediaStream.getAudioTracks();
+      if (!audioTracks || audioTracks.length === 0) return;
+
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          audioContext = new AudioCtx();
+          const source = audioContext.createMediaStreamSource(liveMediaStream);
+          audioAnalyser = audioContext.createAnalyser();
+          audioAnalyser.fftSize = 512;
+          source.connect(audioAnalyser);
+        }
+      } catch(err) {
+        console.warn("AudioContext init notice:", err);
+      }
+
+      // Continuous Speech Recognition if supported
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRec) {
+        try {
+          speechRecognitionInstance = new SpeechRec();
+          speechRecognitionInstance.continuous = true;
+          speechRecognitionInstance.interimResults = true;
+          speechRecognitionInstance.lang = 'en-US';
+
+          const suspiciousKeywords = [
+            'answer', 'option a', 'option b', 'option c', 'option d', 
+            'question', 'what is', 'explain', 'code', 'solution',
+            'chatgpt', 'gemini', 'google', 'solve', 'batao', 'uttar', 'kya hai'
+          ];
+
+          speechRecognitionInstance.onresult = async (evt) => {
+            if (hasSubmitted || isVoiceWarningModalActive) return;
+            for (let i = evt.resultIndex; i < evt.results.length; ++i) {
+              const transcript = (evt.results[i][0].transcript || '').toLowerCase().trim();
+              const matchedWord = suspiciousKeywords.find(kw => transcript.includes(kw));
+              if (matchedWord) {
+                triggerVoiceNotice(`Spoken query keyword "${matchedWord}" detected.`);
+                break;
+              }
+            }
+          };
+
+          speechRecognitionInstance.onerror = (e) => {
+            if (e.error !== 'aborted' && !hasSubmitted) {
+              setTimeout(() => {
+                try { if (speechRecognitionInstance && !hasSubmitted) speechRecognitionInstance.start(); } catch(e){}
+              }, 2500);
+            }
+          };
+
+          speechRecognitionInstance.onend = () => {
+            if (!hasSubmitted && liveMediaStream) {
+              setTimeout(() => {
+                try { if (speechRecognitionInstance && !hasSubmitted) speechRecognitionInstance.start(); } catch(e){}
+              }, 1200);
+            }
+          };
+
+          speechRecognitionInstance.start();
+        } catch(srErr) {
+          console.warn("SpeechRecognition init notice:", srErr);
+        }
+      }
+    }
+
     // Pre-Exam Camera Permission & Verification
     window.initCandidateCameraPreview = async function() {
       const btn = document.getElementById('btnTestCamera');
@@ -1092,12 +1186,20 @@
       const msg = document.getElementById('camVerificationMsg');
 
       try {
-        if (btn) { btn.disabled = true; btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Accessing Webcam...`; }
+        if (btn) { btn.disabled = true; btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Accessing Webcam & Mic...`; }
         if (!liveMediaStream) {
-          liveMediaStream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: "user" },
-            audio: false
-          });
+          try {
+            liveMediaStream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: "user" },
+              audio: true
+            });
+          } catch(avErr) {
+            // Fallback to video only if mic is blocked or unavailable
+            liveMediaStream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: "user" },
+              audio: false
+            });
+          }
         }
         if (preVideo) {
           preVideo.srcObject = liveMediaStream;
@@ -1109,13 +1211,13 @@
           badge.style.background = 'rgba(16, 185, 129, 0.2)';
           badge.style.color = '#10b981';
           badge.style.border = '1px solid rgba(16, 185, 129, 0.4)';
-          badge.innerHTML = `<i class="ri-checkbox-circle-fill"></i> Camera Verified`;
+          badge.innerHTML = `<i class="ri-checkbox-circle-fill"></i> Camera & Audio Verified`;
         }
         if (btn) {
           btn.className = 'btn btn-success btn-sm';
           btn.innerHTML = `<i class="ri-check-line"></i> Feed Verified`;
         }
-        if (msg) msg.textContent = "Webcam active. Real-time local memory analysis ready. Zero video stored.";
+        if (msg) msg.textContent = "Webcam and microphone active. Real-time local memory analysis ready. Zero video/audio stored.";
         isCameraVerified = true;
       } catch(err) {
         console.warn("Camera init error:", err);
@@ -1124,15 +1226,15 @@
           badge.style.background = 'rgba(239, 68, 68, 0.2)';
           badge.style.color = '#ef4444';
           badge.style.border = '1px solid rgba(239, 68, 68, 0.4)';
-          badge.innerHTML = `<i class="ri-close-circle-line"></i> Camera Blocked`;
+          badge.innerHTML = `<i class="ri-close-circle-line"></i> Permissions Blocked`;
         }
         if (btn) {
           btn.disabled = false;
           btn.className = 'btn btn-outline-danger btn-sm';
           btn.innerHTML = `<i class="ri-refresh-line"></i> Retry Permission`;
         }
-        if (msg) msg.textContent = "Please allow webcam access in your browser address bar.";
-        await customAlert("Camera access was blocked or is unavailable. Please grant webcam permissions in your browser to enable live proctoring.", { title: "Webcam Access Required", isDanger: true });
+        if (msg) msg.textContent = "Please allow webcam & microphone access in your browser address bar.";
+        await customAlert("Camera and audio access was blocked or is unavailable. Please grant permissions in your browser to enable live proctoring.", { title: "Media Access Required", isDanger: true });
       }
     };
 
@@ -1146,6 +1248,9 @@
         proctorVideo.srcObject = liveMediaStream;
         proctorVideo.play().catch(() => {});
       }
+
+      // Initialize audio analysis
+      initAudioProctoring();
 
       if (proctorInterval) clearInterval(proctorInterval);
 
@@ -1167,18 +1272,29 @@
         // Path A: Native Chromium FaceDetector API (hardware-accelerated, 0 overhead)
         if (nativeFaceDetector) {
           try {
-            const faces = await nativeFaceDetector.detect(proctorCanvas);
-            detectedFacesCount = faces.length;
-            if (faces.length === 1) {
-              const f = faces[0].boundingBox;
+            const allFaces = await nativeFaceDetector.detect(proctorCanvas);
+            // Filter out tiny false positives (e.g. clothing folds, buttons, background artifacts)
+            const realFaces = allFaces.filter(f => f.boundingBox.width >= 28 && f.boundingBox.height >= 28);
+            detectedFacesCount = realFaces.length;
+
+            if (realFaces.length === 1) {
+              const f = realFaces[0].boundingBox;
               const centerY = f.top + (f.height / 2);
               const centerX = f.left + (f.width / 2);
-              if (centerY > 85 || (f.top + f.height) >= 118) {
-                isPhonePosture = true;
-                isGazeLookingDownOrAway = true;
-              }
-              if (centerX < 28 || centerX > 132) {
-                isGazeLookingDownOrAway = true;
+
+              // Candidate leaning in / zooming in to read question:
+              // When face is large (width > 50 or height > 55), chin drops naturally. This is normal reading!
+              const isLeaningInToRead = (f.width >= 50 || f.height >= 55);
+
+              if (!isLeaningInToRead) {
+                // Phone posture: requires small face far at bottom edge
+                if (centerY > 96 && (f.top + f.height) >= 118) {
+                  isPhonePosture = true;
+                }
+                // Wide horizontal reading leeway across the 160px canvas
+                if (centerX < 12 || centerX > 148) {
+                  isGazeLookingDownOrAway = true;
+                }
               }
             }
           } catch(e) {
@@ -1194,6 +1310,7 @@
         let sumY = 0;
         let leftSideSkin = 0;
         let rightSideSkin = 0;
+        let centerSkin = 0;
         let bottomSkin = 0;
 
         for (let y = 0; y < 120; y++) {
@@ -1213,21 +1330,25 @@
               skinPixels++;
               sumX += x;
               sumY += y;
-              if (x < 65) leftSideSkin++;
-              if (x > 95) rightSideSkin++;
-              if (y > 88) bottomSkin++;
+              if (x < 50) leftSideSkin++;
+              else if (x > 110) rightSideSkin++;
+              else centerSkin++;
+
+              if (y > 95) bottomSkin++;
             }
           }
         }
 
-        const isMultipleBySkin = (leftSideSkin > 450 && rightSideSkin > 450 && skinPixels > 2200);
+        // Two distinct human faces require two separate skin clusters on left and right with a gap in the center
+        // (A single face zoomed in/leaning in will have high centerSkin, preventing false "Multiple People" flags)
+        const isMultipleBySkin = (leftSideSkin > 350 && rightSideSkin > 350 && centerSkin < 180 && skinPixels > 1600);
 
-        // 1. Multiple People Detection (Collaborator / Assistant help)
+        // 1. Multiple People Detection (2 Genuine Humans, sustained across 6 consecutive samples ~4.5s)
         if (detectedFacesCount > 1 || (detectedFacesCount === -1 && isMultipleBySkin)) {
           proctorStreaks.multipleFaces++;
           proctorStreaks.noFace = 0;
           proctorStreaks.gazeDiverted = 0;
-          if (proctorStreaks.multipleFaces >= 3) {
+          if (proctorStreaks.multipleFaces >= 6) {
             proctorViolationCounts.multiplePersons++;
             updateProctorUI('danger', 'ri-group-line', 'Multiple People in Frame');
             logUmcViolation('MULTIPLE_PERSONS_DETECTED', 'More than one individual detected in camera frame.');
@@ -1236,13 +1357,13 @@
           return;
         }
 
-        // 2. Face Absent Detection (Candidate left view)
-        const isAbsentBySkin = (skinPixels < 220);
+        // 2. Face Absent Detection (Candidate absent, sustained across 6 consecutive samples ~4.5s)
+        const isAbsentBySkin = (skinPixels < 180);
         if (detectedFacesCount === 0 || (detectedFacesCount === -1 && isAbsentBySkin)) {
           proctorStreaks.noFace++;
           proctorStreaks.multipleFaces = 0;
           proctorStreaks.gazeDiverted = 0;
-          if (proctorStreaks.noFace >= 4) {
+          if (proctorStreaks.noFace >= 6) {
             proctorViolationCounts.faceAbsent++;
             updateProctorUI('danger', 'ri-user-unfollow-line', 'Candidate Missing from View');
             logUmcViolation('FACE_ABSENT', 'Candidate not visible in webcam view.');
@@ -1251,15 +1372,18 @@
           return;
         }
 
-        // 3. Gaze / Phone Usage Posture Detection (Candidate looking down at phone/notes or AI tools)
-        if (skinPixels >= 220) {
+        // 3. Gaze / Phone Usage Posture Detection (Sustained downward tilt, 8 consecutive samples ~6s)
+        if (skinPixels >= 180) {
           const avgX = sumX / skinPixels;
           const avgY = sumY / skinPixels;
-          if (isPhonePosture || avgY > 86 || bottomSkin > (skinPixels * 0.55) || avgX < 30 || avgX > 130) {
+          // When candidate leans in to read, skinPixels is high and center is occupied; do not flag reading
+          const isLeaningCenter = (skinPixels > 1800 && avgX >= 40 && avgX <= 120);
+
+          if (!isLeaningCenter && (isPhonePosture || (avgY > 95 && skinPixels < 1600) || avgX < 14 || avgX > 146)) {
             proctorStreaks.gazeDiverted++;
-            if (proctorStreaks.gazeDiverted >= 4) {
+            if (proctorStreaks.gazeDiverted >= 8) {
               proctorViolationCounts.gazeDiverted++;
-              const label = (avgY > 86 || isPhonePosture) ? 'Looking Down / Phone Posture' : 'Gaze Diverted / Looking Away';
+              const label = (avgY > 95 || isPhonePosture) ? 'Looking Down / Phone Posture' : 'Gaze Diverted / Looking Away';
               updateProctorUI('warning', 'ri-smartphone-line', label);
               logUmcViolation('SUSPICIOUS_PHONE_OR_GAZE_DIVERSION', `Candidate gaze diverted from assessment screen (${label}).`);
               playProctorWarningSound();
@@ -1268,7 +1392,27 @@
           }
         }
 
-        // 4. Normal Candidate Focus
+        // 4. Audio Volume Energy Analysis
+        if (audioAnalyser) {
+          try {
+            const pcmData = new Uint8Array(audioAnalyser.frequencyBinCount);
+            audioAnalyser.getByteFrequencyData(pcmData);
+            let pcmSum = 0;
+            for (let i = 0; i < pcmData.length; i++) pcmSum += pcmData[i];
+            const avgVol = pcmSum / pcmData.length;
+            if (avgVol > 52) { // Sustained conversational volume
+              audioViolationStreak++;
+              if (audioViolationStreak >= 6) {
+                audioViolationStreak = 0;
+                triggerVoiceNotice("Sustained vocal activity detected.");
+              }
+            } else {
+              if (audioViolationStreak > 0) audioViolationStreak--;
+            }
+          } catch(audioErr) {}
+        }
+
+        // 5. Normal Candidate Focus
         proctorStreaks.noFace = 0;
         proctorStreaks.multipleFaces = 0;
         proctorStreaks.gazeDiverted = 0;
@@ -1308,6 +1452,14 @@
       if (liveMediaStream) {
         liveMediaStream.getTracks().forEach(t => t.stop());
         liveMediaStream = null;
+      }
+      if (speechRecognitionInstance) {
+        try { speechRecognitionInstance.stop(); } catch(e){}
+        speechRecognitionInstance = null;
+      }
+      if (audioContext && audioContext.state !== 'closed') {
+        try { audioContext.close(); } catch(e){}
+        audioContext = null;
       }
     }
 
@@ -1690,10 +1842,17 @@
       if (quizData.liveCameraProctoring !== false) {
         try {
           if (!liveMediaStream) {
-            liveMediaStream = await navigator.mediaDevices.getUserMedia({
-              video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: "user" },
-              audio: false
-            });
+            try {
+              liveMediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: "user" },
+                audio: true
+              });
+            } catch(avErr) {
+              liveMediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 320 }, height: { ideal: 240 }, facingMode: "user" },
+                audio: false
+              });
+            }
           }
         } catch(camErr) {
           console.warn("Camera requirement error:", camErr);

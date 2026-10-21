@@ -167,15 +167,61 @@
     }
 
     .dpg-hover-bio {
-      font-size: 0.8rem;
-      line-height: 1.45;
+      font-size: 0.82rem;
+      line-height: 1.5;
       color: #cbd5e1;
       margin-bottom: 12px;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      min-height: 2.3rem;
+      min-height: 2.4rem;
+      word-break: break-word;
+    }
+    .dpg-hover-bio strong,
+    .dpg-hover-bio b {
+      color: #ffffff !important;
+      font-weight: 700;
+    }
+    .dpg-hover-bio em,
+    .dpg-hover-bio i {
+      color: #93c5fd;
+      font-style: italic;
+    }
+    .dpg-hover-bio code,
+    .dpg-hover-bio .dpg-hover-code {
+      background: rgba(99, 102, 241, 0.25);
+      color: #a5b4fc;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.76rem;
+      font-family: monospace;
+    }
+    .dpg-hover-bio a,
+    .dpg-hover-bio .dpg-hover-bio-link {
+      color: #38bdf8;
+      text-decoration: underline;
+    }
+
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio strong,
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio b {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio em,
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio i {
+      color: #4338ca !important;
+    }
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio code,
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio .dpg-hover-code {
+      background: rgba(99, 102, 241, 0.12) !important;
+      color: #3730a3 !important;
+    }
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio a,
+    html[data-theme="light"] #dpgContributorHoverCard .dpg-hover-bio .dpg-hover-bio-link {
+      color: #0284c7 !important;
     }
 
     .dpg-hover-social-row {
@@ -434,15 +480,48 @@
     const name = (user && (user.name || user.displayName)) || nameFallback || "Verified Contributor";
     const photo = (user && (user.avatarUrl || user.profilePic || user.photoURL)) || photoFallback || "";
     const bioRaw = (user && user.bio) || "Verified academic author & study material contributor on DPGNotes.";
-    const cleanBio = bioRaw.replace(/<[^>]*>/g, '').trim();
     const linkedin = (user && user.linkedin) || "";
     const github = (user && user.github) || "";
     const role = (user && (user.discipline || user.role)) || "Academic Contributor";
 
+    function formatHoverBioMarkup(rawBio) {
+      if (!rawBio) return "Verified academic author & study material contributor on DPGNotes.";
+      let s = String(rawBio).trim();
+
+      // 1. Sanitize dangerous HTML tags and script handlers while preserving safe formatting tags
+      s = s.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+           .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+           .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+           .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+           .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+           .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+           .replace(/\son\w+\s*=\s*[^>\s]+/gi, '')
+           .replace(/javascript:/gi, '');
+
+      // 2. Parse Markdown Bold: **text** or __text__
+      s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+      // 3. Parse Markdown Italic: *text* or _text_
+      s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      s = s.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+      // 4. Parse Inline Code: `code`
+      s = s.replace(/`([^`]+)`/g, '<code class="dpg-hover-code">$1</code>');
+
+      // 5. Parse Markdown Links: [text](url)
+      s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="dpg-hover-bio-link">$1</a>');
+
+      // 6. Line breaks
+      s = s.replace(/\r\n|\r|\n/g, '<br>');
+
+      return s;
+    }
+
     // Update Elements
     document.getElementById("dpgHoverName").textContent = name;
     document.getElementById("dpgHoverRole").textContent = role;
-    document.getElementById("dpgHoverBio").textContent = cleanBio || "Verified contributor on DPGNotes.";
+    document.getElementById("dpgHoverBio").innerHTML = formatHoverBioMarkup(bioRaw);
 
     // Avatar
     const avatarWrap = document.getElementById("dpgHoverAvatarWrap");

@@ -61,28 +61,28 @@
     wrapper.setAttribute("aria-label", "Accessibility and Reading Theme Controls");
 
     wrapper.innerHTML = `
-      <!-- Theme Switchers -->
-      <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'default' ? 'active' : ''}" data-target-theme="default" onclick="window.setReaderTheme('default')" title="Default DPGNotes Blue Theme">
-        <i class="ri-contrast-2-line"></i> <span class="dpg-rc-theme-text">DPG Blue</span>
+      <!-- Theme Switchers (Icon-based with adaptive labels) -->
+      <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'default' ? 'active' : ''}" data-target-theme="default" onclick="window.setReaderTheme('default')" title="Default DPGNotes Midnight Blue Theme" aria-label="Default DPG Blue Theme">
+        <i class="ri-contrast-2-line" style="color:#60a5fa;"></i> <span class="dpg-rc-theme-text">DPG Blue</span>
       </button>
-      <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'light' ? 'active' : ''}" data-target-theme="light" onclick="window.setReaderTheme('light')" title="Light High-Contrast Paper Theme">
-        <i class="ri-sun-line"></i> <span class="dpg-rc-theme-text">Light</span>
+      <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'light' ? 'active' : ''}" data-target-theme="light" onclick="window.setReaderTheme('light')" title="Light High-Contrast Paper Theme" aria-label="Light High Contrast Paper Theme">
+        <i class="ri-sun-line" style="color:#f59e0b;"></i> <span class="dpg-rc-theme-text">Light</span>
       </button>
-      <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'dark' ? 'active' : ''}" data-target-theme="dark" onclick="window.setReaderTheme('dark')" title="OLED Pure Dark Contrast Theme">
-        <i class="ri-moon-clear-line"></i> <span class="dpg-rc-theme-text">Dark</span>
+      <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'dark' ? 'active' : ''}" data-target-theme="dark" onclick="window.setReaderTheme('dark')" title="OLED Pure Dark Contrast Theme" aria-label="OLED Pure Dark Contrast Theme">
+        <i class="ri-moon-clear-line" style="color:#a78bfa;"></i> <span class="dpg-rc-theme-text">Dark</span>
       </button>
 
       <span class="dpg-rc-divider"></span>
 
-      <!-- Font Size Scalers -->
-      <button type="button" class="dpg-rc-btn" onclick="window.cycleFontSize(-1)" title="Decrease Text Size" aria-label="Decrease Text Size">
-        A-
+      <!-- Font Size Scalers (Icon-based with adaptive typography) -->
+      <button type="button" class="dpg-rc-btn dpg-rc-font-btn" onclick="window.cycleFontSize(-1)" title="Decrease Text Size" aria-label="Decrease Text Size">
+        <i class="ri-font-size-2" style="font-size:0.75rem;"></i><span style="font-size:0.72rem; font-weight:700;">-</span>
       </button>
-      <button type="button" class="dpg-rc-btn ${currentFontSize === 'md' ? 'active' : ''}" onclick="window.setReaderFontSize('md')" title="Standard Text Size" aria-label="Reset Standard Text Size">
-        A
+      <button type="button" class="dpg-rc-btn dpg-rc-font-btn ${currentFontSize === 'md' ? 'active' : ''}" onclick="window.setReaderFontSize('md')" title="Standard Text Size" aria-label="Reset Standard Text Size">
+        <i class="ri-text"></i>
       </button>
-      <button type="button" class="dpg-rc-btn" onclick="window.cycleFontSize(1)" title="Increase Text Size (High Accessibility)" aria-label="Increase Text Size">
-        A+
+      <button type="button" class="dpg-rc-btn dpg-rc-font-btn" onclick="window.cycleFontSize(1)" title="Increase Text Size (High Accessibility)" aria-label="Increase Text Size">
+        <i class="ri-font-size-2" style="font-size:0.95rem;"></i><span style="font-size:0.75rem; font-weight:700;">+</span>
       </button>
     `;
 

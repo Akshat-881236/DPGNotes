@@ -1451,7 +1451,7 @@ async function loadAcademicResources() {
       getDocs(collection(db, "users")).catch(err => {
         return { forEach: () => {} };
       }),
-      getDocs(query(collection(db, "quizDirectory"), where("status", "==", "published"))).catch(err => {
+      getDocs(collection(db, "quizDirectory")).catch(err => {
         console.warn("Quiz directory fetch warning:", err);
         return { forEach: () => {} };
       })
