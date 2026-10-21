@@ -908,7 +908,36 @@
     html[data-theme="light"] .edu-modal .modal-header {
       border-bottom-color: rgba(15, 23, 42, 0.08) !important;
     }
-    html[data-theme="light"] .edu-modal .modal-title {
+    html[data-theme="light"] .edu-modal .modal-title,
+    html[data-theme="light"] .edu-modal h4,
+    html[data-theme="light"] #guestPromptModal h4,
+    html[data-theme="light"] .guest-prompt-heading {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .edu-modal p,
+    html[data-theme="light"] #guestPromptModal p,
+    html[data-theme="light"] .guest-prompt-desc {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] #guestPromptModal .modal-content {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.25) !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] #guestPromptModal .btn-nav-ghost {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    html[data-theme="light"] #guestPromptModal .btn-nav-ghost:hover {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] #signUpVerifyEmailDisplay {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] ::selection {
+      background: rgba(99, 102, 241, 0.35) !important;
       color: #0f172a !important;
     }
     html[data-theme="light"] .edu-modal .btn-close-white {
@@ -1279,8 +1308,16 @@
     html[data-theme="emerald"] .edu-modal .modal-header {
       border-bottom-color: rgba(16, 185, 129, 0.15) !important;
     }
-    html[data-theme="emerald"] .edu-modal .modal-title {
+    html[data-theme="emerald"] .edu-modal .modal-title,
+    html[data-theme="emerald"] .edu-modal h4,
+    html[data-theme="emerald"] #guestPromptModal h4,
+    html[data-theme="emerald"] .guest-prompt-heading {
       color: #ffffff !important;
+    }
+    html[data-theme="emerald"] .edu-modal p,
+    html[data-theme="emerald"] #guestPromptModal p,
+    html[data-theme="emerald"] .guest-prompt-desc {
+      color: #a7f3d0 !important;
     }
     html[data-theme="emerald"] .edu-label {
       color: #a7f3d0 !important;
@@ -2265,6 +2302,16 @@
     }
     .edu-modal .modal-body {
       padding: 1.5rem;
+    }
+    .guest-prompt-heading {
+      color: #ffffff;
+    }
+    .guest-prompt-desc {
+      color: #94a3b8;
+    }
+    ::selection {
+      background: rgba(99, 102, 241, 0.7);
+      color: #ffffff;
     }
     .edu-input {
       background: rgba(3, 7, 18, 0.7);
@@ -3276,11 +3323,11 @@
             <i class="ri-graduation-cap-line"></i>
           </div>
 
-          <h4 style="font-family:var(--font-heading); font-weight:800; margin-bottom:8px; color:#ffffff;">
+          <h4 class="guest-prompt-heading" style="font-family:var(--font-heading); font-weight:800; margin-bottom:8px;">
             Enjoying DPGNotes? Unlock the Full Academic Suite!
           </h4>
           
-          <p style="font-size:0.9rem; color:#94a3b8; line-height:1.6; margin-bottom:1.5rem;">
+          <p class="guest-prompt-desc" style="font-size:0.9rem; line-height:1.6; margin-bottom:1.5rem;">
             You have been exploring DPGNotes as a guest. Create a free contributor account to save study notes, generate Cloud Assignment &amp; Practical covers, interact with the AI Academic Engine, and join our peer network.
           </p>
 

@@ -1347,49 +1347,17 @@
       }
     };
 
-    window.updateQuestionLivePreview = function(i) {
-      const promptBox = document.getElementById(`preview_prompt_${i}`);
-      const optionsBox = document.getElementById(`preview_options_${i}`);
-      if (!promptBox || !optionsBox) return;
-
-      const qText = document.getElementById(`qText_${i}`)?.value || '';
-      const a = document.getElementById(`q_${i}_optA`)?.value || '';
-      const b = document.getElementById(`q_${i}_optB`)?.value || '';
-      const c = document.getElementById(`q_${i}_optC`)?.value || '';
-      const d = document.getElementById(`q_${i}_optD`)?.value || '';
-      const selectedRadio = document.querySelector(`input[name="correctKey_${i}"]:checked`);
-      const selectedKey = selectedRadio ? selectedRadio.value : '';
-
-      const formatFn = (raw, ctx) => {
-        if (!raw || !raw.trim()) return '';
-        if (typeof window.formatSolutionContent === 'function') {
+    function renderRichPreviewContent(raw, ctx) {
+      if (!raw || !raw.trim()) return '';
+      if (typeof window.formatSolutionContent === 'function') {
+        try {
           return window.formatSolutionContent(raw, ctx);
+        } catch(e) {
+          console.warn("Format solution content error:", e);
         }
-        return escapeHtml(raw);
-      };
-
-      const promptHtml = formatFn(qText, `prev_q_${i}`);
-      promptBox.innerHTML = promptHtml || '<em style="color:#64748b; font-size:0.92rem;">(Type your question prompt / problem statement above to see it formatted live here...)</em>';
-
-      const optData = [
-        { letter: 'A', text: a },
-        { letter: 'B', text: b },
-        { letter: 'C', text: c },
-        { letter: 'D', text: d }
-      ];
-
-      optionsBox.innerHTML = optData.map(opt => {
-        const isCorrect = (selectedKey === opt.letter);
-        const formattedContent = formatFn(opt.text, `prev_opt_${opt.letter}_${i}`) || `<span style="color:#64748b; font-style:italic;">Option ${opt.letter} text...</span>`;
-        return `
-          <div class="preview-exam-option-card ${isCorrect ? 'is-correct-key' : ''}" onclick="selectKey(${i}, '${opt.letter}')" title="Click to designate Option ${opt.letter} as correct key">
-            <div class="preview-option-letter">${opt.letter}</div>
-            <div class="preview-option-content">${formattedContent}</div>
-            ${isCorrect ? `<span class="preview-correct-pill"><i class="ri-checkbox-circle-fill"></i> Designated Key</span>` : ''}
-          </div>
-        `;
-      }).join('');
-    };
+      }
+      return escapeHtml(raw);
+    }
 
     // ============================================================================
     // DYNAMIC 3–12 OPTIONS & MULTI-SELECTION QUESTION (MSQ) ENGINE
@@ -1586,38 +1554,45 @@
     };
 
     window.updateQuestionLivePreview = function(qIndex) {
-      const promptBox = document.getElementById(`preview_prompt_${qIndex}`);
-      const optsBox = document.getElementById(`preview_options_${qIndex}`);
-      if (!promptBox || !optsBox) return;
+      try {
+        const promptBox = document.getElementById(`preview_prompt_${qIndex}`);
+        const optsBox = document.getElementById(`preview_options_${qIndex}`);
+        if (!promptBox || !optsBox) return;
 
-      const rawPrompt = document.getElementById(`qText_${qIndex}`)?.value || '';
-      promptBox.innerHTML = renderRichPreviewContent(rawPrompt, `prev_q_${qIndex}`) || '<em style="color:#64748b;">Question statement preview will appear here...</em>';
+        const rawPrompt = document.getElementById(`qText_${qIndex}`)?.value || '';
+        promptBox.innerHTML = renderRichPreviewContent(rawPrompt, `prev_q_${qIndex}`) || '<em style="color:#64748b;">Question statement preview will appear here...</em>';
 
-      const optCount = questionOptCounts[qIndex] || 4;
-      const keys = selectedKeysMap[qIndex] || new Set();
-      const activeKeys = Array.from(keys).filter(k => k !== 'DEFERRED');
-      const isMSQ = activeKeys.length > 1;
+        const optCount = questionOptCounts[qIndex] || 4;
+        const keys = selectedKeysMap[qIndex] || new Set();
+        const activeKeys = Array.from(keys).filter(k => k !== 'DEFERRED');
+        const isMSQ = activeKeys.length > 1;
 
-      optsBox.innerHTML = '';
-      for (let o = 0; o < optCount; o++) {
-        const letter = ALL_OPTION_LETTERS[o];
-        const rawVal = document.getElementById(`q_${qIndex}_opt${letter}`)?.value || '';
-        const isCorrectKey = keys.has(letter);
+        optsBox.innerHTML = '';
+        for (let o = 0; o < optCount; o++) {
+          const letter = ALL_OPTION_LETTERS[o];
+          const rawVal = document.getElementById(`q_${qIndex}_opt${letter}`)?.value || '';
+          const isCorrectKey = keys.has(letter);
 
-        const card = document.createElement('div');
-        card.className = `preview-exam-option-card ${isCorrectKey ? 'is-correct-key' : ''}`;
-        
-        const renderedHtml = renderRichPreviewContent(rawVal, `prev_opt_${qIndex}_${letter}`) || `<span style="color:#64748b;">Option ${letter} preview</span>`;
-        
-        const iconHtml = isMSQ ? 
-          (isCorrectKey ? '<i class="ri-checkbox-fill" style="margin-right:4px;"></i>' : '<i class="ri-checkbox-blank-line" style="margin-right:4px;"></i>') :
-          (isCorrectKey ? '<i class="ri-radio-button-fill" style="margin-right:4px;"></i>' : '<i class="ri-radio-button-line" style="margin-right:4px;"></i>');
+          const card = document.createElement('div');
+          card.className = `preview-exam-option-card ${isCorrectKey ? 'is-correct-key' : ''}`;
+          card.onclick = () => toggleKey(qIndex, letter);
+          card.title = `Click to toggle Option ${letter} as correct key`;
 
-        card.innerHTML = `
-          <div class="preview-option-letter">${iconHtml}${letter}</div>
-          <div class="preview-option-content">${renderedHtml}</div>
-        `;
-        optsBox.appendChild(card);
+          const renderedHtml = renderRichPreviewContent(rawVal, `prev_opt_${qIndex}_${letter}`) || `<span style="color:#64748b;">Option ${letter} preview</span>`;
+
+          const iconHtml = isMSQ ? 
+            (isCorrectKey ? '<i class="ri-checkbox-fill" style="margin-right:4px;"></i>' : '<i class="ri-checkbox-blank-line" style="margin-right:4px;"></i>') :
+            (isCorrectKey ? '<i class="ri-radio-button-fill" style="margin-right:4px;"></i>' : '<i class="ri-radio-button-line" style="margin-right:4px;"></i>');
+
+          card.innerHTML = `
+            <div class="preview-option-letter">${iconHtml}${letter}</div>
+            <div class="preview-option-content">${renderedHtml}</div>
+            ${isCorrectKey ? `<span class="preview-correct-pill"><i class="ri-checkbox-circle-fill"></i> Designated Key</span>` : ''}
+          `;
+          optsBox.appendChild(card);
+        }
+      } catch (err) {
+        console.warn("Live preview update warning:", err);
       }
     };
 
@@ -1716,17 +1691,21 @@
         container.appendChild(card);
       }
 
-      renderOptionInputs(i, optCount, existingValues);
-      renderKeySelector(i, optCount);
+      try {
+        renderOptionInputs(i, optCount, existingValues);
+        renderKeySelector(i, optCount);
 
-      if (initialData) {
-        const promptVal = initialData.qText !== undefined ? initialData.qText : (initialData.questionText || '');
-        if (promptVal) document.getElementById(`qText_${i}`).value = promptVal;
+        if (initialData) {
+          const promptVal = initialData.qText !== undefined ? initialData.qText : (initialData.questionText || '');
+          if (promptVal) document.getElementById(`qText_${i}`).value = promptVal;
+        }
+
+        updateKeyButtonsUI(i);
+        checkQuestionConfigured(i);
+        updateQuestionLivePreview(i);
+      } catch (cardErr) {
+        console.error(`Error initializing question card ${i}:`, cardErr);
       }
-
-      updateKeyButtonsUI(i);
-      checkQuestionConfigured(i);
-      updateQuestionLivePreview(i);
     }
 
     window.toggleImmediateResultUI = function(isImmediate) {

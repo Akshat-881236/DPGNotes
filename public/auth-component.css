@@ -471,3 +471,48 @@ body.dpg-quota-locked-state > *:not(#dpgAuthOverlay):not(#dpgLockdownShield) {
   overflow: hidden !important;
 }
 
+/* Light Theme Adaptations for Auth Component Dialogs */
+html[data-theme="light"] {
+  --dpg-auth-bg: #f8fafc;
+  --dpg-auth-card: #ffffff;
+  --dpg-auth-card-elevated: #f1f5f9;
+  --dpg-auth-border: rgba(15, 23, 42, 0.14);
+  --dpg-auth-text: #0f172a;
+  --dpg-auth-muted: #64748b;
+}
+
+html[data-theme="light"] .dpg-auth-dialog {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15), 0 0 35px rgba(99, 102, 241, 0.08) !important;
+}
+
+html[data-theme="light"] .dpg-auth-title,
+html[data-theme="light"] .dpg-auth-dialog h2,
+html[data-theme="light"] .dpg-auth-dialog h3,
+html[data-theme="light"] .dpg-auth-dialog h4 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .dpg-auth-subtitle,
+html[data-theme="light"] .dpg-auth-dialog p {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .dpg-auth-label {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .dpg-auth-input {
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .dpg-auth-input:focus {
+  background: #ffffff !important;
+  border-color: #4f46e5 !important;
+  color: #0f172a !important;
+}
+
