@@ -349,7 +349,7 @@
             </div>
           </div>
           <div class="redirect-title" id="redirectModalTitle">External Link Confirmation</div>
-          <div class="redirect-subtitle">You are navigating outside the verified DPGNotes Academic Network</div>
+          <div class="redirect-subtitle" id="redirectSubtitle">You are navigating outside the verified DPGNotes Academic Network</div>
         </div>
 
         <div class="redirect-body">
@@ -374,7 +374,7 @@
 
           <div class="redirect-notice-banner">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            <span>DPGNotes applies an isolated <code>no-referrer</code> policy and academic UTM campaign tags. Third-party content is governed by external terms.</span>
+            <span id="redirectNoticeText">DPGNotes applies an isolated <code>no-referrer</code> policy and academic UTM campaign tags. Third-party content is governed by external terms.</span>
           </div>
         </div>
 
@@ -515,6 +515,180 @@
       document.body.removeChild(tempInp);
     }
 
+        // ============================================================================
+    // VERIFIED CONTRIBUTOR SOCIAL REGISTRY & AUTO-BYPASS ENGINE
+    // ============================================================================
+    const verifiedContributorSocials = new Set();
+
+    function normalizeSocialUrl(raw) {
+      if (!raw || typeof raw !== 'string') return '';
+      try {
+        let u = raw.trim();
+        if (!u.startsWith('http://') && !u.startsWith('https://')) {
+          u = 'https://' + u;
+        }
+        const parsed = new URL(u);
+        const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+        const pathname = parsed.pathname.toLowerCase().replace(/\/+$/, '');
+        return `${host}${pathname}`;
+      } catch (e) {
+        return raw.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, '');
+      }
+    }
+
+    function registerContributorSocial(userData) {
+      if (!userData || typeof userData !== 'object') return;
+      const isVerified = userData.isVerified === true ||
+                         userData.verified === true ||
+                         userData.tier === 'contributor' ||
+                         userData.role === 'contributor' ||
+                         userData.status === 'verified' ||
+                         (userData.uploadedCount && Number(userData.uploadedCount) > 0) ||
+                         (userData.likesCount && Number(userData.likesCount) > 0);
+      if (isVerified) {
+        if (userData.linkedin) {
+          const norm = normalizeSocialUrl(userData.linkedin);
+          if (norm) verifiedContributorSocials.add(norm);
+        }
+        if (userData.github) {
+          const norm = normalizeSocialUrl(userData.github);
+          if (norm) verifiedContributorSocials.add(norm);
+        }
+      }
+    }
+
+    window.__dpgRegisterVerifiedSocial = function(url) {
+      const norm = normalizeSocialUrl(url);
+      if (norm) verifiedContributorSocials.add(norm);
+    };
+
+    (function initVerifiedSocialSync() {
+      try {
+        const cached = localStorage.getItem('dpg_verified_contributor_socials');
+        if (cached) {
+          const arr = JSON.parse(cached);
+          if (Array.isArray(arr)) arr.forEach(u => verifiedContributorSocials.add(u));
+        }
+      } catch (e) {}
+
+      if (window.__dpgUserCache && typeof window.__dpgUserCache === 'object') {
+        Object.values(window.__dpgUserCache).forEach(registerContributorSocial);
+      }
+
+      const syncWithFirestore = async () => {
+        try {
+          const firestore = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : (window.db || null);
+          if (firestore && typeof firestore.collection === 'function') {
+            const snap = await firestore.collection('users').get();
+            snap.forEach(d => registerContributorSocial(d.data()));
+            localStorage.setItem('dpg_verified_contributor_socials', JSON.stringify(Array.from(verifiedContributorSocials)));
+            return;
+          }
+        } catch (e) {}
+
+        try {
+          const res = await fetch((window.API_BASE_URL || 'https://dpgnotes.onrender.com') + '/api/social/list-profiles');
+          if (res.ok) {
+            const list = await res.json();
+            if (Array.isArray(list)) {
+              list.forEach(registerContributorSocial);
+              localStorage.setItem('dpg_verified_contributor_socials', JSON.stringify(Array.from(verifiedContributorSocials)));
+            }
+          }
+        } catch (e) {}
+      };
+
+      setTimeout(syncWithFirestore, 800);
+    })();
+
+    // Helper: Provide tailored domain-specific explanations for common trusted external sites
+    function getDomainExplanation(url) {
+      const host = (url.hostname || '').toLowerCase().replace(/^www\./, '');
+
+      // YouTube
+      if (host === 'youtube.com' || host === 'youtu.be' || host.endsWith('.youtube.com')) {
+        return {
+          title: 'Navigating to YouTube',
+          subtitle: 'External educational video lecture hosted on YouTube',
+          notice: 'You are opening an external video lecture on YouTube. DPGNotes enforces an isolated no-referrer policy. Video streaming, recommendations, and cookies operate under Google & YouTube Terms of Service.'
+        };
+      }
+
+      // Google Search / Google Scholar / Drive
+      if (host === 'google.com' || host.endsWith('.google.com') || host.endsWith('.google.co.in')) {
+        return {
+          title: 'Navigating to Google Search',
+          subtitle: 'External reference search on Google Search / Scholar',
+          notice: 'You are redirecting to Google Search or Google Scholar for supplementary study references. Query terms and searches outside DPGNotes are subject to Google Privacy Policy and Terms of Service.'
+        };
+      }
+
+      // GitHub (external / non-verified contributor profiles or general repositories)
+      if (host === 'github.com' || host.endsWith('.github.com')) {
+        return {
+          title: 'Navigating to GitHub',
+          subtitle: 'External open-source repository or developer profile on GitHub',
+          notice: 'You are viewing an external code repository, project documentation, or user account on GitHub. This destination is not an official verified DPGNotes contributor profile. Verify code security before cloning or running scripts.'
+        };
+      }
+
+      // LinkedIn (external / non-verified contributor profiles or organization pages)
+      if (host === 'linkedin.com' || host.endsWith('.linkedin.com')) {
+        return {
+          title: 'Navigating to LinkedIn',
+          subtitle: 'External profile or professional network on LinkedIn',
+          notice: 'You are navigating to an external LinkedIn profile, organization, or publication. This link does not belong to a verified DPGNotes Contributor registry. LinkedIn User Agreement and privacy practices apply.'
+        };
+      }
+
+      // Wikipedia / Wikimedia
+      if (host === 'wikipedia.org' || host.endsWith('.wikipedia.org') || host === 'wikimedia.org' || host.endsWith('.wikimedia.org')) {
+        return {
+          title: 'Navigating to Wikipedia',
+          subtitle: 'Open educational encyclopedic article reference',
+          notice: 'You are opening an open-access encyclopedic article on Wikipedia. Content is user-curated and licensed under CC BY-SA 4.0. Cross-reference academic citations with primary textbook sources.'
+        };
+      }
+
+      // SWAYAM / NPTEL (Govt. of India)
+      if (host === 'nptel.ac.in' || host.endsWith('.nptel.ac.in') || host === 'swayam.gov.in' || host.endsWith('.swayam.gov.in')) {
+        return {
+          title: 'Navigating to NPTEL / SWAYAM Portal',
+          subtitle: 'Official National Programme on Technology Enhanced Learning (MoE, Govt. of India)',
+          notice: 'You are navigating to the official SWAYAM / NPTEL platform for certified Indian engineering syllabi, video lectures, and assignments. Course certification and exam policies are managed by MoE.'
+        };
+      }
+
+      // Stack Overflow / Stack Exchange
+      if (host === 'stackoverflow.com' || host.endsWith('.stackoverflow.com') || host === 'stackexchange.com' || host.endsWith('.stackexchange.com')) {
+        return {
+          title: 'Navigating to Stack Overflow',
+          subtitle: 'Technical programming Q&A and code resolution thread',
+          notice: 'You are viewing community-contributed technical Q&A on Stack Overflow. Code snippets and technical discussions are governed by Stack Exchange terms and CC BY-SA licensing.'
+        };
+      }
+
+      // LeetCode / GeeksforGeeks / HackerRank / Codeforces
+      if (host === 'geeksforgeeks.org' || host.endsWith('.geeksforgeeks.org') ||
+          host === 'leetcode.com' || host.endsWith('.leetcode.com') ||
+          host === 'hackerrank.com' || host.endsWith('.hackerrank.com') ||
+          host === 'codeforces.com' || host.endsWith('.codeforces.com') ||
+          host === 'w3schools.com' || host.endsWith('.w3schools.com')) {
+        return {
+          title: `Navigating to ${host}`,
+          subtitle: 'External programming practice problem or technical tutorial',
+          notice: 'You are leaving DPGNotes to access external coding problem sets or technical tutorials. Interactive sandboxes, code submissions, and problems are hosted independently by the platform.'
+        };
+      }
+
+      // Default fallback
+      return {
+        title: 'External Link Confirmation',
+        subtitle: 'You are navigating outside the verified DPGNotes Academic Network',
+        notice: 'DPGNotes applies an isolated no-referrer policy and academic UTM campaign tags. Third-party content is governed by external terms.'
+      };
+    }
+
     // Intercept clicks on links globally
     document.addEventListener('click', (e) => {
       const anchor = e.target.closest('a');
@@ -560,6 +734,26 @@
           return;
         }
 
+        // 1. Quizzone portal auto-bypass
+        if (href.includes('akshat-881236.github.io/Quizzone') || url.href.includes('akshat-881236.github.io/Quizzone')) {
+          return;
+        }
+
+        // 2. Only and Only Verified Contributor LinkedIn and Github Profile auto-bypass
+        const hostNorm = url.hostname.toLowerCase().replace(/^www\./, '');
+        const isLinkedInOrGitHub = (hostNorm === 'linkedin.com' || hostNorm.endsWith('.linkedin.com') ||
+                                    hostNorm === 'github.com' || hostNorm.endsWith('.github.com'));
+
+        if (isLinkedInOrGitHub) {
+          const normTarget = normalizeSocialUrl(url.href);
+          const isVerifiedLink = verifiedContributorSocials.has(normTarget) ||
+                                 anchor.getAttribute('data-contributor-verified') === 'true' ||
+                                 anchor.closest('[data-contributor-verified="true"]');
+          if (isVerifiedLink) {
+            return;
+          }
+        }
+
         const internalHosts = [
           window.location.hostname,
           'dpgnotes.web.app', 
@@ -571,7 +765,6 @@
           'akshat-145609.github.io',
           'akshat-881236.github.io',
           'akshatnetworkhub',
-          'github.io',
           'digiindia-student-platform.onrender.com',
           'digiindia'
         ];
@@ -596,6 +789,15 @@
 
           const protocolText = document.getElementById('redirectProtocolText');
           if (protocolText) protocolText.textContent = url.protocol === 'https:' ? 'HTTPS Secure' : 'HTTP External';
+
+          // Tailored Domain Explanation
+          const explanation = getDomainExplanation(url);
+          const titleEl = document.getElementById('redirectModalTitle');
+          if (titleEl) titleEl.textContent = explanation.title;
+          const subEl = document.getElementById('redirectSubtitle');
+          if (subEl) subEl.textContent = explanation.subtitle;
+          const noticeTextEl = document.getElementById('redirectNoticeText');
+          if (noticeTextEl) noticeTextEl.textContent = explanation.notice;
 
           const copyText = document.getElementById('redirectCopyText');
           if (copyText) copyText.textContent = 'Copy';

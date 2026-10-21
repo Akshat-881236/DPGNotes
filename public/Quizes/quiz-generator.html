@@ -572,10 +572,15 @@
 
   <!-- Studio Navbar -->
   <header class="qz-navbar">
-    <a href="/index.html" class="qz-brand">
-      <img src="/ANH.png" alt="DPGNotes">
-      <span>DPGNotes <span style="color:var(--qz-primary);">Quiz Studio</span></span>
-    </a>
+    <div class="qz-brand" style="display:flex; align-items:center; gap:8px;">
+      <a href="/index.html" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit;">
+        <img src="/ANH.png" alt="DPGNotes">
+        <span>DPGNotes</span>
+      </a>
+      <a href="https://akshat-881236.github.io/Quizzone/" target="_blank" rel="noopener" data-bypass-redirect="true" style="color:var(--qz-primary); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Open Quizzone Portal">
+        Quizzone Studio <i class="ri-external-link-line" style="font-size:0.85em;"></i>
+      </a>
+    </div>
     <div class="qz-nav-actions" style="display:flex; align-items:center; gap:10px;">
       <a href="/Quizes/quiz-record-and-analytics.html" class="btn btn-sm btn-outline-secondary qz-nav-btn" title="Contributor Analytics" aria-label="Contributor Analytics">
         <i class="ri-bar-chart-box-line"></i> <span class="qz-nav-btn-text">Analytics</span>
@@ -678,8 +683,10 @@
             <option value="30">30 Minutes</option>
             <option value="45">45 Minutes</option>
             <option value="60">60 Minutes (1 Hour)</option>
-            <option value="90">90 Minutes</option>
+            <option value="90">90 Minutes (1.5 Hours)</option>
             <option value="120">120 Minutes (2 Hours)</option>
+            <option value="150">150 Minutes (2.5 Hours)</option>
+            <option value="180">180 Minutes (3 Hours)</option>
           </select>
         </div>
         <div class="col-md-4">
@@ -944,25 +951,26 @@
         let hasAnyQuestionContent = false;
         for (let i = 1; i <= currentQuestionCount; i++) {
           const qText = document.getElementById(`qText_${i}`)?.value || '';
-          const optA = document.getElementById(`q_${i}_optA`)?.value || '';
-          const optB = document.getElementById(`q_${i}_optB`)?.value || '';
-          const optC = document.getElementById(`q_${i}_optC`)?.value || '';
-          const optD = document.getElementById(`q_${i}_optD`)?.value || '';
-          const selRadio = document.querySelector(`input[name="correctKey_${i}"]:checked`);
-          const correctKey = selRadio ? selRadio.value : (document.getElementById(`lblKey_${i}_DEFERRED`)?.classList.contains('selected') ? 'DEFERRED' : '');
-
-          if (qText.trim() || optA.trim() || optB.trim() || optC.trim() || optD.trim() || correctKey) {
+          const optCount = questionOptCounts[i] || 4;
+          const opts = {};
+          let hasOptionContent = false;
+          for (let o = 0; o < optCount; o++) {
+            const letter = ALL_OPTION_LETTERS[o];
+            const val = document.getElementById(`q_${i}_opt${letter}`)?.value || '';
+            opts[letter] = val;
+            if (val.trim()) hasOptionContent = true;
+          }
+          const keys = selectedKeysMap[i] ? Array.from(selectedKeysMap[i]) : [];
+          if (qText.trim() || hasOptionContent || keys.length > 0) {
             hasAnyQuestionContent = true;
           }
 
           questions.push({
             qIndex: i,
             qText: qText,
-            optA: optA,
-            optB: optB,
-            optC: optC,
-            optD: optD,
-            correctKey: correctKey
+            optionCount: optCount,
+            options: opts,
+            keys: keys
           });
         }
 
@@ -1240,6 +1248,236 @@
       }).join('');
     };
 
+    // ============================================================================
+    // DYNAMIC 3–12 OPTIONS & MULTI-SELECTION QUESTION (MSQ) ENGINE
+    // ============================================================================
+    const ALL_OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    const questionOptCounts = {};
+    const selectedKeysMap = {};
+
+    function renderOptionInputs(qIdx, optCount, existingValues = {}) {
+      const container = document.getElementById(`optGrid_${qIdx}`);
+      if (!container) return;
+      const letters = ALL_OPTION_LETTERS.slice(0, optCount);
+      container.innerHTML = letters.map(letter => `
+        <div class="opt-col" id="col_${qIdx}_opt${letter}">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+            <label class="form-label mb-0" style="font-weight:700;">Option ${letter} <span class="req">*</span></label>
+            <span style="font-size:0.72rem; color:#94a3b8;">Use quick tools below or type HTML/Markdown</span>
+          </div>
+          <div class="sol-editor-box">
+            ${renderQuickToolsPalette(`q_${qIdx}_opt${letter}`, `qz_opt${letter}_${qIdx}`)}
+            <textarea id="q_${qIdx}_opt${letter}" class="form-control" rows="3" placeholder="Option ${letter} text, code, or math..." oninput="checkQuestionConfigured(${qIdx}); updateQuestionLivePreview(${qIdx}); debouncedAutoSaveDraft();"></textarea>
+          </div>
+        </div>
+      `).join('');
+
+      letters.forEach(letter => {
+        if (existingValues[letter] !== undefined) {
+          const el = document.getElementById(`q_${qIdx}_opt${letter}`);
+          if (el) el.value = existingValues[letter];
+        }
+      });
+    }
+
+    function renderKeySelector(qIdx, optCount) {
+      const container = document.getElementById(`keySelectorWrap_${qIdx}`);
+      if (!container) return;
+      const immResult = document.getElementById('immediateResult')?.checked ?? true;
+      const letters = ALL_OPTION_LETTERS.slice(0, optCount);
+
+      container.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+          <span style="font-size:0.85rem; font-weight:700; color:var(--qz-text-muted);">
+            <i class="ri-key-2-fill" style="color:var(--qz-warning);"></i> Correct Answer Key:
+          </span>
+          <span style="font-size:0.75rem; color:#94a3b8;">(Click to toggle. Selecting >1 option automatically converts this question to MSQ)</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          ${letters.map(letter => `
+            <button type="button" class="btn btn-sm btn-outline-secondary key-btn" id="btnKey_${qIdx}_${letter}" onclick="toggleKey(${qIdx}, '${letter}')" style="min-width:40px; font-weight:700; border-radius:8px;">
+              ${letter}
+            </button>
+          `).join('')}
+          <button type="button" class="btn btn-sm btn-outline-secondary key-btn" id="btnKey_${qIdx}_DEFERRED" onclick="toggleKey(${qIdx}, 'DEFERRED')" style="display:${immResult ? 'none' : 'inline-flex'}; font-weight:600; border-radius:8px;">
+            Deferred Key
+          </button>
+        </div>
+      `;
+    }
+
+    function updateKeyButtonsUI(qIdx) {
+      const optCount = questionOptCounts[qIdx] || 4;
+      const keys = selectedKeysMap[qIdx] || new Set();
+      const letters = ALL_OPTION_LETTERS.slice(0, optCount).concat(['DEFERRED']);
+
+      letters.forEach(k => {
+        const btn = document.getElementById(`btnKey_${qIdx}_${k}`);
+        if (btn) {
+          if (keys.has(k)) {
+            btn.className = 'btn btn-sm btn-primary key-btn active';
+            btn.style.boxShadow = '0 0 10px rgba(99, 102, 241, 0.4)';
+          } else {
+            btn.className = 'btn btn-sm btn-outline-secondary key-btn';
+            btn.style.boxShadow = 'none';
+          }
+        }
+      });
+
+      const activeLetters = Array.from(keys).filter(k => k !== 'DEFERRED').sort();
+      const badge = document.getElementById(`qTypeBadge_${qIdx}`);
+      if (badge) {
+        if (keys.has('DEFERRED')) {
+          badge.className = 'badge bg-secondary';
+          badge.textContent = 'Deferred Key';
+        } else if (activeLetters.length > 1) {
+          badge.className = 'badge bg-warning text-dark';
+          badge.innerHTML = `<i class="ri-checkbox-multiple-line"></i> MSQ (${activeLetters.join(', ')})`;
+        } else if (activeLetters.length === 1) {
+          badge.className = 'badge bg-primary';
+          badge.textContent = `MCQ (${activeLetters[0]})`;
+        } else {
+          badge.className = 'badge bg-outline-secondary';
+          badge.textContent = 'No Key Selected';
+        }
+      }
+    }
+
+    window.toggleKey = function(qIdx, key, triggerSave = true) {
+      if (!selectedKeysMap[qIdx]) selectedKeysMap[qIdx] = new Set();
+      const keys = selectedKeysMap[qIdx];
+
+      if (key === 'DEFERRED') {
+        if (keys.has('DEFERRED')) {
+          keys.clear();
+        } else {
+          keys.clear();
+          keys.add('DEFERRED');
+        }
+      } else {
+        if (keys.has('DEFERRED')) keys.delete('DEFERRED');
+        if (keys.has(key)) {
+          keys.delete(key);
+        } else {
+          keys.add(key);
+        }
+      }
+
+      updateKeyButtonsUI(qIdx);
+      checkQuestionConfigured(qIdx);
+      updateQuestionLivePreview(qIdx);
+      if (triggerSave) debouncedAutoSaveDraft();
+    };
+
+    window.selectKey = function(qIdx, key, triggerSave = true) {
+      if (!selectedKeysMap[qIdx]) selectedKeysMap[qIdx] = new Set();
+      selectedKeysMap[qIdx].clear();
+      if (key) {
+        const arr = Array.isArray(key) ? key : String(key).split(',').map(s => s.trim()).filter(Boolean);
+        arr.forEach(k => selectedKeysMap[qIdx].add(k));
+      }
+      updateKeyButtonsUI(qIdx);
+      checkQuestionConfigured(qIdx);
+      updateQuestionLivePreview(qIdx);
+      if (triggerSave) debouncedAutoSaveDraft();
+    };
+
+    window.changeQuestionOptionCount = function(qIdx, newCount) {
+      if (newCount < 3) newCount = 3;
+      if (newCount > 12) newCount = 12;
+      const oldCount = questionOptCounts[qIdx] || 4;
+      questionOptCounts[qIdx] = newCount;
+
+      const currentValues = {};
+      ALL_OPTION_LETTERS.slice(0, Math.max(oldCount, newCount)).forEach(l => {
+        const el = document.getElementById(`q_${qIdx}_opt${l}`);
+        if (el) currentValues[l] = el.value;
+      });
+
+      renderOptionInputs(qIdx, newCount, currentValues);
+
+      if (selectedKeysMap[qIdx]) {
+        const validLetters = new Set(ALL_OPTION_LETTERS.slice(0, newCount).concat(['DEFERRED']));
+        for (const k of selectedKeysMap[qIdx]) {
+          if (!validLetters.has(k)) selectedKeysMap[qIdx].delete(k);
+        }
+      }
+
+      renderKeySelector(qIdx, newCount);
+      updateKeyButtonsUI(qIdx);
+      checkQuestionConfigured(qIdx);
+      updateQuestionLivePreview(qIdx);
+      debouncedAutoSaveDraft();
+    };
+
+    window.checkQuestionConfigured = function(qIdx) {
+      const optCount = questionOptCounts[qIdx] || 4;
+      const promptVal = document.getElementById(`qText_${qIdx}`)?.value.trim();
+      
+      let allOptionsFilled = true;
+      for (let o = 0; o < optCount; o++) {
+        const l = ALL_OPTION_LETTERS[o];
+        const optVal = document.getElementById(`q_${qIdx}_opt${l}`)?.value.trim();
+        if (!optVal) {
+          allOptionsFilled = false;
+          break;
+        }
+      }
+
+      const keys = selectedKeysMap[qIdx] || new Set();
+      const immResult = document.getElementById('immediateResult')?.checked ?? true;
+      const hasValidKey = immResult ? (keys.size > 0 && !keys.has('DEFERRED')) : (keys.size > 0);
+
+      const isComplete = Boolean(promptVal && allOptionsFilled && hasValidKey);
+      const pill = document.getElementById(`navPill_${qIdx}`);
+      const statusTxt = document.getElementById(`qStatus_${qIdx}`);
+      
+      if (pill) {
+        pill.className = isComplete ? 'q-jump-pill completed' : 'q-jump-pill';
+      }
+      if (statusTxt) {
+        statusTxt.textContent = isComplete ? 'Complete' : 'Incomplete';
+        statusTxt.style.color = isComplete ? '#10b981' : '#94a3b8';
+      }
+      updateNavigatorProgress();
+    };
+
+    window.updateQuestionLivePreview = function(qIndex) {
+      const promptBox = document.getElementById(`preview_prompt_${qIndex}`);
+      const optsBox = document.getElementById(`preview_options_${qIndex}`);
+      if (!promptBox || !optsBox) return;
+
+      const rawPrompt = document.getElementById(`qText_${qIndex}`)?.value || '';
+      promptBox.innerHTML = renderRichPreviewContent(rawPrompt, `prev_q_${qIndex}`) || '<em style="color:#64748b;">Question statement preview will appear here...</em>';
+
+      const optCount = questionOptCounts[qIndex] || 4;
+      const keys = selectedKeysMap[qIndex] || new Set();
+      const activeKeys = Array.from(keys).filter(k => k !== 'DEFERRED');
+      const isMSQ = activeKeys.length > 1;
+
+      optsBox.innerHTML = '';
+      for (let o = 0; o < optCount; o++) {
+        const letter = ALL_OPTION_LETTERS[o];
+        const rawVal = document.getElementById(`q_${qIndex}_opt${letter}`)?.value || '';
+        const isCorrectKey = keys.has(letter);
+
+        const card = document.createElement('div');
+        card.className = `preview-exam-option-card ${isCorrectKey ? 'is-correct-key' : ''}`;
+        
+        const renderedHtml = renderRichPreviewContent(rawVal, `prev_opt_${qIndex}_${letter}`) || `<span style="color:#64748b;">Option ${letter} preview</span>`;
+        
+        const iconHtml = isMSQ ? 
+          (isCorrectKey ? '<i class="ri-checkbox-fill" style="margin-right:4px;"></i>' : '<i class="ri-checkbox-blank-line" style="margin-right:4px;"></i>') :
+          (isCorrectKey ? '<i class="ri-radio-button-fill" style="margin-right:4px;"></i>' : '<i class="ri-radio-button-line" style="margin-right:4px;"></i>');
+
+        card.innerHTML = `
+          <div class="preview-option-letter">${iconHtml}${letter}</div>
+          <div class="preview-option-content">${renderedHtml}</div>
+        `;
+        optsBox.appendChild(card);
+      }
+    };
+
     function createSingleQuestionCard(i, totalCount, container, navContainer, initialData = null) {
       let pill = document.getElementById(`navPill_${i}`);
       if (!pill) {
@@ -1251,17 +1489,56 @@
         navContainer.appendChild(pill);
       }
 
+      let optCount = 4;
+      let existingValues = {};
+      let initialKeys = [];
+
+      if (initialData) {
+        if (initialData.optionCount) {
+          optCount = parseInt(initialData.optionCount, 10);
+        } else if (initialData.options && typeof initialData.options === 'object') {
+          optCount = Math.max(3, Object.keys(initialData.options).length);
+        }
+        if (initialData.options) {
+          existingValues = initialData.options;
+        } else {
+          ['A', 'B', 'C', 'D'].forEach(l => {
+            if (initialData[`opt${l}`]) existingValues[l] = initialData[`opt${l}`];
+          });
+        }
+        if (initialData.keys) {
+          initialKeys = initialData.keys;
+        } else if (initialData.correctKey || initialData.correctOption) {
+          const kStr = initialData.correctKey || initialData.correctOption;
+          initialKeys = String(kStr).split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+
+      optCount = Math.max(3, Math.min(12, optCount));
+      questionOptCounts[i] = optCount;
+      selectedKeysMap[i] = new Set(initialKeys);
+
       let card = document.getElementById(`qCard_${i}`);
       if (!card) {
         card = document.createElement('div');
         card.className = 'q-editor-card';
         card.id = `qCard_${i}`;
-        const immResult = document.getElementById('immediateResult')?.checked ?? true;
 
         card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="q-num-badge">Question ${i} of ${totalCount}</span>
-            <span id="qStatus_${i}" style="font-size:0.75rem; color:var(--qz-text-muted);">Unsaved</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="q-num-badge">Question ${i} of ${totalCount}</span>
+              <span id="qTypeBadge_${i}" class="badge bg-secondary" style="font-size:0.75rem;">MCQ (Single Correct)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="display:inline-flex; align-items:center; gap:6px;">
+                <label for="qOptCount_${i}" style="font-size:0.78rem; font-weight:700; color:var(--qz-text-muted); margin:0;">Options:</label>
+                <select id="qOptCount_${i}" class="form-select form-select-sm" style="width:auto; padding:2px 24px 2px 8px; font-size:0.8rem; height:28px;" onchange="changeQuestionOptionCount(${i}, parseInt(this.value, 10))">
+                  ${[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => `<option value="${n}" ${n === optCount ? 'selected' : ''}>${n} Options (A–${ALL_OPTION_LETTERS[n-1]})` + '</option>').join('')}
+                </select>
+              </div>
+              <span id="qStatus_${i}" style="font-size:0.75rem; color:var(--qz-text-muted);">Unsaved</span>
+            </div>
           </div>
           
           <div class="mb-3">
@@ -1275,41 +1552,9 @@
             </div>
           </div>
 
-          <div class="opt-grid">
-            ${['A', 'B', 'C', 'D'].map(letter => `
-              <div class="opt-col">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
-                  <label class="form-label mb-0" style="font-weight:700;">Option ${letter} <span class="req">*</span></label>
-                  <span style="font-size:0.72rem; color:#94a3b8;">Use quick tools below or type HTML/Markdown</span>
-                </div>
-                <div class="sol-editor-box">
-                  ${renderQuickToolsPalette(`q_${i}_opt${letter}`, `qz_opt${letter}_${i}`)}
-                  <textarea id="q_${i}_opt${letter}" class="form-control" rows="3" placeholder="Option ${letter} text, code, or math..." oninput="checkQuestionConfigured(${i}); updateQuestionLivePreview(${i}); debouncedAutoSaveDraft();"></textarea>
-                </div>
-              </div>
-            `).join('')}
-          </div>
+          <div class="opt-grid" id="optGrid_${i}"></div>
 
-          <div class="key-selector-wrap">
-            <span style="font-size:0.85rem; font-weight:700; color:var(--qz-text-muted);">
-              <i class="ri-key-2-fill" style="color:var(--qz-warning);"></i> Correct Option:
-            </span>
-            <label class="key-radio-btn" id="lblKey_${i}_A">
-              <input type="radio" name="correctKey_${i}" value="A" onchange="selectKey(${i}, 'A')"> A
-            </label>
-            <label class="key-radio-btn" id="lblKey_${i}_B">
-              <input type="radio" name="correctKey_${i}" value="B" onchange="selectKey(${i}, 'B')"> B
-            </label>
-            <label class="key-radio-btn" id="lblKey_${i}_C">
-              <input type="radio" name="correctKey_${i}" value="C" onchange="selectKey(${i}, 'C')"> C
-            </label>
-            <label class="key-radio-btn" id="lblKey_${i}_D">
-              <input type="radio" name="correctKey_${i}" value="D" onchange="selectKey(${i}, 'D')"> D
-            </label>
-            <label class="key-radio-btn" id="lblKey_${i}_DEFERRED" style="display:${immResult ? 'none' : 'inline-flex'};">
-              <input type="radio" name="correctKey_${i}" value="DEFERRED" onchange="selectKey(${i}, 'DEFERRED')"> Deferred Key
-            </label>
-          </div>
+          <div class="key-selector-wrap" id="keySelectorWrap_${i}"></div>
 
           <!-- Per-Question Real-Time Live Examination Preview -->
           <div class="quiz-exam-preview-container" id="preview_box_${i}">
@@ -1328,79 +1573,22 @@
         container.appendChild(card);
       }
 
+      renderOptionInputs(i, optCount, existingValues);
+      renderKeySelector(i, optCount);
+
       if (initialData) {
         const promptVal = initialData.qText !== undefined ? initialData.qText : (initialData.questionText || '');
         if (promptVal) document.getElementById(`qText_${i}`).value = promptVal;
-
-        const optA = initialData.optA !== undefined ? initialData.optA : (initialData.options ? initialData.options.A : '');
-        const optB = initialData.optB !== undefined ? initialData.optB : (initialData.options ? initialData.options.B : '');
-        const optC = initialData.optC !== undefined ? initialData.optC : (initialData.options ? initialData.options.C : '');
-        const optD = initialData.optD !== undefined ? initialData.optD : (initialData.options ? initialData.options.D : '');
-
-        if (optA) document.getElementById(`q_${i}_optA`).value = optA;
-        if (optB) document.getElementById(`q_${i}_optB`).value = optB;
-        if (optC) document.getElementById(`q_${i}_optC`).value = optC;
-        if (optD) document.getElementById(`q_${i}_optD`).value = optD;
-
-        const chosenKey = initialData.correctKey || initialData.correctOption || '';
-        if (chosenKey) {
-          selectKey(i, chosenKey, false);
-        }
       }
 
+      updateKeyButtonsUI(i);
       checkQuestionConfigured(i);
       updateQuestionLivePreview(i);
     }
 
-    window.selectKey = function(qIndex, key, triggerSave = true) {
-      ['A', 'B', 'C', 'D', 'DEFERRED'].forEach(k => {
-        const lbl = document.getElementById(`lblKey_${qIndex}_${k}`);
-        if (lbl) lbl.classList.remove('selected');
-      });
-      const chosen = document.getElementById(`lblKey_${qIndex}_${key}`);
-      if (chosen) chosen.classList.add('selected');
-      const radio = document.querySelector(`input[name="correctKey_${qIndex}"][value="${key}"]`);
-      if (radio) radio.checked = true;
-      checkQuestionConfigured(qIndex);
-      updateQuestionLivePreview(qIndex);
-      if (triggerSave) debouncedAutoSaveDraft();
-    };
-
-    window.checkQuestionConfigured = function(qIndex) {
-      const txt = document.getElementById(`qText_${qIndex}`)?.value.trim();
-      const a = document.getElementById(`q_${qIndex}_optA`)?.value.trim();
-      const b = document.getElementById(`q_${qIndex}_optB`)?.value.trim();
-      const c = document.getElementById(`q_${qIndex}_optC`)?.value.trim();
-      const d = document.getElementById(`q_${qIndex}_optD`)?.value.trim();
-      const selRadio = document.querySelector(`input[name="correctKey_${qIndex}"]:checked`);
-
-      const pill = document.getElementById(`navPill_${qIndex}`);
-      const statusTxt = document.getElementById(`qStatus_${qIndex}`);
-      
-      const isComplete = txt && a && b && c && d && selRadio;
-      if (pill) {
-        pill.className = isComplete ? 'q-jump-pill completed' : 'q-jump-pill';
-      }
-      if (statusTxt) {
-        statusTxt.textContent = isComplete ? 'Complete' : 'Incomplete';
-        statusTxt.style.color = isComplete ? '#10b981' : '#94a3b8';
-      }
-      updateNavigatorProgress();
-    };
-
-    function updateNavigatorProgress() {
-      let completeCount = 0;
-      for (let i = 1; i <= currentQuestionCount; i++) {
-        const pill = document.getElementById(`navPill_${i}`);
-        if (pill && pill.classList.contains('completed')) completeCount++;
-      }
-      const progTxt = document.getElementById('navProgressText');
-      if (progTxt) progTxt.textContent = `${completeCount} / ${currentQuestionCount} configured`;
-    }
-
     window.toggleImmediateResultUI = function(isImmediate) {
       for (let i = 1; i <= currentQuestionCount; i++) {
-        const defBtn = document.getElementById(`lblKey_${i}_DEFERRED`);
+        const defBtn = document.getElementById(`btnKey_${i}_DEFERRED`) || document.getElementById(`lblKey_${i}_DEFERRED`);
         if (defBtn) defBtn.style.display = isImmediate ? 'none' : 'inline-flex';
       }
     };
@@ -1441,41 +1629,56 @@
 
       for (let i = 1; i <= currentQuestionCount; i++) {
         const qText = document.getElementById(`qText_${i}`).value.trim();
-        const optA = document.getElementById(`q_${i}_optA`).value.trim();
-        const optB = document.getElementById(`q_${i}_optB`).value.trim();
-        const optC = document.getElementById(`q_${i}_optC`).value.trim();
-        const optD = document.getElementById(`q_${i}_optD`).value.trim();
-        const selectedRadio = document.querySelector(`input[name="correctKey_${i}"]:checked`);
+        const optCount = questionOptCounts[i] || 4;
+        const opts = {};
 
-        if (!qText || !optA || !optB || !optC || !optD) {
-          await customAlert(`Question ${i} is missing prompt text or answer options.`, { title: "Incomplete Question" });
+        if (!qText) {
+          await customAlert(`Question ${i} is missing prompt text.`, { title: "Incomplete Question" });
           document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
           return;
         }
 
-        if (immediateResult && (!selectedRadio || selectedRadio.value === 'DEFERRED')) {
-          await customAlert(`Question ${i} must have a designated correct option (A, B, C, or D) because Immediate Result is enabled.`, { title: "Answer Key Required" });
+        for (let o = 0; o < optCount; o++) {
+          const l = ALL_OPTION_LETTERS[o];
+          const val = document.getElementById(`q_${i}_opt${l}`)?.value.trim() || '';
+          if (!val) {
+            await customAlert(`Question ${i} is missing text for Option ${l}.`, { title: "Incomplete Option" });
+            document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
+            return;
+          }
+          opts[l] = val;
+        }
+
+        const keys = selectedKeysMap[i] || new Set();
+        if (keys.size === 0) {
+          await customAlert(`Question ${i} must have at least one designated correct answer key.`, { title: "Answer Key Required" });
           document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
           return;
         }
 
-        const correctKey = selectedRadio ? selectedRadio.value : 'DEFERRED';
-        if (correctKey === 'DEFERRED') hasMissingAnswers = true;
+        if (immediateResult && keys.has('DEFERRED')) {
+          await customAlert(`Question ${i} cannot use Deferred Key because Immediate Result is enabled.`, { title: "Answer Key Required" });
+          document.getElementById(`qCard_${i}`).scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+
+        const activeLetters = Array.from(keys).filter(k => k !== 'DEFERRED').sort();
+        const isMSQ = activeLetters.length > 1;
+        const correctStr = keys.has('DEFERRED') ? 'DEFERRED' : (isMSQ ? activeLetters.join(',') : activeLetters[0]);
+
+        if (correctStr === 'DEFERRED') hasMissingAnswers = true;
 
         // Store public question payload (NO correct answer)
         questions.push({
           qIndex: i,
           questionText: qText,
-          options: {
-            A: optA,
-            B: optB,
-            C: optC,
-            D: optD
-          }
+          optionCount: optCount,
+          type: isMSQ ? 'msq' : 'mcq',
+          options: opts
         });
 
         // Store private answer key
-        privateKeyMap[String(i)] = correctKey;
+        privateKeyMap[String(i)] = correctStr;
       }
 
       const btn = document.getElementById('btnPublishQuiz');

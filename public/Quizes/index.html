@@ -608,10 +608,15 @@
 
   <!-- Navigation -->
   <header class="portal-nav">
-    <a href="/index.html" class="brand-link">
-      <img src="/ANH.png" alt="DPGNotes">
-      <span>DPGNotes <span style="color:var(--qz-primary);">Examinations</span></span>
-    </a>
+    <div class="brand-link" style="display:flex; align-items:center; gap:8px;">
+      <a href="/index.html" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit;">
+        <img src="/ANH.png" alt="DPGNotes">
+        <span>DPGNotes</span>
+      </a>
+      <a href="https://akshat-881236.github.io/Quizzone/" target="_blank" rel="noopener" data-bypass-redirect="true" style="color:var(--qz-primary); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Open Quizzone Portal">
+        Quizzone <i class="ri-external-link-line" style="font-size:0.85em;"></i>
+      </a>
+    </div>
     <div class="portal-nav-actions">
       <a href="/Quizes/quiz-generator.html" class="btn btn-sm btn-outline-primary nav-action-btn" title="Create Quiz" aria-label="Create Quiz">
         <i class="ri-add-circle-line"></i> <span class="nav-btn-text">Create Quiz</span>
@@ -1906,11 +1911,18 @@
     }
 
     function updateTimerDisplay() {
-      const m = Math.floor(remainingSeconds / 60);
+      const h = Math.floor(remainingSeconds / 3600);
+      const m = Math.floor((remainingSeconds % 3600) / 60);
       const s = remainingSeconds % 60;
       const display = document.getElementById('timerDisplay');
       const badge = document.getElementById('examTimerBadge');
-      if (display) display.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      if (display) {
+        if (h > 0) {
+          display.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        } else {
+          display.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+      }
       if (remainingSeconds < 180 && badge) {
         badge.className = 'timer-badge'; // red danger
       }
@@ -1952,30 +1964,53 @@
       return escapeHtml(rawStr);
     }
 
-    // Render Question
+    // Render Question (Dynamic 3–12 Options & MSQ Multi-Select Engine)
     function renderCurrentQuestion() {
       const q = questionsList[currentQIdx];
-      document.getElementById('currentQBadge').textContent = `Question ${currentQIdx + 1} of ${questionsList.length}`;
+      const isMSQ = q.type === 'msq' ||
+                    (Array.isArray(q.correctOptions) && q.correctOptions.length > 1) ||
+                    (typeof q.correctOption === 'string' && q.correctOption.includes(','));
+
+      const typeBadgeHtml = isMSQ ? 
+        '<span class="badge bg-warning text-dark" style="font-size:0.75rem; font-weight:700;"><i class="ri-checkbox-multiple-line"></i> MSQ (Multiple Choice)</span>' :
+        '<span class="badge bg-secondary" style="font-size:0.75rem;">MCQ (Single Correct)</span>';
+
+      document.getElementById('currentQBadge').innerHTML = `Question ${currentQIdx + 1} of ${questionsList.length} &nbsp; ${typeBadgeHtml}`;
       
       const promptEl = document.getElementById('currentQPrompt');
-      promptEl.innerHTML = renderRichQuizText(q.questionText || '', `exam_q_${currentQIdx}`);
+      let promptContent = renderRichQuizText(q.questionText || '', `exam_q_${currentQIdx}`);
+      if (isMSQ) {
+        promptContent += '<div style="font-size:0.8rem; color:#38bdf8; margin-top:8px; display:flex; align-items:center; gap:5px;"><i class="ri-information-line"></i> <span>Select all correct options. Full score awarded only when all correct options are selected. No negative marking on MSQ.</span></div>';
+      }
+      promptEl.innerHTML = promptContent;
 
       const optsContainer = document.getElementById('optionsListContainer');
       optsContainer.innerHTML = '';
 
-      ['A', 'B', 'C', 'D'].forEach(letter => {
+      // Determine available option letters (3 up to 12)
+      const optionLetters = (q.options && Object.keys(q.options).length > 0) ? 
+        Object.keys(q.options).sort() : ['A', 'B', 'C', 'D'];
+
+      const currentAns = candidateAnswers[currentQIdx];
+      const selectedSet = isMSQ ? 
+        new Set(currentAns ? currentAns.split(',').map(s => s.trim()).filter(Boolean) : []) :
+        new Set(currentAns ? [currentAns] : []);
+
+      optionLetters.forEach(letter => {
         const card = document.createElement('div');
-        card.className = 'option-card';
-        if (candidateAnswers[currentQIdx] === letter) {
-          card.classList.add('selected');
-        }
-        card.onclick = () => selectExamOption(letter);
+        const isSelected = selectedSet.has(letter);
+        card.className = `option-card ${isSelected ? 'selected' : ''}`;
+        card.onclick = () => selectExamOption(letter, isMSQ);
 
         const rawOpt = (q.options && q.options[letter]) || '';
         const optHtml = renderRichQuizText(rawOpt, `exam_opt_${currentQIdx}_${letter}`);
 
+        const iconHtml = isMSQ ? 
+          (isSelected ? '<i class="ri-checkbox-fill" style="color:var(--qz-primary); font-size:1.15rem;"></i>' : '<i class="ri-checkbox-blank-line" style="font-size:1.15rem;"></i>') :
+          (isSelected ? '<i class="ri-radio-button-fill" style="color:var(--qz-primary); font-size:1.15rem;"></i>' : '<i class="ri-radio-button-line" style="font-size:1.15rem;"></i>');
+
         card.innerHTML = `
-          <div class="option-letter">${letter}</div>
+          <div class="option-letter" style="display:flex; align-items:center; gap:6px;">${iconHtml} ${letter}</div>
           <div class="option-content">${optHtml}</div>
         `;
         optsContainer.appendChild(card);
@@ -1999,12 +2034,35 @@
       updateNavPillsStatus();
     }
 
-    window.selectExamOption = async function(letter) {
+    window.selectExamOption = async function(letter, isMSQ = false) {
       if (quizData.allowChangeAnswers === false && candidateAnswers[currentQIdx] !== undefined) {
         await customAlert("This examination does not permit changing previously registered answers.", { title: "Answer Locked" });
         return;
       }
-      candidateAnswers[currentQIdx] = letter;
+
+      if (isMSQ) {
+        // Multi-selection toggle
+        let currentArr = candidateAnswers[currentQIdx] ? 
+          candidateAnswers[currentQIdx].split(',').map(s => s.trim()).filter(Boolean) : [];
+        if (currentArr.includes(letter)) {
+          currentArr = currentArr.filter(x => x !== letter);
+        } else {
+          currentArr.push(letter);
+        }
+        currentArr.sort();
+        if (currentArr.length > 0) {
+          candidateAnswers[currentQIdx] = currentArr.join(',');
+        } else {
+          delete candidateAnswers[currentQIdx];
+        }
+      } else {
+        // Single selection
+        if (candidateAnswers[currentQIdx] === letter) {
+          // Keep selected or allow toggle if desired
+        } else {
+          candidateAnswers[currentQIdx] = letter;
+        }
+      }
       renderCurrentQuestion();
     };
 
@@ -2187,16 +2245,39 @@
         }
       }
 
-      // Compute counts
+      // Compute counts with MSQ scoring formula: All Correct = credit; partial/wrong = 0 credit WITHOUT negative marking
+      let marksGained = 0;
+      let marksDeducted = 0;
+
       for (let i = 0; i < questionsList.length; i++) {
-        const chosen = candidateAnswers[i];
-        if (!chosen) {
+        const q = questionsList[i];
+        const chosenRaw = candidateAnswers[i];
+        const correctRaw = answerKey ? answerKey[String(i + 1)] : null;
+
+        if (!chosenRaw) {
           unattemptedCount++;
-        } else if (answerKey && answerKey[String(i + 1)]) {
-          if (chosen === answerKey[String(i + 1)]) {
-            correctCount++;
+        } else if (correctRaw) {
+          const isMSQ = (q.type === 'msq') || (correctRaw.includes(','));
+          if (isMSQ) {
+            const chosenArr = chosenRaw.split(',').map(s => s.trim()).filter(Boolean).sort();
+            const correctArr = correctRaw.split(',').map(s => s.trim()).filter(Boolean).sort();
+            const isExactMatch = chosenArr.length === correctArr.length && chosenArr.every(x => correctArr.includes(x));
+            if (isExactMatch) {
+              correctCount++;
+              marksGained += (quizData.marksPerCorrect || 1.0);
+            } else {
+              incorrectCount++;
+              // Crucial requirement: MSQ partial or wrong answer is Not Correct WITHOUT Negative Marking!
+            }
           } else {
-            incorrectCount++;
+            // MCQ Single Correct
+            if (chosenRaw === correctRaw) {
+              correctCount++;
+              marksGained += (quizData.marksPerCorrect || 1.0);
+            } else {
+              incorrectCount++;
+              marksDeducted += (quizData.negativeMarks || 0.0);
+            }
           }
         }
       }
@@ -2206,7 +2287,8 @@
       const unattemptedPenalty = quizData.unattemptedPenalty || 0.0;
       const maxScore = questionsList.length * marksPerCorrect;
 
-      const rawScore = (correctCount * marksPerCorrect) - (incorrectCount * negativeMarks) - (unattemptedCount * unattemptedPenalty);
+      const unattemptedPenaltyTotal = unattemptedCount * unattemptedPenalty;
+      const rawScore = marksGained - marksDeducted - unattemptedPenaltyTotal;
       const finalScore = Math.max(0, parseFloat(rawScore.toFixed(2)));
       const percentage = Math.max(0, parseFloat(((finalScore / maxScore) * 100).toFixed(1)));
 
@@ -2493,30 +2575,69 @@
         for (let i = 0; i < questionsList.length; i++) {
           const q = questionsList[i];
           const candChosen = candidateAnswers[i];
-          const correctLetter = res.answerKey ? res.answerKey[String(i + 1)] : null;
-          const isCorrect = candChosen && candChosen === correctLetter;
-          const isUnattempted = !candChosen;
+          const correctKey = res.answerKey ? res.answerKey[String(i + 1)] : null;
+          const isMSQ = (q.type === 'msq') || (correctKey && correctKey.includes(','));
+
+          let isCorrect = false;
+          let isUnattempted = !candChosen;
+          let pointsText = '';
+
+          if (isUnattempted) {
+            pointsText = 'Unattempted (0.0)';
+          } else if (correctKey) {
+            if (isMSQ) {
+              const candArr = candChosen.split(',').map(s => s.trim()).filter(Boolean).sort();
+              const corrArr = correctKey.split(',').map(s => s.trim()).filter(Boolean).sort();
+              isCorrect = candArr.length === corrArr.length && candArr.every(x => corrArr.includes(x));
+              if (isCorrect) {
+                pointsText = `Correct (+${quizData.marksPerCorrect || 1.0})`;
+              } else {
+                pointsText = 'Incorrect (0.0 - No Negative Marking for MSQ)';
+              }
+            } else {
+              isCorrect = candChosen === correctKey;
+              if (isCorrect) {
+                pointsText = `Correct (+${quizData.marksPerCorrect || 1.0})`;
+              } else {
+                pointsText = `Incorrect (-${quizData.negativeMarks || 0.0})`;
+              }
+            }
+          }
 
           let statusClass = isCorrect ? 'is-correct' : (isUnattempted ? 'is-unanswered' : 'is-incorrect');
-          let statusText = isCorrect ? 'Correct (+1.0)' : (isUnattempted ? 'Unattempted' : 'Incorrect (-0.25)');
+          let statusColor = isCorrect ? '#10b981' : (isUnattempted ? '#f59e0b' : '#ef4444');
 
           const qTextHtml = renderRichQuizText(q.questionText || '', `rev_q_${i}`);
-          const candVal = candChosen && q.options ? q.options[candChosen] : '';
-          const corrVal = correctLetter && q.options ? q.options[correctLetter] : '';
-          const userAnsHtml = candChosen ? `${candChosen}: ` + renderRichQuizText(candVal, `rev_u_${i}`) : 'None';
-          const corrAnsHtml = correctLetter ? `${correctLetter}: ` + renderRichQuizText(corrVal, `rev_c_${i}`) : 'Pending Evaluation';
+
+          let userAnsHtml = 'None';
+          if (candChosen) {
+            const candLetters = candChosen.split(',').map(s => s.trim()).filter(Boolean);
+            userAnsHtml = candLetters.map(l => {
+              const val = q.options ? q.options[l] : '';
+              return `<strong>${l}:</strong> ` + renderRichQuizText(val, `rev_u_${i}_${l}`);
+            }).join('<br>');
+          }
+
+          let corrAnsHtml = 'Pending Evaluation';
+          if (correctKey) {
+            const corrLetters = correctKey.split(',').map(s => s.trim()).filter(Boolean);
+            corrAnsHtml = corrLetters.map(l => {
+              const val = q.options ? q.options[l] : '';
+              return `<strong>${l}:</strong> ` + renderRichQuizText(val, `rev_c_${i}_${l}`);
+            }).join('<br>');
+          }
 
           const item = document.createElement('div');
           item.className = `review-item ${statusClass}`;
           item.innerHTML = `
             <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.8rem; font-weight:700;">
-              <span>Question ${i + 1}</span>
-              <span style="color:${isCorrect ? '#10b981' : (isUnattempted ? '#f59e0b' : '#ef4444')}">${statusText}</span>
+              <span>Question ${i + 1} &nbsp; <span class="badge ${isMSQ ? 'bg-warning text-dark' : 'bg-secondary'}" style="font-size:0.7rem;">${isMSQ ? 'MSQ' : 'MCQ'}</span></span>
+              <span style="color:${statusColor}">${pointsText}</span>
             </div>
             <div class="rev-q-text" style="font-size:0.95rem; color:var(--qz-text); margin-bottom:0.75rem;">${qTextHtml}</div>
             <div style="font-size:0.85rem; color:var(--qz-text-muted);">
-              <div style="margin-bottom:6px;">Your Answer: <div class="rev-ans-text" style="color:var(--qz-text); display:inline-block; font-weight:600;">${userAnsHtml}</div></div>
-              <div>Correct Option: <div style="color:#10b981; display:inline-block; font-weight:600;">${corrAnsHtml}</div></div>
+              <div style="margin-bottom:8px;">Your Selection: <div class="rev-ans-text" style="color:var(--qz-text); font-weight:600; margin-top:2px;">${userAnsHtml}</div></div>
+              <div>Correct Key: <div style="color:#10b981; font-weight:600; margin-top:2px;">${corrAnsHtml}</div></div>
             </div>
           `;
           revList.appendChild(item);

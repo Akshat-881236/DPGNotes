@@ -538,9 +538,19 @@
     const emptySocials = document.getElementById("dpgHoverSocialsEmpty");
 
     let hasSocial = false;
+    const isUserVerifiedContributor = !!(user && (user.isVerified || user.verified || user.tier === 'contributor' || user.role === 'contributor' || user.status === 'verified' || (user.uploadedCount && Number(user.uploadedCount) > 0)));
+
     if (linkedin && linkedin.startsWith("http")) {
       liEl.href = linkedin;
       liEl.style.display = "inline-flex";
+      if (isUserVerifiedContributor) {
+        liEl.setAttribute('data-contributor-verified', 'true');
+        liEl.setAttribute('data-bypass-redirect', 'true');
+        if (window.__dpgRegisterVerifiedSocial) window.__dpgRegisterVerifiedSocial(linkedin);
+      } else {
+        liEl.removeAttribute('data-contributor-verified');
+        liEl.removeAttribute('data-bypass-redirect');
+      }
       hasSocial = true;
     } else {
       liEl.style.display = "none";
@@ -549,6 +559,14 @@
     if (github && github.startsWith("http")) {
       ghEl.href = github;
       ghEl.style.display = "inline-flex";
+      if (isUserVerifiedContributor) {
+        ghEl.setAttribute('data-contributor-verified', 'true');
+        ghEl.setAttribute('data-bypass-redirect', 'true');
+        if (window.__dpgRegisterVerifiedSocial) window.__dpgRegisterVerifiedSocial(github);
+      } else {
+        ghEl.removeAttribute('data-contributor-verified');
+        ghEl.removeAttribute('data-bypass-redirect');
+      }
       hasSocial = true;
     } else {
       ghEl.style.display = "none";
