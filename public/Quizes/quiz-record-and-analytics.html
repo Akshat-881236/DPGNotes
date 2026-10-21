@@ -44,6 +44,32 @@
       --qz-text-muted: #94a3b8;
     }
 
+    html[data-theme="light"],
+    body[data-theme="light"],
+    body.theme-light {
+      --qz-bg: #f8fafc;
+      --qz-surface: #ffffff;
+      --qz-card: #ffffff;
+      --qz-border: #cbd5e1;
+      --qz-text: #0f172a;
+      --qz-text-muted: #475569;
+      --qz-primary: #4338ca;
+      --qz-primary-hover: #3730a3;
+      --qz-accent: #0284c7;
+    }
+
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.theme-dark {
+      --qz-bg: #030712;
+      --qz-surface: #0b0f17;
+      --qz-card: #0b0f17;
+      --qz-border: rgba(255, 255, 255, 0.12);
+      --qz-text: #ffffff;
+      --qz-text-muted: #9ca3af;
+      --qz-accent: #38bdf8;
+    }
+
     * { box-sizing: border-box; }
     body {
       background: var(--qz-bg);
@@ -56,7 +82,7 @@
 
     .analytics-nav {
       padding: 0.85rem 1.75rem;
-      background: rgba(10, 14, 23, 0.85);
+      background: var(--qz-surface, rgba(10, 14, 23, 0.85));
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--qz-border);
       display: flex;
@@ -71,7 +97,7 @@
       align-items: center;
       gap: 10px;
       text-decoration: none;
-      color: #fff;
+      color: var(--qz-text);
       font-weight: 700;
       font-size: 1.15rem;
     }
@@ -127,7 +153,7 @@
       border-radius: 16px;
       padding: 1.25rem;
       backdrop-filter: blur(20px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     }
     .kpi-label {
       font-size: 0.8rem;
@@ -140,7 +166,7 @@
     .kpi-val {
       font-size: 1.75rem;
       font-weight: 800;
-      color: #ffffff;
+      color: var(--qz-text);
     }
 
     /* Quiz Detail Section */
@@ -150,7 +176,7 @@
       border-radius: 18px;
       padding: 1.75rem;
       backdrop-filter: blur(20px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       margin-bottom: 2rem;
     }
 
@@ -173,8 +199,9 @@
     }
     .custom-table td {
       padding: 13px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--qz-border);
       vertical-align: middle;
+      color: var(--qz-text);
     }
     .custom-table tbody tr:hover td {
       background: rgba(255, 255, 255, 0.02);
@@ -197,7 +224,7 @@
 
     .umc-badge-clean {
       background: rgba(16, 185, 129, 0.15);
-      color: #6ee7b7;
+      color: #10b981;
       border: 1px solid rgba(16, 185, 129, 0.3);
       padding: 3px 8px;
       border-radius: 6px;
@@ -207,7 +234,7 @@
     }
     .umc-badge-flagged {
       background: rgba(239, 68, 68, 0.15);
-      color: #fca5a5;
+      color: #ef4444;
       border: 1px solid rgba(239, 68, 68, 0.3);
       padding: 3px 8px;
       border-radius: 6px;
@@ -229,7 +256,8 @@
       padding: 1.5rem;
     }
     .qz-modal-card {
-      background: #111827;
+      background: var(--qz-surface, #111827);
+      color: var(--qz-text, #f8fafc);
       border: 1px solid var(--qz-border);
       border-radius: 18px;
       padding: 2rem;
@@ -238,6 +266,65 @@
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    /* Light Theme Direct Overrides */
+    html[data-theme="light"] .analytics-nav {
+      background: #ffffff !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+    }
+    html[data-theme="light"] .brand-link {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .nav-btn-dash {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    html[data-theme="light"] .nav-btn-dash:hover {
+      background: #f1f5f9 !important;
+      color: #000000 !important;
+    }
+    html[data-theme="light"] .custom-table th {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+    }
+    html[data-theme="light"] .custom-table td {
+      border-bottom: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .custom-table tbody tr:hover td {
+      background: #f8fafc !important;
+    }
+    html[data-theme="light"] .qz-box,
+    html[data-theme="light"] .kpi-card {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    }
+    html[data-theme="light"] .kpi-val {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .qz-modal-card {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
+    }
+    html[data-theme="light"] .qz-modal-card h4,
+    html[data-theme="light"] #scModalTitle {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .btn-close-white {
+      filter: invert(1) grayscale(100%) brightness(0%) !important;
+    }
+    html[data-theme="light"] .form-select,
+    html[data-theme="light"] .form-control {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
     }
   </style>
   <script src="/history-monitoring.js" defer></script>
@@ -349,7 +436,7 @@
       <div class="qz-box">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
           <div>
-            <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.2rem;">Select Authored Examination</h3>
+            <h3 style="font-size:1.25rem; font-weight:700; color:var(--qz-text); margin-bottom:0.2rem;">Select Authored Examination</h3>
             <span style="font-size:0.82rem; color:var(--qz-text-muted);">Switch between your active assessments</span>
           </div>
           <div style="min-width:280px;">
@@ -368,7 +455,7 @@
                 <span id="sqVisBadge" class="badge bg-secondary">Public</span>
                 <span id="sqKeyStatusBadge" class="badge bg-warning">Key: Pending</span>
               </div>
-              <h2 id="sqTitle" style="font-size:1.4rem; font-weight:800; color:#fff; margin-bottom:0.3rem;">...</h2>
+              <h2 id="sqTitle" style="font-size:1.4rem; font-weight:800; color:var(--qz-text); margin-bottom:0.3rem;">...</h2>
               <p id="sqDesc" style="color:var(--qz-text-muted); font-size:0.88rem; margin-bottom:0; line-height:1.5;">...</p>
             </div>
             <div class="col-md-5 text-md-end">
@@ -392,7 +479,7 @@
 
         <!-- Candidates Scorecard Table -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
-          <h4 style="font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0;">
+          <h4 style="font-size:1.1rem; font-weight:700; color:var(--qz-text); margin-bottom:0;">
             <i class="ri-trophy-line" style="color:#fbbf24;"></i> Candidate Leaderboard &amp; Submissions
           </h4>
           <button type="button" class="btn btn-sm btn-outline-light" onclick="exportCsv()">
@@ -436,7 +523,7 @@
       <div class="qz-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px;">
           <div>
-            <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.2rem;">My Examination Portfolio</h3>
+            <h3 style="font-size:1.25rem; font-weight:700; color:var(--qz-text); margin-bottom:0.2rem;">My Examination Portfolio</h3>
             <span style="font-size:0.82rem; color:var(--qz-text-muted);">History of academic quizzes you have attempted across DPGNotes</span>
           </div>
           <button type="button" class="btn btn-sm btn-outline-light" onclick="loadMyQuizAttempts(true)">
@@ -479,7 +566,7 @@
       <div class="qz-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px;">
           <div>
-            <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.2rem;">Candidate Retest &amp; Reset Requests</h3>
+            <h3 style="font-size:1.25rem; font-weight:700; color:var(--qz-text); margin-bottom:0.2rem;">Candidate Retest &amp; Reset Requests</h3>
             <span style="font-size:0.82rem; color:var(--qz-text-muted);">Review candidates requesting another attempt on your authored assessments</span>
           </div>
           <button type="button" class="btn btn-sm btn-outline-light" onclick="loadRetestRequests(true)">
@@ -518,7 +605,7 @@
   <div id="modalScorecardDetail" class="qz-modal-overlay" style="display:none;">
     <div class="qz-modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid var(--qz-border); padding-bottom:0.75rem;">
-        <h4 style="font-weight:700; margin-bottom:0; color:#fff;" id="scModalTitle">Scorecard Detail</h4>
+        <h4 style="font-weight:700; margin-bottom:0; color:var(--qz-text);" id="scModalTitle">Scorecard Detail</h4>
         <button type="button" class="btn-close btn-close-white" onclick="document.getElementById('modalScorecardDetail').style.display='none'"></button>
       </div>
       <div id="scModalBody">Loading details...</div>
@@ -740,7 +827,7 @@
 
           tr.innerHTML = `
             <td><span class="${rankPillClass}">${rank}</span></td>
-            <td><strong style="color:#fff;">${escapeHtml(att.candidateName || 'Anonymous')}</strong></td>
+            <td><strong style="color:var(--qz-text); font-weight:700;">${escapeHtml(att.candidateName || 'Anonymous')}</strong></td>
             <td>${escapeHtml(att.studentId || 'N/A')}</td>
             <td>${escapeHtml(att.collegeName || 'N/A')}</td>
             <td><strong style="color:var(--qz-accent);">${att.score !== undefined ? att.score : '--'} / ${att.maximumScore || '--'}</strong></td>
@@ -750,6 +837,9 @@
             <td><span style="font-size:0.8rem; color:var(--qz-text-muted);">${escapeHtml(att.submissionReason || 'VOLUNTARY_SUBMIT')}</span></td>
             <td>
               <div style="display:flex; align-items:center; gap:6px;">
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="viewCandidateScorecard('${att.attemptId}')" title="Inspect Detailed Scorecard & Telemetry">
+                  <i class="ri-eye-line"></i> Scorecard
+                </button>
                 ${retestAllowedBadge}
                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteCandidateAttemptRecord('${att.attemptId}', '${escapeHtml(att.candidateName)}')" title="Permanently Delete Scorecard">
                   <i class="ri-delete-bin-line"></i>
@@ -944,7 +1034,7 @@
 
           tr.innerHTML = `
             <td><strong>${idx + 1}</strong></td>
-            <td><strong style="color:#fff;">${escapeHtml(att.quizTitle || att.title || 'Academic Assessment')}</strong></td>
+            <td><strong style="color:var(--qz-text); font-weight:700;">${escapeHtml(att.quizTitle || att.title || 'Academic Assessment')}</strong></td>
             <td><span class="badge bg-secondary">${escapeHtml(att.subjectCode || 'ACADEMIC')}</span></td>
             <td>${escapeHtml(att.ownerName || 'Verified Contributor')}</td>
             <td><strong style="color:var(--qz-accent);">${att.score !== undefined ? att.score : '--'} / ${att.maximumScore || '--'}</strong></td>
@@ -972,11 +1062,14 @@
 
     // Candidate Sends Retest / Delete Request to Author
     window.requestRetest = async function(quizId, attemptId, ownerUid, quizTitle) {
-      const reason = prompt(
-        `Send a Re-Test Request to the author of "${quizTitle}"?\nState your reason (e.g., technical glitch, review attempt):`,
-        "Requesting permission to retake examination."
-      );
-      if (!reason || !reason.trim()) return;
+      const promptPromptMsg = `Send a Re-Test Request to the author of "${quizTitle}"?\nState your reason (e.g., technical glitch, review attempt):`;
+      const defaultReason = "Requesting permission to retake examination.";
+      
+      let reason = (typeof customPrompt === 'function') ? 
+        await customPrompt(promptPromptMsg, defaultReason) : 
+        await prompt(promptPromptMsg, defaultReason);
+
+      if (typeof reason !== 'string' || !reason.trim()) return;
 
       try {
         const requestId = 'req_' + activeUid.slice(0, 6) + '_' + Date.now().toString(36);
@@ -1058,11 +1151,11 @@
           ` : '';
 
           tr.innerHTML = `
-            <td><strong style="color:#fff;">${escapeHtml(req.candidateName || 'Candidate')}</strong></td>
+            <td><strong style="color:var(--qz-text); font-weight:700;">${escapeHtml(req.candidateName || 'Candidate')}</strong></td>
             <td>${escapeHtml(req.studentId || 'N/A')}</td>
             <td><span style="color:var(--qz-accent); font-weight:600;">${escapeHtml(req.quizTitle || 'Assessment')}</span></td>
             <td><span style="font-size:0.8rem; color:var(--qz-text-muted);">${dateStr}</span></td>
-            <td><span style="font-size:0.82rem; color:#cbd5e1;">${escapeHtml(req.reason || 'No reason specified')}</span></td>
+            <td><span style="font-size:0.82rem; color:var(--qz-text);">${escapeHtml(req.reason || 'No reason specified')}</span></td>
             <td><span class="badge ${statusBadgeClass}">${req.status.toUpperCase()}</span></td>
             <td>
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -1168,37 +1261,157 @@
       }
     };
 
-    // View Candidate Scorecard in Modal
-    window.viewMyScorecardDetail = function(attemptId) {
-      const att = myAttemptsList.find(a => a.attemptId === attemptId);
+    // Render Complete Scorecard & Proctoring Telemetry Modal
+    function renderScorecardModal(att) {
       if (!att) return;
+      document.getElementById('scModalTitle').textContent = `Scorecard: ${att.quizTitle || att.title || 'Academic Assessment'}`;
 
-      document.getElementById('scModalTitle').textContent = `Scorecard: ${att.quizTitle || 'Assessment'}`;
+      const maxScoreVal = att.maximumScore || att.maxScore || (att.totalQuestions ? (att.totalQuestions * 1.0) : 100);
+      const scoreVal = att.score !== undefined ? att.score : 0;
+      const percentageVal = att.percentage !== undefined ? att.percentage : (maxScoreVal > 0 ? Math.round((scoreVal / maxScoreVal) * 100) : 0);
+
+      const isClean = !att.umcFlag && (!att.violationCount || att.violationCount === 0);
+      const integrityBadge = isClean ?
+        `<span class="badge bg-success"><i class="ri-shield-check-line"></i> Clean Session (Verified)</span>` :
+        `<span class="badge bg-danger"><i class="ri-shield-flash-line"></i> Monitored Flags (${att.violationCount || 1})</span>`;
+
+      const dateStr = att.submittedAt?.seconds ? 
+        new Date(att.submittedAt.seconds * 1000).toLocaleString() : 
+        (att.submittedAt ? new Date(att.submittedAt).toLocaleString() : 'Recent');
+
+      // Question breakdown metrics
+      const correctCnt = att.correctCount !== undefined ? att.correctCount : '--';
+      const incorrectCnt = att.incorrectCount !== undefined ? att.incorrectCount : '--';
+      const unattemptedCnt = att.unattemptedCount !== undefined ? att.unattemptedCount : '--';
+      const totalCnt = att.totalQuestions !== undefined ? att.totalQuestions : (typeof att.answers === 'object' ? Object.keys(att.answers).length : '--');
+
+      // Proctoring Event Timeline
+      let proctorEventsHtml = '';
+      const events = att.proctorEvents || [];
+      if (events.length > 0) {
+        proctorEventsHtml = `
+          <div style="margin-top:1.25rem;">
+            <h5 style="font-size:0.92rem; font-weight:700; color:var(--qz-text); margin-bottom:0.6rem; display:flex; align-items:center; gap:6px;">
+              <i class="ri-shield-user-line" style="color:var(--qz-primary);"></i> Proctoring Telemetry Timeline
+            </h5>
+            <div style="max-height:200px; overflow-y:auto; border:1px solid var(--qz-border); border-radius:10px; padding:0.4rem; background:rgba(0,0,0,0.02);">
+              <table style="width:100%; font-size:0.78rem;" class="table table-sm table-borderless mb-0">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--qz-border); color:var(--qz-text-muted);">
+                    <th>Time</th>
+                    <th>Sensor Event</th>
+                    <th>Severity</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${events.map(ev => {
+                    let sevClass = 'bg-secondary';
+                    if (ev.severity === 'high') sevClass = 'bg-danger';
+                    else if (ev.severity === 'medium') sevClass = 'bg-warning text-dark';
+                    else if (ev.severity === 'low') sevClass = 'bg-info text-dark';
+                    else if (ev.severity === 'technical_warning') sevClass = 'bg-primary';
+
+                    const timeLabel = ev.timestampSec ? `${Math.floor(ev.timestampSec / 60)}m ${ev.timestampSec % 60}s` : (ev.occurredAt ? new Date(ev.occurredAt).toLocaleTimeString() : '+0s');
+                    return `
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <td style="white-space:nowrap; font-weight:600; color:var(--qz-text);">${timeLabel}</td>
+                        <td style="font-weight:600; color:var(--qz-accent);">${escapeHtml(ev.type || 'EVENT')}</td>
+                        <td><span class="badge ${sevClass}">${escapeHtml(ev.severity || 'info')}</span></td>
+                        <td style="color:var(--qz-text);">${escapeHtml(ev.details || '')}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div style="font-size:0.74rem; color:var(--qz-text-muted); margin-top:6px; font-style:italic;">
+              Proctoring signals are sensor events captured for instructor review; academic decisions are verified by faculty.
+            </div>
+          </div>
+        `;
+      } else {
+        proctorEventsHtml = `
+          <div style="margin-top:1.25rem; padding:0.75rem; border:1px dashed var(--qz-border); border-radius:10px; font-size:0.82rem; color:var(--qz-text-muted); text-align:center;">
+            <i class="ri-checkbox-circle-line" style="color:var(--qz-success);"></i> No proctoring interruption events were logged during this attempt.
+          </div>
+        `;
+      }
+
       document.getElementById('scModalBody').innerHTML = `
-        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--qz-border); border-radius:12px; padding:1.25rem; margin-bottom:1rem;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <span style="color:var(--qz-text-muted);">Candidate:</span>
-            <strong>${escapeHtml(att.candidateName || 'Anonymous')}</strong>
+        <div style="background:var(--qz-card, rgba(255,255,255,0.03)); border:1px solid var(--qz-border); border-radius:14px; padding:1.25rem; margin-bottom:0.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <span style="font-size:0.72rem; text-transform:uppercase; color:var(--qz-text-muted); font-weight:600;">Candidate</span>
+              <h5 style="margin:0; font-weight:700; color:var(--qz-text);">${escapeHtml(att.candidateName || 'Anonymous')}</h5>
+            </div>
+            <div style="text-align:right;">
+              ${integrityBadge}
+            </div>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <span style="color:var(--qz-text-muted);">Student ID:</span>
-            <strong>${escapeHtml(att.studentId || 'N/A')}</strong>
+
+          <div class="row g-2" style="font-size:0.85rem; margin-bottom:12px;">
+            <div class="col-6"><span style="color:var(--qz-text-muted);">Student ID:</span> <strong style="color:var(--qz-text);">${escapeHtml(att.studentId || 'N/A')}</strong></div>
+            <div class="col-6"><span style="color:var(--qz-text-muted);">Course:</span> <strong style="color:var(--qz-text);">${escapeHtml(att.course || 'General')}</strong></div>
+            <div class="col-6"><span style="color:var(--qz-text-muted);">Institution:</span> <strong style="color:var(--qz-text);">${escapeHtml(att.collegeName || att.universityName || 'DPGNotes Portal')}</strong></div>
+            <div class="col-6"><span style="color:var(--qz-text-muted);">Submitted:</span> <strong style="color:var(--qz-text);">${dateStr}</strong></div>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <span style="color:var(--qz-text-muted);">Score Earned:</span>
-            <strong style="color:var(--qz-accent); font-size:1.15rem;">${att.score !== undefined ? att.score : '--'} / ${att.maximumScore || '--'}</strong>
+
+          <hr style="border-color:var(--qz-border); margin:12px 0;">
+
+          <!-- Score & Metric Cards -->
+          <div class="row g-2 text-center" style="margin-bottom:12px;">
+            <div class="col-3">
+              <div style="background:rgba(99, 102, 241, 0.08); border:1px solid var(--qz-border); border-radius:10px; padding:8px 4px;">
+                <div style="font-size:0.7rem; color:var(--qz-text-muted); font-weight:600;">SCORE</div>
+                <div style="font-size:1.15rem; font-weight:800; color:var(--qz-accent);">${scoreVal} / ${maxScoreVal}</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div style="background:rgba(16, 185, 129, 0.08); border:1px solid var(--qz-border); border-radius:10px; padding:8px 4px;">
+                <div style="font-size:0.7rem; color:var(--qz-text-muted); font-weight:600;">ACCURACY</div>
+                <div style="font-size:1.15rem; font-weight:800; color:var(--qz-success);">${percentageVal}%</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div style="background:rgba(245, 158, 11, 0.08); border:1px solid var(--qz-border); border-radius:10px; padding:8px 4px;">
+                <div style="font-size:0.7rem; color:var(--qz-text-muted); font-weight:600;">DURATION</div>
+                <div style="font-size:1.05rem; font-weight:700; color:var(--qz-text);">${Math.floor((att.durationSeconds || 0) / 60)}m ${(att.durationSeconds || 0) % 60}s</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div style="background:rgba(56, 189, 248, 0.08); border:1px solid var(--qz-border); border-radius:10px; padding:8px 4px;">
+                <div style="font-size:0.7rem; color:var(--qz-text-muted); font-weight:600;">QUESTIONS</div>
+                <div style="font-size:1.05rem; font-weight:700; color:var(--qz-text);">${totalCnt}</div>
+              </div>
+            </div>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <span style="color:var(--qz-text-muted);">Percentage:</span>
-            <strong style="color:var(--qz-success);">${att.percentage !== undefined ? `${att.percentage}%` : 'Pending'}</strong>
+
+          <!-- Breakdown pills -->
+          <div style="display:flex; justify-content:space-around; background:rgba(0,0,0,0.03); border:1px solid var(--qz-border); border-radius:10px; padding:8px; font-size:0.82rem;">
+            <div><i class="ri-checkbox-circle-fill" style="color:var(--qz-success);"></i> Correct: <strong style="color:var(--qz-success);">${correctCnt}</strong></div>
+            <div><i class="ri-close-circle-fill" style="color:var(--qz-danger);"></i> Incorrect: <strong style="color:var(--qz-danger);">${incorrectCnt}</strong></div>
+            <div><i class="ri-indeterminate-circle-fill" style="color:var(--qz-warning);"></i> Unattempted: <strong style="color:var(--qz-warning);">${unattemptedCnt}</strong></div>
           </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--qz-text-muted);">Time Invested:</span>
-            <strong>${Math.floor((att.durationSeconds || 0) / 60)}m ${(att.durationSeconds || 0) % 60}s</strong>
-          </div>
+
+          ${proctorEventsHtml}
         </div>
       `;
       document.getElementById('modalScorecardDetail').style.display = 'flex';
+    }
+
+    // View Candidate Scorecard (Instructor inspecting candidate attempt in Tab 1)
+    window.viewCandidateScorecard = function(attemptId) {
+      const att = currentAttemptsList.find(a => a.attemptId === attemptId);
+      if (!att) return;
+      renderScorecardModal(att);
+    };
+
+    // View Candidate Scorecard (Candidate inspecting own attempt in Tab 2)
+    window.viewMyScorecardDetail = function(attemptId) {
+      const att = myAttemptsList.find(a => a.attemptId === attemptId);
+      if (!att) return;
+      renderScorecardModal(att);
     };
 
     // CSV Export

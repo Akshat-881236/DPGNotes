@@ -681,7 +681,7 @@
       <div style="width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; color:#f87171; font-size:2rem;">
         <i class="ri-shield-keyhole-line"></i>
       </div>
-      <h3 style="color:#fff; font-size:1.35rem; font-weight:800; margin-bottom:0.6rem;">Security Shield Active</h3>
+      <h3 style="color:var(--qz-text); font-size:1.35rem; font-weight:800; margin-bottom:0.6rem;">Security Shield Active</h3>
       <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.55; margin-bottom:1.5rem;">
         External side panel, Ask Gemini, developer tools, or split screen detected. Examination content has been shielded to protect academic integrity.
         Please close the side panel or re-focus the window to resume your assessment.
@@ -742,18 +742,18 @@
         <span class="badge" id="examSubjectBadge" style="background:rgba(6, 182, 212, 0.15); border:1px solid rgba(6, 182, 212, 0.3); color:#67e8f9; padding:5px 14px; border-radius:999px; margin-bottom:0.5rem;">
           SUBJECT CODE
         </span>
-        <h2 id="examRegTitle" style="font-size:1.75rem; font-weight:800; color:#fff; margin-bottom:0.4rem;">Examination Assessment</h2>
+        <h2 id="examRegTitle" style="font-size:1.75rem; font-weight:800; color:var(--qz-text); margin-bottom:0.4rem;">Examination Assessment</h2>
         <p id="examRegDesc" style="color:var(--qz-text-muted); font-size:0.9rem; line-height:1.5;">...</p>
       </div>
 
       <!-- Examination Rules Summary Card -->
-      <div style="background:rgba(15, 23, 42, 0.6); border:1px solid var(--qz-border); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
-        <div style="font-weight:700; font-size:0.9rem; color:#fff; margin-bottom:0.75rem;">
+      <div style="background:var(--qz-card, rgba(15, 23, 42, 0.6)); border:1px solid var(--qz-border); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
+        <div style="font-weight:700; font-size:0.9rem; color:var(--qz-text); margin-bottom:0.75rem;">
           <i class="ri-information-line" style="color:var(--qz-primary);"></i> Assessment Guidelines:
         </div>
         <div class="row g-2" style="font-size:0.85rem; color:var(--qz-text-muted);">
-          <div class="col-6"><i class="ri-questionnaire-line"></i> Total Questions: <strong id="ruleTotalQ" style="color:#fff;">--</strong></div>
-          <div class="col-6"><i class="ri-time-line"></i> Time Limit: <strong id="ruleDuration" style="color:#fff;">-- Mins</strong></div>
+          <div class="col-6"><i class="ri-questionnaire-line"></i> Total Questions: <strong id="ruleTotalQ" style="color:var(--qz-text);">--</strong></div>
+          <div class="col-6"><i class="ri-time-line"></i> Time Limit: <strong id="ruleDuration" style="color:var(--qz-text);">-- Mins</strong></div>
           <div class="col-6"><i class="ri-add-circle-line"></i> Correct: <strong id="ruleCorrectScore" style="color:#10b981;">+1.0</strong></div>
           <div class="col-6"><i class="ri-indeterminate-circle-line"></i> Negative Mark: <strong id="ruleNegativeScore" style="color:#ef4444;">-0.25</strong></div>
           <div class="col-12" id="ruleStrictNotice" style="color:#fca5a5; display:none; margin-top:4px;">
@@ -763,9 +763,9 @@
       </div>
 
       <!-- Live Camera Proctoring Verification Card (Zero Video Stored) -->
-      <div id="cameraProctorSetupCard" style="background:rgba(15, 23, 42, 0.7); border:1.5px solid rgba(56, 189, 248, 0.4); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
+      <div id="cameraProctorSetupCard" style="background:var(--qz-card, rgba(15, 23, 42, 0.7)); border:1.5px solid rgba(56, 189, 248, 0.4); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:8px;">
-          <div style="font-weight:700; font-size:0.95rem; color:#fff; display:flex; align-items:center; gap:8px;">
+          <div style="font-weight:700; font-size:0.95rem; color:var(--qz-text); display:flex; align-items:center; gap:8px;">
             <i class="ri-camera-lens-line" style="color:#38bdf8; font-size:1.2rem;"></i> Live AI Webcam Proctoring
           </div>
           <span id="camVerificationBadge" class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); font-size:0.75rem;">
@@ -784,12 +784,12 @@
             <video id="preExamVideo" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1);"></video>
             <span style="position:absolute; bottom:2px; right:2px; background:rgba(16,185,129,0.9); color:#fff; font-size:0.6rem; padding:1px 4px; border-radius:4px; font-weight:700;">OK</span>
           </div>
-          <span id="camVerificationMsg" style="font-size:0.8rem; color:#94a3b8;">Click button above to verify webcam.</span>
+          <span id="camVerificationMsg" style="font-size:0.8rem; color:var(--qz-text-muted);">Click button above to verify webcam.</span>
         </div>
       </div>
 
       <form id="candidateRegForm" onsubmit="startExaminationSession(event)">
-        <h4 style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:1rem;">Candidate Details</h4>
+        <h4 style="font-size:1.05rem; font-weight:700; color:var(--qz-text); margin-bottom:1rem;">Candidate Details</h4>
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label">Full Name <span class="req">*</span></label>
@@ -835,7 +835,7 @@
       <div class="exam-header-bar">
         <div>
           <span style="font-size:0.8rem; color:var(--qz-text-muted); display:block;">EXAMINATION IN PROGRESS</span>
-          <strong id="examHeaderTitle" style="font-size:1.05rem; color:#fff;">DSA Mid-Term</strong>
+          <strong id="examHeaderTitle" style="font-size:1.05rem; color:var(--qz-text);">DSA Mid-Term</strong>
         </div>
         <div style="display:flex; align-items:center; gap:16px;">
           <div id="examTimerBadge" class="timer-badge safe">
@@ -1209,6 +1209,66 @@
       }
     }
 
+    // MediaPipe Vision Tasks FaceDetector (BlazeFace Short Range)
+    let mpFaceDetector = null;
+    let isMpVisionLoading = false;
+
+    async function initMediaPipeVision() {
+      if (mpFaceDetector || isMpVisionLoading) return mpFaceDetector;
+      isMpVisionLoading = true;
+      try {
+        const visionModule = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm");
+        const wasmFileset = await visionModule.FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+        );
+        mpFaceDetector = await visionModule.FaceDetector.createFromOptions(wasmFileset, {
+          baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
+            delegate: "GPU"
+          },
+          runningMode: "IMAGE",
+          minDetectionConfidence: 0.5
+        });
+        console.log("[MediaPipe] BlazeFace detector loaded successfully.");
+      } catch (err) {
+        console.warn("[MediaPipe] Vision init notice (falling back to native/chroma):", err);
+        mpFaceDetector = null;
+      } finally {
+        isMpVisionLoading = false;
+      }
+      return mpFaceDetector;
+    }
+
+    // Proctoring Telemetry Event Engine (Blueprint Phase 2)
+    const sessionProctorEvents = [];
+    const proctorCooldownMap = {};
+
+    function emitProctorEvent(type, severity, durationMs, details) {
+      const now = Date.now();
+      const lastEmitted = proctorCooldownMap[type] || 0;
+      // 10s cooldown per category prevents telemetry flood while preserving high-fidelity audit trail
+      if (now - lastEmitted < 10000) return;
+      proctorCooldownMap[type] = now;
+
+      const eventObj = {
+        eventId: "pe_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 6),
+        type: type,
+        occurredAt: new Date().toISOString(),
+        timestampSec: Math.max(0, Math.round((Date.now() - (examStartTime || Date.now())) / 1000)),
+        durationMs: Math.round(durationMs || 0),
+        severity: severity, // 'low' | 'medium' | 'high' | 'technical_warning'
+        confidence: "signal-only",
+        status: "needs_review",
+        details: details
+      };
+
+      sessionProctorEvents.push(eventObj);
+      console.log("[ProctorEventEngine]", eventObj);
+
+      playProctorWarningSound();
+      logUmcViolation(type, details);
+    }
+
     // Audio chime for real-time candidate warning
     function playProctorWarningSound() {
       try {
@@ -1388,6 +1448,9 @@
       // Initialize audio analysis
       initAudioProctoring();
 
+      // Ensure MediaPipe Vision is initialized
+      initMediaPipeVision().catch(() => {});
+
       if (proctorInterval) clearInterval(proctorInterval);
 
       proctorInterval = setInterval(async () => {
@@ -1405,11 +1468,58 @@
         let isGazeLookingDownOrAway = false;
         let isPhonePosture = false;
 
-        // Path A: Native Chromium FaceDetector API (hardware-accelerated, 0 overhead)
-        if (nativeFaceDetector) {
+        // Path A0: MediaPipe Vision Tasks FaceDetector (BlazeFace Short Range with 6 Keypoints & Pose)
+        if (mpFaceDetector) {
+          try {
+            const mpResult = mpFaceDetector.detect(proctorCanvas);
+            const validDetections = (mpResult.detections || []).filter(d => {
+              const bb = d.boundingBox;
+              return bb && bb.width >= 24 && bb.height >= 24;
+            });
+            detectedFacesCount = validDetections.length;
+
+            if (detectedFacesCount === 1) {
+              const det = validDetections[0];
+              const bb = det.boundingBox;
+              const cx = bb.originX + (bb.width / 2);
+              const cy = bb.originY + (bb.height / 2);
+              const isLeaningIn = (bb.width >= 50 || bb.height >= 55);
+
+              if (!isLeaningIn) {
+                // Downward tilt / phone posture: small face low on canvas
+                if (cy > 95 && (bb.originY + bb.height) >= 118) {
+                  isPhonePosture = true;
+                }
+                // Wide horizontal leeway for question reading
+                if (cx < 12 || cx > 148) {
+                  isGazeLookingDownOrAway = true;
+                }
+              }
+
+              // Keypoints yaw & pitch inspection
+              if (det.keypoints && det.keypoints.length >= 3) {
+                const rEye = det.keypoints[0];
+                const lEye = det.keypoints[1];
+                const nose = det.keypoints[2];
+                if (rEye && lEye && nose) {
+                  const eyeDist = Math.abs(rEye.x - lEye.x) || 1;
+                  const eyeMidX = (rEye.x + lEye.x) / 2;
+                  const yawDeviation = Math.abs(nose.x - eyeMidX) / eyeDist;
+                  if (yawDeviation > 0.45 && !isLeaningIn) {
+                    isGazeLookingDownOrAway = true;
+                  }
+                }
+              }
+            }
+          } catch(mpErr) {
+            detectedFacesCount = -1;
+          }
+        }
+
+        // Path A1: Native Chromium FaceDetector API Fallback (hardware-accelerated)
+        if (detectedFacesCount === -1 && nativeFaceDetector) {
           try {
             const allFaces = await nativeFaceDetector.detect(proctorCanvas);
-            // Filter out tiny false positives (e.g. clothing folds, buttons, background artifacts)
             const realFaces = allFaces.filter(f => f.boundingBox.width >= 28 && f.boundingBox.height >= 28);
             detectedFacesCount = realFaces.length;
 
@@ -1417,17 +1527,12 @@
               const f = realFaces[0].boundingBox;
               const centerY = f.top + (f.height / 2);
               const centerX = f.left + (f.width / 2);
-
-              // Candidate leaning in / zooming in to read question:
-              // When face is large (width > 50 or height > 55), chin drops naturally. This is normal reading!
               const isLeaningInToRead = (f.width >= 50 || f.height >= 55);
 
               if (!isLeaningInToRead) {
-                // Phone posture: requires small face far at bottom edge
                 if (centerY > 96 && (f.top + f.height) >= 118) {
                   isPhonePosture = true;
                 }
-                // Wide horizontal reading leeway across the 160px canvas
                 if (centerX < 12 || centerX > 148) {
                   isGazeLookingDownOrAway = true;
                 }
@@ -1476,24 +1581,22 @@
         }
 
         // Two distinct human faces require two separate skin clusters on left and right with a gap in the center
-        // (A single face zoomed in/leaning in will have high centerSkin, preventing false "Multiple People" flags)
         const isMultipleBySkin = (leftSideSkin > 350 && rightSideSkin > 350 && centerSkin < 180 && skinPixels > 1600);
 
-        // 1. Multiple People Detection (2 Genuine Humans, sustained across 6 consecutive samples ~4.5s)
+        // 1. Multiple People Detection (Grace: ~3.0s, Severity: High)
         if (detectedFacesCount > 1 || (detectedFacesCount === -1 && isMultipleBySkin)) {
           proctorStreaks.multipleFaces++;
           proctorStreaks.noFace = 0;
           proctorStreaks.gazeDiverted = 0;
-          if (proctorStreaks.multipleFaces >= 6) {
+          if (proctorStreaks.multipleFaces >= 4) {
             proctorViolationCounts.multiplePersons++;
             updateProctorUI('danger', 'ri-group-line', 'Multiple People in Frame');
-            logUmcViolation('MULTIPLE_PERSONS_DETECTED', 'More than one individual detected in camera frame.');
-            playProctorWarningSound();
+            emitProctorEvent('MULTIPLE_FACES_DETECTED', 'high', 3000, 'More than one individual detected in webcam view.');
           }
           return;
         }
 
-        // 2. Face Absent Detection (Candidate absent, sustained across 6 consecutive samples ~4.5s)
+        // 2. Face Absent Detection (Grace: ~4.5s, Severity: Medium)
         const isAbsentBySkin = (skinPixels < 180);
         if (detectedFacesCount === 0 || (detectedFacesCount === -1 && isAbsentBySkin)) {
           proctorStreaks.noFace++;
@@ -1502,33 +1605,30 @@
           if (proctorStreaks.noFace >= 6) {
             proctorViolationCounts.faceAbsent++;
             updateProctorUI('danger', 'ri-user-unfollow-line', 'Candidate Missing from View');
-            logUmcViolation('FACE_ABSENT', 'Candidate not visible in webcam view.');
-            playProctorWarningSound();
+            emitProctorEvent('FACE_ABSENT', 'medium', 4500, 'Candidate missing from webcam field of view.');
           }
           return;
         }
 
-        // 3. Gaze / Phone Usage Posture Detection (Sustained downward tilt, 8 consecutive samples ~6s)
+        // 3. Gaze / Phone Usage Posture Detection (Grace: ~5.0s, Severity: Low/Medium)
         if (skinPixels >= 180) {
           const avgX = sumX / skinPixels;
           const avgY = sumY / skinPixels;
-          // When candidate leans in to read, skinPixels is high and center is occupied; do not flag reading
           const isLeaningCenter = (skinPixels > 1800 && avgX >= 40 && avgX <= 120);
 
-          if (!isLeaningCenter && (isPhonePosture || (avgY > 95 && skinPixels < 1600) || avgX < 14 || avgX > 146)) {
+          if (!isLeaningCenter && (isPhonePosture || isGazeLookingDownOrAway || (avgY > 95 && skinPixels < 1600) || avgX < 14 || avgX > 146)) {
             proctorStreaks.gazeDiverted++;
-            if (proctorStreaks.gazeDiverted >= 8) {
+            if (proctorStreaks.gazeDiverted >= 7) {
               proctorViolationCounts.gazeDiverted++;
               const label = (avgY > 95 || isPhonePosture) ? 'Looking Down / Phone Posture' : 'Gaze Diverted / Looking Away';
               updateProctorUI('warning', 'ri-smartphone-line', label);
-              logUmcViolation('SUSPICIOUS_PHONE_OR_GAZE_DIVERSION', `Candidate gaze diverted from assessment screen (${label}).`);
-              playProctorWarningSound();
+              emitProctorEvent('GAZE_DIVERTED', 'low', 5000, `Candidate gaze diverted from assessment screen (${label}).`);
             }
             return;
           }
         }
 
-        // 4. Audio Volume Energy Analysis
+        // 4. Audio Volume Energy Analysis (Grace: ~3.0s, Severity: Medium)
         if (audioAnalyser) {
           try {
             const pcmData = new Uint8Array(audioAnalyser.frequencyBinCount);
@@ -1538,8 +1638,9 @@
             const avgVol = pcmSum / pcmData.length;
             if (avgVol > 52) { // Sustained conversational volume
               audioViolationStreak++;
-              if (audioViolationStreak >= 6) {
+              if (audioViolationStreak >= 4) {
                 audioViolationStreak = 0;
+                emitProctorEvent('AUDIO_NOISE_OR_VOICE', 'medium', 3000, 'Sustained conversational volume or vocal audio detected.');
                 triggerVoiceNotice("Sustained vocal activity detected.");
               }
             } else {
@@ -1665,7 +1766,7 @@
             <div style="width:68px; height:68px; margin:0 auto 1.25rem; border-radius:50%; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); display:flex; align-items:center; justify-content:center;">
               <i class="ri-folder-open-line" style="font-size:2rem; color:var(--qz-primary);"></i>
             </div>
-            <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.5rem;">No Examinations Found</h3>
+            <h3 style="font-size:1.25rem; font-weight:700; color:var(--qz-text); margin-bottom:0.5rem;">No Examinations Found</h3>
             <p style="font-size:0.95rem; max-width:500px; margin:0 auto 1.25rem; line-height:1.5;">
               No public quizzes published yet. Be the first contributor to create one!
             </p>
@@ -1690,7 +1791,7 @@
                 <i class="ri-time-line"></i> ${q.timeMinutes || 20}m
               </span>
             </div>
-            <h3 style="font-size:1.15rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">${escapeHtml(q.title || 'Untitled Assessment')}</h3>
+            <h3 style="font-size:1.15rem; font-weight:700; color:var(--qz-text); margin-bottom:0.4rem;">${escapeHtml(q.title || 'Untitled Assessment')}</h3>
             <p style="color:var(--qz-text-muted); font-size:0.85rem; line-height:1.5; margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
               ${escapeHtml(q.description || 'No description provided.')}
             </p>
@@ -2253,13 +2354,15 @@
       document.addEventListener('visibilitychange', () => {
         if (document.hidden && !hasSubmitted) {
           logUmcViolation('TAB_OR_APP_HIDDEN', 'Candidate navigated away or changed browser tab.');
+          emitProctorEvent('TAB_VISIBILITY_HIDDEN', 'high', 0, 'Candidate switched away from assessment browser tab.');
         }
       });
 
       // 2. Fullscreen monitor
       document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement && !hasSubmitted && quizData.strictMode) {
+        if (!document.fullscreenElement && !hasSubmitted) {
           logUmcViolation('FULLSCREEN_EXIT', 'Candidate exited proctored fullscreen environment.');
+          emitProctorEvent('FULLSCREEN_EXITED', 'medium', 0, 'Candidate exited examination fullscreen mode.');
         }
       });
 
@@ -2275,6 +2378,7 @@
           if (shield && shield.style.display !== 'flex') {
             shield.style.display = 'flex';
             logUmcViolation('ASK_GEMINI_OR_SIDE_PANEL', 'External side panel or Ask Gemini detected.');
+            emitProctorEvent('SIDE_PANEL_OR_AI_OVERLAY', 'high', 0, 'External side panel or Ask Gemini detected.');
           }
         } else {
           if (shield && shield.style.display === 'flex' && !isWindowBlurred) {
@@ -2294,6 +2398,7 @@
           const shield = document.getElementById('aiShieldOverlay');
           if (shield) shield.style.display = 'flex';
           logUmcViolation('WINDOW_FOCUS_LOST', 'Window lost active candidate focus.');
+          emitProctorEvent('WINDOW_BLURRED', 'medium', 0, 'Window lost active candidate focus.');
         }
       });
 
@@ -2493,6 +2598,7 @@
           umcFlag: uvcViolations.length > 0,
           violationCount: uvcViolations.length,
           violationsSummary: uvcViolations.slice(0, 10),
+          proctorEvents: sessionProctorEvents,
           answerKeyVersion: 1
         };
         await setDoc(attemptRef, attemptData);
@@ -2538,7 +2644,8 @@
               incorrectCount: incorrectCount,
               unattemptedCount: unattemptedCount,
               answers: candidateAnswers,
-              umcFlag: uvcViolations.length > 0
+              umcFlag: uvcViolations.length > 0,
+              proctorEvents: sessionProctorEvents
             });
             localStorage.setItem('dpg_guest_quiz_attempts', JSON.stringify(guestAttempts));
 
@@ -2581,7 +2688,8 @@
               unattemptedCount: unattemptedCount,
               answers: candidateAnswers,
               umcFlag: uvcViolations.length > 0,
-              violationCount: uvcViolations.length
+              violationCount: uvcViolations.length,
+              proctorEvents: sessionProctorEvents
             });
           } catch(me) {
             console.warn("Failed to write to myQuizAttempts:", me);
