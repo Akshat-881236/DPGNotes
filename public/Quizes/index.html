@@ -603,6 +603,45 @@
     .review-item.is-incorrect { border-left: 4px solid var(--qz-danger); }
     .review-item.is-unanswered { border-left: 4px solid var(--qz-warning); }
   </style>
+  <script src="/history-monitoring.js" defer></script>
+  <!-- Hardcoded Quiz System Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Quiz",
+        "@id": "https://dpgnotes.web.app/Quizes/index.html#quiz-system",
+        "name": "DPGNotes Quizzone Timed Examination Portal",
+        "description": "Standardized academic quizzes and examinations with MSQ multi-select scoring, live camera proctoring, and instant scorecards.",
+        "url": "https://dpgnotes.web.app/Quizes/index.html",
+        "educationalLevel": "Higher Education",
+        "provider": {
+          "@type": "EducationalOrganization",
+          "name": "DPGNotes",
+          "url": "https://dpgnotes.web.app/"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://dpgnotes.web.app/index.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "DPGNotes Quizzone",
+            "item": "https://dpgnotes.web.app/Quizes/index.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -1034,6 +1073,98 @@
     let shareTokenParam = new URLSearchParams(window.location.search).get('share_token');
     let quizData = null;
     let questionsList = [];
+    let candidateOriginalAnswers = {};
+    let questionDisplayOrder = [];
+
+    // ============================================================================
+    // ANTI-CHEATING GROUP DIVISIBILITY & OPTION SHUFFLING ALGORITHM
+    // ============================================================================
+    function applyAntiCheatingQuestionEngine() {
+      if (!questionsList || questionsList.length < 2) return;
+
+      const totalQ = questionsList.length;
+      const divisorCandidates = [4, 5, 6];
+      let selectedDivisor = null;
+
+      // 1. Find whichever among 4, 5, 6 returns remainder 0
+      for (const d of divisorCandidates) {
+        if (totalQ % d === 0) {
+          selectedDivisor = d;
+          break;
+        }
+      }
+
+      // If none has remainder 0, choose the divisor that produces the smallest remainder
+      if (!selectedDivisor) {
+        let lowestRem = Infinity;
+        for (const d of divisorCandidates) {
+          const rem = totalQ % d;
+          if (rem < lowestRem) {
+            lowestRem = rem;
+            selectedDivisor = d;
+          }
+        }
+      }
+
+      // 2. Partition questions into groups of selectedDivisor
+      const groups = [];
+      for (let i = 0; i < totalQ; i += selectedDivisor) {
+        groups.push(questionsList.slice(i, i + selectedDivisor));
+      }
+
+      // 3. Perform Fisher-Yates intra-group swapping within each group
+      // This scrambles questions within each group to prevent cheating squares
+      const reorderedQuestions = [];
+      groups.forEach(group => {
+        const shuffled = [...group];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        reorderedQuestions.push(...shuffled);
+      });
+
+      // 4. Runtime Option Swapping & Answer Key Dynamic Remapping
+      reorderedQuestions.forEach((q, newIdx) => {
+        if (q._originalIndex === undefined) {
+          q._originalIndex = q.qIndex !== undefined ? q.qIndex : (newIdx + 1);
+        }
+
+        if (q.options && typeof q.options === 'object') {
+          const origLetters = Object.keys(q.options).sort();
+          if (origLetters.length > 1) {
+            const optionEntries = origLetters.map(letter => ({
+              origLetter: letter,
+              content: q.options[letter]
+            }));
+
+            // Fisher-Yates shuffle the option contents
+            for (let i = optionEntries.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [optionEntries[i], optionEntries[j]] = [optionEntries[j], optionEntries[i]];
+            }
+
+            // Map shuffled contents back to letter sequence A, B, C...
+            const runtimeOptions = {};
+            const origToNew = {};
+            const newToOrig = {};
+
+            origLetters.forEach((assignedLetter, idx) => {
+              const entry = optionEntries[idx];
+              runtimeOptions[assignedLetter] = entry.content;
+              origToNew[entry.origLetter] = assignedLetter;
+              newToOrig[assignedLetter] = entry.origLetter;
+            });
+
+            q._runtimeOptions = runtimeOptions;
+            q._origToNew = origToNew;
+            q._newToOrig = newToOrig;
+          }
+        }
+      });
+
+      questionsList = reorderedQuestions;
+    }
     let currentQIdx = 0;
     let candidateAnswers = {};
     let flaggedQuestions = new Set();
@@ -1878,6 +2009,9 @@
       remainingSeconds = (quizData.timeMinutes || 20) * 60;
       startExamTimer();
 
+      // Apply Anti-Cheating Group Divisibility & Option Swapping
+      applyAntiCheatingQuestionEngine();
+
       // Render Navigator Grid
       renderExamNavGrid();
 
@@ -1964,7 +2098,7 @@
       return escapeHtml(rawStr);
     }
 
-    // Render Question (Dynamic 3–12 Options & MSQ Multi-Select Engine)
+    // Render Question (Dynamic 3–12 Options & MSQ Multi-Select Engine with Anti-Cheating Swapping)
     function renderCurrentQuestion() {
       const q = questionsList[currentQIdx];
       const isMSQ = q.type === 'msq' ||
@@ -1987,9 +2121,9 @@
       const optsContainer = document.getElementById('optionsListContainer');
       optsContainer.innerHTML = '';
 
-      // Determine available option letters (3 up to 12)
-      const optionLetters = (q.options && Object.keys(q.options).length > 0) ? 
-        Object.keys(q.options).sort() : ['A', 'B', 'C', 'D'];
+      // Use runtime shuffled options if generated by anti-cheat algorithm
+      const activeOptions = q._runtimeOptions || q.options || {};
+      const optionLetters = Object.keys(activeOptions).length > 0 ? Object.keys(activeOptions).sort() : ['A', 'B', 'C', 'D'];
 
       const currentAns = candidateAnswers[currentQIdx];
       const selectedSet = isMSQ ? 
@@ -2002,7 +2136,7 @@
         card.className = `option-card ${isSelected ? 'selected' : ''}`;
         card.onclick = () => selectExamOption(letter, isMSQ);
 
-        const rawOpt = (q.options && q.options[letter]) || '';
+        const rawOpt = activeOptions[letter] || '';
         const optHtml = renderRichQuizText(rawOpt, `exam_opt_${currentQIdx}_${letter}`);
 
         const iconHtml = isMSQ ? 
@@ -2040,8 +2174,10 @@
         return;
       }
 
+      const q = questionsList[currentQIdx];
+      const origIdx = q._originalIndex !== undefined ? q._originalIndex : (currentQIdx + 1);
+
       if (isMSQ) {
-        // Multi-selection toggle
         let currentArr = candidateAnswers[currentQIdx] ? 
           candidateAnswers[currentQIdx].split(',').map(s => s.trim()).filter(Boolean) : [];
         if (currentArr.includes(letter)) {
@@ -2052,16 +2188,17 @@
         currentArr.sort();
         if (currentArr.length > 0) {
           candidateAnswers[currentQIdx] = currentArr.join(',');
+          // Map to original answer key letters for database
+          const mappedOriginal = currentArr.map(l => (q._newToOrig && q._newToOrig[l]) ? q._newToOrig[l] : l).sort().join(',');
+          candidateOriginalAnswers[origIdx] = mappedOriginal;
         } else {
           delete candidateAnswers[currentQIdx];
+          delete candidateOriginalAnswers[origIdx];
         }
       } else {
-        // Single selection
-        if (candidateAnswers[currentQIdx] === letter) {
-          // Keep selected or allow toggle if desired
-        } else {
-          candidateAnswers[currentQIdx] = letter;
-        }
+        candidateAnswers[currentQIdx] = letter;
+        const mappedOriginal = (q._newToOrig && q._newToOrig[letter]) ? q._newToOrig[letter] : letter;
+        candidateOriginalAnswers[origIdx] = mappedOriginal;
       }
       renderCurrentQuestion();
     };
@@ -2071,9 +2208,15 @@
         await customAlert("Registered answers cannot be cleared.", { title: "Answer Locked" });
         return;
       }
+      const q = questionsList[currentQIdx];
+      const origIdx = q._originalIndex !== undefined ? q._originalIndex : (currentQIdx + 1);
       delete candidateAnswers[currentQIdx];
+      delete candidateOriginalAnswers[origIdx];
       renderCurrentQuestion();
     };
+
+
+
 
     window.toggleFlagReview = function() {
       if (flaggedQuestions.has(currentQIdx)) {
@@ -2245,14 +2388,21 @@
         }
       }
 
-      // Compute counts with MSQ scoring formula: All Correct = credit; partial/wrong = 0 credit WITHOUT negative marking
+      // Scoring Rules:
+      // 1. In Case of UMC based Auto Submission: No Scoring (0 marks for all, even correct ones)
+      // 2. In Case of Time Over based Auto Submission: Auto scoring based on options selected with negative marking rules
+      const isUMCAutoSubmit = submissionReason === 'umc_violation_limit' || 
+                              submissionReason.includes('umc') || 
+                              uvcViolations.length >= 3;
+
       let marksGained = 0;
       let marksDeducted = 0;
 
       for (let i = 0; i < questionsList.length; i++) {
         const q = questionsList[i];
-        const chosenRaw = candidateAnswers[i];
-        const correctRaw = answerKey ? answerKey[String(i + 1)] : null;
+        const origIdx = q._originalIndex !== undefined ? q._originalIndex : (i + 1);
+        const chosenRaw = candidateOriginalAnswers[origIdx] || candidateAnswers[i];
+        const correctRaw = answerKey ? answerKey[String(origIdx)] : null;
 
         if (!chosenRaw) {
           unattemptedCount++;
@@ -2267,7 +2417,7 @@
               marksGained += (quizData.marksPerCorrect || 1.0);
             } else {
               incorrectCount++;
-              // Crucial requirement: MSQ partial or wrong answer is Not Correct WITHOUT Negative Marking!
+              // No negative marks for MSQ
             }
           } else {
             // MCQ Single Correct
@@ -2287,10 +2437,20 @@
       const unattemptedPenalty = quizData.unattemptedPenalty || 0.0;
       const maxScore = questionsList.length * marksPerCorrect;
 
-      const unattemptedPenaltyTotal = unattemptedCount * unattemptedPenalty;
-      const rawScore = marksGained - marksDeducted - unattemptedPenaltyTotal;
-      const finalScore = Math.max(0, parseFloat(rawScore.toFixed(2)));
-      const percentage = Math.max(0, parseFloat(((finalScore / maxScore) * 100).toFixed(1)));
+      let finalScore = 0;
+      let percentage = 0;
+
+      if (isUMCAutoSubmit) {
+        // Strict UMC Disqualification: 0 score awarded, even for correct answers
+        finalScore = 0;
+        percentage = 0;
+        correctCount = 0;
+      } else {
+        const unattemptedPenaltyTotal = unattemptedCount * unattemptedPenalty;
+        const rawScore = marksGained - marksDeducted - unattemptedPenaltyTotal;
+        finalScore = Math.max(0, parseFloat(rawScore.toFixed(2)));
+        percentage = Math.max(0, parseFloat(((finalScore / maxScore) * 100).toFixed(1)));
+      }
 
       const candName = document.getElementById('candName').value.trim() || 'Candidate';
       const candStudentId = document.getElementById('candStudentId').value.trim() || 'N/A';
@@ -2318,7 +2478,9 @@
           startedAt: new Date(examStartTime),
           submittedAt: serverTimestamp(),
           durationSeconds: durationSeconds,
-          answers: candidateAnswers,
+          answers: candidateOriginalAnswers,
+          displayAnswers: candidateAnswers,
+          isUMCDisqualified: isUMCAutoSubmit,
           totalQuestions: questionsList.length,
           correctCount: correctCount,
           incorrectCount: incorrectCount,
