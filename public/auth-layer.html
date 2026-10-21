@@ -703,17 +703,24 @@
       let target = urlParams.get('go-to') || urlParams.get('goto') || urlParams.get('redirect') || urlParams.get('returnUrl') || sessionStorage.getItem('dpg_auth_redirect') || '';
       if (!target) return '/dashboard.html';
 
+      let resolved = '/dashboard.html';
       try {
         const parsed = new URL(target, window.location.origin);
         if (parsed.origin === window.location.origin) {
-          return parsed.pathname + parsed.search + parsed.hash;
+          resolved = parsed.pathname + parsed.search + parsed.hash;
         }
       } catch (e) {}
 
-      if (target.startsWith('/') && !target.startsWith('//')) {
-        return target;
+      if (resolved === '/dashboard.html' && target.startsWith('/') && !target.startsWith('//')) {
+        resolved = target;
       }
-      return '/dashboard.html';
+
+      if (resolved && resolved !== '/dashboard.html') {
+        try {
+          sessionStorage.setItem('dpg_auth_redirect', resolved);
+        } catch (e) {}
+      }
+      return resolved;
     }
 
     const safeTarget = getSafeRedirectTarget();

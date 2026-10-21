@@ -764,7 +764,6 @@ jobs:
 document.addEventListener("DOMContentLoaded", () => {
   initHeaderControls();
   initReadingProgressBar();
-  initSidebarNavigation();
   initSearchFilter();
   initHeaderSearchModal();
   checkAuthAndClearanceGate();
@@ -1491,25 +1490,6 @@ function escapeHtml(str) {
 // CONTRIBUTOR AUTH LAYER & ADMIN APPROVAL CHECK (SILENT VERIFICATION - NO DOM THRESHOLD)
 // ============================================================================
 
-window.signInWithGoogleGate = async function() {
-  const btn = document.getElementById("btnGateGoogleSignIn");
-  if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Authenticating...';
-  try {
-    const provider = new GoogleAuthProvider();
-    const res = await signInWithPopup(auth, provider);
-    if (res && res.user) {
-      localStorage.setItem("dpgActiveUserUid", res.user.uid);
-      localStorage.setItem("dpgActiveUserEmail", res.user.email);
-      localStorage.setItem("dpgActiveUserName", res.user.displayName || "Verified Contributor");
-      checkAuthAndClearanceGate();
-    }
-  } catch(err) {
-    console.error("Google Sign In error:", err);
-    if (btn) btn.innerHTML = '<i class="ri-google-fill"></i> Sign In with Google';
-    alert("Authentication failed: " + (err.message || err));
-  }
-};
-
 async function checkAuthAndClearanceGate() {
   onAuthStateChanged(auth, async (user) => {
     const localUid = localStorage.getItem("dpgActiveUserUid");
@@ -1530,9 +1510,10 @@ async function checkAuthAndClearanceGate() {
       currentActiveUser = null;
     }
 
-    // 1. Unauthenticated Contributor Check
+    // 1. Unauthenticated Contributor Check -> Redirect to Contributor Auth Gateway
     if (!currentActiveUser) {
-      renderSignInGate();
+      const dest = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.replace('/auth-layer.html?go-to=' + dest);
       return;
     }
 
@@ -1543,6 +1524,7 @@ async function checkAuthAndClearanceGate() {
 
     if (isAdmin) {
       currentClearanceRecord = { status: "approved", role: "admin", exempt: true };
+      sessionStorage.setItem("dpg_confidential_approved", currentActiveUser.uid);
       grantClearanceAccess();
       return;
     }
@@ -1553,7 +1535,8 @@ async function checkAuthAndClearanceGate() {
       const reqSnap = await getDoc(reqRef);
 
       if (!reqSnap.exists()) {
-        renderRequestClearanceForm(false);
+        const dest = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.replace('/overview/access-request.html?go-to=' + dest);
         return;
       }
 
@@ -1567,7 +1550,8 @@ async function checkAuthAndClearanceGate() {
       if (sessionApproved) {
         grantClearanceAccess();
       } else {
-        renderRequestClearanceForm(false);
+        const dest = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.replace('/overview/access-request.html?go-to=' + dest);
       }
     }
   });
@@ -1578,234 +1562,35 @@ function evaluateClearanceStatus(record) {
   const start = record.startDate ? new Date(record.startDate + "T00:00:00") : null;
   const end = record.endDate ? new Date(record.endDate + "T23:59:59") : null;
 
-  if (record.status === "pending" || !record.status) {
-    renderPendingStatus(record);
-    return;
-  }
-
-  if (record.status === "rejected") {
-    renderRejectedStatus(record);
-    return;
-  }
-
-  if (record.status === "revoked") {
-    renderRevokedStatus(record);
-    return;
-  }
-
-  if (end && now > end) {
-    // Expired: auto-denied
-    renderExpiredStatus(record);
-    return;
-  }
-
-  if (start && now < start) {
-    renderScheduledStatus(record);
-    return;
-  }
-
   if (record.status === "approved" && (!start || now >= start) && (!end || now <= end)) {
-    // APPROVED: Silent access grant - nothing shown on DOM
+    // APPROVED: Silent access grant
     sessionStorage.setItem("dpg_confidential_approved", currentActiveUser.uid);
     grantClearanceAccess();
     return;
   }
 
-  // Fallback
-  renderRequestClearanceForm(false);
+  // Not approved, pending, rejected, revoked, expired, or scheduled -> open access-request.html
+  const dest = encodeURIComponent(window.location.pathname + window.location.search);
+  window.location.replace('/overview/access-request.html?go-to=' + dest);
 }
 
 function grantClearanceAccess() {
-  const gateOverlay = document.getElementById("clearanceGateOverlay");
-  if (gateOverlay) gateOverlay.style.display = "none";
+  // 1. Remove security guard style concealing DOM
+  const guardStyle = document.getElementById("authGateGuardStyle");
+  if (guardStyle) guardStyle.remove();
 
-  // Note: Per requirements, NO clearance threshold badge or date threshold is rendered on the DOM
-  window.switchTab(1);
-}
+  // 2. Remove verification screen
+  const gateLoader = document.getElementById("overviewAuthGateLoader");
+  if (gateLoader) gateLoader.remove();
 
-function renderSignInGate() {
-  const gateOverlay = document.getElementById("clearanceGateOverlay");
-  const gateTitle = document.getElementById("gateTitle");
-  const gateDesc = document.getElementById("gateDesc");
-  const gateStatusAlert = document.getElementById("gateStatusAlert");
-  const gateForm = document.getElementById("gateRequestForm");
-  const gateAuthSection = document.getElementById("gateAuthSection");
+  // 3. Populate sidebar navigation now that clearance is verified
+  initSidebarNavigation();
 
-  if (gateOverlay) gateOverlay.style.display = "flex";
-  if (gateTitle) gateTitle.textContent = "Verified Contributor Access Only";
-  if (gateDesc) gateDesc.textContent = "The DPGNotes Overview Tutorial & Technical Architecture is reserved for authenticated contributors and approved team members. Please sign in with your contributor account to proceed.";
-  if (gateStatusAlert) gateStatusAlert.style.display = "none";
-  if (gateForm) gateForm.style.display = "none";
-  if (gateAuthSection) gateAuthSection.style.display = "block";
-}
-
-function renderRequestClearanceForm(isRenewal = false) {
-  const gateOverlay = document.getElementById("clearanceGateOverlay");
-  const gateTitle = document.getElementById("gateTitle");
-  const gateDesc = document.getElementById("gateDesc");
-  const gateStatusAlert = document.getElementById("gateStatusAlert");
-  const gateForm = document.getElementById("gateRequestForm");
-  const gateAuthSection = document.getElementById("gateAuthSection");
-
-  if (gateOverlay) gateOverlay.style.display = "flex";
-  if (gateAuthSection) gateAuthSection.style.display = "none";
-  if (gateTitle) gateTitle.textContent = isRenewal ? "Renew Overview Clearance" : "Confidential Clearance Required";
-  if (gateDesc) gateDesc.textContent = "Access to the DPGNotes Technical Architecture and FSD Tutorial is reserved for verified contributors authorized by administrators in the Admin Portal.";
-
-  if (gateStatusAlert) {
-    gateStatusAlert.style.display = "block";
-    gateStatusAlert.innerHTML = `
-      <div style="color:#eab308; font-weight:700;"><i class="ri-shield-keyhole-line"></i> Signed In Contributor: ${escapeHtml(currentActiveUser?.displayName || currentActiveUser?.email || "Contributor")}</div>
-      <p style="margin:4px 0 0; font-size:0.85rem; color:#cbd5e1;">Submit your academic justification or evaluation purpose to request an active clearance threshold.</p>
-    `;
-  }
-
-  if (gateForm) {
-    gateForm.style.display = "block";
-    gateForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const reasonVal = document.getElementById("gateReasonInput")?.value || "";
-      if (!reasonVal.trim()) {
-        alert("Please state your justification or purpose for access.");
-        return;
-      }
-      submitClearanceRequest(reasonVal.trim());
-    };
-  }
-}
-
-async function submitClearanceRequest(reason) {
-  const submitBtn = document.getElementById("btnSubmitGateRequest");
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Submitting to Admin...`;
-  }
-
-  try {
-    const docData = {
-      uid: currentActiveUser.uid,
-      email: currentActiveUser.email,
-      displayName: currentActiveUser.displayName || currentActiveUser.name || "Verified Contributor",
-      photoURL: currentActiveUser.photoURL || "",
-      reason: reason,
-      status: "pending",
-      requestDate: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
-
-    await setDoc(doc(db, "confidential_overview_requests", currentActiveUser.uid), docData, { merge: true });
-    renderPendingStatus(docData);
-  } catch(err) {
-    console.error("Submission failed:", err);
-    alert("Request submission failed: " + err.message);
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = `Submit Access Request <i class="ri-arrow-right-line"></i>`;
-    }
-  }
-}
-
-function renderPendingStatus(record) {
-  const gateTitle = document.getElementById("gateTitle");
-  const gateDesc = document.getElementById("gateDesc");
-  const gateStatusAlert = document.getElementById("gateStatusAlert");
-  const gateForm = document.getElementById("gateRequestForm");
-  const gateAuthSection = document.getElementById("gateAuthSection");
-
-  if (gateAuthSection) gateAuthSection.style.display = "none";
-  if (gateTitle) gateTitle.textContent = "Clearance Pending Approval";
-  if (gateDesc) gateDesc.textContent = "Your request has been dispatched to the Administrator and is currently listed in the Admin Portal 'Confidential' Tab.";
-  if (gateStatusAlert) {
-    gateStatusAlert.style.display = "block";
-    gateStatusAlert.innerHTML = `
-      <div style="color:#eab308; font-weight:700;"><i class="ri-time-line"></i> Status: Pending Admin Review</div>
-      <p style="margin:4px 0; color:#cbd5e1;"><strong>Submitted By:</strong> ${escapeHtml(record.displayName || record.email)}</p>
-      <p style="margin:4px 0; color:#cbd5e1;"><strong>Purpose:</strong> ${escapeHtml(record.reason || "Architecture evaluation")}</p>
-      <p style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);">Once the Administrator authorizes your request in the Admin Portal, refresh to view.</p>
-      <button type="button" class="gate-btn-submit" style="margin-top:12px; width:100%; justify-content:center;" onclick="window.location.reload()">
-        <i class="ri-refresh-line"></i> Check Approval Status
-      </button>
-    `;
-  }
-  if (gateForm) gateForm.style.display = "none";
-}
-
-function renderRejectedStatus(record) {
-  const gateTitle = document.getElementById("gateTitle");
-  const gateDesc = document.getElementById("gateDesc");
-  const gateStatusAlert = document.getElementById("gateStatusAlert");
-  const gateAuthSection = document.getElementById("gateAuthSection");
-
-  if (gateAuthSection) gateAuthSection.style.display = "none";
-  if (gateTitle) gateTitle.textContent = "Access Request Declined";
-  if (gateDesc) gateDesc.textContent = "Your recent request for system overview access was declined by the administrator.";
-  if (gateStatusAlert) {
-    gateStatusAlert.style.display = "block";
-    gateStatusAlert.innerHTML = `
-      <div style="color:#ef4444; font-weight:700;"><i class="ri-close-circle-line"></i> Request Declined</div>
-      <p style="margin:4px 0; color:#cbd5e1;"><strong>Note:</strong> ${escapeHtml(record.rejectionReason || "No explanation provided")}</p>
-      <p style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);">You may submit an updated request below.</p>
-    `;
-  }
-  renderRequestClearanceForm(true);
-}
-
-function renderRevokedStatus(record) {
-  const gateTitle = document.getElementById("gateTitle");
-  const gateDesc = document.getElementById("gateDesc");
-  const gateStatusAlert = document.getElementById("gateStatusAlert");
-  const gateAuthSection = document.getElementById("gateAuthSection");
-
-  if (gateAuthSection) gateAuthSection.style.display = "none";
-  if (gateTitle) gateTitle.textContent = "Clearance Revoked";
-  if (gateDesc) gateDesc.textContent = "Your access authorization has been revoked by the administrator in the Admin Portal.";
-  if (gateStatusAlert) {
-    gateStatusAlert.style.display = "block";
-    gateStatusAlert.innerHTML = `
-      <div style="color:#ef4444; font-weight:700;"><i class="ri-prohibited-line"></i> Access Revoked</div>
-      <p style="margin:6px 0; color:#cbd5e1;">Submit a new request if this action was taken in error.</p>
-    `;
-  }
-  renderRequestClearanceForm(true);
-}
-
-function renderExpiredStatus(record) {
-  const gateTitle = document.getElementById("gateTitle");
-  const gateDesc = document.getElementById("gateDesc");
-  const gateStatusAlert = document.getElementById("gateStatusAlert");
-  const gateAuthSection = document.getElementById("gateAuthSection");
-
-  if (gateAuthSection) gateAuthSection.style.display = "none";
-  if (gateTitle) gateTitle.textContent = "Access Window Expired";
-  if (gateDesc) gateDesc.textContent = "Your previously approved access window has expired. Access is automatically denied until renewed.";
-  if (gateStatusAlert) {
-    gateStatusAlert.style.display = "block";
-    gateStatusAlert.innerHTML = `
-      <div style="color:#ef4444; font-weight:700;"><i class="ri-alarm-warning-line"></i> Clearance Expired</div>
-      <p style="margin:6px 0; color:#cbd5e1;">Submit a renewal request for updated administrator authorization.</p>
-    `;
-  }
-  renderRequestClearanceForm(true);
-}
-
-function renderScheduledStatus(record) {
-  const gateTitle = document.getElementById("gateTitle");
-  const gateDesc = document.getElementById("gateDesc");
-  const gateStatusAlert = document.getElementById("gateStatusAlert");
-  const gateForm = document.getElementById("gateRequestForm");
-  const gateAuthSection = document.getElementById("gateAuthSection");
-
-  if (gateAuthSection) gateAuthSection.style.display = "none";
-  if (gateTitle) gateTitle.textContent = "Clearance Scheduled";
-  if (gateDesc) gateDesc.textContent = `Your access authorization is scheduled to become active on ${escapeHtml(record.startDate)}.`;
-  if (gateStatusAlert) {
-    gateStatusAlert.style.display = "block";
-    gateStatusAlert.innerHTML = `
-      <div style="color:#38bdf8; font-weight:700;"><i class="ri-calendar-event-line"></i> Scheduled Access</div>
-      <p style="margin:6px 0; color:#cbd5e1;">Access will activate automatically on your approved start date.</p>
-    `;
-  }
-  if (gateForm) gateForm.style.display = "none";
+  // 4. Resolve and switch to requested tab (default 1)
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedTab = parseInt(urlParams.get("tab") || urlParams.get("module") || "1", 10);
+  const validTab = (requestedTab >= 1 && requestedTab <= 12) ? requestedTab : 1;
+  window.switchTab(validTab);
 }
 
 // Log Read History to Firestore

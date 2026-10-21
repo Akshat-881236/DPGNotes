@@ -33,12 +33,36 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css?v=2.2.0">
   
+  <!-- Instant Contributor Auth Protection Check & Inspection Prevention -->
+  <style id="authGateGuardStyle">
+    .overview-layout-container, .overview-header, .reading-progress-container, .search-modal, #btnScrollTop {
+      display: none !important;
+    }
+  </style>
+  <script>
+    (function() {
+      const cachedUid = localStorage.getItem('dpgActiveUserUid');
+      if (!cachedUid) {
+        const dest = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.replace('/auth-layer.html?go-to=' + dest);
+      }
+    })();
+  </script>
+
   <!-- DPGNotes Unified Shared Auth Component -->
   <link rel="stylesheet" href="/auth-component.css">
   <script type="module" src="/auth-component.js"></script>
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body class="theme-auto">
+
+  <!-- Secure Clearance Verification Screen -->
+  <div id="overviewAuthGateLoader" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#0a0f1d; color:#94a3b8; font-family:'Outfit',sans-serif; text-align:center; padding:1.5rem; position:fixed; inset:0; z-index:99999;">
+    <div style="width:52px; height:52px; border:3px solid rgba(99,102,241,0.2); border-top-color:#6366f1; border-radius:50%; animation:spinOverview 0.8s linear infinite; margin-bottom:1.25rem;"></div>
+    <h3 style="font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:0.4rem;">Verifying Contributor Clearance...</h3>
+    <p style="font-size:0.86rem; color:#94a3b8; max-width:380px;">Checking active session token and cryptographic clearance credentials with DPG Vault.</p>
+    <style>@keyframes spinOverview { to { transform: rotate(360deg); } }</style>
+  </div>
 
   <!-- ========================================================================
        READING PROGRESS BAR (LEGAL CENTER STYLE)
@@ -141,67 +165,7 @@
 
   </div>
 
-  <!-- ========================================================================
-       CLEARANCE GATE OVERLAY (CONFIDENTIALITY AUTHORIZATION GATE)
-       Hidden when authorized. No clearance threshold badges shown on DOM.
-       ======================================================================== -->
-  <div class="clearance-gate-overlay" id="clearanceGateOverlay" style="display:none;">
-    <div class="gate-card" id="gateCard">
-      <div class="gate-icon-circle">
-        <i class="ri-shield-user-fill"></i>
-      </div>
-      <h2 class="gate-title" id="gateTitle">Verified Contributor Access Only</h2>
-      <p class="gate-desc" id="gateDesc">
-        The DPGNotes Overview Tutorial &amp; Technical Architecture is reserved for authenticated contributors and approved researchers.
-      </p>
 
-      <div class="gate-status-alert" id="gateStatusAlert" style="display:none;">
-        <!-- Dynamically populated status -->
-      </div>
-
-      <!-- ALL AUTHENTICATION METHODS (MATCHING CONTRIBUTOR PAGES) -->
-      <div id="gateAuthSection">
-        <div class="gate-auth-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-          <button type="button" class="gate-btn-social" id="btnGateGoogleSignIn" onclick="window.dpgLoginGoogle ? window.dpgLoginGoogle() : window.signInWithGoogleGate()">
-            <i class="ri-google-fill" style="color:#ea4335;"></i> Google
-          </button>
-          <button type="button" class="gate-btn-social" id="btnGateGithubSignIn" onclick="window.dpgLoginGithub ? window.dpgLoginGithub() : (window.openSignInModal &amp;&amp; window.openSignInModal())">
-            <i class="ri-github-fill"></i> GitHub
-          </button>
-        </div>
-
-        <button type="button" class="gate-btn-primary-auth" style="width:100%; margin-bottom:1rem;" onclick="window.openSignInModal ? window.openSignInModal() : window.signInWithGoogleGate()">
-          <i class="ri-id-card-line"></i> Sign In with Student ID / Email + Password
-        </button>
-
-        <div style="display:flex; justify-content:space-between; margin-top:0.8rem; font-size:0.85rem;">
-          <a href="javascript:void(0)" onclick="window.openSignUpModal ? window.openSignUpModal() : (window.location.href='https://dpgnotes.web.app/index.html?action=signup')" style="color:#818cf8; text-decoration:none; font-weight:600;">Create Free Account</a>
-          <a href="javascript:void(0)" onclick="window.openForgotPasswordModal ? window.openForgotPasswordModal() : (window.location.href='https://dpgnotes.web.app/index.html?action=signin')" style="color:#94a3b8; text-decoration:none;">Forgot Password?</a>
-        </div>
-      </div>
-
-      <!-- REQUEST FORM (FOR LOGGED IN CONTRIBUTORS REQUIRING ADMIN APPROVAL) -->
-      <form id="gateRequestForm" style="display:none; margin-top:1.25rem;">
-        <label class="gate-field-label">
-          Purpose / Academic Justification for Access
-        </label>
-        <textarea id="gateReasonInput" class="gate-input-field" rows="3" placeholder="e.g. Capstone Project evaluation, Faculty technical review, or architectural study." required></textarea>
-
-        <button type="submit" class="gate-btn-submit" id="btnSubmitGateRequest">
-          Submit Access Request <i class="ri-arrow-right-line"></i>
-        </button>
-      </form>
-
-      <div class="gate-footer-links" style="margin-top:1.5rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1rem;">
-        <a href="https://dpgnotes.web.app/index.html">
-          <i class="ri-arrow-left-line"></i> Back to Homepage
-        </a>
-        <a href="https://dpgnotes.web.app/dashboard.html">
-          <i class="ri-dashboard-line"></i> Contributor Dashboard
-        </a>
-      </div>
-    </div>
-  </div>
 
   <!-- ========================================================================
        LEGAL CENTER-STYLE SEARCH MODAL (DIRECT CONTENT NAVIGATION)

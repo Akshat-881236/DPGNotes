@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Universal DPGNotes Pre-loader -->
+  <script src="/dpg-loader.js"></script>
+  <script src="https://dpgnotes.web.app/redirect.js" defer></script>
+  <meta name="google-adsense-account" content="ca-pub-5515547448097504">
+  <script src="../config.js"></script>
+  <script src="../dpg-params.js"></script>
+  <script src="../custom-dialogs.js"></script>
+  <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Confidential Clearance Required | DPGNotes Overview</title>
+  
+  <!-- SEO & Security Meta Tags -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="description" content="Authorization gateway and confidential clearance request for DPGNotes Technical Architecture and FSD Tutorials.">
+  <link rel="icon" type="image/png" href="https://dpgnotes.web.app/ANH.png">
+
+  <!-- Google Fonts: Inter, Outfit, Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Icons: RemixIcon & Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css?v=2.2.0">
+  <link rel="stylesheet" href="/auth-component.css">
+
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background-color: #0a0f1d;
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.16), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.12), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08), transparent 60%);
+      color: #f8fafc;
+      font-family: 'Outfit', sans-serif;
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    .access-container {
+      width: 100%;
+      max-width: 580px;
+      margin: auto;
+    }
+
+    .gate-card {
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 24px;
+      padding: 2.5rem 2.2rem;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(99, 102, 241, 0.18);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      position: relative;
+    }
+
+    .gate-icon-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.15);
+      border: 2px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      font-size: 2.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+    }
+
+    .gate-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .gate-desc {
+      font-size: 0.92rem;
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .gate-status-alert {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 1.1rem;
+      font-size: 0.88rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .gate-field-label {
+      display: block;
+      text-align: left;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .gate-input-field {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      margin-bottom: 1.25rem;
+      outline: none;
+      resize: vertical;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gate-input-field:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    .gate-btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 13px 22px;
+      border-radius: 12px;
+      font-size: 0.96rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 18px rgba(99, 102, 241, 0.35);
+    }
+
+    .gate-btn-submit:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(99, 102, 241, 0.5);
+    }
+
+    .gate-btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .gate-footer-links {
+      margin-top: 1.6rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 0.85rem;
+    }
+
+    .gate-footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .gate-footer-links a:hover {
+      color: #ffffff;
+    }
+
+    .dest-target-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #c7d2fe;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+
+  <!-- Instant Contributor Auth Protection Check -->
+  <script>
+    (function() {
+      const cachedUid = localStorage.getItem('dpgActiveUserUid');
+      if (!cachedUid) {
+        const dest = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.replace('/auth-layer.html?go-to=' + dest);
+      }
+    })();
+  </script>
+
+  <!-- DPGNotes Unified Shared Auth Component -->
+  <script type="module" src="/auth-component.js"></script>
+  <script src="/history-monitoring.js" defer></script>
+</head>
+<body>
+
+  <div class="access-container">
+    <div class="gate-card" id="gateCard">
+      
+      <!-- Destination Pill -->
+      <div id="destBadge" class="dest-target-badge" style="display:none;">
+        <i class="ri-compass-3-line"></i>
+        <span>Destination: <strong id="destPathText">/overview/index.html</strong></span>
+      </div>
+
+      <div class="gate-icon-circle" id="gateIconCircle">
+        <i class="ri-shield-keyhole-fill"></i>
+      </div>
+
+      <h2 class="gate-title" id="gateTitle">Confidential Clearance Required</h2>
+      <p class="gate-desc" id="gateDesc">
+        Access to the DPGNotes Technical Architecture and FSD Tutorial is reserved for verified contributors authorized by administrators in the Admin Portal.
+      </p>
+
+      <!-- Status Alert Box -->
+      <div class="gate-status-alert" id="gateStatusAlert">
+        <div style="color:#eab308; font-weight:700;">
+          <i class="ri-shield-keyhole-line"></i> Signed In Contributor: <span id="contributorDisplayName">Verifying...</span>
+        </div>
+        <p style="margin:4px 0 0; font-size:0.85rem; color:#cbd5e1;">
+          Submit your academic justification or evaluation purpose to request an active clearance threshold.
+        </p>
+      </div>
+
+      <!-- Request Clearance Form -->
+      <form id="gateRequestForm">
+        <label class="gate-field-label" for="gateReasonInput">
+          Purpose / Academic Justification for Access
+        </label>
+        <textarea id="gateReasonInput" class="gate-input-field" rows="4" placeholder="e.g. Capstone Project evaluation, Faculty technical review, or architectural study." required></textarea>
+
+        <button type="submit" class="gate-btn-submit" id="btnSubmitGateRequest">
+          Submit Access Request <i class="ri-arrow-right-line"></i>
+        </button>
+      </form>
+
+      <!-- Footer Links -->
+      <div class="gate-footer-links">
+        <a href="https://dpgnotes.web.app/index.html">
+          <i class="ri-arrow-left-line"></i> Back to Homepage
+        </a>
+        <a href="https://dpgnotes.web.app/dashboard.html">
+          <i class="ri-dashboard-line"></i> Contributor Dashboard
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "542750393081",
+      appId: "1:542750393081:web:ca0207ffb846eeb318f7db"
+    };
+
+    const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let activeUser = null;
+
+    // Safe redirection target extraction
+    function getSafeRedirectTarget() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let target = urlParams.get('go-to') || urlParams.get('goto') || urlParams.get('redirect') || sessionStorage.getItem('dpg_auth_redirect') || '/overview/index.html';
+      
+      let resolved = '/overview/index.html';
+      try {
+        const parsed = new URL(target, window.location.origin);
+        if (parsed.origin === window.location.origin) {
+          resolved = parsed.pathname + parsed.search + parsed.hash;
+        }
+      } catch (e) {}
+
+      if (resolved === '/overview/index.html' && target.startsWith('/') && !target.startsWith('//')) {
+        resolved = target;
+      }
+      return resolved;
+    }
+
+    const safeTarget = getSafeRedirectTarget();
+
+    // Show destination badge if not default
+    const destBadge = document.getElementById("destBadge");
+    const destText = document.getElementById("destPathText");
+    if (destBadge && destText && safeTarget !== '/overview/index.html') {
+      destBadge.style.display = "inline-flex";
+      destText.textContent = safeTarget;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Listen to Auth State
+    onAuthStateChanged(auth, async (user) => {
+      const localUid = localStorage.getItem("dpgActiveUserUid");
+      const localEmail = localStorage.getItem("dpgActiveUserEmail");
+      const localName = localStorage.getItem("dpgActiveUserName");
+      const localRole = localStorage.getItem("dpgActiveUserRole");
+
+      if (user) {
+        activeUser = user;
+      } else if (localUid) {
+        activeUser = {
+          uid: localUid,
+          email: localEmail || "contributor@dpgnotes.app",
+          displayName: localName || "Verified Contributor",
+          role: localRole || "contributor"
+        };
+      } else {
+        activeUser = null;
+      }
+
+      if (!activeUser) {
+        // Guest: Redirect to Contributor Auth Gateway
+        const target = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.replace('/auth-layer.html?go-to=' + target);
+        return;
+      }
+
+      // Display Contributor Identity
+      const nameSpan = document.getElementById("contributorDisplayName");
+      if (nameSpan) {
+        nameSpan.textContent = activeUser.displayName || activeUser.email || "Verified Contributor";
+      }
+
+      // Admin Exemption Check
+      const isAdmin = activeUser.email === "its.akshatnetworkhub23@gmail.com" || 
+                      activeUser.role === "admin" || 
+                      localRole === "admin";
+
+      if (isAdmin) {
+        sessionStorage.setItem("dpg_confidential_approved", activeUser.uid);
+        renderApprovedState();
+        setTimeout(() => {
+          window.location.replace(safeTarget);
+        }, 500);
+        return;
+      }
+
+      // Check Firestore Clearance
+      await evaluateClearanceRecord();
+    });
+
+    async function evaluateClearanceRecord() {
+      if (!activeUser) return;
+      try {
+        const reqRef = doc(db, "confidential_overview_requests", activeUser.uid);
+        const reqSnap = await getDoc(reqRef);
+
+        if (!reqSnap.exists()) {
+          renderRequestForm(false);
+          return;
+        }
+
+        const record = reqSnap.data();
+        evaluateClearanceStatus(record);
+      } catch (err) {
+        console.warn("Error reading clearance request:", err);
+        renderRequestForm(false);
+      }
+    }
+
+    function evaluateClearanceStatus(record) {
+      const now = new Date();
+      const start = record.startDate ? new Date(record.startDate + "T00:00:00") : null;
+      const end = record.endDate ? new Date(record.endDate + "T23:59:59") : null;
+
+      if (record.status === "pending" || !record.status) {
+        renderPendingStatus(record);
+        return;
+      }
+
+      if (record.status === "rejected") {
+        renderRejectedStatus(record);
+        return;
+      }
+
+      if (record.status === "revoked") {
+        renderRevokedStatus(record);
+        return;
+      }
+
+      if (end && now > end) {
+        renderExpiredStatus(record);
+        return;
+      }
+
+      if (start && now < start) {
+        renderScheduledStatus(record);
+        return;
+      }
+
+      if (record.status === "approved" && (!start || now >= start) && (!end || now <= end)) {
+        sessionStorage.setItem("dpg_confidential_approved", activeUser.uid);
+        renderApprovedState();
+        setTimeout(() => {
+          window.location.replace(safeTarget);
+        }, 600);
+        return;
+      }
+
+      renderRequestForm(false);
+    }
+
+    function renderApprovedState() {
+      const gateTitle = document.getElementById("gateTitle");
+      const gateDesc = document.getElementById("gateDesc");
+      const gateStatusAlert = document.getElementById("gateStatusAlert");
+      const gateForm = document.getElementById("gateRequestForm");
+      const iconCircle = document.getElementById("gateIconCircle");
+
+      if (iconCircle) {
+        iconCircle.style.background = "rgba(16, 185, 129, 0.15)";
+        iconCircle.style.borderColor = "rgba(16, 185, 129, 0.4)";
+        iconCircle.style.color = "#10b981";
+        iconCircle.innerHTML = '<i class="ri-checkbox-circle-fill"></i>';
+      }
+      if (gateTitle) gateTitle.textContent = "Clearance Authorized";
+      if (gateDesc) gateDesc.textContent = "Your confidential clearance has been verified. Redirecting you to the Overview Workspace...";
+      if (gateStatusAlert) {
+        gateStatusAlert.style.display = "block";
+        gateStatusAlert.style.borderColor = "rgba(16, 185, 129, 0.4)";
+        gateStatusAlert.innerHTML = `
+          <div style="color:#10b981; font-weight:700;"><i class="ri-shield-check-fill"></i> Access Verified</div>
+          <p style="margin:4px 0 0; color:#cbd5e1;">Redirecting to ${escapeHtml(safeTarget)}...</p>
+        `;
+      }
+      if (gateForm) gateForm.style.display = "none";
+    }
+
+    function renderRequestForm(isRenewal = false) {
+      const gateTitle = document.getElementById("gateTitle");
+      const gateDesc = document.getElementById("gateDesc");
+      const gateStatusAlert = document.getElementById("gateStatusAlert");
+      const gateForm = document.getElementById("gateRequestForm");
+
+      if (gateTitle) gateTitle.textContent = isRenewal ? "Renew Overview Clearance" : "Confidential Clearance Required";
+      if (gateDesc) gateDesc.textContent = "Access to the DPGNotes Technical Architecture and FSD Tutorial is reserved for verified contributors authorized by administrators in the Admin Portal.";
+
+      if (gateStatusAlert) {
+        gateStatusAlert.style.display = "block";
+        gateStatusAlert.innerHTML = `
+          <div style="color:#eab308; font-weight:700;">
+            <i class="ri-shield-keyhole-line"></i> Signed In Contributor: ${escapeHtml(activeUser?.displayName || activeUser?.email || "Contributor")}
+          </div>
+          <p style="margin:4px 0 0; font-size:0.85rem; color:#cbd5e1;">
+            Submit your academic justification or evaluation purpose to request an active clearance threshold.
+          </p>
+        `;
+      }
+
+      if (gateForm) {
+        gateForm.style.display = "block";
+        const submitBtn = document.getElementById("btnSubmitGateRequest");
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `Submit Access Request <i class="ri-arrow-right-line"></i>`;
+        }
+      }
+    }
+
+    function renderPendingStatus(record) {
+      const gateTitle = document.getElementById("gateTitle");
+      const gateDesc = document.getElementById("gateDesc");
+      const gateStatusAlert = document.getElementById("gateStatusAlert");
+      const gateForm = document.getElementById("gateRequestForm");
+
+      if (gateTitle) gateTitle.textContent = "Clearance Pending Approval";
+      if (gateDesc) gateDesc.textContent = "Your request has been dispatched to the Administrator and is currently listed in the Admin Portal 'Confidential' Tab.";
+      if (gateStatusAlert) {
+        gateStatusAlert.style.display = "block";
+        gateStatusAlert.style.borderColor = "rgba(234, 179, 8, 0.35)";
+        gateStatusAlert.innerHTML = `
+          <div style="color:#eab308; font-weight:700;"><i class="ri-time-line"></i> Status: Pending Admin Review</div>
+          <p style="margin:4px 0; color:#cbd5e1;"><strong>Submitted By:</strong> ${escapeHtml(record.displayName || record.email)}</p>
+          <p style="margin:4px 0; color:#cbd5e1;"><strong>Purpose:</strong> ${escapeHtml(record.reason || "Architecture evaluation")}</p>
+          <p style="margin-top:8px; font-size:0.8rem; color:#94a3b8;">Once the Administrator authorizes your request in the Admin Portal, click below or refresh to enter.</p>
+          <button type="button" class="gate-btn-submit" id="btnCheckApproval" style="margin-top:12px; width:100%; justify-content:center;">
+            <i class="ri-refresh-line"></i> Check Approval Status
+          </button>
+        `;
+
+        const checkBtn = document.getElementById("btnCheckApproval");
+        if (checkBtn) {
+          checkBtn.onclick = async () => {
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Checking...';
+            await evaluateClearanceRecord();
+          };
+        }
+      }
+      if (gateForm) gateForm.style.display = "none";
+    }
+
+    function renderRejectedStatus(record) {
+      const gateTitle = document.getElementById("gateTitle");
+      const gateDesc = document.getElementById("gateDesc");
+      const gateStatusAlert = document.getElementById("gateStatusAlert");
+
+      if (gateTitle) gateTitle.textContent = "Access Request Declined";
+      if (gateDesc) gateDesc.textContent = "Your recent request for system overview access was declined by the administrator.";
+      if (gateStatusAlert) {
+        gateStatusAlert.style.display = "block";
+        gateStatusAlert.style.borderColor = "rgba(239, 68, 68, 0.35)";
+        gateStatusAlert.innerHTML = `
+          <div style="color:#ef4444; font-weight:700;"><i class="ri-close-circle-line"></i> Request Declined</div>
+          <p style="margin:4px 0; color:#cbd5e1;"><strong>Note:</strong> ${escapeHtml(record.rejectionReason || "Requirements not met")}</p>
+          <p style="margin-top:8px; font-size:0.8rem; color:#94a3b8;">You may submit an updated request below.</p>
+        `;
+      }
+      renderRequestForm(true);
+    }
+
+    function renderRevokedStatus(record) {
+      const gateTitle = document.getElementById("gateTitle");
+      const gateDesc = document.getElementById("gateDesc");
+      const gateStatusAlert = document.getElementById("gateStatusAlert");
+
+      if (gateTitle) gateTitle.textContent = "Clearance Revoked";
+      if (gateDesc) gateDesc.textContent = "Your access authorization has been revoked by the administrator in the Admin Portal.";
+      if (gateStatusAlert) {
+        gateStatusAlert.style.display = "block";
+        gateStatusAlert.style.borderColor = "rgba(239, 68, 68, 0.35)";
+        gateStatusAlert.innerHTML = `
+          <div style="color:#ef4444; font-weight:700;"><i class="ri-prohibited-line"></i> Access Revoked</div>
+          <p style="margin:6px 0; color:#cbd5e1;">Submit a new request if this action was taken in error.</p>
+        `;
+      }
+      renderRequestForm(true);
+    }
+
+    function renderExpiredStatus(record) {
+      const gateTitle = document.getElementById("gateTitle");
+      const gateDesc = document.getElementById("gateDesc");
+      const gateStatusAlert = document.getElementById("gateStatusAlert");
+
+      if (gateTitle) gateTitle.textContent = "Access Window Expired";
+      if (gateDesc) gateDesc.textContent = "Your previously approved access window has expired. Access is automatically denied until renewed.";
+      if (gateStatusAlert) {
+        gateStatusAlert.style.display = "block";
+        gateStatusAlert.style.borderColor = "rgba(239, 68, 68, 0.35)";
+        gateStatusAlert.innerHTML = `
+          <div style="color:#ef4444; font-weight:700;"><i class="ri-alarm-warning-line"></i> Clearance Expired</div>
+          <p style="margin:6px 0; color:#cbd5e1;">Submit a renewal request for updated administrator authorization.</p>
+        `;
+      }
+      renderRequestForm(true);
+    }
+
+    function renderScheduledStatus(record) {
+      const gateTitle = document.getElementById("gateTitle");
+      const gateDesc = document.getElementById("gateDesc");
+      const gateStatusAlert = document.getElementById("gateStatusAlert");
+      const gateForm = document.getElementById("gateRequestForm");
+
+      if (gateTitle) gateTitle.textContent = "Clearance Scheduled";
+      if (gateDesc) gateDesc.textContent = `Your access authorization is scheduled to become active on ${escapeHtml(record.startDate)}.`;
+      if (gateStatusAlert) {
+        gateStatusAlert.style.display = "block";
+        gateStatusAlert.style.borderColor = "rgba(56, 189, 248, 0.35)";
+        gateStatusAlert.innerHTML = `
+          <div style="color:#38bdf8; font-weight:700;"><i class="ri-calendar-event-line"></i> Scheduled Access</div>
+          <p style="margin:6px 0; color:#cbd5e1;">Access will activate automatically on your approved start date.</p>
+        `;
+      }
+      if (gateForm) gateForm.style.display = "none";
+    }
+
+    // Submit Request Action
+    const requestForm = document.getElementById("gateRequestForm");
+    if (requestForm) {
+      requestForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const reasonInput = document.getElementById("gateReasonInput");
+        const reasonVal = (reasonInput?.value || "").trim();
+
+        if (!reasonVal) {
+          alert("Please state your justification or purpose for access.");
+          return;
+        }
+
+        const submitBtn = document.getElementById("btnSubmitGateRequest");
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Submitting to Admin...`;
+        }
+
+        try {
+          const docData = {
+            uid: activeUser.uid,
+            email: activeUser.email || "",
+            displayName: activeUser.displayName || activeUser.name || localStorage.getItem("dpgActiveUserName") || "Verified Contributor",
+            photoURL: activeUser.photoURL || "",
+            reason: reasonVal,
+            status: "pending",
+            requestDate: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          };
+
+          await setDoc(doc(db, "confidential_overview_requests", activeUser.uid), docData, { merge: true });
+          renderPendingStatus(docData);
+        } catch (err) {
+          console.error("Submission failed:", err);
+          alert("Request submission failed: " + err.message);
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `Submit Access Request <i class="ri-arrow-right-line"></i>`;
+          }
+        }
+      };
+    }
+
+    window.checkApprovalStatusNow = evaluateClearanceRecord;
+  </script>
+</body>
+</html>
