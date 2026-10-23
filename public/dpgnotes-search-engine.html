@@ -1,1268 +1,1307 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
-  <script src="/dpg-loader.js"></script>
-  <script src="https://dpgnotes.web.app/redirect.js" defer></script>
-  <meta name="google-adsense-account" content="ca-pub-5515547448097504">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="icon" href="ANH.png" type="image/png" />
-  <title>DPGNotes Search Engine | Academic Notes, Solutions &amp; Question Papers</title>
-  <meta name="description" content="Search across thousands of verified university notes, computer science modules, sessional question papers, tutorials, and practical files on DPGNotes Search Engine." />
-  <link rel="canonical" href="https://dpgnotes.web.app/dpgnotes-search-engine.html" />
-  <meta name="robots" content="index, follow" />
-  <meta name="keywords" content="DPGNotes Search, Academic Search Engine, University Notes Finder, BCA PYQ, Computer Science Search, Physical Education Notes, Exam Preparation" />
-  <meta name="author" content="DPGNotes / Akshat Network Hub" />
-  <meta property="og:title" content="DPGNotes Search Engine" />
-  <meta property="og:description" content="Intelligent academic search engine for college notes, question papers, and study materials." />
-  <meta property="og:image" content="ANH.png" />
-  <meta property="og:type" content="website" />
-  
-  <!-- Fonts & Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-  <script src="dpg-params.js"></script>
-  <script src="custom-dialogs.js"></script>
-  <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
-  
-  <style>
-    :root {
-      --bg: #ffffff;
-      --text: #202124;
-      --text-muted: #5f6368;
-      --primary: #1a73e8;
-      --primary-hover: #1557b0;
-      --primary-light: #e8f0fe;
-      --border: #dfe1e5;
-      --border-hover: #dadce0;
-      --shadow-sm: 0 1px 6px rgba(32,33,36,0.18);
-      --shadow-md: 0 4px 16px rgba(32,33,36,0.16);
-      --chip-bg: #f8fafc;
-      --chip-border: #e2e8f0;
-      --chip-hover: #f1f5f9;
-      --radius-pill: 28px;
-    }
-
-    html[data-theme="dark"] {
-      --bg: #0b0f19;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #1e293b;
-      --border-hover: #334155;
-      --chip-bg: #111827;
-      --chip-border: #1e293b;
-      --chip-hover: #1e293b;
-      --primary: #38bdf8;
-      --primary-hover: #0ea5e9;
-      --primary-light: rgba(56, 189, 248, 0.15);
-      --shadow-sm: 0 1px 6px rgba(0,0,0,0.4);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
-
-    /* Dark Theme Overrides for Search Engine */
-    html[data-theme="dark"] .engine-top-nav {
-      background: #0b0f19 !important;
-      border-bottom-color: #1e293b !important;
-    }
-    html[data-theme="dark"] .nav-brand-title {
-      color: #38bdf8 !important;
-    }
-    html[data-theme="dark"] .nav-home-btn {
-      background: #111827 !important;
-      color: #f8fafc !important;
-      border-color: #1e293b !important;
-    }
-    html[data-theme="dark"] .nav-home-btn:hover {
-      background: #1e293b !important;
-      color: #38bdf8 !important;
-      border-color: #38bdf8 !important;
-    }
-    html[data-theme="dark"] .hero-brand-title {
-      color: #f8fafc !important;
-    }
-    html[data-theme="dark"] .hero-subtitle {
-      color: #94a3b8 !important;
-    }
-    html[data-theme="dark"] .search-bar-wrapper {
-      background: #111827 !important;
-      border-color: #1e293b !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
-    }
-    html[data-theme="dark"] .search-bar-wrapper:hover,
-    html[data-theme="dark"] .search-bar-wrapper:focus-within {
-      background: #151e34 !important;
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18), 0 4px 16px rgba(0,0,0,0.5) !important;
-    }
-    html[data-theme="dark"] .search-input {
-      color: #f8fafc !important;
-    }
-    html[data-theme="dark"] .search-input::placeholder {
-      color: #64748b !important;
-    }
-    html[data-theme="dark"] .suggestions-dropdown {
-      background: #111827 !important;
-      border-color: #1e293b !important;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
-    }
-    html[data-theme="dark"] .suggestion-item {
-      color: #f8fafc !important;
-      border-bottom-color: #1e293b !important;
-    }
-    html[data-theme="dark"] .suggestion-item:hover,
-    html[data-theme="dark"] .suggestion-item.active {
-      background: #1e293b !important;
-    }
-    html[data-theme="dark"] .suggestion-meta {
-      color: #94a3b8 !important;
-    }
-    html[data-theme="dark"] .category-chip {
-      background: #111827 !important;
-      color: #cbd5e1 !important;
-      border-color: #1e293b !important;
-    }
-    html[data-theme="dark"] .category-chip:hover {
-      background: #1e293b !important;
-      border-color: #38bdf8 !important;
-      color: #38bdf8 !important;
-    }
-    html[data-theme="dark"] .cta-btn-primary {
-      background: #38bdf8 !important;
-      color: #0b0f19 !important;
-    }
-    html[data-theme="dark"] .cta-btn-secondary {
-      background: #111827 !important;
-      color: #f8fafc !important;
-      border-color: #1e293b !important;
-    }
-    html[data-theme="dark"] .cta-btn-secondary:hover {
-      background: #1e293b !important;
-      border-color: #38bdf8 !important;
-      color: #38bdf8 !important;
-    }
-    html[data-theme="dark"] .engine-footer {
-      background: #0b0f19 !important;
-      border-top-color: #1e293b !important;
-      color: #64748b !important;
-    }
-    html[data-theme="dark"] .engine-footer a {
-      color: #94a3b8 !important;
-    }
-    html[data-theme="dark"] .engine-footer a:hover {
-      color: #38bdf8 !important;
-    }
-    .engine-theme-toggle-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: all 0.2s;
-    }
-    .engine-theme-toggle-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-    html[data-theme="dark"] .engine-theme-toggle-btn {
-      background: #111827;
-      color: #f8fafc;
-      border-color: #1e293b;
-    }
-    html[data-theme="dark"] .engine-theme-toggle-btn:hover {
-      background: #1e293b;
-      border-color: #38bdf8;
-      color: #38bdf8;
-    }
-
-    /* ==========================================
-       TOP NAVIGATION BAR
-       ========================================== */
-    .engine-top-nav {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.85rem 1.75rem;
-      background: #ffffff;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .nav-brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      color: var(--primary);
-      font-family: 'Outfit', sans-serif;
-      font-weight: 700;
-      font-size: 1.25rem;
-      letter-spacing: -0.4px;
-      transition: opacity 0.2s;
-    }
-    .nav-brand:hover {
-      opacity: 0.9;
-    }
-    .nav-brand-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: var(--primary);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    /* Home (Always Present) */
-    .nav-home-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #ffffff;
-      color: #3c4043;
-      border: 1px solid #dadce0;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-    .nav-home-btn:hover {
-      background: #f8fafc;
-      border-color: #bdc1c6;
-      color: #202124;
-    }
-
-    /* Guest Sign In Button */
-    .nav-btn-signin {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--primary);
-      color: #ffffff;
-      border: 1px solid var(--primary);
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(26,115,232,0.28);
-    }
-    .nav-btn-signin:hover {
-      background: var(--primary-hover);
-      border-color: var(--primary-hover);
-      box-shadow: 0 2px 6px rgba(26,115,232,0.38);
-    }
-
-    /* Contributor / Logged-in State */
-    .contributor-user-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .contributor-dashboard-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--primary);
-      color: #ffffff;
-      border: 1px solid var(--primary);
-      padding: 4px 14px 4px 5px;
-      border-radius: 22px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(26,115,232,0.25);
-    }
-    .contributor-dashboard-btn:hover {
-      background: var(--primary-hover);
-    }
-
-    .contributor-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #ffffff;
-      background: #3b82f6;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.78rem;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .contributor-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .contributor-logout-btn {
-      background: #f8fafc;
-      border: 1px solid #dadce0;
-      color: #5f6368;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1.05rem;
-      transition: all 0.2s ease;
-    }
-    .contributor-logout-btn:hover {
-      background: #fee2e2;
-      border-color: #fca5a5;
-      color: #dc2626;
-    }
-
-    /* ==========================================
-       MAIN HERO SECTION (MATCHING IMAGES 2 & 3)
-       ========================================== */
-    .search-hero-stage {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2.5rem 1.5rem 3rem 1.5rem;
-      width: 100%;
-      max-width: 820px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .hero-center-brand {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 0.5rem;
-    }
-    .hero-logo-icon {
-      font-size: 2.5rem;
-      color: var(--primary);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .hero-brand-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 3.25rem;
-      font-weight: 800;
-      letter-spacing: -1px;
-      color: #1a73e8;
-    }
-    .hero-brand-title .accent {
-      color: #202124;
-    }
-
-    .hero-subtitle {
-      color: var(--text-muted);
-      font-size: 0.96rem;
-      margin-bottom: 2rem;
-      max-width: 600px;
-      line-height: 1.5;
-    }
-
-    /* ==========================================
-       SEARCH BOX & AUTO-SUGGESTIONS (IMAGE 4)
-       ========================================== */
-    .search-box-outer-container {
-      width: 100%;
-      max-width: 680px;
-      position: relative;
-      margin-bottom: 1.5rem;
-    }
-
-    .search-bar-wrapper {
-      position: relative;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-pill);
-      padding: 0.35rem 0.6rem;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 20;
-    }
-
-    .search-bar-wrapper:hover,
-    .search-bar-wrapper:focus-within {
-      box-shadow: var(--shadow-md);
-      border-color: transparent;
-    }
-
-    /* When suggestions are active, attach dropdown smoothly */
-    .search-bar-wrapper.has-suggestions {
-      border-bottom-left-radius: 0 !important;
-      border-bottom-right-radius: 0 !important;
-      border-bottom-color: #f1f3f4 !important;
-      box-shadow: 0 4px 16px rgba(32,33,36,0.16) !important;
-    }
-
-    .search-bar-icon {
-      color: #9aa0a6;
-      font-size: 1.25rem;
-      margin-left: 0.65rem;
-      flex-shrink: 0;
-    }
-
-    .search-input {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 1.05rem;
-      padding: 0.65rem 0.3rem;
-    }
-    .search-input::placeholder {
-      color: #9aa0a6;
-      font-size: 0.98rem;
-    }
-
-    .search-bar-actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-right: 0.5rem;
-      flex-shrink: 0;
-    }
-
-    .search-action-icon-btn {
-      background: none;
-      border: none;
-      color: #5f6368;
-      font-size: 1.2rem;
-      padding: 6px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .search-action-icon-btn:hover {
-      background: #f1f3f4;
-      color: var(--text);
-    }
-
-    .search-mic-btn {
-      color: #ea4335 !important;
-    }
-    .search-mic-btn.listening {
-      color: #ea4335 !important;
-      animation: micPulse 1.2s infinite;
-      background: #fce8e6;
-    }
-    @keyframes micPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.18); }
-      100% { transform: scale(1); }
-    }
-
-    .search-clear-btn {
-      display: none;
-      color: #70757a;
-    }
-    .search-clear-btn.visible {
-      display: flex;
-    }
-
-    /* Auto-suggestions Dropdown (Matching Image 4) */
-    .suggestions-dropdown {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-top: none;
-      border-bottom-left-radius: 24px;
-      border-bottom-right-radius: 24px;
-      box-shadow: 0 8px 16px rgba(32,33,36,0.16);
-      display: none;
-      max-height: 380px;
-      overflow-y: auto;
-      text-align: left;
-      z-index: 15;
-      padding: 0.4rem 0;
-    }
-    .suggestions-dropdown.active {
-      display: block;
-    }
-
-    .suggestion-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.65rem 1.25rem;
-      cursor: pointer;
-      text-decoration: none;
-      color: var(--text);
-      transition: background 0.15s ease;
-      gap: 12px;
-    }
-    .suggestion-row:hover {
-      background: #f8fafc;
-    }
-
-    .suggestion-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-      min-width: 0;
-    }
-    .suggestion-left i {
-      color: #9aa0a6;
-      font-size: 1.15rem;
-      flex-shrink: 0;
-    }
-    .suggestion-text {
-      font-size: 0.95rem;
-      color: #202124;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .suggestion-badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 12px;
-      background: #e8f0fe;
-      color: #1a73e8;
-      flex-shrink: 0;
-    }
-
-    .no-suggestions-row {
-      padding: 1rem 1.25rem;
-      font-size: 0.88rem;
-      color: #70757a;
-      text-align: center;
-    }
-
-    /* ==========================================
-       BUTTONS & TRENDING PILLS (IMAGE 2 & 3)
-       ========================================== */
-    .hero-btn-row {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .hero-action-btn {
-      background: #f8fafc;
-      border: 1px solid #dadce0;
-      color: #3c4043;
-      padding: 0.55rem 1.25rem;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .hero-action-btn:hover {
-      background: #f1f3f4;
-      border-color: #bdc1c6;
-      color: #202124;
-      box-shadow: 0 1px 3px rgba(60,64,67,0.15);
-    }
-
-    .trending-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      max-width: 720px;
-    }
-
-    .trending-label {
-      font-size: 0.84rem;
-      color: #70757a;
-      font-weight: 500;
-    }
-
-    .trending-pill {
-      background: var(--chip-bg);
-      border: 1px solid var(--chip-border);
-      color: #4b5563;
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .trending-pill:hover {
-      background: var(--chip-hover);
-      border-color: #cbd5e1;
-      color: #1e293b;
-      transform: translateY(-1px);
-    }
-
-    /* ==========================================
-       MOBILE RESPONSIVENESS (MATCHING IMAGE 3)
-       ========================================== */
-    @media (max-width: 768px) {
-      .engine-top-nav {
-        padding: 0.65rem 1rem;
-      }
-      .dashboard-label-text {
-        display: none !important;
-      }
-      .contributor-dashboard-btn {
-        padding: 2px;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-      }
-      .contributor-avatar {
-        width: 32px;
-        height: 32px;
-        border: 2px solid var(--primary);
-      }
-      .search-hero-stage {
-        padding: 2rem 1rem;
-      }
-      .hero-brand-title {
-        font-size: 2.5rem;
-      }
-      .hero-subtitle {
-        font-size: 0.86rem;
-        margin-bottom: 1.5rem;
-      }
-      .search-box-outer-container {
-        margin-bottom: 1.25rem;
-      }
-      .search-input {
-        font-size: 0.95rem;
-      }
-      .hero-btn-row {
-        gap: 8px;
-        margin-bottom: 1.5rem;
-      }
-      .hero-action-btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.84rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .nav-home-text {
-        display: none;
-      }
-      .nav-home-btn {
-        padding: 6px 10px;
-      }
-      .hero-brand-title {
-        font-size: 2.15rem;
-      }
-    }
-
-    /* ========================================================
-       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
-       ======================================================== */
-    @media (max-width: 380px) {
-      .engine-top-nav {
-        padding: 0.5rem 0.6rem;
-      }
-      .nav-brand-title {
-        font-size: 0.95rem;
-      }
-      .nav-btn-signin span {
-        display: none;
-      }
-      .hero-brand-title {
-        font-size: 1.8rem;
-      }
-      .main-search-input {
-        font-size: 0.88rem;
-      }
-      .quick-chips-wrapper {
-        gap: 6px;
-      }
-    }
-
-    @media (max-width: 340px) {
-      .nav-home-btn {
-        padding: 4px 6px;
-      }
-      .hero-brand-title {
-        font-size: 1.5rem;
-      }
-    }
-
-    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
-      .search-engine-hero {
-        padding: 2.5rem 1.5rem;
-      }
-      .main-search-box {
-        max-width: 90%;
-      }
-    }
-
-    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
-      .engine-top-nav {
-        padding: 0.75rem 1.5rem;
-      }
-    }
-  </style>
-  <script src="/history-monitoring.js" defer></script>
-</head>
-<body>
-
-  <!-- Top Navigation Header -->
-  <header class="engine-top-nav">
-    <a href="/dpgnotes-search-engine.html" class="nav-brand" title="DPGNotes Search Engine">
-      <div class="nav-brand-logo">
-        <i class="ri-search-2-line"></i>
-      </div>
-      <span class="nav-brand-title">DPGNotes</span>
-    </a>
-
-    <div class="nav-actions">
-      <button type="button" class="engine-theme-toggle-btn" id="btnEngineThemeToggle" onclick="toggleEngineTheme()" title="Toggle Dark/Light Theme">
-        <i class="ri-moon-line" id="engineThemeIcon"></i>
-      </button>
-      <!-- Home (Always Present) -->
-      <a href="index.html" class="nav-home-btn" title="Back to Main Platform">
-        <i class="ri-home-4-line"></i>
-        <span class="nav-home-text">Home</span>
-      </a>
-
-      <!-- Auth Area: Contributor Dashboard with Photo & Logout OR Sign In if Guest -->
-      <div id="navAuthArea" class="nav-auth-area">
-        <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In to DPGNotes Contributor Portal">
-          <i class="ri-login-box-line"></i>
-          <span>Sign In</span>
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <!-- Top Native Sponsored Ad Banner -->
-  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="width:100%; max-width:820px; margin:0.5rem auto 0 auto; padding:0 1rem; box-sizing:border-box;"></div>
-
-  <!-- Hero Search Stage -->
-  <main class="search-hero-stage">
-    <!-- Center Logo & Branding (Matching Images 2 & 3) -->
-    <div class="hero-center-brand">
-      <i class="ri-search-eye-line hero-logo-icon"></i>
-      <h1 class="hero-brand-title">DPGNotes</h1>
-    </div>
-    <p class="hero-subtitle">DPG College Verified Academic Notes, Solutions &amp; Sessional Exam Hub</p>
-
-    <!-- Quick Search Mode Tabs (All, Notes, Solutions, Quizzes) -->
-    <div class="search-category-tabs" style="display:flex; justify-content:center; gap:8px; margin-bottom:1.2rem; flex-wrap:wrap;">
-      <a href="/dpgnotes-serp.html?tab=all" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
-        <i class="ri-search-line"></i> All
-      </a>
-      <a href="/dpgnotes-serp.html?tab=solutions" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
-        <i class="ri-code-box-line"></i> Solutions
-      </a>
-      <a href="/dpgnotes-serp.html?tab=quizzes" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(245, 158, 11, 0.15); border-color:rgba(245, 158, 11, 0.35); color:#f59e0b; font-weight:700;">
-        <i class="ri-questionnaire-line"></i> Quizzes <span style="font-size:0.65rem; background:#f59e0b; color:#000; padding:1px 5px; border-radius:6px; font-weight:800;">NEW</span>
-      </a>
-    </div>
-
-    <!-- Search Box with Live Auto-suggestions (Matching Image 4) -->
-    <div class="search-box-outer-container">
-      <div class="search-bar-wrapper" id="searchBarWrapper">
-        <i class="ri-search-line search-bar-icon"></i>
-        <input type="text" class="search-input" id="engineSearchInput" placeholder="Search projects, developers, tech stacks, notes..." autocomplete="off">
-        
-        <div class="search-bar-actions">
-          <!-- Clear Button -->
-          <button type="button" class="search-action-icon-btn search-clear-btn" id="btnClearSearch" onclick="clearSearchInput()" title="Clear Search">
-            <i class="ri-close-line"></i>
-          </button>
-          <!-- Voice Search Mic Button -->
-          <button type="button" class="search-action-icon-btn search-mic-btn" id="btnVoiceSearch" onclick="startVoiceSearch()" title="Search by Voice">
-            <i class="ri-mic-fill"></i>
-          </button>
-          <!-- Lens Visual Search Button -->
-          <button type="button" class="search-action-icon-btn" onclick="triggerDpgLensUpload()" title="DPG Lens Search" style="color:#0284c7;">
-            <i class="ri-camera-lens-line"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Hidden file input for DPG Lens -->
-      <input type="file" id="dpgLensFileInput" accept="image/*,.pdf" style="display:none;" onchange="handleDpgLensFileSelected(this)">
-
-      <!-- Live Auto-suggestions Dropdown (Matching Image 4) -->
-      <div class="suggestions-dropdown" id="suggestionsDropdown">
-        <div class="no-suggestions-row">Start typing to search notes, solutions, or topics...</div>
-      </div>
-    </div>
-
-    <!-- Search Buttons (Matching Images 2 & 3) -->
-    <div class="hero-btn-row">
-      <button type="button" class="hero-action-btn" onclick="triggerSearchRedirect()">DPGNotes Search</button>
-      <button type="button" class="hero-action-btn" onclick="luckyRedirect()">I'm Feeling Lucky</button>
-    </div>
-
-    <!-- Trending Chips (Matching Images 2 & 3) -->
-    <div class="trending-container">
-      <span class="trending-label">Trending:</span>
-      <a class="trending-pill" onclick="searchTrendingTopic('Machine Learning')">Machine Learning</a>
-      <a class="trending-pill" onclick="searchTrendingTopic('Full Stack React')">Full Stack React</a>
-      <a class="trending-pill" onclick="searchTrendingTopic('Python')">Python</a>
-      <a class="trending-pill" onclick="searchTrendingTopic('FastAPI')">FastAPI</a>
-      <a class="trending-pill" onclick="searchTrendingTopic('AI & Deep Learning')">AI &amp; Deep Learning</a>
-      <a class="trending-pill" onclick="searchTrendingTopic('Data Structures')">Data Structures</a>
-      <a class="trending-pill" onclick="searchTrendingTopic('Operating Systems')">Operating Systems</a>
-      <a class="trending-pill" onclick="searchTrendingTopic('DBMS Solutions')">DBMS Solutions</a>
-    </div>
-
-    <!-- Feed Native Ad Container -->
-    <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:2rem; width:100%; max-width:680px;"></div>
-  </main>
-
-  <!-- Bottom Footer Native Sponsored Ad Banner -->
-  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="width:100%; max-width:820px; margin:1rem auto 1.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
-
-  <script>
-    // Search Engine Theme Engine (Syncs with Platform & Reader Themes)
-    (function initEngineTheme() {
-      try {
-        const savedTheme = localStorage.getItem("dpg_active_theme") || localStorage.getItem("dpgReaderTheme") || "light";
-        const isDark = savedTheme === "dark" || savedTheme === "default";
-        document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
-        window.addEventListener('DOMContentLoaded', () => {
-          const icon = document.getElementById("engineThemeIcon");
-          if (icon) icon.className = isDark ? "ri-sun-line" : "ri-moon-line";
-        });
-      } catch(e) {}
-    })();
-
-    window.toggleEngineTheme = function() {
-      const current = document.documentElement.getAttribute("data-theme") || "light";
-      const next = current === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", next);
-      try {
-        localStorage.setItem("dpg_active_theme", next);
-        localStorage.setItem("dpgReaderTheme", next);
-      } catch(e) {}
-      const icon = document.getElementById("engineThemeIcon");
-      if (icon) icon.className = next === "dark" ? "ri-sun-line" : "ri-moon-line";
-    };
-  </script>
-
-  <script src="config.js"></script>
-  <script type="module">
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
-      authDomain: "dpgnotes.firebaseapp.com",
-      projectId: "dpgnotes",
-      storageBucket: "dpgnotes.firebasestorage.app",
-      messagingSenderId: "910494426039",
-      appId: "1:910494426039:web:adeae5315caaf846c43e32"
-    };
-
-    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    // ==========================================
-    // AUTH STATE & NAVBAR ADAPTATION
-    // (Laptop: Photo + Dashboard + Logout; Mobile: Avatar + Logout; Guest: Sign In)
-    // ==========================================
-    onAuthStateChanged(auth, (user) => {
-      const authArea = document.getElementById("navAuthArea");
-      if (!authArea) return;
-
-      if (user) {
-        const photoURL = user.photoURL || '';
-        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
-        const initial = displayName.charAt(0).toUpperCase();
-
-        const avatarHtml = photoURL 
-          ? `<img src="${photoURL}" alt="${displayName}" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">`
-          : initial;
-
-        authArea.innerHTML = `
-          <div class="contributor-user-wrapper">
-            <a href="dashboard.html" class="contributor-dashboard-btn" title="Go to Dashboard (${displayName})">
-              <div class="contributor-avatar">${avatarHtml}</div>
-              <span class="dashboard-label-text">Dashboard</span>
-            </a>
-            <button type="button" class="contributor-logout-btn" onclick="window.handleEngineSignOut()" title="Log Out">
-              <i class="ri-logout-box-r-line"></i>
-            </button>
-          </div>
-        `;
-      } else {
-        authArea.innerHTML = `
-          <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In to DPGNotes">
-            <i class="ri-login-box-line"></i>
-            <span>Sign In</span>
-          </a>
-        `;
-      }
-    });
-
-    window.handleEngineSignOut = async function() {
-      try {
-        await signOut(auth);
-        localStorage.removeItem("dpgActiveUserUid");
-        localStorage.removeItem("dpgActiveUserEmail");
-        localStorage.removeItem("dpgActiveUserName");
-        window.location.reload();
-      } catch (err) {
-        console.error("Sign out error:", err);
-      }
-    };
-
-    // ==========================================
-    // FIRESTORE PRELOAD & AUTO-SUGGESTIONS ENGINE (IMAGE 4)
-    // ==========================================
-    let cachedDocs = [];
-
-    async function loadDocumentsCache() {
-      try {
-        const snap = await getDocs(collection(db, "documents"));
-        cachedDocs = [];
-        snap.forEach(d => {
-          const data = d.data();
-          const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
-          const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
-          if (isApproved && !isPrivate) {
-            cachedDocs.push({ id: d.id, ...data });
-          }
-        });
-
-        // Also preload Academic Solutions (Practicals & Assignments)
-        try {
-          const solSnap = await getDocs(collectionGroup(db, "solutions"));
-          solSnap.forEach(solDoc => {
-            const solData = solDoc.data();
-            const parentPath = solDoc.ref.path || '';
-            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
-            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
-            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
-            const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
-            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
-            const subName = solData.subjectName || 'Academic Solution';
-            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
-
-            cachedDocs.push({
-              id: solDoc.id,
-              isSolution: true,
-              solutionUrl: solUrl,
-              title: `${subName}${subCode}`,
-              category: solType,
-              discipline: solData.course || solData.courseSec || "Academic",
-              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", solData.course || ""].filter(Boolean)
-            });
-          });
-        } catch(solErr) {
-          console.warn("Solutions suggestion preload warning:", solErr);
-        }
-
-        // Preload Quizzes from quizDirectory
-        try {
-          const qzSnap = await getDocs(collection(db, "quizDirectory"));
-          qzSnap.forEach(qzDoc => {
-            const qzData = qzDoc.data();
-            if (qzData.status === "published" || qzData.isPublic !== false) {
-              cachedDocs.push({
-                id: qzDoc.id,
-                isQuiz: true,
-                quizUrl: `/Quizes/index.html?quizId=${encodeURIComponent(qzDoc.id)}`,
-                title: qzData.title || `${qzData.subjectName} Quiz`,
-                subjectCode: qzData.subjectCode || '',
-                subjectName: qzData.subjectName || '',
-                questionKeywords: qzData.questionKeywords || '',
-                category: "Quiz",
-                discipline: qzData.subjectName || "Academic",
-                tags: ["quiz", "exam", "test", qzData.subjectCode || "", qzData.subjectName || "", ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean)
-              });
-            }
-          });
-        } catch(qzErr) {
-          console.warn("Quiz suggestion preload warning:", qzErr);
-        }
-      } catch (err) {
-        console.warn("Failed caching documents for suggestions:", err.message);
-      }
-    }
-
-    const input = document.getElementById("engineSearchInput");
-    const wrapper = document.getElementById("searchBarWrapper");
-    const dropdown = document.getElementById("suggestionsDropdown");
-    const clearBtn = document.getElementById("btnClearSearch");
-
-    window.clearSearchInput = function() {
-      if (input) {
-        input.value = '';
-        input.focus();
-        if (clearBtn) clearBtn.classList.remove("visible");
-        closeSuggestions();
-      }
-    };
-
-    function closeSuggestions() {
-      if (dropdown) dropdown.classList.remove("active");
-      if (wrapper) wrapper.classList.remove("has-suggestions");
-    }
-
-    input.addEventListener("input", (e) => {
-      const q = e.target.value.trim().toLowerCase();
-      if (clearBtn) {
-        if (q.length > 0) clearBtn.classList.add("visible");
-        else clearBtn.classList.remove("visible");
-      }
-
-      if (!q) {
-        closeSuggestions();
-        return;
-      }
-
-      // Filter matched documents
-      const matches = cachedDocs.filter(d => 
-        (d.title && d.title.toLowerCase().includes(q)) ||
-        (d.discipline && d.discipline.toLowerCase().includes(q)) ||
-        (d.category && d.category.toLowerCase().includes(q)) ||
-        (d.subjectCode && d.subjectCode.toLowerCase().includes(q)) ||
-        (d.subjectName && d.subjectName.toLowerCase().includes(q)) ||
-        (d.questionKeywords && d.questionKeywords.toLowerCase().includes(q)) ||
-        (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q)))
-      ).slice(0, 6);
-
-      dropdown.innerHTML = "";
-
-      if (matches.length > 0) {
-        matches.forEach(d => {
-          const row = document.createElement("div");
-          row.className = "suggestion-row";
-          // Direct Destination navigation when clicking a document or solution!
-          row.onclick = () => {
-            if (d.isQuiz && d.quizUrl) {
-              window.location.href = d.quizUrl;
-            } else if (d.isSolution && d.solutionUrl) {
-              window.location.href = d.solutionUrl;
-            } else {
-              window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
-            }
-          };
-
-          const iconClass = d.isQuiz ? 'ri-questionnaire-line' : (d.isSolution ? 'ri-code-box-line' : 'ri-file-text-line');
-          const iconColor = d.isQuiz ? 'color:#f59e0b;' : (d.isSolution ? 'color:#0284c7;' : '');
-          const badgeStyle = d.isQuiz ? 'background:#fef3c7; color:#b45309;' : (d.isSolution ? 'background:#e0f2fe; color:#0369a1;' : '');
-
-          row.innerHTML = `
-            <div class="suggestion-left">
-              <i class="${iconClass}" style="${iconColor}"></i>
-              <span class="suggestion-text">${d.title}</span>
-            </div>
-            <span class="suggestion-badge" style="${badgeStyle}">${d.category || 'Notes'}</span>
-          `;
-          dropdown.appendChild(row);
-        });
-
-        // Also add direct query search row
-        const queryRow = document.createElement("div");
-        queryRow.className = "suggestion-row";
-        queryRow.style.borderTop = "1px solid #f1f3f4";
-        queryRow.onclick = () => {
-          window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
-        };
-        queryRow.innerHTML = `
-          <div class="suggestion-left">
-            <i class="ri-search-2-line" style="color:#1a73e8;"></i>
-            <span class="suggestion-text" style="color:#1a73e8; font-weight:600;">Search for "<strong>${e.target.value.trim()}</strong>" on DPGNotes SERP</span>
-          </div>
-          <i class="ri-arrow-right-up-line" style="color:#1a73e8;"></i>
-        `;
-        dropdown.appendChild(queryRow);
-      } else {
-        // Query search row even when no exact doc matches
-        const queryRow = document.createElement("div");
-        queryRow.className = "suggestion-row";
-        queryRow.onclick = () => {
-          window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
-        };
-        queryRow.innerHTML = `
-          <div class="suggestion-left">
-            <i class="ri-search-line"></i>
-            <span class="suggestion-text">Search DPGNotes SERP for "<strong>${e.target.value.trim()}</strong>"</span>
-          </div>
-          <i class="ri-arrow-right-line" style="color:#9aa0a6;"></i>
-        `;
-        dropdown.appendChild(queryRow);
-      }
-
-      dropdown.classList.add("active");
-      wrapper.classList.add("has-suggestions");
-    });
-
-    // Close suggestions if clicked outside
-    document.addEventListener("click", (e) => {
-      if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) {
-        closeSuggestions();
-      }
-    });
-
-    // Enter Key Trigger -> Points to SERP page
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        window.triggerSearchRedirect();
-      }
-    });
-
-    window.triggerSearchRedirect = function() {
-      const q = input.value.trim();
-      if (q) {
-        window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(q)}`;
-      } else {
-        window.location.href = `/dpgnotes-serp.html`;
-      }
-    };
-
-    window.luckyRedirect = function() {
-      if (cachedDocs.length > 0) {
-        const randomDoc = cachedDocs[Math.floor(Math.random() * cachedDocs.length)];
-        window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(randomDoc.id)}&title=${encodeURIComponent(randomDoc.title || '')}`;
-      } else {
-        window.location.href = `/dpgnotes-serp.html`;
-      }
-    };
-
-    window.searchTrendingTopic = function(topic) {
-      if (input) input.value = topic;
-      window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(topic)}`;
-    };
-
-    // ==========================================
-    // VOICE SEARCH (SPEECH RECOGNITION)
-    // ==========================================
-    window.startVoiceSearch = function() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Voice recognition is not supported in this browser environment. Please type your query.");
-        return;
-      }
-      const micBtn = document.getElementById("btnVoiceSearch");
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.start();
-
-      if (micBtn) micBtn.classList.add("listening");
-      input.placeholder = "🎙️ Listening... Speak now";
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        input.value = transcript;
-        if (micBtn) micBtn.classList.remove("listening");
-        window.triggerSearchRedirect();
-      };
-      recognition.onerror = () => {
-        if (micBtn) micBtn.classList.remove("listening");
-        input.placeholder = "Search projects, developers, tech stacks, notes...";
-      };
-      recognition.onend = () => {
-        if (micBtn) micBtn.classList.remove("listening");
-      };
-    };
-
-    // ==========================================
-    // DPG LENS VISUAL SEARCH
-    // ==========================================
-    window.triggerDpgLensUpload = function() {
-      const fileInput = document.getElementById("dpgLensFileInput");
-      if (fileInput) fileInput.click();
-    };
-
-    window.handleDpgLensFileSelected = async function(inputEl) {
-      if (!inputEl.files || inputEl.files.length === 0) return;
-      const file = inputEl.files[0];
-      if (input) input.value = `📷 DPG Lens Scanning: ${file.name}...`;
-
-      try {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-          const res = await fetch(apiBase + '/api/ai/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              prompt: `DPG Lens Visual Analysis: Analyze file "${file.name}" and extract academic subject keywords, topic, and notes classification for DPGNotes search engine.`,
-              systemContext: 'DPG Lens Visual Recognition Engine'
-            })
-          });
-          const resJson = await res.json();
-          const keyword = (resJson.answer || file.name.replace(/\.[^/.]+$/, "")).substring(0, 40);
-          if (input) input.value = keyword;
-          window.triggerSearchRedirect();
-        };
-        reader.readAsDataURL(file);
-      } catch (err) {
-        console.error("DPG Lens Error:", err);
-        const fallbackQuery = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-        if (input) input.value = fallbackQuery;
-        window.triggerSearchRedirect();
-      }
-    };
-
-    // Start background preload
-    loadDocumentsCache();
-  </script>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
+  <script src="/dpg-loader.js"></script>
+  <script src="https://dpgnotes.web.app/redirect.js" defer></script>
+  <meta name="google-adsense-account" content="ca-pub-5515547448097504">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="ANH.png" type="image/png" />
+  <title>DPGNotes Search Engine | Academic Notes, Solutions &amp; Question Papers</title>
+  <meta name="description" content="Search across thousands of verified university notes, computer science modules, sessional question papers, tutorials, and practical files on DPGNotes Search Engine." />
+  <link rel="canonical" href="https://dpgnotes.web.app/dpgnotes-search-engine.html" />
+  <meta name="robots" content="index, follow" />
+  <meta name="keywords" content="DPGNotes Search, Academic Search Engine, University Notes Finder, BCA PYQ, Computer Science Search, Physical Education Notes, Exam Preparation" />
+  <meta name="author" content="DPGNotes / Akshat Network Hub" />
+  <meta property="og:title" content="DPGNotes Search Engine" />
+  <meta property="og:description" content="Intelligent academic search engine for college notes, question papers, and study materials." />
+  <meta property="og:image" content="ANH.png" />
+  <meta property="og:type" content="website" />
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="dpg-params.js"></script>
+  <script src="custom-dialogs.js"></script>
+  <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
+  
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #202124;
+      --text-muted: #5f6368;
+      --primary: #1a73e8;
+      --primary-hover: #1557b0;
+      --primary-light: #e8f0fe;
+      --border: #dfe1e5;
+      --border-hover: #dadce0;
+      --shadow-sm: 0 1px 6px rgba(32,33,36,0.18);
+      --shadow-md: 0 4px 16px rgba(32,33,36,0.16);
+      --chip-bg: #f8fafc;
+      --chip-border: #e2e8f0;
+      --chip-hover: #f1f5f9;
+      --radius-pill: 28px;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0b0f19;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --border-hover: #334155;
+      --chip-bg: #111827;
+      --chip-border: #1e293b;
+      --chip-hover: #1e293b;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --primary-light: rgba(56, 189, 248, 0.15);
+      --shadow-sm: 0 1px 6px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Dark Theme Overrides for Search Engine */
+    html[data-theme="dark"] .engine-top-nav {
+      background: #0b0f19 !important;
+      border-bottom-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .nav-brand-title {
+      color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .nav-home-btn {
+      background: #111827 !important;
+      color: #f8fafc !important;
+      border-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .nav-home-btn:hover {
+      background: #1e293b !important;
+      color: #38bdf8 !important;
+      border-color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .hero-brand-title {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .hero-subtitle {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .search-bar-wrapper {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+    }
+    html[data-theme="dark"] .search-bar-wrapper:hover,
+    html[data-theme="dark"] .search-bar-wrapper:focus-within {
+      background: #151e34 !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18), 0 4px 16px rgba(0,0,0,0.5) !important;
+    }
+    html[data-theme="dark"] .search-input {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .search-input::placeholder {
+      color: #64748b !important;
+    }
+    html[data-theme="dark"] .suggestions-dropdown {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    }
+    html[data-theme="dark"] .suggestion-item {
+      color: #f8fafc !important;
+      border-bottom-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .suggestion-item:hover,
+    html[data-theme="dark"] .suggestion-item.active {
+      background: #1e293b !important;
+    }
+    html[data-theme="dark"] .suggestion-meta {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .category-chip {
+      background: #111827 !important;
+      color: #cbd5e1 !important;
+      border-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .category-chip:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+      color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .cta-btn-primary {
+      background: #38bdf8 !important;
+      color: #0b0f19 !important;
+    }
+    html[data-theme="dark"] .cta-btn-secondary {
+      background: #111827 !important;
+      color: #f8fafc !important;
+      border-color: #1e293b !important;
+    }
+    html[data-theme="dark"] .cta-btn-secondary:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+      color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .engine-footer {
+      background: #0b0f19 !important;
+      border-top-color: #1e293b !important;
+      color: #64748b !important;
+    }
+    html[data-theme="dark"] .engine-footer a {
+      color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .engine-footer a:hover {
+      color: #38bdf8 !important;
+    }
+    .engine-theme-toggle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .engine-theme-toggle-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    html[data-theme="dark"] .engine-theme-toggle-btn {
+      background: #111827;
+      color: #f8fafc;
+      border-color: #1e293b;
+    }
+    html[data-theme="dark"] .engine-theme-toggle-btn:hover {
+      background: #1e293b;
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    /* ==========================================
+       TOP NAVIGATION BAR
+       ========================================== */
+    .engine-top-nav {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.75rem;
+      background: #ffffff;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--primary);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.4px;
+      transition: opacity 0.2s;
+    }
+    .nav-brand:hover {
+      opacity: 0.9;
+    }
+    .nav-brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Home (Always Present) */
+    .nav-home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .nav-home-btn:hover {
+      background: #f8fafc;
+      border-color: #bdc1c6;
+      color: #202124;
+    }
+
+    /* Guest Sign In Button */
+    .nav-btn-signin {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(26,115,232,0.28);
+    }
+    .nav-btn-signin:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      box-shadow: 0 2px 6px rgba(26,115,232,0.38);
+    }
+
+    /* Contributor / Logged-in State */
+    .contributor-user-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contributor-dashboard-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 4px 14px 4px 5px;
+      border-radius: 22px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(26,115,232,0.25);
+    }
+    .contributor-dashboard-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .contributor-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ffffff;
+      background: #3b82f6;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.78rem;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .contributor-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .contributor-logout-btn {
+      background: #f8fafc;
+      border: 1px solid #dadce0;
+      color: #5f6368;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.05rem;
+      transition: all 0.2s ease;
+    }
+    .contributor-logout-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+
+    /* ==========================================
+       MAIN HERO SECTION (MATCHING IMAGES 2 & 3)
+       ========================================== */
+    .search-hero-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1.5rem 3rem 1.5rem;
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-center-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 0.5rem;
+    }
+    .hero-logo-icon {
+      font-size: 2.5rem;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.25rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #1a73e8;
+    }
+    .hero-brand-title .accent {
+      color: #202124;
+    }
+
+    .hero-subtitle {
+      color: var(--text-muted);
+      font-size: 0.96rem;
+      margin-bottom: 2rem;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    /* ==========================================
+       SEARCH BOX & AUTO-SUGGESTIONS (IMAGE 4)
+       ========================================== */
+    .search-box-outer-container {
+      width: 100%;
+      max-width: 680px;
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-bar-wrapper {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 0.35rem 0.6rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 20;
+    }
+
+    .search-bar-wrapper:hover,
+    .search-bar-wrapper:focus-within {
+      box-shadow: var(--shadow-md);
+      border-color: transparent;
+    }
+
+    /* When suggestions are active, attach dropdown smoothly */
+    .search-bar-wrapper.has-suggestions {
+      border-bottom-left-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      border-bottom-color: #f1f3f4 !important;
+      box-shadow: 0 4px 16px rgba(32,33,36,0.16) !important;
+    }
+
+    .search-bar-icon {
+      color: #9aa0a6;
+      font-size: 1.25rem;
+      margin-left: 0.65rem;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1.05rem;
+      padding: 0.65rem 0.3rem;
+    }
+    .search-input::placeholder {
+      color: #9aa0a6;
+      font-size: 0.98rem;
+    }
+
+    .search-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .search-action-icon-btn {
+      background: none;
+      border: none;
+      color: #5f6368;
+      font-size: 1.2rem;
+      padding: 6px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .search-action-icon-btn:hover {
+      background: #f1f3f4;
+      color: var(--text);
+    }
+
+    .search-mic-btn {
+      color: #ea4335 !important;
+    }
+    .search-mic-btn.listening {
+      color: #ea4335 !important;
+      animation: micPulse 1.2s infinite;
+      background: #fce8e6;
+    }
+    @keyframes micPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    .search-clear-btn {
+      display: none;
+      color: #70757a;
+    }
+    .search-clear-btn.visible {
+      display: flex;
+    }
+
+    /* Auto-suggestions Dropdown (Matching Image 4) */
+    .suggestions-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 8px 16px rgba(32,33,36,0.16);
+      display: none;
+      max-height: 380px;
+      overflow-y: auto;
+      text-align: left;
+      z-index: 15;
+      padding: 0.4rem 0;
+    }
+    .suggestions-dropdown.active {
+      display: block;
+    }
+
+    .suggestion-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1.25rem;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.15s ease;
+      gap: 12px;
+    }
+    .suggestion-row:hover {
+      background: #f8fafc;
+    }
+
+    .suggestion-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .suggestion-left i {
+      color: #9aa0a6;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+    .suggestion-text {
+      font-size: 0.95rem;
+      color: #202124;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .suggestion-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: #e8f0fe;
+      color: #1a73e8;
+      flex-shrink: 0;
+    }
+
+    .no-suggestions-row {
+      padding: 1rem 1.25rem;
+      font-size: 0.88rem;
+      color: #70757a;
+      text-align: center;
+    }
+
+    /* ==========================================
+       BUTTONS & TRENDING PILLS (IMAGE 2 & 3)
+       ========================================== */
+    .hero-btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-action-btn {
+      background: #f8fafc;
+      border: 1px solid #dadce0;
+      color: #3c4043;
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .hero-action-btn:hover {
+      background: #f1f3f4;
+      border-color: #bdc1c6;
+      color: #202124;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.15);
+    }
+
+    .trending-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 720px;
+    }
+
+    .trending-label {
+      font-size: 0.84rem;
+      color: #70757a;
+      font-weight: 500;
+    }
+
+    .trending-pill {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      color: #4b5563;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .trending-pill:hover {
+      background: var(--chip-hover);
+      border-color: #cbd5e1;
+      color: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================
+       MOBILE RESPONSIVENESS (MATCHING IMAGE 3)
+       ========================================== */
+    @media (max-width: 768px) {
+      .engine-top-nav {
+        padding: 0.65rem 1rem;
+      }
+      .dashboard-label-text {
+        display: none !important;
+      }
+      .contributor-dashboard-btn {
+        padding: 2px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+      }
+      .contributor-avatar {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--primary);
+      }
+      .search-hero-stage {
+        padding: 2rem 1rem;
+      }
+      .hero-brand-title {
+        font-size: 2.5rem;
+      }
+      .hero-subtitle {
+        font-size: 0.86rem;
+        margin-bottom: 1.5rem;
+      }
+      .search-box-outer-container {
+        margin-bottom: 1.25rem;
+      }
+      .search-input {
+        font-size: 0.95rem;
+      }
+      .hero-btn-row {
+        gap: 8px;
+        margin-bottom: 1.5rem;
+      }
+      .hero-action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.84rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-home-text {
+        display: none;
+      }
+      .nav-home-btn {
+        padding: 6px 10px;
+      }
+      .hero-brand-title {
+        font-size: 2.15rem;
+      }
+    }
+
+    /* ========================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================== */
+    @media (max-width: 380px) {
+      .engine-top-nav {
+        padding: 0.5rem 0.6rem;
+      }
+      .nav-brand-title {
+        font-size: 0.95rem;
+      }
+      .nav-btn-signin span {
+        display: none;
+      }
+      .hero-brand-title {
+        font-size: 1.8rem;
+      }
+      .main-search-input {
+        font-size: 0.88rem;
+      }
+      .quick-chips-wrapper {
+        gap: 6px;
+      }
+    }
+
+    @media (max-width: 340px) {
+      .nav-home-btn {
+        padding: 4px 6px;
+      }
+      .hero-brand-title {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .search-engine-hero {
+        padding: 2.5rem 1.5rem;
+      }
+      .main-search-box {
+        max-width: 90%;
+      }
+    }
+
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .engine-top-nav {
+        padding: 0.75rem 1.5rem;
+      }
+    }
+  
+    /* Universal High Contrast Auto-suggestions Styling */
+    html[data-theme="light"] .suggestions-dropdown {
+      background: #ffffff !important;
+      border: 1px solid #dadce0 !important;
+      box-shadow: 0 8px 24px rgba(32,33,36,0.18) !important;
+    }
+    html[data-theme="light"] .suggestion-row {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .suggestion-row:hover {
+      background: #f1f5f9 !important;
+    }
+    html[data-theme="light"] .suggestion-text {
+      color: #0f172a !important;
+      font-weight: 600 !important;
+    }
+    html[data-theme="light"] .no-suggestions-row {
+      color: #475569 !important;
+    }
+    html[data-theme="dark"] .suggestions-dropdown {
+      background: #0f172a !important;
+      border: 1px solid #334155 !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
+    }
+    html[data-theme="dark"] .suggestion-row {
+      color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .suggestion-row:hover {
+      background: #1e293b !important;
+    }
+    html[data-theme="dark"] .suggestion-text {
+      color: #f8fafc !important;
+      font-weight: 600 !important;
+    }
+    html[data-theme="dark"] .no-suggestions-row {
+      color: #94a3b8 !important;
+    }
+
+  </style>
+  <script src="/history-monitoring.js" defer></script>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="engine-top-nav">
+    <a href="/dpgnotes-search-engine.html" class="nav-brand" title="DPGNotes Search Engine">
+      <div class="nav-brand-logo">
+        <i class="ri-search-2-line"></i>
+      </div>
+      <span class="nav-brand-title">DPGNotes</span>
+    </a>
+
+    <div class="nav-actions">
+      <button type="button" class="engine-theme-toggle-btn" id="btnEngineThemeToggle" onclick="toggleEngineTheme()" title="Toggle Dark/Light Theme">
+        <i class="ri-moon-line" id="engineThemeIcon"></i>
+      </button>
+      <!-- Home (Always Present) -->
+      <a href="index.html" class="nav-home-btn" title="Back to Main Platform">
+        <i class="ri-home-4-line"></i>
+        <span class="nav-home-text">Home</span>
+      </a>
+
+      <!-- Auth Area: Contributor Dashboard with Photo & Logout OR Sign In if Guest -->
+      <div id="navAuthArea" class="nav-auth-area">
+        <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In to DPGNotes Contributor Portal">
+          <i class="ri-login-box-line"></i>
+          <span>Sign In</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Top Native Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="width:100%; max-width:820px; margin:0.5rem auto 0 auto; padding:0 1rem; box-sizing:border-box;"></div>
+
+  <!-- Hero Search Stage -->
+  <main class="search-hero-stage">
+    <!-- Center Logo & Branding (Matching Images 2 & 3) -->
+    <div class="hero-center-brand">
+      <i class="ri-search-eye-line hero-logo-icon"></i>
+      <h1 class="hero-brand-title">DPGNotes</h1>
+    </div>
+    <p class="hero-subtitle">DPG College Verified Academic Notes, Solutions &amp; Sessional Exam Hub</p>
+
+    <!-- Quick Search Mode Tabs (All, Notes, Solutions, Quizzes) -->
+    <div class="search-category-tabs" style="display:flex; justify-content:center; gap:8px; margin-bottom:1.2rem; flex-wrap:wrap;">
+      <a href="/dpgnotes-serp.html?tab=all" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+        <i class="ri-search-line"></i> All
+      </a>
+      <a href="/dpgnotes-serp.html?tab=solutions" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+        <i class="ri-code-box-line"></i> Solutions
+      </a>
+      <a href="/dpgnotes-serp.html?tab=quizzes" class="trending-pill" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; background:rgba(245, 158, 11, 0.15); border-color:rgba(245, 158, 11, 0.35); color:#f59e0b; font-weight:700;">
+        <i class="ri-questionnaire-line"></i> Quizzes <span style="font-size:0.65rem; background:#f59e0b; color:#000; padding:1px 5px; border-radius:6px; font-weight:800;">NEW</span>
+      </a>
+    </div>
+
+    <!-- Search Box with Live Auto-suggestions (Matching Image 4) -->
+    <div class="search-box-outer-container">
+      <div class="search-bar-wrapper" id="searchBarWrapper">
+        <i class="ri-search-line search-bar-icon"></i>
+        <input type="text" class="search-input" id="engineSearchInput" placeholder="Search projects, developers, tech stacks, notes..." autocomplete="off">
+        
+        <div class="search-bar-actions">
+          <!-- Clear Button -->
+          <button type="button" class="search-action-icon-btn search-clear-btn" id="btnClearSearch" onclick="clearSearchInput()" title="Clear Search">
+            <i class="ri-close-line"></i>
+          </button>
+          <!-- Voice Search Mic Button -->
+          <button type="button" class="search-action-icon-btn search-mic-btn" id="btnVoiceSearch" onclick="startVoiceSearch()" title="Search by Voice">
+            <i class="ri-mic-fill"></i>
+          </button>
+          <!-- Lens Visual Search Button -->
+          <button type="button" class="search-action-icon-btn" onclick="triggerDpgLensUpload()" title="DPG Lens Search" style="color:#0284c7;">
+            <i class="ri-camera-lens-line"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hidden file input for DPG Lens -->
+      <input type="file" id="dpgLensFileInput" accept="image/*,.pdf" style="display:none;" onchange="handleDpgLensFileSelected(this)">
+
+      <!-- Live Auto-suggestions Dropdown (Matching Image 4) -->
+      <div class="suggestions-dropdown" id="suggestionsDropdown">
+        <div class="no-suggestions-row">Start typing to search notes, solutions, or topics...</div>
+      </div>
+    </div>
+
+    <!-- Search Buttons (Matching Images 2 & 3) -->
+    <div class="hero-btn-row">
+      <button type="button" class="hero-action-btn" onclick="triggerSearchRedirect()">DPGNotes Search</button>
+      <button type="button" class="hero-action-btn" onclick="luckyRedirect()">I'm Feeling Lucky</button>
+    </div>
+
+    <!-- Trending Chips (Matching Images 2 & 3) -->
+    <div class="trending-container">
+      <span class="trending-label">Trending:</span>
+      <a class="trending-pill" onclick="searchTrendingTopic('Machine Learning')">Machine Learning</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Full Stack React')">Full Stack React</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Python')">Python</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('FastAPI')">FastAPI</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('AI & Deep Learning')">AI &amp; Deep Learning</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Data Structures')">Data Structures</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('Operating Systems')">Operating Systems</a>
+      <a class="trending-pill" onclick="searchTrendingTopic('DBMS Solutions')">DBMS Solutions</a>
+    </div>
+
+    <!-- Feed Native Ad Container -->
+    <div class="native-ads" id="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin-top:2rem; width:100%; max-width:680px;"></div>
+  </main>
+
+  <!-- Bottom Footer Native Sponsored Ad Banner -->
+  <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="width:100%; max-width:820px; margin:1rem auto 1.5rem auto; padding:0 1rem; box-sizing:border-box;"></div>
+
+  <script>
+    // Search Engine Theme Engine (Syncs with Platform & Reader Themes)
+    (function initEngineTheme() {
+      try {
+        const savedTheme = localStorage.getItem("dpg_active_theme") || localStorage.getItem("dpgReaderTheme") || "light";
+        const isDark = savedTheme === "dark" || savedTheme === "default";
+        document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+        window.addEventListener('DOMContentLoaded', () => {
+          const icon = document.getElementById("engineThemeIcon");
+          if (icon) icon.className = isDark ? "ri-sun-line" : "ri-moon-line";
+        });
+      } catch(e) {}
+    })();
+
+    window.toggleEngineTheme = function() {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem("dpg_active_theme", next);
+        localStorage.setItem("dpgReaderTheme", next);
+      } catch(e) {}
+      const icon = document.getElementById("engineThemeIcon");
+      if (icon) icon.className = next === "dark" ? "ri-sun-line" : "ri-moon-line";
+    };
+  </script>
+
+  <script src="config.js"></script>
+  <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ==========================================
+    // AUTH STATE & NAVBAR ADAPTATION
+    // (Laptop: Photo + Dashboard + Logout; Mobile: Avatar + Logout; Guest: Sign In)
+    // ==========================================
+    onAuthStateChanged(auth, (user) => {
+      const authArea = document.getElementById("navAuthArea");
+      if (!authArea) return;
+
+      if (user) {
+        const photoURL = user.photoURL || '';
+        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
+        const initial = displayName.charAt(0).toUpperCase();
+
+        const avatarHtml = photoURL 
+          ? `<img src="${photoURL}" alt="${displayName}" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">`
+          : initial;
+
+        authArea.innerHTML = `
+          <div class="contributor-user-wrapper">
+            <a href="dashboard.html" class="contributor-dashboard-btn" title="Go to Dashboard (${displayName})">
+              <div class="contributor-avatar">${avatarHtml}</div>
+              <span class="dashboard-label-text">Dashboard</span>
+            </a>
+            <button type="button" class="contributor-logout-btn" onclick="window.handleEngineSignOut()" title="Log Out">
+              <i class="ri-logout-box-r-line"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        authArea.innerHTML = `
+          <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In to DPGNotes">
+            <i class="ri-login-box-line"></i>
+            <span>Sign In</span>
+          </a>
+        `;
+      }
+    });
+
+    window.handleEngineSignOut = async function() {
+      try {
+        await signOut(auth);
+        localStorage.removeItem("dpgActiveUserUid");
+        localStorage.removeItem("dpgActiveUserEmail");
+        localStorage.removeItem("dpgActiveUserName");
+        window.location.reload();
+      } catch (err) {
+        console.error("Sign out error:", err);
+      }
+    };
+
+    // ==========================================
+    // FIRESTORE PRELOAD & AUTO-SUGGESTIONS ENGINE (IMAGE 4)
+    // ==========================================
+    let cachedDocs = [];
+
+    async function loadDocumentsCache() {
+      try {
+        const snap = await getDocs(collection(db, "documents"));
+        cachedDocs = [];
+        snap.forEach(d => {
+          const data = d.data();
+          const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
+          const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
+          if (isApproved && !isPrivate) {
+            cachedDocs.push({ id: d.id, ...data });
+          }
+        });
+
+        // Also preload Academic Solutions (Practicals & Assignments)
+        try {
+          const solSnap = await getDocs(collectionGroup(db, "solutions"));
+          solSnap.forEach(solDoc => {
+            const solData = solDoc.data();
+            const parentPath = solDoc.ref.path || '';
+            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
+            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
+            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
+            const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
+            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+            const subName = solData.subjectName || 'Academic Solution';
+            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
+
+            cachedDocs.push({
+              id: solDoc.id,
+              isSolution: true,
+              solutionUrl: solUrl,
+              title: `${subName}${subCode}`,
+              category: solType,
+              discipline: solData.course || solData.courseSec || "Academic",
+              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", solData.course || ""].filter(Boolean)
+            });
+          });
+        } catch(solErr) {
+          console.warn("Solutions suggestion preload warning:", solErr);
+        }
+
+        // Preload Quizzes from quizDirectory
+        try {
+          const qzSnap = await getDocs(collection(db, "quizDirectory"));
+          qzSnap.forEach(qzDoc => {
+            const qzData = qzDoc.data();
+            if (qzData.status === "published" || qzData.isPublic !== false) {
+              cachedDocs.push({
+                id: qzDoc.id,
+                isQuiz: true,
+                quizUrl: `/Quizes/index.html?quizId=${encodeURIComponent(qzDoc.id)}`,
+                title: qzData.title || `${qzData.subjectName} Quiz`,
+                subjectCode: qzData.subjectCode || '',
+                subjectName: qzData.subjectName || '',
+                questionKeywords: qzData.questionKeywords || '',
+                category: "Quiz",
+                discipline: qzData.subjectName || "Academic",
+                tags: ["quiz", "exam", "test", qzData.subjectCode || "", qzData.subjectName || "", ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean)
+              });
+            }
+          });
+        } catch(qzErr) {
+          console.warn("Quiz suggestion preload warning:", qzErr);
+        }
+      } catch (err) {
+        console.warn("Failed caching documents for suggestions:", err.message);
+      }
+    }
+
+    const input = document.getElementById("engineSearchInput");
+    const wrapper = document.getElementById("searchBarWrapper");
+    const dropdown = document.getElementById("suggestionsDropdown");
+    const clearBtn = document.getElementById("btnClearSearch");
+
+    window.clearSearchInput = function() {
+      if (input) {
+        input.value = '';
+        input.focus();
+        if (clearBtn) clearBtn.classList.remove("visible");
+        closeSuggestions();
+      }
+    };
+
+    function closeSuggestions() {
+      if (dropdown) dropdown.classList.remove("active");
+      if (wrapper) wrapper.classList.remove("has-suggestions");
+    }
+
+    input.addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      if (clearBtn) {
+        if (q.length > 0) clearBtn.classList.add("visible");
+        else clearBtn.classList.remove("visible");
+      }
+
+      if (!q) {
+        closeSuggestions();
+        return;
+      }
+
+      // Filter matched documents
+      const matches = cachedDocs.filter(d => 
+        (d.title && d.title.toLowerCase().includes(q)) ||
+        (d.discipline && d.discipline.toLowerCase().includes(q)) ||
+        (d.category && d.category.toLowerCase().includes(q)) ||
+        (d.subjectCode && d.subjectCode.toLowerCase().includes(q)) ||
+        (d.subjectName && d.subjectName.toLowerCase().includes(q)) ||
+        (d.questionKeywords && d.questionKeywords.toLowerCase().includes(q)) ||
+        (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q)))
+      ).slice(0, 6);
+
+      dropdown.innerHTML = "";
+
+      if (matches.length > 0) {
+        matches.forEach(d => {
+          const row = document.createElement("div");
+          row.className = "suggestion-row";
+          // Direct Destination navigation when clicking a document or solution!
+          row.onclick = () => {
+            if (d.isQuiz && d.quizUrl) {
+              window.location.href = d.quizUrl;
+            } else if (d.isSolution && d.solutionUrl) {
+              window.location.href = d.solutionUrl;
+            } else {
+              window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`;
+            }
+          };
+
+          const iconClass = d.isQuiz ? 'ri-questionnaire-line' : (d.isSolution ? 'ri-code-box-line' : 'ri-file-text-line');
+          const iconColor = d.isQuiz ? 'color:#f59e0b;' : (d.isSolution ? 'color:#0284c7;' : '');
+          const badgeStyle = d.isQuiz ? 'background:#fef3c7; color:#b45309;' : (d.isSolution ? 'background:#e0f2fe; color:#0369a1;' : '');
+
+          row.innerHTML = `
+            <div class="suggestion-left">
+              <i class="${iconClass}" style="${iconColor}"></i>
+              <span class="suggestion-text">${d.title}</span>
+            </div>
+            <span class="suggestion-badge" style="${badgeStyle}">${d.category || 'Notes'}</span>
+          `;
+          dropdown.appendChild(row);
+        });
+
+        // Also add direct query search row
+        const queryRow = document.createElement("div");
+        queryRow.className = "suggestion-row";
+        queryRow.style.borderTop = "1px solid #f1f3f4";
+        queryRow.onclick = () => {
+          window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
+        };
+        queryRow.innerHTML = `
+          <div class="suggestion-left">
+            <i class="ri-search-2-line" style="color:#1a73e8;"></i>
+            <span class="suggestion-text" style="color:#1a73e8; font-weight:600;">Search for "<strong>${e.target.value.trim()}</strong>" on DPGNotes SERP</span>
+          </div>
+          <i class="ri-arrow-right-up-line" style="color:#1a73e8;"></i>
+        `;
+        dropdown.appendChild(queryRow);
+      } else {
+        // Query search row even when no exact doc matches
+        const queryRow = document.createElement("div");
+        queryRow.className = "suggestion-row";
+        queryRow.onclick = () => {
+          window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
+        };
+        queryRow.innerHTML = `
+          <div class="suggestion-left">
+            <i class="ri-search-line"></i>
+            <span class="suggestion-text">Search DPGNotes SERP for "<strong>${e.target.value.trim()}</strong>"</span>
+          </div>
+          <i class="ri-arrow-right-line" style="color:#9aa0a6;"></i>
+        `;
+        dropdown.appendChild(queryRow);
+      }
+
+      dropdown.classList.add("active");
+      wrapper.classList.add("has-suggestions");
+    });
+
+    // Close suggestions if clicked outside
+    document.addEventListener("click", (e) => {
+      if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) {
+        closeSuggestions();
+      }
+    });
+
+    // Enter Key Trigger -> Points to SERP page
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        window.triggerSearchRedirect();
+      }
+    });
+
+    window.triggerSearchRedirect = function() {
+      const q = input.value.trim();
+      if (q) {
+        window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(q)}`;
+      } else {
+        window.location.href = `/dpgnotes-serp.html`;
+      }
+    };
+
+    window.luckyRedirect = function() {
+      if (cachedDocs.length > 0) {
+        const randomDoc = cachedDocs[Math.floor(Math.random() * cachedDocs.length)];
+        window.location.href = `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(randomDoc.id)}&title=${encodeURIComponent(randomDoc.title || '')}`;
+      } else {
+        window.location.href = `/dpgnotes-serp.html`;
+      }
+    };
+
+    window.searchTrendingTopic = function(topic) {
+      if (input) input.value = topic;
+      window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(topic)}`;
+    };
+
+    // ==========================================
+    // VOICE SEARCH (SPEECH RECOGNITION)
+    // ==========================================
+    window.startVoiceSearch = function() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Voice recognition is not supported in this browser environment. Please type your query.");
+        return;
+      }
+      const micBtn = document.getElementById("btnVoiceSearch");
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.start();
+
+      if (micBtn) micBtn.classList.add("listening");
+      input.placeholder = "🎙️ Listening... Speak now";
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        if (micBtn) micBtn.classList.remove("listening");
+        window.triggerSearchRedirect();
+      };
+      recognition.onerror = () => {
+        if (micBtn) micBtn.classList.remove("listening");
+        input.placeholder = "Search projects, developers, tech stacks, notes...";
+      };
+      recognition.onend = () => {
+        if (micBtn) micBtn.classList.remove("listening");
+      };
+    };
+
+    // ==========================================
+    // DPG LENS VISUAL SEARCH
+    // ==========================================
+    window.triggerDpgLensUpload = function() {
+      const fileInput = document.getElementById("dpgLensFileInput");
+      if (fileInput) fileInput.click();
+    };
+
+    window.handleDpgLensFileSelected = async function(inputEl) {
+      if (!inputEl.files || inputEl.files.length === 0) return;
+      const file = inputEl.files[0];
+      if (input) input.value = `📷 DPG Lens Scanning: ${file.name}...`;
+
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+          const res = await fetch(apiBase + '/api/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: `DPG Lens Visual Analysis: Analyze file "${file.name}" and extract academic subject keywords, topic, and notes classification for DPGNotes search engine.`,
+              systemContext: 'DPG Lens Visual Recognition Engine'
+            })
+          });
+          const resJson = await res.json();
+          const keyword = (resJson.answer || file.name.replace(/\.[^/.]+$/, "")).substring(0, 40);
+          if (input) input.value = keyword;
+          window.triggerSearchRedirect();
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        console.error("DPG Lens Error:", err);
+        const fallbackQuery = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        if (input) input.value = fallbackQuery;
+        window.triggerSearchRedirect();
+      }
+    };
+
+    // Start background preload
+    loadDocumentsCache();
+  </script>
+</body>
+</html>

@@ -1,473 +1,483 @@
-rules_version = '2';
-
-service cloud.firestore {
-
-  match /databases/{database}/documents {
-
-    /* ---------------- USERS ---------------- */
-
-    match /users/{userId} {
-
-      allow read: if true;
-
-      allow write: if request.auth != null;
-    }
-
-    /* -------------- DOCUMENTS -------------- */
-
-    match /documents/{docId} {
-
-      // Public Read
-      allow read: if true;
-
-      // Authenticated Upload
-      allow create:
-      if request.auth != null
-      &&
-      validateDocument();
-
-      // Only authorized contributor (author) can update metadata/password/visibility,
-      // while student/guest telemetry actions can only update engagement counters (likes, views, shares, downloads).
-      allow update: if request.auth != null && (
-        request.auth.uid == resource.data.userId ||
-        request.auth.uid == resource.data.uploaderId ||
-        request.auth.uid == resource.data.uploaderUid ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy', 'views', 'shares', 'downloads', 'screentime', 'totalScreentimeSec'])
-      );
-
-      // Only authoring contributor can delete their document
-      allow delete: if request.auth != null && (
-        request.auth.uid == resource.data.userId ||
-        request.auth.uid == resource.data.uploaderId ||
-        request.auth.uid == resource.data.uploaderUid
-      );
-    }
-    /* ---------- ACTIVITY LOGS ---------- */
-    match /activity_logs/{logId} {
-      allow create: if true;
-      allow read: if true;
-    }
-
-    /* ---------- NOTIFICATIONS ---------- */
-    match /notifications/{notificationId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- SHARE LINKS ---------- */
-    match /share_links/{tokenId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- EDUCATIONAL VIDEOS ---------- */
-    match /videos/{videoId} {
-      allow read, write: if true;
-    }
-
-    match /Video/{videoId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- SHARE ENGAGEMENTS ---------- */
-    match /share_engagements/{engId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- SECURITY VIOLATIONS ---------- */
-    match /security_violations/{violId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- PERMANENT BLOCKS ---------- */
-    match /permanent_blocks/{blockId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- ACTIVE SESSIONS ---------- */
-    match /active_sessions/{sessId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- FOLLOWS ---------- */
-    match /follows/{followId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- CONNECTIONS ---------- */
-    match /connections/{connectionId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- GROUP MESSAGES ---------- */
-    match /group_messages/{msgId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- CHATS & DIRECT MESSAGES ---------- */
-    match /chats/{chatId} {
-      allow read, write: if true;
-      match /{allSubcollections=**} {
-        allow read, write: if true;
-      }
-    }
-
-    /* ---------- SUPPORT TOKENS ---------- */
-    match /support_tokens/{tokenId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- SUPPORT REQUESTS ---------- */
-    match /support_requests/{reqId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- SHORTENED URLS ---------- */
-    match /shortened_urls/{urlId} {
-      allow read, write: if true;
-    }
-
-    match /invitations/{invitationId} {
-      allow read, write: if true;
-    }
-    
-    /* ---------- DEVICE LOGIN HISTORY ---------- */
-    match /device_login_history/{logId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- GUEST QUOTAS ---------- */
-    match /guest_quotas/{quotaId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- VISITOR ATTRIBUTION & LOCATION METRICS ---------- */
-    match /visitor_metrics/{metricId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- MEDIA RESPONSIVENESS USER FEEDBACK ---------- */
-    match /responsiveness_feedback/{feedbackId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- DPGNOTES PLATFORM & SERVICE RATINGS ---------- */
-    match /dpgnotes_ratings/{ratingId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- SITE METADATA & LIVE AGGREGATE RATINGS ---------- */
-    match /site_metadata/{metaId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- RESOURCE KNOWLEDGE ---------- */
-    match /resource_knowledge/{rkId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- RESOURCE NOTES (In-Document Notes & Subcollections) ---------- */
-    match /resource-notes/{document=**} {
-      allow read, write: if true;
-    }
-    match /resource-notes/{resourceId}/notes/{noteId} {
-      allow read, write: if true;
-    }
-    match /resource_notes/{document=**} {
-      allow read, write: if true;
-    }
-    match /resource_notes/{resourceId}/notes/{noteId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- BLOGS ---------- */
-    match /blogs/{blogId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- PENDING APPROVALS ---------- */
-    match /pending_approvals/{approvalId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- VIOLATIONS ---------- */
-    match /violations/{violId} {
-      allow read, write: if true;
-      match /{allSubcollections=**} {
-        allow read, write: if true;
-      }
-    }
-    match /user_violations/{uvId} {
-      allow read, write: if true;
-    }
-    match /authorized_access_violations/{aavId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- USER ADS (Multi-Platform: DPGNotes, LinkedIn, Medium, GitHub) ---------- */
-    match /user_ads/{adId} {
-      allow read, write: if true;
-    }
-    
-    /* ---------- AD & RESOURCE TELEMETRY TRACKING ---------- */
-    match /ad_trackings/{trackingId} {
-      allow read, write: if true;
-    }
-
-    match /resource_trackings/{trackingId} {
-      allow read, write: if true;
-    }
-
-    match /resource_tracking/{trackingId} {
-      allow read, write: if true;
-    }
-
-    match /resource_analytics/{analyticsId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- USER ACTIVITY FEEDS (Recommendation Engine & Telemetry) ---------- */
-    match /user_activity_feeds/{feedId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- ASSIGNMENT & PRACTICAL COVER PAGES & LOGS ---------- */
-    match /Assignment/{userId}/{document=**} {
-      allow read, write, delete: if true;
-    }
-
-    /* ---------- COVER PAGE QUOTAS & ANTI-BYPASS TRACKING ---------- */
-    match /cover_page_quotas/{quotaId} {
-      allow read, write, delete: if true;
-    }
-
-    /* ---------- UTILITY TOOL QUOTAS (ImageToPdf, MetaAdder, MetaAnalyzer) ---------- */
-    match /utility_tool_quotas/{quotaId} {
-      allow read, write, delete: if true;
-    }
-
-    /* ---------- PRACTICAL COVER PAGES & RECORDS ---------- */
-    match /Practical/{userId}/{document=**} {
-      allow read, write, delete: if true;
-    }
-
-    /* ---------- COLLECTION GROUP: RECORDS (Admin Cover Pages Telemetry) ---------- */
-    match /{path=**}/records/{recordId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- ASSIGNMENT SOLUTIONS (Academic Solutions Suite) ---------- */
-    match /assignment_solutions/{contributorUid} {
-      allow read: if true;
-      allow write: if request.auth != null;
-
-      match /solutions/{solutionId} {
-        // Public/student read access (zero-knowledge encryption decrypts client-side)
-        allow read: if true;
-        // Contributors publish solutions under authenticated sessions
-        allow create: if request.auth != null;
-        // Updates: authoring contributor or telemetry engagement updates
-        allow update: if request.auth != null
-          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
-        // Deletes
-        allow delete: if request.auth != null;
-      }
-    }
-
-    /* ---------- PRACTICAL SOLUTIONS (Academic Solutions Suite) ---------- */
-    match /practical_solutions/{contributorUid} {
-      allow read: if true;
-      allow write: if request.auth != null;
-
-      match /solutions/{solutionId} {
-        // Public/student read access (zero-knowledge encryption decrypts client-side)
-        allow read: if true;
-        // Contributors publish solutions under authenticated sessions
-        allow create: if request.auth != null;
-        // Updates: authoring contributor or telemetry engagement updates
-        allow update: if request.auth != null
-          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
-        // Deletes
-        allow delete: if request.auth != null;
-      }
-    }
-
-    /* ---------- COLLECTION GROUP: SOLUTIONS (Admin Management & Metrics) ---------- */
-    match /{path=**}/solutions/{solutionId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.resource.data.contributorUid == request.auth.uid;
-      allow update: if (request.auth != null && request.auth.uid == resource.data.contributorUid)
-        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
-      allow delete: if request.auth != null && request.auth.uid == resource.data.contributorUid;
-    }
-
-    /* ---------- TOP-LEVEL SOLUTIONS FALLBACK ---------- */
-    match /solutions/{document=**} {
-      allow read: if true;
-      allow write: if true;
-    }
-
-    /* ---------- SEARCH CTR TELEMETRY ---------- */
-    match /search_ctr_telemetry/{id} {
-      allow read, write: if true;
-    }
-
-    /* ---------- SOLUTION TEST CASES & SANDBOX CODE BLOCKS ---------- */
-    match /solution_test_cases/{testCaseId} {
-      allow read, write: if true;
-    }
-
-    match /code-blocks/{document=**} {
-      allow read, write: if true;
-    }
-
-    /* ---------- CONFIDENTIAL OVERVIEW & AUDIT ---------- */
-    match /confidential_overview_requests/{requestId} {
-      allow read, write: if true;
-    }
-
-    match /confidential_read_history/{historyId} {
-      allow read, write: if true;
-    }
-
-    /* ---------- CONTRIBUTORS & QUIZ SYSTEM ---------- */
-    match /contributors/{contributorUid} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == contributorUid;
-
-      match /quizzes/{quizId} {
-        allow read: if true;
-        allow write: if request.auth != null && request.auth.uid == contributorUid;
-
-        match /questionPages/{pageId} {
-          allow read: if true;
-          allow write: if request.auth != null && request.auth.uid == contributorUid;
-        }
-
-        match /privateAnswerKey/{keyDoc} {
-          allow read: if resource.data.isReleased == true || (request.auth != null && request.auth.uid == contributorUid);
-          allow write: if request.auth != null && request.auth.uid == contributorUid;
-        }
-
-        match /attempts/{attemptId} {
-          allow create: if true;
-          allow read: if true;
-          allow update, delete: if true;
-        }
-      }
-
-      /* Candidate's personal quiz attempt history */
-      match /myQuizAttempts/{attemptId} {
-        allow read, write, delete: if true;
-      }
-
-      /* Author's incoming retest requests */
-      match /retestRequests/{requestId} {
-        allow read, write, delete: if true;
-      }
-    }
-
-    /* ---------- RETEST REQUESTS (Global) ---------- */
-    match /retestRequests/{requestId} {
-      allow read, write, delete: if true;
-    }
-
-    /* ---------- COLLECTION GROUPS FOR QUIZZES ---------- */
-    match /{path=**}/myQuizAttempts/{attemptId} {
-      allow read, write, delete: if true;
-    }
-
-    match /{path=**}/retestRequests/{requestId} {
-      allow read, write, delete: if true;
-    }
-
-    match /{path=**}/attempts/{attemptId} {
-      allow read, write, delete: if true;
-    }
-
-    /* ---------- QUIZ ATTEMPTS LOOKUP & DEDUPLICATION ---------- */
-    match /quizAttemptsLookup/{lookupId} {
-      allow read, write, delete: if true;
-    }
-
-    /* ---------- QUIZ DEVICE & IP TRACKING ---------- */
-        match /quiz_device_tracking/{trackId} {
-      allow read, write: if true;
-    }
-
-    match /quizDirectory/{quizId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
-      allow update, delete: if request.auth != null && (resource.data.ownerUid == request.auth.uid || request.auth.uid == request.resource.data.ownerUid);
-    }
-
-    match /quizAnalytics/{quizId} {
-      allow read: if true;
-      allow create, update: if true;
-      allow delete: if request.auth != null;
-    }
-
-    match /quizShares/{tokenHash} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    /* ---------- VALIDATION ---------- */
-
-    function validateDocument() {
-
-      return request.resource.data.keys().hasAll([
-        'category',
-        'discipline',
-        'title',
-        'description',
-        'tags',
-        'documentId',
-        'pdfUrl',
-        'createdAt',
-        'userId',
-        'userName'
-      ])
-
-      &&
-
-      request.resource.data.category in [
-
-        'SE',
-        'SP',
-        'UE',
-        'EV',
-        'T&N',
-        'IQ',
-        'A&LR',
-        'PQ'
-      ]
-
-      &&
-
-      request.resource.data.title is string
-
-      &&
-
-      request.resource.data.description is string
-
-      &&
-
-      request.resource.data.tags is list
-
-      &&
-
-      request.resource.data.documentId is string
-
-      &&
-
-      request.resource.data.pdfUrl is string
-
-      &&
-
-      request.resource.data.userId is string
-
-      &&
-
-      request.resource.data.userName is string;
-    }
-  }
+rules_version = '2';
+
+service cloud.firestore {
+
+  match /databases/{database}/documents {
+
+    /* ---------------- USERS ---------------- */
+
+    match /users/{userId} {
+
+      allow read: if true;
+
+      allow write: if request.auth != null;
+    }
+
+    /* -------------- DOCUMENTS -------------- */
+
+    function isDPGAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'its.akshatnetworkhub23@gmail.com' ||
+        request.auth.token.admin == true ||
+        request.auth.uid == 'its.akshatnetworkhub23@gmail.com'
+      );
+    }
+
+    match /documents/{docId} {
+
+      // Public Read
+      allow read: if true;
+
+      // Authenticated Upload
+      allow create:
+      if request.auth != null
+      &&
+      validateDocument();
+
+      // Only authorized contributor (author) or admin can update metadata/password/visibility,
+      // while student/guest telemetry actions can only update engagement counters (likes, views, shares, downloads).
+      allow update: if request.auth != null && (
+        isDPGAdmin() ||
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.uploaderId ||
+        request.auth.uid == resource.data.uploaderUid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy', 'views', 'shares', 'downloads', 'screentime', 'totalScreentimeSec'])
+      );
+
+      // Only authoring contributor or admin can delete their document
+      allow delete: if request.auth != null && (
+        isDPGAdmin() ||
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.uploaderId ||
+        request.auth.uid == resource.data.uploaderUid
+      );
+    }
+    /* ---------- ACTIVITY LOGS ---------- */
+    match /activity_logs/{logId} {
+      allow create: if true;
+      allow read: if true;
+    }
+
+    /* ---------- NOTIFICATIONS ---------- */
+    match /notifications/{notificationId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SHARE LINKS ---------- */
+    match /share_links/{tokenId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- EDUCATIONAL VIDEOS ---------- */
+    match /videos/{videoId} {
+      allow read, write: if true;
+    }
+
+    match /Video/{videoId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SHARE ENGAGEMENTS ---------- */
+    match /share_engagements/{engId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SECURITY VIOLATIONS ---------- */
+    match /security_violations/{violId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- PERMANENT BLOCKS ---------- */
+    match /permanent_blocks/{blockId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- ACTIVE SESSIONS ---------- */
+    match /active_sessions/{sessId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- FOLLOWS ---------- */
+    match /follows/{followId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- CONNECTIONS ---------- */
+    match /connections/{connectionId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- GROUP MESSAGES ---------- */
+    match /group_messages/{msgId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- CHATS & DIRECT MESSAGES ---------- */
+    match /chats/{chatId} {
+      allow read, write: if true;
+      match /{allSubcollections=**} {
+        allow read, write: if true;
+      }
+    }
+
+    /* ---------- SUPPORT TOKENS ---------- */
+    match /support_tokens/{tokenId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SUPPORT REQUESTS ---------- */
+    match /support_requests/{reqId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SHORTENED URLS ---------- */
+    match /shortened_urls/{urlId} {
+      allow read, write: if true;
+    }
+
+    match /invitations/{invitationId} {
+      allow read, write: if true;
+    }
+    
+    /* ---------- DEVICE LOGIN HISTORY ---------- */
+    match /device_login_history/{logId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- GUEST QUOTAS ---------- */
+    match /guest_quotas/{quotaId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- VISITOR ATTRIBUTION & LOCATION METRICS ---------- */
+    match /visitor_metrics/{metricId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- MEDIA RESPONSIVENESS USER FEEDBACK ---------- */
+    match /responsiveness_feedback/{feedbackId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- DPGNOTES PLATFORM & SERVICE RATINGS ---------- */
+    match /dpgnotes_ratings/{ratingId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SITE METADATA & LIVE AGGREGATE RATINGS ---------- */
+    match /site_metadata/{metaId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- RESOURCE KNOWLEDGE ---------- */
+    match /resource_knowledge/{rkId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- RESOURCE NOTES (In-Document Notes & Subcollections) ---------- */
+    match /resource-notes/{document=**} {
+      allow read, write: if true;
+    }
+    match /resource-notes/{resourceId}/notes/{noteId} {
+      allow read, write: if true;
+    }
+    match /resource_notes/{document=**} {
+      allow read, write: if true;
+    }
+    match /resource_notes/{resourceId}/notes/{noteId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- BLOGS ---------- */
+    match /blogs/{blogId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- PENDING APPROVALS ---------- */
+    match /pending_approvals/{approvalId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- VIOLATIONS ---------- */
+    match /violations/{violId} {
+      allow read, write: if true;
+      match /{allSubcollections=**} {
+        allow read, write: if true;
+      }
+    }
+    match /user_violations/{uvId} {
+      allow read, write: if true;
+    }
+    match /authorized_access_violations/{aavId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- USER ADS (Multi-Platform: DPGNotes, LinkedIn, Medium, GitHub) ---------- */
+    match /user_ads/{adId} {
+      allow read, write: if true;
+    }
+    
+    /* ---------- AD & RESOURCE TELEMETRY TRACKING ---------- */
+    match /ad_trackings/{trackingId} {
+      allow read, write: if true;
+    }
+
+    match /resource_trackings/{trackingId} {
+      allow read, write: if true;
+    }
+
+    match /resource_tracking/{trackingId} {
+      allow read, write: if true;
+    }
+
+    match /resource_analytics/{analyticsId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- USER ACTIVITY FEEDS (Recommendation Engine & Telemetry) ---------- */
+    match /user_activity_feeds/{feedId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- ASSIGNMENT & PRACTICAL COVER PAGES & LOGS ---------- */
+    match /Assignment/{userId}/{document=**} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- COVER PAGE QUOTAS & ANTI-BYPASS TRACKING ---------- */
+    match /cover_page_quotas/{quotaId} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- UTILITY TOOL QUOTAS (ImageToPdf, MetaAdder, MetaAnalyzer) ---------- */
+    match /utility_tool_quotas/{quotaId} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- PRACTICAL COVER PAGES & RECORDS ---------- */
+    match /Practical/{userId}/{document=**} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- COLLECTION GROUP: RECORDS (Admin Cover Pages Telemetry) ---------- */
+    match /{path=**}/records/{recordId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- ASSIGNMENT SOLUTIONS (Academic Solutions Suite) ---------- */
+    match /assignment_solutions/{contributorUid} {
+      allow read: if true;
+      allow write: if request.auth != null;
+
+      match /solutions/{solutionId} {
+        // Public/student read access (zero-knowledge encryption decrypts client-side)
+        allow read: if true;
+        // Contributors publish solutions under authenticated sessions
+        allow create: if request.auth != null;
+        // Updates: authoring contributor or telemetry engagement updates
+        allow update: if request.auth != null
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
+        // Deletes
+        allow delete: if request.auth != null;
+      }
+    }
+
+    /* ---------- PRACTICAL SOLUTIONS (Academic Solutions Suite) ---------- */
+    match /practical_solutions/{contributorUid} {
+      allow read: if true;
+      allow write: if request.auth != null;
+
+      match /solutions/{solutionId} {
+        // Public/student read access (zero-knowledge encryption decrypts client-side)
+        allow read: if true;
+        // Contributors publish solutions under authenticated sessions
+        allow create: if request.auth != null;
+        // Updates: authoring contributor or telemetry engagement updates
+        allow update: if request.auth != null
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
+        // Deletes
+        allow delete: if request.auth != null;
+      }
+    }
+
+    /* ---------- COLLECTION GROUP: SOLUTIONS (Admin Management & Metrics) ---------- */
+    match /{path=**}/solutions/{solutionId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.contributorUid == request.auth.uid;
+      allow update: if (request.auth != null && request.auth.uid == resource.data.contributorUid)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'likedBy', 'totalScreentimeSec', 'shares']));
+      allow delete: if request.auth != null && request.auth.uid == resource.data.contributorUid;
+    }
+
+    /* ---------- TOP-LEVEL SOLUTIONS FALLBACK ---------- */
+    match /solutions/{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    /* ---------- SEARCH CTR TELEMETRY ---------- */
+    match /search_ctr_telemetry/{id} {
+      allow read, write: if true;
+    }
+
+    /* ---------- SOLUTION TEST CASES & SANDBOX CODE BLOCKS ---------- */
+    match /solution_test_cases/{testCaseId} {
+      allow read, write: if true;
+    }
+
+    match /code-blocks/{document=**} {
+      allow read, write: if true;
+    }
+
+    /* ---------- CONFIDENTIAL OVERVIEW & AUDIT ---------- */
+    match /confidential_overview_requests/{requestId} {
+      allow read, write: if true;
+    }
+
+    match /confidential_read_history/{historyId} {
+      allow read, write: if true;
+    }
+
+    /* ---------- CONTRIBUTORS & QUIZ SYSTEM ---------- */
+    match /contributors/{contributorUid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == contributorUid;
+
+      match /quizzes/{quizId} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == contributorUid;
+
+        match /questionPages/{pageId} {
+          allow read: if true;
+          allow write: if request.auth != null && request.auth.uid == contributorUid;
+        }
+
+        match /privateAnswerKey/{keyDoc} {
+          allow read: if resource.data.isReleased == true || (request.auth != null && request.auth.uid == contributorUid);
+          allow write: if request.auth != null && request.auth.uid == contributorUid;
+        }
+
+        match /attempts/{attemptId} {
+          allow create: if true;
+          allow read: if true;
+          allow update, delete: if true;
+        }
+      }
+
+      /* Candidate's personal quiz attempt history */
+      match /myQuizAttempts/{attemptId} {
+        allow read, write, delete: if true;
+      }
+
+      /* Author's incoming retest requests */
+      match /retestRequests/{requestId} {
+        allow read, write, delete: if true;
+      }
+    }
+
+    /* ---------- RETEST REQUESTS (Global) ---------- */
+    match /retestRequests/{requestId} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- COLLECTION GROUPS FOR QUIZZES ---------- */
+    match /{path=**}/myQuizAttempts/{attemptId} {
+      allow read, write, delete: if true;
+    }
+
+    match /{path=**}/retestRequests/{requestId} {
+      allow read, write, delete: if true;
+    }
+
+    match /{path=**}/attempts/{attemptId} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- QUIZ ATTEMPTS LOOKUP & DEDUPLICATION ---------- */
+    match /quizAttemptsLookup/{lookupId} {
+      allow read, write, delete: if true;
+    }
+
+    /* ---------- QUIZ DEVICE & IP TRACKING ---------- */
+        match /quiz_device_tracking/{trackId} {
+      allow read, write: if true;
+    }
+
+    match /quizDirectory/{quizId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if request.auth != null && (resource.data.ownerUid == request.auth.uid || request.auth.uid == request.resource.data.ownerUid);
+    }
+
+    match /quizAnalytics/{quizId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if request.auth != null;
+    }
+
+    match /quizShares/{tokenHash} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    /* ---------- VALIDATION ---------- */
+
+    function validateDocument() {
+
+      return request.resource.data.keys().hasAll([
+        'category',
+        'discipline',
+        'title',
+        'description',
+        'tags',
+        'documentId',
+        'pdfUrl',
+        'createdAt',
+        'userId',
+        'userName'
+      ])
+
+      &&
+
+      request.resource.data.category in [
+
+        'SE',
+        'SP',
+        'UE',
+        'EV',
+        'T&N',
+        'IQ',
+        'A&LR',
+        'PQ'
+      ]
+
+      &&
+
+      request.resource.data.title is string
+
+      &&
+
+      request.resource.data.description is string
+
+      &&
+
+      request.resource.data.tags is list
+
+      &&
+
+      request.resource.data.documentId is string
+
+      &&
+
+      request.resource.data.pdfUrl is string
+
+      &&
+
+      request.resource.data.userId is string
+
+      &&
+
+      request.resource.data.userName is string;
+    }
+  }
 }

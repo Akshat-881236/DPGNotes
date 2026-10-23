@@ -1,1731 +1,1764 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
-  <script src="/dpg-loader.js"></script>
-  <script src="https://dpgnotes.web.app/redirect.js" defer></script>
-  <meta name="google-adsense-account" content="ca-pub-5515547448097504">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
-     crossorigin="anonymous"></script>
-  <meta name="dpg-notes-verification-tag" content="Xlj3NwA4122vAPi2pmCD">
-  <script src="https://dpgnotes.web.app/track-init.js?referer-to=Xlj3NwA4122vAPi2pmCD&used-by=CCoQSLFfzWf4NGF6zox3tO399Xg1" defer></script>
-  <meta name="dpg-notes-verification-tag" content="FBAIYHrIqsPTz8K7VNKH">
-  <script src="https://dpgnotes.web.app/track-init.js?referer-to=FBAIYHrIqsPTz8K7VNKH&used-by=N7D544J5IdYane7huazhZmjOOKu1" defer></script>
-  <meta name="digiindia-student-innovation-platform" content="dofP3Z_gTI6o71KvinoPuw">
-  <meta name="digiindia-student-innovation-platform" content="2kV9BlePhk89XPlAvirJIw">
-  <meta name="digiindia-student-innovation-platform" content="dofP3Z_gTI6o71KvinoPuw">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="ANH.png" type="image/png" />
-  <title>DPGNotes PDF Viewer | Read, Annotate & AI Ask Question</title>
-  <meta name="description" content="Secure, high-performance academic PDF viewer by DPGNotes. View university notes, practical files, study summaries, and interactive AI Q&A." />
-  <meta name="keywords" content="DPGNotes PDF Viewer, Online PDF Reader, Academic Notes Viewer, Study Material Reader, AI PDF Q&A, Akshat Network Hub" />
-  <meta name="author" content="DPGNotes / Akshat Network Hub" />
-  <meta property="og:title" content="DPGNotes PDF Viewer" />
-  <meta property="og:description" content="View university notes, textbooks, and study files with embedded AI summary and interactive tools." />
-  <meta property="og:image" content="ANH.png" />
-  <meta property="og:type" content="article" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
-  <script src="config.js"></script>
-  <script src="/dpg-params.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-  <script src="/custom-dialogs.js"></script>
-  <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
-  <script src="notes-handler.js"></script>
-  <!-- DPGNotes Unified Shared Auth & Reader Accessibility System -->
-  <link rel="stylesheet" href="/auth-component.css">
-  <link rel="stylesheet" href="/reader-theme.css">
-  <script src="/dpg-feed.js"></script>
-  <script type="module" src="/auth-component.js"></script>
-  <script src="/reader-theme.js"></script>
-  <script>
-    if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
-    function renderMarkdown(md) {
-      if (!md) return '';
-      if (typeof marked === 'undefined') return md.replace(/\n/g,'<br>');
-      const parsed = marked.parse(md);
-      if (typeof DOMPurify !== 'undefined') {
-        return DOMPurify.sanitize(parsed, {
-          ADD_TAGS: ['iframe', 'details', 'summary'],
-          ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'style', 'class', 'target', 'open', 'type']
-        });
-      }
-      return parsed;
-    }
-  </script>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:#0c0e1a;--sb:#111427;--surface:#161929;--bdr:rgba(255,255,255,0.08);--pri:#6366f1;--pli:#818cf8;--txt:#e2e8f0;--mut:#64748b;--acc:#8b5cf6}
-    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
-    /* TOP BAR */
-    .topbar{height:56px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.25rem;gap:1rem;position:sticky;top:0;z-index:200}
-    .topbar .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;color:white;text-decoration:none}
-    .topbar .logo .dot{color:var(--pri)}
-    .topbar .doctitle{flex:1;font-size:0.88rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .nbtn{background:rgba(255,255,255,0.06);border:1px solid var(--bdr);color:var(--txt);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;display:flex;align-items:center;gap:6px;transition:background .2s;text-decoration:none}
-    .nbtn:hover{background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4)}
-    /* LAYOUT */
-    .layout{display:flex;flex:1;overflow:hidden}
-    /* SIDEBAR */
-    .sidebar{width:385px;max-width:100%;flex-shrink:0;background:var(--sb);border-right:1px solid var(--bdr);overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:1rem}
-    @media(max-width:1024px){.sidebar{width:320px}}
-    .scard{background:var(--surface);border:1px solid var(--bdr);border-radius:13px;padding:.9rem 1rem}
-    .scard h3{font-size:.7rem;font-weight:600;color:var(--pli);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem;display:flex;align-items:center;gap:6px}
-    .mrow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:.45rem}
-    .mlabel{color:var(--mut);font-size:.77rem;flex-shrink:0}.mval{color:var(--txt);font-size:.81rem;font-weight:500;text-align:right}
-    .btag{display:inline-block;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.25);color:var(--pli);border-radius:20px;padding:2px 8px;font-size:.71rem;margin:2px}
-    /* AI */
-    .ai-out{min-height:90px;max-height:420px;overflow-y:auto;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:.7rem;font-size:.81rem;line-height:1.65;color:#cbd5e1;margin-bottom:.6rem}
-    .ai-out.ph{color:var(--mut);font-style:italic}
-    .ai-out h1,.ai-out h2,.ai-out h3{color:#a78bfa;font-size:.88rem;margin:.35rem 0 .2rem}
-    .ai-out strong{color:#c4b5fd}.ai-out ul,.ai-out ol{padding-left:1.2rem;margin:.25rem 0}.ai-out p{margin:.25rem 0}
-    .ai-out code{background:rgba(139,92,246,.15);padding:1px 5px;border-radius:3px;font-size:.79em}
-    .aibtn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:white;border:none;border-radius:9px;padding:.55rem .9rem;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .2s;width:100%}
-    .aibtn:hover{opacity:.85}.aibtn:disabled{opacity:.4;cursor:not-allowed}
-    /* PDF AREA */
-    .pdfmain{flex:1;overflow-y:auto;background:#191c2e;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem}
-    .pdfpage{width:100%;max-width:830px;margin-bottom:1.1rem;border-radius:9px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6)}
-    .pdfpage canvas{display:block;width:100%;height:auto;background:white}
-    /* AD SLOT */
-    .adslot{width:100%;max-width:830px;margin:.5rem 0 1.2rem;border-radius:11px;border:1px dashed rgba(99,102,241,.22);background:#0f1120;min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--mut);font-size:.76rem}
-    /* RECOMMENDATIONS */
-    .end-pdf-recommendations{width:100%;max-width:860px;margin:3rem auto 0;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.08);box-sizing:border-box}
-    .end-pdf-main-title{color:white}
-    .pdf-recommendation-card{background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.08);color:white}
-    .pdf-rec-title{color:white}
-    /* SPINNER */
-    .spinner{display:flex;flex-direction:column;align-items:center;padding:5rem;color:var(--mut);gap:.8rem}
-    .spin-icon{font-size:2.4rem;animation:spin 1s linear infinite;color:var(--pri)}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    /* RESIZER */
-    .resizer{width:6px;background:rgba(255,255,255,0.06);cursor:col-resize;transition:background 0.2s;flex-shrink:0;user-select:none;z-index:100;display:flex;align-items:center;justify-content:center}
-    .resizer:hover,.resizer.dragging{background:var(--pri)}
-    .resizer::after{content:'┊';color:rgba(255,255,255,0.4);font-size:14px}
-    /* MOBILE MEDIA RESPONSIVENESS */
-    @media(max-width:768px){
-      .sidebar{display:none;position:fixed;top:52px;left:0;height:calc(100vh - 52px);z-index:300;overflow-y:auto;width:285px}
-      .sidebar.open{display:flex}
-      .mob-toggle{display:flex !important}
-      .resizer{display:none!important}
-      .topbar{
-        height: 52px !important;
-        padding: 0 0.5rem !important;
-        gap: 0.35rem !important;
-        max-width: 100vw !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        box-sizing: border-box !important;
-      }
-      .topbar .logo{
-        font-size: 0.88rem !important;
-        gap: 5px !important;
-      }
-      .topbar .doctitle{
-        display: none !important;
-      }
-      .topbar .nbtn{
-        padding: 5px 8px !important;
-        font-size: 0.74rem !important;
-        gap: 4px !important;
-      }
-      .topbar .nbtn .btn-label{
-        display: none !important;
-      }
-      .layout{
-        width: 100% !important;
-        max-width: 100vw !important;
-        overflow-x: hidden !important;
-      }
-      .pdfmain{
-        width: 100% !important;
-        max-width: 100vw !important;
-        padding: 0.75rem 0.25rem !important;
-        box-sizing: border-box !important;
-        overflow-x: hidden !important;
-      }
-      .pdfpage{
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-bottom: 0.85rem !important;
-        border-radius: 6px !important;
-        box-sizing: border-box !important;
-      }
-      .pdfpage canvas{
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        display: block !important;
-        box-sizing: border-box !important;
-      }
-    }
-
-    /* ========================================================
-       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
-       ======================================================== */
-
-    /* 1. Folded Outer Screen / Extra Narrow (max-width: 380px) */
-    @media (max-width: 380px) {
-      .topbar {
-        height: 48px !important;
-        padding: 0 0.35rem !important;
-        gap: 0.25rem !important;
-      }
-      .topbar .logo {
-        font-size: 0.8rem !important;
-      }
-      .topbar .nbtn {
-        padding: 4px 6px !important;
-        font-size: 0.7rem !important;
-      }
-      .sidebar {
-        width: min(260px, 86vw) !important;
-      }
-      .pdfmain {
-        padding: 0.5rem 0.15rem !important;
-      }
-      .modal-box, .share-modal, div[id$="Modal"] > div {
-        max-width: 95vw !important;
-        padding: 1rem 0.75rem !important;
-      }
-    }
-
-    /* 2. Extra Narrow Folded Display (max-width: 340px) */
-    @media (max-width: 340px) {
-      .topbar .nbtn {
-        padding: 3px 5px !important;
-        font-size: 0.65rem !important;
-      }
-      .sidebar {
-        width: 88vw !important;
-      }
-    }
-
-    /* 3. Unfolded Foldable Screens (600px - 900px, 3/4 to 4/3 aspect ratio) */
-    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
-      .pdfmain {
-        padding: 1rem 0.75rem !important;
-      }
-      .pdfpage {
-        max-width: 96% !important;
-      }
-    }
-
-    /* 4. Dual-Screen Spanning Foldable Support */
-    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
-      .sidebar {
-        display: flex !important;
-        position: static !important;
-        width: env(fold-left, 300px) !important;
-        height: calc(100vh - 56px) !important;
-      }
-      .mob-toggle {
-        display: none !important;
-      }
-      .resizer {
-        display: flex !important;
-      }
-    }
-    .mob-toggle{display:none}
-    @keyframes shakeError {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
-    }
-    .shake-error {
-      animation: shakeError 0.4s ease;
-      border-color: #ef4444 !important;
-    }
-  </style>
-  <script src="/history-monitoring.js" defer></script>
-</head>
-<body>
-
-<div class="topbar">
-  <a href="index.html" class="logo"><i class="ri-graduation-cap-fill" style="color:#6366f1;font-size:1.25rem;"></i>DPG<span class="dot">Notes</span></a>
-  <button class="nbtn mob-toggle" onclick="document.getElementById('sb').classList.toggle('open')"><i class="ri-layout-left-line"></i></button>
-  <div class="doctitle" id="navTitle">Loading...</div>
-  <div style="display:flex;gap:.35rem;flex-shrink:0;">
-    <button class="nbtn" onclick="sharePdf()" title="Share"><i class="ri-share-line"></i> <span class="btn-label">Share</span></button>
-    <a href="index.html" class="nbtn" title="Back to Resources"><i class="ri-arrow-left-line"></i> <span class="btn-label">Back</span></a>
-  </div>
-</div>
-
-<div class="layout">
-  <aside class="sidebar" id="sb">
-
-    <!-- User Info -->
-    <div class="scard">
-      <h3><i class="ri-user-3-line"></i> Viewer</h3>
-      <div id="userInfo" style="color:var(--mut);font-size:.84rem;">Loading...</div>
-    </div>
-
-    <!-- Doc Metadata -->
-    <div class="scard">
-      <h3><i class="ri-file-info-line"></i> Document Info</h3>
-      <div class="mrow"><span class="mlabel">Title</span><span class="mval" id="mTitle">—</span></div>
-      <div class="mrow"><span class="mlabel">Category</span><span class="mval" id="mCat">—</span></div>
-      <div class="mrow"><span class="mlabel">Discipline</span><span class="mval" id="mDisc">—</span></div>
-      <div class="mrow"><span class="mlabel">Uploader</span><span class="mval" id="mUp">—</span></div>
-      <div class="mrow"><span class="mlabel">Doc ID</span><span class="mval" id="mId" style="color:var(--mut);font-size:.74rem;">—</span></div>
-      <div class="mrow"><span class="mlabel">Access</span><span class="mval" id="mAccess"><span style="color:#60a5fa;"><i class="ri-global-line"></i> Public</span></span></div>
-      <div id="mDescWrap" style="display:none;margin-top:.65rem">
-        <div style="color:var(--mut);font-size:.72rem;margin-bottom:3px">Description</div>
-        <div id="mDesc" style="font-size:.79rem;color:#94a3b8;line-height:1.5"></div>
-      </div>
-      <div id="mTagsWrap" style="display:none;margin-top:.65rem">
-        <div style="color:var(--mut);font-size:.72rem;margin-bottom:4px">Tags</div>
-        <div id="mTags"></div>
-      </div>
-    </div>
-
-    <!-- Mini Search Engine -->
-    <div class="scard">
-      <h3><i class="ri-search-2-line"></i> Mini Search Engine</h3>
-      <input type="text" id="sidebarSearchInput" placeholder="Search resources..." style="width:100%; padding:0.5rem 0.75rem; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:white; font-size:0.8rem; font-family:inherit;" oninput="handleSidebarMiniSearch(this.value)">
-      <div id="sidebarSearchResults" style="display:none; max-height:220px; overflow-y:auto; margin-top:8px; display:flex; flex-direction:column; gap:6px;"></div>
-    </div>
-
-    <!-- AI Analysis (Chat Mode) -->
-    <div class="scard" style="display: flex; flex-direction: column;">
-      <h3><i class="ri-robot-2-line"></i> AI Chat Assistant</h3>
-      <div id="aiChatArea" style="min-height: 150px; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.2); border-radius: 10px; padding: 0.6rem; font-size: 0.81rem; margin-bottom: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem;">
-        <div class="chat-msg ai" style="align-self: flex-start; background: rgba(255,255,255,0.06); padding: 0.5rem 0.75rem; border-radius: 10px; line-height: 1.4; color: #cbd5e1; border-bottom-left-radius: 2px;">
-          🤖 Hello! I am DPGNotes AI. Click "Analyse" or ask me anything about this document!
-        </div>
-      </div>
-      <div class="ai-input-row" style="display: flex; gap: 0.4rem;">
-        <input type="text" id="aiChatInput" placeholder="Ask a question..." style="flex: 1; padding: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: inherit; font-size: 0.8rem;" onkeydown="if(event.key==='Enter') sendPdfAiQuery()">
-        <button id="aiChatSendBtn" onclick="sendPdfAiQuery()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;"><i class="ri-send-plane-2-line"></i></button>
-      </div>
-      <button class="aibtn" id="aiBtn" onclick="runAI()" style="margin-top: 0.6rem;"><i class="ri-sparkling-line"></i> Analyse Document</button>
-    </div>
-
-    <!-- Sidebar Recommendation Sections -->
-    <div class="scard">
-      <h3><i class="ri-compass-3-line"></i> Discover Resources</h3>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <details open style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
-          <summary style="font-size:0.8rem; font-weight:700; color:#a78bfa; cursor:pointer;"><i class="ri-bookmark-3-line"></i> Related Resources</summary>
-          <div id="sbRelGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
-        </details>
-
-        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
-          <summary style="font-size:0.8rem; font-weight:700; color:#818cf8; cursor:pointer;"><i class="ri-user-star-line"></i> Same Contributor</summary>
-          <div id="sbSameGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
-        </details>
-
-        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
-          <summary style="font-size:0.8rem; font-weight:700; color:#f59e0b; cursor:pointer;"><i class="ri-fire-line"></i> Most Liked</summary>
-          <div id="sbTopLikedGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
-        </details>
-
-        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
-          <summary style="font-size:0.8rem; font-weight:700; color:#34d399; cursor:pointer;"><i class="ri-share-forward-line"></i> Most Shared</summary>
-          <div id="sbTopSharedGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
-        </details>
-
-        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
-          <summary style="font-size:0.8rem; font-weight:700; color:#c084fc; cursor:pointer;"><i class="ri-global-line"></i> Domain Specific</summary>
-          <div id="sbDomainGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
-        </details>
-      </div>
-    </div>
-
-    <!-- Native Sponsored Ads Section (Multiple Sidebar Ads) -->
-    <div class="native-ads sidebar-ad-wrap" id="sbUserAdCardWrap" data-ad-variant="sidebar" data-ad-count="3" style="margin:1rem 0; width:100%; box-sizing:border-box;"></div>
-
-    <!-- Page Stats -->
-    <div class="scard">
-      <h3><i class="ri-pages-line"></i> Pages</h3>
-      <div class="mrow"><span class="mlabel">Total</span><span class="mval" id="pgTotal">—</span></div>
-      <div class="mrow"><span class="mlabel">In View</span><span class="mval" id="pgCur">—</span></div>
-    </div>
-
-  </aside>
-
-  <!-- DRAGGABLE RESIZER HANDLE -->
-  <div class="resizer" id="sidebarResizer" title="Click & Drag to Resize Sidebar Width"></div>
-
-  <main class="pdfmain" id="pdfArea">
-    <div class="spinner" id="loadSpinner">
-      <i class="ri-loader-4-line spin-icon"></i>
-      <p style="font-weight:600">Loading secure document...</p>
-    </div>
-
-    <!-- END OF PDF RECOMMENDATIONS -->
-    <div id="endPdfRecommendations" class="end-pdf-recommendations" style="display:none; margin-top:3rem; padding:2rem 1.5rem; border-radius:20px; backdrop-filter:blur(20px);">
-      <h2 class="end-pdf-main-title" style="font-family:'Outfit',sans-serif; font-size:1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;"><i class="ri-compass-3-line" style="color:var(--pri);"></i> Continue Exploring Resources</h2>
-      
-      <!-- 1. RELEVANT RESOURCES -->
-      <div style="margin-bottom:2rem;">
-        <h3 style="font-size:1.1rem; color:#a78bfa; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-bookmark-3-line"></i> Relevant Resources</h3>
-        <div id="relevantResourcesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
-          <div style="color:var(--mut); font-size:0.85rem;">Loading relevant resources...</div>
-        </div>
-      </div>
-
-      <!-- 2. MORE FROM CONTRIBUTOR -->
-      <div style="margin-bottom:2rem;">
-        <h3 style="font-size:1.1rem; color:#818cf8; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line"></i> More From <span id="uploaderNameSpan">Contributor</span></h3>
-        <div id="moreFromContributorGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
-          <div style="color:var(--mut); font-size:0.85rem;">Loading contributor uploads...</div>
-        </div>
-      </div>
-
-      <!-- 3. TOP RATED / MOST POPULAR -->
-      <div>
-        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-fire-line"></i> Top Rated Academic Materials</h3>
-        <div id="highRatedResourcesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
-          <div style="color:var(--mut); font-size:0.85rem;">Loading top rated notes...</div>
-        </div>
-      </div>
-
-      <!-- 4. END OF DOCUMENT SPONSORED ADS -->
-      <div style="margin-top:2rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1.5rem;">
-        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-sparkles-line"></i> Sponsored Materials</h3>
-        <div class="native-ads" data-ad-variant="feed" data-ad-count="2" style="margin:1rem 0;"></div>
-        <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="margin:1rem 0;"></div>
-      </div>
-    </div>
-  </main>
-</div>
-
-<!-- PRIVATE RESOURCE PASSWORD VERIFICATION MODAL -->
-<div id="pdfPasswordModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; align-items:center; justify-content:center; padding:1.25rem;">
-  <div style="background:#0f172a; border:1px solid rgba(99,102,241,0.35); border-radius:20px; padding:2rem; width:100%; max-width:440px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.85); text-align:center;">
-    <div style="width:58px; height:58px; border-radius:50%; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:1.8rem; color:#818cf8;">
-      <i class="ri-lock-2-line"></i>
-    </div>
-    <h3 style="font-family:'Outfit',sans-serif; font-size:1.35rem; color:white; margin:0 0 0.5rem 0;">Password Protected</h3>
-    <p style="color:#94a3b8; font-size:0.88rem; line-height:1.5; margin:0 0 1.25rem 0;">This academic document is private. Please enter the access password provided by the contributor to unlock and read this PDF.</p>
-    
-    <div id="pwdModalError" style="display:none; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-size:0.82rem; padding:8px 12px; border-radius:8px; margin-bottom:1rem; text-align:left;">
-      <i class="ri-error-warning-line"></i> <span id="pwdModalErrorText">Incorrect password</span>
-    </div>
-
-    <form id="pdfPasswordForm" onsubmit="handlePdfPasswordVerify(event)">
-      <div style="position:relative; margin-bottom:1.25rem; text-align:left;">
-        <label style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:6px; font-weight:600;">Access Password</label>
-        <div style="position:relative;">
-          <input type="password" id="pdfAccessPasswordInput" required placeholder="Enter document password" style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:10px; padding:10px 42px 10px 14px; color:white; font-size:0.95rem; outline:none; transition:border-color 0.2s;">
-          <button type="button" onclick="togglePdfPasswordEye()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.15rem; padding:4px;">
-            <i class="ri-eye-line" id="pdfEyeIcon"></i>
-          </button>
-        </div>
-      </div>
-      <div style="display:flex; gap:10px;">
-        <a href="/" style="flex:1; text-align:center; padding:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:10px; text-decoration:none; font-size:0.88rem; font-weight:600;">Cancel</a>
-        <button type="submit" id="btnUnlockPdf" style="flex:2; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:10px; border-radius:10px; font-weight:700; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-          <i class="ri-lock-unlock-line"></i> Unlock &amp; View
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script type="module">
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-const cfg = {
-  apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
-  projectId:"dpgnotes",storageBucket:"dpgnotes.firebasestorage.app",
-  messagingSenderId:"910494426039",appId:"1:910494426039:web:adeae5315caaf846c43e32"
-};
-const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgnotes");
-const auth  = getAuth(fbApp);
-const db    = getFirestore(fbApp);
-
-window.dpgDb = db;
-window.doc = doc;
-window.getDoc = getDoc;
-window.collection = collection;
-window.query = query;
-window.where = where;
-window.getDocs = getDocs;
-window.setDoc = setDoc;
-window.addDoc = addDoc;
-window.serverTimestamp = serverTimestamp;
-
-// CTR telemetry check
-const P = new URLSearchParams(location.search);
-const searchToken = P.get('search-token');
-const trackingDocId = P.get('docid') || P.get('resourceID') || P.get('resourceId') || P.get('id');
-const trackingDocTitle = P.get('title') || 'Untitled Document';
-
-if (searchToken && trackingDocId) {
-  addDoc(collection(db, "search_ctr_telemetry"), {
-    searchToken,
-    documentId: trackingDocId,
-    title: trackingDocTitle,
-    clickedAt: serverTimestamp(),
-    pageUrl: location.href,
-    userAgent: navigator.userAgent
-  }).catch(err => console.warn("CTR telemetry log failed:", err));
-}
-
-function updateViewerUserInfo(user) {
-  const el = document.getElementById('userInfo');
-  if (!el) return;
-
-  if (user) {
-    const isAdmin = user.email === 'its.akshatnetworkhub23@gmail.com';
-    const profileLink = isAdmin ? 'admin.html' : `profile.html?uid=${user.uid}`;
-    const av = user.photoURL
-      ? `<img src="${user.photoURL}" style="width:36px;height:36px;border-radius:50%;border:2px solid #6366f1;vertical-align:middle;margin-right:8px;cursor:pointer;" title="View Profile">`
-      : `<span style="display:inline-flex;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.95rem;margin-right:8px;vertical-align:middle;cursor:pointer;" title="View Profile">${(user.displayName||user.email||'?')[0].toUpperCase()}</span>`;
-
-    el.innerHTML = `
-      <div style="display:flex;align-items:center;">
-        <a href="${profileLink}" target="_blank" style="text-decoration:none;">${av}</a>
-        <div>
-          <div style="font-weight:600;color:#e2e8f0;font-size:.88rem;display:flex;align-items:center;gap:6px;">
-            <a href="${profileLink}" target="_blank" style="color:#e2e8f0;text-decoration:none;">${user.displayName||'Contributor'}</a>
-            ${isAdmin ? '<span style="background:#ef4444;color:white;font-size:0.68rem;padding:1px 6px;border-radius:4px;font-weight:700;">ADMIN</span>' : '<span style="background:rgba(99,102,241,0.2);color:#a5b4fc;font-size:0.68rem;padding:1px 6px;border-radius:4px;">CONTRIBUTOR</span>'}
-          </div>
-          <div style="color:#64748b;font-size:.74rem;">${user.email||''}</div>
-        </div>
-      </div>
-    `;
-  } else {
-    const pdfViews = parseInt(localStorage.getItem("dpg_quota_pdfs") || "0", 10);
-    const remaining = Math.max(0, 3 - pdfViews);
-    el.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:3px;">
-        <div style="display:flex;align-items:center;gap:6px;color:var(--txt);font-weight:600;font-size:0.85rem;">
-          <i class="ri-user-line" style="color:var(--pri);"></i> Anonymous Guest
-        </div>
-        <div style="font-size:0.75rem;color:var(--mut);">${remaining} PDF reads remaining today</div>
-      </div>
-    `;
-  }
-}
-window.updateViewerUserInfo = updateViewerUserInfo;
-
-onAuthStateChanged(auth, user => {
-  window.dpgCurrentUser = user;
-  updateViewerUserInfo(user);
-});
-document.addEventListener('DOMContentLoaded', () => {
-  updateViewerUserInfo(auth.currentUser);
-});
-</script>
-
-<script>
-// ─ Params & Dual-Mode Resolver ─────────────────────────────────────────────
-const P = new URLSearchParams(location.search);
-const incomingShare = (P.get('share') || P.get('token') || '').trim();
-const incomingId = (P.get('id') || P.get('docid') || P.get('resourceId') || P.get('resourceID') || '').trim();
-
-// Video redirect safeguard: Never render video tokens or video IDs inside PDF viewer
-if (incomingShare.startsWith('VSH_') || incomingShare.startsWith('VSH_AD_')) {
-  window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(incomingShare)}`);
-} else if (incomingId.startsWith('yt-') || incomingId.startsWith('v-') || incomingId.startsWith('vid_')) {
-  window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?id=${encodeURIComponent(incomingId)}`);
-}
-
-let resourceId = incomingId;
-let pdfUrl  = P.get('pdf')         || '';
-let docTitle= P.get('title')       || 'Untitled Document';
-let docCat  = P.get('category')    || '—';
-let docDisc = P.get('discipline')  || '—';
-let docUp   = P.get('uploader')    || '—';
-let docId   = resourceId           || P.get('docid') || '—';
-let docDesc = P.get('description') || '';
-let docTags = P.get('tags')        || '';
-let viewerTrackId = P.get('trackId') || P.get('trackid') || '';
-let viewStartTime = Date.now();
-
-async function resolveTrackIdAndSendTelemetry() {
-  if (!viewerTrackId && resourceId) {
-    try {
-      if (window.getDoc && window.doc && window.dpgDb) {
-        const dSnap = await window.getDoc(window.doc(window.dpgDb, "documents", resourceId));
-        if (dSnap && dSnap.exists && dSnap.exists()) {
-          viewerTrackId = dSnap.data().trackId || '';
-        }
-      }
-    } catch(e) {}
-  }
-
-  const screentimeSecs = Math.round((Date.now() - viewStartTime) / 1000);
-  const visitorUser = window.dpgCurrentUser || (window.auth ? window.auth.currentUser : null);
-  const vUid = visitorUser ? visitorUser.uid : (localStorage.getItem("dpg_guest_uid") || ("guest_" + Math.random().toString(36).substring(2, 10)));
-  const vEmail = visitorUser ? (visitorUser.email || '') : 'guest@dpgnotes.app';
-  const vType = visitorUser ? (visitorUser.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : 'Contributor') : 'Guest User';
-
-  fetch('/api/telemetry/track-resource-view', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      resourceId: resourceId || '',
-      trackId: viewerTrackId || '',
-      userId: vUid,
-      visitorEmail: vEmail,
-      userType: vType,
-      screentime: screentimeSecs,
-      pageUrl: location.href,
-      referrerUrl: document.referrer || '',
-      title: docTitle || 'Academic Resource'
-    })
-  }).catch(() => {});
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => resolveTrackIdAndSendTelemetry(), 3000);
-});
-
-window.addEventListener("beforeunload", () => {
-  resolveTrackIdAndSendTelemetry();
-});
-
-setInterval(() => {
-  resolveTrackIdAndSendTelemetry();
-}, 30000);
-
-function updateDocMetadataUI() {
-  document.title = `${docTitle} — DPGNotes PDF Viewer`;
-  document.getElementById('navTitle').textContent = docTitle;
-  document.getElementById('mTitle').textContent   = docTitle;
-  document.getElementById('mCat').textContent     = docCat;
-  document.getElementById('mDisc').textContent    = docDisc;
-  document.getElementById('mUp').textContent      = docUp;
-  document.getElementById('mId').textContent      = docId;
-  const accessEl = document.getElementById('mAccess');
-  if (accessEl && window.currentDocAccessHtml) {
-    accessEl.innerHTML = window.currentDocAccessHtml;
-  }
-
-  if (docDesc) {
-    document.getElementById('mDesc').textContent    = docDesc;
-    document.getElementById('mDescWrap').style.display = 'block';
-  }
-  if (docTags) {
-    const tEl = document.getElementById('mTags');
-    tEl.innerHTML = '';
-    const tagsArr = typeof docTags === 'string' ? docTags.split(',') : (Array.isArray(docTags) ? docTags : []);
-    tagsArr.forEach(t => {
-      const s = String(t).trim();
-      if (s) {
-        const serpUrl = `https://dpgnotes.web.app/dpgnotes-serp.html?q=${encodeURIComponent(s)}`;
-        tEl.innerHTML += `<a href="${serpUrl}" target="_blank" class="btag" style="text-decoration:none; cursor:pointer;" title="Search '${s}' on DPGNotes SERP">${s}</a>`;
-      }
-    });
-    document.getElementById('mTagsWrap').style.display = 'block';
-  }
-
-  // Log to User Activity Feed
-  if (window.dpgFeed) {
-    window.dpgFeed.logPdfVisit({
-      id: docId,
-      title: docTitle,
-      category: docCat,
-      discipline: docDisc,
-      tags: docTags
-    });
-  }
-}
-
-// ─ PDF Render ───────────────────────────────────────────────────────────────
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-const pdfArea  = document.getElementById('pdfArea');
-const spinner  = document.getElementById('loadSpinner');
-let pdfDoc = null, totalPages = 0;
-
-function adSlot(n) {
-  const d = document.createElement('div');
-  d.className = 'adslot';
-  d.id = `ad-${n}`;
-  d.style.cssText = "width:100%; max-width:100%; overflow:hidden; margin:1.5rem 0;";
-
-  // Alternating pattern every 3 pages: 
-  // slot 1 (Page 3) -> AdSense, slot 2 (Page 6) -> Native Ads, slot 3 (Page 9) -> AdSense, slot 4 (Page 12) -> Native Ads, slot 5 (Page 15) -> AdSense...
-  if (n % 2 !== 0) {
-    d.innerHTML = `<div style="width:100%;text-align:center;padding:.5rem;">
-      <ins class="adsbygoogle"
-           style="display:block; text-align:center;"
-           data-ad-layout="in-article"
-           data-ad-format="fluid"
-           data-ad-client="ca-pub-5515547448097504"
-           data-ad-slot="6070257271"></ins>
-    </div>`;
-  } else {
-    d.innerHTML = `<div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>`;
-  }
-  return d;
-}
-
-async function renderAllPages() {
-  if (!pdfUrl) {
-    spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">No PDF URL provided.</p>`;
-    return;
-  }
-  try {
-    pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
-    totalPages = pdfDoc.numPages;
-    spinner.style.display = 'none';
-    document.getElementById('pgTotal').textContent = totalPages;
-    document.getElementById('pgCur').textContent   = '1';
-
-    // Mathematical Sidebar Ad Capacity: 10 pages -> 1 ad, 20 pages -> 3 ads, 30 pages -> 5 ads...
-    const sidebarAdCount = Math.max(1, 1 + Math.floor(Math.max(0, totalPages - 10) / 10) * 2);
-    const sbAdWrap = document.getElementById("sbUserAdCardWrap");
-    if (sbAdWrap) {
-      sbAdWrap.dataset.adCount = sidebarAdCount;
-      delete sbAdWrap.dataset.adInjected;
-      sbAdWrap.innerHTML = "";
-    }
-
-    // Pre-load In-Document Contributor Notes for this resource
-    const targetDocId = resourceId || docId || P.get('docid') || P.get('id') || '';
-    if (window.loadResourceNotes && targetDocId) {
-      try {
-        await window.loadResourceNotes(targetDocId);
-      } catch (noteLoadErr) {
-        console.warn("Failed pre-loading resource notes in viewer:", noteLoadErr);
-      }
-    }
-
-    for (let i = 1; i <= totalPages; i++) {
-      // 1. Inject 'before' in-document note if configured for this page
-      if (window.injectNoteForPage) {
-        window.injectNoteForPage(i, 'before', pdfArea);
-      }
-
-      await renderPage(i);
-
-      // 2. Inject 'after' in-document note if configured for this page
-      if (window.injectNoteForPage) {
-        window.injectNoteForPage(i, 'after', pdfArea);
-      }
-
-      // Alternating Ad after every 3rd page (not after the last)
-      if (i % 3 === 0 && i < totalPages) {
-        const slotN = Math.floor(i/3);
-        pdfArea.appendChild(adSlot(slotN));
-        if (slotN % 2 !== 0) {
-          try {
-            (adsbygoogle = window.adsbygoogle || []).push({});
-          } catch(e) {
-            console.error("AdSense push error:", e);
-          }
-        }
-      }
-    }
-
-    // Trigger native ad rendering for page gaps and sidebar
-    if (typeof window.renderNativeDPGAds === "function") {
-      window.renderNativeDPGAds();
-    }
-
-    // Intersection observer for current page
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) document.getElementById('pgCur').textContent = e.target.dataset.pg;
-      });
-    }, { threshold: 0.4 });
-    pdfArea.querySelectorAll('.pdfpage').forEach(p => obs.observe(p));
-
-    // Explicitly append End-of-PDF Recommendations to bottom of page stream (after all pages)
-    const endRecs = document.getElementById("endPdfRecommendations");
-    if (endRecs) {
-      pdfArea.appendChild(endRecs);
-      endRecs.style.display = "block";
-      loadEndPdfRecommendations();
-    }
-
-    // Auto-scroll to shared / target in-document note if specified in URL
-    const targetNoteParam = P.get('note') || (location.hash ? location.hash.replace(/^#note-/, '').replace(/^#/, '') : '');
-    const shareTokenParam = P.get('share');
-    if (targetNoteParam && window.scrollToNote) {
-      setTimeout(() => {
-        window.scrollToNote(targetNoteParam);
-      }, 500);
-    }
-    if (shareTokenParam) {
-      try {
-        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-        const guestName = (typeof auth !== 'undefined' && auth.currentUser) ? (auth.currentUser.displayName || auth.currentUser.email) : 'Guest';
-        fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareTokenParam)}&openedBy=${encodeURIComponent(guestName)}`).catch(() => {});
-      } catch (e) {}
-    }
-
-  } catch(err) {
-    console.error(err);
-    spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">Failed to load PDF.</p>`;
-    spinner.style.display = 'flex';
-  }
-}
-
-window.allDocsCache = [];
-
-window.handleSidebarMiniSearch = function(val) {
-  const container = document.getElementById("sidebarSearchResults");
-  if (!container) return;
-  const q = val.trim().toLowerCase();
-
-  if (!q) {
-    container.style.display = "none";
-    container.innerHTML = "";
-    return;
-  }
-
-  container.style.display = "flex";
-  const matches = window.allDocsCache.filter(d => {
-    const title = (d.title || "").toLowerCase();
-    const desc = (d.description || "").toLowerCase();
-    const tags = Array.isArray(d.tags) ? d.tags.join(" ").toLowerCase() : (d.tags || "").toLowerCase();
-    return title.includes(q) || desc.includes(q) || tags.includes(q);
-  }).slice(0, 5);
-
-  if (matches.length === 0) {
-    container.innerHTML = `<div style="color:var(--mut); font-size:0.75rem; padding:4px;">No matching resources found.</div>`;
-    return;
-  }
-
-  container.innerHTML = matches.map(d => {
-    const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
-    return `
-      <a href="${vUrl}" target="_blank" class="mini-search-item">
-        <span class="mini-search-item-title">${d.title || 'Untitled'}</span>
-        <span class="mini-search-item-meta">${d.category || 'Notes'} • ${d.userName || d.uploader || 'Contributor'}</span>
-      </a>
-    `;
-  }).join('');
-};
-
-// CURSOR DRAGGABLE RESIZER HANDLE
-document.addEventListener("DOMContentLoaded", () => {
-  const resizer = document.getElementById("sidebarResizer");
-  const sidebar = document.getElementById("sb");
-
-  if (resizer && sidebar) {
-    let isDragging = false;
-
-    resizer.addEventListener("mousedown", (e) => {
-      isDragging = true;
-      resizer.classList.add("dragging");
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-      const newWidth = Math.max(280, Math.min(680, e.clientX));
-      sidebar.style.width = newWidth + "px";
-    });
-
-    document.addEventListener("mouseup", () => {
-      if (isDragging) {
-        isDragging = false;
-        resizer.classList.remove("dragging");
-        document.body.style.cursor = "";
-        document.body.style.userSelect = "";
-      }
-    });
-  }
-
-  // Universal Telemetry & Screentime Tracking
-  const startTime = Date.now();
-  const trackId = "tr_" + Math.random().toString(36).substring(2, 10);
-  const targetResId = resourceID || docid || "doc_" + Math.random().toString(36).substring(2, 6);
-  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-
-  function sendTelemetry(actionType) {
-    const elapsedSecs = Math.max(1, Math.round((Date.now() - startTime) / 1000));
-    fetch(apiBase + '/api/telemetry/track-resource-view', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        resourceId: targetResId,
-        title: docTitle,
-        category: docCat,
-        discipline: docDisc,
-        authorName: docUp,
-        userType: 'Guest',
-        userId: 'guest_' + Math.random().toString(36).substring(2, 8),
-        trackId: trackId,
-        screentime: elapsedSecs,
-        action: actionType || 'view'
-      })
-    }).catch(e => console.warn("Telemetry ping failed:", e));
-  }
-
-  sendTelemetry('view');
-  window.addEventListener('beforeunload', () => sendTelemetry('leave'));
-});
-
-async function loadEndPdfRecommendations() {
-  const relGrid = document.getElementById("relevantResourcesGrid");
-  const moreGrid = document.getElementById("moreFromContributorGrid");
-  const topGrid = document.getElementById("highRatedResourcesGrid");
-  const upSpan = document.getElementById("uploaderNameSpan");
-
-  if (upSpan && docUp) upSpan.textContent = docUp;
-
-  const db = window.dpgDb;
-  if (!db || !window.collection || !window.getDocs) return;
-
-  try {
-    const snap = await window.getDocs(window.collection(db, "documents"));
-    if (snap.empty) return;
-
-    const allDocs = [];
-    snap.forEach(dSnap => {
-      const d = dSnap.data();
-      allDocs.push({ id: dSnap.id, ...d });
-    });
-    window.allDocsCache = allDocs;
-
-    // 1. Relevant Resources (matching category or discipline)
-    const relevant = allDocs.filter(d => (d.id !== docId && (d.category === docCat || d.discipline === docDisc))).slice(0, 3);
-    // 2. More from Contributor
-    const fromContributor = allDocs.filter(d => (d.id !== docId && (d.userName === docUp || d.uploader === docUp))).slice(0, 3);
-    // 3. High Rated (sorted by likes count)
-    const highRated = [...allDocs].sort((a,b) => ((b.likes?.length || 0) - (a.likes?.length || 0))).slice(0, 3);
-    // 4. Most Shared
-    const mostShared = [...allDocs].sort((a,b) => ((b.sharesCount || 0) - (a.sharesCount || 0))).slice(0, 3);
-
-    function renderMiniCards(container, docs) {
-      if (!container) return;
-      if (docs.length === 0) {
-        container.innerHTML = `<div style="color:var(--mut); font-size:0.82rem;">No additional resources found.</div>`;
-        return;
-      }
-      container.innerHTML = docs.map(d => {
-        const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
-        return `
-          <div class="pdf-recommendation-card" style="border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:8px;">
-            <div style="font-size:0.7rem; font-weight:700; color:#818cf8; text-transform:uppercase;">${d.category || 'Notes'}</div>
-            <div class="pdf-rec-title" style="font-weight:700; font-size:0.92rem; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${d.title || 'Untitled'}</div>
-            <div style="font-size:0.75rem; color:#94a3b8;">Uploaded by ${d.userName || d.uploader || 'Contributor'}</div>
-            <a href="${vUrl}" target="_blank" style="margin-top:auto; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700; text-align:center;">Open Resource</a>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderSidebarMiniLinks(containerId, docs) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      if (docs.length === 0) {
-        container.innerHTML = `<div style="color:var(--mut); font-size:0.72rem;">No items found.</div>`;
-        return;
-      }
-      container.innerHTML = docs.map(d => {
-        const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}`;
-        return `
-          <a href="${vUrl}" target="_blank" style="color:#cbd5e1; text-decoration:none; display:flex; justify-content:space-between; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
-            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:82%; font-weight:500;">${d.title || 'Untitled'}</span>
-            <i class="ri-arrow-right-s-line" style="color:#6366f1;"></i>
-          </a>
-        `;
-      }).join('');
-    }
-
-    renderMiniCards(relGrid, relevant);
-    renderMiniCards(moreGrid, fromContributor);
-    renderMiniCards(topGrid, highRated);
-
-    renderSidebarMiniLinks("sbRelGrid", relevant);
-    renderSidebarMiniLinks("sbSameGrid", fromContributor);
-    renderSidebarMiniLinks("sbTopLikedGrid", highRated);
-    renderSidebarMiniLinks("sbTopSharedGrid", mostShared);
-    renderSidebarMiniLinks("sbDomainGrid", relevant);
-
-    // Fetch approved User Ads for sidebar display
-    const adSnap = await window.getDocs(window.collection(db, "user_ads"));
-    if (!adSnap.empty) {
-      const approvedAds = [];
-      adSnap.forEach(aDoc => {
-        const aData = aDoc.data();
-        if (aData.status === "Approved") approvedAds.push({ id: aDoc.id, ...aData });
-      });
-
-      if (approvedAds.length > 0) {
-        const randomAd = approvedAds[Math.floor(Math.random() * approvedAds.length)];
-        const adWrap = document.getElementById("sbUserAdCardWrap");
-        if (adWrap) {
-          adWrap.style.display = "block";
-          const elAv = document.getElementById("sbAdAvatar");
-          if (elAv) elAv.src = randomAd.userAvatar || "ANH.png";
-          
-          const elNm = document.getElementById("sbAdName");
-          if (elNm) elNm.textContent = randomAd.userName || "Advertiser";
-          
-          const elTt = document.getElementById("sbAdTitle");
-          if (elTt) elTt.textContent = randomAd.title || "Promoted Resource";
-          
-          const elDc = document.getElementById("sbAdDesc");
-          if (elDc) elDc.textContent = randomAd.description || "";
-          
-          const elTh = document.getElementById("sbAdThumb");
-          if (elTh) elTh.src = randomAd.thumbnailUrl || "";
-          
-          const elLk = document.getElementById("sbAdLink");
-          if (elLk) elLk.href = randomAd.targetLink || "#";
-
-          // Video hover auto-play feature
-          if (randomAd.videoUrl) {
-            const mediaWrap = document.getElementById("sbAdMediaWrap");
-            const playerDiv = document.getElementById("sbAdPlayer");
-            let ytVidId = "";
-            const match = randomAd.videoUrl.match(/(?:watch\?v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            if (match) ytVidId = match[1];
-
-            if (ytVidId && mediaWrap && playerDiv) {
-              mediaWrap.onmouseenter = function() {
-                playerDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytVidId}?autoplay=1&mute=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
-                playerDiv.style.display = "block";
-              };
-              mediaWrap.onmouseleave = function() {
-                playerDiv.style.display = "none";
-                playerDiv.innerHTML = "";
-              };
-            }
-          }
-        }
-      }
-    }
-
-  } catch(e) {
-    console.warn("Failed loading end PDF recommendations & sidebar ads:", e);
-  }
-}
-
-async function renderPage(n) {
-  const page     = await pdfDoc.getPage(n);
-  const scale    = Math.min(window.devicePixelRatio||1, 2) * 1.15;
-  const viewport = page.getViewport({scale});
-  const canvas   = document.createElement('canvas');
-  const ctx      = canvas.getContext('2d');
-  canvas.width   = viewport.width;
-  canvas.height  = viewport.height;
-  const wrap     = document.createElement('div');
-  wrap.className = 'pdfpage';
-  wrap.dataset.pg = n;
-  wrap.appendChild(canvas);
-  pdfArea.appendChild(wrap);
-  await page.render({canvasContext:ctx, viewport}).promise;
-}
-
-// ─ AI Analysis (Chat Mode) ──────────────────────────────────────────────────
-let pdfChatHistory = [];
-
-function appendPdfChatMessage(role, text) {
-  const chatArea = document.getElementById("aiChatArea");
-  if (!chatArea) return;
-
-  const msgDiv = document.createElement("div");
-  msgDiv.className = `chat-msg ${role}`;
-  
-  if (role === 'user') {
-    msgDiv.style.alignSelf = 'flex-end';
-    msgDiv.style.background = 'linear-gradient(135deg, #8b5cf6, #6366f1)';
-    msgDiv.style.color = 'white';
-    msgDiv.style.padding = '0.5rem 0.75rem';
-    msgDiv.style.borderRadius = '10px';
-    msgDiv.style.borderBottomRightRadius = '2px';
-    msgDiv.style.fontSize = '0.8rem';
-    msgDiv.style.lineHeight = '1.4';
-    msgDiv.style.maxWidth = '85%';
-    msgDiv.style.wordBreak = 'break-word';
-  } else {
-    msgDiv.style.alignSelf = 'flex-start';
-    msgDiv.style.background = 'rgba(255,255,255,0.06)';
-    msgDiv.style.padding = '0.5rem 0.75rem';
-    msgDiv.style.borderRadius = '10px';
-    msgDiv.style.borderBottomLeftRadius = '2px';
-    msgDiv.style.fontSize = '0.8rem';
-    msgDiv.style.lineHeight = '1.4';
-    msgDiv.style.color = '#cbd5e1';
-    msgDiv.style.maxWidth = '85%';
-    msgDiv.style.wordBreak = 'break-word';
-  }
-
-  let formattedHtml = role === 'ai' && typeof renderMarkdown === 'function' 
-    ? renderMarkdown(text) 
-    : text.replace(/\n/g, '<br>');
-
-  // Auto-detect YouTube URLs and replace with responsive playable iframe embeds
-  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/gi;
-  formattedHtml = formattedHtml.replace(ytRegex, (match, vidId) => {
-    return `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; margin:0.8rem 0; border:1px solid rgba(255,255,255,0.1);"><iframe src="https://www.youtube.com/embed/${vidId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe></div>`;
-  });
-
-  msgDiv.innerHTML = formattedHtml;
-
-  // Make all embedded iframes responsive inside chat bubbles
-  msgDiv.querySelectorAll("iframe").forEach(ifrm => {
-    ifrm.style.maxWidth = "100%";
-    ifrm.style.borderRadius = "8px";
-    if (!ifrm.parentElement || !ifrm.parentElement.style.paddingBottom) {
-      ifrm.style.height = "200px";
-      ifrm.style.width = "100%";
-    }
-  });
-
-  // Single-open accordion listeners
-  msgDiv.querySelectorAll("details").forEach(det => {
-    det.ontoggle = function() {
-      if (this.open) {
-        document.querySelectorAll("#aiChatArea details").forEach(other => {
-          if (other !== this) other.open = false;
-        });
-      }
-    };
-  });
-
-  chatArea.appendChild(msgDiv);
-  chatArea.scrollTop = chatArea.scrollHeight;
-  pdfChatHistory.push({ role, text });
-}
-
-// Background Pre-fetch PDF Text & Knowledge Base
-window.preloadedPdfText = "";
-window.resourceKnowledgeMd = "";
-window.firestoreDocId = "";
-
-async function backgroundPreFetchDocumentKnowledge() {
-  // 1. Pre-extract PDF text in background
-  if (pdfDoc && !window.preloadedPdfText) {
-    try {
-      window.preloadedPdfText = await extractPdfText();
-    } catch (e) {
-      console.warn("Background PDF text pre-fetch warning:", e);
-    }
-  }
-
-  // 2. Pre-fetch resource knowledge from Firestore if docId or firestoreDocId exists
-  const targetId = window.firestoreDocId || docId || resourceId;
-  if (targetId && targetId !== '—' && !window.resourceKnowledgeMd) {
-    try {
-      const db = window.dpgDb;
-      if (db && window.doc && window.getDoc) {
-        // Try direct doc fetch by firestoreDocId or targetId
-        let snap = await window.getDoc(window.doc(db, "resource_knowledge", targetId));
-        if ((!snap || !snap.exists()) && docId && docId !== targetId) {
-          snap = await window.getDoc(window.doc(db, "resource_knowledge", docId));
-        }
-
-        if (snap && snap.exists()) {
-          const kData = snap.data();
-          let combined = kData.knowledgeMd || "";
-          if (kData.faqs && Array.isArray(kData.faqs)) {
-            combined += "\n\n### Resource FAQs:\n" + kData.faqs.map(f => `Q: ${f.query}\nA: ${f.solution}`).join('\n\n');
-          }
-          window.resourceKnowledgeMd = combined;
-        }
-      }
-    } catch (e) {
-      console.warn("Background resource_knowledge pre-fetch warning:", e);
-    }
-  }
-  if (window.dpgResourceNotesCache && window.dpgResourceNotesCache.length > 0) {
-    let notesSummary = "\n\n### In-Document Contributor Notes (Page-Level Guidance):\n";
-    window.dpgResourceNotesCache.forEach(n => {
-      const text = (n.htmlContent || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      const tags = Array.isArray(n.tags) ? n.tags.join(', ') : (n.tags || '');
-      const rendText = n.rendering === 'before' ? 'Before Page' : 'After Page';
-      notesSummary += `- Note at Page ${n.pageNumber} (${rendText}): [Topics: ${tags}] ${text}\n`;
-    });
-    window.resourceKnowledgeMd = (window.resourceKnowledgeMd || '') + notesSummary;
-  }
-}
-
-async function extractPdfText() {
-  if (!pdfDoc) return "";
-  let text = "";
-  const maxPages = Math.min(pdfDoc.numPages, 10);
-  for (let i = 1; i <= maxPages; i++) {
-    try {
-      const page = await pdfDoc.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(" ");
-      text += `--- Page ${i} ---\n${pageText}\n\n`;
-    } catch(e) {
-      console.warn("Failed to extract page " + i, e);
-    }
-  }
-  return text;
-}
-
-async function animateProgressSteps(statusElement, steps) {
-  for (const step of steps) {
-    if (statusElement) {
-      statusElement.innerHTML = `🤖 <em>${step}</em>`;
-    }
-    await new Promise(r => setTimeout(r, 220));
-  }
-}
-
-async function runAI() {
-  const btn = document.getElementById('aiBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite"></i> Analysing...';
-  
-  const chatArea = document.getElementById("aiChatArea");
-  const thinking = document.createElement("div");
-  thinking.id = "pdfThinking";
-  thinking.style.alignSelf = 'flex-start';
-  thinking.style.color = '#a78bfa';
-  thinking.style.fontSize = '0.8rem';
-  chatArea.appendChild(thinking);
-  chatArea.scrollTop = chatArea.scrollHeight;
-
-  const steps = [
-    "[ 1/7. Receive Query ]",
-    "[ 2/7. Analyzing Document Metadata ]",
-    "[ 3/7. Background DOM & PDF Screening ]",
-    "[ 4/7. URL Mapping & Resource Indexing ]",
-    "[ 5/7. Fetching content from runtime knowledge.md ]",
-    "[ 6/7. Generating Response ]",
-    "[ 7/7. Formatting Response ]"
-  ];
-
-  await backgroundPreFetchDocumentKnowledge();
-  await animateProgressSteps(thinking, steps);
-
-  try {
-    const res = await fetch(window.API_BASE_URL + '/api/ai/analyse-document', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ 
-        data: { 
-          docid: docId, 
-          title: docTitle, 
-          category: docCat, 
-          discipline: docDisc, 
-          uploader: docUp, 
-          description: docDesc, 
-          tags: docTags, 
-          pdfUrl: pdfUrl,
-          extractedPdfText: window.preloadedPdfText,
-          knowledgeMd: window.resourceKnowledgeMd
-        } 
-      })
-    });
-
-    if (thinking) thinking.remove();
-
-    if (!res.ok) throw new Error('Server ' + res.status);
-    const j = await res.json();
-    const answer = j.report || j.analysis || j.result || j.answer || 'No analysis returned.';
-    
-    appendPdfChatMessage('ai', answer);
-  } catch(err) {
-    if (thinking) thinking.remove();
-    appendPdfChatMessage('ai', '❌ Failed to analyze document: ' + err.message);
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyse';
-}
-window.runAI = runAI;
-
-async function sendPdfAiQuery() {
-  const input = document.getElementById("aiChatInput");
-  const btn = document.getElementById("aiChatSendBtn");
-  if (!input || !btn) return;
-  
-  const question = input.value.trim();
-  if (!question) return;
-
-  input.value = "";
-  btn.disabled = true;
-  
-  appendPdfChatMessage('user', question);
-  
-  const chatArea = document.getElementById("aiChatArea");
-  const thinking = document.createElement("div");
-  thinking.id = "pdfThinking";
-  thinking.style.alignSelf = 'flex-start';
-  thinking.style.color = '#a78bfa';
-  thinking.style.fontSize = '0.8rem';
-  chatArea.appendChild(thinking);
-  chatArea.scrollTop = chatArea.scrollHeight;
-
-  const steps = [
-    "[ 1/7. Receive Query ]",
-    "[ 2/7. Analyzing User Question ]",
-    "[ 3/7. Background DOM & PDF Screening ]",
-    "[ 4/7. URL Mapping & Resource Indexing ]",
-    "[ 5/7. Fetching content from runtime knowledge.md ]",
-    "[ 6/7. Generating Response ]",
-    "[ 7/7. Formatting Response ]"
-  ];
-
-  await backgroundPreFetchDocumentKnowledge();
-  await animateProgressSteps(thinking, steps);
-
-  try {
-    const res = await fetch(window.API_BASE_URL + '/api/ai/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        history: pdfChatHistory,
-        question: question,
-        prompt: question,
-        resourceId: docId,
-        context: {
-          documentId: docId,
-          documentTitle: docTitle,
-          documentCategory: docCat,
-          documentDiscipline: docDisc,
-          documentUploader: docUp,
-          documentDescription: docDesc,
-          documentTags: docTags,
-          documentPdfUrl: pdfUrl,
-          extractedPdfText: window.preloadedPdfText || "N/A",
-          knowledgeBase: window.resourceKnowledgeMd || ""
-        }
-      })
-    });
-    
-    if (thinking) thinking.remove();
-
-    const data = await res.json();
-    if (data.answer) {
-      appendPdfChatMessage('ai', data.answer);
-    } else {
-      appendPdfChatMessage('ai', '⚠️ No response received.');
-    }
-  } catch(err) {
-    if (thinking) thinking.remove();
-    appendPdfChatMessage('ai', '❌ Connection error: ' + err.message);
-  }
-  btn.disabled = false;
-}
-window.sendPdfAiQuery = sendPdfAiQuery;
-
-// ─ Share ────────────────────────────────────────────────────────────────────
-async function sharePdf() {
-  try {
-    const res = await fetch(window.API_BASE_URL + '/api/share/generate', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ docId, title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, pdfUrl, description:docDesc, tags:docTags, originalUrl: location.origin + '/index.html', uploaderUid:'' })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error||'Failed');
-
-    const shareTitle = `${docTitle} — DPGNotes`;
-    const shareText = `Read "${docTitle}" on DPGNotes - Verified Academic Resource:\n${data.shareUrl}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: shareTitle,
-          text: `Read "${docTitle}" on DPGNotes - Verified Academic Resource:`,
-          url: data.shareUrl
-        });
-        return;
-      } catch (shareErr) {
-        if (shareErr.name === 'AbortError') return;
-      }
-    }
-
-    await navigator.clipboard.writeText(data.shareUrl);
-    alert('Share link copied to clipboard:\n' + data.shareUrl);
-  } catch(err) { alert('Share error: ' + err.message); }
-}
-window.sharePdf = sharePdf;
-
-function escapeDocHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
-
-async function sha256ClientHash(text) {
-  const enc = new TextEncoder();
-  const hashBuf = await crypto.subtle.digest("SHA-256", enc.encode(text));
-  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-let pendingPasswordVerifyCallback = null;
-let pendingPasswordDoc = null;
-
-function showAccessBadge(type) {
-  const accessEl = document.getElementById('mAccess');
-  let html = '';
-  if (type === 'owner') {
-    html = `<span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-user-line"></i> Author Bypass</span>`;
-  } else if (type === 'admin') {
-    html = `<span style="background:rgba(99,102,241,0.18); color:#a5b4fc; border:1px solid rgba(99,102,241,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-keyhole-line"></i> Admin Preview</span>`;
-  } else if (type === 'unlocked') {
-    html = `<span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-lock-unlock-line"></i> Unlocked</span>`;
-  } else if (type === 'locked') {
-    html = `<span style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-lock-2-line"></i> Private (Password)</span>`;
-  } else {
-    html = `<span style="background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-global-line"></i> Public</span>`;
-  }
-  window.currentDocAccessHtml = html;
-  if (accessEl) accessEl.innerHTML = html;
-}
-
-function openPdfPasswordModal(docData, onVerified) {
-  pendingPasswordDoc = docData;
-  pendingPasswordVerifyCallback = onVerified;
-  const modal = document.getElementById("pdfPasswordModal");
-  const input = document.getElementById("pdfAccessPasswordInput");
-  const errBox = document.getElementById("pwdModalError");
-  if (errBox) errBox.style.display = "none";
-  if (input) {
-    input.value = "";
-    input.type = "password";
-  }
-  const eye = document.getElementById("pdfEyeIcon");
-  if (eye) eye.className = "ri-eye-line";
-
-  if (modal) {
-    modal.style.display = "flex";
-    setTimeout(() => { if (input) input.focus(); }, 100);
-  }
-
-  const spinner = document.getElementById('loadSpinner');
-  if (spinner) {
-    spinner.innerHTML = `
-      <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(239,68,68,0.3); border-radius:18px; padding:2rem; text-align:center; max-width:440px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-        <i class="ri-lock-2-line" style="font-size:3rem; color:#f87171; display:block; margin-bottom:1rem;"></i>
-        <h3 style="color:white; font-size:1.2rem; margin-bottom:0.5rem; font-family:'Outfit',sans-serif;">Document Locked</h3>
-        <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.2rem;">This academic resource is private and protected by an access password.</p>
-        <button onclick="document.getElementById('pdfPasswordModal').style.display='flex'" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:9px 20px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-          <i class="ri-key-line"></i> Enter Password to Unlock
-        </button>
-      </div>
-    `;
-    spinner.style.display = 'flex';
-  }
-}
-
-window.handlePdfPasswordVerify = async function(e) {
-  if (e) e.preventDefault();
-  const input = document.getElementById("pdfAccessPasswordInput");
-  const errBox = document.getElementById("pwdModalError");
-  const errText = document.getElementById("pwdModalErrorText");
-  const btn = document.getElementById("btnUnlockPdf");
-
-  if (!input || !pendingPasswordDoc) return;
-  const val = input.value.trim();
-  if (!val) {
-    if (errBox) {
-      errText.textContent = "Please enter the access password.";
-      errBox.style.display = "block";
-    }
-    return;
-  }
-
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Verifying...`;
-  }
-
-  try {
-    const inputHash = await sha256ClientHash(val);
-    const targetHash = pendingPasswordDoc.passwordHash || "";
-    const plainPw = pendingPasswordDoc.password || "";
-
-    const isMatch = (targetHash && inputHash === targetHash) || (plainPw && val === plainPw);
-
-    if (isMatch) {
-      const modal = document.getElementById("pdfPasswordModal");
-      if (modal) modal.style.display = "none";
-      if (pendingPasswordVerifyCallback) {
-        await pendingPasswordVerifyCallback();
-      }
-    } else {
-      if (errBox) {
-        errText.textContent = "Incorrect password. Please verify with the contributor.";
-        errBox.style.display = "block";
-      }
-      input.classList.add("shake-error");
-      setTimeout(() => input.classList.remove("shake-error"), 500);
-      input.select();
-    }
-  } catch(err) {
-    console.error("Password verification error:", err);
-    if (errBox) {
-      errText.textContent = "Verification failed: " + err.message;
-      errBox.style.display = "block";
-    }
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = `<i class="ri-lock-unlock-line"></i> Unlock & View`;
-    }
-  }
-};
-
-window.togglePdfPasswordEye = function() {
-  const input = document.getElementById("pdfAccessPasswordInput");
-  const icon = document.getElementById("pdfEyeIcon");
-  if (!input || !icon) return;
-  if (input.type === "password") {
-    input.type = "text";
-    icon.className = "ri-eye-off-line";
-  } else {
-    input.type = "password";
-    icon.className = "ri-eye-line";
-  }
-};
-
-async function resolveAndRender() {
-  // 1. Wait up to 3 seconds for async Firebase module to expose window.dpgDb and getDoc
-  let attempts = 0;
-  while ((!window.dpgDb || !window.getDoc || !window.doc) && attempts < 15) {
-    await new Promise(r => setTimeout(r, 200));
-    attempts++;
-  }
-
-  const targetSearchId = resourceId || P.get('docid') || P.get('id') || '';
-
-  // 2. If targetSearchId is provided, query Firestore
-  if (targetSearchId && targetSearchId !== '—') {
-    try {
-      const db = window.dpgDb;
-      if (db && window.doc && window.getDoc) {
-        // A. Direct Document lookup by Firestore ID
-        const docRef = window.doc(db, "documents", targetSearchId);
-        let snap = await window.getDoc(docRef);
-
-        let d = null;
-        if (snap && snap.exists()) {
-          d = snap.data();
-          window.firestoreDocId = snap.id;
-        } else if (window.query && window.collection && window.where && window.getDocs) {
-          // B. Query documents collection where documentId == targetSearchId
-          const qDoc = window.query(window.collection(db, "documents"), window.where("documentId", "==", targetSearchId));
-          const qSnap = await window.getDocs(qDoc);
-          if (!qSnap.empty) {
-            const firstDoc = qSnap.docs[0];
-            d = firstDoc.data();
-            window.firestoreDocId = firstDoc.id;
-          }
-        }
-
-        if (d) {
-          if (d.pdfUrl) pdfUrl = d.pdfUrl;
-          if (d.title) docTitle = d.title;
-          if (d.category) docCat = d.category;
-          if (d.discipline) docDisc = d.discipline;
-          if (d.userName || d.uploader) docUp = d.userName || d.uploader;
-          if (d.description) docDesc = d.description;
-          if (d.tags) docTags = Array.isArray(d.tags) ? d.tags.join(', ') : d.tags;
-          if (d.trackId) window.resolvedTrackId = d.trackId;
-          docId = d.documentId || window.firestoreDocId || targetSearchId;
-          window.currentLoadedDocData = d;
-        }
-      }
-    } catch(err) {
-      console.warn("Firestore resourceID fetch error, using URL params fallback:", err);
-    }
-  }
-
-  // Allow brief window for auth to settle
-  let authWait = 0;
-  while (!window.dpgCurrentUser && window.dpgAuth && !window.dpgAuth.currentUser && authWait < 6) {
-    await new Promise(r => setTimeout(r, 100));
-    authWait++;
-  }
-
-  const d = window.currentLoadedDocData;
-  if (d) {
-    const isApproved = d.status === "approved" || d.isApproved === true || (d.status === undefined && d.isApproved === undefined);
-    const user = window.dpgCurrentUser || (window.dpgAuth ? window.dpgAuth.currentUser : null);
-    const currentUid = user?.uid || localStorage.getItem("dpgActiveUserUid") || "";
-    const currentEmail = (user?.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
-
-    const isAdmin = currentEmail === 'its.akshatnetworkhub23@gmail.com' || !!localStorage.getItem("adminToken") || P.get('preview') === 'admin';
-    const isOwner = !!(currentUid && d.userId && currentUid === d.userId) || !!(currentEmail && d.uploaderEmail && currentEmail === (d.uploaderEmail || "").toLowerCase().trim());
-
-    // 1. Approval Gate Check: Non-approved resources are inaccessible to general public
-    if (!isApproved && !isOwner && !isAdmin) {
-      updateDocMetadataUI();
-      const spinner = document.getElementById('loadSpinner');
-      if (spinner) {
-        spinner.innerHTML = `
-          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(245,158,11,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-            <div style="width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#fbbf24;">
-              <i class="ri-time-line"></i>
-            </div>
-            <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Resource Under Review</h2>
-            <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
-              "${escapeDocHtml(d.title || docTitle)}" has been submitted by the contributor and is currently pending Administrator review. Once approved, it will be published for public reading.
-            </p>
-            <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 22px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
-              <i class="ri-arrow-left-line"></i> Return to DPGNotes Home
-            </a>
-          </div>
-        `;
-        spinner.style.display = 'flex';
-      }
-      return;
-    }
-
-    // 2. Private Resource Password Gate Check
-    const isPrivate = d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false;
-    window.currentDocumentIsPrivate = isPrivate;
-
-    if (isPrivate) {
-      const docKey = d.id || window.firestoreDocId || targetSearchId;
-      const isSessionUnlocked = sessionStorage.getItem('dpg_pdf_unlocked_' + docKey) === 'true';
-
-      if (isOwner) {
-        showAccessBadge("owner");
-      } else if (isAdmin) {
-        showAccessBadge("admin");
-      } else if (!isSessionUnlocked) {
-        updateDocMetadataUI();
-        showAccessBadge("locked");
-        openPdfPasswordModal(d, async () => {
-          sessionStorage.setItem('dpg_pdf_unlocked_' + docKey, 'true');
-          showAccessBadge("unlocked");
-          await renderAllPages();
-          backgroundPreFetchDocumentKnowledge();
-        });
-        return; // Halt render until verified
-      } else {
-        showAccessBadge("unlocked");
-      }
-    } else {
-      showAccessBadge("public");
-    }
-  } else {
-    showAccessBadge("public");
-  }
-
-  updateDocMetadataUI();
-  await renderAllPages();
-
-  // Trigger background pre-fetch of PDF text & resource knowledge
-  backgroundPreFetchDocumentKnowledge();
-
-  // Live Firestore Telemetry Logger (/api/resource/track-view) with Asynchronous Auth Resolution
-  window.initLiveTelemetryLogger = function() {
-    if (window.hasLoggedTelemetry) return;
-    
-    const performPing = (userObj) => {
-      if (window.hasLoggedTelemetry) return;
-      window.hasLoggedTelemetry = true;
-
-      const finalResId = window.firestoreDocId || targetSearchId || 'MIC-PE-001';
-      const finalTrackId = window.resolvedTrackId || P.get('trackId') || '34237666';
-
-      let vUid = 'guest_session';
-      let vEmail = 'guest@dpgnotes.app';
-      let uType = 'Guest User';
-
-      if (userObj) {
-        vUid = userObj.uid;
-        vEmail = userObj.email || `${userObj.uid}@dpgnotes.app`;
-        uType = (userObj.email === 'its.akshatnetworkhub23@gmail.com') ? 'Admin' : 'Contributor';
-      } else {
-        vUid = localStorage.getItem("dpg_guest_uid") || ('guest_' + Math.random().toString(36).substring(2, 9));
-        localStorage.setItem("dpg_guest_uid", vUid);
-      }
-
-      const telemetryPayload = {
-        resourceId: finalResId,
-        trackId: finalTrackId,
-        title: docTitle || 'Academic Resource',
-        category: docCat || 'Notes',
-        discipline: docDisc || 'General',
-        visitorUid: vUid,
-        visitorEmail: vEmail,
-        userType: uType,
-        action: 'view',
-        screentimeSeconds: 15
-      };
-
-      const writeDirectFirestoreTelemetry = (payload) => {
-        try {
-          if (window.dpgDb && window.doc && window.setDoc && window.collection && window.addDoc) {
-            const trackDocRef = window.doc(window.dpgDb, "resource_tracking", `${payload.trackId}_${payload.visitorUid}`);
-            window.setDoc(trackDocRef, {
-              resourceId: payload.resourceId,
-              trackId: payload.trackId,
-              title: payload.title,
-              category: payload.category,
-              discipline: payload.discipline,
-              visitorUid: payload.visitorUid,
-              visitorEmail: payload.visitorEmail,
-              userType: payload.userType,
-              action: payload.action,
-              screentimeSeconds: payload.screentimeSeconds,
-              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date(),
-              updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
-            }, { merge: true }).catch(err => console.warn("Direct resource_tracking write error:", err));
-
-            window.addDoc(window.collection(window.dpgDb, "resource_analytics"), {
-              resourceId: payload.resourceId,
-              trackId: payload.trackId,
-              title: payload.title,
-              category: payload.category,
-              discipline: payload.discipline,
-              visitorUid: payload.visitorUid,
-              visitorEmail: payload.visitorEmail,
-              userType: payload.userType,
-              action: payload.action,
-              screentimeSeconds: payload.screentimeSeconds,
-              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
-            }).catch(err => console.warn("Direct resource_analytics write error:", err));
-          }
-        } catch(fErr) {
-          console.warn("Direct Firestore telemetry log error:", fErr);
-        }
-      };
-
-      // Initial View Log (Direct Firestore + Backend API)
-      writeDirectFirestoreTelemetry(telemetryPayload);
-      fetch('/api/resource/track-view', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(telemetryPayload)
-      }).catch(e => console.warn("PDF Viewer view ping error:", e));
-
-      // Periodic Screentime Ping every 15s (Direct Firestore + Backend API)
-      setInterval(() => {
-        telemetryPayload.action = 'screentime';
-        telemetryPayload.screentimeSeconds = 15;
-        writeDirectFirestoreTelemetry(telemetryPayload);
-        fetch('/api/resource/track-view', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(telemetryPayload)
-        }).catch(() => {});
-      }, 15000);
-    };
-
-    if (window.dpgCurrentUser || auth.currentUser) {
-      performPing(window.dpgCurrentUser || auth.currentUser);
-    } else {
-      const unsubscribe = onAuthStateChanged(auth, (u) => {
-        window.dpgCurrentUser = u;
-        performPing(u);
-        if (typeof unsubscribe === 'function') unsubscribe();
-      });
-      setTimeout(() => performPing(window.dpgCurrentUser || auth.currentUser), 800);
-    }
-  };
-
-  window.initLiveTelemetryLogger();
-}
-
-// ─ Init ─────────────────────────────────────────────────────────────────────
-resolveAndRender();
-
-const urlParams = new URLSearchParams(window.location.search);
-const q = urlParams.get('q');
-if (q) {
-  const input = document.getElementById("aiChatInput");
-  if (input) {
-    input.value = decodeURIComponent(q);
-    sendPdfAiQuery();
-  }
-}
-</script>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
+  <script src="/dpg-loader.js"></script>
+  <script src="https://dpgnotes.web.app/redirect.js" defer></script>
+  <meta name="google-adsense-account" content="ca-pub-5515547448097504">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
+     crossorigin="anonymous"></script>
+  <meta name="dpg-notes-verification-tag" content="Xlj3NwA4122vAPi2pmCD">
+  <script src="https://dpgnotes.web.app/track-init.js?referer-to=Xlj3NwA4122vAPi2pmCD&used-by=CCoQSLFfzWf4NGF6zox3tO399Xg1" defer></script>
+  <meta name="dpg-notes-verification-tag" content="FBAIYHrIqsPTz8K7VNKH">
+  <script src="https://dpgnotes.web.app/track-init.js?referer-to=FBAIYHrIqsPTz8K7VNKH&used-by=N7D544J5IdYane7huazhZmjOOKu1" defer></script>
+  <meta name="digiindia-student-innovation-platform" content="dofP3Z_gTI6o71KvinoPuw">
+  <meta name="digiindia-student-innovation-platform" content="2kV9BlePhk89XPlAvirJIw">
+  <meta name="digiindia-student-innovation-platform" content="dofP3Z_gTI6o71KvinoPuw">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="ANH.png" type="image/png" />
+  <title>DPGNotes PDF Viewer | Read, Annotate & AI Ask Question</title>
+  <meta name="description" content="Secure, high-performance academic PDF viewer by DPGNotes. View university notes, practical files, study summaries, and interactive AI Q&A." />
+  <meta name="keywords" content="DPGNotes PDF Viewer, Online PDF Reader, Academic Notes Viewer, Study Material Reader, AI PDF Q&A, Akshat Network Hub" />
+  <meta name="author" content="DPGNotes / Akshat Network Hub" />
+  <meta property="og:title" content="DPGNotes PDF Viewer" />
+  <meta property="og:description" content="View university notes, textbooks, and study files with embedded AI summary and interactive tools." />
+  <meta property="og:image" content="ANH.png" />
+  <meta property="og:type" content="article" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="config.js"></script>
+  <script src="/dpg-params.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script src="/custom-dialogs.js"></script>
+  <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
+  <script src="notes-handler.js"></script>
+  <!-- DPGNotes Unified Shared Auth & Reader Accessibility System -->
+  <link rel="stylesheet" href="/auth-component.css">
+  <link rel="stylesheet" href="/reader-theme.css">
+  <script src="/dpg-feed.js"></script>
+  <script type="module" src="/auth-component.js"></script>
+  <script src="/reader-theme.js"></script>
+  <script>
+    if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
+    function renderMarkdown(md) {
+      if (!md) return '';
+      if (typeof marked === 'undefined') return md.replace(/\n/g,'<br>');
+      const parsed = marked.parse(md);
+      if (typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(parsed, {
+          ADD_TAGS: ['iframe', 'details', 'summary'],
+          ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'style', 'class', 'target', 'open', 'type']
+        });
+      }
+      return parsed;
+    }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0c0e1a;--sb:#111427;--surface:#161929;--bdr:rgba(255,255,255,0.08);--pri:#6366f1;--pli:#818cf8;--txt:#e2e8f0;--mut:#64748b;--acc:#8b5cf6}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
+    /* TOP BAR */
+    .topbar{height:56px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.25rem;gap:1rem;position:sticky;top:0;z-index:200}
+    .topbar .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;color:white;text-decoration:none}
+    .topbar .logo .dot{color:var(--pri)}
+    .topbar .doctitle{flex:1;font-size:0.88rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .nbtn{background:rgba(255,255,255,0.06);border:1px solid var(--bdr);color:var(--txt);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;display:flex;align-items:center;gap:6px;transition:background .2s;text-decoration:none}
+    .nbtn:hover{background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4)}
+    /* LAYOUT */
+    .layout{display:flex;flex:1;overflow:hidden}
+    /* SIDEBAR */
+    .sidebar{width:385px;max-width:100%;flex-shrink:0;background:var(--sb);border-right:1px solid var(--bdr);overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:1rem}
+    @media(max-width:1024px){.sidebar{width:320px}}
+    .scard{background:var(--surface);border:1px solid var(--bdr);border-radius:13px;padding:.9rem 1rem}
+    .scard h3{font-size:.7rem;font-weight:600;color:var(--pli);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem;display:flex;align-items:center;gap:6px}
+    .mrow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:.45rem}
+    .mlabel{color:var(--mut);font-size:.77rem;flex-shrink:0}.mval{color:var(--txt);font-size:.81rem;font-weight:500;text-align:right}
+    .btag{display:inline-block;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.25);color:var(--pli);border-radius:20px;padding:2px 8px;font-size:.71rem;margin:2px}
+    /* AI */
+    .ai-out{min-height:90px;max-height:420px;overflow-y:auto;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:.7rem;font-size:.81rem;line-height:1.65;color:#cbd5e1;margin-bottom:.6rem}
+    .ai-out.ph{color:var(--mut);font-style:italic}
+    .ai-out h1,.ai-out h2,.ai-out h3{color:#a78bfa;font-size:.88rem;margin:.35rem 0 .2rem}
+    .ai-out strong{color:#c4b5fd}.ai-out ul,.ai-out ol{padding-left:1.2rem;margin:.25rem 0}.ai-out p{margin:.25rem 0}
+    .ai-out code{background:rgba(139,92,246,.15);padding:1px 5px;border-radius:3px;font-size:.79em}
+    .aibtn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:white;border:none;border-radius:9px;padding:.55rem .9rem;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .2s;width:100%}
+    .aibtn:hover{opacity:.85}.aibtn:disabled{opacity:.4;cursor:not-allowed}
+    /* PDF AREA */
+    .pdfmain{flex:1;overflow-y:auto;background:#191c2e;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem}
+    .pdfpage{width:100%;max-width:830px;margin-bottom:1.1rem;border-radius:9px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6)}
+    .pdfpage canvas{display:block;width:100%;height:auto;background:white}
+    /* AD SLOT */
+    .adslot{width:100%;max-width:830px;margin:.5rem 0 1.2rem;border-radius:11px;border:1px dashed rgba(99,102,241,.22);background:#0f1120;min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--mut);font-size:.76rem}
+    /* RECOMMENDATIONS */
+    .end-pdf-recommendations{width:100%;max-width:860px;margin:3rem auto 0;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.08);box-sizing:border-box}
+    .end-pdf-main-title{color:white}
+    .pdf-recommendation-card{background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.08);color:white}
+    .pdf-rec-title{color:white}
+    /* SPINNER */
+    .spinner{display:flex;flex-direction:column;align-items:center;padding:5rem;color:var(--mut);gap:.8rem}
+    .spin-icon{font-size:2.4rem;animation:spin 1s linear infinite;color:var(--pri)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* RESIZER */
+    .resizer{width:6px;background:rgba(255,255,255,0.06);cursor:col-resize;transition:background 0.2s;flex-shrink:0;user-select:none;z-index:100;display:flex;align-items:center;justify-content:center}
+    .resizer:hover,.resizer.dragging{background:var(--pri)}
+    .resizer::after{content:'┊';color:rgba(255,255,255,0.4);font-size:14px}
+    /* MOBILE MEDIA RESPONSIVENESS */
+    @media(max-width:768px){
+      .sidebar{display:none;position:fixed;top:52px;left:0;height:calc(100vh - 52px);z-index:300;overflow-y:auto;width:285px}
+      .sidebar.open{display:flex}
+      .mob-toggle{display:flex !important}
+      .resizer{display:none!important}
+      .topbar{
+        height: 52px !important;
+        padding: 0 0.5rem !important;
+        gap: 0.35rem !important;
+        max-width: 100vw !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        box-sizing: border-box !important;
+      }
+      .topbar .logo{
+        font-size: 0.88rem !important;
+        gap: 5px !important;
+      }
+      .topbar .doctitle{
+        display: none !important;
+      }
+      .topbar .nbtn{
+        padding: 5px 8px !important;
+        font-size: 0.74rem !important;
+        gap: 4px !important;
+      }
+      .topbar .nbtn .btn-label{
+        display: none !important;
+      }
+      .layout{
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+      }
+      .pdfmain{
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding: 0.75rem 0.25rem !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+      }
+      .pdfpage{
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-bottom: 0.85rem !important;
+        border-radius: 6px !important;
+        box-sizing: border-box !important;
+      }
+      .pdfpage canvas{
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        box-sizing: border-box !important;
+      }
+    }
+
+    /* ========================================================
+       FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
+       ======================================================== */
+
+    /* 1. Folded Outer Screen / Extra Narrow (max-width: 380px) */
+    @media (max-width: 380px) {
+      .topbar {
+        height: 48px !important;
+        padding: 0 0.35rem !important;
+        gap: 0.25rem !important;
+      }
+      .topbar .logo {
+        font-size: 0.8rem !important;
+      }
+      .topbar .nbtn {
+        padding: 4px 6px !important;
+        font-size: 0.7rem !important;
+      }
+      .sidebar {
+        width: min(260px, 86vw) !important;
+      }
+      .pdfmain {
+        padding: 0.5rem 0.15rem !important;
+      }
+      .modal-box, .share-modal, div[id$="Modal"] > div {
+        max-width: 95vw !important;
+        padding: 1rem 0.75rem !important;
+      }
+    }
+
+    /* 2. Extra Narrow Folded Display (max-width: 340px) */
+    @media (max-width: 340px) {
+      .topbar .nbtn {
+        padding: 3px 5px !important;
+        font-size: 0.65rem !important;
+      }
+      .sidebar {
+        width: 88vw !important;
+      }
+    }
+
+    /* 3. Unfolded Foldable Screens (600px - 900px, 3/4 to 4/3 aspect ratio) */
+    @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
+      .pdfmain {
+        padding: 1rem 0.75rem !important;
+      }
+      .pdfpage {
+        max-width: 96% !important;
+      }
+    }
+
+    /* 4. Dual-Screen Spanning Foldable Support */
+    @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
+      .sidebar {
+        display: flex !important;
+        position: static !important;
+        width: env(fold-left, 300px) !important;
+        height: calc(100vh - 56px) !important;
+      }
+      .mob-toggle {
+        display: none !important;
+      }
+      .resizer {
+        display: flex !important;
+      }
+    }
+    .mob-toggle{display:none}
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake-error {
+      animation: shakeError 0.4s ease;
+      border-color: #ef4444 !important;
+    }
+  </style>
+  <script src="/history-monitoring.js" defer></script>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="logo"><i class="ri-graduation-cap-fill" style="color:#6366f1;font-size:1.25rem;"></i>DPG<span class="dot">Notes</span></a>
+  <button class="nbtn mob-toggle" onclick="document.getElementById('sb').classList.toggle('open')"><i class="ri-layout-left-line"></i></button>
+  <div class="doctitle" id="navTitle">Loading...</div>
+  <div style="display:flex;gap:.35rem;flex-shrink:0;">
+    <button class="nbtn" onclick="sharePdf()" title="Share"><i class="ri-share-line"></i> <span class="btn-label">Share</span></button>
+    <a href="index.html" class="nbtn" title="Back to Resources"><i class="ri-arrow-left-line"></i> <span class="btn-label">Back</span></a>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" id="sb">
+
+    <!-- User Info -->
+    <div class="scard">
+      <h3><i class="ri-user-3-line"></i> Viewer</h3>
+      <div id="userInfo" style="color:var(--mut);font-size:.84rem;">Loading...</div>
+    </div>
+
+    <!-- Doc Metadata -->
+    <div class="scard">
+      <h3><i class="ri-file-info-line"></i> Document Info</h3>
+      <div class="mrow"><span class="mlabel">Title</span><span class="mval" id="mTitle">—</span></div>
+      <div class="mrow"><span class="mlabel">Category</span><span class="mval" id="mCat">—</span></div>
+      <div class="mrow"><span class="mlabel">Discipline</span><span class="mval" id="mDisc">—</span></div>
+      <div class="mrow"><span class="mlabel">Uploader</span><span class="mval" id="mUp">—</span></div>
+      <div class="mrow"><span class="mlabel">Doc ID</span><span class="mval" id="mId" style="color:var(--mut);font-size:.74rem;">—</span></div>
+      <div class="mrow"><span class="mlabel">Access</span><span class="mval" id="mAccess"><span style="color:#60a5fa;"><i class="ri-global-line"></i> Public</span></span></div>
+      <div id="mDescWrap" style="display:none;margin-top:.65rem">
+        <div style="color:var(--mut);font-size:.72rem;margin-bottom:3px">Description</div>
+        <div id="mDesc" style="font-size:.79rem;color:#94a3b8;line-height:1.5"></div>
+      </div>
+      <div id="mTagsWrap" style="display:none;margin-top:.65rem">
+        <div style="color:var(--mut);font-size:.72rem;margin-bottom:4px">Tags</div>
+        <div id="mTags"></div>
+      </div>
+    </div>
+
+    <!-- Mini Search Engine -->
+    <div class="scard">
+      <h3><i class="ri-search-2-line"></i> Mini Search Engine</h3>
+      <input type="text" id="sidebarSearchInput" placeholder="Search resources..." style="width:100%; padding:0.5rem 0.75rem; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:white; font-size:0.8rem; font-family:inherit;" oninput="handleSidebarMiniSearch(this.value)">
+      <div id="sidebarSearchResults" style="display:none; max-height:220px; overflow-y:auto; margin-top:8px; display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+
+    <!-- AI Analysis (Chat Mode) -->
+    <div class="scard" style="display: flex; flex-direction: column;">
+      <h3><i class="ri-robot-2-line"></i> AI Chat Assistant</h3>
+      <div id="aiChatArea" style="min-height: 150px; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.2); border-radius: 10px; padding: 0.6rem; font-size: 0.81rem; margin-bottom: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div class="chat-msg ai" style="align-self: flex-start; background: rgba(255,255,255,0.06); padding: 0.5rem 0.75rem; border-radius: 10px; line-height: 1.4; color: #cbd5e1; border-bottom-left-radius: 2px;">
+          🤖 Hello! I am DPGNotes AI. Click "Analyse" or ask me anything about this document!
+        </div>
+      </div>
+      <div class="ai-input-row" style="display: flex; gap: 0.4rem;">
+        <input type="text" id="aiChatInput" placeholder="Ask a question..." style="flex: 1; padding: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: inherit; font-size: 0.8rem;" onkeydown="if(event.key==='Enter') sendPdfAiQuery()">
+        <button id="aiChatSendBtn" onclick="sendPdfAiQuery()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;"><i class="ri-send-plane-2-line"></i></button>
+      </div>
+      <button class="aibtn" id="aiBtn" onclick="runAI()" style="margin-top: 0.6rem;"><i class="ri-sparkling-line"></i> Analyse Document</button>
+    </div>
+
+    <!-- Sidebar Recommendation Sections -->
+    <div class="scard">
+      <h3><i class="ri-compass-3-line"></i> Discover Resources</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <details open style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#a78bfa; cursor:pointer;"><i class="ri-bookmark-3-line"></i> Related Resources</summary>
+          <div id="sbRelGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#818cf8; cursor:pointer;"><i class="ri-user-star-line"></i> Same Contributor</summary>
+          <div id="sbSameGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#f59e0b; cursor:pointer;"><i class="ri-fire-line"></i> Most Liked</summary>
+          <div id="sbTopLikedGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#34d399; cursor:pointer;"><i class="ri-share-forward-line"></i> Most Shared</summary>
+          <div id="sbTopSharedGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+
+        <details style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+          <summary style="font-size:0.8rem; font-weight:700; color:#c084fc; cursor:pointer;"><i class="ri-global-line"></i> Domain Specific</summary>
+          <div id="sbDomainGrid" style="margin-top:6px; display:flex; flex-direction:column; gap:6px; font-size:0.75rem; color:#94a3b8;">Loading...</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Native Sponsored Ads Section (Multiple Sidebar Ads) -->
+    <div class="native-ads sidebar-ad-wrap" id="sbUserAdCardWrap" data-ad-variant="sidebar" data-ad-count="3" style="margin:1rem 0; width:100%; box-sizing:border-box;"></div>
+
+    <!-- Page Stats -->
+    <div class="scard">
+      <h3><i class="ri-pages-line"></i> Pages</h3>
+      <div class="mrow"><span class="mlabel">Total</span><span class="mval" id="pgTotal">—</span></div>
+      <div class="mrow"><span class="mlabel">In View</span><span class="mval" id="pgCur">—</span></div>
+    </div>
+
+  </aside>
+
+  <!-- DRAGGABLE RESIZER HANDLE -->
+  <div class="resizer" id="sidebarResizer" title="Click & Drag to Resize Sidebar Width"></div>
+
+  <main class="pdfmain" id="pdfArea">
+    <div class="spinner" id="loadSpinner">
+      <i class="ri-loader-4-line spin-icon"></i>
+      <p style="font-weight:600">Loading secure document...</p>
+    </div>
+
+    <!-- END OF PDF RECOMMENDATIONS -->
+    <div id="endPdfRecommendations" class="end-pdf-recommendations" style="display:none; margin-top:3rem; padding:2rem 1.5rem; border-radius:20px; backdrop-filter:blur(20px);">
+      <h2 class="end-pdf-main-title" style="font-family:'Outfit',sans-serif; font-size:1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;"><i class="ri-compass-3-line" style="color:var(--pri);"></i> Continue Exploring Resources</h2>
+      
+      <!-- 1. RELEVANT RESOURCES -->
+      <div style="margin-bottom:2rem;">
+        <h3 style="font-size:1.1rem; color:#a78bfa; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-bookmark-3-line"></i> Relevant Resources</h3>
+        <div id="relevantResourcesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
+          <div style="color:var(--mut); font-size:0.85rem;">Loading relevant resources...</div>
+        </div>
+      </div>
+
+      <!-- 2. MORE FROM CONTRIBUTOR -->
+      <div style="margin-bottom:2rem;">
+        <h3 style="font-size:1.1rem; color:#818cf8; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-user-star-line"></i> More From <span id="uploaderNameSpan">Contributor</span></h3>
+        <div id="moreFromContributorGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
+          <div style="color:var(--mut); font-size:0.85rem;">Loading contributor uploads...</div>
+        </div>
+      </div>
+
+      <!-- 3. TOP RATED / MOST POPULAR -->
+      <div>
+        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-fire-line"></i> Top Rated Academic Materials</h3>
+        <div id="highRatedResourcesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
+          <div style="color:var(--mut); font-size:0.85rem;">Loading top rated notes...</div>
+        </div>
+      </div>
+
+      <!-- 4. END OF DOCUMENT SPONSORED ADS -->
+      <div style="margin-top:2rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1.5rem;">
+        <h3 style="font-size:1.1rem; color:#f59e0b; margin-bottom:1rem; display:flex; align-items:center; gap:8px;"><i class="ri-sparkles-line"></i> Sponsored Materials</h3>
+        <div class="native-ads" data-ad-variant="feed" data-ad-count="2" style="margin:1rem 0;"></div>
+        <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="margin:1rem 0;"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- PRIVATE RESOURCE PASSWORD VERIFICATION MODAL -->
+<div id="pdfPasswordModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; align-items:center; justify-content:center; padding:1.25rem;">
+  <div style="background:#0f172a; border:1px solid rgba(99,102,241,0.35); border-radius:20px; padding:2rem; width:100%; max-width:440px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.85); text-align:center;">
+    <div style="width:58px; height:58px; border-radius:50%; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:1.8rem; color:#818cf8;">
+      <i class="ri-lock-2-line"></i>
+    </div>
+    <h3 style="font-family:'Outfit',sans-serif; font-size:1.35rem; color:white; margin:0 0 0.5rem 0;">Password Protected</h3>
+    <p style="color:#94a3b8; font-size:0.88rem; line-height:1.5; margin:0 0 1.25rem 0;">This academic document is private. Please enter the access password provided by the contributor to unlock and read this PDF.</p>
+    
+    <div id="pwdModalError" style="display:none; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-size:0.82rem; padding:8px 12px; border-radius:8px; margin-bottom:1rem; text-align:left;">
+      <i class="ri-error-warning-line"></i> <span id="pwdModalErrorText">Incorrect password</span>
+    </div>
+
+    <form id="pdfPasswordForm" onsubmit="handlePdfPasswordVerify(event)">
+      <div style="position:relative; margin-bottom:1.25rem; text-align:left;">
+        <label style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:6px; font-weight:600;">Access Password</label>
+        <div style="position:relative;">
+          <input type="password" id="pdfAccessPasswordInput" required placeholder="Enter document password" style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:10px; padding:10px 42px 10px 14px; color:white; font-size:0.95rem; outline:none; transition:border-color 0.2s;">
+          <button type="button" onclick="togglePdfPasswordEye()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.15rem; padding:4px;">
+            <i class="ri-eye-line" id="pdfEyeIcon"></i>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="/" style="flex:1; text-align:center; padding:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:10px; text-decoration:none; font-size:0.88rem; font-weight:600;">Cancel</a>
+        <button type="submit" id="btnUnlockPdf" style="flex:2; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:10px; border-radius:10px; font-weight:700; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <i class="ri-lock-unlock-line"></i> Unlock &amp; View
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const cfg = {
+  apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
+  projectId:"dpgnotes",storageBucket:"dpgnotes.firebasestorage.app",
+  messagingSenderId:"910494426039",appId:"1:910494426039:web:adeae5315caaf846c43e32"
+};
+const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgnotes");
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+
+window.dpgDb = db;
+window.doc = doc;
+window.getDoc = getDoc;
+window.collection = collection;
+window.query = query;
+window.where = where;
+window.getDocs = getDocs;
+window.setDoc = setDoc;
+window.addDoc = addDoc;
+window.serverTimestamp = serverTimestamp;
+
+// CTR telemetry check
+const P = new URLSearchParams(location.search);
+const searchToken = P.get('search-token');
+const trackingDocId = P.get('docid') || P.get('resourceID') || P.get('resourceId') || P.get('id');
+const trackingDocTitle = P.get('title') || 'Untitled Document';
+
+if (searchToken && trackingDocId) {
+  addDoc(collection(db, "search_ctr_telemetry"), {
+    searchToken,
+    documentId: trackingDocId,
+    title: trackingDocTitle,
+    clickedAt: serverTimestamp(),
+    pageUrl: location.href,
+    userAgent: navigator.userAgent
+  }).catch(err => console.warn("CTR telemetry log failed:", err));
+}
+
+function updateViewerUserInfo(user) {
+  const el = document.getElementById('userInfo');
+  if (!el) return;
+
+  if (user) {
+    const isAdmin = user.email === 'its.akshatnetworkhub23@gmail.com';
+    const profileLink = isAdmin ? 'admin.html' : `profile.html?uid=${user.uid}`;
+    const av = user.photoURL
+      ? `<img src="${user.photoURL}" style="width:36px;height:36px;border-radius:50%;border:2px solid #6366f1;vertical-align:middle;margin-right:8px;cursor:pointer;" title="View Profile">`
+      : `<span style="display:inline-flex;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.95rem;margin-right:8px;vertical-align:middle;cursor:pointer;" title="View Profile">${(user.displayName||user.email||'?')[0].toUpperCase()}</span>`;
+
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;">
+        <a href="${profileLink}" target="_blank" style="text-decoration:none;">${av}</a>
+        <div>
+          <div style="font-weight:600;color:#e2e8f0;font-size:.88rem;display:flex;align-items:center;gap:6px;">
+            <a href="${profileLink}" target="_blank" style="color:#e2e8f0;text-decoration:none;">${user.displayName||'Contributor'}</a>
+            ${isAdmin ? '<span style="background:#ef4444;color:white;font-size:0.68rem;padding:1px 6px;border-radius:4px;font-weight:700;">ADMIN</span>' : '<span style="background:rgba(99,102,241,0.2);color:#a5b4fc;font-size:0.68rem;padding:1px 6px;border-radius:4px;">CONTRIBUTOR</span>'}
+          </div>
+          <div style="color:#64748b;font-size:.74rem;">${user.email||''}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    const pdfViews = parseInt(localStorage.getItem("dpg_quota_pdfs") || "0", 10);
+    const remaining = Math.max(0, 3 - pdfViews);
+    el.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <div style="display:flex;align-items:center;gap:6px;color:var(--txt);font-weight:600;font-size:0.85rem;">
+          <i class="ri-user-line" style="color:var(--pri);"></i> Anonymous Guest
+        </div>
+        <div style="font-size:0.75rem;color:var(--mut);">${remaining} PDF reads remaining today</div>
+      </div>
+    `;
+  }
+}
+window.updateViewerUserInfo = updateViewerUserInfo;
+
+onAuthStateChanged(auth, user => {
+  window.dpgCurrentUser = user;
+  updateViewerUserInfo(user);
+});
+document.addEventListener('DOMContentLoaded', () => {
+  updateViewerUserInfo(auth.currentUser);
+});
+</script>
+
+<script>
+// ─ Params & Dual-Mode Resolver ─────────────────────────────────────────────
+const P = new URLSearchParams(location.search);
+const incomingShare = (P.get('share') || P.get('token') || '').trim();
+const incomingId = (P.get('id') || P.get('docid') || P.get('resourceId') || P.get('resourceID') || '').trim();
+
+// Video redirect safeguard: Never render video tokens or video IDs inside PDF viewer
+if (incomingShare.startsWith('VSH_') || incomingShare.startsWith('VSH_AD_')) {
+  window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(incomingShare)}`);
+} else if (incomingId.startsWith('yt-') || incomingId.startsWith('v-') || incomingId.startsWith('vid_')) {
+  window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?id=${encodeURIComponent(incomingId)}`);
+}
+
+let resourceId = incomingId;
+let pdfUrl  = P.get('pdf')         || '';
+let docTitle= P.get('title')       || 'Untitled Document';
+let docCat  = P.get('category')    || '—';
+let docDisc = P.get('discipline')  || '—';
+let docUp   = P.get('uploader')    || '—';
+let docId   = resourceId           || P.get('docid') || '—';
+let docDesc = P.get('description') || '';
+let docTags = P.get('tags')        || '';
+let viewerTrackId = P.get('trackId') || P.get('trackid') || '';
+let viewStartTime = Date.now();
+
+async function resolveTrackIdAndSendTelemetry() {
+  if (!viewerTrackId && resourceId) {
+    try {
+      if (window.getDoc && window.doc && window.dpgDb) {
+        const dSnap = await window.getDoc(window.doc(window.dpgDb, "documents", resourceId));
+        if (dSnap && dSnap.exists && dSnap.exists()) {
+          viewerTrackId = dSnap.data().trackId || '';
+        }
+      }
+    } catch(e) {}
+  }
+
+  const screentimeSecs = Math.round((Date.now() - viewStartTime) / 1000);
+  const visitorUser = window.dpgCurrentUser || (window.auth ? window.auth.currentUser : null);
+  const vUid = visitorUser ? visitorUser.uid : (localStorage.getItem("dpg_guest_uid") || ("guest_" + Math.random().toString(36).substring(2, 10)));
+  const vEmail = visitorUser ? (visitorUser.email || '') : 'guest@dpgnotes.app';
+  const vType = visitorUser ? (visitorUser.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : 'Contributor') : 'Guest User';
+
+  fetch('/api/telemetry/track-resource-view', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      resourceId: resourceId || '',
+      trackId: viewerTrackId || '',
+      userId: vUid,
+      visitorEmail: vEmail,
+      userType: vType,
+      screentime: screentimeSecs,
+      pageUrl: location.href,
+      referrerUrl: document.referrer || '',
+      title: docTitle || 'Academic Resource'
+    })
+  }).catch(() => {});
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => resolveTrackIdAndSendTelemetry(), 3000);
+});
+
+window.addEventListener("beforeunload", () => {
+  resolveTrackIdAndSendTelemetry();
+});
+
+setInterval(() => {
+  resolveTrackIdAndSendTelemetry();
+}, 30000);
+
+function updateDocMetadataUI() {
+  document.title = `${docTitle} — DPGNotes PDF Viewer`;
+  document.getElementById('navTitle').textContent = docTitle;
+  document.getElementById('mTitle').textContent   = docTitle;
+  document.getElementById('mCat').textContent     = docCat;
+  document.getElementById('mDisc').textContent    = docDisc;
+  document.getElementById('mUp').textContent      = docUp;
+  document.getElementById('mId').textContent      = docId;
+  const accessEl = document.getElementById('mAccess');
+  if (accessEl && window.currentDocAccessHtml) {
+    accessEl.innerHTML = window.currentDocAccessHtml;
+  }
+
+  if (docDesc) {
+    document.getElementById('mDesc').textContent    = docDesc;
+    document.getElementById('mDescWrap').style.display = 'block';
+  }
+  if (docTags) {
+    const tEl = document.getElementById('mTags');
+    tEl.innerHTML = '';
+    const tagsArr = typeof docTags === 'string' ? docTags.split(',') : (Array.isArray(docTags) ? docTags : []);
+    tagsArr.forEach(t => {
+      const s = String(t).trim();
+      if (s) {
+        const serpUrl = `https://dpgnotes.web.app/dpgnotes-serp.html?q=${encodeURIComponent(s)}`;
+        tEl.innerHTML += `<a href="${serpUrl}" target="_blank" class="btag" style="text-decoration:none; cursor:pointer;" title="Search '${s}' on DPGNotes SERP">${s}</a>`;
+      }
+    });
+    document.getElementById('mTagsWrap').style.display = 'block';
+  }
+
+  // Log to User Activity Feed
+  if (window.dpgFeed) {
+    window.dpgFeed.logPdfVisit({
+      id: docId,
+      title: docTitle,
+      category: docCat,
+      discipline: docDisc,
+      tags: docTags
+    });
+  }
+}
+
+// ─ PDF Render ───────────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+const pdfArea  = document.getElementById('pdfArea');
+const spinner  = document.getElementById('loadSpinner');
+let pdfDoc = null, totalPages = 0;
+
+function adSlot(n) {
+  const d = document.createElement('div');
+  d.className = 'adslot';
+  d.id = `ad-${n}`;
+  d.style.cssText = "width:100%; max-width:100%; overflow:hidden; margin:1.5rem 0;";
+
+  // Alternating pattern every 3 pages: 
+  // slot 1 (Page 3) -> AdSense, slot 2 (Page 6) -> Native Ads, slot 3 (Page 9) -> AdSense, slot 4 (Page 12) -> Native Ads, slot 5 (Page 15) -> AdSense...
+  if (n % 2 !== 0) {
+    d.innerHTML = `<div style="width:100%;text-align:center;padding:.5rem;">
+      <ins class="adsbygoogle"
+           style="display:block; text-align:center;"
+           data-ad-layout="in-article"
+           data-ad-format="fluid"
+           data-ad-client="ca-pub-5515547448097504"
+           data-ad-slot="6070257271"></ins>
+    </div>`;
+  } else {
+    d.innerHTML = `<div class="native-ads" data-ad-variant="feed" data-ad-count="1"></div>`;
+  }
+  return d;
+}
+
+async function renderAllPages() {
+  if (!pdfUrl) {
+    spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">No PDF URL provided.</p>`;
+    return;
+  }
+  try {
+    pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+    totalPages = pdfDoc.numPages;
+    spinner.style.display = 'none';
+    document.getElementById('pgTotal').textContent = totalPages;
+    document.getElementById('pgCur').textContent   = '1';
+
+    // Mathematical Sidebar Ad Capacity: 10 pages -> 1 ad, 20 pages -> 3 ads, 30 pages -> 5 ads...
+    const sidebarAdCount = Math.max(1, 1 + Math.floor(Math.max(0, totalPages - 10) / 10) * 2);
+    const sbAdWrap = document.getElementById("sbUserAdCardWrap");
+    if (sbAdWrap) {
+      sbAdWrap.dataset.adCount = sidebarAdCount;
+      delete sbAdWrap.dataset.adInjected;
+      sbAdWrap.innerHTML = "";
+    }
+
+    // Pre-load In-Document Contributor Notes for this resource
+    const targetDocId = resourceId || docId || P.get('docid') || P.get('id') || '';
+    if (window.loadResourceNotes && targetDocId) {
+      try {
+        await window.loadResourceNotes(targetDocId);
+      } catch (noteLoadErr) {
+        console.warn("Failed pre-loading resource notes in viewer:", noteLoadErr);
+      }
+    }
+
+    for (let i = 1; i <= totalPages; i++) {
+      // 1. Inject 'before' in-document note if configured for this page
+      if (window.injectNoteForPage) {
+        window.injectNoteForPage(i, 'before', pdfArea);
+      }
+
+      await renderPage(i);
+
+      // 2. Inject 'after' in-document note if configured for this page
+      if (window.injectNoteForPage) {
+        window.injectNoteForPage(i, 'after', pdfArea);
+      }
+
+      // Alternating Ad after every 3rd page (not after the last)
+      if (i % 3 === 0 && i < totalPages) {
+        const slotN = Math.floor(i/3);
+        pdfArea.appendChild(adSlot(slotN));
+        if (slotN % 2 !== 0) {
+          try {
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          } catch(e) {
+            console.error("AdSense push error:", e);
+          }
+        }
+      }
+    }
+
+    // Trigger native ad rendering for page gaps and sidebar
+    if (typeof window.renderNativeDPGAds === "function") {
+      window.renderNativeDPGAds();
+    }
+
+    // Intersection observer for current page
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) document.getElementById('pgCur').textContent = e.target.dataset.pg;
+      });
+    }, { threshold: 0.4 });
+    pdfArea.querySelectorAll('.pdfpage').forEach(p => obs.observe(p));
+
+    // Explicitly append End-of-PDF Recommendations to bottom of page stream (after all pages)
+    const endRecs = document.getElementById("endPdfRecommendations");
+    if (endRecs) {
+      pdfArea.appendChild(endRecs);
+      endRecs.style.display = "block";
+      loadEndPdfRecommendations();
+    }
+
+    // Auto-scroll to shared / target in-document note if specified in URL
+    const targetNoteParam = P.get('note') || (location.hash ? location.hash.replace(/^#note-/, '').replace(/^#/, '') : '');
+    const shareTokenParam = P.get('share');
+    if (targetNoteParam && window.scrollToNote) {
+      setTimeout(() => {
+        window.scrollToNote(targetNoteParam);
+      }, 500);
+    }
+    if (shareTokenParam) {
+      try {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const guestName = (typeof auth !== 'undefined' && auth.currentUser) ? (auth.currentUser.displayName || auth.currentUser.email) : 'Guest';
+        fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareTokenParam)}&openedBy=${encodeURIComponent(guestName)}`).catch(() => {});
+      } catch (e) {}
+    }
+
+  } catch(err) {
+    console.error(err);
+    spinner.innerHTML = `<i class="ri-file-warning-line" style="font-size:3rem;color:#ef4444;"></i><p style="color:#ef4444;">Failed to load PDF.</p>`;
+    spinner.style.display = 'flex';
+  }
+}
+
+window.allDocsCache = [];
+
+window.handleSidebarMiniSearch = function(val) {
+  const container = document.getElementById("sidebarSearchResults");
+  if (!container) return;
+  const q = val.trim().toLowerCase();
+
+  if (!q) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
+  }
+
+  container.style.display = "flex";
+  const matches = window.allDocsCache.filter(d => {
+    const title = (d.title || "").toLowerCase();
+    const desc = (d.description || "").toLowerCase();
+    const tags = Array.isArray(d.tags) ? d.tags.join(" ").toLowerCase() : (d.tags || "").toLowerCase();
+    return title.includes(q) || desc.includes(q) || tags.includes(q);
+  }).slice(0, 5);
+
+  if (matches.length === 0) {
+    container.innerHTML = `<div style="color:var(--mut); font-size:0.75rem; padding:4px;">No matching resources found.</div>`;
+    return;
+  }
+
+  container.innerHTML = matches.map(d => {
+    const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
+    return `
+      <a href="${vUrl}" target="_blank" class="mini-search-item">
+        <span class="mini-search-item-title">${d.title || 'Untitled'}</span>
+        <span class="mini-search-item-meta">${d.category || 'Notes'} • ${d.userName || d.uploader || 'Contributor'}</span>
+      </a>
+    `;
+  }).join('');
+};
+
+// CURSOR DRAGGABLE RESIZER HANDLE
+document.addEventListener("DOMContentLoaded", () => {
+  const resizer = document.getElementById("sidebarResizer");
+  const sidebar = document.getElementById("sb");
+
+  if (resizer && sidebar) {
+    let isDragging = false;
+
+    resizer.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      resizer.classList.add("dragging");
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const newWidth = Math.max(280, Math.min(680, e.clientX));
+      sidebar.style.width = newWidth + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        resizer.classList.remove("dragging");
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      }
+    });
+  }
+
+  // Universal Telemetry & Screentime Tracking
+  const startTime = Date.now();
+  const trackId = "tr_" + Math.random().toString(36).substring(2, 10);
+  const targetResId = resourceID || docid || "doc_" + Math.random().toString(36).substring(2, 6);
+  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+
+  function sendTelemetry(actionType) {
+    const elapsedSecs = Math.max(1, Math.round((Date.now() - startTime) / 1000));
+    fetch(apiBase + '/api/telemetry/track-resource-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        resourceId: targetResId,
+        title: docTitle,
+        category: docCat,
+        discipline: docDisc,
+        authorName: docUp,
+        userType: 'Guest',
+        userId: 'guest_' + Math.random().toString(36).substring(2, 8),
+        trackId: trackId,
+        screentime: elapsedSecs,
+        action: actionType || 'view'
+      })
+    }).catch(e => console.warn("Telemetry ping failed:", e));
+  }
+
+  sendTelemetry('view');
+  window.addEventListener('beforeunload', () => sendTelemetry('leave'));
+});
+
+async function loadEndPdfRecommendations() {
+  const relGrid = document.getElementById("relevantResourcesGrid");
+  const moreGrid = document.getElementById("moreFromContributorGrid");
+  const topGrid = document.getElementById("highRatedResourcesGrid");
+  const upSpan = document.getElementById("uploaderNameSpan");
+
+  if (upSpan && docUp) upSpan.textContent = docUp;
+
+  const db = window.dpgDb;
+  if (!db || !window.collection || !window.getDocs) return;
+
+  try {
+    const snap = await window.getDocs(window.collection(db, "documents"));
+    if (snap.empty) return;
+
+    const allDocs = [];
+    snap.forEach(dSnap => {
+      const d = dSnap.data();
+      allDocs.push({ id: dSnap.id, ...d });
+    });
+    window.allDocsCache = allDocs;
+
+    // 1. Relevant Resources (matching category or discipline)
+    const relevant = allDocs.filter(d => (d.id !== docId && (d.category === docCat || d.discipline === docDisc))).slice(0, 3);
+    // 2. More from Contributor
+    const fromContributor = allDocs.filter(d => (d.id !== docId && (d.userName === docUp || d.uploader === docUp))).slice(0, 3);
+    // 3. High Rated (sorted by likes count)
+    const highRated = [...allDocs].sort((a,b) => ((b.likes?.length || 0) - (a.likes?.length || 0))).slice(0, 3);
+    // 4. Most Shared
+    const mostShared = [...allDocs].sort((a,b) => ((b.sharesCount || 0) - (a.sharesCount || 0))).slice(0, 3);
+
+    function renderMiniCards(container, docs) {
+      if (!container) return;
+      if (docs.length === 0) {
+        container.innerHTML = `<div style="color:var(--mut); font-size:0.82rem;">No additional resources found.</div>`;
+        return;
+      }
+      container.innerHTML = docs.map(d => {
+        const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}&description=${encodeURIComponent(d.description || '')}`;
+        return `
+          <div class="pdf-recommendation-card" style="border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:0.7rem; font-weight:700; color:#818cf8; text-transform:uppercase;">${d.category || 'Notes'}</div>
+            <div class="pdf-rec-title" style="font-weight:700; font-size:0.92rem; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${d.title || 'Untitled'}</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Uploaded by ${d.userName || d.uploader || 'Contributor'}</div>
+            <a href="${vUrl}" target="_blank" style="margin-top:auto; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:6px 12px; border-radius:8px; text-decoration:none; font-size:0.8rem; font-weight:700; text-align:center;">Open Resource</a>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSidebarMiniLinks(containerId, docs) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      if (docs.length === 0) {
+        container.innerHTML = `<div style="color:var(--mut); font-size:0.72rem;">No items found.</div>`;
+        return;
+      }
+      container.innerHTML = docs.map(d => {
+        const vUrl = `dpgnotes-pdf-viewer.html?resourceID=${d.id}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || '')}&docid=${encodeURIComponent(d.documentId || d.id)}`;
+        return `
+          <a href="${vUrl}" target="_blank" style="color:#cbd5e1; text-decoration:none; display:flex; justify-content:space-between; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:82%; font-weight:500;">${d.title || 'Untitled'}</span>
+            <i class="ri-arrow-right-s-line" style="color:#6366f1;"></i>
+          </a>
+        `;
+      }).join('');
+    }
+
+    renderMiniCards(relGrid, relevant);
+    renderMiniCards(moreGrid, fromContributor);
+    renderMiniCards(topGrid, highRated);
+
+    renderSidebarMiniLinks("sbRelGrid", relevant);
+    renderSidebarMiniLinks("sbSameGrid", fromContributor);
+    renderSidebarMiniLinks("sbTopLikedGrid", highRated);
+    renderSidebarMiniLinks("sbTopSharedGrid", mostShared);
+    renderSidebarMiniLinks("sbDomainGrid", relevant);
+
+    // Fetch approved User Ads for sidebar display
+    const adSnap = await window.getDocs(window.collection(db, "user_ads"));
+    if (!adSnap.empty) {
+      const approvedAds = [];
+      adSnap.forEach(aDoc => {
+        const aData = aDoc.data();
+        if (aData.status === "Approved") approvedAds.push({ id: aDoc.id, ...aData });
+      });
+
+      if (approvedAds.length > 0) {
+        const randomAd = approvedAds[Math.floor(Math.random() * approvedAds.length)];
+        const adWrap = document.getElementById("sbUserAdCardWrap");
+        if (adWrap) {
+          adWrap.style.display = "block";
+          const elAv = document.getElementById("sbAdAvatar");
+          if (elAv) elAv.src = randomAd.userAvatar || "ANH.png";
+          
+          const elNm = document.getElementById("sbAdName");
+          if (elNm) elNm.textContent = randomAd.userName || "Advertiser";
+          
+          const elTt = document.getElementById("sbAdTitle");
+          if (elTt) elTt.textContent = randomAd.title || "Promoted Resource";
+          
+          const elDc = document.getElementById("sbAdDesc");
+          if (elDc) elDc.textContent = randomAd.description || "";
+          
+          const elTh = document.getElementById("sbAdThumb");
+          if (elTh) elTh.src = randomAd.thumbnailUrl || "";
+          
+          const elLk = document.getElementById("sbAdLink");
+          if (elLk) elLk.href = randomAd.targetLink || "#";
+
+          // Video hover auto-play feature
+          if (randomAd.videoUrl) {
+            const mediaWrap = document.getElementById("sbAdMediaWrap");
+            const playerDiv = document.getElementById("sbAdPlayer");
+            let ytVidId = "";
+            const match = randomAd.videoUrl.match(/(?:watch\?v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (match) ytVidId = match[1];
+
+            if (ytVidId && mediaWrap && playerDiv) {
+              mediaWrap.onmouseenter = function() {
+                playerDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytVidId}?autoplay=1&mute=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+                playerDiv.style.display = "block";
+              };
+              mediaWrap.onmouseleave = function() {
+                playerDiv.style.display = "none";
+                playerDiv.innerHTML = "";
+              };
+            }
+          }
+        }
+      }
+    }
+
+  } catch(e) {
+    console.warn("Failed loading end PDF recommendations & sidebar ads:", e);
+  }
+}
+
+async function renderPage(n) {
+  const page     = await pdfDoc.getPage(n);
+  const scale    = Math.min(window.devicePixelRatio||1, 2) * 1.15;
+  const viewport = page.getViewport({scale});
+  const canvas   = document.createElement('canvas');
+  const ctx      = canvas.getContext('2d');
+  canvas.width   = viewport.width;
+  canvas.height  = viewport.height;
+  const wrap     = document.createElement('div');
+  wrap.className = 'pdfpage';
+  wrap.dataset.pg = n;
+  wrap.appendChild(canvas);
+  pdfArea.appendChild(wrap);
+  await page.render({canvasContext:ctx, viewport}).promise;
+}
+
+// ─ AI Analysis (Chat Mode) ──────────────────────────────────────────────────
+let pdfChatHistory = [];
+
+function appendPdfChatMessage(role, text) {
+  const chatArea = document.getElementById("aiChatArea");
+  if (!chatArea) return;
+
+  const msgDiv = document.createElement("div");
+  msgDiv.className = `chat-msg ${role}`;
+  
+  if (role === 'user') {
+    msgDiv.style.alignSelf = 'flex-end';
+    msgDiv.style.background = 'linear-gradient(135deg, #8b5cf6, #6366f1)';
+    msgDiv.style.color = 'white';
+    msgDiv.style.padding = '0.5rem 0.75rem';
+    msgDiv.style.borderRadius = '10px';
+    msgDiv.style.borderBottomRightRadius = '2px';
+    msgDiv.style.fontSize = '0.8rem';
+    msgDiv.style.lineHeight = '1.4';
+    msgDiv.style.maxWidth = '85%';
+    msgDiv.style.wordBreak = 'break-word';
+  } else {
+    msgDiv.style.alignSelf = 'flex-start';
+    msgDiv.style.background = 'rgba(255,255,255,0.06)';
+    msgDiv.style.padding = '0.5rem 0.75rem';
+    msgDiv.style.borderRadius = '10px';
+    msgDiv.style.borderBottomLeftRadius = '2px';
+    msgDiv.style.fontSize = '0.8rem';
+    msgDiv.style.lineHeight = '1.4';
+    msgDiv.style.color = '#cbd5e1';
+    msgDiv.style.maxWidth = '85%';
+    msgDiv.style.wordBreak = 'break-word';
+  }
+
+  let formattedHtml = role === 'ai' && typeof renderMarkdown === 'function' 
+    ? renderMarkdown(text) 
+    : text.replace(/\n/g, '<br>');
+
+  // Auto-detect YouTube URLs and replace with responsive playable iframe embeds
+  const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/gi;
+  formattedHtml = formattedHtml.replace(ytRegex, (match, vidId) => {
+    return `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; margin:0.8rem 0; border:1px solid rgba(255,255,255,0.1);"><iframe src="https://www.youtube.com/embed/${vidId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe></div>`;
+  });
+
+  msgDiv.innerHTML = formattedHtml;
+
+  // Make all embedded iframes responsive inside chat bubbles
+  msgDiv.querySelectorAll("iframe").forEach(ifrm => {
+    ifrm.style.maxWidth = "100%";
+    ifrm.style.borderRadius = "8px";
+    if (!ifrm.parentElement || !ifrm.parentElement.style.paddingBottom) {
+      ifrm.style.height = "200px";
+      ifrm.style.width = "100%";
+    }
+  });
+
+  // Single-open accordion listeners
+  msgDiv.querySelectorAll("details").forEach(det => {
+    det.ontoggle = function() {
+      if (this.open) {
+        document.querySelectorAll("#aiChatArea details").forEach(other => {
+          if (other !== this) other.open = false;
+        });
+      }
+    };
+  });
+
+  chatArea.appendChild(msgDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  pdfChatHistory.push({ role, text });
+}
+
+// Background Pre-fetch PDF Text & Knowledge Base
+window.preloadedPdfText = "";
+window.resourceKnowledgeMd = "";
+window.firestoreDocId = "";
+
+async function backgroundPreFetchDocumentKnowledge() {
+  // 1. Pre-extract PDF text in background
+  if (pdfDoc && !window.preloadedPdfText) {
+    try {
+      window.preloadedPdfText = await extractPdfText();
+    } catch (e) {
+      console.warn("Background PDF text pre-fetch warning:", e);
+    }
+  }
+
+  // 2. Pre-fetch resource knowledge from Firestore if docId or firestoreDocId exists
+  const targetId = window.firestoreDocId || docId || resourceId;
+  if (targetId && targetId !== '—' && !window.resourceKnowledgeMd) {
+    try {
+      const db = window.dpgDb;
+      if (db && window.doc && window.getDoc) {
+        // Try direct doc fetch by firestoreDocId or targetId
+        let snap = await window.getDoc(window.doc(db, "resource_knowledge", targetId));
+        if ((!snap || !snap.exists()) && docId && docId !== targetId) {
+          snap = await window.getDoc(window.doc(db, "resource_knowledge", docId));
+        }
+
+        if (snap && snap.exists()) {
+          const kData = snap.data();
+          let combined = kData.knowledgeMd || "";
+          if (kData.faqs && Array.isArray(kData.faqs)) {
+            combined += "\n\n### Resource FAQs:\n" + kData.faqs.map(f => `Q: ${f.query}\nA: ${f.solution}`).join('\n\n');
+          }
+          window.resourceKnowledgeMd = combined;
+        }
+      }
+    } catch (e) {
+      console.warn("Background resource_knowledge pre-fetch warning:", e);
+    }
+  }
+  if (window.dpgResourceNotesCache && window.dpgResourceNotesCache.length > 0) {
+    let notesSummary = "\n\n### In-Document Contributor Notes (Page-Level Guidance):\n";
+    window.dpgResourceNotesCache.forEach(n => {
+      const text = (n.htmlContent || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      const tags = Array.isArray(n.tags) ? n.tags.join(', ') : (n.tags || '');
+      const rendText = n.rendering === 'before' ? 'Before Page' : 'After Page';
+      notesSummary += `- Note at Page ${n.pageNumber} (${rendText}): [Topics: ${tags}] ${text}\n`;
+    });
+    window.resourceKnowledgeMd = (window.resourceKnowledgeMd || '') + notesSummary;
+  }
+}
+
+async function extractPdfText() {
+  if (!pdfDoc) return "";
+  let text = "";
+  const maxPages = Math.min(pdfDoc.numPages, 10);
+  for (let i = 1; i <= maxPages; i++) {
+    try {
+      const page = await pdfDoc.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(" ");
+      text += `--- Page ${i} ---\n${pageText}\n\n`;
+    } catch(e) {
+      console.warn("Failed to extract page " + i, e);
+    }
+  }
+  return text;
+}
+
+async function animateProgressSteps(statusElement, steps) {
+  for (const step of steps) {
+    if (statusElement) {
+      statusElement.innerHTML = `🤖 <em>${step}</em>`;
+    }
+    await new Promise(r => setTimeout(r, 220));
+  }
+}
+
+async function runAI() {
+  const btn = document.getElementById('aiBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite"></i> Analysing...';
+  
+  const chatArea = document.getElementById("aiChatArea");
+  const thinking = document.createElement("div");
+  thinking.id = "pdfThinking";
+  thinking.style.alignSelf = 'flex-start';
+  thinking.style.color = '#a78bfa';
+  thinking.style.fontSize = '0.8rem';
+  chatArea.appendChild(thinking);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  const steps = [
+    "[ 1/7. Receive Query ]",
+    "[ 2/7. Analyzing Document Metadata ]",
+    "[ 3/7. Background DOM & PDF Screening ]",
+    "[ 4/7. URL Mapping & Resource Indexing ]",
+    "[ 5/7. Fetching content from runtime knowledge.md ]",
+    "[ 6/7. Generating Response ]",
+    "[ 7/7. Formatting Response ]"
+  ];
+
+  await backgroundPreFetchDocumentKnowledge();
+  await animateProgressSteps(thinking, steps);
+
+  try {
+    const res = await fetch(window.API_BASE_URL + '/api/ai/analyse-document', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ 
+        data: { 
+          docid: docId, 
+          title: docTitle, 
+          category: docCat, 
+          discipline: docDisc, 
+          uploader: docUp, 
+          description: docDesc, 
+          tags: docTags, 
+          pdfUrl: pdfUrl,
+          extractedPdfText: window.preloadedPdfText,
+          knowledgeMd: window.resourceKnowledgeMd
+        } 
+      })
+    });
+
+    if (thinking) thinking.remove();
+
+    if (!res.ok) throw new Error('Server ' + res.status);
+    const j = await res.json();
+    const answer = j.report || j.analysis || j.result || j.answer || 'No analysis returned.';
+    
+    appendPdfChatMessage('ai', answer);
+  } catch(err) {
+    if (thinking) thinking.remove();
+    appendPdfChatMessage('ai', '❌ Failed to analyze document: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ri-sparkling-line"></i> Re-Analyse';
+}
+window.runAI = runAI;
+
+async function sendPdfAiQuery() {
+  const input = document.getElementById("aiChatInput");
+  const btn = document.getElementById("aiChatSendBtn");
+  if (!input || !btn) return;
+  
+  const question = input.value.trim();
+  if (!question) return;
+
+  input.value = "";
+  btn.disabled = true;
+  
+  appendPdfChatMessage('user', question);
+  
+  const chatArea = document.getElementById("aiChatArea");
+  const thinking = document.createElement("div");
+  thinking.id = "pdfThinking";
+  thinking.style.alignSelf = 'flex-start';
+  thinking.style.color = '#a78bfa';
+  thinking.style.fontSize = '0.8rem';
+  chatArea.appendChild(thinking);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  const steps = [
+    "[ 1/7. Receive Query ]",
+    "[ 2/7. Analyzing User Question ]",
+    "[ 3/7. Background DOM & PDF Screening ]",
+    "[ 4/7. URL Mapping & Resource Indexing ]",
+    "[ 5/7. Fetching content from runtime knowledge.md ]",
+    "[ 6/7. Generating Response ]",
+    "[ 7/7. Formatting Response ]"
+  ];
+
+  await backgroundPreFetchDocumentKnowledge();
+  await animateProgressSteps(thinking, steps);
+
+  try {
+    const res = await fetch(window.API_BASE_URL + '/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        history: pdfChatHistory,
+        question: question,
+        prompt: question,
+        resourceId: docId,
+        context: {
+          documentId: docId,
+          documentTitle: docTitle,
+          documentCategory: docCat,
+          documentDiscipline: docDisc,
+          documentUploader: docUp,
+          documentDescription: docDesc,
+          documentTags: docTags,
+          documentPdfUrl: pdfUrl,
+          extractedPdfText: window.preloadedPdfText || "N/A",
+          knowledgeBase: window.resourceKnowledgeMd || ""
+        }
+      })
+    });
+    
+    if (thinking) thinking.remove();
+
+    const data = await res.json();
+    if (data.answer) {
+      appendPdfChatMessage('ai', data.answer);
+    } else {
+      appendPdfChatMessage('ai', '⚠️ No response received.');
+    }
+  } catch(err) {
+    if (thinking) thinking.remove();
+    appendPdfChatMessage('ai', '❌ Connection error: ' + err.message);
+  }
+  btn.disabled = false;
+}
+window.sendPdfAiQuery = sendPdfAiQuery;
+
+// ─ Share ────────────────────────────────────────────────────────────────────
+async function sharePdf() {
+  try {
+    const res = await fetch(window.API_BASE_URL + '/api/share/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ docId, title:docTitle, category:docCat, discipline:docDisc, uploader:docUp, pdfUrl, description:docDesc, tags:docTags, originalUrl: location.origin + '/index.html', uploaderUid:'' })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Failed');
+
+    const shareTitle = `${docTitle} — DPGNotes`;
+    const shareText = `Read "${docTitle}" on DPGNotes - Verified Academic Resource:\n${data.shareUrl}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: `Read "${docTitle}" on DPGNotes - Verified Academic Resource:`,
+          url: data.shareUrl
+        });
+        return;
+      } catch (shareErr) {
+        if (shareErr.name === 'AbortError') return;
+      }
+    }
+
+    await navigator.clipboard.writeText(data.shareUrl);
+    alert('Share link copied to clipboard:\n' + data.shareUrl);
+  } catch(err) { alert('Share error: ' + err.message); }
+}
+window.sharePdf = sharePdf;
+
+function escapeDocHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+async function sha256ClientHash(text) {
+  const enc = new TextEncoder();
+  const hashBuf = await crypto.subtle.digest("SHA-256", enc.encode(text));
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+let pendingPasswordVerifyCallback = null;
+let pendingPasswordDoc = null;
+
+function showAccessBadge(type) {
+  const accessEl = document.getElementById('mAccess');
+  let html = '';
+  if (type === 'owner') {
+    html = `<span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-user-line"></i> Author Bypass</span>`;
+  } else if (type === 'admin') {
+    html = `<span style="background:rgba(99,102,241,0.18); color:#a5b4fc; border:1px solid rgba(99,102,241,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-shield-keyhole-line"></i> Admin Preview</span>`;
+  } else if (type === 'unlocked') {
+    html = `<span style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-lock-unlock-line"></i> Unlocked</span>`;
+  } else if (type === 'locked') {
+    html = `<span style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-lock-2-line"></i> Private (Password)</span>`;
+  } else {
+    html = `<span style="background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-global-line"></i> Public</span>`;
+  }
+  window.currentDocAccessHtml = html;
+  if (accessEl) accessEl.innerHTML = html;
+}
+
+function openPdfPasswordModal(docData, onVerified) {
+  pendingPasswordDoc = docData;
+  pendingPasswordVerifyCallback = onVerified;
+  const modal = document.getElementById("pdfPasswordModal");
+  const input = document.getElementById("pdfAccessPasswordInput");
+  const errBox = document.getElementById("pwdModalError");
+  if (errBox) errBox.style.display = "none";
+  if (input) {
+    input.value = "";
+    input.type = "password";
+  }
+  const eye = document.getElementById("pdfEyeIcon");
+  if (eye) eye.className = "ri-eye-line";
+
+  if (modal) {
+    modal.style.display = "flex";
+    setTimeout(() => { if (input) input.focus(); }, 100);
+  }
+
+  const spinner = document.getElementById('loadSpinner');
+  if (spinner) {
+    spinner.innerHTML = `
+      <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(239,68,68,0.3); border-radius:18px; padding:2rem; text-align:center; max-width:440px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+        <i class="ri-lock-2-line" style="font-size:3rem; color:#f87171; display:block; margin-bottom:1rem;"></i>
+        <h3 style="color:white; font-size:1.2rem; margin-bottom:0.5rem; font-family:'Outfit',sans-serif;">Document Locked</h3>
+        <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.2rem;">This academic resource is private and protected by an access password.</p>
+        <button onclick="document.getElementById('pdfPasswordModal').style.display='flex'" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:9px 20px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+          <i class="ri-key-line"></i> Enter Password to Unlock
+        </button>
+      </div>
+    `;
+    spinner.style.display = 'flex';
+  }
+}
+
+window.handlePdfPasswordVerify = async function(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById("pdfAccessPasswordInput");
+  const errBox = document.getElementById("pwdModalError");
+  const errText = document.getElementById("pwdModalErrorText");
+  const btn = document.getElementById("btnUnlockPdf");
+
+  if (!input || !pendingPasswordDoc) return;
+  const val = input.value.trim();
+  if (!val) {
+    if (errBox) {
+      errText.textContent = "Please enter the access password.";
+      errBox.style.display = "block";
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Verifying...`;
+  }
+
+  try {
+    const inputHash = await sha256ClientHash(val);
+    const targetHash = pendingPasswordDoc.passwordHash || "";
+    const plainPw = pendingPasswordDoc.password || "";
+
+    const isMatch = (targetHash && inputHash === targetHash) || (plainPw && val === plainPw);
+
+    if (isMatch) {
+      const modal = document.getElementById("pdfPasswordModal");
+      if (modal) modal.style.display = "none";
+      if (pendingPasswordVerifyCallback) {
+        await pendingPasswordVerifyCallback();
+      }
+    } else {
+      if (errBox) {
+        errText.textContent = "Incorrect password. Please verify with the contributor.";
+        errBox.style.display = "block";
+      }
+      input.classList.add("shake-error");
+      setTimeout(() => input.classList.remove("shake-error"), 500);
+      input.select();
+    }
+  } catch(err) {
+    console.error("Password verification error:", err);
+    if (errBox) {
+      errText.textContent = "Verification failed: " + err.message;
+      errBox.style.display = "block";
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-lock-unlock-line"></i> Unlock & View`;
+    }
+  }
+};
+
+window.togglePdfPasswordEye = function() {
+  const input = document.getElementById("pdfAccessPasswordInput");
+  const icon = document.getElementById("pdfEyeIcon");
+  if (!input || !icon) return;
+  if (input.type === "password") {
+    input.type = "text";
+    icon.className = "ri-eye-off-line";
+  } else {
+    input.type = "password";
+    icon.className = "ri-eye-line";
+  }
+};
+
+async function resolveAndRender() {
+  // 1. Wait up to 3 seconds for async Firebase module to expose window.dpgDb and getDoc
+  let attempts = 0;
+  while ((!window.dpgDb || !window.getDoc || !window.doc) && attempts < 15) {
+    await new Promise(r => setTimeout(r, 200));
+    attempts++;
+  }
+
+  const targetSearchId = resourceId || P.get('docid') || P.get('id') || '';
+
+  // 2. If targetSearchId is provided, query Firestore
+  if (targetSearchId && targetSearchId !== '—') {
+    try {
+      const db = window.dpgDb;
+      if (db && window.doc && window.getDoc) {
+        // A. Direct Document lookup by Firestore ID
+        const docRef = window.doc(db, "documents", targetSearchId);
+        let snap = await window.getDoc(docRef);
+
+        let d = null;
+        if (snap && snap.exists()) {
+          d = snap.data();
+          window.firestoreDocId = snap.id;
+        } else if (window.query && window.collection && window.where && window.getDocs) {
+          // B. Query documents collection where documentId == targetSearchId
+          const qDoc = window.query(window.collection(db, "documents"), window.where("documentId", "==", targetSearchId));
+          const qSnap = await window.getDocs(qDoc);
+          if (!qSnap.empty) {
+            const firstDoc = qSnap.docs[0];
+            d = firstDoc.data();
+            window.firestoreDocId = firstDoc.id;
+          }
+        }
+
+        if (d) {
+          if (d.pdfUrl) pdfUrl = d.pdfUrl;
+          if (d.title) docTitle = d.title;
+          if (d.category) docCat = d.category;
+          if (d.discipline) docDisc = d.discipline;
+          if (d.userName || d.uploader) docUp = d.userName || d.uploader;
+          if (d.description) docDesc = d.description;
+          if (d.tags) docTags = Array.isArray(d.tags) ? d.tags.join(', ') : d.tags;
+          if (d.trackId) window.resolvedTrackId = d.trackId;
+          docId = d.documentId || window.firestoreDocId || targetSearchId;
+          window.currentLoadedDocData = d;
+        }
+      }
+    } catch(err) {
+      console.warn("Firestore resourceID fetch error, using URL params fallback:", err);
+    }
+  }
+
+  // Allow brief window for auth to settle
+  let authWait = 0;
+  while (!window.dpgCurrentUser && window.dpgAuth && !window.dpgAuth.currentUser && authWait < 6) {
+    await new Promise(r => setTimeout(r, 100));
+    authWait++;
+  }
+
+  const d = window.currentLoadedDocData;
+  if (d) {
+    const isApproved = d.status === "approved" || d.isApproved === true || (d.status === undefined && d.isApproved === undefined);
+    const user = window.dpgCurrentUser || (window.dpgAuth ? window.dpgAuth.currentUser : null);
+    const currentUid = user?.uid || localStorage.getItem("dpgActiveUserUid") || "";
+    const currentEmail = (user?.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
+
+    // Strict Active Admin Session Verification (cannot be bypassed by URL param alone)
+    const hasAdminToken = !!localStorage.getItem("adminToken");
+    const activeEmail = (localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
+    const hasActiveAdminSession = currentEmail === 'its.akshatnetworkhub23@gmail.com' || (hasAdminToken && (activeEmail === 'its.akshatnetworkhub23@gmail.com' || !activeEmail));
+    const isAdmin = hasActiveAdminSession;
+    const isOwner = !!(currentUid && d.userId && currentUid === d.userId) || !!(currentEmail && d.uploaderEmail && currentEmail === (d.uploaderEmail || "").toLowerCase().trim());
+
+    // 0. Explicit Preview Gate: If URL specifically requests preview=admin without verified admin credentials
+    if (P.get('preview') === 'admin' && !isAdmin && !isOwner) {
+      updateDocMetadataUI();
+      const spinner = document.getElementById('loadSpinner');
+      if (spinner) {
+        spinner.innerHTML = `
+          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(239,68,68,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+            <div style="width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#f87171;">
+              <i class="ri-shield-keyhole-line"></i>
+            </div>
+            <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Administrator Session Required</h2>
+            <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+              The administrative preview mode requires an active verified Administrator session. Anonymous visitors and non-admin users cannot preview resources under review.
+            </p>
+            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+              <a href="/admin.html" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
+                <i class="ri-admin-line"></i> Admin Login
+              </a>
+              <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:10px 18px; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.88rem;">
+                Return Home
+              </a>
+            </div>
+          </div>
+        `;
+        spinner.style.display = 'flex';
+      }
+      return;
+    }
+
+    // 1. Approval Gate Check: Non-approved resources are inaccessible to general public
+    if (!isApproved && !isOwner && !isAdmin) {
+      updateDocMetadataUI();
+      const spinner = document.getElementById('loadSpinner');
+      if (spinner) {
+        spinner.innerHTML = `
+          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(245,158,11,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+            <div style="width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#fbbf24;">
+              <i class="ri-time-line"></i>
+            </div>
+            <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Resource Under Review</h2>
+            <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+              "${escapeDocHtml(d.title || docTitle)}" has been submitted by the contributor and is currently pending Administrator review. Once approved, it will be published for public reading.
+            </p>
+            <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 22px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
+              <i class="ri-arrow-left-line"></i> Return to DPGNotes Home
+            </a>
+          </div>
+        `;
+        spinner.style.display = 'flex';
+      }
+      return;
+    }
+
+    // 2. Private Resource Password Gate Check
+    const isPrivate = d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false;
+    window.currentDocumentIsPrivate = isPrivate;
+
+    if (isPrivate) {
+      const docKey = d.id || window.firestoreDocId || targetSearchId;
+      const isSessionUnlocked = sessionStorage.getItem('dpg_pdf_unlocked_' + docKey) === 'true';
+
+      if (isOwner) {
+        showAccessBadge("owner");
+      } else if (isAdmin) {
+        showAccessBadge("admin");
+      } else if (!isSessionUnlocked) {
+        updateDocMetadataUI();
+        showAccessBadge("locked");
+        openPdfPasswordModal(d, async () => {
+          sessionStorage.setItem('dpg_pdf_unlocked_' + docKey, 'true');
+          showAccessBadge("unlocked");
+          await renderAllPages();
+          backgroundPreFetchDocumentKnowledge();
+        });
+        return; // Halt render until verified
+      } else {
+        showAccessBadge("unlocked");
+      }
+    } else {
+      showAccessBadge("public");
+    }
+  } else {
+    showAccessBadge("public");
+  }
+
+  updateDocMetadataUI();
+  await renderAllPages();
+
+  // Trigger background pre-fetch of PDF text & resource knowledge
+  backgroundPreFetchDocumentKnowledge();
+
+  // Live Firestore Telemetry Logger (/api/resource/track-view) with Asynchronous Auth Resolution
+  window.initLiveTelemetryLogger = function() {
+    if (window.hasLoggedTelemetry) return;
+    
+    const performPing = (userObj) => {
+      if (window.hasLoggedTelemetry) return;
+      window.hasLoggedTelemetry = true;
+
+      const finalResId = window.firestoreDocId || targetSearchId || 'MIC-PE-001';
+      const finalTrackId = window.resolvedTrackId || P.get('trackId') || '34237666';
+
+      let vUid = 'guest_session';
+      let vEmail = 'guest@dpgnotes.app';
+      let uType = 'Guest User';
+
+      if (userObj) {
+        vUid = userObj.uid;
+        vEmail = userObj.email || `${userObj.uid}@dpgnotes.app`;
+        uType = (userObj.email === 'its.akshatnetworkhub23@gmail.com') ? 'Admin' : 'Contributor';
+      } else {
+        vUid = localStorage.getItem("dpg_guest_uid") || ('guest_' + Math.random().toString(36).substring(2, 9));
+        localStorage.setItem("dpg_guest_uid", vUid);
+      }
+
+      const telemetryPayload = {
+        resourceId: finalResId,
+        trackId: finalTrackId,
+        title: docTitle || 'Academic Resource',
+        category: docCat || 'Notes',
+        discipline: docDisc || 'General',
+        visitorUid: vUid,
+        visitorEmail: vEmail,
+        userType: uType,
+        action: 'view',
+        screentimeSeconds: 15
+      };
+
+      const writeDirectFirestoreTelemetry = (payload) => {
+        try {
+          if (window.dpgDb && window.doc && window.setDoc && window.collection && window.addDoc) {
+            const trackDocRef = window.doc(window.dpgDb, "resource_tracking", `${payload.trackId}_${payload.visitorUid}`);
+            window.setDoc(trackDocRef, {
+              resourceId: payload.resourceId,
+              trackId: payload.trackId,
+              title: payload.title,
+              category: payload.category,
+              discipline: payload.discipline,
+              visitorUid: payload.visitorUid,
+              visitorEmail: payload.visitorEmail,
+              userType: payload.userType,
+              action: payload.action,
+              screentimeSeconds: payload.screentimeSeconds,
+              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+              updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+            }, { merge: true }).catch(err => console.warn("Direct resource_tracking write error:", err));
+
+            window.addDoc(window.collection(window.dpgDb, "resource_analytics"), {
+              resourceId: payload.resourceId,
+              trackId: payload.trackId,
+              title: payload.title,
+              category: payload.category,
+              discipline: payload.discipline,
+              visitorUid: payload.visitorUid,
+              visitorEmail: payload.visitorEmail,
+              userType: payload.userType,
+              action: payload.action,
+              screentimeSeconds: payload.screentimeSeconds,
+              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
+            }).catch(err => console.warn("Direct resource_analytics write error:", err));
+          }
+        } catch(fErr) {
+          console.warn("Direct Firestore telemetry log error:", fErr);
+        }
+      };
+
+      // Initial View Log (Direct Firestore + Backend API)
+      writeDirectFirestoreTelemetry(telemetryPayload);
+      fetch('/api/resource/track-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(telemetryPayload)
+      }).catch(e => console.warn("PDF Viewer view ping error:", e));
+
+      // Periodic Screentime Ping every 15s (Direct Firestore + Backend API)
+      setInterval(() => {
+        telemetryPayload.action = 'screentime';
+        telemetryPayload.screentimeSeconds = 15;
+        writeDirectFirestoreTelemetry(telemetryPayload);
+        fetch('/api/resource/track-view', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(telemetryPayload)
+        }).catch(() => {});
+      }, 15000);
+    };
+
+    if (window.dpgCurrentUser || auth.currentUser) {
+      performPing(window.dpgCurrentUser || auth.currentUser);
+    } else {
+      const unsubscribe = onAuthStateChanged(auth, (u) => {
+        window.dpgCurrentUser = u;
+        performPing(u);
+        if (typeof unsubscribe === 'function') unsubscribe();
+      });
+      setTimeout(() => performPing(window.dpgCurrentUser || auth.currentUser), 800);
+    }
+  };
+
+  window.initLiveTelemetryLogger();
+}
+
+// ─ Init ─────────────────────────────────────────────────────────────────────
+resolveAndRender();
+
+const urlParams = new URLSearchParams(window.location.search);
+const q = urlParams.get('q');
+if (q) {
+  const input = document.getElementById("aiChatInput");
+  if (input) {
+    input.value = decodeURIComponent(q);
+    sendPdfAiQuery();
+  }
+}
+</script>
+</body>
+</html>
