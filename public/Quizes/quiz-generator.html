@@ -296,6 +296,231 @@
 
     }
 
+    /* Studio Banner Styles (Default Midnight Blue / Dark Theme) */
+    .studio-draft-banner {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #fde68a;
+      transition: all 0.2s ease;
+    }
+    .studio-draft-banner-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .studio-draft-banner-icon {
+      color: #fbbf24;
+      font-size: 1.15rem;
+    }
+    .studio-draft-banner-text strong {
+      color: #ffffff;
+    }
+    .studio-draft-banner-btn {
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .studio-draft-banner-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+
+    .studio-url-banner {
+      background: rgba(99, 102, 241, 0.14);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #c7d2fe;
+      transition: all 0.2s ease;
+    }
+    .studio-url-banner-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .studio-url-banner-icon {
+      color: #818cf8;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .studio-url-banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .studio-url-btn-export {
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      color: #e0e7ff;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .studio-url-btn-export:hover {
+      background: #6366f1;
+      color: #ffffff;
+    }
+    .studio-url-btn-dismiss {
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .studio-url-btn-dismiss:hover {
+      background: #f59e0b;
+      color: #000000;
+    }
+
+    /* Light Theme Color Contrast Accessibility Overrides (WCAG AAA) */
+    html[data-theme="light"] .studio-draft-banner,
+    body[data-theme="light"] .studio-draft-banner,
+    body.theme-light .studio-draft-banner {
+      background: #fffbeb !important;
+      border: 1.5px solid #f59e0b !important;
+      color: #78350f !important;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1) !important;
+    }
+    html[data-theme="light"] .studio-draft-banner-content,
+    body[data-theme="light"] .studio-draft-banner-content,
+    body.theme-light .studio-draft-banner-content {
+      color: #78350f !important;
+    }
+    html[data-theme="light"] .studio-draft-banner-icon,
+    body[data-theme="light"] .studio-draft-banner-icon,
+    body.theme-light .studio-draft-banner-icon {
+      color: #b45309 !important;
+    }
+    html[data-theme="light"] .studio-draft-banner-text,
+    body[data-theme="light"] .studio-draft-banner-text,
+    body.theme-light .studio-draft-banner-text {
+      color: #78350f !important;
+    }
+    html[data-theme="light"] .studio-draft-banner-text strong,
+    body[data-theme="light"] .studio-draft-banner-text strong,
+    body.theme-light .studio-draft-banner-text strong {
+      color: #451a03 !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] .studio-draft-banner-btn,
+    body[data-theme="light"] .studio-draft-banner-btn,
+    body.theme-light .studio-draft-banner-btn {
+      background: #fee2e2 !important;
+      border: 1.5px solid #ef4444 !important;
+      color: #991b1b !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.15) !important;
+    }
+    html[data-theme="light"] .studio-draft-banner-btn:hover,
+    body[data-theme="light"] .studio-draft-banner-btn:hover,
+    body.theme-light .studio-draft-banner-btn:hover {
+      background: #dc2626 !important;
+      color: #ffffff !important;
+      border-color: #dc2626 !important;
+    }
+
+    html[data-theme="light"] .studio-url-banner,
+    body[data-theme="light"] .studio-url-banner,
+    body.theme-light .studio-url-banner {
+      background: #eef2ff !important;
+      border: 1.5px solid #6366f1 !important;
+      color: #1e1b4b !important;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.12) !important;
+    }
+    html[data-theme="light"] .studio-url-banner-content,
+    body[data-theme="light"] .studio-url-banner-content,
+    body.theme-light .studio-url-banner-content {
+      color: #1e1b4b !important;
+    }
+    html[data-theme="light"] .studio-url-banner-icon,
+    body[data-theme="light"] .studio-url-banner-icon,
+    body.theme-light .studio-url-banner-icon {
+      color: #4338ca !important;
+    }
+    html[data-theme="light"] .studio-url-banner-text,
+    body[data-theme="light"] .studio-url-banner-text,
+    body.theme-light .studio-url-banner-text {
+      color: #1e1b4b !important;
+    }
+    html[data-theme="light"] .studio-url-banner-text strong,
+    body[data-theme="light"] .studio-url-banner-text strong,
+    body.theme-light .studio-url-banner-text strong {
+      color: #312e81 !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] .studio-url-btn-export,
+    body[data-theme="light"] .studio-url-btn-export,
+    body.theme-light .studio-url-btn-export {
+      background: #e0e7ff !important;
+      border: 1.5px solid #4f46e5 !important;
+      color: #312e81 !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 3px rgba(79, 70, 229, 0.15) !important;
+    }
+    html[data-theme="light"] .studio-url-btn-export:hover,
+    body[data-theme="light"] .studio-url-btn-export:hover,
+    body.theme-light .studio-url-btn-export:hover {
+      background: #4338ca !important;
+      color: #ffffff !important;
+      border-color: #4338ca !important;
+    }
+    html[data-theme="light"] .studio-url-btn-dismiss,
+    body[data-theme="light"] .studio-url-btn-dismiss,
+    body.theme-light .studio-url-btn-dismiss {
+      background: #fef3c7 !important;
+      border: 1.5px solid #d97706 !important;
+      color: #92400e !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 3px rgba(217, 119, 6, 0.15) !important;
+    }
+    html[data-theme="light"] .studio-url-btn-dismiss:hover,
+    body[data-theme="light"] .studio-url-btn-dismiss:hover,
+    body.theme-light .studio-url-btn-dismiss:hover {
+      background: #d97706 !important;
+      color: #ffffff !important;
+      border-color: #d97706 !important;
+    }
+
+
 
 
     * { box-sizing: border-box; }
@@ -2433,53 +2658,30 @@
 
 
     function showDraftIndicator(timeIso, isRestored = false) {
-
       let banner = document.getElementById('draftStatusBanner');
-
       if (!banner) {
-
         const header = document.querySelector('.studio-header');
-
         if (header) {
-
           banner = document.createElement('div');
-
           banner.id = 'draftStatusBanner';
-
-          banner.style.cssText = 'background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); border-radius:12px; padding:10px 16px; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:0.85rem; color:#fde68a;';
-
+          banner.className = 'studio-draft-banner';
           header.insertAdjacentElement('afterend', banner);
-
         }
-
       }
-
       if (banner) {
-
+        banner.className = 'studio-draft-banner';
         banner.style.display = 'flex';
-
         const timeStr = timeIso ? new Date(timeIso).toLocaleTimeString() : new Date().toLocaleTimeString();
-
         banner.innerHTML = `
-
-          <div style="display:flex; align-items:center; gap:8px;">
-
-            <i class="ri-history-line" style="color:#fbbf24; font-size:1.15rem;"></i>
-
-            <span>${isRestored ? 'Resumed unsaved quiz draft' : 'Draft auto-saved'} at <strong>${timeStr}</strong></span>
-
+          <div class="studio-draft-banner-content">
+            <i class="ri-history-line studio-draft-banner-icon"></i>
+            <span class="studio-draft-banner-text">${isRestored ? 'Resumed unsaved quiz draft' : 'Draft auto-saved'} at <strong>${timeStr}</strong></span>
           </div>
-
-          <button type="button" class="btn btn-sm" style="font-size:0.75rem; padding:3px 12px; border-radius:6px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-weight:600; cursor:pointer;" onclick="window.discardQuizDraft()">
-
+          <button type="button" class="studio-draft-banner-btn" onclick="window.discardQuizDraft()">
             <i class="ri-delete-bin-line"></i> Discard Draft
-
           </button>
-
         `;
-
       }
-
     }
 
 
@@ -2514,22 +2716,23 @@
         if (header) {
           banner = document.createElement('div');
           banner.id = 'urlAutoFillStatusBanner';
-          banner.style.cssText = 'background:rgba(99,102,241,0.14); border:1px solid rgba(99,102,241,0.4); border-radius:12px; padding:12px 18px; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:0.88rem; color:#c7d2fe;';
+          banner.className = 'studio-url-banner';
           header.insertAdjacentElement('afterend', banner);
         }
       }
       if (banner) {
+        banner.className = 'studio-url-banner';
         banner.style.display = 'flex';
         banner.innerHTML = `
-          <div style="display:flex; align-items:center; gap:10px;">
-            <i class="ri-magic-line" style="color:#818cf8; font-size:1.3rem;"></i>
-            <span><strong>Quiz Populated via URL:</strong> Review questions, marking schemes, and answer keys before manual validation &amp; publishing.</span>
+          <div class="studio-url-banner-content">
+            <i class="ri-magic-line studio-url-banner-icon"></i>
+            <span class="studio-url-banner-text"><strong>Quiz Populated via URL:</strong> Review questions, marking schemes, and answer keys before manual validation &amp; publishing.</span>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" class="btn btn-sm btn-outline-light" style="font-size:0.75rem; padding:4px 10px; border-radius:6px;" onclick="window.copyQuizParamUrl()" title="Export updated URL with current questions">
+          <div class="studio-url-banner-actions">
+            <button type="button" class="studio-url-btn-export" onclick="window.copyQuizParamUrl()" title="Export updated URL with current questions">
               <i class="ri-link"></i> Export URL
             </button>
-            <button type="button" class="btn btn-sm btn-outline-warning" style="font-size:0.75rem; padding:4px 10px; border-radius:6px;" onclick="this.closest('#urlAutoFillStatusBanner').style.display='none'">
+            <button type="button" class="studio-url-btn-dismiss" onclick="this.closest('#urlAutoFillStatusBanner').style.display='none'">
               Dismiss
             </button>
           </div>
@@ -2836,7 +3039,7 @@
         if (window.customAlert) {
           await window.customAlert(
             `Shareable URL with all current quiz questions and settings has been generated and copied to your clipboard!\n\n${fullUrl}\n\nSecurity Notice: URLs appear in browser history, server logs, and HTTP Referrer headers. For large or confidential examinations, JSON draft export is recommended.`,
-            { title: "Quiz URL Exported" }
+            { title: "Quiz URL Exported", isUrlExport: true, url: fullUrl }
           );
         } else {
           prompt("Quiz URL generated (copied to clipboard):", fullUrl);
