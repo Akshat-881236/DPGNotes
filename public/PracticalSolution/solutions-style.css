@@ -1915,6 +1915,8 @@ html[data-theme="light"] .sol-diff-badge-info {
   font-size: 0.78rem;
   color: #94a3b8;
   margin-bottom: 4px;
+}
+
 /* NAVBAR HEADER SEARCH EXPANDER */
 .sol-nav-search-wrapper {
   position: relative;
@@ -2295,3 +2297,282 @@ html[data-theme="light"] .sol-diff-badge-info {
 
 /* Gemini AI Modal & Overview Keyframes */
 @keyframes solModalPop { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
+
+
+/* ========================================================
+   QUICK FORMATTER CONTENT - COMPREHENSIVE LIGHT THEME RULES
+   ======================================================== */
+
+/* Headings (h1, h2, h3) across all content areas */
+html[data-theme="light"] .sol-answer-content h1,
+html[data-theme="light"] .sol-answer-content h2,
+html[data-theme="light"] .sol-answer-content h3,
+html[data-theme="light"] .sol-q-preview-content h1,
+html[data-theme="light"] .sol-q-preview-content h2,
+html[data-theme="light"] .sol-q-preview-content h3,
+html[data-theme="light"] #currentQPrompt h1,
+html[data-theme="light"] #currentQPrompt h2,
+html[data-theme="light"] #currentQPrompt h3,
+html[data-theme="light"] .option-content h1,
+html[data-theme="light"] .option-content h2,
+html[data-theme="light"] .option-content h3,
+html[data-theme="light"] .q-card h1,
+html[data-theme="light"] .q-card h2,
+html[data-theme="light"] .q-card h3,
+body[data-theme="light"] .sol-answer-content h1,
+body[data-theme="light"] .sol-answer-content h2,
+body[data-theme="light"] .sol-answer-content h3,
+body[data-theme="light"] .sol-q-preview-content h1,
+body[data-theme="light"] .sol-q-preview-content h2,
+body[data-theme="light"] .sol-q-preview-content h3,
+body.theme-light .sol-answer-content h1,
+body.theme-light .sol-answer-content h2,
+body.theme-light .sol-answer-content h3 {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* Paragraphs & Text */
+html[data-theme="light"] .sol-answer-content p,
+html[data-theme="light"] .sol-q-preview-content p,
+html[data-theme="light"] #currentQPrompt p,
+html[data-theme="light"] .option-content p,
+body[data-theme="light"] .sol-answer-content p,
+body[data-theme="light"] .sol-q-preview-content p,
+body.theme-light .sol-answer-content p,
+body.theme-light .sol-q-preview-content p {
+  color: #1e293b !important;
+  line-height: 1.65 !important;
+}
+
+/* Bold / Strong */
+html[data-theme="light"] .sol-answer-content strong,
+html[data-theme="light"] .sol-q-preview-content strong,
+html[data-theme="light"] #currentQPrompt strong,
+html[data-theme="light"] .option-content strong,
+body[data-theme="light"] .sol-answer-content strong,
+body[data-theme="light"] .sol-q-preview-content strong,
+body.theme-light .sol-answer-content strong,
+body.theme-light .sol-q-preview-content strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* Links */
+html[data-theme="light"] .sol-answer-content a,
+html[data-theme="light"] .sol-q-preview-content a,
+html[data-theme="light"] #currentQPrompt a,
+html[data-theme="light"] .option-content a,
+body[data-theme="light"] .sol-answer-content a,
+body[data-theme="light"] .sol-q-preview-content a,
+body.theme-light .sol-answer-content a,
+body.theme-light .sol-q-preview-content a {
+  color: #4338ca !important;
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+}
+html[data-theme="light"] .sol-answer-content a:hover,
+html[data-theme="light"] .sol-q-preview-content a:hover,
+html[data-theme="light"] #currentQPrompt a:hover,
+html[data-theme="light"] .option-content a:hover {
+  color: #312e81 !important;
+}
+
+/* Lists */
+html[data-theme="light"] .sol-answer-content ol,
+html[data-theme="light"] .sol-answer-content ul,
+html[data-theme="light"] .sol-q-preview-content ol,
+html[data-theme="light"] .sol-q-preview-content ul,
+html[data-theme="light"] #currentQPrompt ol,
+html[data-theme="light"] #currentQPrompt ul {
+  color: #1e293b !important;
+}
+html[data-theme="light"] .sol-answer-content li,
+html[data-theme="light"] .sol-q-preview-content li,
+html[data-theme="light"] #currentQPrompt li {
+  color: #1e293b !important;
+  margin-bottom: 0.35rem !important;
+}
+
+/* Inline Code */
+html[data-theme="light"] .sol-answer-content code,
+html[data-theme="light"] .sol-q-preview-content code,
+html[data-theme="light"] #currentQPrompt code,
+html[data-theme="light"] .option-content code,
+body[data-theme="light"] .sol-answer-content code,
+body[data-theme="light"] .sol-q-preview-content code,
+body.theme-light .sol-answer-content code,
+body.theme-light .sol-q-preview-content code {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+/* Multi-line Pre Code Blocks */
+html[data-theme="light"] .sol-answer-content pre,
+html[data-theme="light"] .sol-q-preview-content pre,
+html[data-theme="light"] #currentQPrompt pre,
+html[data-theme="light"] .option-content pre,
+body[data-theme="light"] .sol-answer-content pre,
+body[data-theme="light"] .sol-q-preview-content pre,
+body.theme-light .sol-answer-content pre,
+body.theme-light .sol-q-preview-content pre {
+  background: #f8fafc !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+}
+html[data-theme="light"] .sol-answer-content pre code,
+html[data-theme="light"] .sol-q-preview-content pre code,
+html[data-theme="light"] #currentQPrompt pre code,
+html[data-theme="light"] .option-content pre code,
+body[data-theme="light"] .sol-answer-content pre code,
+body[data-theme="light"] .sol-q-preview-content pre code,
+body.theme-light .sol-answer-content pre code,
+body.theme-light .sol-q-preview-content pre code {
+  background: transparent !important;
+  border: none !important;
+  color: #0f172a !important;
+  padding: 0 !important;
+}
+
+/* Interactive Sandbox Code Containers (.sol-code-block-container) */
+html[data-theme="light"] .sol-code-block-container,
+body[data-theme="light"] .sol-code-block-container,
+body.theme-light .sol-code-block-container {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="light"] .sol-code-block-header,
+body[data-theme="light"] .sol-code-block-header,
+body.theme-light .sol-code-block-header {
+  background: #f1f5f9 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sol-code-block-id-tag,
+body[data-theme="light"] .sol-code-block-id-tag,
+body.theme-light .sol-code-block-id-tag {
+  color: #64748b !important;
+}
+html[data-theme="light"] .sol-code-block-body,
+body[data-theme="light"] .sol-code-block-body,
+body.theme-light .sol-code-block-body {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sol-code-block-body code,
+body[data-theme="light"] .sol-code-block-body code,
+body.theme-light .sol-code-block-body code {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .sol-code-btn,
+body[data-theme="light"] .sol-code-btn,
+body.theme-light .sol-code-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+html[data-theme="light"] .sol-code-btn:hover,
+body[data-theme="light"] .sol-code-btn:hover,
+body.theme-light .sol-code-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Live Preview Boxes in Generators */
+html[data-theme="light"] .sol-q-preview-box,
+body[data-theme="light"] .sol-q-preview-box,
+body.theme-light .sol-q-preview-box {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="light"] .sol-q-preview-header,
+body[data-theme="light"] .sol-q-preview-header,
+body.theme-light .sol-q-preview-header {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+html[data-theme="light"] .sol-q-preview-badge,
+body[data-theme="light"] .sol-q-preview-badge,
+body.theme-light .sol-q-preview-badge {
+  color: #0284c7 !important;
+}
+html[data-theme="light"] .sol-q-preview-content,
+body[data-theme="light"] .sol-q-preview-content,
+body.theme-light .sol-q-preview-content {
+  color: #0f172a !important;
+}
+
+/* Demo Boxes (demo-box & demo-card) */
+html[data-theme="light"] .demo-box,
+body[data-theme="light"] .demo-box,
+body.theme-light .demo-box {
+  background: #f8fafc !important;
+  border: 2px solid #0284c7 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .demo-box h3,
+body[data-theme="light"] .demo-box h3,
+body.theme-light .demo-box h3 {
+  color: #0369a1 !important;
+}
+html[data-theme="light"] .demo-card,
+body[data-theme="light"] .demo-card,
+body.theme-light .demo-card {
+  background: #ffffff !important;
+  border: 2px solid #10b981 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .demo-card h2,
+body[data-theme="light"] .demo-card h2,
+body.theme-light .demo-card h2 {
+  color: #047857 !important;
+}
+
+/* Palette Toolbar in Light Theme */
+html[data-theme="light"] .sol-palette,
+body[data-theme="light"] .sol-palette,
+body.theme-light .sol-palette {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+html[data-theme="light"] .sol-palette-btn,
+body[data-theme="light"] .sol-palette-btn,
+body.theme-light .sol-palette-btn {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+html[data-theme="light"] .sol-palette-btn:hover,
+body[data-theme="light"] .sol-palette-btn:hover,
+body.theme-light .sol-palette-btn:hover {
+  background: #e0e7ff !important;
+  border-color: #6366f1 !important;
+  color: #3730a3 !important;
+}
+
+/* High-Contrast Syntax Overrides for Light Theme */
+html[data-theme="light"] .sol-code-block-body span[style*="color:#38bdf8"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #38bdf8"],
+html[data-theme="light"] pre span[style*="color:#38bdf8"],
+html[data-theme="light"] pre span[style*="color: #38bdf8"] {
+  color: #0284c7 !important;
+}
+html[data-theme="light"] .sol-code-block-body span[style*="color:#34d399"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #34d399"],
+html[data-theme="light"] pre span[style*="color:#34d399"],
+html[data-theme="light"] pre span[style*="color: #34d399"] {
+  color: #047857 !important;
+}
+html[data-theme="light"] .sol-code-block-body span[style*="color:#facc15"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #facc15"],
+html[data-theme="light"] pre span[style*="color:#facc15"],
+html[data-theme="light"] pre span[style*="color: #facc15"] {
+  color: #b45309 !important;
+}

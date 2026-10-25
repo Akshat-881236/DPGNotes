@@ -41,6 +41,349 @@
       --qz-text: #f8fafc;
       --qz-text-muted: #94a3b8;
     }
+    /* ========================================================
+       LIGHT THEME CONTRAST OVERRIDES - QUIZ SEARCH & EXAM ENGINE
+       ======================================================== */
+    html[data-theme="light"],
+    body[data-theme="light"],
+    body.theme-light {
+      --qz-bg: #f8fafc;
+      --qz-surface: #ffffff;
+      --qz-card-bg: #ffffff;
+      --qz-border: #cbd5e1;
+      --qz-text: #0f172a;
+      --qz-text-muted: #475569;
+      --qz-primary: #4338ca;
+      --qz-primary-hover: #3730a3;
+      --qz-primary-glow: rgba(67, 56, 202, 0.2);
+      --qz-accent: #0284c7;
+    }
+
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.theme-dark {
+      --qz-bg: #030712;
+      --qz-surface: #0b0f17;
+      --qz-card-bg: #0b0f17;
+      --qz-border: rgba(255, 255, 255, 0.12);
+      --qz-text: #ffffff;
+      --qz-text-muted: #9ca3af;
+      --qz-accent: #38bdf8;
+    }
+
+    /* Navbar Light Theme */
+    html[data-theme="light"] .portal-nav,
+    body[data-theme="light"] .portal-nav,
+    body.theme-light .portal-nav {
+      background: #ffffff !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+    }
+    html[data-theme="light"] .brand-link,
+    body[data-theme="light"] .brand-link,
+    body.theme-light .brand-link {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .nav-btn-dash,
+    body[data-theme="light"] .nav-btn-dash,
+    body.theme-light .nav-btn-dash {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .nav-btn-dash:hover,
+    body[data-theme="light"] .nav-btn-dash:hover,
+    body.theme-light .nav-btn-dash:hover {
+      background: #e2e8f0 !important;
+      color: #000000 !important;
+    }
+
+    /* Search Engine View in Light Theme */
+    html[data-theme="light"] .search-input,
+    body[data-theme="light"] .search-input,
+    body.theme-light .search-input {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+    html[data-theme="light"] .search-input:focus,
+    body[data-theme="light"] .search-input:focus,
+    body.theme-light .search-input:focus {
+      border-color: #4f46e5 !important;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+    }
+    html[data-theme="light"] .search-icon-pos,
+    body[data-theme="light"] .search-icon-pos,
+    body.theme-light .search-icon-pos {
+      color: #64748b !important;
+    }
+    html[data-theme="light"] .tag-chip,
+    body[data-theme="light"] .tag-chip,
+    body.theme-light .tag-chip {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #475569 !important;
+    }
+    html[data-theme="light"] .tag-chip:hover,
+    html[data-theme="light"] .tag-chip.active,
+    body[data-theme="light"] .tag-chip:hover,
+    body[data-theme="light"] .tag-chip.active,
+    body.theme-light .tag-chip:hover,
+    body.theme-light .tag-chip.active {
+      background: #4338ca !important;
+      color: #ffffff !important;
+      border-color: #4338ca !important;
+    }
+    html[data-theme="light"] .quiz-item-card,
+    body[data-theme="light"] .quiz-item-card,
+    body.theme-light .quiz-item-card {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .quiz-item-card h3,
+    body[data-theme="light"] .quiz-item-card h3,
+    body.theme-light .quiz-item-card h3 {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] .quiz-item-card p,
+    body[data-theme="light"] .quiz-item-card p,
+    body.theme-light .quiz-item-card p {
+      color: #334155 !important;
+    }
+
+    /* Exam Interface Light Theme */
+    html[data-theme="light"] .exam-header-bar,
+    body[data-theme="light"] .exam-header-bar,
+    body.theme-light .exam-header-bar {
+      background: #ffffff !important;
+      border-bottom: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .timer-badge,
+    body[data-theme="light"] .timer-badge,
+    body.theme-light .timer-badge {
+      background: #fee2e2 !important;
+      color: #991b1b !important;
+      border: 1px solid #f87171 !important;
+    }
+    html[data-theme="light"] .exam-card,
+    body[data-theme="light"] .exam-card,
+    body.theme-light .exam-card {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06) !important;
+      color: #0f172a !important;
+    }
+
+    /* Question Prompt & Formatted Content */
+    html[data-theme="light"] #currentQPrompt,
+    body[data-theme="light"] #currentQPrompt,
+    body.theme-light #currentQPrompt {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] #currentQPrompt h1,
+    html[data-theme="light"] #currentQPrompt h2,
+    html[data-theme="light"] #currentQPrompt h3,
+    body[data-theme="light"] #currentQPrompt h1,
+    body[data-theme="light"] #currentQPrompt h2,
+    body[data-theme="light"] #currentQPrompt h3,
+    body.theme-light #currentQPrompt h1,
+    body.theme-light #currentQPrompt h2,
+    body.theme-light #currentQPrompt h3 {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] #currentQPrompt p,
+    body[data-theme="light"] #currentQPrompt p,
+    body.theme-light #currentQPrompt p {
+      color: #1e293b !important;
+      line-height: 1.65 !important;
+    }
+    html[data-theme="light"] #currentQPrompt strong,
+    body[data-theme="light"] #currentQPrompt strong,
+    body.theme-light #currentQPrompt strong {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] #currentQPrompt a,
+    body[data-theme="light"] #currentQPrompt a,
+    body.theme-light #currentQPrompt a {
+      color: #4338ca !important;
+      text-decoration: underline !important;
+      font-weight: 600 !important;
+    }
+    html[data-theme="light"] #currentQPrompt ol,
+    html[data-theme="light"] #currentQPrompt ul,
+    body[data-theme="light"] #currentQPrompt ol,
+    body[data-theme="light"] #currentQPrompt ul,
+    body.theme-light #currentQPrompt ol,
+    body.theme-light #currentQPrompt ul {
+      color: #1e293b !important;
+    }
+    html[data-theme="light"] #currentQPrompt code,
+    body[data-theme="light"] #currentQPrompt code,
+    body.theme-light #currentQPrompt code {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      font-weight: 600 !important;
+      padding: 2px 6px !important;
+      border-radius: 4px !important;
+    }
+    html[data-theme="light"] #currentQPrompt pre,
+    body[data-theme="light"] #currentQPrompt pre,
+    body.theme-light #currentQPrompt pre {
+      background: #f8fafc !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      border-radius: 8px !important;
+    }
+    html[data-theme="light"] #currentQPrompt pre code,
+    body[data-theme="light"] #currentQPrompt pre code,
+    body.theme-light #currentQPrompt pre code {
+      background: transparent !important;
+      border: none !important;
+      color: #0f172a !important;
+    }
+
+    /* Option Cards & Content */
+    html[data-theme="light"] .option-card,
+    body[data-theme="light"] .option-card,
+    body.theme-light .option-card {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+    html[data-theme="light"] .option-card:hover,
+    body[data-theme="light"] .option-card:hover,
+    body.theme-light .option-card:hover {
+      background: #f8fafc !important;
+      border-color: #6366f1 !important;
+    }
+    html[data-theme="light"] .option-card.selected,
+    body[data-theme="light"] .option-card.selected,
+    body.theme-light .option-card.selected {
+      background: #eef2ff !important;
+      border-color: #4338ca !important;
+      box-shadow: 0 0 0 2px rgba(67, 56, 202, 0.25) !important;
+    }
+    html[data-theme="light"] .option-letter,
+    body[data-theme="light"] .option-letter,
+    body.theme-light .option-letter {
+      background: #e2e8f0 !important;
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    html[data-theme="light"] .option-card.selected .option-letter,
+    body[data-theme="light"] .option-card.selected .option-letter,
+    body.theme-light .option-card.selected .option-letter {
+      background: #4338ca !important;
+      color: #ffffff !important;
+      border-color: #4338ca !important;
+    }
+    html[data-theme="light"] .option-content,
+    body[data-theme="light"] .option-content,
+    body.theme-light .option-content {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .option-content h1,
+    html[data-theme="light"] .option-content h2,
+    html[data-theme="light"] .option-content h3,
+    body[data-theme="light"] .option-content h1,
+    body[data-theme="light"] .option-content h2,
+    body[data-theme="light"] .option-content h3,
+    body.theme-light .option-content h1,
+    body.theme-light .option-content h2,
+    body.theme-light .option-content h3 {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] .option-content p,
+    body[data-theme="light"] .option-content p,
+    body.theme-light .option-content p {
+      color: #1e293b !important;
+    }
+    html[data-theme="light"] .option-content code,
+    body[data-theme="light"] .option-content code,
+    body.theme-light .option-content code {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    /* Navigator Dock */
+    html[data-theme="light"] .dock-container,
+    body[data-theme="light"] .dock-container,
+    body.theme-light .dock-container {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    }
+    html[data-theme="light"] .q-jump-pill,
+    body[data-theme="light"] .q-jump-pill,
+    body.theme-light .q-jump-pill {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .q-jump-pill.active,
+    body[data-theme="light"] .q-jump-pill.active,
+    body.theme-light .q-jump-pill.active {
+      background: #4338ca !important;
+      color: #ffffff !important;
+      border-color: #4338ca !important;
+    }
+    html[data-theme="light"] .q-jump-pill.answered,
+    body[data-theme="light"] .q-jump-pill.answered,
+    body.theme-light .q-jump-pill.answered {
+      background: #10b981 !important;
+      color: #ffffff !important;
+      border-color: #10b981 !important;
+    }
+    html[data-theme="light"] .nav-pill,
+    body[data-theme="light"] .nav-pill,
+    body.theme-light .nav-pill {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .nav-pill:hover,
+    body[data-theme="light"] .nav-pill:hover,
+    body.theme-light .nav-pill:hover {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    /* Scorecard & Review View in Light Theme */
+    html[data-theme="light"] .score-card-box,
+    body[data-theme="light"] .score-card-box,
+    body.theme-light .score-card-box {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+    }
+    html[data-theme="light"] .review-item,
+    body[data-theme="light"] .review-item,
+    body.theme-light .review-item {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+    }
+    html[data-theme="light"] .rev-q-text,
+    body[data-theme="light"] .rev-q-text,
+    body.theme-light .rev-q-text {
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .rev-ans-text,
+    body[data-theme="light"] .rev-ans-text,
+    body.theme-light .rev-ans-text {
+      color: #0f172a !important;
+    }
+
 
     * { box-sizing: border-box; }
     body {
