@@ -326,6 +326,92 @@
       color: #0f172a !important;
       border-color: #cbd5e1 !important;
     }
+
+    /* Tab Header Action Buttons */
+    .btn-export-csv {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #c7d2fe;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-export-csv:hover {
+      background: #6366f1;
+      color: #ffffff;
+      border-color: #6366f1;
+    }
+    .btn-refresh-history,
+    .btn-refresh-requests {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f8fafc;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-refresh-history:hover,
+    .btn-refresh-requests:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Light Theme Button Visibility Overrides (WCAG AAA) */
+    html[data-theme="light"] .btn-export-csv,
+    body[data-theme="light"] .btn-export-csv,
+    body.theme-light .btn-export-csv {
+      background: #eef2ff !important;
+      border: 1.5px solid #6366f1 !important;
+      color: #3730a3 !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 3px rgba(99, 102, 241, 0.15) !important;
+    }
+    html[data-theme="light"] .btn-export-csv:hover,
+    body[data-theme="light"] .btn-export-csv:hover,
+    body.theme-light .btn-export-csv:hover {
+      background: #4f46e5 !important;
+      color: #ffffff !important;
+      border-color: #4f46e5 !important;
+    }
+    html[data-theme="light"] .btn-refresh-history,
+    body[data-theme="light"] .btn-refresh-history,
+    body.theme-light .btn-refresh-history,
+    html[data-theme="light"] .btn-refresh-requests,
+    body[data-theme="light"] .btn-refresh-requests,
+    body.theme-light .btn-refresh-requests {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+    }
+    html[data-theme="light"] .btn-refresh-history:hover,
+    body[data-theme="light"] .btn-refresh-history:hover,
+    body.theme-light .btn-refresh-history:hover,
+    html[data-theme="light"] .btn-refresh-requests:hover,
+    body[data-theme="light"] .btn-refresh-requests:hover,
+    body.theme-light .btn-refresh-requests:hover {
+      background: #f1f5f9 !important;
+      border-color: #6366f1 !important;
+      color: #4338ca !important;
+    }
+
+    /* General Light Theme fallback for all .btn-outline-light elements */
+    html[data-theme="light"] .btn-outline-light,
+    body[data-theme="light"] .btn-outline-light,
+    body.theme-light .btn-outline-light {
+      background-color: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      font-weight: 600 !important;
+    }
+    html[data-theme="light"] .btn-outline-light:hover,
+    body[data-theme="light"] .btn-outline-light:hover,
+    body.theme-light .btn-outline-light:hover {
+      background-color: #f1f5f9 !important;
+      color: #000000 !important;
+      border-color: #94a3b8 !important;
+    }
+
   </style>
   <script src="/history-monitoring.js" defer></script>
   <!-- Hardcoded Contributor Quiz Analytics Structured Data (JSON-LD) -->
@@ -482,7 +568,7 @@
           <h4 style="font-size:1.1rem; font-weight:700; color:var(--qz-text); margin-bottom:0;">
             <i class="ri-trophy-line" style="color:#fbbf24;"></i> Candidate Leaderboard &amp; Submissions
           </h4>
-          <button type="button" class="btn btn-sm btn-outline-light" onclick="exportCsv()">
+          <button type="button" class="btn btn-sm btn-outline-light btn-export-csv" onclick="exportCsv()" title="Export candidate submissions as CSV">
             <i class="ri-download-cloud-2-line"></i> Export CSV Roster
           </button>
         </div>
@@ -526,7 +612,7 @@
             <h3 style="font-size:1.25rem; font-weight:700; color:var(--qz-text); margin-bottom:0.2rem;">My Examination Portfolio</h3>
             <span style="font-size:0.82rem; color:var(--qz-text-muted);">History of academic quizzes you have attempted across DPGNotes</span>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-light" onclick="loadMyQuizAttempts(true)">
+          <button type="button" class="btn btn-sm btn-outline-light btn-refresh-history" onclick="loadMyQuizAttempts(true)" title="Refresh exam attempt history">
             <i class="ri-refresh-line"></i> Refresh History
           </button>
         </div>
@@ -569,7 +655,7 @@
             <h3 style="font-size:1.25rem; font-weight:700; color:var(--qz-text); margin-bottom:0.2rem;">Candidate Retest &amp; Reset Requests</h3>
             <span style="font-size:0.82rem; color:var(--qz-text-muted);">Review candidates requesting another attempt on your authored assessments</span>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-light" onclick="loadRetestRequests(true)">
+          <button type="button" class="btn btn-sm btn-outline-light btn-refresh-requests" onclick="loadRetestRequests(true)" title="Refresh candidate retest requests">
             <i class="ri-refresh-line"></i> Refresh Requests
           </button>
         </div>
