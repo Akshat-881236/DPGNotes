@@ -18,7 +18,7 @@ async function initReport() {
   
   // 2. Check Param Logic
   const urlParams = new URLSearchParams(window.location.search);
-  const shareCode = urlParams.get('code');
+  const shareCode = urlParams.get('code') || urlParams.get('token') || urlParams.get('share') || urlParams.get('shareToken');
   
   if (!shareCode) {
     statusTxt.innerText = "Invalid Request";
@@ -28,16 +28,19 @@ async function initReport() {
     return;
   }
   
-  // 3. Content Access from Server (Secure Fetch)
+  // 3. Content Access from Server (Secure Fetch with Direct Firestore Fallback)
   try {
-    const res = await fetch(`${API_URL}/admin/share-report/${shareCode}`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    
-    if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
+    let data = null;
+    try {
+      const res = await fetch(`${API_URL}/admin/share-report/${encodeURIComponent(shareCode)}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      if (res.ok) {
+        data = await res.json();
+      } else if (res.status === 401 || res.status === 403) {
         statusTxt.innerText = "Session Expired";
         statusTxt.style.color = "var(--report-danger)";
         subTxt.innerText = "Your admin session is invalid or expired. Redirecting...";
@@ -45,10 +48,38 @@ async function initReport() {
         setTimeout(() => { window.location.href = "admin-login.html"; }, 2500);
         return;
       }
-      throw new Error("Failed to fetch report data");
+    } catch(fetchErr) {
+      console.warn("API report fetch warning:", fetchErr);
+    }
+
+    if (!data) {
+      // Fallback: Direct Firestore REST query to load share link info
+      try {
+        const fsUrl = `https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/share_links/${encodeURIComponent(shareCode)}`;
+        const fsRes = await fetch(fsUrl);
+        if (fsRes.ok) {
+          const fsJson = await fsRes.json();
+          const fields = fsJson.fields || {};
+          const info = {};
+          for (const [k, v] of Object.entries(fields)) {
+            info[k] = v.stringValue !== undefined ? v.stringValue : 
+                     (v.integerValue !== undefined ? Number(v.integerValue) : 
+                     (v.booleanValue !== undefined ? v.booleanValue : null));
+          }
+          data = {
+            shareInfo: info,
+            engagements: []
+          };
+        }
+      } catch(fsErr) {
+        console.warn("Direct Firestore fallback error:", fsErr);
+      }
+    }
+
+    if (!data) {
+      throw new Error("Unable to locate share link records.");
     }
     
-    const data = await res.json();
     overlay.style.display = "none";
     container.style.display = "block";
     renderReport(data);

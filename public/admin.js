@@ -801,6 +801,7 @@ async function loadShares() {
     let noteShares = 0;
     let solShares = 0;
     let videoShares = 0;
+    let quizShares = 0;
     let totalClicks = 0;
 
     snap.forEach(doc => {
@@ -810,6 +811,8 @@ async function loadShares() {
 
       if (item.type === 'note') {
         noteShares++;
+      } else if (item.type === 'quiz' || item.isQuiz || (item.token && item.token.startsWith('qz_'))) {
+        quizShares++;
       } else if (item.type === 'solution' || item.type === 'assignment_solution' || item.type === 'practical_solution') {
         solShares++;
       } else if (item.type === 'video' || item.type === 'ad_video' || (item.token && (item.token.startsWith('VSH_') || item.token.startsWith('VSH_AD_')))) {
@@ -849,7 +852,7 @@ window.loadShares = loadShares;
 
 window.filterSharesByType = function(type, btnEl) {
   window.currentSharesFilter = type;
-  const buttons = ['shareFilterAll', 'shareFilterDoc', 'shareFilterNote', 'shareFilterSolution', 'shareFilterVideo'];
+  const buttons = ['shareFilterAll', 'shareFilterDoc', 'shareFilterNote', 'shareFilterSolution', 'shareFilterQuiz', 'shareFilterVideo'];
   buttons.forEach(bId => {
     const b = document.getElementById(bId);
     if (b) {
@@ -871,6 +874,8 @@ function applySharesFilterAndRender() {
     list = list.filter(l => l.type === 'note');
   } else if (window.currentSharesFilter === 'solution') {
     list = list.filter(l => l.type === 'solution' || l.type === 'assignment_solution' || l.type === 'practical_solution');
+  } else if (window.currentSharesFilter === 'quiz') {
+    list = list.filter(l => l.type === 'quiz' || l.isQuiz || (l.token && l.token.startsWith('qz_')));
   } else if (window.currentSharesFilter === 'video') {
     list = list.filter(l => l.type === 'video' || l.type === 'ad_video' || (l.token && (l.token.startsWith('VSH_') || l.token.startsWith('VSH_AD_'))));
   }

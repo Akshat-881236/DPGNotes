@@ -1413,7 +1413,7 @@
 
     // App State
     let currentQuizId = new URLSearchParams(window.location.search).get('quizId');
-    let shareTokenParam = new URLSearchParams(window.location.search).get('share_token');
+    let shareTokenParam = new URLSearchParams(window.location.search).get('share_token') || new URLSearchParams(window.location.search).get('shareToken') || new URLSearchParams(window.location.search).get('share') || new URLSearchParams(window.location.search).get('token');
     let quizData = null;
     let questionsList = [];
     let candidateOriginalAnswers = {};

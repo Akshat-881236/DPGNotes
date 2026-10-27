@@ -773,6 +773,130 @@
     }
 
 
+    
+    /* ========================================================
+       SECTION TITLES, BADGES, KEY BUTTONS & CONTRAST (LIGHT & DARK)
+       ======================================================== */
+    /* 1. Section Title Bar in Light Theme */
+    html[data-theme="light"] .card-title-bar,
+    body[data-theme="light"] .card-title-bar,
+    body.theme-light .card-title-bar {
+      color: #0f172a !important;
+      border-bottom-color: #cbd5e1 !important;
+    }
+
+    /* 2. Top Badges in Light Theme */
+    html[data-theme="light"] .studio-badge,
+    body[data-theme="light"] .studio-badge,
+    body.theme-light .studio-badge {
+      background: #ede9fe !important;
+      border: 1px solid #c4b5fd !important;
+      color: #4338ca !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] .q-num-badge,
+    body[data-theme="light"] .q-num-badge,
+    body.theme-light .q-num-badge {
+      background: #ede9fe !important;
+      border: 1px solid #c4b5fd !important;
+      color: #4338ca !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] .badge.bg-secondary,
+    body[data-theme="light"] .badge.bg-secondary,
+    body.theme-light .badge.bg-secondary {
+      background-color: #e2e8f0 !important;
+      color: #1e293b !important;
+      border: 1px solid #cbd5e1 !important;
+      font-weight: 600 !important;
+    }
+
+    /* 3. Question Editor Card in Light Theme */
+    html[data-theme="light"] .q-editor-card,
+    body[data-theme="light"] .q-editor-card,
+    body.theme-light .q-editor-card {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+      color: #0f172a !important;
+    }
+
+    /* 4. Labels & Placeholders in Light Theme */
+    html[data-theme="light"] .form-label,
+    body[data-theme="light"] .form-label,
+    body.theme-light .form-label {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="light"] .form-control::placeholder,
+    body[data-theme="light"] .form-control::placeholder,
+    body.theme-light .form-control::placeholder {
+      color: #64748b !important;
+      opacity: 0.9 !important;
+    }
+
+    /* 5. Key Buttons (A, B, C, D) in Light Theme */
+    html[data-theme="light"] .key-btn,
+    body[data-theme="light"] .key-btn,
+    body.theme-light .key-btn {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #1e293b !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+    html[data-theme="light"] .key-btn:hover,
+    body[data-theme="light"] .key-btn:hover,
+    body.theme-light .key-btn:hover {
+      background: #f1f5f9 !important;
+      border-color: #6366f1 !important;
+      color: #4338ca !important;
+    }
+    html[data-theme="light"] .key-btn.active,
+    body[data-theme="light"] .key-btn.active,
+    body.theme-light .key-btn.active {
+      background: #4338ca !important;
+      border-color: #4338ca !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 10px rgba(67, 56, 202, 0.4) !important;
+    }
+
+    /* 6. Dark / DPG Blue Theme Key Buttons & Placeholders */
+    html[data-theme="dark"] .key-btn,
+    html[data-theme="default"] .key-btn,
+    body[data-theme="dark"] .key-btn,
+    body[data-theme="default"] .key-btn,
+    .key-btn {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      color: #f8fafc !important;
+      font-weight: 700 !important;
+    }
+    html[data-theme="dark"] .key-btn:hover,
+    html[data-theme="default"] .key-btn:hover,
+    .key-btn:hover {
+      background: rgba(99, 102, 241, 0.25) !important;
+      border-color: #818cf8 !important;
+      color: #ffffff !important;
+    }
+    html[data-theme="dark"] .key-btn.active,
+    html[data-theme="default"] .key-btn.active,
+    .key-btn.active {
+      background: #6366f1 !important;
+      border-color: #6366f1 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.5) !important;
+    }
+    html[data-theme="dark"] .form-control::placeholder,
+    html[data-theme="default"] .form-control::placeholder,
+    body[data-theme="dark"] .form-control::placeholder,
+    body[data-theme="default"] .form-control::placeholder,
+    .form-control::placeholder {
+      color: #94a3b8 !important;
+      opacity: 0.9 !important;
+    }
+
+
     * { box-sizing: border-box; }
 
     body {

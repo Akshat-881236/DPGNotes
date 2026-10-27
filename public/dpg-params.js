@@ -1580,9 +1580,13 @@
   });
 
   // ==========================================================================
-  // 10. SMART SHARE LINK RESOLUTION & REDIRECTION (?share=TOKEN or ?token=TOKEN)
+  // 10. SMART SHARE LINK RESOLUTION & REDIRECTION (?share=TOKEN or ?token=TOKEN or ?share_token=TOKEN)
   // ==========================================================================
-  const rawShareParam = params.get('share') || (!window.location.pathname.includes('dpgnotes-video.html') ? params.get('token') : null);
+  const rawShareParam = params.get('share') || 
+                        params.get('share_token') || 
+                        params.get('shareToken') || 
+                        params.get('code') || 
+                        (!window.location.pathname.includes('dpgnotes-video.html') ? params.get('token') : null);
   const shareToken = rawShareParam ? rawShareParam.trim() : null;
 
   if (shareToken) {
@@ -1594,10 +1598,12 @@
       }
     }
 
-    const isAlreadyViewingPdf = window.location.pathname.includes('dpgnotes-pdf-viewer.html') && params.get('pdf');
+    const isAlreadyViewingPdf = window.location.pathname.includes('dpgnotes-pdf-viewer.html') && (params.get('pdf') || params.get('resourceID'));
     const isAlreadyViewingVideo = window.location.pathname.includes('dpgnotes-video.html');
+    const isAlreadyViewingQuiz = window.location.pathname.includes('/Quizes/');
+    const isAlreadyViewingSolution = window.location.pathname.includes('/AssignmentSolution/') || window.location.pathname.includes('/PracticalSolution/');
 
-    if (!isAlreadyViewingPdf && !isAlreadyViewingVideo && !isCrawler) {
+    if (!isAlreadyViewingPdf && !isAlreadyViewingVideo && !isAlreadyViewingQuiz && !isAlreadyViewingSolution && !isCrawler) {
       let overlay = document.getElementById('dpgShareRedirectOverlay');
       if (!overlay) {
         overlay = document.createElement('div');
@@ -1628,80 +1634,118 @@
           visitorUid = localStorage.getItem('dpgActiveUserUid') || localStorage.getItem('dpg_guest_id') || 'Guest';
         } catch(e) {}
 
+        let docData = null;
+
+        // Step A: Attempt server API call first
         try {
           const endpoint = `${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorUid)}`;
-          const res = await fetch(endpoint);
+          const res = await fetch(endpoint, { signal: AbortSignal.timeout(4000) });
           const data = await res.json();
-
           if (res.ok && data && data.documentData) {
-            const d = data.documentData;
-
-            // 1. Legal Document
-            if (d.docId && d.docId.startsWith('legal_')) {
-              window.location.replace(`/legal/index.html#${encodeURIComponent(d.docId.replace('legal_', ''))}`);
-              return;
-            }
-
-            // 2. Educational Video or Sponsored Video Ad
-            if (d.type === 'video' || d.type === 'ad_video' || (d.token && (d.token.startsWith('VSH_') || d.token.startsWith('VSH_AD_'))) || d.videoId) {
-              const videoTargetUrl = new URL('/dpgnotes-video.html', window.location.origin);
-              videoTargetUrl.searchParams.set('token', d.token || shareToken);
-              if (d.type === 'ad_video') {
-                videoTargetUrl.searchParams.set('adId', d.videoId || d.targetId || '');
-              } else if (d.videoId) {
-                videoTargetUrl.searchParams.set('id', d.videoId || d.targetId || '');
-              }
-              window.location.replace(videoTargetUrl.toString());
-              return;
-            }
-
-            // 3. Practical Solution
-            if (d.type === 'practical_solution' || d.subType === 'practical') {
-              const solTargetUrl = new URL('/PracticalSolution/index.html', window.location.origin);
-              solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
-              solTargetUrl.searchParams.set('share_token', d.token || shareToken);
-              window.location.replace(solTargetUrl.toString());
-              return;
-            }
-
-            // 4. Assignment Solution
-            if (d.type === 'assignment_solution' || d.type === 'solution') {
-              const solTargetUrl = new URL('/AssignmentSolution/index.html', window.location.origin);
-              solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
-              solTargetUrl.searchParams.set('share_token', d.token || shareToken);
-              window.location.replace(solTargetUrl.toString());
-              return;
-            }
-
-            // 5. Standard PDF Document
-            const viewerUrl = new URL('/dpgnotes-pdf-viewer.html', window.location.origin);
-            if (d.pdfUrl) viewerUrl.searchParams.set('pdf', d.pdfUrl);
-            if (d.title) viewerUrl.searchParams.set('title', d.title);
-            if (d.category) viewerUrl.searchParams.set('category', d.category);
-            if (d.discipline) viewerUrl.searchParams.set('discipline', d.discipline);
-            if (d.uploader) viewerUrl.searchParams.set('uploader', d.uploader);
-            if (d.docId) viewerUrl.searchParams.set('docid', d.docId);
-            if (d.description) viewerUrl.searchParams.set('description', d.description);
-            const tagsStr = Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || '');
-            if (tagsStr) viewerUrl.searchParams.set('tags', tagsStr);
-            viewerUrl.searchParams.set('share', shareToken);
-
-            window.location.replace(viewerUrl.toString());
-            return;
-          } else {
-            if (overlay) overlay.remove();
-            cleanUrlParam(['share', 'token']);
-            const msg = (data && data.error) ? data.error : 'Share link has expired or is invalid.';
-            if (window.customAlert) {
-              window.customAlert(msg, { title: 'Share Link Expired' });
-            } else {
-              alert(msg);
-            }
+            docData = data.documentData;
           }
-        } catch(netErr) {
-          console.error('[dpg-params] Network error resolving share token:', netErr);
+        } catch(e) {
+          console.warn('[dpg-params] Server share resolution attempt warning:', e);
+        }
+
+        // Step B: Resilient Fallback to direct Firestore REST API
+        if (!docData) {
+          try {
+            const fsUrl = `https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/share_links/${encodeURIComponent(shareToken)}`;
+            const fsRes = await fetch(fsUrl, { signal: AbortSignal.timeout(4000) });
+            if (fsRes.ok) {
+              const fsJson = await fsRes.json();
+              const fields = fsJson.fields || {};
+              docData = {};
+              for (const [k, v] of Object.entries(fields)) {
+                docData[k] = v.stringValue !== undefined ? v.stringValue : 
+                             (v.integerValue !== undefined ? Number(v.integerValue) : 
+                             (v.booleanValue !== undefined ? v.booleanValue : 
+                             (v.arrayValue?.values ? v.arrayValue.values.map(x => x.stringValue) : null)));
+              }
+              // Fire-and-forget background analytics click ping
+              try {
+                fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorUid)}`).catch(() => {});
+              } catch(_) {}
+            }
+          } catch(fsErr) {
+            console.warn('[dpg-params] Direct Firestore REST fallback warning:', fsErr);
+          }
+        }
+
+        if (docData) {
+          const d = docData;
+
+          // 1. Legal Document
+          if (d.docId && d.docId.startsWith('legal_')) {
+            window.location.replace(`/legal/index.html#${encodeURIComponent(d.docId.replace('legal_', ''))}`);
+            return;
+          }
+
+          // 2. Educational Video or Sponsored Video Ad
+          if (d.type === 'video' || d.type === 'ad_video' || (d.token && (d.token.startsWith('VSH_') || d.token.startsWith('VSH_AD_'))) || d.videoId) {
+            const videoTargetUrl = new URL('/dpgnotes-video.html', window.location.origin);
+            videoTargetUrl.searchParams.set('token', d.token || shareToken);
+            if (d.type === 'ad_video') {
+              videoTargetUrl.searchParams.set('adId', d.videoId || d.targetId || '');
+            } else if (d.videoId) {
+              videoTargetUrl.searchParams.set('id', d.videoId || d.targetId || '');
+            }
+            window.location.replace(videoTargetUrl.toString());
+            return;
+          }
+
+          // 3. Quiz Examination Portal
+          if (d.type === 'quiz' || d.subType === 'quiz' || d.isQuiz || (d.docId && d.docId.startsWith('quiz_')) || (d.token && d.token.startsWith('qz_')) || d.category === 'Examination Quiz') {
+            const quizTargetUrl = new URL('/Quizes/index.html', window.location.origin);
+            quizTargetUrl.searchParams.set('quizId', d.docId || d.quizId || d.targetId || '');
+            quizTargetUrl.searchParams.set('share_token', d.token || shareToken);
+            window.location.replace(quizTargetUrl.toString());
+            return;
+          }
+
+          // 4. Practical Solution
+          if (d.type === 'practical_solution' || d.subType === 'practical' || (d.docId && d.docId.startsWith('prac_'))) {
+            const solTargetUrl = new URL('/PracticalSolution/index.html', window.location.origin);
+            solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
+            solTargetUrl.searchParams.set('share_token', d.token || shareToken);
+            window.location.replace(solTargetUrl.toString());
+            return;
+          }
+
+          // 5. Assignment Solution
+          if (d.type === 'assignment_solution' || d.type === 'solution' || (d.docId && (d.docId.startsWith('assign_') || d.docId.startsWith('sol_')))) {
+            const solTargetUrl = new URL('/AssignmentSolution/index.html', window.location.origin);
+            solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
+            solTargetUrl.searchParams.set('share_token', d.token || shareToken);
+            window.location.replace(solTargetUrl.toString());
+            return;
+          }
+
+          // 6. Standard PDF Document
+          const viewerUrl = new URL('/dpgnotes-pdf-viewer.html', window.location.origin);
+          if (d.pdfUrl) viewerUrl.searchParams.set('pdf', d.pdfUrl);
+          if (d.title) viewerUrl.searchParams.set('title', d.title);
+          if (d.category) viewerUrl.searchParams.set('category', d.category);
+          if (d.discipline) viewerUrl.searchParams.set('discipline', d.discipline);
+          if (d.uploader) viewerUrl.searchParams.set('uploader', d.uploader);
+          if (d.docId) viewerUrl.searchParams.set('docid', d.docId);
+          if (d.description) viewerUrl.searchParams.set('description', d.description);
+          const tagsStr = Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || '');
+          if (tagsStr) viewerUrl.searchParams.set('tags', tagsStr);
+          viewerUrl.searchParams.set('share', shareToken);
+
+          window.location.replace(viewerUrl.toString());
+          return;
+        } else {
           if (overlay) overlay.remove();
-          cleanUrlParam(['share', 'token']);
+          cleanUrlParam(['share', 'token', 'share_token', 'shareToken', 'code']);
+          const msg = 'Share link has expired or is invalid.';
+          if (window.customAlert) {
+            window.customAlert(msg, { title: 'Share Link Expired' });
+          } else {
+            alert(msg);
+          }
         }
       })();
     }

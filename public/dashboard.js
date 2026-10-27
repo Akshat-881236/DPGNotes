@@ -503,9 +503,9 @@ onAuthStateChanged(auth, async (user) => {
     loadExplore();
     loadLeaderboard();
     
-    // Check for Share Token parameter in dashboard
+    // Check for Share Token parameter in dashboard (?share=, ?token=, ?share_token=, ?shareToken=, ?code=)
     const urlParams = new URLSearchParams(window.location.search);
-    const rawShareParam = urlParams.get('share') || urlParams.get('token');
+    const rawShareParam = urlParams.get('share') || urlParams.get('share_token') || urlParams.get('shareToken') || urlParams.get('code') || urlParams.get('token');
     const shareToken = rawShareParam ? rawShareParam.trim() : null;
     if (shareToken) {
       if (shareToken.startsWith('VSH_') || shareToken.startsWith('VSH_AD_')) {
@@ -514,38 +514,89 @@ onAuthStateChanged(auth, async (user) => {
       }
       (async () => {
         try {
-          const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(currentUser?.uid || 'Guest')}`);
-          const data = await res.json();
-          if (res.ok && data.documentData) {
-            const d = data.documentData;
+          let docData = null;
 
-            // 1. Legal Document
+          // 1. Direct Firestore client SDK lookup
+          try {
+            if (db && doc && getDoc) {
+              const snap = await getDoc(doc(db, "share_links", shareToken));
+              if (snap.exists()) {
+                docData = snap.data();
+                try {
+                  updateDoc(doc(db, "share_links", shareToken), { clicks: increment(1), lastClickedAt: new Date().toISOString() }).catch(() => {});
+                } catch(_) {}
+              }
+            }
+          } catch(fsErr) {
+            console.warn("Firestore share link lookup warning:", fsErr);
+          }
+
+          // 2. Direct Firestore REST fallback
+          if (!docData) {
+            try {
+              const fsUrl = `https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/share_links/${encodeURIComponent(shareToken)}`;
+              const fsRes = await fetch(fsUrl, { signal: AbortSignal.timeout(4000) });
+              if (fsRes.ok) {
+                const fsJson = await fsRes.json();
+                const fields = fsJson.fields || {};
+                docData = {};
+                for (const [k, v] of Object.entries(fields)) {
+                  docData[k] = v.stringValue !== undefined ? v.stringValue : 
+                               (v.integerValue !== undefined ? Number(v.integerValue) : 
+                               (v.booleanValue !== undefined ? v.booleanValue : 
+                               (v.arrayValue?.values ? v.arrayValue.values.map(x => x.stringValue) : null)));
+                }
+              }
+            } catch(e) {}
+          }
+
+          // 3. Server API fallback
+          if (!docData) {
+            try {
+              const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(currentUser?.uid || 'Guest')}`);
+              const data = await res.json();
+              if (res.ok && data.documentData) {
+                docData = data.documentData;
+              }
+            } catch(e) {}
+          }
+
+          if (docData) {
+            const d = docData;
+
+            // Legal Document
             if (d.docId && d.docId.startsWith('legal_')) {
               window.location.href = `https://dpgnotes.web.app/legal/index.html#${encodeURIComponent(d.docId.replace('legal_', ''))}`;
               return;
             }
 
-            // 2. Video or Video Ad
+            // Video or Video Ad
             if (d.type === 'video' || d.type === 'ad_video' || (d.token && (d.token.startsWith('VSH_') || d.token.startsWith('VSH_AD_'))) || d.videoId) {
               const vParam = d.videoId ? (d.type === 'ad_video' ? `&adId=${encodeURIComponent(d.videoId)}` : `&id=${encodeURIComponent(d.videoId)}`) : '';
               window.location.href = `https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(d.token || shareToken)}${vParam}`;
               return;
             }
 
-            // 3. Practical Solution
-            if (d.type === 'practical_solution' || d.subType === 'practical') {
+            // Quiz Examination
+            if (d.type === 'quiz' || d.subType === 'quiz' || d.isQuiz || (d.docId && d.docId.startsWith('quiz_')) || (d.token && d.token.startsWith('qz_')) || d.category === 'Examination Quiz') {
+              window.location.href = `https://dpgnotes.web.app/Quizes/index.html?quizId=${encodeURIComponent(d.docId || d.quizId || d.targetId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
+              return;
+            }
+
+            // Practical Solution
+            if (d.type === 'practical_solution' || d.subType === 'practical' || (d.docId && d.docId.startsWith('prac_'))) {
               window.location.href = `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(d.docId || d.solutionId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
               return;
             }
 
-            // 4. Assignment Solution
-            if (d.type === 'assignment_solution' || d.type === 'solution') {
+            // Assignment Solution
+            if (d.type === 'assignment_solution' || d.type === 'solution' || (d.docId && (d.docId.startsWith('assign_') || d.docId.startsWith('sol_')))) {
               window.location.href = `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(d.docId || d.solutionId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
               return;
             }
 
-            // 5. Standard PDF
-            const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.uploader || '')}&docid=${encodeURIComponent(d.docId || '')}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}&share=${encodeURIComponent(shareToken)}`;
+            // Standard PDF Document
+            const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.docId || '')}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.uploader || '')}&docid=${encodeURIComponent(d.docId || '')}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}&share=${encodeURIComponent(shareToken)}`;
             window.location.href = viewerUrl;
           } else {
             alert("Share link expired or invalid.");
@@ -1176,7 +1227,7 @@ async function loadExplore() {
               style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
               ${hasLiked ? '❤️ Liked' : '🤍 Like'} (${likesCount})
             </button>
-            <button type="button" class="action-btn share-action share-btn" onclick="handleDashboardShare(event, '${docId}', '${title.replace(/'/g, "\\'")}', '${data.category || ''}', '${discipline.replace(/'/g, "\\'")}', '${authorName.replace(/'/g, "\\'")}', '${data.pdfUrl || ''}', '', '')" style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
+            <button type="button" class="action-btn share-action share-btn" onclick="handleDashboardShare(event, '${docId}', '${title.replace(/'/g, "\\'")}', '${data.category || ''}', '${discipline.replace(/'/g, "\\'")}', '${authorName.replace(/'/g, "\\'")}', '${data.pdfUrl || ''}', '', '', '${isQuizCard ? 'quiz' : (isSol ? (data.type === 'practical' ? 'practical_solution' : 'assignment_solution') : 'document')}')" style="flex:1; padding:6px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; font-size:0.75rem; cursor:pointer;">
               🔗 Share
             </button>
           </div>
@@ -2058,33 +2109,59 @@ function attachEngagementListeners() {
   });
 }
 
-  window.handleDashboardShare = async function(event, docId, title, category, discipline, uploader, pdfUrl, description, tags) {
+  window.handleDashboardShare = async function(event, docId, title, category, discipline, uploader, pdfUrl, description, tags, resourceType = 'document') {
     const btn = event.currentTarget;
     const originalText = btn.innerText;
     btn.innerText = "⏳ Generating...";
+
+    const isQuiz = resourceType === 'quiz';
+    const isSol = resourceType === 'practical_solution' || resourceType === 'assignment_solution' || resourceType === 'solution';
+    const prefix = isQuiz ? 'qz_' : (isSol ? 'sol_' : 'sh_');
+    const token = prefix + Math.random().toString(36).substring(2, 9);
+    const uploaderUid = (currentUser && currentUser.uid) || localStorage.getItem('dpgActiveUserUid') || '';
+
+    const shareData = {
+      token: token,
+      type: isQuiz ? 'quiz' : (isSol ? 'solution' : 'document'),
+      subType: isQuiz ? 'quiz' : (resourceType === 'practical_solution' ? 'practical' : (resourceType === 'assignment_solution' ? 'assignment' : 'notes')),
+      docId: docId,
+      solutionId: isSol ? docId : '',
+      quizId: isQuiz ? docId : '',
+      targetId: docId,
+      title: title || 'Academic Resource',
+      category: category || (isQuiz ? 'Examination Quiz' : (isSol ? 'Academic Solution' : 'Academic Notes')),
+      discipline: discipline || 'Computer Science',
+      uploader: uploader || 'Verified Contributor',
+      uploaderUid: uploaderUid,
+      pdfUrl: pdfUrl || '',
+      clicks: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      if (db && doc && setDoc) {
+        await setDoc(doc(db, "share_links", token), shareData, { merge: true });
+      }
+    } catch (fsErr) {
+      console.warn("Direct Firestore share_links write warning:", fsErr);
+    }
     
+    let shareUrl = `${window.location.origin}/dashboard.html?share=${token}`;
     try {
       const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          docId, 
-          title, 
-          category, 
-          discipline, 
-          uploader, 
-          pdfUrl, 
-          description, 
-          tags,
+          ...shareData,
           originalUrl: window.location.origin + "/dashboard.html?share=",
-          uploaderUid: currentUser.uid
+          token: token
         })
       });
-      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate link");
-      
-      const shareUrl = data.shareUrl;
+      if (res.ok && data.shareUrl) {
+        shareUrl = data.shareUrl;
+      }
+    } catch(_) {}
       let shared = false;
       
       if (navigator.share) {
