@@ -282,49 +282,59 @@
     }
     .sol-rec-filter-tabs {
       display: flex;
+      align-items: center;
       gap: 8px;
       margin-bottom: 1.5rem;
       overflow-x: auto;
-      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
     }
     .sol-rec-tab-btn {
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: #94a3b8;
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-size: 0.84rem;
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       white-space: nowrap;
-      transition: all 0.2s ease;
-    }
-    html[data-theme="light"] .sol-rec-tab-btn {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      color: #334155;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
     .sol-rec-tab-btn:hover {
       background: rgba(51, 65, 85, 0.9);
       color: #ffffff;
-    }
-    html[data-theme="light"] .sol-rec-tab-btn:hover {
-      background: #f1f5f9;
-      color: #0f172a;
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
     }
     .sol-rec-tab-btn.active {
       background: linear-gradient(135deg, #0284c7, #6366f1);
       border-color: #38bdf8;
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      transform: translateY(-1px);
+    }
+    html[data-theme="light"] .sol-rec-tab-btn {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #334155;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    html[data-theme="light"] .sol-rec-tab-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #94a3b8;
     }
     html[data-theme="light"] .sol-rec-tab-btn.active {
       background: linear-gradient(135deg, #0284c7, #4f46e5);
       border-color: #0284c7;
       color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
     }
     .sol-rec-grid {
       display: grid;

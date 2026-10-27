@@ -449,8 +449,19 @@
     // ========================================================================
     function getReturnUrl() {
       const params = new URLSearchParams(window.location.search);
-      const ret = params.get('returnUrl') || params.get('redirect') || params.get('next');
-      if (ret && (ret.startsWith('/') || ret.startsWith('https://dpgnotes.web.app'))) {
+      const ret = params.get('returnUrl') || 
+                  params.get('return_url') || 
+                  params.get('redirect') || 
+                  params.get('go-to') || 
+                  params.get('goto') || 
+                  params.get('redirect-to') || 
+                  params.get('ref') || 
+                  params.get('reference') || 
+                  params.get('dest') || 
+                  params.get('target') || 
+                  params.get('next') || 
+                  params.get('continue');
+      if (ret && (ret.startsWith('/') || ret.startsWith('https://dpgnotes.web.app') || ret.startsWith(window.location.origin))) {
         return ret;
       }
       return "https://dpgnotes.web.app/index.html";
@@ -462,6 +473,8 @@
       document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
       localStorage.removeItem("dpg_quota_visits");
       localStorage.removeItem("dpg_quota_pdfs");
+      sessionStorage.removeItem("dpg_auth_redirect");
+      localStorage.removeItem("dpg_auth_redirect");
       window.location.href = targetUrl || getReturnUrl();
     }
 
@@ -471,10 +484,13 @@
     });
 
     window.triggerEmailSignIn = function() {
+      const ret = getReturnUrl();
+      sessionStorage.setItem("dpg_auth_redirect", ret);
+      localStorage.setItem("dpg_auth_redirect", ret);
       if (typeof window.openSignInModal === "function") {
         window.openSignInModal();
       } else {
-        window.location.href = "https://dpgnotes.web.app/index.html?action=signin&returnUrl=" + encodeURIComponent(getReturnUrl());
+        window.location.href = "https://dpgnotes.web.app/index.html?action=signin&returnUrl=" + encodeURIComponent(ret);
       }
     };
 

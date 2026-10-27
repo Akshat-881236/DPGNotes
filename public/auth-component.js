@@ -960,19 +960,30 @@ async function completeAuthSuccess(user) {
   const legacyScreen = document.getElementById("unnegotiableLockedQuotaScreen");
   if (legacyScreen) legacyScreen.remove();
 
-  // Handle post-auth redirect if specified via URL parameters or stored session
+  // Dispatch global event for listeners first so lock clearance hooks execute
+  window.dispatchEvent(new CustomEvent("dpg-auth-success", { detail: { user } }));
+
+  // Handle post-auth redirect: active URL parameters take precedence over stale storage
   const urlP = new URLSearchParams(window.location.search);
-  const paramRedirect = urlP.get("go-to") || urlP.get("goto") || urlP.get("redirect-to") || urlP.get("redirect") || urlP.get("returnUrl");
-  const authRedirect = sessionStorage.getItem("dpg_auth_redirect") || localStorage.getItem("dpg_auth_redirect") || paramRedirect;
+  const paramRedirect = urlP.get("go-to") || 
+                        urlP.get("goto") || 
+                        urlP.get("redirect-to") || 
+                        urlP.get("redirect") || 
+                        urlP.get("returnUrl") || 
+                        urlP.get("return_url") || 
+                        urlP.get("ref") || 
+                        urlP.get("reference") || 
+                        urlP.get("dest") || 
+                        urlP.get("target") || 
+                        urlP.get("next") || 
+                        urlP.get("continue");
+  const authRedirect = paramRedirect || sessionStorage.getItem("dpg_auth_redirect") || localStorage.getItem("dpg_auth_redirect");
   if (authRedirect) {
     sessionStorage.removeItem("dpg_auth_redirect");
     localStorage.removeItem("dpg_auth_redirect");
     window.location.href = authRedirect;
     return;
   }
-
-  // Dispatch global event for listeners
-  window.dispatchEvent(new CustomEvent("dpg-auth-success", { detail: { user } }));
 
   // Call optional custom callback or notify user
   if (typeof window.onDpgAuthSuccess === "function") {

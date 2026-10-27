@@ -157,6 +157,47 @@
         gap: 10px !important;
       }
     }
+    @media (max-width: 480px) {
+      .monetization-metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+      .monetization-info-card {
+        padding: 8px 6px !important;
+      }
+      .monetization-info-card > div:first-child {
+        font-size: 0.68rem !important;
+        white-space: normal !important;
+        line-height: 1.2 !important;
+      }
+      .monetization-info-card > div:nth-child(2) {
+        font-size: 1.05rem !important;
+      }
+      .monetization-info-card > div:last-child {
+        font-size: 0.62rem !important;
+      }
+      #uploadAdForm {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      #uploadAdForm input,
+      #uploadAdForm select,
+      #uploadAdForm textarea {
+        font-size: 0.88rem !important;
+      }
+      #contributorMonetizationCard {
+        padding: 1rem 0.75rem !important;
+      }
+    }
+    @media (max-width: 360px) {
+      .monetization-metrics-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+      }
+      .monetization-info-card {
+        padding: 6px 4px !important;
+      }
+    }
     .monetization-info-card {
       background: rgba(255, 255, 255, 0.04) !important;
       border: 1px solid rgba(255, 255, 255, 0.09) !important;
@@ -167,6 +208,8 @@
       display: flex !important;
       flex-direction: column !important;
       justify-content: center !important;
+      overflow-wrap: break-word !important;
+      word-break: normal !important;
     }
     .dashboard-ad-table-wrap {
       width: 100% !important;
@@ -1121,15 +1164,23 @@
 
             <!-- Real-Time Ad-Wise Monetization Breakdown Table (Media Responsive with Bidirectional Movement) -->
             <div id="contribAdsItemizedTableWrap" class="dashboard-ad-table-wrap">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
                 <span style="font-weight: 700; font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 6px;">
                   <i class="ri-file-list-3-line" style="color: #6366f1;"></i> Real-Time Ad-Wise Monetization Breakdown
                 </span>
-                <span style="font-size:0.72rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:2px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
-                  <i class="ri-arrow-left-right-line"></i> ⇄ Swipe left-right to inspect all columns
-                </span>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                  <button type="button" class="table-scroll-btn" onclick="window.scrollAdsTable(-220)" title="Scroll Left (or use Left Arrow key)" style="background:rgba(99,102,241,0.25); border:1px solid rgba(99,102,241,0.45); color:#c4b5fd; border-radius:6px; padding:3px 8px; font-size:0.74rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+                    <i class="ri-arrow-left-s-line"></i> Left
+                  </button>
+                  <button type="button" class="table-scroll-btn" onclick="window.scrollAdsTable(220)" title="Scroll Right (or use Right Arrow key)" style="background:rgba(99,102,241,0.25); border:1px solid rgba(99,102,241,0.45); color:#c4b5fd; border-radius:6px; padding:3px 8px; font-size:0.74rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+                    Right <i class="ri-arrow-right-s-line"></i>
+                  </button>
+                  <span style="font-size:0.72rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+                    <i class="ri-arrow-left-right-line"></i> Swipe ⇄
+                  </span>
+                </div>
               </div>
-              <div class="dashboard-ad-table-scroll-container" id="contribAdsTableScroller">
+              <div class="dashboard-ad-table-scroll-container" id="contribAdsTableScroller" tabindex="0" role="region" aria-label="Ad Monetization Table - Use arrow keys or swipe horizontally to inspect all columns">
                 <table class="dashboard-ad-table">
                   <thead>
                     <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.12); color: #94a3b8; background: rgba(255, 255, 255, 0.04);">

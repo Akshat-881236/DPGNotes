@@ -762,32 +762,65 @@
     /* Universal High Contrast Auto-suggestions Styling */
     html[data-theme="light"] .suggestions-dropdown {
       background: #ffffff !important;
-      border: 1px solid #dadce0 !important;
-      box-shadow: 0 8px 24px rgba(32,33,36,0.18) !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
     }
     html[data-theme="light"] .suggestion-row {
       color: #0f172a !important;
+      border-bottom: 1px solid #f1f5f9 !important;
     }
     html[data-theme="light"] .suggestion-row:hover {
-      background: #f1f5f9 !important;
+      background: #f8fafc !important;
+    }
+    html[data-theme="light"] .suggestion-left i {
+      color: #475569 !important;
     }
     html[data-theme="light"] .suggestion-text {
       color: #0f172a !important;
       font-weight: 600 !important;
     }
     html[data-theme="light"] .no-suggestions-row {
-      color: #475569 !important;
+      color: #334155 !important;
+      font-weight: 500 !important;
     }
+    html[data-theme="light"] .suggestion-badge {
+      background: #ede9fe !important;
+      color: #4338ca !important;
+      border: 1px solid #c4b5fd !important;
+    }
+    html[data-theme="light"] .suggestion-badge.suggestion-badge-quiz {
+      background: #fef3c7 !important;
+      color: #92400e !important;
+      border: 1px solid #fcd34d !important;
+    }
+    html[data-theme="light"] .suggestion-badge.suggestion-badge-solution {
+      background: #e0f2fe !important;
+      color: #0369a1 !important;
+      border: 1px solid #7dd3fc !important;
+    }
+    html[data-theme="light"] .suggestion-query-row {
+      background: #faf5ff !important;
+      border-top: 1px solid #e2e8f0 !important;
+    }
+    html[data-theme="light"] .suggestion-query-row .suggestion-text {
+      color: #4338ca !important;
+    }
+
+    /* Dark Theme High-Contrast Auto-suggestions */
     html[data-theme="dark"] .suggestions-dropdown {
       background: #0f172a !important;
       border: 1px solid #334155 !important;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.7) !important;
     }
     html[data-theme="dark"] .suggestion-row {
       color: #f8fafc !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
     }
     html[data-theme="dark"] .suggestion-row:hover {
       background: #1e293b !important;
+    }
+    html[data-theme="dark"] .suggestion-left i {
+      color: #94a3b8 !important;
     }
     html[data-theme="dark"] .suggestion-text {
       color: #f8fafc !important;
@@ -795,6 +828,28 @@
     }
     html[data-theme="dark"] .no-suggestions-row {
       color: #94a3b8 !important;
+    }
+    html[data-theme="dark"] .suggestion-badge {
+      background: rgba(99, 102, 241, 0.2) !important;
+      color: #c4b5fd !important;
+      border: 1px solid rgba(99, 102, 241, 0.4) !important;
+    }
+    html[data-theme="dark"] .suggestion-badge.suggestion-badge-quiz {
+      background: rgba(245, 158, 11, 0.2) !important;
+      color: #fcd34d !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+    html[data-theme="dark"] .suggestion-badge.suggestion-badge-solution {
+      background: rgba(14, 165, 233, 0.2) !important;
+      color: #7dd3fc !important;
+      border: 1px solid rgba(14, 165, 233, 0.4) !important;
+    }
+    html[data-theme="dark"] .suggestion-query-row {
+      background: rgba(99, 102, 241, 0.08) !important;
+      border-top: 1px solid #334155 !important;
+    }
+    html[data-theme="dark"] .suggestion-query-row .suggestion-text {
+      color: #818cf8 !important;
     }
 
   </style>
@@ -1143,38 +1198,36 @@
           };
 
           const iconClass = d.isQuiz ? 'ri-questionnaire-line' : (d.isSolution ? 'ri-code-box-line' : 'ri-file-text-line');
-          const iconColor = d.isQuiz ? 'color:#f59e0b;' : (d.isSolution ? 'color:#0284c7;' : '');
-          const badgeStyle = d.isQuiz ? 'background:#fef3c7; color:#b45309;' : (d.isSolution ? 'background:#e0f2fe; color:#0369a1;' : '');
+          const badgeClass = d.isQuiz ? 'suggestion-badge suggestion-badge-quiz' : (d.isSolution ? 'suggestion-badge suggestion-badge-solution' : 'suggestion-badge');
 
           row.innerHTML = `
             <div class="suggestion-left">
-              <i class="${iconClass}" style="${iconColor}"></i>
+              <i class="${iconClass}"></i>
               <span class="suggestion-text">${d.title}</span>
             </div>
-            <span class="suggestion-badge" style="${badgeStyle}">${d.category || 'Notes'}</span>
+            <span class="${badgeClass}">${d.category || (d.isQuiz ? 'Quiz' : (d.isSolution ? 'Solution' : 'Notes'))}</span>
           `;
           dropdown.appendChild(row);
         });
 
         // Also add direct query search row
         const queryRow = document.createElement("div");
-        queryRow.className = "suggestion-row";
-        queryRow.style.borderTop = "1px solid #f1f3f4";
+        queryRow.className = "suggestion-row suggestion-query-row";
         queryRow.onclick = () => {
           window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
         };
         queryRow.innerHTML = `
           <div class="suggestion-left">
-            <i class="ri-search-2-line" style="color:#1a73e8;"></i>
-            <span class="suggestion-text" style="color:#1a73e8; font-weight:600;">Search for "<strong>${e.target.value.trim()}</strong>" on DPGNotes SERP</span>
+            <i class="ri-search-2-line"></i>
+            <span class="suggestion-text">Search for "<strong>${e.target.value.trim()}</strong>" on DPGNotes SERP</span>
           </div>
-          <i class="ri-arrow-right-up-line" style="color:#1a73e8;"></i>
+          <i class="ri-arrow-right-up-line"></i>
         `;
         dropdown.appendChild(queryRow);
       } else {
         // Query search row even when no exact doc matches
         const queryRow = document.createElement("div");
-        queryRow.className = "suggestion-row";
+        queryRow.className = "suggestion-row suggestion-query-row";
         queryRow.onclick = () => {
           window.location.href = `/dpgnotes-serp.html?q=${encodeURIComponent(e.target.value.trim())}`;
         };
@@ -1183,7 +1236,7 @@
             <i class="ri-search-line"></i>
             <span class="suggestion-text">Search DPGNotes SERP for "<strong>${e.target.value.trim()}</strong>"</span>
           </div>
-          <i class="ri-arrow-right-line" style="color:#9aa0a6;"></i>
+          <i class="ri-arrow-right-line"></i>
         `;
         dropdown.appendChild(queryRow);
       }

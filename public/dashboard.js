@@ -1339,14 +1339,24 @@ async function loadExplore() {
   attachEngagementListeners();
 }
 
-// Enable touch & mouse horizontal drag for Ads Itemized breakdown table
+// Enable touch & mouse horizontal drag & key navigation for Ads Itemized breakdown table
+window.scrollAdsTable = function(delta) {
+  const scroller = document.getElementById("contribAdsTableScroller");
+  if (scroller) {
+    scroller.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+};
+
 function initDashboardTableDragScroll() {
   const scroller = document.getElementById("contribAdsTableScroller");
   if (!scroller) return;
   let isDown = false;
   let startX;
   let scrollLeft;
+  let touchStartX = 0;
+  let touchScrollLeft = 0;
 
+  // Mouse drag support
   scroller.addEventListener('mousedown', (e) => {
     isDown = true;
     scroller.style.cursor = 'grabbing';
@@ -1367,6 +1377,36 @@ function initDashboardTableDragScroll() {
     const x = e.pageX - scroller.offsetLeft;
     const walk = (x - startX) * 1.5;
     scroller.scrollLeft = scrollLeft - walk;
+  });
+
+  // Touch gesture support for mobile & tablet hand gesture swapping
+  scroller.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartX = e.touches[0].pageX - scroller.offsetLeft;
+      touchScrollLeft = scroller.scrollLeft;
+    }
+  }, { passive: true });
+
+  scroller.addEventListener('touchmove', (e) => {
+    if (!touchStartX || !e.touches || e.touches.length === 0) return;
+    const currentX = e.touches[0].pageX - scroller.offsetLeft;
+    const diff = (currentX - touchStartX) * 1.2;
+    scroller.scrollLeft = touchScrollLeft - diff;
+  }, { passive: true });
+
+  scroller.addEventListener('touchend', () => {
+    touchStartX = 0;
+  }, { passive: true });
+
+  // Arrow key navigation when table scroller has focus
+  scroller.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      scroller.scrollBy({ left: -160, behavior: 'smooth' });
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      scroller.scrollBy({ left: 160, behavior: 'smooth' });
+    }
   });
 }
 setTimeout(initDashboardTableDragScroll, 1000);

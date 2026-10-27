@@ -2316,6 +2316,11 @@ body[data-theme="light"] .sol-community-testcases-box {
 html[data-theme="light"] .sol-community-title,
 body[data-theme="light"] .sol-community-title {
   color: #0f172a !important;
+  font-weight: 700 !important;
+}
+html[data-theme="light"] .sol-community-header span,
+body[data-theme="light"] .sol-community-header span {
+  color: #475569 !important;
 }
 html[data-theme="light"] .sol-testcase-card,
 body[data-theme="light"] .sol-testcase-card {
@@ -2337,16 +2342,88 @@ html[data-theme="light"] .sol-tc-meta,
 body[data-theme="light"] .sol-tc-meta {
   color: #475569 !important;
 }
+html[data-theme="light"] .sol-tc-meta span[style*="color:#facc15"],
+html[data-theme="light"] .sol-tc-meta span[style*="color: #facc15"] {
+  color: #92400e !important;
+  background: #fef3c7 !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  border: 1px solid #fde68a !important;
+}
 html[data-theme="light"] .sol-tc-stats,
 body[data-theme="light"] .sol-tc-stats {
   background: #f1f5f9 !important;
   color: #334155 !important;
   border: 1px solid #e2e8f0 !important;
 }
-html[data-theme="light"] .sol-table th,
-html[data-theme="light"] .sol-answer-content table th {
+
+/* Light Theme High-Contrast for Try It Code Playground & Sandboxes */
+html[data-theme="light"] .sol-sandbox-modal-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25) !important;
+}
+html[data-theme="light"] .sol-sandbox-topbar {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+html[data-theme="light"] .sol-sandbox-title {
+  color: #0f172a !important;
+}
+html[data-theme="light"] label[for="tryitTestCaseSelect"] {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+html[data-theme="light"] #tryitTestCaseSelect {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+html[data-theme="light"] .sol-sandbox-tabs {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+html[data-theme="light"] .sol-sandbox-tab-btn {
+  color: #475569 !important;
+}
+html[data-theme="light"] .sol-sandbox-tab-btn.active {
+  background: #ffffff !important;
+  color: #4338ca !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+html[data-theme="light"] #tryitDraftTitleInput {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+html[data-theme="light"] #tryitDraftModeSelect {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+html[data-theme="light"] .sol-sandbox-modal-card > div:last-child {
+  background: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+html[data-theme="light"] #tryitLoggedUserLabel,
+html[data-theme="light"] .sol-sandbox-modal-card > div:last-child span {
+  color: #334155 !important;
+}
+
+/* Fix Broken Words in Tables across all themes (Word-Break Normal) */
+.sol-table,
+.sol-table th,
+.sol-table td,
+.sol-answer-content table,
+.sol-answer-content table th,
+.sol-answer-content table td,
+.sol-q-preview-content table,
+.sol-q-preview-content table th,
+.sol-q-preview-content table td {
   word-break: normal !important;
   overflow-wrap: break-word !important;
+  white-space: normal !important;
+  hyphens: auto !important;
 }
 
 
