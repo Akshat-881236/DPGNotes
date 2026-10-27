@@ -2114,7 +2114,8 @@ function attachEngagementListeners() {
     const originalText = btn.innerText;
     btn.innerText = "⏳ Generating...";
 
-    const isQuiz = resourceType === 'quiz';
+    try {
+      const isQuiz = resourceType === 'quiz';
     const isSol = resourceType === 'practical_solution' || resourceType === 'assignment_solution' || resourceType === 'solution';
     const prefix = isQuiz ? 'qz_' : (isSol ? 'sol_' : 'sh_');
     const token = prefix + Math.random().toString(36).substring(2, 9);

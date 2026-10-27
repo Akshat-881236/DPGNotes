@@ -839,6 +839,9 @@ async function loadShares() {
     const statSolSharesCount = document.getElementById("statSolSharesCount");
     if (statSolSharesCount) statSolSharesCount.innerText = solShares;
 
+    const statQuizSharesCount = document.getElementById("statQuizSharesCount");
+    if (statQuizSharesCount) statQuizSharesCount.innerText = quizShares;
+
     const statTotalShareClicks = document.getElementById("statTotalShareClicks");
     if (statTotalShareClicks) statTotalShareClicks.innerText = totalClicks.toLocaleString();
     
@@ -906,6 +909,7 @@ function renderSharesTable(shares) {
   shares.forEach(link => {
     const isNote = link.type === 'note';
     const isSolution = link.type === 'solution' || link.type === 'assignment_solution' || link.type === 'practical_solution';
+    const isQuiz = link.type === 'quiz' || link.isQuiz || (link.token && link.token.startsWith('qz_'));
     const isVideo = link.type === 'video' || link.type === 'ad_video' || (link.token && (link.token.startsWith('VSH_') || link.token.startsWith('VSH_AD_')));
 
     let typeBadge = '';
@@ -916,6 +920,8 @@ function renderSharesTable(shares) {
       const label = isPrac ? '🔬 PRACTICAL' : '🎓 ASSIGNMENT';
       const courseStr = (link.course || link.courseSec) ? ` [${escapeAdminHtml(link.course || link.courseSec)}]` : '';
       typeBadge = `<span style="background:rgba(20,184,166,0.2); color:#14b8a6; border:1px solid rgba(20,184,166,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">${label}${courseStr}</span>`;
+    } else if (isQuiz) {
+      typeBadge = `<span style="background:rgba(234,179,8,0.2); color:#eab308; border:1px solid rgba(234,179,8,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📝 QUIZ</span>`;
     } else if (isVideo) {
       const isAd = link.type === 'ad_video' || (link.token && link.token.startsWith('VSH_AD_'));
       typeBadge = `<span style="background:rgba(236,72,153,0.2); color:#f472b6; border:1px solid rgba(236,72,153,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📹 ${isAd ? 'VIDEO AD' : 'VIDEO'}</span>`;
@@ -932,6 +938,8 @@ function renderSharesTable(shares) {
       const folder = (link.subType === 'practical' || link.type === 'practical_solution') ? 'PracticalSolution' : 'AssignmentSolution';
       const contrib = link.contributorUid || link.uploaderUid || '';
       directViewerLink = `${folder}/index.html?id=${encodeURIComponent(link.docId || link.solutionId || targetDocId)}&contributor=${encodeURIComponent(contrib)}&share_token=${encodeURIComponent(link.token)}`;
+    } else if (isQuiz) {
+      directViewerLink = `Quizes/index.html?quizId=${encodeURIComponent(link.docId || link.quizId || targetDocId)}&share_token=${encodeURIComponent(link.token)}`;
     } else if (isVideo) {
       directViewerLink = `dpgnotes-video.html?token=${encodeURIComponent(link.token)}`;
     } else {
