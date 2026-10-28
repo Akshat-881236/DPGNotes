@@ -23,6 +23,13 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
      crossorigin="anonymous"></script>
   <style>
+    /* Dashboard Shell & Responsive Viewport Shield (Prevents Flexbox Blowout) */
+    .dashboard-shell, .dashboard-main, .tabs-container, .dashboard-tab {
+      min-width: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
     .ad-banner-section {
       display: block;
       margin: 0;
@@ -145,11 +152,19 @@
     }
 
     /* Promote & Upload Ads Media Responsiveness & Table Optimization (Fixes Images 1, 2, 3) */
+    #contributorMonetizationCard {
+      width: 100% !important;
+      max-width: 750px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+    }
     .monetization-metrics-grid {
       display: grid !important;
       grid-template-columns: repeat(4, 1fr) !important;
       gap: 12px !important;
       margin-bottom: 1rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
     }
     @media (max-width: 1024px) {
       .monetization-metrics-grid {
@@ -210,6 +225,17 @@
       justify-content: center !important;
       overflow-wrap: break-word !important;
       word-break: normal !important;
+      box-sizing: border-box !important;
+    }
+    .ad-table-header-row {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      flex-wrap: wrap !important;
+      gap: 8px !important;
+      width: 100% !important;
+      margin-bottom: 10px !important;
+      box-sizing: border-box !important;
     }
     .dashboard-ad-table-wrap {
       width: 100% !important;
@@ -234,6 +260,7 @@
       scrollbar-color: #6366f1 rgba(15, 23, 42, 0.4) !important;
       box-sizing: border-box !important;
       cursor: grab !important;
+      display: block !important;
     }
     .dashboard-ad-table-scroll-container::-webkit-scrollbar {
       height: 6px !important;
@@ -251,11 +278,87 @@
     }
     .dashboard-ad-table {
       width: 100% !important;
-      min-width: 720px !important;
+      min-width: 700px !important;
       border-collapse: collapse !important;
       font-size: 0.82rem !important;
       text-align: left !important;
       white-space: nowrap !important;
+    }
+
+    /* YouTube Academic Video References Media Responsiveness (Fixes Images 4 & 5) */
+    .yt-video-card {
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+    }
+    .yt-video-form-grid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+      gap: 1rem !important;
+      margin-bottom: 1rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    .yt-video-form-footer {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      flex-wrap: wrap !important;
+      gap: 12px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    #ytVideoSubmitBtn {
+      box-sizing: border-box !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+    .yt-videos-table-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      touch-action: pan-x pan-y !important;
+      background: rgba(15, 23, 42, 0.7) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 14px !important;
+      padding: 0.6rem !important;
+      margin-top: 0.75rem !important;
+      box-sizing: border-box !important;
+      display: block !important;
+      cursor: grab !important;
+    }
+    .yt-videos-table-wrapper::-webkit-scrollbar {
+      height: 6px !important;
+      width: 6px !important;
+    }
+    .yt-videos-table-wrapper::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4) !important;
+    }
+    .yt-videos-table-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18) !important;
+      border-radius: 4px !important;
+    }
+    .yt-videos-table-wrapper::-webkit-scrollbar-thumb:hover {
+      background: #ef4444 !important;
+    }
+    .yt-videos-table {
+      width: 100% !important;
+      min-width: 680px !important;
+      border-collapse: collapse !important;
+      text-align: left !important;
+      font-size: 0.88rem !important;
+    }
+    .yt-videos-table th, .yt-videos-table td {
+      padding: 0.75rem 0.9rem !important;
+      box-sizing: border-box !important;
     }
     .dashboard-ad-table thead th {
       position: sticky !important;
@@ -341,6 +444,7 @@
         padding: 0.95rem !important;
         border-radius: 12px !important;
         max-width: 100% !important;
+        width: 100% !important;
         box-sizing: border-box !important;
       }
       .monetization-metrics-grid {
@@ -356,6 +460,7 @@
       }
       #uploadAdForm {
         max-width: 100% !important;
+        width: 100% !important;
         box-sizing: border-box !important;
         padding: 0 !important;
       }
@@ -364,6 +469,7 @@
       #uploadAdForm textarea,
       #uploadAdForm button {
         max-width: 100% !important;
+        width: 100% !important;
         box-sizing: border-box !important;
       }
       #adThumbnailBox {
@@ -382,6 +488,35 @@
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
+      }
+      .yt-video-card {
+        padding: 1.15rem 0.95rem !important;
+        border-radius: 12px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .yt-video-form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.85rem !important;
+      }
+      .yt-video-form-footer {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+      #ytVideoSubmitBtn {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+      .ad-table-header-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+      }
+      .table-scroll-controls {
+        width: 100% !important;
+        justify-content: space-between !important;
       }
     }
 
@@ -425,17 +560,36 @@
       .sidebar {
         width: min(270px, 86vw) !important;
       }
+      .monetization-metrics-grid {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+      }
+      .yt-video-card {
+        padding: 0.85rem 0.65rem !important;
+        border-radius: 10px !important;
+      }
+      #contributorMonetizationCard {
+        padding: 0.85rem 0.65rem !important;
+      }
+      #submitAdBtn, #ytVideoSubmitBtn {
+        font-size: 0.85rem !important;
+        padding: 0.75rem 0.6rem !important;
+      }
     }
 
     /* 2. Extra Narrow Folded Display (max-width: 340px) */
     @media (max-width: 340px) {
       .tab-btn {
-        padding: 0.75rem 1rem !important;
-        font-size: 0.88rem !important;
+        padding: 0.65rem 0.85rem !important;
+        font-size: 0.82rem !important;
       }
       .manage-res-table td[data-label="Action Panel"] > div {
         flex-direction: column !important;
         align-items: stretch !important;
+      }
+      .yt-video-form-grid input {
+        font-size: 0.82rem !important;
+        padding: 0.6rem 0.75rem !important;
       }
     }
 
@@ -505,6 +659,7 @@
     #authCheckOverlay p {
       color: #94a3b8;
       font-size: 0.9rem;
+    }
     /* Native Ads Monetization Policy Confirmation Modal Styles */
     .dpg-monetization-modal-box {
       max-width: 540px !important;
@@ -1003,11 +1158,11 @@
         <!-- YT VIDEOS TAB (ACADEMIC VIDEO REFERENCES) -->
         <section id="ytVideosTab" class="dashboard-tab">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
-            <div>
-              <h2 style="margin:0 0 0.4rem 0; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:10px;">
+            <div style="flex:1 1 260px; min-width:0;">
+              <h2 style="margin:0 0 0.4rem 0; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:10px; font-size:clamp(1.2rem, 3.5vw, 1.8rem); word-break:break-word;">
                 <i class="ri-youtube-fill" style="color:#ef4444;"></i> YouTube Video References
               </h2>
-              <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">
+              <p style="color:var(--text-muted); font-size:0.88rem; margin:0; word-break:break-word;">
                 Share verified academic lecture videos, lab walkthroughs, or project demonstrations with students. Submissions are reviewed and approved by administrators before appearing in the DPGNotes search engine.
               </p>
             </div>
@@ -1017,35 +1172,35 @@
           </div>
 
           <!-- Video Submission Form -->
-          <div style="background:var(--card-bg, #1e293b); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:2rem; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+          <div class="yt-video-card">
             <h3 style="margin:0 0 1rem 0; font-size:1.05rem; color:#fff; display:flex; align-items:center; gap:8px;">
               <i class="ri-add-circle-line" style="color:var(--primary-light);"></i> Submit Academic Video Reference
             </h3>
 
             <form id="ytVideoUploadForm" onsubmit="handleYtVideoSubmit(event)">
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1rem;">
+              <div class="yt-video-form-grid">
                 <div>
                   <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">Video Reference ID *</label>
-                  <input type="text" id="ytVideoIdInput" readonly style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.6); color:#a5b4fc; font-family:'Fira Code', monospace; font-weight:700; font-size:0.9rem;" value="Calculating next ID...">
+                  <input type="text" id="ytVideoIdInput" readonly style="width:100%; box-sizing:border-box; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.6); color:#a5b4fc; font-family:'Fira Code', monospace; font-weight:700; font-size:0.9rem;" value="Calculating next ID...">
                 </div>
 
                 <div>
                   <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">Video Source / Channel Name *</label>
-                  <input type="text" id="ytVideoSourceInput" placeholder="e.g. Akshat Network Hub, NPTEL" required style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
+                  <input type="text" id="ytVideoSourceInput" placeholder="e.g. Akshat Network Hub, NPTEL" required style="width:100%; box-sizing:border-box; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
                 </div>
               </div>
 
               <div style="margin-bottom:1rem;">
                 <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">YouTube Video URL *</label>
-                <input type="url" id="ytVideoUrlInput" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." required style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
+                <input type="url" id="ytVideoUrlInput" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." required style="width:100%; box-sizing:border-box; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
               </div>
 
               <div style="margin-bottom:1.25rem;">
                 <label style="color:var(--text-muted); font-size:0.84rem; display:block; margin-bottom:6px;">Video Title / Topic *</label>
-                <input type="text" id="ytVideoTitleInput" placeholder="e.g. Introducing DPGNotes PDF Viewer &amp; Reader" required style="width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
+                <input type="text" id="ytVideoTitleInput" placeholder="e.g. Introducing DPGNotes PDF Viewer &amp; Reader" required style="width:100%; box-sizing:border-box; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:rgba(15,23,42,0.8); color:white; font-size:0.9rem;">
               </div>
 
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div class="yt-video-form-footer">
                 <div style="font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
                   <span style="background:rgba(234,179,8,0.15); color:#facc15; padding:2px 8px; border-radius:6px; font-weight:700;"><i class="ri-time-line"></i> Status: Pending Approval</span>
                   <span>Will be evaluated by Admin team</span>
@@ -1058,12 +1213,20 @@
           </div>
 
           <!-- My Submissions Table -->
-          <div style="background:var(--card-bg, #1e293b); border:1px solid var(--border); border-radius:16px; padding:1.5rem;">
-            <h3 style="margin:0 0 1rem 0; font-size:1.05rem; color:#fff; display:flex; align-items:center; gap:8px;">
-              <i class="ri-folder-video-line" style="color:var(--primary-light);"></i> My Submitted Video References
-            </h3>
-            <div class="manage-res-table-wrapper" style="overflow-x:auto;">
-              <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.85rem;">
+          <div class="yt-video-card" style="padding:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:8px;">
+              <h3 style="margin:0; font-size:1.05rem; color:#fff; display:flex; align-items:center; gap:8px;">
+                <i class="ri-folder-video-line" style="color:var(--primary-light);"></i> My Submitted Video References
+              </h3>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:0.82rem; color:var(--text-muted);" id="ytVideosCount">0 videos</span>
+                <span style="font-size:0.72rem; color:#fbbf24; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+                  <i class="ri-arrow-left-right-line"></i> Swipe ⇄
+                </span>
+              </div>
+            </div>
+            <div class="yt-videos-table-wrapper" id="ytVideosTableScroller" tabindex="0" role="region" aria-label="Academic Video References Table - Swipe horizontally to inspect columns">
+              <table class="yt-videos-table" id="ytVideosTable">
                 <thead>
                   <tr style="border-bottom:1px solid var(--border); color:var(--text-muted);">
                     <th style="padding:10px 12px;">Video ID</th>
@@ -1164,11 +1327,11 @@
 
             <!-- Real-Time Ad-Wise Monetization Breakdown Table (Media Responsive with Bidirectional Movement) -->
             <div id="contribAdsItemizedTableWrap" class="dashboard-ad-table-wrap">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+              <div class="ad-table-header-row">
                 <span style="font-weight: 700; font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 6px;">
                   <i class="ri-file-list-3-line" style="color: #6366f1;"></i> Real-Time Ad-Wise Monetization Breakdown
                 </span>
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <div class="table-scroll-controls" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                   <button type="button" class="table-scroll-btn" onclick="window.scrollAdsTable(-220)" title="Scroll Left (or use Left Arrow key)" style="background:rgba(99,102,241,0.25); border:1px solid rgba(99,102,241,0.45); color:#c4b5fd; border-radius:6px; padding:3px 8px; font-size:0.74rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
                     <i class="ri-arrow-left-s-line"></i> Left
                   </button>
@@ -1237,14 +1400,14 @@
               <input type="text" id="adTags" class="search-bar" placeholder="Computer Science, Exam Notes, OpenSource, React" required style="width:100%; margin-bottom:0;">
             </div>
 
-            <div id="adThumbnailBox" style="margin-bottom:1.2rem; background:rgba(255,255,255,0.03); border:1px dashed var(--border); border-radius:12px; padding:1.2rem;">
-              <label id="adThumbnailLabel" style="color:var(--primary-light); font-size:0.88rem; font-weight:600; display:block; margin-bottom:6px;">Ad Banner Thumbnail Image (Cloudinary Upload - Optional for Medium/Header/Footer Ads)</label>
+            <div id="adThumbnailBox" style="margin-bottom:1.2rem; background:rgba(255,255,255,0.03); border:1px dashed var(--border); border-radius:12px; padding:1.2rem; width:100%; box-sizing:border-box; overflow:hidden;">
+              <label id="adThumbnailLabel" style="color:var(--primary-light); font-size:0.88rem; font-weight:600; display:block; margin-bottom:6px; word-break:break-word;">Ad Banner Thumbnail Image (Cloudinary Upload - Optional for Medium/Header/Footer Ads)</label>
               <input type="file" id="adThumbnailFile" accept="image/*" style="display:none;" onchange="handleAdThumbnailSelect(event)">
-              <div style="display:flex; gap:12px; align-items:center;">
-                <button type="button" onclick="document.getElementById('adThumbnailFile').click()" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button type="button" onclick="document.getElementById('adThumbnailFile').click()" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
                   <i class="ri-image-add-line"></i> Select Image File
                 </button>
-                <span id="adThumbnailFileName" style="font-size:0.82rem; color:var(--text-muted);">No image selected</span>
+                <span id="adThumbnailFileName" style="font-size:0.82rem; color:var(--text-muted); word-break:break-all; max-width:100%;">No image selected</span>
               </div>
               
               <div id="adUploadProgressContainer" style="display:none; margin-top:10px;">
@@ -1269,8 +1432,8 @@
               <input type="url" id="adVideoUrl" class="search-bar" placeholder="https://www.youtube.com/watch?v=..." style="width:100%; margin-bottom:0;">
             </div>
 
-            <button type="submit" id="submitAdBtn" class="upload-btn" style="width:100%; padding:0.9rem; border-radius:10px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; cursor:pointer;">
-              <i class="ri-rocket-line"></i> Submit Ad Campaign for Admin Approval
+            <button type="submit" id="submitAdBtn" class="upload-btn" style="width:100%; padding:0.9rem; border-radius:10px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; white-space:normal; word-break:break-word; text-align:center;">
+              <i class="ri-rocket-line"></i> <span>Submit Ad Campaign for Admin Approval</span>
             </button>
           </form>
         </section>

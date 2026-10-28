@@ -1348,65 +1348,70 @@ window.scrollAdsTable = function(delta) {
 };
 
 function initDashboardTableDragScroll() {
-  const scroller = document.getElementById("contribAdsTableScroller");
-  if (!scroller) return;
-  let isDown = false;
-  let startX;
-  let scrollLeft;
-  let touchStartX = 0;
-  let touchScrollLeft = 0;
+  const scrollers = [
+    document.getElementById("contribAdsTableScroller"),
+    document.getElementById("ytVideosTableScroller")
+  ].filter(Boolean);
 
-  // Mouse drag support
-  scroller.addEventListener('mousedown', (e) => {
-    isDown = true;
-    scroller.style.cursor = 'grabbing';
-    startX = e.pageX - scroller.offsetLeft;
-    scrollLeft = scroller.scrollLeft;
-  });
-  scroller.addEventListener('mouseleave', () => {
-    isDown = false;
-    scroller.style.cursor = 'grab';
-  });
-  scroller.addEventListener('mouseup', () => {
-    isDown = false;
-    scroller.style.cursor = 'grab';
-  });
-  scroller.addEventListener('mousemove', (e) => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - scroller.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    scroller.scrollLeft = scrollLeft - walk;
-  });
+  scrollers.forEach(scroller => {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let touchStartX = 0;
+    let touchScrollLeft = 0;
 
-  // Touch gesture support for mobile & tablet hand gesture swapping
-  scroller.addEventListener('touchstart', (e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartX = e.touches[0].pageX - scroller.offsetLeft;
-      touchScrollLeft = scroller.scrollLeft;
-    }
-  }, { passive: true });
-
-  scroller.addEventListener('touchmove', (e) => {
-    if (!touchStartX || !e.touches || e.touches.length === 0) return;
-    const currentX = e.touches[0].pageX - scroller.offsetLeft;
-    const diff = (currentX - touchStartX) * 1.2;
-    scroller.scrollLeft = touchScrollLeft - diff;
-  }, { passive: true });
-
-  scroller.addEventListener('touchend', () => {
-    touchStartX = 0;
-  }, { passive: true });
-
-  // Arrow key navigation when table scroller has focus
-  scroller.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
+    // Mouse drag support
+    scroller.addEventListener('mousedown', (e) => {
+      isDown = true;
+      scroller.style.cursor = 'grabbing';
+      startX = e.pageX - scroller.offsetLeft;
+      scrollLeft = scroller.scrollLeft;
+    });
+    scroller.addEventListener('mouseleave', () => {
+      isDown = false;
+      scroller.style.cursor = 'grab';
+    });
+    scroller.addEventListener('mouseup', () => {
+      isDown = false;
+      scroller.style.cursor = 'grab';
+    });
+    scroller.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
       e.preventDefault();
-      scroller.scrollBy({ left: -160, behavior: 'smooth' });
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      scroller.scrollBy({ left: 160, behavior: 'smooth' });
-    }
+      const x = e.pageX - scroller.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      scroller.scrollLeft = scrollLeft - walk;
+    });
+
+    // Touch gesture support for mobile & tablet hand gesture swapping
+    scroller.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length > 0) {
+        touchStartX = e.touches[0].pageX - scroller.offsetLeft;
+        touchScrollLeft = scroller.scrollLeft;
+      }
+    }, { passive: true });
+
+    scroller.addEventListener('touchmove', (e) => {
+      if (!touchStartX || !e.touches || e.touches.length === 0) return;
+      const currentX = e.touches[0].pageX - scroller.offsetLeft;
+      const diff = (currentX - touchStartX) * 1.2;
+      scroller.scrollLeft = touchScrollLeft - diff;
+    }, { passive: true });
+
+    scroller.addEventListener('touchend', () => {
+      touchStartX = 0;
+    }, { passive: true });
+
+    // Arrow key navigation when table scroller has focus
+    scroller.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        scroller.scrollBy({ left: -160, behavior: 'smooth' });
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        scroller.scrollBy({ left: 160, behavior: 'smooth' });
+      }
+    });
   });
 }
 setTimeout(initDashboardTableDragScroll, 1000);
@@ -4195,16 +4200,16 @@ async function loadYtVideosData() {
       const tr = document.createElement("tr");
       tr.style.borderBottom = "1px solid var(--border)";
       tr.innerHTML = `
-        <td style="padding:12px; font-family:'Fira Code', monospace; font-weight:700; color:#a5b4fc;">${v.id}</td>
-        <td style="padding:12px; font-weight:600; color:#fff;">${escapeHtml(v.title || 'Untitled')}</td>
-        <td style="padding:12px; color:var(--text-muted);">${escapeHtml(v.source || 'Akshat Network Hub')}</td>
-        <td style="padding:12px;">${statusBadge}</td>
-        <td style="padding:12px; font-size:0.8rem; color:var(--text-muted);">
+        <td style="padding:12px; font-family:'Fira Code', monospace; font-weight:700; color:#a5b4fc; white-space:nowrap;">${v.id}</td>
+        <td style="padding:12px; font-weight:600; color:#fff; min-width:160px; word-break:break-word;">${escapeHtml(v.title || 'Untitled')}</td>
+        <td style="padding:12px; color:var(--text-muted); min-width:120px; word-break:break-word;">${escapeHtml(v.source || 'Akshat Network Hub')}</td>
+        <td style="padding:12px; white-space:nowrap;">${statusBadge}</td>
+        <td style="padding:12px; font-size:0.8rem; color:var(--text-muted); white-space:nowrap;">
           <span title="Views"><i class="ri-eye-line"></i> ${totalViews}</span> &bull; 
           <span title="Likes"><i class="ri-heart-3-line"></i> ${totalLikes}</span> &bull; 
           <span title="Shares"><i class="ri-share-forward-line"></i> ${totalShares}</span>
         </td>
-        <td style="padding:12px; text-align:right;">
+        <td style="padding:12px; text-align:right; white-space:nowrap;">
           <div style="display:inline-flex; gap:6px;">
             <a href="dpgnotes-video.html?id=${encodeURIComponent(v.id)}" target="_blank" style="padding:4px 10px; border-radius:6px; background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
               <i class="ri-play-circle-line"></i> Preview
@@ -4217,6 +4222,9 @@ async function loadYtVideosData() {
       `;
       tbody.appendChild(tr);
     });
+
+    const countEl = document.getElementById("ytVideosCount");
+    if (countEl) countEl.textContent = `${myVideos.length} video${myVideos.length === 1 ? '' : 's'}`;
   } catch (err) {
     console.error("loadYtVideosData error:", err);
     tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:#ef4444;">Failed to load videos: ${err.message}</td></tr>`;
