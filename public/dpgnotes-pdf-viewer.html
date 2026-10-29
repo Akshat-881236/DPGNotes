@@ -30,6 +30,16 @@
 
   <meta name="digiindia-student-innovation-platform" content="dofP3Z_gTI6o71KvinoPuw">
 
+  <script>
+    (function(){
+      try {
+        var sp = new URLSearchParams(window.location.search);
+        if (sp.get('embedded') === '1' || sp.get('embedded') === 'true' || sp.get('embed') === '1') {
+          document.documentElement.classList.add('is-embedded');
+        }
+      } catch(e){}
+    })();
+  </script>
   <meta charset="UTF-8">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -138,6 +148,48 @@
 
     .nbtn:hover{background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4)}
 
+    /* EMBEDDED IN-PAGE MODE */
+    html.is-embedded body,
+    body.is-embedded {
+      min-height: 100% !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      background: #0b0f19 !important;
+    }
+    html.is-embedded .topbar,
+    body.is-embedded .topbar {
+      display: none !important;
+    }
+    html.is-embedded .sidebar,
+    body.is-embedded .sidebar {
+      display: none !important;
+    }
+    html.is-embedded .layout,
+    body.is-embedded .layout {
+      height: 100vh !important;
+      min-height: 100vh !important;
+    }
+    html.is-embedded .pdfmain,
+    body.is-embedded .pdfmain {
+      padding: 0.6rem 0.5rem !important;
+      background: #090d16 !important;
+      width: 100% !important;
+    }
+    html.is-embedded .pdfpage,
+    body.is-embedded .pdfpage {
+      max-width: 96% !important;
+      margin-bottom: 0.85rem !important;
+    }
+    html.is-embedded .end-pdf-recommendations,
+    html.is-embedded .adslot,
+    body.is-embedded .end-pdf-recommendations,
+    body.is-embedded .adslot {
+      display: none !important;
+    }
+    html.is-embedded .embedded-page-pill {
+      display: flex !important;
+    }
+
     /* LAYOUT */
 
     .layout{display:flex;flex:1;overflow:hidden}
@@ -510,6 +562,10 @@
 
 
 
+<div id="embPagePill" class="embedded-page-pill" style="display:none; position:fixed; bottom:16px; right:20px; z-index:999; background:rgba(15,23,42,0.85); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.18); border-radius:30px; padding:6px 14px; font-size:0.8rem; color:#cbd5e1; box-shadow:0 8px 24px rgba(0,0,0,0.5); align-items:center; gap:8px;">
+  <i class="ri-file-pdf-line" style="color:#38bdf8;"></i> Page <span id="embCur">1</span> / <span id="embTotal">—</span>
+</div>
+
 <div class="layout">
 
   <aside class="sidebar" id="sb">
@@ -1342,7 +1398,9 @@ async function renderAllPages() {
 
     document.getElementById('pgTotal').textContent = totalPages;
 
-    document.getElementById('pgCur').textContent   = '1';
+    document.getElementById('pgCur').textContent   = '1';
+    const embT = document.getElementById('embTotal'); if (embT) embT.textContent = totalPages;
+    const embC = document.getElementById('embCur'); if (embC) embC.textContent = '1';
 
 
 
@@ -1454,7 +1512,10 @@ async function renderAllPages() {
 
       entries.forEach(e => {
 
-        if (e.isIntersecting) document.getElementById('pgCur').textContent = e.target.dataset.pg;
+        if (e.isIntersecting) {
+          document.getElementById('pgCur').textContent = e.target.dataset.pg;
+          const embC = document.getElementById('embCur'); if (embC) embC.textContent = e.target.dataset.pg;
+        }
 
       });
 

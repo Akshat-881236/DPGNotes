@@ -2740,3 +2740,83 @@ html[data-theme="light"] pre span[style*="color:#fb923c"],
 html[data-theme="light"] pre span[style*="color: #fb923c"] {
   color: #c2410c !important;
 }
+
+/* ============================================================================
+   IN-PAGE PDF VIEWER SCOPE & ATTACHMENT CARD THEME COMPLIANCE
+   ============================================================================ */
+#pdfAttachmentCard {
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+html[data-theme="light"] #pdfAttachmentCard,
+body[data-theme="light"] #pdfAttachmentCard,
+body.theme-light #pdfAttachmentCard {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] #pdfAttachmentHeading,
+body[data-theme="light"] #pdfAttachmentHeading,
+body.theme-light #pdfAttachmentHeading {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] #pdfScopeViewerContainer,
+body[data-theme="light"] #pdfScopeViewerContainer,
+body.theme-light #pdfScopeViewerContainer {
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+html[data-theme="light"] #pdfFrameWrapper,
+body[data-theme="light"] #pdfFrameWrapper,
+body.theme-light #pdfFrameWrapper {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] #pdfScopeLoading,
+body[data-theme="light"] #pdfScopeLoading,
+body.theme-light #pdfScopeLoading {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+/* Sepia Theme */
+html[data-theme="sepia"] #pdfAttachmentCard,
+body[data-theme="sepia"] #pdfAttachmentCard,
+body.theme-sepia #pdfAttachmentCard {
+  background: #fdf6e2 !important;
+  border: 1px solid #d8cbb5 !important;
+}
+
+html[data-theme="sepia"] #pdfAttachmentHeading,
+body[data-theme="sepia"] #pdfAttachmentHeading,
+body.theme-sepia #pdfAttachmentHeading {
+  color: #433422 !important;
+}
+
+html[data-theme="sepia"] #pdfScopeViewerContainer,
+body.theme-sepia #pdfScopeViewerContainer {
+  border-top-color: #d8cbb5 !important;
+}
+
+html[data-theme="sepia"] #pdfFrameWrapper,
+body.theme-sepia #pdfFrameWrapper {
+  border-color: #d8cbb5 !important;
+}
+
+/* Responsive in-page viewer height on smaller mobile devices */
+@media (max-width: 768px) {
+  #pdfFrameWrapper {
+    height: 520px !important;
+    min-height: 400px !important;
+  }
+}
+@media (max-width: 480px) {
+  #pdfFrameWrapper {
+    height: 440px !important;
+    min-height: 350px !important;
+  }
+}

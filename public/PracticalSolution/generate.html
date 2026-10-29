@@ -245,6 +245,7 @@
           <div id="pdfSelectedInfo" style="margin-top:10px; font-size:0.85rem; color:#38bdf8; display:none;">
             <span id="pdfFileName">filename.pdf</span> &bull; <span id="pdfFileSize">0 KB</span>
           </div>
+          <a id="pdfVerifyBtn" href="#" target="_blank" class="sol-btn sol-btn-secondary sol-btn-sm" style="display:none; margin:10px auto 0; width:fit-content; text-decoration:none;"><i class="ri-eye-line"></i> Verify Attached PDF</a>
 
           <!-- Upload Progress -->
           <div id="pdfUploadProgressBox" style="display:none; margin-top:12px; max-width:400px; margin-left:auto; margin-right:auto;">
@@ -681,6 +682,11 @@
           progressBar.style.width = '100%';
           progressText.innerHTML = '<span style="color:#10b981;"><i class="ri-checkbox-circle-fill"></i> Uploaded to Cloudinary successfully</span>';
           document.getElementById('uploadedPdfUrl').value = uploadedUrl;
+          const verifyBtn = document.getElementById('pdfVerifyBtn');
+          if (verifyBtn) {
+            verifyBtn.href = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(uploadedUrl)}&title=Attached%20PDF`;
+            verifyBtn.style.display = 'inline-flex';
+          }
         } else {
           throw new Error(data.error?.message || data.error || "Cloudinary upload failed");
         }
@@ -1203,6 +1209,11 @@
             infoBox.style.display = 'block';
             document.getElementById('pdfFileName').textContent = 'Attached Practical PDF';
             document.getElementById('pdfFileSize').textContent = 'Cloudinary';
+        const vBtn = document.getElementById('pdfVerifyBtn');
+        if (vBtn && (data.pdfUrl || decrypted?.pdfUrl || document.getElementById('uploadedPdfUrl')?.value)) {
+          vBtn.href = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data?.pdfUrl || decrypted?.pdfUrl || document.getElementById('uploadedPdfUrl')?.value)}&title=Attached%20PDF`;
+          vBtn.style.display = 'inline-flex';
+        }
           }
         }
 
@@ -1326,6 +1337,11 @@
             infoBox.style.display = 'block';
             document.getElementById('pdfFileName').textContent = 'Attached Practical PDF';
             document.getElementById('pdfFileSize').textContent = 'Cloudinary';
+        const vBtn = document.getElementById('pdfVerifyBtn');
+        if (vBtn && (data.pdfUrl || decrypted?.pdfUrl || document.getElementById('uploadedPdfUrl')?.value)) {
+          vBtn.href = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(data?.pdfUrl || decrypted?.pdfUrl || document.getElementById('uploadedPdfUrl')?.value)}&title=Attached%20PDF`;
+          vBtn.style.display = 'inline-flex';
+        }
           }
         }
 
