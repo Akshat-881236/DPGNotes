@@ -447,6 +447,11 @@
     else if (l === 'kt') l = 'kotlin';
     else if (l === 'markup' || l === 'htm') l = 'html';
     else if (l === 'scss' || l === 'sass') l = 'css';
+    else if (l === 'ts' || l === 'typescript') l = 'javascript';
+    else if (l === 'py3' || l === 'python3') l = 'python';
+    else if (l === 'cplusplus') l = 'cpp';
+    else if (l === 'c-lang') l = 'c';
+    else if (l === 'java-lang') l = 'java';
 
     const registry = {
       html: {
@@ -652,43 +657,473 @@
     }
   };
 
+
+  // Intelligent Multi-Language Code Syntax Auto-Detector
+  function detectCodeLanguage(code) {
+    if (!code || typeof code !== 'string') return 'code';
+    const c = code.trim();
+    if (/(?:<!DOCTYPE|<html\b|<body\b|<div\b|<button\b|<head\b|<style\b|<script\b)/i.test(c)) return 'html';
+    if (/(?:#include\s*<iostream>|#include\s*<vector>|#include\s*<string>|std::cout|std::cin|std::endl|using\s+namespace\s+std;)/.test(c)) return 'cpp';
+    if (/(?:#include\s*<stdio\.h>|#include\s*<stdlib\.h>|printf\s*\(|scanf\s*\(|int\s+main\s*\()/i.test(c)) return 'c';
+    if (/(?:public\s+class\s+|public\s+static\s+void\s+main|System\.out\.println|import\s+java\.)/.test(c)) return 'java';
+    if (/(?:def\s+\w+\s*\(|import\s+\w+|from\s+\w+\s+import|elif\s+|print\s*\(|class\s+\w+\s*:|if\s+__name__\s*==)/.test(c)) return 'python';
+    if (/(?:^[.#@a-zA-Z][^{\n]*\{\s*[\w-]+:\s*[^;]+;)/m.test(c)) return 'css';
+    if (/(?:const\s+\w+\s*=|let\s+\w+\s*=|function\s+\w*\(|console\.log\(|document\.getElementById|addEventListener)/.test(c)) return 'javascript';
+    if (/(?:SELECT\s+.+\s+FROM|CREATE\s+TABLE|INSERT\s+INTO)/i.test(c)) return 'sql';
+    return 'code';
+  }
+  window.detectCodeLanguage = detectCodeLanguage;
+
+  // Semantic Token Span Generator with Theme-Compliant CSS Variables
+  function tokSpan(cls, varName, fallbackColor, text, extra = '') {
+    return `<span class="${cls}" style="color:var(--${varName}, ${fallbackColor});${extra}">${text}</span>`;
+  }
+
   // Syntax Highlighter for Clean Code Auto-Formatting across All Major Languages
   function highlightCodeSyntax(code, lang) {
     if (!code) return '';
-    const meta = getLanguageMeta(lang);
-    const l = meta.canonical;
+    let meta = getLanguageMeta(lang);
+    let l = meta.canonical;
 
-    // HTML / XML formatting
+    // Intelligent auto-detection if language is missing or generic
+    if (!lang || l === 'code' || l === 'text') {
+      const detected = detectCodeLanguage(code);
+      if (detected && detected !== 'code') {
+        meta = getLanguageMeta(detected);
+        l = meta.canonical;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // A. HTML / XML formatting
+    // -------------------------------------------------------------
     if (l === 'html' || l === 'xml') {
       let esc = escapeHtml(code);
-      esc = esc.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span style="color:#64748b; font-style:italic;">$1</span>');
-      esc = esc.replace(/\s([a-zA-Z0-9_-]+)=(&quot;[^&]*&quot;|&#39;[^&#]*&#39;)/g, ' <span style="color:#38bdf8;">$1</span>=<span style="color:#34d399;">$2</span>');
-      esc = esc.replace(/(&lt;\/?)([a-zA-Z0-9_-]+)/g, '$1<span style="color:#f43f5e; font-weight:600;">$2</span>');
+      esc = esc.replace(/(&lt;!--[\s\S]*?--&gt;)/g, tokSpan('tok-com', 'tok-com', '#94a3b8', '$1', ' font-style:italic;'));
+      esc = esc.replace(/\s([a-zA-Z0-9_-]+)=(&quot;[^&]*&quot;|&#39;[^&#]*&#39;)/g, ' ' + tokSpan('tok-attr', 'tok-attr', '#38bdf8', '$1') + '=' + tokSpan('tok-str', 'tok-str', '#34d399', '$2'));
+      esc = esc.replace(/(&lt;\/?)([a-zA-Z0-9_-]+)/g, '$1' + tokSpan('tok-tag', 'tok-tag', '#f43f5e', '$2', ' font-weight:600;'));
       return esc;
     }
 
-    // CSS / SCSS formatting
+    // -------------------------------------------------------------
+    // B. CSS / SCSS formatting
+    // -------------------------------------------------------------
     if (l === 'css') {
-      let esc = escapeHtml(code);
-      const comments = [];
-      esc = esc.replace(/(\/\*[\s\S]*?\*\/)/g, (m) => {
-        comments.push(m);
-        return '___CSS_COMMENT_' + (comments.length - 1) + '___';
-      });
-      esc = esc.replace(/([a-zA-Z0-9_-]+)\s*:\s*([^;{}]+)(;|\b)/g, (match, prop, val, semi) => {
-        return `<span style="color:#38bdf8;">${prop}</span>: <span style="color:#34d399;">${val}</span>${semi}`;
-      });
-      esc = esc.replace(/___CSS_COMMENT_(\d+)___/g, (m, idx) => {
-        return `<span style="color:#64748b; font-style:italic;">${comments[Number(idx)]}</span>`;
-      });
+      let esc = '';
+      const re = /(\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|@[a-zA-Z-]+|#[a-fA-F0-9]{3,8}\b|-?[0-9]+(?:\.[0-9]+)?(?:px|rem|em|vh|vw|%|deg|s|ms|fr|pt|vmin|vmax)\b|-?[0-9]+(?:\.[0-9]+)?|var\(--[a-zA-Z0-9_-]+\)|rgba?\([^)]*\)|hsla?\([^)]*\)|url\([^)]*\)|!important|::?[a-zA-Z0-9_-]+|\.[a-zA-Z0-9_-]+|#[a-zA-Z0-9_-]+|[a-zA-Z_-][a-zA-Z0-9_-]*|[{}();,:]|\s+|[^\s{}();,:]+)/g;
+      
+      let state = 'selector';
+      const stateStack = [];
+      let m;
+      while ((m = re.exec(code)) !== null) {
+        const t = m[0];
+        if (/^\s+$/.test(t)) {
+          esc += t;
+          continue;
+        }
+        if (t.startsWith('/*')) {
+          esc += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
+          continue;
+        }
+        if (t.startsWith('@')) {
+          esc += tokSpan('tok-prep', 'tok-prep', '#f472b6', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (t === '{') {
+          stateStack.push(state);
+          state = 'property';
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', '{');
+          continue;
+        }
+        if (t === '}') {
+          state = stateStack.pop() || 'selector';
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', '}');
+          continue;
+        }
+        if (t === ':') {
+          if (state === 'property') state = 'value';
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', ':');
+          continue;
+        }
+        if (t === ';') {
+          if (state === 'value') state = 'property';
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', ';');
+          continue;
+        }
+        if (t === '(' || t === ')' || t === ',') {
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', escapeHtml(t));
+          continue;
+        }
+        if (t.startsWith('"') || t.startsWith("'")) {
+          esc += tokSpan('tok-str', 'tok-str', '#34d399', escapeHtml(t));
+          continue;
+        }
+        if (t === '!important') {
+          esc += tokSpan('tok-kwd', 'tok-kwd', '#f43f5e', t, ' font-weight:700;');
+          continue;
+        }
+        if (t.startsWith('var(') || t.startsWith('rgb') || t.startsWith('hsl') || t.startsWith('url')) {
+          esc += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t));
+          continue;
+        }
+        if (/-?[0-9]+(?:\.[0-9]+)?(?:px|rem|em|vh|vw|%|deg|s|ms|fr|pt|vmin|vmax)$/.test(t)) {
+          esc += tokSpan('tok-css-unit', 'tok-css-unit', '#fb923c', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (/^-?[0-9]+(?:\.[0-9]+)?$/.test(t)) {
+          esc += tokSpan('tok-num', 'tok-num', '#fb923c', escapeHtml(t));
+          continue;
+        }
+        if (/^#[a-fA-F0-9]{3,8}$/.test(t)) {
+          esc += tokSpan('tok-css-val', 'tok-css-val', '#fb923c', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+
+        if (state === 'selector') {
+          if (t.startsWith('.') || t.startsWith('#') || t.startsWith(':')) {
+            esc += tokSpan('tok-css-sel', 'tok-css-sel', '#f472b6', escapeHtml(t), ' font-weight:600;');
+          } else if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(t)) {
+            esc += tokSpan('tok-tag', 'tok-tag', '#38bdf8', escapeHtml(t), ' font-weight:600;');
+          } else {
+            esc += escapeHtml(t);
+          }
+        } else if (state === 'property') {
+          esc += tokSpan('tok-css-prop', 'tok-css-prop', '#38bdf8', escapeHtml(t));
+        } else {
+          const cssKeywords = new Set(['flex', 'grid', 'block', 'inline-block', 'inline', 'none', 'auto', 'inherit', 'initial', 'unset', 'relative', 'absolute', 'fixed', 'sticky', 'pointer', 'center', 'bold', 'italic', 'hidden', 'visible', 'scroll', 'solid', 'dashed', 'dotted', 'transparent', 'box-sizing', 'border-box', 'sans-serif', 'monospace', 'cover', 'contain', 'no-repeat', 'repeat-x', 'repeat-y', 'space-between', 'space-around', 'align-items', 'justify-content']);
+          if (cssKeywords.has(t.toLowerCase())) {
+            esc += tokSpan('tok-kwd', 'tok-kwd', '#c084fc', escapeHtml(t), ' font-weight:600;');
+          } else {
+            esc += tokSpan('tok-css-val', 'tok-css-val', '#34d399', escapeHtml(t));
+          }
+        }
+      }
       return esc;
     }
 
+    // -------------------------------------------------------------
+    // C. JavaScript / TypeScript / Node.js
+    // -------------------------------------------------------------
+    if (l === 'javascript' || l === 'node') {
+      const JS_KEYWORDS = new Set([
+        'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default', 'delete',
+        'do', 'else', 'export', 'extends', 'finally', 'for', 'function', 'if', 'import',
+        'in', 'instanceof', 'new', 'return', 'super', 'switch', 'this', 'throw', 'try',
+        'typeof', 'var', 'void', 'while', 'with', 'yield', 'let', 'static', 'await', 'async',
+        'of', 'from', 'as', 'get', 'set'
+      ]);
+      const JS_TYPES = new Set([
+        'true', 'false', 'null', 'undefined', 'NaN', 'Infinity',
+        'Promise', 'Array', 'Object', 'String', 'Number', 'Boolean', 'Function', 'Symbol', 'BigInt', 'Error',
+        'Map', 'Set', 'WeakMap', 'WeakSet', 'Date', 'RegExp', 'Math', 'JSON', 'console', 'window', 'document', 'process', 'Buffer'
+      ]);
+
+      let esc = '';
+      const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^`\\])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\/(?![/*])(?:\\.|[^/\\])+\/[gimsuy]*|\b0x[0-9a-fA-F]+\b|\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b|\b[A-Za-z_$][\w$]*\b|=>|===|!==|==|!=|<=|>=|\+\+|--|&&|\|\||\?\?|\?\.|\.\.\.|[+\-*/%&|^~!=<>?:;.,{}()[\]]|\s+)/g;
+      
+      let m;
+      while ((m = re.exec(code)) !== null) {
+        const t = m[0];
+        if (/^\s+$/.test(t)) {
+          esc += t;
+          continue;
+        }
+        if (t.startsWith('//') || t.startsWith('/*')) {
+          esc += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
+          continue;
+        }
+        if (t.startsWith('`')) {
+          let inner = escapeHtml(t);
+          inner = inner.replace(/(\$\{)([\s\S]*?)(\})/g, (m, o, e, c) => {
+            return tokSpan('tok-punct', 'tok-punct', '#f472b6', o) + highlightCodeSyntax(e, 'javascript') + tokSpan('tok-punct', 'tok-punct', '#f472b6', c);
+          });
+          esc += tokSpan('tok-str', 'tok-str', '#34d399', inner);
+          continue;
+        }
+        if (t.startsWith('"') || t.startsWith("'") || (t.startsWith('/') && t.length > 1 && !t.startsWith('//') && !t.startsWith('/*'))) {
+          esc += tokSpan('tok-str', 'tok-str', '#34d399', escapeHtml(t));
+          continue;
+        }
+        if (/^(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)$/.test(t)) {
+          esc += tokSpan('tok-num', 'tok-num', '#fb923c', escapeHtml(t));
+          continue;
+        }
+        if (JS_KEYWORDS.has(t)) {
+          esc += tokSpan('tok-kwd', 'tok-kwd', '#c084fc', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (JS_TYPES.has(t)) {
+          esc += tokSpan('tok-typ', 'tok-typ', '#38bdf8', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        const lookahead = code.substring(re.lastIndex).match(/^\s*\(/);
+        if (lookahead && /^[A-Za-z_$][\w$]*$/.test(t)) {
+          esc += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (/^[=><!+\-*/%&|^~?:.]+$/.test(t)) {
+          esc += tokSpan('tok-op', 'tok-op', '#f472b6', escapeHtml(t));
+          continue;
+        }
+        if (/^[;.,{}()[\]]$/.test(t)) {
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', escapeHtml(t));
+          continue;
+        }
+        esc += escapeHtml(t);
+      }
+      return esc;
+    }
+
+    // -------------------------------------------------------------
+    // D. Java
+    // -------------------------------------------------------------
+    if (l === 'java') {
+      const JAVA_KEYWORDS = new Set([
+        'abstract', 'assert', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default',
+        'do', 'else', 'enum', 'extends', 'final', 'finally', 'for', 'goto', 'if', 'implements',
+        'import', 'instanceof', 'interface', 'native', 'new', 'package', 'private', 'protected',
+        'public', 'return', 'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws',
+        'transient', 'try', 'void', 'volatile', 'while', 'record', 'sealed', 'permits', 'var', 'yield'
+      ]);
+      const JAVA_TYPES = new Set([
+        'boolean', 'byte', 'char', 'double', 'float', 'int', 'long', 'short',
+        'String', 'Integer', 'Double', 'Float', 'Boolean', 'Long', 'Byte', 'Short', 'Character',
+        'Object', 'System', 'Scanner', 'Math', 'List', 'ArrayList', 'Map', 'HashMap', 'Set',
+        'HashSet', 'Collections', 'Arrays', 'Exception', 'Throwable', 'Thread', 'Runnable',
+        'StringBuilder', 'StringBuffer', 'PrintStream', 'true', 'false', 'null'
+      ]);
+
+      let esc = '';
+      const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|@[A-Za-z_]\w*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b0x[0-9a-fA-F]+[lL]?\b|\b\d+(?:\.\d+)?[fFdDlL]?\b|\b[A-Za-z_]\w*\b|[=><!+\-*/%&|^~?:]+|[;.,{}()[\]]|\s+)/g;
+      
+      let m;
+      while ((m = re.exec(code)) !== null) {
+        const t = m[0];
+        if (/^\s+$/.test(t)) {
+          esc += t;
+          continue;
+        }
+        if (t.startsWith('//') || t.startsWith('/*')) {
+          esc += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
+          continue;
+        }
+        if (t.startsWith('@')) {
+          esc += tokSpan('tok-dec', 'tok-dec', '#e879f9', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (t.startsWith('"') || t.startsWith("'")) {
+          esc += tokSpan('tok-str', 'tok-str', '#34d399', escapeHtml(t));
+          continue;
+        }
+        if (/^(?:0x[0-9a-fA-F]+[lL]?|\d+(?:\.\d+)?[fFdDlL]?)$/.test(t)) {
+          esc += tokSpan('tok-num', 'tok-num', '#fb923c', escapeHtml(t));
+          continue;
+        }
+        if (JAVA_KEYWORDS.has(t)) {
+          esc += tokSpan('tok-kwd', 'tok-kwd', '#c084fc', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (JAVA_TYPES.has(t)) {
+          esc += tokSpan('tok-typ', 'tok-typ', '#38bdf8', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        const lookahead = code.substring(re.lastIndex).match(/^\s*\(/);
+        if (lookahead && /^[A-Za-z_]\w*$/.test(t)) {
+          esc += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (/^[=><!+\-*/%&|^~?:]+$/.test(t)) {
+          esc += tokSpan('tok-op', 'tok-op', '#f472b6', escapeHtml(t));
+          continue;
+        }
+        if (/^[;.,{}()[\]]$/.test(t)) {
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', escapeHtml(t));
+          continue;
+        }
+        esc += escapeHtml(t);
+      }
+      return esc;
+    }
+
+    // -------------------------------------------------------------
+    // E. C & C++
+    // -------------------------------------------------------------
+    if (l === 'c' || l === 'cpp') {
+      const isCpp = (l === 'cpp');
+      const C_KEYWORDS = new Set([
+        'struct', 'union', 'enum', 'typedef', 'sizeof', 'return', 'if', 'else', 'for', 'while', 'do',
+        'switch', 'case', 'break', 'continue', 'default', 'goto', 'extern', 'static', 'auto',
+        'register', 'const', 'volatile', 'inline', 'restrict'
+      ]);
+      const CPP_KEYWORDS = new Set([
+        ...C_KEYWORDS,
+        'class', 'namespace', 'using', 'template', 'typename', 'public', 'private', 'protected',
+        'virtual', 'override', 'final', 'friend', 'constexpr', 'consteval', 'constinit', 'decltype',
+        'auto', 'nullptr', 'new', 'delete', 'try', 'catch', 'throw', 'operator', 'explicit',
+        'mutable', 'noexcept', 'static_cast', 'dynamic_cast', 'reinterpret_cast', 'const_cast',
+        'concept', 'requires', 'co_await', 'co_yield', 'co_return'
+      ]);
+      const C_TYPES = new Set([
+        'int', 'float', 'double', 'char', 'void', 'short', 'long', 'signed', 'unsigned', 'size_t',
+        'ssize_t', 'uint8_t', 'uint16_t', 'uint32_t', 'uint64_t', 'int8_t', 'int16_t', 'int32_t',
+        'int64_t', 'bool', 'FILE', 'NULL', 'ptrdiff_t', 'true', 'false'
+      ]);
+      const CPP_TYPES = new Set([
+        ...C_TYPES,
+        'string', 'vector', 'map', 'unordered_map', 'set', 'unordered_set', 'pair', 'tuple',
+        'unique_ptr', 'shared_ptr', 'array', 'queue', 'stack', 'priority_queue', 'deque', 'list',
+        'cout', 'cin', 'endl', 'cerr', 'std'
+      ]);
+      const C_BUILTIN_FNS = new Set([
+        'printf', 'scanf', 'malloc', 'calloc', 'realloc', 'free', 'exit', 'memcpy', 'memset',
+        'strlen', 'strcpy', 'strcmp', 'strncpy', 'strncmp', 'strcat', 'fopen', 'fclose', 'fgets',
+        'fputs', 'fprintf', 'fscanf', 'getchar', 'putchar', 'puts', 'gets', 'sqrt', 'pow', 'abs'
+      ]);
+
+      const kwSet = isCpp ? CPP_KEYWORDS : C_KEYWORDS;
+      const typSet = isCpp ? CPP_TYPES : C_TYPES;
+      
+      let esc = '';
+      const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#(?:include\s*<[^>]+>|include\s*"[^"]+"|define\b[^\n]*|ifdef\b[^\n]*|ifndef\b[^\n]*|endif\b[^\n]*|if\b[^\n]*|elif\b[^\n]*|else\b[^\n]*|pragma\b[^\n]*|undef\b[^\n]*|[a-zA-Z_]\w*)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b0x[0-9a-fA-F]+[uUlL]*\b|\b\d+(?:\.\d+)?[fFlLuU]*\b|\b[A-Za-z_]\w*\b|::|->|<<|>>|<=|>=|==|!=|\+\+|--|&&|\|\||[=><!+\-*/%&|^~?:]+|[;.,{}()[\]]|\s+)/g;
+      
+      let m;
+      while ((m = re.exec(code)) !== null) {
+        const t = m[0];
+        if (/^\s+$/.test(t)) {
+          esc += t;
+          continue;
+        }
+        if (t.startsWith('//') || t.startsWith('/*')) {
+          esc += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
+          continue;
+        }
+        if (t.startsWith('#')) {
+          esc += tokSpan('tok-prep', 'tok-prep', '#f472b6', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (t.startsWith('"') || t.startsWith("'")) {
+          esc += tokSpan('tok-str', 'tok-str', '#34d399', escapeHtml(t));
+          continue;
+        }
+        if (/^(?:0x[0-9a-fA-F]+[uUlL]*|\d+(?:\.\d+)?[fFlLuU]*)$/.test(t)) {
+          esc += tokSpan('tok-num', 'tok-num', '#fb923c', escapeHtml(t));
+          continue;
+        }
+        if (kwSet.has(t)) {
+          esc += tokSpan('tok-kwd', 'tok-kwd', '#c084fc', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (typSet.has(t)) {
+          esc += tokSpan('tok-typ', 'tok-typ', '#38bdf8', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (C_BUILTIN_FNS.has(t)) {
+          esc += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        const lookahead = code.substring(re.lastIndex).match(/^\s*\(/);
+        if (lookahead && /^[A-Za-z_]\w*$/.test(t)) {
+          esc += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (t === '::' || t === '->' || t === '<<' || t === '>>' || /^[=><!+\-*/%&|^~?:]+$/.test(t)) {
+          esc += tokSpan('tok-op', 'tok-op', '#f472b6', escapeHtml(t));
+          continue;
+        }
+        if (/^[;.,{}()[\]]$/.test(t)) {
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', escapeHtml(t));
+          continue;
+        }
+        esc += escapeHtml(t);
+      }
+      return esc;
+    }
+
+    // -------------------------------------------------------------
+    // F. Python
+    // -------------------------------------------------------------
+    if (l === 'python') {
+      const PY_KEYWORDS = new Set([
+        'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
+        'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in',
+        'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while',
+        'with', 'yield', 'match', 'case'
+      ]);
+      const PY_LITERALS = new Set(['True', 'False', 'None', 'self', 'cls']);
+      const PY_BUILTINS = new Set([
+        'int', 'float', 'str', 'bool', 'list', 'dict', 'set', 'tuple', 'bytes', 'object',
+        'print', 'len', 'range', 'open', 'input', 'type', 'isinstance', 'enumerate', 'zip',
+        'map', 'filter', 'sorted', 'min', 'max', 'sum', 'abs', 'round', 'any', 'all', 'id',
+        'super', 'property', 'staticmethod', 'classmethod', 'dir', 'hasattr', 'getattr', 'setattr'
+      ]);
+
+      let esc = '';
+      const re = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|[frbFRB]?"(?:\\.|[^"\\])*"|[frbFRB]?'(?:\\.|[^'\\])*'|@[A-Za-z_][\w.]*|\b0x[0-9a-fA-F]+\b|\b0b[01]+\b|\b0o[0-7]+\b|\b\d+(?:\.\d+)?[jJ]?\b|\b[A-Za-z_]\w*\b|->|==|!=|<=|>=|\+=|-=|\*=|(?:\/{1,2}=)|%|\*{1,2}|\/{1,2}|[=><+\-*&|^~:]+|[;.,{}()[\]]|\s+)/g;
+      
+      let m;
+      while ((m = re.exec(code)) !== null) {
+        const t = m[0];
+        if (/^\s+$/.test(t)) {
+          esc += t;
+          continue;
+        }
+        if (t.startsWith('#')) {
+          esc += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
+          continue;
+        }
+        if (t.startsWith('"""') || t.startsWith("'''")) {
+          esc += tokSpan('tok-str', 'tok-str', '#34d399', escapeHtml(t), ' font-style:italic;');
+          continue;
+        }
+        if (t.startsWith('"') || t.startsWith("'") || /^[frbFRB]['"]/.test(t)) {
+          esc += tokSpan('tok-str', 'tok-str', '#34d399', escapeHtml(t));
+          continue;
+        }
+        if (t.startsWith('@')) {
+          esc += tokSpan('tok-dec', 'tok-dec', '#e879f9', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (/^(?:0x[0-9a-fA-F]+|0b[01]+|0o[0-7]+|\d+(?:\.\d+)?[jJ]?)$/.test(t)) {
+          esc += tokSpan('tok-num', 'tok-num', '#fb923c', escapeHtml(t));
+          continue;
+        }
+        if (PY_KEYWORDS.has(t)) {
+          esc += tokSpan('tok-kwd', 'tok-kwd', '#c084fc', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (PY_LITERALS.has(t)) {
+          esc += tokSpan('tok-typ', 'tok-typ', '#38bdf8', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (PY_BUILTINS.has(t)) {
+          esc += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        const lookahead = code.substring(re.lastIndex).match(/^\s*\(/);
+        if (lookahead && /^[A-Za-z_]\w*$/.test(t)) {
+          esc += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t), ' font-weight:600;');
+          continue;
+        }
+        if (t === '->' || /^[=><+\-*&|^~:%/]+$/.test(t)) {
+          esc += tokSpan('tok-op', 'tok-op', '#f472b6', escapeHtml(t));
+          continue;
+        }
+        if (/^[;.,{}()[\]]$/.test(t)) {
+          esc += tokSpan('tok-punct', 'tok-punct', '#cbd5e1', escapeHtml(t));
+          continue;
+        }
+        esc += escapeHtml(t);
+      }
+      return esc;
+    }
+
+    // -------------------------------------------------------------
+    // G. Universal Fallback (SQL, Go, Rust, PHP, C#, Dart, Ruby, Swift, Bash, etc.)
+    // -------------------------------------------------------------
     const conf = LANG_KEYWORD_CONFIGS[l] || LANG_KEYWORD_CONFIGS[l === 'javascript' ? 'node' : 'cpp'] || LANG_KEYWORD_CONFIGS['cpp'];
     const keywords = conf.keywords || new Set();
     const types = conf.types || new Set();
 
-    // Single-pass atomic token regex
     const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#[^\n]*|--[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`[\s\S]*?`|\b0x[0-9a-fA-F]+\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b|[^\s\w]+|\s+)/g;
 
     let out = '';
@@ -698,34 +1133,39 @@
       if (/^\s+$/.test(t)) {
         out += t;
       } else if (t.startsWith('//') || t.startsWith('/*')) {
-        out += `<span style="color:#64748b; font-style:italic;">${escapeHtml(t)}</span>`;
+        out += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
       } else if (t.startsWith('--') && (l === 'sql')) {
-        out += `<span style="color:#64748b; font-style:italic;">${escapeHtml(t)}</span>`;
+        out += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
       } else if (t.startsWith('#')) {
-        if (l === 'python' || l === 'ruby' || l === 'bash') {
-          out += `<span style="color:#64748b; font-style:italic;">${escapeHtml(t)}</span>`;
+        if (l === 'ruby' || l === 'bash') {
+          out += tokSpan('tok-com', 'tok-com', '#94a3b8', escapeHtml(t), ' font-style:italic;');
         } else {
-          // Preprocessor directive for C/C++/C# e.g. #include, #define
-          out += `<span style="color:#f472b6; font-weight:600;">${escapeHtml(t)}</span>`;
+          out += tokSpan('tok-prep', 'tok-prep', '#f472b6', escapeHtml(t), ' font-weight:600;');
         }
       } else if (t.startsWith('"') || t.startsWith("'") || t.startsWith('`')) {
-        out += `<span style="color:#34d399;">${escapeHtml(t)}</span>`;
+        out += tokSpan('tok-str', 'tok-str', '#34d399', escapeHtml(t));
       } else if (/^(?:0x[0-9a-fA-F]+|\d+(?:\.\d+)?)$/.test(t)) {
-        out += `<span style="color:#fb923c;">${t}</span>`;
+        out += tokSpan('tok-num', 'tok-num', '#fb923c', escapeHtml(t));
       } else {
         const lower = t.toLowerCase();
         if (types.has(t)) {
-          out += `<span style="color:#38bdf8; font-weight:600;">${escapeHtml(t)}</span>`;
+          out += tokSpan('tok-typ', 'tok-typ', '#38bdf8', escapeHtml(t), ' font-weight:600;');
         } else if (keywords.has(t) || (l === 'sql' && keywords.has(lower))) {
-          out += `<span style="color:#c084fc; font-weight:600;">${escapeHtml(t)}</span>`;
+          out += tokSpan('tok-kwd', 'tok-kwd', '#c084fc', escapeHtml(t), ' font-weight:600;');
         } else {
-          out += escapeHtml(t);
+          const lookahead = code.substring(re.lastIndex).match(/^\s*\(/);
+          if (lookahead && /^[A-Za-z_]\w*$/.test(t)) {
+            out += tokSpan('tok-fn', 'tok-fn', '#60a5fa', escapeHtml(t), ' font-weight:600;');
+          } else {
+            out += escapeHtml(t);
+          }
         }
       }
     }
     return out;
   }
   window.highlightCodeSyntax = highlightCodeSyntax;
+
 
   // Smart Content Formatter: Transforms raw contributor text into advanced academic HTML with linked code containers
   window.formatSolutionContent = function(rawContent, contextId) {
@@ -739,14 +1179,8 @@
       const langMatch = (attrs || '').match(/data-lang=["']([^"']+)["']/i);
 
       let lang = (langMatch ? langMatch[1] : (extraClasses || '')).toLowerCase().trim();
-      if (!lang) {
-        if (codeBody.includes('<html') || codeBody.includes('<div') || codeBody.includes('<button') || codeBody.includes('<p') || codeBody.includes('<!DOCTYPE')) lang = 'html';
-        else if (codeBody.includes('{') && codeBody.includes(':') && codeBody.includes(';')) lang = 'css';
-        else if (codeBody.includes('def ') || codeBody.includes('import ') || codeBody.includes('print(')) lang = 'python';
-        else if (codeBody.includes('#include') || codeBody.includes('cout <<') || codeBody.includes('std::')) lang = 'cpp';
-        else if (codeBody.includes('public class ') || codeBody.includes('System.out.')) lang = 'java';
-        else if (codeBody.includes('SELECT ') || codeBody.includes('CREATE TABLE ')) lang = 'sql';
-        else lang = 'javascript';
+      if (!lang || lang === 'code' || lang === 'text') {
+        lang = detectCodeLanguage(codeBody);
       }
 
       const meta = getLanguageMeta(lang);
@@ -778,12 +1212,15 @@
       return renderCodeBlock(attrs, extraClasses, innerContent, containerIndex);
     });
 
-    // 2. Transform standard <pre><code class="language-xyz"> blocks
-    const preCodeRegex = /<pre><code(?:\s+class=["'](?:language-)?([a-zA-Z0-9_+-]+)["'])?>([\s\S]*?)<\/code><\/pre>/gi;
+    // 2. Transform standard <pre><code class="language-xyz"> and bare <pre><code> blocks with auto-detection
+    const preCodeRegex = /<pre(?:\s+class=["'](?:language-)?([a-zA-Z0-9_+-]+)["'])?>\s*<code(?:\s+class=["'](?:language-)?([a-zA-Z0-9_+-]+)["'])?>([\s\S]*?)<\/code>\s*<\/pre>/gi;
     let preIndex = 0;
-    content = content.replace(preCodeRegex, function(match, langClass, codeBody) {
+    content = content.replace(preCodeRegex, function(match, preLang, codeLang, codeBody) {
       preIndex++;
-      const lang = (langClass || '').toLowerCase().trim() || 'code';
+      let lang = (codeLang || preLang || '').toLowerCase().trim();
+      if (!lang || lang === 'code' || lang === 'text') {
+        lang = detectCodeLanguage(codeBody);
+      }
       const meta = getLanguageMeta(lang);
       const groupId = contextId || 'code';
       const codeId = `code-${meta.canonical}-${groupId}${preIndex > 1 ? '_' + preIndex : ''}`;
@@ -879,7 +1316,9 @@
     const existingGroupMatches = [...val.matchAll(/data-code-group=["']([^"']+)["']/g)];
     if (existingGroupMatches.length > 0) {
       const candidateGroup = existingGroupMatches[existingGroupMatches.length - 1][1];
-      const targetType = (type === 'javascript' || type === 'js') ? 'js' : type;
+      const targetType = (type === 'javascript' || type === 'js') ? 'js' :
+                         (type === 'python' || type === 'py') ? 'py' :
+                         (type === 'c++' || type === 'cpp') ? 'cpp' : type;
       const hasThisType = val.includes(`id="code-${targetType}-${candidateGroup}"`);
       if (!hasThisType && type !== 'all') {
         uniqueId = candidateGroup;
@@ -889,7 +1328,9 @@
     if (!uniqueId) {
       const storedGroup = localStorage.getItem('dpg_active_sandbox_group_' + contextId);
       if (storedGroup && type !== 'all') {
-        const targetType = (type === 'javascript' || type === 'js') ? 'js' : type;
+        const targetType = (type === 'javascript' || type === 'js') ? 'js' :
+                         (type === 'python' || type === 'py') ? 'py' :
+                         (type === 'c++' || type === 'cpp') ? 'cpp' : type;
         if (!val.includes(`id="code-${targetType}-${storedGroup}"`)) {
           uniqueId = storedGroup;
         }
@@ -911,7 +1352,9 @@
         existingData['css'] = { id: `code-css-${uniqueId}`, groupId: uniqueId, lang: 'css' };
         existingData['js'] = { id: `code-js-${uniqueId}`, groupId: uniqueId, lang: 'javascript' };
       } else {
-        const normalizedType = (type === 'javascript' || type === 'js') ? 'js' : type;
+        const normalizedType = (type === 'javascript' || type === 'js') ? 'js' :
+                               (type === 'python' || type === 'py') ? 'py' :
+                               (type === 'c++' || type === 'cpp') ? 'cpp' : type;
         existingData[normalizedType] = {
           id: `code-${normalizedType}-${uniqueId}`,
           groupId: uniqueId,
@@ -929,6 +1372,14 @@
       snippet = `\n<div class="code-container" id="code-css-${uniqueId}" data-code-group="${uniqueId}" data-lang="css">\n<pre><code>/* CSS Code Container */\n.demo-box {\n  padding: 1.5rem;\n  background: #f8fafc;\n  border: 2px solid #38bdf8;\n  border-radius: 8px;\n}\n#btnAction {\n  background: #38bdf8;\n  color: #0f172a;\n  font-weight: bold;\n  border: none;\n  padding: 8px 16px;\n  border-radius: 6px;\n  cursor: pointer;\n}</code></pre>\n</div>\n`;
     } else if (type === 'js' || type === 'javascript') {
       snippet = `\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>// JavaScript Code Container\nconst btn_${uniqueId} = document.getElementById('runBtn_${uniqueId}') || document.getElementById('btnAction');\nif (btn_${uniqueId}) {\n  btn_${uniqueId}.addEventListener('click', function() {\n    console.log("Action button clicked in sandbox!");\n    const out_${uniqueId} = document.getElementById('result_${uniqueId}') || document.getElementById('outputMsg');\n    if (out_${uniqueId}) out_${uniqueId}.textContent = "Ran successfully at " + new Date().toLocaleTimeString();\n  });\n}</code></pre>\n</div>\n`;
+    } else if (type === 'python' || type === 'py') {
+      snippet = `\n<div class="code-container" id="code-py-${uniqueId}" data-code-group="${uniqueId}" data-lang="python">\n<pre><code># Python Solution Code Container\ndef solution():\n    """\n    Educational Academic Implementation\n    """\n    print("Executing Python solution...")\n    result = [x**2 for x in range(1, 6)]\n    print(f"Computed squares: {result}")\n    return result\n\nif __name__ == "__main__":\n    solution()\n</code></pre>\n</div>\n`;
+    } else if (type === 'java') {
+      snippet = `\n<div class="code-container" id="code-java-${uniqueId}" data-code-group="${uniqueId}" data-lang="java">\n<pre><code>// Java Solution Code Container\nimport java.util.*;\n\npublic class Solution {\n    public static void main(String[] args) {\n        System.out.println("Executing Java Solution...");\n        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5);\n        for (int num : list) {\n            System.out.println("Processing item: " + num);\n        }\n    }\n}\n</code></pre>\n</div>\n`;
+    } else if (type === 'cpp' || type === 'c++') {
+      snippet = `\n<div class="code-container" id="code-cpp-${uniqueId}" data-code-group="${uniqueId}" data-lang="cpp">\n<pre><code>// C++ Solution Code Container\n#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    cout << "Executing C++ Solution..." << endl;\n    vector<int> numbers = {10, 20, 30, 40, 50};\n    for (int n : numbers) {\n        cout << "Value: " << n << endl;\n    }\n    return 0;\n}\n</code></pre>\n</div>\n`;
+    } else if (type === 'c') {
+      snippet = `\n<div class="code-container" id="code-c-${uniqueId}" data-code-group="${uniqueId}" data-lang="c">\n<pre><code>/* C Language Solution Code Container */\n#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    printf("Executing C Solution...\\n");\n    int arr[] = {1, 2, 3, 4, 5};\n    int n = sizeof(arr) / sizeof(arr[0]);\n    for (int i = 0; i < n; i++) {\n        printf("Index %d -> %d\\n", i, arr[i]);\n    }\n    return 0;\n}\n</code></pre>\n</div>\n`;
     } else if (type === 'all') {
       // Complete linked HTML + CSS + JS package
       snippet = `\n<!-- Linked Code Sandbox Package (Group: ${uniqueId}) -->\n<div class="code-container" id="code-html-${uniqueId}" data-code-group="${uniqueId}" data-lang="html">\n<pre><code><div class="demo-card">\n  <h2>Interactive Academic Component</h2>\n  <button id="runBtn_${uniqueId}">Execute Component</button>\n  <div id="result_${uniqueId}" style="margin-top:10px; font-weight:bold;">Output awaits trigger...</div>\n</div></code></pre>\n</div>\n\n<div class="code-container" id="code-css-${uniqueId}" data-code-group="${uniqueId}" data-lang="css">\n<pre><code>.demo-card {\n  padding: 1.25rem;\n  background: #ffffff;\n  border: 2px solid #10b981;\n  border-radius: 10px;\n  color: #1e293b;\n}\n#runBtn_${uniqueId} {\n  background: #10b981;\n  color: white;\n  border: none;\n  padding: 8px 18px;\n  border-radius: 6px;\n  font-weight: 600;\n  cursor: pointer;\n}</code></pre>\n</div>\n\n<div class="code-container" id="code-js-${uniqueId}" data-code-group="${uniqueId}" data-lang="javascript">\n<pre><code>const runBtn_${uniqueId} = document.getElementById('runBtn_${uniqueId}');\nif (runBtn_${uniqueId}) {\n  runBtn_${uniqueId}.addEventListener('click', function() {\n    console.log("Component executed with group ID: ${uniqueId}");\n    const res_${uniqueId} = document.getElementById('result_${uniqueId}');\n    if (res_${uniqueId}) res_${uniqueId}.textContent = "Live script output updated at " + new Date().toLocaleTimeString();\n  });\n}</code></pre>\n</div>\n`;

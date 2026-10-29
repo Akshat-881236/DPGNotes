@@ -1975,5 +1975,186 @@ html[data-theme="light"] .option-card.selected .option-letter {
   color: #ffffff !important;
 }
 
+/* ============================================================================
+   UNIVERSAL CODE SYNTAX HIGHLIGHTING ENGINE - MULTI-THEME COMPLIANCE
+   Strict color contracts across Default Dark, Light, Ocean, Sunset, Forest, Sepia
+   ============================================================================ */
+:root {
+  --tok-kwd: #c084fc;
+  --tok-typ: #38bdf8;
+  --tok-str: #34d399;
+  --tok-num: #fb923c;
+  --tok-com: #94a3b8;
+  --tok-prep: #f472b6;
+  --tok-fn: #60a5fa;
+  --tok-dec: #e879f9;
+  --tok-tag: #f87171;
+  --tok-attr: #38bdf8;
+  --tok-css-sel: #f472b6;
+  --tok-css-prop: #38bdf8;
+  --tok-css-val: #34d399;
+  --tok-css-unit: #fb923c;
+  --tok-punct: #cbd5e1;
+  --tok-op: #f472b6;
+}
 
+/* Light Theme: WCAG AAA high-contrast syntax tokens */
+html[data-theme="light"],
+body[data-theme="light"],
+body.theme-light {
+  --tok-kwd: #7c3aed;
+  --tok-typ: #0369a1;
+  --tok-str: #047857;
+  --tok-num: #c2410c;
+  --tok-com: #64748b;
+  --tok-prep: #be185d;
+  --tok-fn: #2563eb;
+  --tok-dec: #a21caf;
+  --tok-tag: #dc2626;
+  --tok-attr: #0284c7;
+  --tok-css-sel: #b91c1c;
+  --tok-css-prop: #0369a1;
+  --tok-css-val: #047857;
+  --tok-css-unit: #c2410c;
+  --tok-punct: #475569;
+  --tok-op: #9333ea;
+}
 
+/* Ocean / Blue Theme: vibrant marine palette */
+html[data-theme="ocean"],
+body[data-theme="ocean"],
+body.theme-ocean,
+body.theme-blue {
+  --tok-kwd: #a78bfa;
+  --tok-typ: #38bdf8;
+  --tok-str: #4ade80;
+  --tok-num: #fdba74;
+  --tok-com: #7dd3fc;
+  --tok-prep: #f472b6;
+  --tok-fn: #67e8f9;
+  --tok-dec: #c084fc;
+  --tok-tag: #f87171;
+  --tok-attr: #38bdf8;
+  --tok-css-sel: #67e8f9;
+  --tok-css-prop: #38bdf8;
+  --tok-css-val: #4ade80;
+  --tok-css-unit: #fdba74;
+  --tok-punct: #93c5fd;
+  --tok-op: #f472b6;
+}
+
+/* Sunset Theme: warm dusk palette */
+html[data-theme="sunset"],
+body[data-theme="sunset"],
+body.theme-sunset {
+  --tok-kwd: #f472b6;
+  --tok-typ: #fb923c;
+  --tok-str: #34d399;
+  --tok-num: #facc15;
+  --tok-com: #fda4af;
+  --tok-prep: #c084fc;
+  --tok-fn: #fb7185;
+  --tok-dec: #f43f5e;
+  --tok-tag: #fb923c;
+  --tok-attr: #f472b6;
+  --tok-css-sel: #fb7185;
+  --tok-css-prop: #f472b6;
+  --tok-css-val: #34d399;
+  --tok-css-unit: #facc15;
+  --tok-punct: #fbcfe8;
+  --tok-op: #fb923c;
+}
+
+/* Forest Theme: natural emerald palette */
+html[data-theme="forest"],
+body[data-theme="forest"],
+body.theme-forest {
+  --tok-kwd: #a7f3d0;
+  --tok-typ: #6ee7b7;
+  --tok-str: #fde047;
+  --tok-num: #fb923c;
+  --tok-com: #6ee7b7;
+  --tok-prep: #f472b6;
+  --tok-fn: #34d399;
+  --tok-dec: #c084fc;
+  --tok-tag: #f87171;
+  --tok-attr: #6ee7b7;
+  --tok-css-sel: #34d399;
+  --tok-css-prop: #6ee7b7;
+  --tok-css-val: #fde047;
+  --tok-css-unit: #fb923c;
+  --tok-punct: #a7f3d0;
+  --tok-op: #f472b6;
+}
+
+/* Sepia Theme: warm academic paper palette */
+html[data-theme="sepia"],
+body[data-theme="sepia"],
+body.theme-sepia {
+  --tok-kwd: #78350f;
+  --tok-typ: #0369a1;
+  --tok-str: #14532d;
+  --tok-num: #9a3412;
+  --tok-com: #78716c;
+  --tok-prep: #831843;
+  --tok-fn: #1d4ed8;
+  --tok-dec: #701a75;
+  --tok-tag: #991b1b;
+  --tok-attr: #0369a1;
+  --tok-css-sel: #991b1b;
+  --tok-css-prop: #0369a1;
+  --tok-css-val: #14532d;
+  --tok-css-unit: #9a3412;
+  --tok-punct: #57534e;
+  --tok-op: #78350f;
+}
+
+/* Direct Token Class Selectors */
+.tok-kwd { color: var(--tok-kwd, #c084fc) !important; font-weight: 600; }
+.tok-typ { color: var(--tok-typ, #38bdf8) !important; font-weight: 600; }
+.tok-str { color: var(--tok-str, #34d399) !important; }
+.tok-num { color: var(--tok-num, #fb923c) !important; }
+.tok-com { color: var(--tok-com, #94a3b8) !important; font-style: italic; }
+.tok-prep { color: var(--tok-prep, #f472b6) !important; font-weight: 600; }
+.tok-fn { color: var(--tok-fn, #60a5fa) !important; font-weight: 600; }
+.tok-dec { color: var(--tok-dec, #e879f9) !important; font-weight: 600; }
+.tok-tag { color: var(--tok-tag, #f87171) !important; font-weight: 600; }
+.tok-attr { color: var(--tok-attr, #38bdf8) !important; }
+.tok-css-sel { color: var(--tok-css-sel, #f472b6) !important; font-weight: 600; }
+.tok-css-prop { color: var(--tok-css-prop, #38bdf8) !important; }
+.tok-css-val { color: var(--tok-css-val, #34d399) !important; }
+.tok-css-unit { color: var(--tok-css-unit, #fb923c) !important; font-weight: 600; }
+.tok-punct { color: var(--tok-punct, #cbd5e1) !important; }
+.tok-op { color: var(--tok-op, #f472b6) !important; }
+
+/* Legacy Inline Style Overrides in Light & Sepia Themes */
+html[data-theme="light"] .sol-code-block-body span[style*="color:#38bdf8"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #38bdf8"],
+html[data-theme="light"] pre span[style*="color:#38bdf8"],
+html[data-theme="light"] pre span[style*="color: #38bdf8"] {
+  color: #0284c7 !important;
+}
+html[data-theme="light"] .sol-code-block-body span[style*="color:#34d399"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #34d399"],
+html[data-theme="light"] pre span[style*="color:#34d399"],
+html[data-theme="light"] pre span[style*="color: #34d399"] {
+  color: #047857 !important;
+}
+html[data-theme="light"] .sol-code-block-body span[style*="color:#facc15"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #facc15"],
+html[data-theme="light"] pre span[style*="color:#facc15"],
+html[data-theme="light"] pre span[style*="color: #facc15"] {
+  color: #b45309 !important;
+}
+html[data-theme="light"] .sol-code-block-body span[style*="color:#c084fc"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #c084fc"],
+html[data-theme="light"] pre span[style*="color:#c084fc"],
+html[data-theme="light"] pre span[style*="color: #c084fc"] {
+  color: #7c3aed !important;
+}
+html[data-theme="light"] .sol-code-block-body span[style*="color:#fb923c"],
+html[data-theme="light"] .sol-code-block-body span[style*="color: #fb923c"],
+html[data-theme="light"] pre span[style*="color:#fb923c"],
+html[data-theme="light"] pre span[style*="color: #fb923c"] {
+  color: #c2410c !important;
+}
