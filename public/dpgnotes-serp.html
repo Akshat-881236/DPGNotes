@@ -3168,24 +3168,7 @@
           academicVideos = predefined.map(p => ({ ...p, isSponsored: false, views: 0, likes: [], shares: 0 }));
         }
 
-        // Intelligent Relaxed Fallback: If 0 direct token hits, surface relevant related quizzes and coursework
-      window.__isRelaxedFallback = false;
-      if (filtered.length === 0 && q) {
-        const qTokens = tokens.filter(t => t.length >= 2);
-        const broad = allDocs.filter(d => {
-          const ft = `${d.title || ''} ${d.description || ''} ${d.discipline || ''} ${d.category || ''} ${(Array.isArray(d.tags) ? d.tags.join(' ') : '')} ${d.subjectName || ''}`.toLowerCase();
-          return qTokens.some(tok => ft.includes(tok.slice(0, 3))) || (d.isQuiz && (ft.includes('computer') || ft.includes('academic') || ft.includes('mock')));
-        });
-        if (broad.length > 0) {
-          filtered = broad;
-          window.__isRelaxedFallback = true;
-        } else {
-          filtered = allDocs.filter(d => Boolean(d.isQuiz) || (d.views && d.views > 20)).slice(0, 15);
-          window.__isRelaxedFallback = true;
-        }
-      }
-
-      // Sort boosted videos to top
+        // Sort boosted videos to top
         academicVideos.sort((a, b) => (b.boosted ? 1 : 0) - (a.boosted ? 1 : 0));
 
         // 2. Fetch video ads from 'user_ads' collection

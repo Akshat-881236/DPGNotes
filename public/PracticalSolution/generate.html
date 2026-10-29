@@ -649,22 +649,40 @@
 
       try {
         const formData = new FormData();
+        formData.append('pdfFile', file);
         formData.append('file', file);
-        formData.append('upload_preset', 'dpgnotes_unsigned');
 
-        const res = await fetch('https://api.cloudinary.com/v1_1/dpgnotes/upload', {
+        let apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined' && window.API_BASE_URL.trim() !== '')
+          ? window.API_BASE_URL.trim()
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com');
+
+        if (apiBase.includes('localhost') && window.location.hostname !== 'localhost') {
+          apiBase = window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com';
+        }
+
+        progressBar.style.width = '50%';
+        progressText.innerHTML = '<span style="color:#38bdf8;"><i class="ri-loader-4-line"></i> Uploading PDF to Cloudinary via server...</span>';
+
+        const res = await fetch(`${apiBase}/api/upload`, {
           method: 'POST',
           body: formData
         });
+
         progressBar.style.width = '85%';
 
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
+
         const data = await res.json();
-        if (data.secure_url) {
+        const uploadedUrl = data.pdfUrl || data.secure_url || data.url;
+
+        if (uploadedUrl) {
           progressBar.style.width = '100%';
           progressText.innerHTML = '<span style="color:#10b981;"><i class="ri-checkbox-circle-fill"></i> Uploaded to Cloudinary successfully</span>';
-          document.getElementById('uploadedPdfUrl').value = data.secure_url;
+          document.getElementById('uploadedPdfUrl').value = uploadedUrl;
         } else {
-          throw new Error(data.error?.message || "Cloudinary upload failed");
+          throw new Error(data.error?.message || data.error || "Cloudinary upload failed");
         }
       } catch (err) {
         console.error("Cloudinary upload error:", err);
