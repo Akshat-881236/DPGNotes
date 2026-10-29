@@ -532,6 +532,66 @@
 
     }
 
+
+    /* Universal Selection Highlighting Contrast */
+    ::selection { background: #4f46e5 !important; color: #ffffff !important; text-shadow: none !important; }
+    ::-moz-selection { background: #4f46e5 !important; color: #ffffff !important; text-shadow: none !important; }
+    html[data-theme="light"] ::selection, body[data-theme="light"] ::selection, body.theme-light ::selection,
+    html[data-theme="light"] *::selection, body[data-theme="light"] *::selection { background: #2563eb !important; color: #ffffff !important; text-shadow: none !important; }
+    html[data-theme="light"] ::-moz-selection, body[data-theme="light"] ::-moz-selection, body.theme-light ::-moz-selection,
+    html[data-theme="light"] *::-moz-selection, body[data-theme="light"] *::-moz-selection { background: #2563eb !important; color: #ffffff !important; text-shadow: none !important; }
+
+    /* Password Modal & Locked Card Specifics */
+    .dpg-pwd-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.82); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:99999; display:none; align-items:center; justify-content:center; padding:1.25rem; box-sizing:border-box; }
+    .dpg-pwd-modal-card { background:#0f172a; border:1.5px solid rgba(99,102,241,0.35); border-radius:20px; padding:2.25rem 2rem; width:100%; max-width:440px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.85); text-align:center; box-sizing:border-box; color:#f8fafc; transition:all 0.25s ease; }
+    .dpg-pwd-icon-wrap { width:60px; height:60px; border-radius:50%; background:rgba(99,102,241,0.15); border:1.5px solid rgba(99,102,241,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem; font-size:1.85rem; color:#818cf8; }
+    .dpg-pwd-modal-title { font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:700; color:#ffffff !important; margin:0 0 0.5rem 0; letter-spacing:-0.015em; line-height:1.3; }
+    .dpg-pwd-modal-desc { color:#94a3b8 !important; font-size:0.9rem; line-height:1.55; margin:0 0 1.25rem 0; font-weight:400; }
+    .dpg-pwd-error-box { background:rgba(239,68,68,0.15); border:1.5px solid rgba(239,68,68,0.35); color:#fca5a5 !important; font-size:0.85rem; padding:10px 14px; border-radius:10px; margin-bottom:1.15rem; text-align:left; display:flex; align-items:center; gap:8px; font-weight:500; }
+    .dpg-pwd-field-group { position:relative; margin-bottom:1.25rem; text-align:left; }
+    .dpg-pwd-label { display:block; font-size:0.82rem; color:#cbd5e1 !important; margin-bottom:7px; font-weight:600; letter-spacing:0.01em; }
+    .dpg-pwd-input-wrap { position:relative; width:100%; }
+    .dpg-pwd-input { width:100%; box-sizing:border-box; background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.18); border-radius:10px; padding:11px 44px 11px 14px; color:#ffffff !important; font-size:0.95rem; font-family:inherit; outline:none; transition:border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+    .dpg-pwd-input::placeholder { color:rgba(255,255,255,0.45); }
+    .dpg-pwd-input:focus { border-color:#6366f1 !important; background:rgba(255,255,255,0.09) !important; box-shadow:0 0 0 3px rgba(99,102,241,0.3) !important; }
+    .dpg-pwd-eye-btn { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.2rem; padding:6px; display:flex; align-items:center; justify-content:center; transition:color 0.2s; border-radius:6px; }
+    .dpg-pwd-eye-btn:hover { color:#ffffff; }
+    .dpg-pwd-btn-row { display:flex; gap:10px; align-items:center; }
+    .dpg-pwd-cancel-btn { flex:1; text-align:center; padding:11px 16px; background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.15); color:#cbd5e1 !important; border-radius:10px; text-decoration:none; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s ease; display:inline-flex; align-items:center; justify-content:center; font-family:inherit; }
+    .dpg-pwd-cancel-btn:hover { background:rgba(255,255,255,0.15); color:#ffffff !important; border-color:rgba(255,255,255,0.28); }
+    .dpg-pwd-unlock-btn { flex:2; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:#ffffff !important; padding:11px 18px; border-radius:10px; font-weight:700; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:7px; box-shadow:0 4px 14px rgba(99,102,241,0.4); transition:all 0.2s ease; font-family:inherit; }
+    .dpg-pwd-unlock-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(99,102,241,0.55); }
+    .dpg-pwd-unlock-btn:active { transform:translateY(0); }
+
+    /* Locked Spinner Card */
+    .dpg-doc-locked-card { background:rgba(15,23,42,0.95); border:1.5px solid rgba(239,68,68,0.35); border-radius:20px; padding:2.25rem 2rem; text-align:center; max-width:440px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6); transition:all 0.25s; }
+    .dpg-doc-locked-icon { font-size:3rem; color:#f87171; display:block; margin-bottom:1rem; }
+    .dpg-doc-locked-title { color:#ffffff !important; font-size:1.3rem; margin-bottom:0.5rem; font-family:'Outfit',sans-serif; font-weight:700; }
+    .dpg-doc-locked-desc { color:#94a3b8 !important; font-size:0.88rem; margin-bottom:1.3rem; line-height:1.5; }
+    .dpg-doc-locked-btn { background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:#ffffff !important; padding:10px 22px; border-radius:10px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:7px; box-shadow:0 4px 14px rgba(99,102,241,0.4); transition:all 0.2s; font-family:inherit; }
+    .dpg-doc-locked-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(99,102,241,0.55); }
+
+    /* Light Theme In-File Overrides */
+    html[data-theme="light"] .dpg-pwd-modal-overlay, body[data-theme="light"] .dpg-pwd-modal-overlay, body.theme-light .dpg-pwd-modal-overlay { background:rgba(15,23,42,0.6) !important; }
+    html[data-theme="light"] .dpg-pwd-modal-card, body[data-theme="light"] .dpg-pwd-modal-card, body.theme-light .dpg-pwd-modal-card { background:#ffffff !important; border:1.5px solid #cbd5e1 !important; box-shadow:0 25px 60px -12px rgba(15,23,42,0.25), 0 0 0 1px rgba(0,0,0,0.04) !important; color:#0f172a !important; }
+    html[data-theme="light"] .dpg-pwd-icon-wrap, body[data-theme="light"] .dpg-pwd-icon-wrap, body.theme-light .dpg-pwd-icon-wrap { background:rgba(67,56,202,0.1) !important; border-color:rgba(67,56,202,0.3) !important; color:#4338ca !important; }
+    html[data-theme="light"] .dpg-pwd-modal-title, body[data-theme="light"] .dpg-pwd-modal-title, body.theme-light .dpg-pwd-modal-title { color:#0f172a !important; }
+    html[data-theme="light"] .dpg-pwd-modal-desc, body[data-theme="light"] .dpg-pwd-modal-desc, body.theme-light .dpg-pwd-modal-desc { color:#334155 !important; }
+    html[data-theme="light"] .dpg-pwd-error-box, body[data-theme="light"] .dpg-pwd-error-box, body.theme-light .dpg-pwd-error-box { background:#fee2e2 !important; border-color:#fca5a5 !important; color:#991b1b !important; }
+    html[data-theme="light"] .dpg-pwd-label, body[data-theme="light"] .dpg-pwd-label, body.theme-light .dpg-pwd-label { color:#0f172a !important; }
+    html[data-theme="light"] .dpg-pwd-input, body[data-theme="light"] .dpg-pwd-input, body.theme-light .dpg-pwd-input { background:#f8fafc !important; border:1.5px solid #cbd5e1 !important; color:#0f172a !important; }
+    html[data-theme="light"] .dpg-pwd-input::placeholder, body[data-theme="light"] .dpg-pwd-input::placeholder, body.theme-light .dpg-pwd-input::placeholder { color:#64748b !important; }
+    html[data-theme="light"] .dpg-pwd-input:focus, body[data-theme="light"] .dpg-pwd-input:focus, body.theme-light .dpg-pwd-input:focus { background:#ffffff !important; border-color:#4338ca !important; color:#0f172a !important; box-shadow:0 0 0 3px rgba(67,56,202,0.18) !important; }
+    html[data-theme="light"] .dpg-pwd-eye-btn, body[data-theme="light"] .dpg-pwd-eye-btn, body.theme-light .dpg-pwd-eye-btn { color:#64748b !important; }
+    html[data-theme="light"] .dpg-pwd-eye-btn:hover, body[data-theme="light"] .dpg-pwd-eye-btn:hover, body.theme-light .dpg-pwd-eye-btn:hover { color:#0f172a !important; }
+    html[data-theme="light"] .dpg-pwd-cancel-btn, body[data-theme="light"] .dpg-pwd-cancel-btn, body.theme-light .dpg-pwd-cancel-btn { background:#f1f5f9 !important; border:1.5px solid #cbd5e1 !important; color:#1e293b !important; }
+    html[data-theme="light"] .dpg-pwd-cancel-btn:hover, body[data-theme="light"] .dpg-pwd-cancel-btn:hover, body.theme-light .dpg-pwd-cancel-btn:hover { background:#e2e8f0 !important; color:#0f172a !important; border-color:#94a3b8 !important; }
+    html[data-theme="light"] .dpg-pwd-unlock-btn, body[data-theme="light"] .dpg-pwd-unlock-btn, body.theme-light .dpg-pwd-unlock-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
+    html[data-theme="light"] .dpg-pwd-unlock-btn:hover, body[data-theme="light"] .dpg-pwd-unlock-btn:hover, body.theme-light .dpg-pwd-unlock-btn:hover { box-shadow:0 6px 20px rgba(67,56,202,0.5) !important; }
+    html[data-theme="light"] .dpg-doc-locked-card, body[data-theme="light"] .dpg-doc-locked-card, body.theme-light .dpg-doc-locked-card { background:#ffffff !important; border:1.5px solid #fca5a5 !important; box-shadow:0 20px 40px rgba(15,23,42,0.12) !important; color:#0f172a !important; }
+    html[data-theme="light"] .dpg-doc-locked-title, body[data-theme="light"] .dpg-doc-locked-title, body.theme-light .dpg-doc-locked-title { color:#0f172a !important; }
+    html[data-theme="light"] .dpg-doc-locked-desc, body[data-theme="light"] .dpg-doc-locked-desc, body.theme-light .dpg-doc-locked-desc { color:#334155 !important; }
+    html[data-theme="light"] .dpg-doc-locked-btn, body[data-theme="light"] .dpg-doc-locked-btn, body.theme-light .dpg-doc-locked-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
   </style>
 
   <script src="/history-monitoring.js" defer></script>
@@ -846,72 +906,41 @@
 
 
 
-<!-- PRIVATE RESOURCE PASSWORD VERIFICATION MODAL -->
-
-<div id="pdfPasswordModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; align-items:center; justify-content:center; padding:1.25rem;">
-
-  <div style="background:#0f172a; border:1px solid rgba(99,102,241,0.35); border-radius:20px; padding:2rem; width:100%; max-width:440px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.85); text-align:center;">
-
-    <div style="width:58px; height:58px; border-radius:50%; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:1.8rem; color:#818cf8;">
-
-      <i class="ri-lock-2-line"></i>
-
-    </div>
-
-    <h3 style="font-family:'Outfit',sans-serif; font-size:1.35rem; color:white; margin:0 0 0.5rem 0;">Password Protected</h3>
-
-    <p style="color:#94a3b8; font-size:0.88rem; line-height:1.5; margin:0 0 1.25rem 0;">This academic document is private. Please enter the access password provided by the contributor to unlock and read this PDF.</p>
-
-    
-
-    <div id="pwdModalError" style="display:none; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-size:0.82rem; padding:8px 12px; border-radius:8px; margin-bottom:1rem; text-align:left;">
-
-      <i class="ri-error-warning-line"></i> <span id="pwdModalErrorText">Incorrect password</span>
-
-    </div>
-
-
-
-    <form id="pdfPasswordForm" onsubmit="handlePdfPasswordVerify(event)">
-
-      <div style="position:relative; margin-bottom:1.25rem; text-align:left;">
-
-        <label style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:6px; font-weight:600;">Access Password</label>
-
-        <div style="position:relative;">
-
-          <input type="password" id="pdfAccessPasswordInput" required placeholder="Enter document password" style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:10px; padding:10px 42px 10px 14px; color:white; font-size:0.95rem; outline:none; transition:border-color 0.2s;">
-
-          <button type="button" onclick="togglePdfPasswordEye()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.15rem; padding:4px;">
-
-            <i class="ri-eye-line" id="pdfEyeIcon"></i>
-
-          </button>
-
-        </div>
-
-      </div>
-
-      <div style="display:flex; gap:10px;">
-
-        <a href="/" style="flex:1; text-align:center; padding:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:10px; text-decoration:none; font-size:0.88rem; font-weight:600;">Cancel</a>
-
-        <button type="submit" id="btnUnlockPdf" style="flex:2; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:10px; border-radius:10px; font-weight:700; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-
-          <i class="ri-lock-unlock-line"></i> Unlock &amp; View
-
-        </button>
-
-      </div>
-
-    </form>
-
-  </div>
-
-</div>
-
-
-
+<!-- PRIVATE RESOURCE PASSWORD VERIFICATION MODAL -->
+<div id="pdfPasswordModal" class="dpg-pwd-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="pwdModalTitle">
+  <div class="dpg-pwd-modal-card">
+    <div class="dpg-pwd-icon-wrap">
+      <i class="ri-lock-2-line"></i>
+    </div>
+    <h3 class="dpg-pwd-modal-title" id="pwdModalTitle">Password Protected</h3>
+    <p class="dpg-pwd-modal-desc" id="pwdModalDesc">This academic document is private. Please enter the access password provided by the contributor to unlock and read this PDF.</p>
+    
+    <div id="pwdModalError" class="dpg-pwd-error-box" style="display:none;" role="alert">
+      <i class="ri-error-warning-line"></i> <span id="pwdModalErrorText">Incorrect password</span>
+    </div>
+
+    <form id="pdfPasswordForm" onsubmit="handlePdfPasswordVerify(event)">
+      <div class="dpg-pwd-field-group">
+        <label class="dpg-pwd-label" for="pdfAccessPasswordInput">Access Password</label>
+        <div class="dpg-pwd-input-wrap">
+          <input type="password" id="pdfAccessPasswordInput" class="dpg-pwd-input" required placeholder="Enter document password" autocomplete="current-password">
+          <button type="button" class="dpg-pwd-eye-btn" onclick="togglePdfPasswordEye()" title="Toggle password visibility" aria-label="Toggle password visibility">
+            <i class="ri-eye-line" id="pdfEyeIcon"></i>
+          </button>
+        </div>
+      </div>
+      <div class="dpg-pwd-btn-row">
+        <button type="button" class="dpg-pwd-cancel-btn" onclick="closePdfPasswordModal()">Cancel</button>
+        <button type="submit" id="btnUnlockPdf" class="dpg-pwd-unlock-btn">
+          <i class="ri-lock-unlock-line"></i> Unlock &amp; View
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
 <script type="module">
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -2804,76 +2833,57 @@ function showAccessBadge(type) {
 
 
 
-function openPdfPasswordModal(docData, onVerified) {
-
-  pendingPasswordDoc = docData;
-
-  pendingPasswordVerifyCallback = onVerified;
-
-  const modal = document.getElementById("pdfPasswordModal");
-
-  const input = document.getElementById("pdfAccessPasswordInput");
-
-  const errBox = document.getElementById("pwdModalError");
-
-  if (errBox) errBox.style.display = "none";
-
-  if (input) {
-
-    input.value = "";
-
-    input.type = "password";
-
-  }
-
-  const eye = document.getElementById("pdfEyeIcon");
-
-  if (eye) eye.className = "ri-eye-line";
-
-
-
-  if (modal) {
-
-    modal.style.display = "flex";
-
-    setTimeout(() => { if (input) input.focus(); }, 100);
-
-  }
-
-
-
-  const spinner = document.getElementById('loadSpinner');
-
-  if (spinner) {
-
-    spinner.innerHTML = `
-
-      <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(239,68,68,0.3); border-radius:18px; padding:2rem; text-align:center; max-width:440px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-
-        <i class="ri-lock-2-line" style="font-size:3rem; color:#f87171; display:block; margin-bottom:1rem;"></i>
-
-        <h3 style="color:white; font-size:1.2rem; margin-bottom:0.5rem; font-family:'Outfit',sans-serif;">Document Locked</h3>
-
-        <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.2rem;">This academic resource is private and protected by an access password.</p>
-
-        <button onclick="document.getElementById('pdfPasswordModal').style.display='flex'" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; color:white; padding:9px 20px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-
-          <i class="ri-key-line"></i> Enter Password to Unlock
-
-        </button>
-
-      </div>
-
-    `;
-
-    spinner.style.display = 'flex';
-
-  }
-
-}
-
-
-
+function openPdfPasswordModal(docData, onVerified) {
+  pendingPasswordDoc = docData;
+  pendingPasswordVerifyCallback = onVerified;
+  const modal = document.getElementById("pdfPasswordModal");
+  const input = document.getElementById("pdfAccessPasswordInput");
+  const errBox = document.getElementById("pwdModalError");
+  if (errBox) errBox.style.display = "none";
+  if (input) {
+    input.value = "";
+    input.type = "password";
+  }
+  const eye = document.getElementById("pdfEyeIcon");
+  if (eye) eye.className = "ri-eye-line";
+
+  if (modal) {
+    modal.style.display = "flex";
+    setTimeout(() => { if (input) input.focus(); }, 100);
+  }
+
+  const spinner = document.getElementById('loadSpinner');
+  if (spinner) {
+    spinner.innerHTML = `
+      <div class="dpg-doc-locked-card">
+        <div class="dpg-doc-locked-icon"><i class="ri-lock-2-line"></i></div>
+        <h3 class="dpg-doc-locked-title">Document Locked</h3>
+        <p class="dpg-doc-locked-desc">This academic resource is private and protected by an access password.</p>
+        <button type="button" class="dpg-doc-locked-btn" onclick="openPdfPasswordModal(pendingPasswordDoc, pendingPasswordVerifyCallback)">
+          <i class="ri-key-line"></i> Enter Password to Unlock
+        </button>
+      </div>
+    `;
+    spinner.style.display = 'flex';
+  }
+}
+
+window.openPdfPasswordModal = openPdfPasswordModal;
+
+window.closePdfPasswordModal = function() {
+  const modal = document.getElementById("pdfPasswordModal");
+  if (modal) modal.style.display = "none";
+};
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById("pdfPasswordModal");
+    if (modal && modal.style.display === "flex") {
+      window.closePdfPasswordModal();
+    }
+  }
+});
+
 window.handlePdfPasswordVerify = async function(e) {
 
   if (e) e.preventDefault();
