@@ -149,12 +149,17 @@
     .nbtn:hover{background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4)}
 
     /* EMBEDDED IN-PAGE MODE */
+    html.is-embedded,
     html.is-embedded body,
     body.is-embedded {
-      min-height: 100% !important;
       height: 100% !important;
+      min-height: 100% !important;
+      max-height: 100% !important;
       overflow: hidden !important;
       background: #0b0f19 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-sizing: border-box !important;
     }
     html.is-embedded .topbar,
     body.is-embedded .topbar {
@@ -164,21 +169,46 @@
     body.is-embedded .sidebar {
       display: none !important;
     }
+    html.is-embedded .resizer,
+    body.is-embedded .resizer {
+      display: none !important;
+    }
     html.is-embedded .layout,
     body.is-embedded .layout {
-      height: 100vh !important;
-      min-height: 100vh !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      min-height: 0 !important;
+      flex: 1 1 100% !important;
+      overflow: hidden !important;
+      display: flex !important;
+      position: relative !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
     html.is-embedded .pdfmain,
     body.is-embedded .pdfmain {
-      padding: 0.6rem 0.5rem !important;
+      padding: 0.85rem 0.6rem 4.5rem !important;
       background: #090d16 !important;
       width: 100% !important;
+      max-width: 100% !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      min-height: 0 !important;
+      flex: 1 1 100% !important;
+      overflow-y: scroll !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior-y: contain !important;
+      scroll-behavior: smooth !important;
+      box-sizing: border-box !important;
     }
     html.is-embedded .pdfpage,
     body.is-embedded .pdfpage {
       max-width: 96% !important;
-      margin-bottom: 0.85rem !important;
+      width: auto !important;
+      margin: 0 auto 1.15rem !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
     }
     html.is-embedded .end-pdf-recommendations,
     html.is-embedded .adslot,
@@ -189,10 +219,34 @@
     html.is-embedded .embedded-page-pill {
       display: flex !important;
     }
+    .emb-pill-btn {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 1.15rem;
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .emb-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+    html[data-theme="light"] .emb-pill-btn {
+      color: #334155 !important;
+    }
+    html[data-theme="light"] .emb-pill-btn:hover {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
 
     /* LAYOUT */
 
-    .layout{display:flex;flex:1;overflow:hidden}
+    .layout{display:flex;flex:1;min-height:0;overflow:hidden}
 
     /* SIDEBAR */
 
@@ -228,7 +282,7 @@
 
     /* PDF AREA */
 
-    .pdfmain{flex:1;overflow-y:auto;background:#191c2e;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem}
+    .pdfmain{flex:1;min-height:0;overflow-y:auto;background:#191c2e;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 
     .pdfpage{width:100%;max-width:830px;margin-bottom:1.1rem;border-radius:9px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6)}
 
@@ -622,8 +676,20 @@
 
 
 
-<div id="embPagePill" class="embedded-page-pill" style="display:none; position:fixed; bottom:16px; right:20px; z-index:999; background:rgba(15,23,42,0.85); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.18); border-radius:30px; padding:6px 14px; font-size:0.8rem; color:#cbd5e1; box-shadow:0 8px 24px rgba(0,0,0,0.5); align-items:center; gap:8px;">
-  <i class="ri-file-pdf-line" style="color:#38bdf8;"></i> Page <span id="embCur">1</span> / <span id="embTotal">—</span>
+<div id="embPagePill" class="embedded-page-pill" style="display:none; position:fixed; bottom:16px; right:20px; z-index:999; background:rgba(15,23,42,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.2); border-radius:30px; padding:4px 10px; font-size:0.82rem; color:#f8fafc; box-shadow:0 8px 24px rgba(0,0,0,0.6); align-items:center; gap:6px; user-select:none;">
+  <button type="button" class="emb-pill-btn" onclick="window.embeddedPrevPage()" title="Previous Page (Scroll Up)" aria-label="Previous Page">
+    <i class="ri-arrow-up-s-line"></i>
+  </button>
+  <span style="display:flex; align-items:center; gap:5px; font-weight:600; padding:0 4px;">
+    <i class="ri-file-pdf-line" style="color:#38bdf8;"></i> <span id="embCur">1</span> / <span id="embTotal">—</span>
+  </span>
+  <button type="button" class="emb-pill-btn" onclick="window.embeddedNextPage()" title="Next Page (Scroll Down)" aria-label="Next Page">
+    <i class="ri-arrow-down-s-line"></i>
+  </button>
+  <span style="width:1px; height:16px; background:rgba(255,255,255,0.2); margin:0 2px;"></span>
+  <button type="button" class="emb-pill-btn" onclick="window.embeddedScrollTop()" title="Scroll to Top" aria-label="Scroll to Top">
+    <i class="ri-skip-up-line"></i>
+  </button>
 </div>
 
 <div class="layout">
@@ -818,7 +884,7 @@
 
 
 
-  <main class="pdfmain" id="pdfArea">
+  <main class="pdfmain" id="pdfArea" tabindex="0">
 
     <div class="spinner" id="loadSpinner">
 
@@ -1535,25 +1601,42 @@ async function renderAllPages() {
 
 
 
-    // Intersection observer for current page
-
-    const obs = new IntersectionObserver(entries => {
-
-      entries.forEach(e => {
-
+    // Dual scroll and intersection tracking for active page
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
         if (e.isIntersecting) {
-          document.getElementById('pgCur').textContent = e.target.dataset.pg;
-          const embC = document.getElementById('embCur'); if (embC) embC.textContent = e.target.dataset.pg;
-        }
-
-      });
-
-    }, { threshold: 0.4 });
-
-    pdfArea.querySelectorAll('.pdfpage').forEach(p => obs.observe(p));
-
-
-
+          const curPg = e.target.dataset.pg;
+          const pgCurEl = document.getElementById('pgCur');
+          if (pgCurEl) pgCurEl.textContent = curPg;
+          const embC = document.getElementById('embCur');
+          if (embC) embC.textContent = curPg;
+        }
+      });
+    }, { root: pdfArea, threshold: 0.25 });
+
+    pdfArea.querySelectorAll('.pdfpage').forEach(p => obs.observe(p));
+
+    let scrollTimer = null;
+    pdfArea.addEventListener('scroll', () => {
+      if (scrollTimer) return;
+      scrollTimer = setTimeout(() => {
+        scrollTimer = null;
+        const pages = pdfArea.querySelectorAll('.pdfpage');
+        const areaRect = pdfArea.getBoundingClientRect();
+        let currentInView = 1;
+        for (let p of pages) {
+          const r = p.getBoundingClientRect();
+          if (r.top <= areaRect.top + areaRect.height / 2 && r.bottom >= areaRect.top) {
+            currentInView = p.dataset.pg;
+          }
+        }
+        const pgCurEl = document.getElementById('pgCur');
+        if (pgCurEl) pgCurEl.textContent = currentInView;
+        const embC = document.getElementById('embCur');
+        if (embC) embC.textContent = currentInView;
+      }, 100);
+    }, { passive: true });
+
     // Explicitly append End-of-PDF Recommendations to bottom of page stream (after all pages)
 
     const endRecs = document.getElementById("endPdfRecommendations");
@@ -2870,6 +2953,58 @@ function openPdfPasswordModal(docData, onVerified) {
 
 window.openPdfPasswordModal = openPdfPasswordModal;
 
+
+window.embeddedScrollToPage = function(pageNum) {
+  const targetPage = document.querySelector(`.pdfpage[data-pg="${pageNum}"]`);
+  const area = document.getElementById('pdfArea');
+  if (targetPage && area) {
+    targetPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const embC = document.getElementById('embCur');
+    if (embC) embC.textContent = pageNum;
+  }
+};
+
+window.embeddedPrevPage = function() {
+  const embC = document.getElementById('embCur');
+  const cur = parseInt(embC ? embC.textContent : '1', 10) || 1;
+  if (cur > 1) {
+    window.embeddedScrollToPage(cur - 1);
+  }
+};
+
+window.embeddedNextPage = function() {
+  const embC = document.getElementById('embCur');
+  const embT = document.getElementById('embTotal');
+  const cur = parseInt(embC ? embC.textContent : '1', 10) || 1;
+  const tot = parseInt(embT ? embT.textContent : '1', 10) || totalPages || 1;
+  if (cur < tot) {
+    window.embeddedScrollToPage(cur + 1);
+  }
+};
+
+window.embeddedScrollTop = function() {
+  const area = document.getElementById('pdfArea');
+  if (area) {
+    area.scrollTo({ top: 0, behavior: 'smooth' });
+    const embC = document.getElementById('embCur');
+    if (embC) embC.textContent = '1';
+  }
+};
+
+window.addEventListener('keydown', function(e) {
+  const isEmbedded = document.documentElement.classList.contains('is-embedded');
+  const area = document.getElementById('pdfArea');
+  if (!area) return;
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+    if (isEmbedded || document.activeElement === area) {
+      area.scrollBy({ top: 350, behavior: 'smooth' });
+    }
+  } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+    if (isEmbedded || document.activeElement === area) {
+      area.scrollBy({ top: -350, behavior: 'smooth' });
+    }
+  }
+});
 window.closePdfPasswordModal = function() {
   const modal = document.getElementById("pdfPasswordModal");
   if (modal) modal.style.display = "none";

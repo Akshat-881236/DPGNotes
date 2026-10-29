@@ -710,12 +710,12 @@
             </div>
           </div>
           
-          <div id="pdfFrameWrapper" style="position:relative; width:100%; height:720px; min-height:480px; border-radius:12px; overflow:hidden; background:#0b0f19; border:1px solid rgba(20,184,166,0.3); box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-            <div id="pdfScopeLoading" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#0d1117; z-index:2; color:var(--sol-text-muted); gap:12px;">
+          <div id="pdfFrameWrapper" style="position:relative; width:100%; height:75vh; min-height:520px; max-height:850px; border-radius:12px; overflow:hidden; background:#0b0f19; border:1px solid rgba(20,184,166,0.3); box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div id="pdfScopeLoading" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#0d1117; z-index:2; color:var(--sol-text-muted); gap:12px; transition:opacity 0.3s ease;">
               <div class="spinner-border text-info" role="status" style="width:2.5rem; height:2.5rem;"></div>
               <p style="margin:0; font-size:0.9rem; color:#94a3b8;">Loading Lab Manual PDF in page scope...</p>
             </div>
-            <iframe id="pdfScopeIframe" src="" style="width:100%; height:100%; border:none; display:block;" allow="fullscreen" allowfullscreen></iframe>
+            <iframe id="pdfScopeIframe" src="" style="width:100%; height:100%; border:none; display:block; -webkit-overflow-scrolling:touch;" scrolling="yes" allow="fullscreen" allowfullscreen></iframe>
           </div>
         </div>
       </section>
@@ -1806,12 +1806,24 @@
         const targetViewerUrl = `/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(currentPdfUrl)}&title=${encodeURIComponent(docTitle)}&embedded=1`;
 
         if (iframe.getAttribute('data-loaded-url') !== currentPdfUrl) {
-          if (loading) loading.style.display = 'flex';
+          if (loading) {
+            loading.style.display = 'flex';
+            loading.style.pointerEvents = 'auto';
+          }
+          iframe.onload = () => {
+            if (loading) {
+              loading.style.display = 'none';
+              loading.style.pointerEvents = 'none';
+            }
+          };
           iframe.src = targetViewerUrl;
           iframe.setAttribute('data-loaded-url', currentPdfUrl);
-          iframe.onload = () => {
-            if (loading) loading.style.display = 'none';
-          };
+          setTimeout(() => {
+            if (loading && loading.style.display !== 'none') {
+              loading.style.display = 'none';
+              loading.style.pointerEvents = 'none';
+            }
+          }, 3500);
         }
         
         container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
