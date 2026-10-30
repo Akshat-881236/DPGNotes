@@ -1388,6 +1388,10 @@ window.toggleDpgTheme = function() {
   try {
     localStorage.setItem("dpg_active_theme", next);
   } catch(e) {}
+  window.dispatchEvent(new CustomEvent("dpg-theme-changed", { detail: { theme: next } }));
+  if (window.DPGContrastEngine && typeof window.DPGContrastEngine.enforceAll === "function") {
+    window.DPGContrastEngine.enforceAll();
+  }
 
   ["themeToggleIconDesktop", "themeToggleIconMobile"].forEach(id => {
     const el = document.getElementById(id);

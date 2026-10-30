@@ -328,4 +328,14 @@
     }
   }, MAX_CUTOFF_TIME_MS);
 
+  // Universal Injection of DPGNotes Runtime Color Contrast & Theme Enforcement Engine
+  try {
+    if (!document.querySelector('script[src*="dpg-contrast-engine.js"]')) {
+      const ceScript = document.createElement('script');
+      ceScript.src = '/dpg-contrast-engine.js';
+      ceScript.defer = true;
+      (document.head || document.documentElement).appendChild(ceScript);
+    }
+  } catch(e) {}
+
 })();

@@ -3238,3 +3238,133 @@ html[data-theme="light"] .sol-tc-actions .sol-btn-secondary {
   color: #0f172a !important;
   border: 1.5px solid #cbd5e1 !important;
 }
+
+
+/* ==========================================================================
+   GLOBAL COMPONENT & SEMANTIC ACCESSIBILITY RULES (WCAG 2.2 AA / AAA)
+   ========================================================================== */
+
+/* Universal Focus Indicator (3px visible outline) */
+:focus-visible {
+  outline: 3px solid var(--ui-focus, #1D4ED8) !important;
+  outline-offset: 3px !important;
+}
+
+/* Icon-only interactive controls */
+.icon-button {
+  color: var(--ui-text) !important;
+  background: var(--ui-surface) !important;
+  border: 1px solid var(--ui-border) !important;
+}
+
+.icon-button:hover {
+  background: var(--ui-surface-hover) !important;
+}
+
+.icon-button:focus-visible {
+  outline: 3px solid var(--ui-focus) !important;
+  outline-offset: 3px !important;
+}
+
+/* Card, Panel, & Container Styling */
+.card, .section-card, .sol-card {
+  color: var(--ui-text);
+  background-color: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+}
+
+.card p, .text-secondary {
+  color: var(--ui-text-secondary);
+}
+
+/* Form Controls & Inputs */
+.form-control, .form-select {
+  color: var(--ui-text);
+  background-color: var(--ui-surface);
+  border-color: var(--ui-border);
+}
+
+.form-control:focus, .form-select:focus {
+  color: var(--ui-text);
+  background-color: var(--ui-surface);
+  border-color: var(--ui-focus);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.2);
+}
+
+/* Semantic Alerts & Badges across themes */
+/* Light Theme */
+html[data-theme="light"] .alert-success, html[data-theme="light"] .badge-success,
+body[data-theme="light"] .alert-success, body[data-theme="light"] .badge-success {
+  background-color: #DCFCE7 !important;
+  color: #14532D !important;
+  border: 1px solid #BBF7D0 !important;
+}
+html[data-theme="light"] .alert-warning, html[data-theme="light"] .badge-warning,
+body[data-theme="light"] .alert-warning, body[data-theme="light"] .badge-warning {
+  background-color: #FEF3C7 !important;
+  color: #78350F !important;
+  border: 1px solid #FDE68A !important;
+}
+html[data-theme="light"] .alert-danger, html[data-theme="light"] .badge-danger,
+body[data-theme="light"] .alert-danger, body[data-theme="light"] .badge-danger {
+  background-color: #FEE2E2 !important;
+  color: #991B1B !important;
+  border: 1px solid #FECACA !important;
+}
+html[data-theme="light"] .alert-info, html[data-theme="light"] .badge-info,
+body[data-theme="light"] .alert-info, body[data-theme="light"] .badge-info {
+  background-color: #DBEAFE !important;
+  color: #1E3A8A !important;
+  border: 1px solid #BFDBFE !important;
+}
+
+/* Dark / Blue / Black / Green Themes */
+html:not([data-theme="light"]):not([data-theme="light-green"]) .alert-success,
+html:not([data-theme="light"]):not([data-theme="light-green"]) .badge-success {
+  background-color: rgba(20, 83, 45, 0.4) !important;
+  color: #BBF7D0 !important;
+  border: 1px solid rgba(74, 222, 128, 0.45) !important;
+}
+html:not([data-theme="light"]):not([data-theme="light-green"]) .alert-warning,
+html:not([data-theme="light"]):not([data-theme="light-green"]) .badge-warning {
+  background-color: rgba(113, 63, 18, 0.4) !important;
+  color: #FDE68A !important;
+  border: 1px solid rgba(253, 230, 138, 0.45) !important;
+}
+html:not([data-theme="light"]):not([data-theme="light-green"]) .alert-danger,
+html:not([data-theme="light"]):not([data-theme="light-green"]) .badge-danger {
+  background-color: rgba(127, 29, 29, 0.4) !important;
+  color: #FECACA !important;
+  border: 1px solid rgba(254, 202, 202, 0.45) !important;
+}
+html:not([data-theme="light"]):not([data-theme="light-green"]) .alert-info,
+html:not([data-theme="light"]):not([data-theme="light-green"]) .badge-info {
+  background-color: rgba(30, 58, 138, 0.4) !important;
+  color: #BFDBFE !important;
+  border: 1px solid rgba(191, 219, 254, 0.45) !important;
+}
+
+/* Academic Tables Readability */
+html[data-theme="light"] table, html[data-theme="light"] .data-table,
+body[data-theme="light"] table, body[data-theme="light"] .data-table {
+  color: #172033;
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] th,
+body[data-theme="light"] th {
+  background-color: #f1f5f9 !important;
+  color: #111827 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] tr:hover,
+body[data-theme="light"] tr:hover {
+  background-color: #f8fafc !important;
+}
+
+html[data-theme="light"] tr:nth-child(even),
+body[data-theme="light"] tr:nth-child(even) {
+  background-color: #f8fafc;
+}

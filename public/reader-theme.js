@@ -19,6 +19,9 @@
     localStorage.setItem(THEME_KEY, theme);
     updateControlsUI();
     window.dispatchEvent(new CustomEvent("dpg-theme-changed", { detail: { theme } }));
+    if (window.DPGContrastEngine && typeof window.DPGContrastEngine.enforceAll === "function") {
+      window.DPGContrastEngine.enforceAll();
+    }
   }
 
   function applyFontSize(size) {
