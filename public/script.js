@@ -305,7 +305,7 @@ function getSafePostAuthRedirectUrl() {
       localStorage.removeItem("dpg_auth_redirect");
       localStorage.removeItem("dpg_quota_locked");
       sessionStorage.removeItem("dpg_quota_locked");
-      document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;SameSite=Lax;Secure";
       if (authRedirect.startsWith('/') || authRedirect.startsWith('https://dpgnotes.web.app') || (typeof window !== 'undefined' && authRedirect.startsWith(window.location.origin))) {
         return authRedirect;
       }
@@ -650,7 +650,7 @@ async function activateScriptVerifiedProfile(customToken, data) {
   // Clear guest quota locks
   localStorage.removeItem("dpg_quota_locked");
   sessionStorage.removeItem("dpg_quota_locked");
-  document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;SameSite=Lax;Secure";
 
   // Landing Dashboard --> Setting tab
   window.location.href = "dashboard.html?verified=1#settings";

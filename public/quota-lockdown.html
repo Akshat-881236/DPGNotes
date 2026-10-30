@@ -470,7 +470,7 @@
     function clearQuotaLocksAndRedirect(targetUrl) {
       localStorage.removeItem("dpg_quota_locked");
       sessionStorage.removeItem("dpg_quota_locked");
-      document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;SameSite=Lax;Secure";
       localStorage.removeItem("dpg_quota_visits");
       localStorage.removeItem("dpg_quota_pdfs");
       sessionStorage.removeItem("dpg_auth_redirect");

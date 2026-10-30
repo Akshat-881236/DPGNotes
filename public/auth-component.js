@@ -135,7 +135,7 @@ window.dpgPurgeCredentials = function() {
     // Clear all auth session cookies
     const cookiesToPurge = ["dpgActiveUser", "dpgActiveUserUid", "dpg_user", "dpg_auth", "dpg_token"];
     cookiesToPurge.forEach(name => {
-      document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+      document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure`;
     });
 
     // Clear and reset all auth forms and inputs across DOM
@@ -562,7 +562,7 @@ function allowAuthUnlock() {
   try {
     localStorage.removeItem("dpg_quota_locked");
     sessionStorage.removeItem("dpg_quota_locked");
-    document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;SameSite=Lax;Secure";
     localStorage.removeItem("dpg_quota_visits");
     localStorage.removeItem("dpg_quota_pdfs");
   } catch(e) {}
@@ -588,7 +588,7 @@ function allowAuthUnlock() {
       if (wasLocked && !_authBypassPermitted) {
         localStorage.setItem("dpg_quota_locked", "true");
         sessionStorage.setItem("dpg_quota_locked", "true");
-        document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax";
+        document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax; Secure";
       }
       return res;
     };
@@ -901,7 +901,7 @@ window.openForgotPasswordModal = function() {
 window.showQuotaReachedModal = function() {
   localStorage.setItem("dpg_quota_locked", "true");
   sessionStorage.setItem("dpg_quota_locked", "true");
-  document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax";
+  document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax; Secure";
   if (!window.location.pathname.includes('quota-lockdown.html')) {
     window.location.href = "https://dpgnotes.web.app/quota-lockdown.html?returnUrl=" + encodeURIComponent(window.location.href);
     return;

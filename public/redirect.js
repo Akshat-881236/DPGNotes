@@ -852,7 +852,7 @@
         return match ? match[2] : null;
       }
       function setCookie(name, val) {
-        document.cookie = name + '=' + val + ';path=/;max-age=86400;SameSite=Strict';
+        document.cookie = name + '=' + val + ';path=/;max-age=86400;SameSite=Strict; Secure';
       }
       function clearCookie(name) {
         document.cookie = name + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
@@ -987,7 +987,7 @@
       // Set cookie for track_id
       const d = new Date();
       d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000));
-      document.cookie = `dpg_ad_click_track_id=${encodeURIComponent(trackId)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+      document.cookie = `dpg_ad_click_track_id=${encodeURIComponent(trackId)};expires=${d.toUTCString()};path=/;SameSite=Lax; Secure`;
 
       const pageUrl = window.location.href;
       const pageTitle = document.title || "DPGNotes Resource Page";

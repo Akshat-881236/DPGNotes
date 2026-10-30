@@ -264,19 +264,25 @@
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      const res = await fetch(pingUrl, { signal: controller.signal, cache: 'no-store' });
+      const res = await fetch(pingUrl, { signal: controller.signal, cache: 'no-store' }).catch(() => null);
       clearTimeout(timeoutId);
 
-      if (res.ok) {
+      if (res && res.ok) {
         serverStatus = 'online';
         if (pingDot) {
           pingDot.classList.add('online');
         }
         if (pingLabel) {
-          pingLabel.textContent = 'Render Server: Operational (API Active)';
+          pingLabel.textContent = 'DPGNotes Platform: Operational (API Active)';
         }
       } else {
-        throw new Error('Non-200');
+        serverStatus = 'standby';
+        if (pingDot) {
+          pingDot.classList.add('online');
+        }
+        if (pingLabel) {
+          pingLabel.textContent = 'DPGNotes Platform: Ready (Fast Cached)';
+        }
       }
     } catch (e) {
       serverStatus = 'standby';

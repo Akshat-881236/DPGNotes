@@ -22,6 +22,10 @@
       {
         "source": "/.well-known/security.txt",
         "destination": "/.well-known/security.txt"
+      },
+      {
+        "source": "/api/ping",
+        "destination": "/api/ping.json"
       }
     ],
     "ignore": [
@@ -36,7 +40,7 @@
         "headers": [
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.google.com https://www.googletagservices.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.googleusercontent.com https://avatars.githubusercontent.com https://pagead2.googlesyndication.com https://images.unsplash.com https://placehold.co https://img.youtube.com https://i.ytimg.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://generativelanguage.googleapis.com https://dpgnotes-python-service.onrender.com https://digiindia-student-platform.onrender.com https://dpgnotes.onrender.com https://api.ipify.org https://ipapi.co https://freeipapi.com https://res.cloudinary.com https://api.cloudinary.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.google.com; frame-src 'self' https://dpgnotes.firebaseapp.com https://www.youtube.com https://www.youtube-nocookie.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.google.com https://*.doubleclick.net blob: data:; media-src 'self' blob: data: https://res.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self' https://*.firebaseapp.com https://accounts.google.com; upgrade-insecure-requests;"
+            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.gstatic.com https://*.gstatic.com https://apis.google.com https://*.google.com https://cdn.jsdelivr.net https://*.jsdelivr.net https://cdnjs.cloudflare.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://*.googletagservices.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.googleapis.com https://cdn.jsdelivr.net https://*.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net https://*.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.cloudinary.com https://*.googleusercontent.com https://avatars.githubusercontent.com https://*.githubusercontent.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://images.unsplash.com https://placehold.co https://img.youtube.com https://i.ytimg.com https://*.ytimg.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://generativelanguage.googleapis.com https://storage.googleapis.com https://*.storage.googleapis.com https://cdn.jsdelivr.net https://*.jsdelivr.net https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://dpgnotes-python-service.onrender.com https://digiindia-student-platform.onrender.com https://dpgnotes.onrender.com https://*.onrender.com https://api.ipify.org https://*.ipify.org https://ipapi.co https://*.ipapi.co https://freeipapi.com https://*.freeipapi.com https://free.freeipapi.com https://res.cloudinary.com https://*.cloudinary.com https://api.cloudinary.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://*.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google; frame-src 'self' https://dpgnotes.firebaseapp.com https://*.firebaseapp.com https://www.youtube.com https://*.youtube.com https://www.youtube-nocookie.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net blob: data:; media-src 'self' blob: data: https://res.cloudinary.com https://*.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self' https://*.firebaseapp.com https://accounts.google.com https://*.google.com; upgrade-insecure-requests;"
           },
           {
             "key": "Strict-Transport-Security",
@@ -60,7 +64,7 @@
           },
           {
             "key": "Permissions-Policy",
-            "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), screen-wake-lock=(), accelerometer=(), gyroscope=(), magnetometer=()"
+            "value": "camera=(self), microphone=(self), display-capture=(self), screen-wake-lock=(self), fullscreen=(self), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()"
           },
           {
             "key": "Cross-Origin-Opener-Policy",
@@ -68,11 +72,11 @@
           },
           {
             "key": "Cross-Origin-Embedder-Policy",
-            "value": "credentialless"
+            "value": "unsafe-none"
           },
           {
             "key": "Cross-Origin-Resource-Policy",
-            "value": "same-site"
+            "value": "cross-origin"
           },
           {
             "key": "X-Permitted-Cross-Domain-Policies",
@@ -135,6 +139,31 @@
           },
           {
             "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/api/ping*",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET, OPTIONS"
+          },
+          {
+            "key": "Access-Control-Allow-Headers",
             "value": "*"
           },
           {

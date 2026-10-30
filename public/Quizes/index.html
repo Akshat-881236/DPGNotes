@@ -1393,7 +1393,7 @@
         devId = 'dev_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
         try {
           localStorage.setItem('dpg_quiz_device_id', devId);
-          document.cookie = `dpg_quiz_device_id=${devId}; path=/; max-age=31536000; SameSite=Lax`;
+          document.cookie = `dpg_quiz_device_id=${devId}; path=/; max-age=31536000; SameSite=Lax; Secure`;
         } catch(e) {}
       }
       return devId;
@@ -1405,7 +1405,7 @@
         gId = 'guest_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
         try {
           localStorage.setItem('dpg_guest_uid', gId);
-          document.cookie = `dpg_guest_uid=${gId}; path=/; max-age=31536000; SameSite=Lax`;
+          document.cookie = `dpg_guest_uid=${gId}; path=/; max-age=31536000; SameSite=Lax; Secure`;
         } catch(e) {}
       }
       return gId;

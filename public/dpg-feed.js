@@ -78,10 +78,10 @@
 
       // Save cookie preference
       if (docInfo.discipline) {
-        document.cookie = `dpg_pref_discipline=${encodeURIComponent(docInfo.discipline)}; path=/; max-age=2592000; SameSite=Lax`;
+        document.cookie = `dpg_pref_discipline=${encodeURIComponent(docInfo.discipline)}; path=/; max-age=2592000; SameSite=Lax; Secure`;
       }
       if (docInfo.category) {
-        document.cookie = `dpg_pref_category=${encodeURIComponent(docInfo.category)}; path=/; max-age=2592000; SameSite=Lax`;
+        document.cookie = `dpg_pref_category=${encodeURIComponent(docInfo.category)}; path=/; max-age=2592000; SameSite=Lax; Secure`;
       }
     } catch (e) {
       console.warn("logPdfVisit failed:", e);
@@ -105,7 +105,7 @@
         tx.objectStore(STORE_INTERACTIONS).add(entry);
       }
 
-      document.cookie = `dpg_last_query=${encodeURIComponent(q)}; path=/; max-age=2592000; SameSite=Lax`;
+      document.cookie = `dpg_last_query=${encodeURIComponent(q)}; path=/; max-age=2592000; SameSite=Lax; Secure`;
     } catch (e) {
       console.warn("logSerpSearch failed:", e);
     }

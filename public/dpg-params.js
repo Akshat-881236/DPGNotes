@@ -93,14 +93,14 @@
         sessionStorage.setItem('utm-source', source);
         localStorage.setItem('utm_source', source);
         localStorage.setItem('utm-source', source);
-        document.cookie = `dpg_utm_source=${encodeURIComponent(source)};path=/;max-age=2592000;SameSite=Lax`;
+        document.cookie = `dpg_utm_source=${encodeURIComponent(source)};path=/;max-age=2592000;SameSite=Lax; Secure`;
       }
       if (referrer) {
         sessionStorage.setItem('utm_referrer', referrer);
         sessionStorage.setItem('utm-referrer', referrer);
         localStorage.setItem('utm_referrer', referrer);
         localStorage.setItem('utm-referrer', referrer);
-        document.cookie = `dpg_utm_referrer=${encodeURIComponent(referrer)};path=/;max-age=2592000;SameSite=Lax`;
+        document.cookie = `dpg_utm_referrer=${encodeURIComponent(referrer)};path=/;max-age=2592000;SameSite=Lax; Secure`;
       }
       if (medium) {
         sessionStorage.setItem('utm_medium', medium);
@@ -538,7 +538,7 @@
       devId = 'dev_' + Math.abs(hash).toString(36) + '_' + Math.random().toString(36).substring(2, 8);
       try {
         localStorage.setItem('dpg_client_device_id', devId);
-        document.cookie = `dpg_client_device_id=${devId};path=/;max-age=31536000;SameSite=Lax`;
+        document.cookie = `dpg_client_device_id=${devId};path=/;max-age=31536000;SameSite=Lax; Secure`;
       } catch(e) {}
     }
     return devId;

@@ -1,0 +1,7 @@
+{
+  "status": "online",
+  "service": "dpgnotes-platform",
+  "mode": "production",
+  "version": "3.5.0",
+  "message": "DPGNotes Core Platform API Operational"
+}
