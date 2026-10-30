@@ -1,0 +1,11 @@
+# DPGNotes Responsible Security & Vulnerability Disclosure Policy
+# Reference: RFC 9116 (https://www.rfc-editor.org/rfc/rfc9116)
+
+Contact: mailto:its.akshatnetworkhub23@gmail.com
+Contact: https://dpgnotes.web.app/legal/security-policy.html
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://dpgnotes.web.app/.well-known/security.txt
+Policy: https://dpgnotes.web.app/legal/security-policy.html
+Acknowledgments: https://dpgnotes.web.app/legal/security-policy.html
+Hiring: https://dpgnotes.web.app/legal/index.html
