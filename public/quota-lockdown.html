@@ -495,18 +495,24 @@
     };
 
     window.triggerSignUp = function() {
+      const ret = getReturnUrl();
+      sessionStorage.setItem("dpg_auth_redirect", ret);
+      localStorage.setItem("dpg_auth_redirect", ret);
       if (typeof window.openSignUpModal === "function") {
         window.openSignUpModal();
       } else {
-        window.location.href = "https://dpgnotes.web.app/index.html?action=signup&returnUrl=" + encodeURIComponent(getReturnUrl());
+        window.location.href = "https://dpgnotes.web.app/index.html?action=signup&returnUrl=" + encodeURIComponent(ret);
       }
     };
 
     window.triggerForgotPassword = function() {
+      const ret = getReturnUrl();
+      sessionStorage.setItem("dpg_auth_redirect", ret);
+      localStorage.setItem("dpg_auth_redirect", ret);
       if (typeof window.openForgotPasswordModal === "function") {
         window.openForgotPasswordModal();
       } else {
-        window.location.href = "https://dpgnotes.web.app/index.html?action=forgot&returnUrl=" + encodeURIComponent(getReturnUrl());
+        window.location.href = "https://dpgnotes.web.app/index.html?action=forgot&returnUrl=" + encodeURIComponent(ret);
       }
     };
 

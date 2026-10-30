@@ -185,7 +185,7 @@ function injectAuthDOM() {
         <h2 class="dpg-auth-title">Glad You're Finding DPGNotes Helpful!</h2>
 
         <p class="dpg-auth-subtitle">
-          You've reached your free daily preview limit for guest reading. DPGNotes is built for students and educators, and is <strong style="color:#ffffff;">completely free for all verified contributors</strong>. Sign in to your account to enjoy continuous, unlimited access to verified notes, practical manuals, and exam solutions.
+          You've reached your free daily preview limit for guest reading. DPGNotes is built for students and educators, and is <strong class="dpg-auth-highlight">completely free for all verified contributors</strong>. Sign in to your account to enjoy continuous, unlimited access to verified notes, practical manuals, and exam solutions.
         </p>
 
         <!-- LIVE COUNTDOWN TIMER -->
@@ -216,7 +216,7 @@ function injectAuthDOM() {
           <a class="dpg-auth-link" onclick="window.openSignUpModal()">Create Free Account</a>
         </div>
         <div style="margin-top:0.6rem; font-size:0.8rem;">
-          <a class="dpg-auth-link" onclick="window.openForgotPasswordModal()" style="color:#94a3b8;">Forgot Password?</a>
+          <a class="dpg-auth-link" onclick="window.openForgotPasswordModal()" class="dpg-auth-muted-link">Forgot Password?</a>
         </div>
       </div>
     </div>
@@ -280,7 +280,7 @@ function injectAuthDOM() {
         </div>
         <h3 class="dpg-auth-title" style="font-size:1.4rem;">Two-Factor Verification</h3>
         <p class="dpg-auth-subtitle">
-          We sent a 6-digit security verification code to <strong id="dpg2faEmailTarget" style="color:#ffffff;"></strong>. Enter it below to complete authentication:
+          We sent a 6-digit security verification code to <strong id="dpg2faEmailTarget" class="dpg-auth-email-target"></strong>. Enter it below to complete authentication:
         </p>
 
         <form onsubmit="window.dpgVerify2FA(event)">
@@ -295,7 +295,7 @@ function injectAuthDOM() {
 
         <div style="display:flex; justify-content:space-between; margin-top:1.4rem; font-size:0.84rem;">
           <a class="dpg-auth-link" onclick="window.dpgResend2FA()">Resend Code</a>
-          <a class="dpg-auth-link" onclick="window.dpgBackToSignInStep1()" style="color:#94a3b8;">Back to Sign In</a>
+          <a class="dpg-auth-link" onclick="window.dpgBackToSignInStep1()" class="dpg-auth-muted-link">Back to Sign In</a>
         </div>
       </div>
     </div>
@@ -382,9 +382,9 @@ function injectAuthDOM() {
         </div>
         <h3 class="dpg-auth-title" style="font-size:1.35rem;">Verify Your Email</h3>
         <p class="dpg-auth-subtitle" style="margin-bottom:0.8rem;">
-          A verification link and 6-digit code was dispatched to <strong id="dpgVerifyTargetEmail" style="color:#ffffff;"></strong>.
+          A verification link and 6-digit code was dispatched to <strong id="dpgVerifyTargetEmail" class="dpg-auth-email-target"></strong>.
         </p>
-        <p style="font-size:0.82rem; color:#94a3b8; margin-bottom:1.1rem; line-height:1.4;">
+        <p class="dpg-auth-info-note">
           To activate your DPGNotes contributor profile and grant access, verify email ownership using either option below:
         </p>
 
@@ -401,13 +401,13 @@ function injectAuthDOM() {
           </button>
         </form>
 
-        <button type="button" id="dpgBtnCheckVerification" class="dpg-auth-btn-secondary" style="width:100%; margin-bottom:0.6rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:white; padding:9px; border-radius:8px; cursor:pointer; font-size:0.85rem;" onclick="window.dpgCheckVerificationStatus()">
+        <button type="button" id="dpgBtnCheckVerification" class="dpg-auth-btn-secondary" style="width:100%; margin-bottom:0.6rem; padding:9px; border-radius:8px; cursor:pointer; font-size:0.85rem;" onclick="window.dpgCheckVerificationStatus()">
           <i class="ri-refresh-line"></i> I Clicked the Link in My Email
         </button>
 
         <div style="display:flex; justify-content:space-between; margin-top:1rem; font-size:0.84rem;">
           <a class="dpg-auth-link" onclick="window.dpgResendVerificationEmail()">Resend Verification Link</a>
-          <a class="dpg-auth-link" onclick="window.dpgBackToSignupStep1()" style="color:#94a3b8;">Back to Details</a>
+          <a class="dpg-auth-link" onclick="window.dpgBackToSignupStep1()" class="dpg-auth-muted-link">Back to Details</a>
         </div>
       </div>
     </div>
@@ -452,7 +452,7 @@ function injectAuthDOM() {
         </div>
         <h3 class="dpg-auth-title" style="font-size:1.4rem;">Enter Verification Code</h3>
         <p class="dpg-auth-subtitle">
-          We sent a 6-digit recovery code to <strong id="dpgRecoveryEmailTarget" style="color:#ffffff;"></strong>. Enter the code and choose your new password below:
+          We sent a 6-digit recovery code to <strong id="dpgRecoveryEmailTarget" class="dpg-auth-email-target"></strong>. Enter the code and choose your new password below:
         </p>
 
         <!-- INLINE ERROR ALERT FOR STEP 2 -->
@@ -481,7 +481,7 @@ function injectAuthDOM() {
 
         <div style="display:flex; justify-content:space-between; margin-top:1.2rem; font-size:0.84rem;">
           <a class="dpg-auth-link" onclick="window.dpgResendRecoveryOtp()">Resend Code</a>
-          <a class="dpg-auth-link" onclick="window.dpgBackToRecoveryStep1()" style="color:#94a3b8;">Back</a>
+          <a class="dpg-auth-link" onclick="window.dpgBackToRecoveryStep1()" class="dpg-auth-muted-link">Back</a>
         </div>
       </div>
     </div>

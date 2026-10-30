@@ -2868,3 +2868,98 @@ html[data-theme="light"] pre span[style*="color:#fb923c"],
 html[data-theme="light"] pre span[style*="color: #fb923c"] {
   color: #c2410c !important;
 }
+
+/* ==========================================================================
+   HIGH-CONTRAST LIGHT THEME FOR COMMUNITY TEST CASES & SANDBOXES (WCAG AAA)
+   ========================================================================== */
+html[data-theme="light"] .sol-community-testcases-box,
+body[data-theme="light"] .sol-community-testcases-box,
+body.theme-light .sol-community-testcases-box {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .sol-community-title,
+body[data-theme="light"] .sol-community-title,
+body.theme-light .sol-community-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-community-header span,
+body[data-theme="light"] .sol-community-header span,
+body.theme-light .sol-community-header span {
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .sol-testcase-card,
+body[data-theme="light"] .sol-testcase-card,
+body.theme-light .sol-testcase-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .sol-testcase-card:hover,
+body[data-theme="light"] .sol-testcase-card:hover,
+body.theme-light .sol-testcase-card:hover {
+  border-color: #6366f1 !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.12) !important;
+}
+
+html[data-theme="light"] .sol-tc-title,
+body[data-theme="light"] .sol-tc-title,
+body.theme-light .sol-tc-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-tc-meta,
+body[data-theme="light"] .sol-tc-meta,
+body.theme-light .sol-tc-meta {
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .sol-tc-meta span[style*="color:#facc15"],
+html[data-theme="light"] .sol-tc-meta span[style*="color: #facc15"],
+body[data-theme="light"] .sol-tc-meta span[style*="color:#facc15"],
+body[data-theme="light"] .sol-tc-meta span[style*="color: #facc15"] {
+  color: #92400e !important;
+  background: #fef3c7 !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  border: 1px solid #fde68a !important;
+}
+
+html[data-theme="light"] .sol-tc-stats,
+body[data-theme="light"] .sol-tc-stats,
+body.theme-light .sol-tc-stats {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sol-tc-stats strong,
+body[data-theme="light"] .sol-tc-stats strong,
+body.theme-light .sol-tc-stats strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-tc-actions .sol-btn-secondary,
+body[data-theme="light"] .sol-tc-actions .sol-btn-secondary,
+body.theme-light .sol-tc-actions .sol-btn-secondary {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sol-tc-actions .sol-btn-secondary:hover,
+body[data-theme="light"] .sol-tc-actions .sol-btn-secondary:hover,
+body.theme-light .sol-tc-actions .sol-btn-secondary:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}

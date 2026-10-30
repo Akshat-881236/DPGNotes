@@ -283,6 +283,40 @@ function updateNavbarAuth(user) {
 // ============================================================================
 // GOOGLE & GITHUB AUTHENTICATION
 // ============================================================================
+
+function getSafePostAuthRedirectUrl() {
+  try {
+    const urlP = new URLSearchParams(window.location.search);
+    const paramRedirect = urlP.get("returnUrl") ||
+                          urlP.get("return_url") ||
+                          urlP.get("go-to") ||
+                          urlP.get("goto") ||
+                          urlP.get("redirect") ||
+                          urlP.get("redirect-to") ||
+                          urlP.get("ref") ||
+                          urlP.get("reference") ||
+                          urlP.get("dest") ||
+                          urlP.get("target") ||
+                          urlP.get("next") ||
+                          urlP.get("continue");
+    const authRedirect = paramRedirect || sessionStorage.getItem("dpg_auth_redirect") || localStorage.getItem("dpg_auth_redirect");
+    if (authRedirect) {
+      sessionStorage.removeItem("dpg_auth_redirect");
+      localStorage.removeItem("dpg_auth_redirect");
+      localStorage.removeItem("dpg_quota_locked");
+      sessionStorage.removeItem("dpg_quota_locked");
+      document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      if (authRedirect.startsWith('/') || authRedirect.startsWith('https://dpgnotes.web.app') || (typeof window !== 'undefined' && authRedirect.startsWith(window.location.origin))) {
+        return authRedirect;
+      }
+    }
+  } catch(e) {
+    console.warn("getSafePostAuthRedirectUrl warning:", e);
+  }
+  return null;
+}
+window.getSafePostAuthRedirectUrl = getSafePostAuthRedirectUrl;
+
 async function handlePostOAuthLogin(user) {
   try {
     const userDocRef = doc(db, "users", user.uid);
@@ -310,7 +344,10 @@ async function handlePostOAuthLogin(user) {
       }, { merge: true });
     }
 
-    if (!isComplete) {
+    const targetRedirect = getSafePostAuthRedirectUrl();
+    if (targetRedirect) {
+      window.location.href = targetRedirect;
+    } else if (!isComplete) {
       window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
     } else {
       window.location.href = "dashboard.html";
@@ -846,7 +883,10 @@ window.handlePasswordSignIn = async function(e) {
       if (userData && userData.twoFactorEnabled === false) {
         // 2FA is explicitly disabled by user: complete sign in directly
         const isComplete = userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
-        if (!isComplete) {
+        const targetRedirect = getSafePostAuthRedirectUrl();
+        if (targetRedirect) {
+          window.location.href = targetRedirect;
+        } else if (!isComplete) {
           window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
         } else {
           window.location.href = "dashboard.html";
@@ -912,11 +952,14 @@ window.verify2FACode = async function() {
     const userData = snap.exists() ? snap.data() : null;
     const isComplete = userData && userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
 
-    if (!isComplete) {
-      window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
-    } else {
-      window.location.href = "dashboard.html";
-    }
+        const targetRedirect = getSafePostAuthRedirectUrl();
+        if (targetRedirect) {
+          window.location.href = targetRedirect;
+        } else if (!isComplete) {
+          window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
+        } else {
+          window.location.href = "dashboard.html";
+        }
   } catch(err) {
     showScriptAuthError("twoFactorErrorAlert", err.message || "Verification failed.", "twoFactorInput");
   } finally {

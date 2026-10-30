@@ -3018,3 +3018,223 @@ body[data-theme="dark"] .dpg-doc-locked-desc,
 body.theme-dark .dpg-doc-locked-desc {
   color: #a1a1aa !important;
 }
+
+/* ==========================================================================
+   DPGNOTES STANDARDIZED COLOR SYSTEM & THEME ARCHITECTURE
+   WCAG 2.2 AA / AAA Compliant Design Tokens
+   Supports: Blue Theme, Light Theme, Black/OLED Theme, and Green/Forest Theme
+   ========================================================================== */
+
+:root,
+html[data-theme="default"],
+html[data-theme="blue"],
+body[data-theme="blue"] {
+  --ui-bg: #0B1F3A;
+  --ui-surface: #142B48;
+  --ui-surface-hover: #1C3A5C;
+  --ui-text: #F8FAFC;
+  --ui-text-secondary: #C7D2E0;
+  --ui-text-muted: #B8C7D9;
+  --ui-primary: #7DD3FC;
+  --ui-success: #86EFAC;
+  --ui-warning: #FDE68A;
+  --ui-danger: #FCA5A5;
+  --ui-info: #93C5FD;
+  --ui-border: #49627E;
+  --ui-focus: #7DD3FC;
+}
+
+html[data-theme="light"],
+body[data-theme="light"],
+body.theme-light {
+  --ui-bg: #F8FAFC;
+  --ui-surface: #FFFFFF;
+  --ui-surface-hover: #F1F5F9;
+  --ui-text: #172033;
+  --ui-text-secondary: #475569;
+  --ui-text-muted: #64748B;
+  --ui-primary: #1D4ED8;
+  --ui-success: #166534;
+  --ui-warning: #854D0E;
+  --ui-danger: #B91C1C;
+  --ui-info: #1E40AF;
+  --ui-border: #CBD5E1;
+  --ui-focus: #1D4ED8;
+}
+
+html[data-theme="black"],
+html[data-theme="dark"],
+body[data-theme="dark"],
+body.theme-dark {
+  --ui-bg: #000000;
+  --ui-surface: #171717;
+  --ui-surface-hover: #262626;
+  --ui-text: #F5F5F5;
+  --ui-text-secondary: #A3A3A3;
+  --ui-text-muted: #A3A3A3;
+  --ui-primary: #7DD3FC;
+  --ui-success: #86EFAC;
+  --ui-warning: #FDE68A;
+  --ui-danger: #FCA5A5;
+  --ui-info: #93C5FD;
+  --ui-border: #525252;
+  --ui-focus: #7DD3FC;
+}
+
+html[data-theme="green"],
+html[data-theme="forest"],
+html[data-theme="emerald"],
+body[data-theme="forest"],
+body.theme-forest {
+  --ui-bg: #123B2A;
+  --ui-surface: #1B4935;
+  --ui-surface-hover: #245C42;
+  --ui-text: #F1F8F3;
+  --ui-text-secondary: #CDEBDD;
+  --ui-text-muted: #CDEBDD;
+  --ui-primary: #86EFAC;
+  --ui-success: #86EFAC;
+  --ui-warning: #FDE68A;
+  --ui-danger: #FCA5A5;
+  --ui-info: #7DD3FC;
+  --ui-border: #47725C;
+  --ui-focus: #86EFAC;
+}
+
+/* Light Green Theme Support */
+html[data-theme="light-green"],
+body[data-theme="light-green"] {
+  --ui-bg: #F1F8F3;
+  --ui-surface: #FFFFFF;
+  --ui-surface-hover: #E2F2E9;
+  --ui-text: #123B2A;
+  --ui-text-secondary: #355B47;
+  --ui-text-muted: #4F7A62;
+  --ui-primary: #166534;
+  --ui-success: #14532D;
+  --ui-warning: #854D0E;
+  --ui-danger: #B91C1C;
+  --ui-info: #15803D;
+  --ui-border: #A7C8B4;
+  --ui-focus: #166534;
+}
+
+/* Global Bootstrap & Remix Icon Alignment & Inheritance */
+.bi, [class^="ri-"], [class*=" ri-"] {
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   GLOBAL HIGH-CONTRAST OVERRIDES FOR AUTH & COMMUNITY COMPONENTS (WCAG AAA)
+   ========================================================================== */
+
+/* Light Theme Auth & Modal Controls */
+html[data-theme="light"] .edu-modal .modal-content,
+html[data-theme="light"] .dpg-auth-dialog {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #172033 !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15) !important;
+}
+
+html[data-theme="light"] .edu-modal .modal-title,
+html[data-theme="light"] .dpg-auth-title,
+html[data-theme="light"] .edu-modal h4,
+html[data-theme="light"] .edu-modal h5 {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] .btn-oauth,
+html[data-theme="light"] .dpg-auth-btn-oauth {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #172033 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .btn-oauth:hover,
+html[data-theme="light"] .dpg-auth-btn-oauth:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #111827 !important;
+}
+
+html[data-theme="light"] .btn-oauth-google,
+html[data-theme="light"] .dpg-auth-btn-google {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #172033 !important;
+}
+
+html[data-theme="light"] .btn-oauth-github,
+html[data-theme="light"] .dpg-auth-btn-github {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #172033 !important;
+}
+
+html[data-theme="light"] .btn-oauth-github i,
+html[data-theme="light"] .dpg-auth-btn-github i {
+  color: #172033 !important;
+}
+
+html[data-theme="light"] .dpg-auth-btn-secondary {
+  background: #f8fafc !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #172033 !important;
+}
+
+html[data-theme="light"] .dpg-auth-btn-secondary:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #111827 !important;
+}
+
+/* Light Theme Community Test Cases & Sandboxes */
+html[data-theme="light"] .sol-community-testcases-box {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .sol-community-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-community-header span {
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .sol-testcase-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .sol-tc-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sol-tc-meta {
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .sol-tc-stats {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sol-tc-stats strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .sol-tc-actions .sol-btn-secondary {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
