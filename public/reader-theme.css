@@ -3368,3 +3368,121 @@ html[data-theme="light"] tr:nth-child(even),
 body[data-theme="light"] tr:nth-child(even) {
   background-color: #f8fafc;
 }
+
+
+/* ==========================================================================
+   Resource Under Review & Document Locked Cards Theme Compatibility
+   ========================================================================== */
+.dpg-review-card {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  max-width: 540px;
+  margin: 2rem auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  color: #f8fafc;
+}
+.dpg-review-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.2rem;
+  font-size: 2rem;
+  color: #fbbf24;
+}
+.dpg-review-title {
+  font-family: 'Outfit', sans-serif;
+  color: #ffffff !important;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+.dpg-review-desc {
+  color: #cbd5e1 !important;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+}
+.dpg-review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff !important;
+  padding: 11px 24px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
+}
+
+/* Light Theme Overrides */
+html[data-theme="light"] .dpg-review-card,
+body[data-theme="light"] .dpg-review-card,
+body.theme-light .dpg-review-card {
+  background: #ffffff !important;
+  border: 1.5px solid #f59e0b !important;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(245, 158, 11, 0.2) !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-review-icon-wrap,
+body[data-theme="light"] .dpg-review-icon-wrap,
+body.theme-light .dpg-review-icon-wrap {
+  background: rgba(245, 158, 11, 0.14) !important;
+  border-color: #f59e0b !important;
+  color: #b45309 !important;
+}
+html[data-theme="light"] .dpg-review-title,
+body[data-theme="light"] .dpg-review-title,
+body.theme-light .dpg-review-title {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+html[data-theme="light"] .dpg-review-desc,
+body[data-theme="light"] .dpg-review-desc,
+body.theme-light .dpg-review-desc {
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+html[data-theme="light"] .dpg-review-btn,
+body[data-theme="light"] .dpg-review-btn,
+body.theme-light .dpg-review-btn {
+  background: linear-gradient(135deg, #4338ca, #6366f1) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(67, 56, 202, 0.35) !important;
+}
+
+/* Global Highlight Statements and Selection Across All Themes */
+mark, .highlight, .statement-highlight {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #fef08a !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+html[data-theme="light"] mark,
+html[data-theme="light"] .highlight,
+html[data-theme="light"] .statement-highlight,
+body[data-theme="light"] mark,
+body[data-theme="light"] .highlight,
+body[data-theme="light"] .statement-highlight {
+  background: #fef08a !important;
+  color: #0f172a !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: 1px solid #fde047 !important;
+}

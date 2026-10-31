@@ -132,7 +132,21 @@
 
     :root{--bg:#0c0e1a;--sb:#111427;--surface:#161929;--bdr:rgba(255,255,255,0.08);--pri:#6366f1;--pli:#818cf8;--txt:#e2e8f0;--mut:#64748b;--acc:#8b5cf6}
 
-    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      display: flex;
+      flex-direction: column;
+    }
 
     /* TOP BAR */
 
@@ -246,7 +260,7 @@
 
     /* LAYOUT */
 
-    .layout{display:flex;flex:1;min-height:0;overflow:hidden}
+    .layout{display:flex;flex:1 1 0;min-height:0;height:calc(100vh - 56px);height:calc(100dvh - 56px);overflow:hidden;position:relative;width:100%}
 
     /* SIDEBAR */
 
@@ -282,11 +296,11 @@
 
     /* PDF AREA */
 
-    .pdfmain{flex:1;min-height:0;overflow-y:auto;background:#191c2e;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+    .pdfmain{flex:1 1 auto;min-height:0;height:100%;overflow-y:scroll !important;overflow-x:hidden !important;background:#191c2e;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem 6rem;-webkit-overflow-scrolling:touch !important;touch-action:pan-y !important;overscroll-behavior-y:auto !important;box-sizing:border-box !important}
 
-    .pdfpage{width:100%;max-width:830px;margin-bottom:1.1rem;border-radius:9px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6)}
+    .pdfpage{width:100%;max-width:830px;margin-bottom:1.1rem;border-radius:9px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6);touch-action:pan-y !important}
 
-    .pdfpage canvas{display:block;width:100%;height:auto;background:white}
+    .pdfpage canvas{display:block;width:100%;height:auto;background:white;pointer-events:none !important;touch-action:pan-y !important}
 
     /* AD SLOT */
 
@@ -378,28 +392,24 @@
 
       }
 
-      .layout{
-
-        width: 100% !important;
-
-        max-width: 100vw !important;
-
-        overflow-x: hidden !important;
-
+      .layout {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: calc(100vh - 52px) !important;
+        height: calc(100dvh - 52px) !important;
+        overflow-x: hidden !important;
       }
 
-      .pdfmain{
-
-        width: 100% !important;
-
-        max-width: 100vw !important;
-
-        padding: 0.75rem 0.25rem !important;
-
-        box-sizing: border-box !important;
-
-        overflow-x: hidden !important;
-
+      .pdfmain {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: 100% !important;
+        padding: 0.75rem 0.25rem 6rem !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
       }
 
       .pdfpage{
@@ -646,10 +656,41 @@
     html[data-theme="light"] .dpg-doc-locked-title, body[data-theme="light"] .dpg-doc-locked-title, body.theme-light .dpg-doc-locked-title { color:#0f172a !important; }
     html[data-theme="light"] .dpg-doc-locked-desc, body[data-theme="light"] .dpg-doc-locked-desc, body.theme-light .dpg-doc-locked-desc { color:#334155 !important; }
     html[data-theme="light"] .dpg-doc-locked-btn, body[data-theme="light"] .dpg-doc-locked-btn, body.theme-light .dpg-doc-locked-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
+
+    /* Resource Under Review Card */
+    .dpg-review-card { background:rgba(15,23,42,0.95); border:1.5px solid rgba(245,158,11,0.4); border-radius:20px; padding:2.5rem 2rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6); transition:all 0.25s ease; color:#f8fafc; }
+    .dpg-review-icon-wrap { width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.15); border:1.5px solid rgba(245,158,11,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#fbbf24; }
+    .dpg-review-title { font-family:'Outfit',sans-serif; color:#ffffff !important; font-size:1.4rem; font-weight:700; margin-bottom:0.6rem; letter-spacing:-0.015em; line-height:1.3; }
+    .dpg-review-desc { color:#cbd5e1 !important; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem; font-weight:400; }
+    .dpg-review-btn { display:inline-flex; align-items:center; gap:7px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#ffffff !important; padding:11px 24px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.9rem; box-shadow:0 4px 14px rgba(99,102,241,0.4); transition:all 0.2s ease; }
+    .dpg-review-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(99,102,241,0.55); }
+
+    /* Light Theme In-File Overrides for Review Card */
+    html[data-theme="light"] .dpg-review-card, body[data-theme="light"] .dpg-review-card, body.theme-light .dpg-review-card { background:#ffffff !important; border:1.5px solid #f59e0b !important; box-shadow:0 25px 60px -12px rgba(15,23,42,0.15), 0 0 0 1px rgba(245,158,11,0.2) !important; color:#0f172a !important; }
+    html[data-theme="light"] .dpg-review-icon-wrap, body[data-theme="light"] .dpg-review-icon-wrap, body.theme-light .dpg-review-icon-wrap { background:rgba(245,158,11,0.14) !important; border-color:#f59e0b !important; color:#b45309 !important; }
+    html[data-theme="light"] .dpg-review-title, body[data-theme="light"] .dpg-review-title, body.theme-light .dpg-review-title { color:#0f172a !important; }
+    html[data-theme="light"] .dpg-review-desc, body[data-theme="light"] .dpg-review-desc, body.theme-light .dpg-review-desc { color:#334155 !important; }
+    html[data-theme="light"] .dpg-review-btn, body[data-theme="light"] .dpg-review-btn, body.theme-light .dpg-review-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
+
+    /* Highlight Statements Across Themes */
+    mark, .highlight, .statement-highlight { background:rgba(245,158,11,0.22) !important; color:#fef08a !important; padding:2px 6px; border-radius:4px; font-weight:600; border:1px solid rgba(245,158,11,0.35); }
+    html[data-theme="light"] mark, html[data-theme="light"] .highlight, html[data-theme="light"] .statement-highlight,
+    body[data-theme="light"] mark, body[data-theme="light"] .highlight, body[data-theme="light"] .statement-highlight { background:#fef08a !important; color:#0f172a !important; padding:2px 6px; border-radius:4px; font-weight:600; border:1px solid #fde047 !important; }
   </style>
 
   <script src="/history-monitoring.js" defer></script>
 
+  <script>
+    // Immediate global initialization to prevent any ReferenceError under all execution orders
+    (function() {
+      try {
+        const _p = new URLSearchParams(window.location.search);
+        const _rid = (_p.get('id') || _p.get('docid') || _p.get('resourceId') || _p.get('resourceID') || '').trim();
+        window.resourceId = _rid;
+        window.docId = _rid || _p.get('docid') || '—';
+      } catch(e) {}
+    })();
+  </script>
 </head>
 
 <body>
@@ -1211,7 +1252,8 @@ if (incomingShare.startsWith('VSH_') || incomingShare.startsWith('VSH_AD_')) {
 
 
 
-let resourceId = incomingId;
+window.resourceId = incomingId;
+var resourceId = incomingId;
 
 let pdfUrl  = P.get('pdf')         || '';
 
@@ -1223,7 +1265,8 @@ let docDisc = P.get('discipline')  || '—';
 
 let docUp   = P.get('uploader')    || '—';
 
-let docId   = resourceId           || P.get('docid') || '—';
+window.docId = resourceId;
+var docId   = resourceId           || P.get('docid') || '—';
 
 let docDesc = P.get('description') || '';
 
@@ -3175,268 +3218,19 @@ async function resolveAndRender() {
     updateDocMetadataUI();
     const spinner = document.getElementById('loadSpinner');
     if (spinner) {
-      spinner.innerHTML = `
-        <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(239,68,68,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-          <div style="width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#f87171;">
-            <i class="ri-shield-keyhole-line"></i>
-          </div>
-          <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Administrator Session Required</h2>
-          <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
-            The administrative preview parameter requires an active verified Administrator session. Anonymous visitors and general users cannot preview unapproved resources.
-          </p>
-          <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-            <a href="/admin.html" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
-              <i class="ri-admin-line"></i> Admin Login
-            </a>
-            <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:10px 18px; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.88rem;">
-              Return Home
-            </a>
-          </div>
-        </div>
-      `;
-      spinner.style.display = 'flex';
-    }
-    return;
-  }
-
-  // 1. Wait up to 3 seconds for async Firebase module to expose window.dpgDb and getDoc
-
-  let attempts = 0;
-
-  while ((!window.dpgDb || !window.getDoc || !window.doc) && attempts < 15) {
-
-    await new Promise(r => setTimeout(r, 200));
-
-    attempts++;
-
-  }
-
-
-
-  const targetSearchId = resourceId || P.get('docid') || P.get('id') || '';
-
-
-
-  // 2. If targetSearchId is provided, query Firestore
-
-  if (targetSearchId && targetSearchId !== '—') {
-
-    try {
-
-      const db = window.dpgDb;
-
-      if (db && window.doc && window.getDoc) {
-
-        // A. Direct Document lookup by Firestore ID
-
-        const docRef = window.doc(db, "documents", targetSearchId);
-
-        let snap = await window.getDoc(docRef);
-
-
-
-        let d = null;
-
-        if (snap && snap.exists()) {
-
-          d = snap.data();
-
-          window.firestoreDocId = snap.id;
-
-        } else if (window.query && window.collection && window.where && window.getDocs) {
-
-          // B. Query documents collection where documentId == targetSearchId
-
-          const qDoc = window.query(window.collection(db, "documents"), window.where("documentId", "==", targetSearchId));
-
-          const qSnap = await window.getDocs(qDoc);
-
-          if (!qSnap.empty) {
-
-            const firstDoc = qSnap.docs[0];
-
-            d = firstDoc.data();
-
-            window.firestoreDocId = firstDoc.id;
-
-          }
-
-        }
-
-
-
-        if (d) {
-
-          if (d.pdfUrl) pdfUrl = d.pdfUrl;
-
-          if (d.title) docTitle = d.title;
-
-          if (d.category) docCat = d.category;
-
-          if (d.discipline) docDisc = d.discipline;
-
-          if (d.userName || d.uploader) docUp = d.userName || d.uploader;
-
-          if (d.description) docDesc = d.description;
-
-          if (d.tags) docTags = Array.isArray(d.tags) ? d.tags.join(', ') : d.tags;
-
-          if (d.trackId) window.resolvedTrackId = d.trackId;
-
-          docId = d.documentId || window.firestoreDocId || targetSearchId;
-
-          window.currentLoadedDocData = d;
-
-        }
-
-      }
-
-    } catch(err) {
-
-      console.warn("Firestore resourceID fetch error, using URL params fallback:", err);
-
-    }
-
-  }
-
-
-
-  // Allow brief window for auth to settle
-
-  let authWait = 0;
-
-  while (!window.dpgCurrentUser && window.dpgAuth && !window.dpgAuth.currentUser && authWait < 6) {
-
-    await new Promise(r => setTimeout(r, 100));
-
-    authWait++;
-
-  }
-
-
-
-  const d = window.currentLoadedDocData;
-
-  if (d) {
-
-    const isApproved = d.status === "approved" || d.status === "Approved" || d.isApproved === true;
-
-    const user = window.dpgCurrentUser || (window.dpgAuth ? window.dpgAuth.currentUser : null);
-
-    const currentUid = user?.uid || localStorage.getItem("dpgActiveUserUid") || "";
-
-    const currentEmail = (user?.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
-
-
-
-    // Strict Active Admin Session Verification (cannot be bypassed by URL param alone)
-
-    const hasAdminToken = !!localStorage.getItem("adminToken");
-
-    const activeEmail = (localStorage.getItem("dpgActiveUserEmail") || currentEmail || "").toLowerCase().trim();
-
-    const hasActiveAdminSession = currentEmail === 'its.akshatnetworkhub23@gmail.com' || (hasAdminToken && activeEmail === 'its.akshatnetworkhub23@gmail.com');
-
-    const isAdmin = hasActiveAdminSession;
-
-    const isOwner = !!(currentUid && d.userId && currentUid === d.userId) || !!(currentEmail && d.uploaderEmail && currentEmail === (d.uploaderEmail || "").toLowerCase().trim());
-
-
-
-    // 0. Explicit Preview Gate: If URL specifically requests preview=admin without verified admin credentials
-
-    if (P.get('preview') === 'admin' && !isAdmin && !isOwner) {
-
-      updateDocMetadataUI();
-
-      const spinner = document.getElementById('loadSpinner');
-
-      if (spinner) {
-
-        spinner.innerHTML = `
-
-          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(239,68,68,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-
-            <div style="width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#f87171;">
-
-              <i class="ri-shield-keyhole-line"></i>
-
-            </div>
-
-            <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Administrator Session Required</h2>
-
-            <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
-
-              The administrative preview mode requires an active verified Administrator session. Anonymous visitors and non-admin users cannot preview resources under review.
-
-            </p>
-
-            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-
-              <a href="/admin.html" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
-
-                <i class="ri-admin-line"></i> Admin Login
-
-              </a>
-
-              <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:10px 18px; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.88rem;">
-
-                Return Home
-
-              </a>
-
-            </div>
-
-          </div>
-
-        `;
-
-        spinner.style.display = 'flex';
-
-      }
-
-      return;
-
-    }
-
-
-
-    // 1. Approval Gate Check: Non-approved resources are inaccessible to general public
-
-    if (!isApproved && !isOwner && !isAdmin) {
-
-      updateDocMetadataUI();
-
-      const spinner = document.getElementById('loadSpinner');
-
-      if (spinner) {
-
-        spinner.innerHTML = `
-
-          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(245,158,11,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-
-            <div style="width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#fbbf24;">
-
-              <i class="ri-time-line"></i>
-
-            </div>
-
-            <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Resource Under Review</h2>
-
-            <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
-
-              "${escapeDocHtml(d.title || docTitle)}" has been submitted by the contributor and is currently pending Administrator review. Once approved, it will be published for public reading.
-
-            </p>
-
-            <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 22px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
-
-              <i class="ri-arrow-left-line"></i> Return to DPGNotes Home
-
-            </a>
-
-          </div>
-
+      spinner.innerHTML = `
+          <div class="dpg-review-card">
+            <div class="dpg-review-icon-wrap">
+              <i class="ri-time-line"></i>
+            </div>
+            <h2 class="dpg-review-title">Resource Under Review</h2>
+            <p class="dpg-review-desc">
+              "${escapeDocHtml(d.title || docTitle)}" has been submitted by the contributor and is currently pending Administrator review. Once approved, it will be published for public reading.
+            </p>
+            <a href="/" class="dpg-review-btn">
+              <i class="ri-arrow-left-line"></i> Return to DPGNotes Home
+            </a>
+          </div>
         `;
 
         spinner.style.display = 'flex';

@@ -1883,8 +1883,15 @@
     const queryLabel = document.getElementById("queryTextLabel");
     const initialQuery = urlParams.get("q") || urlParams.get("query") || urlParams.get("tag") || urlParams.get("category") || urlParams.get("discipline") || "";
 
-    if (searchField) searchField.value = initialQuery;
-    if (queryLabel) queryLabel.innerText = initialQuery || "All Materials";
+    const initialParsed = parseSearchQueryOperators(initialQuery);
+    if (initialParsed.operators) {
+      executeParsedOperators(initialParsed.operators);
+      if (searchField) searchField.value = initialParsed.cleanQuery;
+      if (queryLabel) queryLabel.innerText = initialParsed.cleanQuery || "All Materials";
+    } else {
+      if (searchField) searchField.value = initialQuery;
+      if (queryLabel) queryLabel.innerText = initialQuery || "All Materials";
+    }
 
     // Auto-detect and sync filter chip from URL tag parameter
     const initialTagParam = (urlParams.get("tag") || "").toLowerCase();
@@ -2154,8 +2161,8 @@
               totalQuestions: qCount,
               timeMinutes: timeMin,
               questionKeywords: qzData.questionKeywords || '',
-              likes: qzData.likes || 12,
-              views: qzData.views || 45,
+              likes: typeof qzData.likesCount === 'number' ? qzData.likesCount : (Array.isArray(qzData.likes) ? qzData.likes.length : (typeof qzData.likes === 'number' ? qzData.likes : (Array.isArray(qzData.likedBy) ? qzData.likedBy.length : 0))),
+              views: typeof qzData.sharesCount === 'number' ? qzData.sharesCount : (Array.isArray(qzData.shares) ? qzData.shares.length : (typeof qzData.shares === 'number' ? qzData.shares : (typeof qzData.shareCount === 'number' ? qzData.shareCount : (typeof qzData.views === 'number' ? qzData.views : 0)))),
               tags: ["quiz", "exam", "mock test", "assessment", qzData.subjectCode || "", subName, ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean),
               createdAt: qzData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
               rawDoc: qzData
@@ -2335,6 +2342,146 @@
       'exam': ['examination', 'sessional', 'midterm', 'final', 'quiz', 'test', 'mock test'],
       'mock': ['quiz', 'mock test', 'practice test', 'examination']
     };
+
+    
+    // ==========================================
+    // ADVANCED QUERY OPERATOR PARSER & FILTER ENGINE
+    // Supports backtick syntax: `cat='SP'`, `tab='AS'&&cat='All'`, `rel='ML'`, `rel='A-Z'`
+    // ==========================================
+    function parseSearchQueryOperators(rawStr) {
+      if (!rawStr) return { cleanQuery: '', operators: null };
+      const backtickRegex = /`([^`]+)`/;
+      const match = rawStr.match(backtickRegex);
+      if (!match) {
+        return { cleanQuery: rawStr.trim(), operators: null };
+      }
+
+      const opString = match[1].trim();
+      const cleanQuery = rawStr.replace(backtickRegex, '').replace(/\s+/g, ' ').trim();
+
+      const ops = {};
+      const parts = opString.split('&&');
+      parts.forEach(part => {
+        const kv = part.split('=');
+        if (kv.length === 2) {
+          const k = kv[0].trim().toLowerCase();
+          const v = kv[1].trim().replace(/^['"]|['"]$/g, '').trim();
+          ops[k] = v;
+        }
+      });
+
+      return { cleanQuery, operators: ops, fullOperatorStr: opString };
+    }
+
+    function executeParsedOperators(ops) {
+      if (!ops) return;
+
+      // 1. Process 'tab' operator
+      if (ops.tab) {
+        const rawTab = ops.tab.toLowerCase();
+        let targetTab = 'all';
+        if (rawTab === 'as' || rawTab === 'solutions' || rawTab === 'academic' || rawTab === 'solution') targetTab = 'solutions';
+        else if (rawTab === 'q' || rawTab === 'quiz' || rawTab === 'quizzes') targetTab = 'quizzes';
+        else if (rawTab === 'ai') targetTab = 'ai';
+        else if (rawTab === 'notes' || rawTab === 'web' || rawTab === 'website') targetTab = 'website';
+        else if (rawTab === 'yt' || rawTab === 'videos' || rawTab === 'video') targetTab = 'videos';
+        else if (rawTab === 'contributors' || rawTab === 'contributor') targetTab = 'contributors';
+        else targetTab = 'all';
+
+        window.switchSerpTab(targetTab);
+      }
+
+      // 2. Process 'cat' operator
+      if (ops.cat) {
+        const rawCat = ops.cat.toUpperCase();
+        let targetCat = 'ALL';
+        if (rawCat === 'SP' || rawCat === 'SAMPLE PAPER' || rawCat === 'SAMPLE') targetCat = 'SP';
+        else if (rawCat === 'Q' || rawCat === 'QUIZ') targetCat = 'Quiz';
+        else if (rawCat === 'AS' || rawCat === 'ASSIGNMENT SOLUTION' || rawCat === 'ASSIGNMENT') targetCat = 'Assignment Solution';
+        else if (rawCat === 'PS' || rawCat === 'PRACTICAL SOLUTION' || rawCat === 'PRACTICAL') targetCat = 'Practical Solution';
+        else if (rawCat === 'T&N' || rawCat === 'TN' || rawCat === 'TEXT & NOTES' || rawCat === 'NOTES') targetCat = 'T&N';
+        else if (rawCat === 'SE' || rawCat === 'SESSIONAL EXAM' || rawCat === 'SESSIONAL') targetCat = 'SE';
+        else if (rawCat === 'UE' || rawCat === 'UNIVERSITY EXAM' || rawCat === 'UNIVERSITY') targetCat = 'UE';
+        else if (rawCat === 'EV' || rawCat === 'EVALUATION') targetCat = 'EV';
+        else if (rawCat === 'ALL') targetCat = 'ALL';
+        else targetCat = ops.cat;
+
+        window.activeFilterChip = targetCat;
+        const catSelect = document.getElementById("filterCategory");
+        if (catSelect) catSelect.value = targetCat;
+      }
+
+      // 3. Process 'rel' operator (Relevance sort order)
+      if (ops.rel) {
+        const rawRel = ops.rel.toUpperCase();
+        const sortSelect = document.getElementById("sortOrder");
+        if (rawRel === 'NF' || rawRel === 'NEWEST') {
+          window.activeSortOrder = 'newest';
+          if (sortSelect) sortSelect.value = 'newest';
+        } else if (rawRel === 'ML' || rawRel === 'MOST LIKED' || rawRel === 'LIKES') {
+          window.activeSortOrder = 'likes';
+          if (sortSelect) sortSelect.value = 'likes';
+        } else if (rawRel === 'MV' || rawRel === 'MOST VIEWED' || rawRel === 'VIEWS') {
+          window.activeSortOrder = 'views';
+          if (sortSelect) sortSelect.value = 'views';
+        } else if (rawRel === 'A-Z' || rawRel === 'AZ' || rawRel === 'ALPHABETICAL') {
+          window.activeSortOrder = 'az';
+          if (sortSelect) sortSelect.value = 'az';
+        }
+      }
+    }
+
+    // Crawler Agent: Analyzes each PDF resource in SERP for 404 Not Found errors
+    async function crawlAndValidateSerpPdfs(docs) {
+      if (!docs || !Array.isArray(docs) || docs.length === 0) return;
+      const pdfDocs = docs.filter(d => (d.pdfUrl || d.pdf || d.fileUrl) && !d.__checked404);
+      for (const d of pdfDocs) {
+        d.__checked404 = true;
+        const targetUrl = d.pdfUrl || d.pdf || d.fileUrl;
+        if (!targetUrl || typeof targetUrl !== 'string' || !targetUrl.startsWith('http')) continue;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3500);
+          const resp = await fetch(targetUrl, { method: 'HEAD', mode: 'no-cors', signal: controller.signal }).catch(() => null);
+          clearTimeout(timeoutId);
+          if (resp && resp.status === 404) {
+            handleBrokenPdfDetected(d, 404, targetUrl);
+          }
+        } catch(crawlErr) {}
+      }
+    }
+
+    async function handleBrokenPdfDetected(d, status, url) {
+      d.isBroken404 = true;
+      try {
+        if (window.dpgDb && window.collection && window.addDoc) {
+          await window.addDoc(window.collection(window.dpgDb, "broken_pdf_telemetry"), {
+            documentId: d.id,
+            title: d.title || 'Untitled Academic Resource',
+            pdfUrl: url,
+            contributorId: d.contributorUid || d.userId || d.uploader || 'anonymous',
+            contributorEmail: d.uploaderEmail || '',
+            status: status || 404,
+            detectedAt: window.serverTimestamp ? window.serverTimestamp() : new Date(),
+            source: 'serp_crawler_agent'
+          });
+
+          if (d.contributorUid || d.userId) {
+            await window.addDoc(window.collection(window.dpgDb, "notifications"), {
+              recipientUid: d.contributorUid || d.userId,
+              title: '⚠️ PDF Resource 404 Detected',
+              message: `Your uploaded PDF for "${d.title}" returned a 404 Not Found error and has been temporarily omitted from search results. Please re-upload or update your PDF URL in the Dashboard.`,
+              resourceId: d.id,
+              type: 'warning',
+              read: false,
+              createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
+            });
+          }
+        }
+      } catch(e) {
+        console.warn("Crawler telemetry logging note:", e);
+      }
+    }
 
     function applyFilters() {
       const rawQ = (searchField ? searchField.value.trim() : '');
@@ -2590,9 +2737,44 @@
         </div>`;
       });
 
+            // Intelligent Auto-Fill Operator Recommendation
+      let suggestedOperatorCode = '';
+      if (lower.includes('practical') || lower.includes('lab') || lower.includes('manual')) {
+        suggestedOperatorCode = "`tab='solutions'&&cat='PS'`";
+      } else if (lower.includes('quiz') || lower.includes('test') || lower.includes('mcq') || lower.includes('assessment')) {
+        suggestedOperatorCode = "`tab='quizzes'&&cat='Q'`";
+      } else if (lower.includes('sample') || lower.includes('pyq') || lower.includes('previous year')) {
+        suggestedOperatorCode = "`cat='SP'&&rel='NF'`";
+      } else if (lower.includes('assignment') || lower.includes('solution') || lower.includes('homework')) {
+        suggestedOperatorCode = "`tab='solutions'&&cat='AS'`";
+      } else if (lower.includes('sessional') || lower.includes('midterm')) {
+        suggestedOperatorCode = "`cat='SE'&&rel='ML'`";
+      } else if (lower.includes('university') || lower.includes('exam')) {
+        suggestedOperatorCode = "`cat='UE'&&rel='NF'`";
+      } else if (lower.length >= 3) {
+        suggestedOperatorCode = "`rel='A-Z'`";
+      }
+
+      if (suggestedOperatorCode && !val.includes('`')) {
+        window.__activeAutofillSuggestion = `${val.trim()} ${suggestedOperatorCode}`;
+        html += `<div class="serp-suggestion-item" onclick="window.applyAutofillSuggestion('${escapeHtml(window.__activeAutofillSuggestion)}')" style="background:rgba(99,102,241,0.09); border-left:3px solid #6366f1;">
+          <i class="ri-flashlight-fill" style="color:#6366f1;"></i>
+          <span style="flex:1;"><strong>${escapeHtml(val.trim())}</strong> <code style="background:rgba(99,102,241,0.18); color:#818cf8; padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:700;">${escapeHtml(suggestedOperatorCode)}</code></span>
+          <span style="font-size:0.75rem; color:#818cf8; background:rgba(99,102,241,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">Tab ⇥</span>
+        </div>`;
+      } else {
+        window.__activeAutofillSuggestion = '';
+      }
+
       box.innerHTML = html;
       box.style.display = "block";
     }
+
+        window.applyAutofillSuggestion = function(val) {
+      if (searchField) searchField.value = val || window.__activeAutofillSuggestion;
+      hideSuggestionsBox();
+      runSearch();
+    };
 
     window.selectSuggestionQuery = function(qStr) {
       if (searchField) searchField.value = qStr;
@@ -2613,6 +2795,15 @@
     });
 
     function runSearch() {
+      const raw = searchField ? searchField.value.trim() : '';
+      const parsed = parseSearchQueryOperators(raw);
+
+      // Execute operators if present and strip backtick command code from visible input bar
+      if (parsed.operators) {
+        executeParsedOperators(parsed.operators);
+        if (searchField) searchField.value = parsed.cleanQuery;
+      }
+
       const q = searchField ? searchField.value.trim() : '';
       if (queryLabel) queryLabel.innerText = q || 'All Materials';
 
@@ -2641,6 +2832,13 @@
       });
 
       searchField.addEventListener("keydown", (e) => {
+        if (e.key === "Tab" && window.__activeAutofillSuggestion) {
+          e.preventDefault();
+          searchField.value = window.__activeAutofillSuggestion;
+          hideSuggestionsBox();
+          runSearch();
+          return;
+        }
         if (e.key === "Enter") {
           clearTimeout(searchDebounceTimer);
           hideSuggestionsBox();
