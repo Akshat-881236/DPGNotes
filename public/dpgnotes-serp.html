@@ -2092,8 +2092,8 @@
             const course = solData.course || solData.courseSec || "Academic";
             const author = solData.studentName || solData.contributorName || "Verified Contributor";
             const isEnc = Boolean(solData.isEncrypted);
-            const likesCount = typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : (Array.isArray(solData.likes) ? solData.likes.length : 0));
-            const sharesCount = typeof solData.shares === 'number' ? solData.shares : (Array.isArray(solData.shares) ? solData.shares.length : (typeof solData.shareCount === 'number' ? solData.shareCount : (solData.views || 0)));
+            const likesCount = typeof solData.likesCount === 'number' ? solData.likesCount : (typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : (Array.isArray(solData.likes) ? solData.likes.length : 0)));
+            const sharesCount = typeof solData.sharesCount === 'number' ? solData.sharesCount : (typeof solData.shares === 'number' ? solData.shares : (Array.isArray(solData.shares) ? solData.shares.length : (typeof solData.shareCount === 'number' ? solData.shareCount : (solData.views || 0))));
 
             allDocs.push({
               id: solDoc.id,
@@ -2113,8 +2113,11 @@
               userId: contribUid,
               photoURL: solData.photoURL || solData.profilePic || solData.userPhoto || solData.authorPhoto || solData.avatar || "",
               likes: likesCount,
+              likesCount: likesCount,
               shares: sharesCount,
-              views: solData.views || 0,
+              sharesCount: sharesCount,
+              shareCount: sharesCount,
+              views: sharesCount,
               screentime: solData.totalScreentimeSec || 60,
               isEncrypted: isEnc,
               isVerified: true,
@@ -2142,6 +2145,9 @@
             const qCount = qzData.totalQuestions || (Array.isArray(qzData.questions) ? qzData.questions.length : 15);
             const timeMin = qzData.timeMinutes || 20;
 
+            const qLikes = typeof qzData.likesCount === 'number' ? qzData.likesCount : (Array.isArray(qzData.likes) ? qzData.likes.length : (typeof qzData.likes === 'number' ? qzData.likes : (Array.isArray(qzData.likedBy) ? qzData.likedBy.length : 0)));
+            const qShares = typeof qzData.sharesCount === 'number' ? qzData.sharesCount : (typeof qzData.shareCount === 'number' ? qzData.shareCount : (Array.isArray(qzData.shares) ? qzData.shares.length : (typeof qzData.shares === 'number' ? qzData.shares : (typeof qzData.views === 'number' ? qzData.views : 0))));
+
             allDocs.push({
               id: qzId,
               isQuiz: true,
@@ -2161,8 +2167,12 @@
               totalQuestions: qCount,
               timeMinutes: timeMin,
               questionKeywords: qzData.questionKeywords || '',
-              likes: typeof qzData.likesCount === 'number' ? qzData.likesCount : (Array.isArray(qzData.likes) ? qzData.likes.length : (typeof qzData.likes === 'number' ? qzData.likes : (Array.isArray(qzData.likedBy) ? qzData.likedBy.length : 0))),
-              views: typeof qzData.sharesCount === 'number' ? qzData.sharesCount : (Array.isArray(qzData.shares) ? qzData.shares.length : (typeof qzData.shares === 'number' ? qzData.shares : (typeof qzData.shareCount === 'number' ? qzData.shareCount : (typeof qzData.views === 'number' ? qzData.views : 0)))),
+              likes: qLikes,
+              likesCount: qLikes,
+              shares: qShares,
+              sharesCount: qShares,
+              shareCount: qShares,
+              views: qShares,
               tags: ["quiz", "exam", "mock test", "assessment", qzData.subjectCode || "", subName, ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean),
               createdAt: qzData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
               rawDoc: qzData
@@ -2204,7 +2214,7 @@
           allDocs.forEach(d => {
             const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId;
             const author = d.userName || d.uploader || d.studentName || d.contributorName;
-            const docLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
+            const docLikes = typeof d.likesCount === 'number' ? d.likesCount : (Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0)));
 
             if (authorUid && usersMap.has(authorUid)) {
               const u = usersMap.get(authorUid);
@@ -2929,8 +2939,8 @@
           : (d.solutionUrl || (isSol ? (d.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(d.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(d.id)}`) : `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`));
 
         // Engagement metrics
-        const totalLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
-        const totalShares = typeof d.shares === 'number' ? d.shares : (Array.isArray(d.shares) ? d.shares.length : (typeof d.shareCount === 'number' ? d.shareCount : (d.views || 0)));
+        const totalLikes = typeof d.likesCount === 'number' ? d.likesCount : (Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0)));
+        const totalShares = typeof d.sharesCount === 'number' ? d.sharesCount : (typeof d.shareCount === 'number' ? d.shareCount : (Array.isArray(d.shares) ? d.shares.length : (typeof d.shares === 'number' ? d.shares : (typeof d.views === 'number' ? d.views : 0))));
 
         const categoryLabel = d.category || (isQuiz ? 'Quiz' : (isSol ? 'Academic Solution' : 'Notes'));
         const disciplineLabel = d.discipline || 'General';
@@ -3507,8 +3517,8 @@
       let solHtml = `<div style="display:flex; flex-direction:column; gap:16px; width:100%; max-width:900px;">`;
       solutions.forEach(s => {
         const viewerUrl = s.solutionUrl || (s.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(s.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(s.id)}`);
-        const totalLikes = Array.isArray(s.likes) ? s.likes.length : (typeof s.likes === 'number' ? s.likes : (Array.isArray(s.likedBy) ? s.likedBy.length : 0));
-        const totalShares = typeof s.shares === 'number' ? s.shares : (Array.isArray(s.shares) ? s.shares.length : (typeof s.shareCount === 'number' ? s.shareCount : (s.views || 0)));
+        const totalLikes = typeof s.likesCount === 'number' ? s.likesCount : (Array.isArray(s.likes) ? s.likes.length : (typeof s.likes === 'number' ? s.likes : (Array.isArray(s.likedBy) ? s.likedBy.length : 0)));
+        const totalShares = typeof s.sharesCount === 'number' ? s.sharesCount : (typeof s.shareCount === 'number' ? s.shareCount : (Array.isArray(s.shares) ? s.shares.length : (typeof s.shares === 'number' ? s.shares : (typeof s.views === 'number' ? s.views : 0))));
 
         const encBadge = s.isEncrypted
           ? `<span class="result-verified-pill" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;"><i class="ri-lock-2-line"></i> Encrypted</span>`
