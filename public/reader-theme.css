@@ -468,8 +468,12 @@ html[data-font-size="xl"] { font-size: 21px !important; } /* Low-vision accessib
    READER CONTROLS WIDGET UI
    ========================================================================== */
 .dpg-reader-controls {
-  display: inline-flex;
-  align-items: center;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  align-items: center !important;
   background: rgba(15, 23, 42, 0.85);
   border: 1.5px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
@@ -535,11 +539,16 @@ html[data-theme="light"] .dpg-rc-divider {
   .dpg-reader-controls {
     padding: 2px 4px !important;
     gap: 2px !important;
-    max-width: 100% !important;
+    max-width: none !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
   .dpg-rc-btn {
     padding: 3px 6px !important;
     font-size: 0.74rem !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
   }
   .dpg-rc-theme-text {
     display: none !important;
@@ -547,6 +556,7 @@ html[data-theme="light"] .dpg-rc-divider {
   .dpg-rc-divider {
     height: 12px !important;
     margin: 0 1px !important;
+    flex-shrink: 0 !important;
   }
 }
 /* ==========================================================================
@@ -1430,6 +1440,10 @@ body.theme-auto {
 }
 .dpg-reader-controls {
   display: inline-flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
   align-items: center !important;
   gap: 4px !important;
   background: rgba(15, 23, 42, 0.65) !important;
@@ -1437,7 +1451,6 @@ body.theme-auto {
   border-radius: 999px !important;
   padding: 3px 6px !important;
   backdrop-filter: blur(12px) !important;
-  flex-wrap: wrap !important;
 }
 .dpg-rc-btn {
   display: inline-flex !important;
