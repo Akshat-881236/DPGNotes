@@ -1188,6 +1188,18 @@
     const P = new URLSearchParams(location.search);
     const targetId = P.get('id') || P.get('docId');
     let currentAuthUser = null;
+    let activeUid = localStorage.getItem("dpgActiveUserUid") || "";
+    function getActiveUserId() {
+      if (currentAuthUser && currentAuthUser.uid) return currentAuthUser.uid;
+      if (auth.currentUser && auth.currentUser.uid) return auth.currentUser.uid;
+      const lsUid = localStorage.getItem("dpgActiveUserUid");
+      if (lsUid) return lsUid;
+      try {
+        const uObj = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
+        if (uObj.uid) return uObj.uid;
+      } catch(e) {}
+      return activeUid || "";
+    }
     let pendingTrainEmail = "";
     let pendingTrainUser = null;
     let faqCounter = 1;
@@ -2178,6 +2190,7 @@
         btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> ${isEditing ? 'Updating Note...' : 'Publishing Note...'}`;
       }
       try {
+        const currentUid = getActiveUserId() || activeUid || "contributor";
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         const url = isEditing
           ? `${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}/${encodeURIComponent(targetNoteId)}`
@@ -2191,7 +2204,7 @@
             rendering: rend,
             tags: tagsVal,
             htmlContent: finalHtml,
-            userId: activeUid
+            userId: currentUid
           })
         });
         const resData = await res.json();
@@ -2432,8 +2445,8 @@
       }
     }
     async function loadSingleResourceTrainer(docId, user) {
-      const activeUid = user ? user.uid : "";
-      const userEmail = user ? user.email : "";
+      activeUid = user ? user.uid : getActiveUserId();
+      const userEmail = user ? user.email : (localStorage.getItem("dpgUserEmail") || "");
       const isAdmin = userEmail === 'its.akshatnetworkhub23@gmail.com';
       try {
         let snap = await getDoc(doc(db, "documents", docId));
@@ -2518,6 +2531,7 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Processing AI Knowledge Extraction & Generation...`;
       try {
+        const currentUid = getActiveUserId() || activeUid || "contributor";
         const res = await fetch((window.API_BASE_URL || '') + '/api/ai/train-model', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2525,7 +2539,7 @@
             resourceId: targetId,
             urls,
             faqs,
-            userId: activeUid
+            userId: currentUid
           })
         });
         let resData = {};
@@ -2575,6 +2589,7 @@
       const navAllResourcesLink = document.getElementById("navAllResourcesLink");
       if (!user) {
         currentAuthUser = null;
+        activeUid = "";
         if (authOverlay) authOverlay.style.display = "flex";
         if (userArea) userArea.style.display = "none";
         if (logoutBtn) logoutBtn.style.display = "none";
@@ -2584,6 +2599,7 @@
         return;
       }
       currentAuthUser = user;
+      activeUid = user.uid;
       localStorage.setItem("dpgActiveUserUid", user.uid);
       localStorage.setItem("dpgUserEmail", user.email || "");
       if (authOverlay) authOverlay.style.display = "none";
