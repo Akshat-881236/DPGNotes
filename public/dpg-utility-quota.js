@@ -1,18 +1,6 @@
-/**
- * DPGNotes Universal Utility Tools Quota & Anti-Bypass System
- * (Image to PDF Converter, PDF Meta Adder, PDF Meta Analyzer)
- * 
- * Enforces:
- * - 1 Token / Day for Guests
- * - 2 Tokens / Day for Registered Contributors
- * - Hardware Canvas Fingerprint + UID + Date stored in Firestore `utility_tool_quotas`
- * - Bypass-proof: Clearing localStorage/sessionStorage does not grant new tokens.
- * - Quota Lockdown Modal with Google Sign-In (double tokens) and Sponsored Ads watch.
- */
-
+/** DPGNotes Universal Utility Tools Quota & Anti-Bypass System */
 (function() {
   "use strict";
-
   let currentDeviceFingerprint = null;
   let currentQuotaTokens = 1;
   let currentMaxQuota = 1;
@@ -24,22 +12,18 @@
   let coverAdObserver = null;
   let adsRequiredTotal = 1;
   let adsRemainingToWatch = 1;
-
-  // Firebase Module References
   let dpgDb = null;
   let dpgAuth = null;
   let fsDoc = null;
   let fsSetDoc = null;
   let fsGetDoc = null;
   let fsServerTimestamp = null;
-
   async function initFirebaseModules() {
     if (dpgDb) return;
     try {
       const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js");
       const { getFirestore, doc, setDoc, getDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js");
       const { getAuth, signInWithPopup, GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js");
-
       const cfg = (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) ? window.FIREBASE_CONFIG : {
         apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
         authDomain: "dpgnotes.firebaseapp.com",
@@ -48,7 +32,6 @@
         messagingSenderId: "910494426039",
         appId: "1:910494426039:web:adeae5315caaf846c43e32"
       };
-
       const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
       dpgDb = getFirestore(app);
       dpgAuth = getAuth(app);
@@ -61,7 +44,6 @@
       console.warn("[DpgUtilityQuota] Firebase init warning:", err);
     }
   }
-
   async function getDeviceFingerprint() {
     if (currentDeviceFingerprint) return currentDeviceFingerprint;
     try {
@@ -85,7 +67,6 @@
       const lang = navigator.language || "";
       const platform = navigator.platform || "";
       const raw = `${dataUrl}___${screenInfo}___${tz}___${lang}___${platform}`;
-
       let h1 = 0xdeadbeef, h2 = 0x41c64e6d;
       for (let i = 0; i < raw.length; i++) {
         const ch = raw.charCodeAt(i);
@@ -103,7 +84,6 @@
     }
     return currentDeviceFingerprint;
   }
-
   function isContributor() {
     try {
       return !!(localStorage.getItem("dpgActiveUserUid") || (dpgAuth && dpgAuth.currentUser));
@@ -111,11 +91,9 @@
       return false;
     }
   }
-
   function getTodayDateStr() {
     return new Date().toISOString().split("T")[0];
   }
-
   async function getQuotaDocId() {
     const fp = await getDeviceFingerprint();
     const isContrib = isContributor();
@@ -123,14 +101,12 @@
     const prefix = isContrib && uid ? `user_${uid}` : `guest_${fp}`;
     return `util_${prefix}_${getTodayDateStr()}`;
   }
-
   async function syncQuotaFromFirestore() {
     await initFirebaseModules();
     const isContrib = isContributor();
     currentMaxQuota = isContrib ? 2 : 1;
     const today = getTodayDateStr();
     const quotaId = await getQuotaDocId();
-
     try {
       if (dpgDb && fsDoc && fsGetDoc) {
         const quotaRef = fsDoc(dpgDb, "utility_tool_quotas", quotaId);
@@ -156,18 +132,15 @@
     } catch (err) {
       console.warn("[DpgUtilityQuota] Quota sync error:", err);
     }
-
     updateBadgeUI();
     return currentQuotaTokens;
   }
-
   function updateBadgeUI() {
     const isContrib = isContributor();
     const badgeText = `${currentQuotaTokens} / ${currentMaxQuota}`;
     const badgeColor = currentQuotaTokens > 0 ? "#10b981" : "#ef4444";
     const badgeBg = currentQuotaTokens > 0 ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.15)";
     const badgeBorder = currentQuotaTokens > 0 ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.35)";
-
     const badgeHtml = `
       <div id="dpgUtilityQuotaBadge" style="display:inline-flex; align-items:center; gap:6px; background:${badgeBg}; border:1px solid ${badgeBorder}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; color:${badgeColor}; font-family:inherit; cursor:pointer;" title="Click to view Quota details">
         <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
@@ -175,8 +148,6 @@
         ${isContrib ? '<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Contributor (2x)</span>' : '<span style="background:rgba(255,255,255,0.08); color:#94a3b8; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Guest</span>'}
       </div>
     `;
-
-    // Look for tool-specific header pill placeholders or inject into header
     const targets = ["userHeaderPillAdder", "userHeaderPillAnalyzer", "userHeaderPillConverter"];
     let injected = false;
     for (const tId of targets) {
@@ -187,7 +158,6 @@
         break;
       }
     }
-
     if (!injected) {
       const headerStatus = document.querySelector(".header-status");
       if (headerStatus) {
@@ -196,7 +166,6 @@
         headerStatus.insertAdjacentHTML("afterbegin", badgeHtml);
       }
     }
-
     const b = document.getElementById("dpgUtilityQuotaBadge");
     if (b) {
       b.onclick = () => {
@@ -210,20 +179,15 @@
       };
     }
   }
-
-  // Quota Consumption
   async function requestTokenOrLockdown(toolName = "Utility Tool") {
     activeToolName = toolName;
     await syncQuotaFromFirestore();
-
     if (currentQuotaTokens <= 0) {
       showQuotaLockdown();
       return false;
     }
-
     currentQuotaTokens--;
     updateBadgeUI();
-
     try {
       const quotaId = await getQuotaDocId();
       if (dpgDb && fsDoc && fsSetDoc) {
@@ -236,14 +200,10 @@
     } catch (err) {
       console.warn("[DpgUtilityQuota] Failed to decrement token:", err);
     }
-
     return true;
   }
-
-  // Injects Quota Lockdown Modal DOM into document
   function ensureLockdownModal() {
     if (document.getElementById("dpgUtilityLockOverlay")) return;
-
     const modalHtml = `
       <div id="dpgUtilityLockOverlay" style="display:none; position:fixed; inset:0; z-index:2147483640; background:rgba(6,9,19,0.92); backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:1rem; overflow-y:auto;">
         <div style="background:rgba(15,23,42,0.98); border:1px solid rgba(99,102,241,0.35); box-shadow:0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(99,102,241,0.25); border-radius:20px; max-width:620px; width:100%; padding:2rem 1.75rem; color:white; text-align:center; position:relative; box-sizing:border-box;">
@@ -307,10 +267,8 @@
         </div>
       </div>
     `;
-
     document.body.insertAdjacentHTML("beforeend", modalHtml);
   }
-
   function showQuotaLockdown() {
     ensureLockdownModal();
     const overlay = document.getElementById("dpgUtilityLockOverlay");
@@ -319,16 +277,13 @@
     const midSec = document.getElementById("dpgUtilMidnightSec");
     const googleBtn = document.getElementById("dpgUtilBtnGoogleSign");
     const subtitle = document.getElementById("dpgUtilModalSubtitle");
-
     if (choiceSec) choiceSec.style.display = "flex";
     if (adSec) adSec.style.display = "none";
     if (midSec) midSec.style.display = "none";
-
     const isContrib = isContributor();
     if (googleBtn) {
       googleBtn.style.display = isContrib ? "none" : "flex";
     }
-
     if (subtitle) {
       if (isContrib) {
         subtitle.innerHTML = `You have used your Contributor daily quota tokens for <strong>${activeToolName}</strong>. Watch verified learning sponsor ads below to immediately restore your token, or wait for midnight automatic reset.`;
@@ -336,32 +291,26 @@
         subtitle.innerHTML = `You have exhausted your daily free token for <strong>${activeToolName}</strong>. Choose how you would like to proceed:`;
       }
     }
-
     if (overlay) {
       overlay.style.display = "flex";
     }
   }
-
   function exitLockdown() {
     const overlay = document.getElementById("dpgUtilityLockOverlay");
     if (overlay) overlay.style.display = "none";
-
     adWatchInProgress = false;
     if (adWatchTimer) { clearInterval(adWatchTimer); adWatchTimer = null; }
     if (midnightTimer) { clearInterval(midnightTimer); midnightTimer = null; }
     if (adsenseCheckTimer) { clearInterval(adsenseCheckTimer); adsenseCheckTimer = null; }
     if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
     if (typeof window.cleanupAllNativeAds === "function") {
       window.cleanupAllNativeAds();
     }
-
     const adsenseBox = document.getElementById("dpgUtilAdsenseBox");
     if (adsenseBox) {
       adsenseBox.style.display = "none";
       adsenseBox.innerHTML = "";
     }
-
     const adNativeInner = document.getElementById("native-ads");
     if (adNativeInner) {
       adNativeInner.classList.remove("native-ads");
@@ -369,12 +318,10 @@
       adNativeInner.innerHTML = "";
     }
   }
-
   async function restoreQuotaToken() {
     const quotaId = await getQuotaDocId();
     currentQuotaTokens = 1;
     updateBadgeUI();
-
     try {
       if (dpgDb && fsDoc && fsSetDoc) {
         const quotaRef = fsDoc(dpgDb, "utility_tool_quotas", quotaId);
@@ -386,7 +333,6 @@
     } catch (e) {
       console.warn("[DpgUtilityQuota] Failed to update restored token:", e);
     }
-
     exitLockdown();
     if (typeof window.customAlert === "function") {
       await window.customAlert("🎉 Thank you for supporting DPGNotes! Your daily utility token has been restored. You may now continue your operation.", { title: "Token Restored" });
@@ -394,35 +340,26 @@
       alert("🎉 Token restored successfully!");
     }
   }
-
-  // Quota Ad Flow: Follows exact Cover Page Generator logic (AdSense priority + silent Native Ads fallback)
   function startAdFlow() {
     if (adWatchInProgress) return;
     adWatchInProgress = true;
-
     if (adWatchTimer) clearInterval(adWatchTimer);
     if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
     if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
     const choiceSec = document.getElementById("dpgUtilChoiceSec");
     const adSec = document.getElementById("dpgUtilAdPlaybackSec");
     if (choiceSec) choiceSec.style.display = "none";
     if (adSec) adSec.style.display = "block";
-
     const statusEl = document.getElementById("dpgUtilAdStatusText");
     const barEl = document.getElementById("dpgUtilAdProgressBar");
     const adsenseBox = document.getElementById("dpgUtilAdsenseBox");
     const nativeBox = document.getElementById("dpgUtilNativeBox");
-
     if (statusEl) statusEl.textContent = "Connecting to Google AdSense... (15s timeout)";
     if (barEl) barEl.style.width = "0%";
-
     if (!navigator.onLine) {
       fallbackToNativeCoverAd();
       return;
     }
-
-    // 1. Mount Google AdSense container
     if (adsenseBox) {
       adsenseBox.style.display = "block";
       adsenseBox.innerHTML = `
@@ -435,7 +372,6 @@
       `;
     }
     if (nativeBox) nativeBox.style.display = "none";
-
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch(e) {
@@ -443,16 +379,13 @@
       fallbackToNativeCoverAd();
       return;
     }
-
     const ins = adsenseBox ? adsenseBox.querySelector("ins.adsbygoogle") : null;
     if (!ins) {
       fallbackToNativeCoverAd();
       return;
     }
-
     let adResolved = false;
     let checkElapsed = 0;
-
     const onAdsenseAbsent = () => {
       if (adResolved) return;
       adResolved = true;
@@ -460,7 +393,6 @@
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
       fallbackToNativeCoverAd();
     };
-
     const onAdsenseFilled = () => {
       if (adResolved) return;
       adResolved = true;
@@ -468,7 +400,6 @@
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
       playAdsenseDuration();
     };
-
     coverAdObserver = new MutationObserver(() => {
       const status = ins.getAttribute("data-ad-status");
       const isCollapsed = ins.style.display === "none";
@@ -481,12 +412,10 @@
       }
     });
     coverAdObserver.observe(ins, { attributes: true, attributeFilter: ["data-ad-status", "style", "class"] });
-
     adsenseCheckTimer = setInterval(() => {
       checkElapsed += 250;
       const status = ins.getAttribute("data-ad-status");
       const isCollapsed = ins.style.display === "none";
-
       if (status === "unfilled" || isCollapsed) {
         onAdsenseAbsent();
         return;
@@ -495,7 +424,6 @@
         onAdsenseFilled();
         return;
       }
-
       const secLeft = Math.max(0, ((3500 - checkElapsed) / 1000).toFixed(1));
       if (statusEl && !adResolved) {
         statusEl.textContent = `Connecting to Google AdSense... (${secLeft}s)`;
@@ -503,24 +431,20 @@
       if (barEl && !adResolved) {
         barEl.style.width = `${Math.round((checkElapsed / 3500) * 40)}%`;
       }
-
       if (checkElapsed >= 3500) {
         onAdsenseAbsent();
       }
     }, 250);
   }
-
   function playAdsenseDuration() {
     const statusEl = document.getElementById("dpgUtilAdStatusText");
     const barEl = document.getElementById("dpgUtilAdProgressBar");
     let adSec = 15;
     if (statusEl) statusEl.textContent = `Viewing Google AdSense (${adSec}s remaining...)`;
-
     adWatchTimer = setInterval(() => {
       adSec--;
       if (statusEl) statusEl.textContent = `Viewing Google AdSense (${adSec}s remaining...)`;
       if (barEl) barEl.style.width = `${Math.round(((15 - adSec) / 15) * 100)}%`;
-
       if (adSec <= 0) {
         clearInterval(adWatchTimer);
         adWatchTimer = null;
@@ -529,28 +453,23 @@
       }
     }, 1000);
   }
-
   function fallbackToNativeCoverAd() {
     if (adWatchTimer) clearInterval(adWatchTimer);
     if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
     if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
     const statusEl = document.getElementById("dpgUtilAdStatusText");
     const barEl = document.getElementById("dpgUtilAdProgressBar");
     const adsenseBox = document.getElementById("dpgUtilAdsenseBox");
     const nativeBox = document.getElementById("dpgUtilNativeBox");
     const adNativeInner = document.getElementById("native-ads") || (nativeBox ? nativeBox.querySelector(".native-ads") : null);
-
     if (adsenseBox) {
       adsenseBox.style.display = "none";
       adsenseBox.innerHTML = "";
     }
-
     if (nativeBox) nativeBox.style.display = "flex";
     let nativeSec = 15;
     if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad (${nativeSec}s remaining...)`;
     if (barEl) barEl.style.width = "0%";
-
     if (adNativeInner) {
       adNativeInner.classList.add("native-ads");
       adNativeInner.classList.add("cover-modal-native-ad");
@@ -563,12 +482,10 @@
         window.renderNativeDPGAds();
       }
     }
-
     adWatchTimer = setInterval(() => {
       nativeSec--;
       if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad (${nativeSec}s remaining...)`;
       if (barEl) barEl.style.width = `${Math.round(((15 - nativeSec) / 15) * 100)}%`;
-
       if (nativeSec <= 0) {
         clearInterval(adWatchTimer);
         adWatchTimer = null;
@@ -577,15 +494,12 @@
       }
     }, 1000);
   }
-
-  // Bind global cover ad watched callback so native ad skip / complete immediately restores token
   window.onCoverAdWatched = function() {
     const overlay = document.getElementById("dpgUtilityLockOverlay");
     if (overlay && (window.getComputedStyle(overlay).display !== "none")) {
       restoreQuotaToken();
     }
   };
-
   async function signInWithGoogle() {
     const btn = document.getElementById("dpgUtilBtnGoogleSign");
     if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Connecting to Google...';
@@ -595,7 +509,6 @@
       const { auth, signInWithPopup, GoogleAuthProvider } = window._dpgAuthModule;
       const provider = new GoogleAuthProvider();
       const res = await signInWithPopup(auth, provider);
-
       if (res && res.user) {
         localStorage.setItem("dpgActiveUserUid", res.user.uid);
         localStorage.setItem("dpgActiveUser", JSON.stringify({
@@ -605,11 +518,9 @@
           avatar: res.user.photoURL,
           role: "contributor"
         }));
-
         currentMaxQuota = 2;
         currentQuotaTokens = 2;
         updateBadgeUI();
-
         const quotaId = await getQuotaDocId();
         if (dpgDb && fsDoc && fsSetDoc) {
           const quotaRef = fsDoc(dpgDb, "utility_tool_quotas", quotaId);
@@ -621,7 +532,6 @@
             date: getTodayDateStr()
           }, { merge: true });
         }
-
         exitLockdown();
         if (typeof window.customAlert === "function") {
           await window.customAlert("🎉 Welcome Contributor! Your daily utility tool quota has been doubled (2 tokens).", { title: "Signed In Successfully" });
@@ -639,8 +549,6 @@
       }
     }
   }
-
-  // Auto-init on page load
   window.DpgUtilityQuota = {
     init: async function(toolName) {
       activeToolName = toolName || "Utility Tool";
@@ -656,7 +564,6 @@
     getTokensRemaining: () => currentQuotaTokens,
     getMaxTokens: () => currentMaxQuota
   };
-
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       window.DpgUtilityQuota.init(document.title || "Utility Tool");
@@ -664,5 +571,4 @@
   } else {
     window.DpgUtilityQuota.init(document.title || "Utility Tool");
   }
-
 })();

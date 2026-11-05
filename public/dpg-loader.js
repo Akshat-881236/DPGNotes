@@ -1,56 +1,33 @@
-/**
- * DPGNotes Universal Intelligent Pre-loader & Server Pingup System
- * 
- * Standalone, zero-dependency script executed prior to any page styles or scripts.
- * 
- * Features:
- * - Central DPGNotes logo with animated rotating circular green progress ring (#10b981)
- * - Render Cloud Server Pingup status telemetry (/api/ping)
- * - Session frequency throttle: Displays only once every > 5 minutes after closing tab/browser
- * - Optimized adaptive timing: fast (< 3s) on normal connections, max 12s cutoff on poor networks
- * - Graceful lazy-loading handoff
- */
+/** DPGNotes Universal Intelligent Pre-loader & Server Pingup System */
 (function() {
-  // Never show loading overlay to search engine bots, crawlers, or inspection tools
   const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|chrome-lighthouse|lighthouse|slurp|duckduckbot|baiduspider|yandexbot|bingbot/i.test(navigator.userAgent);
   if (isCrawler) return;
-
   const SESSION_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
   const MIN_DISPLAY_TIME_MS = 1200;           // 1.2 seconds for smooth visual experience
   const MAX_CUTOFF_TIME_MS = 12000;           // 12.0 seconds strict maximum cutoff
   const STORAGE_KEY = 'dpg_loader_last_active';
-
-  // 1. Check if user visited within the last 5 minutes
   try {
     const lastActive = localStorage.getItem(STORAGE_KEY);
     const now = Date.now();
     if (lastActive) {
       const elapsed = now - parseInt(lastActive, 10);
       if (!isNaN(elapsed) && elapsed < SESSION_INTERVAL_MS) {
-        // Active session within 5 minutes: Update heartbeat and skip loader
         localStorage.setItem(STORAGE_KEY, now.toString());
         return;
       }
     }
-    // Record current active time
     localStorage.setItem(STORAGE_KEY, now.toString());
   } catch (e) {
-    // If localStorage is blocked, proceed with loader
   }
-
-  // Continuously update heartbeat so active browsing doesn't re-trigger loader
   window.addEventListener('beforeunload', function() {
     try {
       localStorage.setItem(STORAGE_KEY, Date.now().toString());
     } catch(e) {}
   });
-
   const startTime = Date.now();
   let isDismissed = false;
   let serverStatus = 'checking'; // 'checking' | 'online' | 'standby'
   let progressPercent = 10;
-
-  // 2. Inject CSS Styles
   const styleEl = document.createElement('style');
   styleEl.id = 'dpg-loader-styles';
   styleEl.textContent = `
@@ -191,8 +168,6 @@
       50% { opacity: 0.4; transform: scale(0.85); }
     }
   `;
-
-  // 3. Create DOM Structure
   const overlay = document.createElement('div');
   overlay.id = 'dpgLoaderOverlay';
   overlay.innerHTML = `
@@ -212,8 +187,6 @@
       <span id="dpgLoaderPingLabel">Render Server: Checking API connectivity...</span>
     </div>
   `;
-
-  // Fast Mount Strategy: append as early as possible
   function mount() {
     const target = document.body || document.documentElement;
     if (target && !document.getElementById('dpgLoaderOverlay')) {
@@ -221,25 +194,19 @@
       target.appendChild(overlay);
     }
   }
-
   if (document.readyState === 'loading') {
     mount();
     document.addEventListener('DOMContentLoaded', mount);
   } else {
     mount();
   }
-
-  // 4. Update Ring Progress Helper
-  // Circumference for r=60 is 2 * PI * 60 = ~376.99
   const CIRCUMFERENCE = 377;
   function updateProgress(percent, statusMsg) {
     if (isDismissed) return;
     progressPercent = Math.min(100, Math.max(progressPercent, percent));
-
     const fillRing = document.getElementById('dpgLoaderFillRing');
     const percentText = document.getElementById('dpgLoaderPercentText');
     const statusText = document.getElementById('dpgLoaderStatusText');
-
     if (fillRing) {
       const offset = CIRCUMFERENCE - (CIRCUMFERENCE * (progressPercent / 100));
       fillRing.style.strokeDashoffset = offset;
@@ -251,22 +218,16 @@
       statusText.textContent = statusMsg;
     }
   }
-
-  // 5. Check Render Cloud Server Ping (/api/ping)
   async function pingServer() {
     const pingDot = document.getElementById('dpgLoaderPingDot');
     const pingLabel = document.getElementById('dpgLoaderPingLabel');
-
     try {
       const apiBase = (window.API_BASE_URL || '').replace(/\/+$/, '');
       const pingUrl = apiBase ? `${apiBase}/api/ping` : '/api/ping';
-      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
-
       const res = await fetch(pingUrl, { signal: controller.signal, cache: 'no-store' });
       clearTimeout(timeoutId);
-
       if (res.ok) {
         serverStatus = 'online';
         if (pingDot) {
@@ -285,18 +246,12 @@
       }
     }
   }
-
   pingServer();
-
-  // Progress stepped milestones
   setTimeout(() => updateProgress(35, "Verifying client security and modules..."), 300);
   setTimeout(() => updateProgress(65, "Syncing curriculum assets and databases..."), 700);
-
-  // 6. Dismissal Engine
   function dismissLoader() {
     if (isDismissed) return;
     isDismissed = true;
-
     updateProgress(100, "Ready!");
     const ov = document.getElementById('dpgLoaderOverlay');
     if (ov) {
@@ -308,24 +263,18 @@
       }, 550);
     }
   }
-
-  // Window load event handler
   window.addEventListener('load', function() {
     updateProgress(85, "Finalizing page render...");
     const elapsed = Date.now() - startTime;
     const remainingDelay = Math.max(0, MIN_DISPLAY_TIME_MS - elapsed);
-
     setTimeout(() => {
       dismissLoader();
     }, remainingDelay);
   });
-
-  // Strict Max Timeout: 12 seconds in poor network environments
   setTimeout(function() {
     if (!isDismissed) {
       updateProgress(100, "Assets loaded via background stream.");
       dismissLoader();
     }
   }, MAX_CUTOFF_TIME_MS);
-
 })();

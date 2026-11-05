@@ -1,17 +1,8 @@
-/**
- * DPGNotes Native Sponsored Ads Injector & Management Engine (v2.5)
- * Features:
- * - Smart Unique Ad Sampling per page (no duplicate ads across containers)
- * - 30-Second Automatic Ad Cycling for image & text ads
- * - Video Ads Lifecycle: Video completion -> Wait badge (2s) -> Thumbnail wait (3s) -> Auto-swap next ad
- * - Manual Close button (✕) with instant unique ad swap
- * - Area-specific UI Layout Variants: "feed", "sidebar", "header", "footer"
- */
+/** DPGNotes Native Sponsored Ads Injector & Management Engine (v2.5) */
 (function() {
   window.DPG_APPROVED_ADS = window.DPG_APPROVED_ADS || [];
   window.DPG_USED_AD_IDS = window.DPG_USED_AD_IDS || new Set();
   let isFetching = false;
-
   async function getOrInitFirestore() {
     if (window.dpgDb && window.collection && window.getDocs) {
       return { db: window.dpgDb, collection: window.collection, getDocs: window.getDocs };
@@ -19,7 +10,6 @@
     try {
       const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js");
       const { getFirestore, collection, getDocs } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js");
-      
       const cfg = {
         apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
         authDomain: "dpgnotes.firebaseapp.com",
@@ -28,26 +18,21 @@
         messagingSenderId: "910494426039",
         appId: "1:910494426039:web:adeae5315caaf846c43e32"
       };
-
       const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(cfg, "dpgnotes");
       const db = getFirestore(app);
-
       window.dpgDb = window.dpgDb || db;
       window.collection = window.collection || collection;
       window.getDocs = window.getDocs || getDocs;
-
       return { db, collection, getDocs };
     } catch(err) {
       console.warn("Native ads Firebase init error:", err);
       return null;
     }
   }
-
   async function fetchApprovedAds() {
     if (window.DPG_APPROVED_ADS && window.DPG_APPROVED_ADS.length > 0) return window.DPG_APPROVED_ADS;
     if (isFetching) return [];
     isFetching = true;
-
     try {
       const fb = await getOrInitFirestore();
       if (fb) {
@@ -59,7 +44,6 @@
             ads.push({ id: docSnap.id, ...data });
           }
         });
-        
         window.DPG_APPROVED_ADS = ads;
         return ads;
       }
@@ -68,16 +52,13 @@
     } finally {
       isFetching = false;
     }
-    
     return window.DPG_APPROVED_ADS || [];
   }
-
   function extractYouTubeId(url) {
     if (!url) return "";
     const match = url.match(/(?:watch\?v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     return match ? match[1] : "";
   }
-
   function createAdHeaderControls(onCloseCallback) {
     const box = document.createElement("div");
     box.className = "dpg-ad-header-controls";
@@ -90,7 +71,6 @@
       gap: 5px;
       z-index: 15;
     `;
-
     const infoBtn = document.createElement("a");
     infoBtn.href = "legal/index.html#ads-policy";
     infoBtn.target = "_blank";
@@ -113,7 +93,6 @@
     infoBtn.onmouseenter = () => { infoBtn.style.color = "#60a5fa"; infoBtn.style.borderColor = "#60a5fa"; };
     infoBtn.onmouseleave = () => { infoBtn.style.color = "#94a3b8"; infoBtn.style.borderColor = "rgba(255, 255, 255, 0.25)"; };
     infoBtn.onclick = (e) => e.stopPropagation();
-
     const closeBtn = document.createElement("button");
     closeBtn.className = "dpg-ad-close-btn";
     closeBtn.innerHTML = '<i class="ri-close-line"></i>';
@@ -137,7 +116,6 @@
       opacity: 0.35;
       pointer-events: none;
     `;
-
     let remainingCloseSec = 45;
     const closeTimer = setInterval(() => {
       remainingCloseSec--;
@@ -157,7 +135,6 @@
       }
     }, 1000);
     box._closeTimer = closeTimer;
-
     closeBtn.onmouseenter = () => {
       if (closeBtn.disabled) return;
       closeBtn.style.color = "#fff";
@@ -176,19 +153,16 @@
       clearInterval(closeTimer);
       onCloseCallback();
     };
-
     box.appendChild(infoBtn);
     box.appendChild(closeBtn);
     return box;
   }
-
   const PLATFORM_ICONS = {
     linkedin: `<svg viewBox="0 0 24 24" width="16" height="16" fill="#0a66c2" style="vertical-align:middle; flex-shrink:0;"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>`,
     github: `<svg viewBox="0 0 24 24" width="16" height="16" fill="#ffffff" style="vertical-align:middle; flex-shrink:0;"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>`,
     medium: `<svg viewBox="0 0 24 24" width="16" height="16" fill="#ffffff" style="vertical-align:middle; flex-shrink:0;"><path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42c1.87 0 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>`,
     youtube: `<svg viewBox="0 0 24 24" width="16" height="16" fill="#ff0000" style="vertical-align:middle; flex-shrink:0;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`
   };
-
   function getPlatformBadgeHtml(platform, adCategory) {
     if (platform === "linkedin") {
       const cat = adCategory === "blog" ? "LINKEDIN BLOG" : "LINKEDIN POST";
@@ -205,7 +179,6 @@
     }
     return `<span style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.58rem; font-weight:800; padding:2px 6px; border-radius:6px; flex-shrink:0;">SPONSORED</span>`;
   }
-
   function generateAdTrackId(adId) {
     if (!adId) return Math.floor(10000000 + Math.random() * 90000000).toString();
     let hash = 0;
@@ -217,24 +190,20 @@
     const eightDigit = (positiveHash % 90000000 + 10000000).toString();
     return eightDigit;
   }
-
   function buildTrackedAdTargetLink(targetUrl, adId, customTrackId, ad) {
     const trackId = customTrackId || generateAdTrackId(adId);
     let dest = (targetUrl && typeof targetUrl === "string" && targetUrl.trim() !== "" && targetUrl.trim() !== "#") 
       ? targetUrl.trim() 
       : "https://dpgnotes.web.app/index.html";
-    
     try {
       const map = JSON.parse(localStorage.getItem('dpg_ad_track_map') || '{}');
       map[trackId] = { adId: adId || "global", destination: dest, timestamp: Date.now() };
       localStorage.setItem('dpg_ad_track_map', JSON.stringify(map));
     } catch(e) {}
-
     const handlerBase = "https://dpgnotes.web.app/ads-redirect-handler.html";
     const uploaderUid = (ad && (ad.userId || ad.uid || ad.userUid || ad.createdBy)) || "";
     const hostPage = window.location.pathname || "platform";
     const hostOwner = window.DPG_PAGE_RESOURCE_OWNER_UID || window.currentResourceOwnerUid || (document.body && document.body.dataset && document.body.dataset.resourceOwnerUid) || "platform_neutral";
-
     try {
       const u = new URL(handlerBase);
       u.searchParams.set("track_id", trackId);
@@ -249,18 +218,15 @@
       return `${handlerBase}?track_id=${encodeURIComponent(trackId)}&ad_id=${encodeURIComponent(adId || "")}&go-to=${encodeURIComponent(dest)}&src=dpgnotes_platform&host_page=${encodeURIComponent(hostPage)}&host_owner=${encodeURIComponent(hostOwner)}`;
     }
   }
-
   function attachGenuineHoverTracker(card, ad, trackId) {
     const destBtns = card.querySelectorAll(".dpg-ad-destination-btn");
     destBtns.forEach(btn => {
       let hoverTimer = null;
       let hoverStart = 0;
       let recorded = false;
-
       btn.addEventListener("mouseenter", (e) => {
         if (!e.isTrusted) return; // Genuine user interaction check
         hoverStart = Date.now();
-        // Rule 5: 5 seconds (5000ms) continuous hover required for genuine hover
         hoverTimer = setTimeout(() => {
           if (!recorded && hoverStart > 0 && (Date.now() - hoverStart >= 5000)) {
             recorded = true;
@@ -268,35 +234,28 @@
           }
         }, 5000);
       });
-
       btn.addEventListener("mouseleave", () => {
         hoverStart = 0;
         if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
       });
     });
   }
-
   async function sendGenuineHoverTelemetry(ad, trackId) {
     try {
       const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
       const email = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
-      // Strictly exclude Admin visitors
       const ADMIN_EMAILS = ["its.akshatnetworkhub23@gmail.com", "akshatprasad009@gmail.com"];
       if (ADMIN_EMAILS.includes(email) || activeUser.isAdmin || activeUser.role === 'admin') return;
-
-      // Check if user/guest is currently Ads Flagged for 15 days
       const flaggedUntil = parseInt(localStorage.getItem("dpg_ads_flagged_until") || "0", 10);
       if (flaggedUntil > Date.now()) {
         console.warn("User/Guest is currently Ads Flagged for 15 days. Hover engagement ignored.");
         return;
       }
-
       const adKey = ad.id || trackId || "global";
       const hoverHistory = JSON.parse(localStorage.getItem("dpg_ad_hover_history") || "{}");
       const lastHoverTime = hoverHistory[adKey] || 0;
       const now = Date.now();
       const TWELVE_HOURS = 12 * 60 * 60 * 1000;
-
       const guestId = localStorage.getItem("dpg_guest_id") || ("guest_" + Math.random().toString(36).substr(2, 9));
       if (!localStorage.getItem("dpg_guest_id")) localStorage.setItem("dpg_guest_id", guestId);
       let clientDeviceId = localStorage.getItem("dpg_client_device_id");
@@ -304,15 +263,10 @@
         clientDeviceId = "dev_" + Math.random().toString(36).substr(2, 9);
         localStorage.setItem("dpg_client_device_id", clientDeviceId);
       }
-
-      // Rule 4 & 5: Check 12-hour gap between two hover events on same ad
       if (lastHoverTime > 0 && (now - lastHoverTime) < TWELVE_HOURS) {
-        // Rapid hover anomaly detected (<12 hours)!
         console.warn("Rapid hover anomaly detected (<12h gap). Flagging user for 15 days and canceling ad logs.");
         const newFlaggedUntil = now + (15 * 24 * 60 * 60 * 1000);
         localStorage.setItem("dpg_ads_flagged_until", String(newFlaggedUntil));
-
-        // 1. Log violation to backend
         fetch((window.API_BASE_URL || '') + '/api/ads/report-violation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -328,8 +282,6 @@
             timestamp: new Date().toISOString()
           })
         }).catch(console.warn);
-
-        // 2. Cancel all Firestore logs for that specific Ad for this active contributor and guest
         fetch((window.API_BASE_URL || '') + '/api/ads/cancel-engagement-anomaly', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -341,29 +293,21 @@
             clientDeviceId: clientDeviceId
           })
         }).catch(console.warn);
-
         return;
       }
-
-      // Rule 2: Active Contributor hovers on their own uploaded ad are invalid
       const uploaderUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
       if (activeUser.uid && uploaderUid && activeUser.uid === uploaderUid) {
         console.log("Self-hover on own ad detected — non-billable interaction bypassed.");
         return;
       }
-
-      // Record hover timestamp in local pattern history
       hoverHistory[adKey] = now;
       localStorage.setItem("dpg_ad_hover_history", JSON.stringify(hoverHistory));
-
       const currentMonth = new Date().toISOString().substring(0, 7);
       const sessionKey = `dpg_hover_logged_${ad.id || trackId}_${currentMonth}`;
       if (sessionStorage.getItem(sessionKey)) return;
       sessionStorage.setItem(sessionKey, "1");
-
       const hostPage = window.location.pathname || "platform";
       const hostResourceOwnerUid = window.DPG_PAGE_RESOURCE_OWNER_UID || window.currentResourceOwnerUid || (document.body && document.body.dataset && document.body.dataset.resourceOwnerUid) || "platform_neutral";
-
       const payload = {
         adId: ad.id || "",
         trackId: trackId || "",
@@ -378,7 +322,6 @@
         hostPage,
         hostResourceOwnerUid
       };
-
       fetch((window.API_BASE_URL || '') + '/api/ad-hover-telemetry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -388,18 +331,15 @@
       console.warn("Failed to record genuine hover telemetry:", err);
     }
   }
-
   function createAdCardElement(ad, containerId, variant = "feed") {
     const card = document.createElement("div");
     card.className = `dpg-native-ad-card dpg-ad-variant-${variant}`;
-
     const vidId = (variant === "image" || variant === "cover_image") ? "" : extractYouTubeId(ad.videoUrl);
     const profileUid = ad.userId || ad.uid || ad.userUid || ad.createdBy || "";
     const profileUrl = profileUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(profileUid)}` : "https://dpgnotes.web.app/profile.html";
     const trackId = ad.trackId || generateAdTrackId(ad.id);
     const finalTargetLink = buildTrackedAdTargetLink(ad.targetLink, ad.id, trackId, ad);
     card.dataset.trackId = trackId;
-
     let rotationTimeout = null;
     let videoPlaybackTimeout = null;
     let videoWaitTimeout1 = null;
@@ -407,7 +347,6 @@
     let autoPlayTimer = null;
     let skipInterval = null;
     let videoLifecycleActive = false;
-
     function cleanupTimers() {
       if (rotationTimeout) { clearTimeout(rotationTimeout); rotationTimeout = null; }
       if (videoPlaybackTimeout) { clearTimeout(videoPlaybackTimeout); videoPlaybackTimeout = null; }
@@ -425,12 +364,10 @@
       } catch(e) {}
     }
     card._cleanupTimers = cleanupTimers;
-
     const isCoverGen = (typeof window !== "undefined" && window.location && window.location.pathname && window.location.pathname.includes("CoverPageGenerator")) ||
                        variant === "cover_video" ||
                        variant === "cover_image" ||
                        (card.closest && !!card.closest("#nativeAdsContainer"));
-
     function dismissAdCard() {
       cleanupTimers();
       const parentBox = card.parentElement;
@@ -440,15 +377,12 @@
           sessionStorage.setItem("dpg_ad_muted_" + placementKey, (Date.now() + 150000).toString());
         } catch(e) {}
       }
-
       card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
       card.style.opacity = "0";
       card.style.transform = "scale(0.95)";
-
       setTimeout(() => {
         card.style.display = "none";
         if (parentBox) {
-          // Empty Space Removal: completely remove gap/space until re-injection
           parentBox.style.display = "none";
           parentBox.style.height = "0px";
           parentBox.style.minHeight = "0px";
@@ -457,8 +391,6 @@
           parentBox.classList.add("ad-slot-collapsed");
         }
       }, 350);
-
-      // Re-enable ad placement: Instant (300ms) for Cover Page Generators, 2 minutes 30 seconds (150,000 ms) for other pages
       const dismissDelay = isCoverGen ? 300 : 150000;
       rotationTimeout = setTimeout(async () => {
         if (!card.isConnected && !parentBox) return;
@@ -473,36 +405,27 @@
         swapToNextAd();
       }, dismissDelay);
     }
-
     async function swapToNextAd() {
       cleanupTimers();
       if (!card.isConnected || card.style.display === "none") return;
       const parentBox = card.parentElement;
       if (!parentBox) return;
-
-      // In Cover Page Generators, notify progress tracking that an ad concluded ONLY if quota lockdown modal is active
       if (isCoverGen && typeof window.onCoverAdWatched === "function") {
         const overlay = document.getElementById("quotaLockOverlay");
         if (overlay && window.getComputedStyle(overlay).display !== "none") {
           try { window.onCoverAdWatched(); } catch(err) { console.warn("Error triggering onCoverAdWatched:", err); }
         }
       }
-
       card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
       card.style.opacity = "0";
       card.style.transform = "scale(0.95)";
-
       setTimeout(async () => {
         card.style.display = "none";
         if (parentBox) {
           const visibleChildren = Array.from(parentBox.children).filter(c => c.style.display !== "none");
           if (visibleChildren.length === 0) parentBox.style.display = "none";
         }
-
-        // For Cover Page Generators, ad progression is orchestrally controlled by startNextCoverAd()
         if (isCoverGen) return;
-
-        // Ad Rotation Delay: 2m 30s Gap (150,000 ms) for standard content pages
         rotationTimeout = setTimeout(async () => {
           if (!card.isConnected || card.style.display === "none") return;
           if (parentBox) parentBox.style.display = "";
@@ -511,13 +434,11 @@
             card.remove();
             return;
           }
-
           const nextAd = selectAdForVariant(approvedAds, variant, new Set([ad.id])) || approvedAds[Math.floor(Math.random() * approvedAds.length)];
           if (!nextAd) {
             card.remove();
             return;
           }
-
           const newCard = createAdCardElement(nextAd, "elem_" + Date.now(), variant);
           newCard.style.opacity = "0";
           newCard.style.transform = "scale(0.95)";
@@ -526,7 +447,6 @@
           } else if (parentBox) {
             parentBox.appendChild(newCard);
           }
-
           requestAnimationFrame(() => {
             newCard.style.transition = "opacity 0.35s ease, transform 0.35s ease";
             newCard.style.opacity = "1";
@@ -535,7 +455,6 @@
         }, 150000);
       }, 350);
     }
-
     function getProfileLinkHtml(imgSize = "26px", fontSize = "0.78rem") {
       return `
         <a href="${profileUrl}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:inherit; cursor:pointer;" title="View ${ad.userName || 'Advertiser'}'s Profile">
@@ -640,8 +559,6 @@
         <a href="${finalTargetLink}" target="_self" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:5px; border-radius:6px; text-decoration:none; font-size:0.72rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
     } else if (variant === "cover_video" || variant === "cover_image") {
-      // Cover Page Native Ad Variant: Disabled close icon and 'i' info icon.
-      // Has skip button enabled after 30s (video) or 15s (image).
       const isVid = (variant === "cover_video" || !!vidId);
       const skipSec = isVid ? 30 : 15;
       card.style.cssText = `
@@ -682,7 +599,6 @@
           </button>
         </div>
       `;
-
       let remainingSkipSec = skipSec;
       if (skipInterval) clearInterval(skipInterval);
       skipInterval = setInterval(() => {
@@ -717,7 +633,6 @@
         }
       }, 1000);
     } else {
-      // Default / Feed Variant
       card.style.cssText = `
         position: relative;
         width: 100%;
@@ -750,83 +665,63 @@
         <a href="${finalTargetLink}" target="_self" class="dpg-ad-destination-btn" style="display:block; text-align:center; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:7px; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700;">Explore Now <i class="ri-external-link-line"></i></a>
       `;
     }
-
-    // Attach Ad Controls (i info icon & ✕ close button) for standard variants (disabled for cover variants)
     if (variant !== "cover_video" && variant !== "cover_image") {
       const controls = createAdHeaderControls(dismissAdCard);
       card.appendChild(controls);
     }
-
-    // Attach Genuine Hover Tracking to all destination action buttons
     attachGenuineHoverTracker(card, ad, trackId);
-
-    // Smart Rotation & Video Lifecycle Engine
     const isVideoMediaVariant = variant !== "image" && (variant === "feed" || variant === "sidebar" || variant === "main" || variant === "cover_video") && !!vidId;
-
     if (isVideoMediaVariant) {
       const mediaBox = card.querySelector(`#adMediaBox_${containerId}`);
       const playerDiv = card.querySelector(`#adPlayerDiv_${containerId}`);
       const playBtn = card.querySelector(`#adPlayBtn_${containerId}`);
       const waitOverlay = card.querySelector(`#adWaitOverlay_${containerId}`);
       const waitText = card.querySelector(`#adWaitText_${containerId}`);
-
       if (!isCoverGen) {
-        // Fallback 45s timer in case video is never started
         rotationTimeout = setTimeout(() => {
           if (!videoLifecycleActive) {
             swapToNextAd();
           }
         }, 45000);
       }
-
       function startVideo(muted = true) {
         if (!playerDiv || videoLifecycleActive) return;
         videoLifecycleActive = true;
         if (rotationTimeout) { clearTimeout(rotationTimeout); rotationTimeout = null; }
         if (autoPlayTimer) { clearTimeout(autoPlayTimer); autoPlayTimer = null; }
-
         playerDiv.innerHTML = `<iframe id="ytFrame_${containerId}" src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=${muted ? 1 : 0}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
         playerDiv.style.display = "block";
         if (playBtn) playBtn.style.display = "none";
-
-        // Video playback sequence (20 seconds duration timer)
         videoPlaybackTimeout = setTimeout(() => {
           if (!card.isConnected || card.style.display === "none") {
             cleanupTimers();
             return;
           }
-          // 1. Video completed -> show Wait overlay on video container (2 seconds)
           if (waitOverlay) {
             waitOverlay.style.display = "flex";
             if (waitText) waitText.innerText = "Video Completed. Please wait...";
           }
-
           videoWaitTimeout1 = setTimeout(() => {
             if (!card.isConnected || card.style.display === "none") {
               cleanupTimers();
               return;
             }
-            // 2. Hide video, restore thumbnail, show thumbnail wait (3 seconds)
             if (playerDiv) {
               playerDiv.style.display = "none";
               playerDiv.innerHTML = "";
             }
             if (waitText) waitText.innerText = "Loading next sponsored ad...";
-
             videoWaitTimeout2 = setTimeout(() => {
-              // 3. Auto-swap to next unique approved ad
               swapToNextAd();
             }, 3000);
           }, 2000);
         }, 20000);
       }
-
       autoPlayTimer = setTimeout(() => {
         if (!videoLifecycleActive && card.isConnected && card.style.display !== "none") {
           startVideo(true);
         }
       }, 5000);
-
       if (mediaBox) {
         mediaBox.onmouseenter = function() {
           if (!videoLifecycleActive) {
@@ -843,30 +738,22 @@
         };
       }
     } else if (!isCoverGen) {
-      // Non-Video Ads OR Header/Footer Variant Ads -> 45-Second Automatic Rotation (Non-cover only)
       rotationTimeout = setTimeout(() => {
         swapToNextAd();
       }, 45000);
     }
-
     return card;
   }
-
   /**
    * Selects an ad according to asset composition & placement rules, prioritizing unique unused ads:
    */
   function selectAdForVariant(ads, variant = "feed", usedAdIds = new Set()) {
     if (!ads || ads.length === 0) return null;
-
-    // Filter candidate ads not used globally on page nor in current container
     let candidates = ads.filter(a => !usedAdIds.has(a.id) && !window.DPG_USED_AD_IDS.has(a.id));
     if (candidates.length === 0) {
-      // If unique pool exhausted, fallback to unused in container
       candidates = ads.filter(a => !usedAdIds.has(a.id));
     }
     if (candidates.length === 0) candidates = ads; // Allow repetition if required
-
-    // Contextual PDF Resource & User Interest Tag-Matching Preference Engine
     const urlParams = new URLSearchParams(window.location.search);
     const pageContextStr = [
       urlParams.get("tags"),
@@ -875,17 +762,14 @@
       urlParams.get("title"),
       urlParams.get("description")
     ].filter(Boolean).join(" ").toLowerCase();
-
     const pageTags = pageContextStr.split(/[\s,]+/).map(t => t.trim()).filter(t => t.length > 2);
     const userInterests = typeof window.getDPGUserInterests === "function" ? window.getDPGUserInterests().map(i => String(i).toLowerCase()) : [];
     const activeKeywords = [...new Set([...pageTags, ...userInterests])];
-
     if (activeKeywords.length > 0) {
       const scoredCandidates = candidates.map(ad => {
         const adTitle = (ad.title || "").toLowerCase();
         const adDesc = (ad.description || "").toLowerCase();
         const adTags = Array.isArray(ad.tags) ? ad.tags.map(t => String(t).toLowerCase()) : [];
-        
         let score = 0;
         activeKeywords.forEach(kw => {
           if (adTags.some(t => t.includes(kw) || kw.includes(t))) score += 5;
@@ -894,16 +778,13 @@
         });
         return { ad, score };
       });
-
       const matchedCandidates = scoredCandidates.filter(item => item.score > 0);
       if (matchedCandidates.length > 0) {
         matchedCandidates.sort((a, b) => b.score - a.score);
         candidates = matchedCandidates.map(item => item.ad);
       }
     }
-
     let priorityPool = [];
-
     if (variant === "header" || variant === "footer" || variant === "top" || variant === "bottom") {
       const noThumbnailAds = candidates.filter(a => !a.thumbnailUrl || (a.targetPlacement && a.targetPlacement.includes("header")));
       priorityPool = noThumbnailAds.length > 0 ? noThumbnailAds : candidates;
@@ -927,7 +808,6 @@
     } else {
       priorityPool = candidates;
     }
-
     const selected = priorityPool[Math.floor(Math.random() * priorityPool.length)];
     if (selected && selected.id) {
       usedAdIds.add(selected.id);
@@ -935,7 +815,6 @@
     }
     return selected;
   }
-
   function collapseUnfilledAdSenseSlots() {
     document.querySelectorAll('.ad-banner-section, .legal-adsense-container, ins.adsbygoogle').forEach(unit => {
       const ins = unit.tagName.toLowerCase() === 'ins' ? unit : unit.querySelector('ins.adsbygoogle');
@@ -960,7 +839,6 @@
       }
     });
   }
-
   let collapseCheckCount = 0;
   function startAdSenseCollapseMonitoring() {
     const collapseInterval = setInterval(() => {
@@ -971,18 +849,13 @@
       }
     }, 1500);
   }
-
   async function renderAllNativeAds() {
     collapseUnfilledAdSenseSlots();
-
     const containers = document.querySelectorAll(".native-ads, #native-ads");
     if (containers.length === 0) return;
-
     const ads = await fetchApprovedAds();
     if (!ads || ads.length === 0) return;
-
     containers.forEach((box, boxIdx) => {
-      // In Cover Page Generators and Utility Tools, strictly prevent ad injection unless Quota reached modal is active and playback section is visible!
       const isCoverModalAd = box.closest('#quotaLockOverlay') || 
                              box.closest('#dpgUtilityLockOverlay') || 
                              box.closest('.quota-lock-overlay') || 
@@ -998,23 +871,15 @@
           return;
         }
       }
-
       if (box.dataset.adInjected) return;
-
       const variant = box.dataset.adVariant || (box.id.includes("header") ? "header" : box.id.includes("footer") ? "footer" : box.id.includes("sidebar") || box.classList.contains("sidebar") ? "sidebar" : "feed");
-
-      // Separation Rule: Avoid rendering consecutive Native Ads
       const prevSib = box.previousElementSibling;
       if (prevSib && (prevSib.classList.contains("native-ads") || prevSib.classList.contains("dpg-native-ad-card") || prevSib.classList.contains("ad-banner-section"))) {
         box.style.marginTop = "1.5rem";
       }
-
       box.dataset.adInjected = "true";
-
-      // PDF Viewer Sidebar restriction: Always show exactly 1 Ad
       const isPdfViewerSidebar = window.location.pathname.includes("pdf-viewer") && (variant === "sidebar" || box.id.includes("sidebar"));
       const count = isPdfViewerSidebar ? 1 : parseInt(box.dataset.adCount || "1", 10);
-
       const usedAdIds = new Set();
       for (let i = 0; i < count; i++) {
         const selectedAd = selectAdForVariant(ads, variant, usedAdIds);
@@ -1025,7 +890,6 @@
       }
     });
   }
-
   window.cleanupAllNativeAds = function(containerSelector = ".native-ads, #native-ads, #nativeAdsContainer") {
     try {
       document.querySelectorAll(containerSelector).forEach(cont => {
@@ -1038,10 +902,8 @@
       });
     } catch(e) {}
   };
-
   window.renderNativeDPGAds = renderAllNativeAds;
   window.createDPGAdCard = createAdCardElement;
-
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(renderAllNativeAds, 400);

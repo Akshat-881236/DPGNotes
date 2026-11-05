@@ -1,10 +1,5 @@
-/**
- * DPGNotes Contributor Hover Card Engine (contributor-hover-card.js)
- * High-performance, universal contributor avatar & 4-second hover profile card component.
- * Supports: index.html, dashboard.html, dpgnotes-serp.html, AssignmentSolution, PracticalSolution.
- */
+/** DPGNotes Contributor Hover Card Engine (contributor-hover-card.js) */
 (function() {
-  // 1. Ensure Bootstrap Icons CSS is loaded
   if (!document.getElementById("bootstrap-icons-css")) {
     const biLink = document.createElement("link");
     biLink.id = "bootstrap-icons-css";
@@ -12,13 +7,9 @@
     biLink.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css";
     document.head.appendChild(biLink);
   }
-
-  // 2. Global Profiles and Relationship Caches
   window.__dpgUserCache = window.__dpgUserCache || {};
   window.__dpgFollowingCache = window.__dpgFollowingCache || {};
   window.__dpgConnectedCache = window.__dpgConnectedCache || {};
-
-  // Inject Hover Card Styles
   const styleEl = document.createElement("style");
   styleEl.id = "dpg-contributor-hover-styles";
   styleEl.textContent = `
@@ -355,8 +346,6 @@
     }
   `;
   document.head.appendChild(styleEl);
-
-  // 3. Inject Singleton Hover Card Container
   let hoverCard = document.getElementById("dpgContributorHoverCard");
   if (!hoverCard) {
     hoverCard = document.createElement("div");
@@ -401,18 +390,14 @@
     `;
     document.body.appendChild(hoverCard);
   }
-
-  // 4. Hover Logic and 4-Second Dwell Engine
   let activeTrigger = null;
   let currentTargetUid = "";
   let hoverTimer = null;
   let closeTimer = null;
   let isMouseOverCard = false;
   let isMouseOverTrigger = false;
-
   const DWELL_SHOW_DELAY = 120; // Fast dwell detection when arrow is kept on photo
   const HOVER_STAY_DURATION = 4000; // 4 seconds persistent view duration
-
   function getActiveUserUid() {
     try {
       return localStorage.getItem("dpgActiveUserUid") || (window.currentUser && window.currentUser.uid) || "";
@@ -420,7 +405,6 @@
       return "";
     }
   }
-
   function getActiveUserData() {
     try {
       const stored = localStorage.getItem("dpgActiveUser");
@@ -428,18 +412,13 @@
     } catch (e) {}
     return window.currentUser || null;
   }
-
-  // Position Hover Card nicely relative to the hovered avatar
   function positionHoverCard(triggerEl) {
     const rect = triggerEl.getBoundingClientRect();
     const cardRect = hoverCard.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-
     let top = rect.bottom + 4;
     let left = rect.left - 20;
-
-    // Flip to top if close to bottom
     if (top + cardRect.height > viewportHeight - 16) {
       top = rect.top - cardRect.height - 4;
       hoverCard.classList.add("flipped-top");
@@ -447,18 +426,13 @@
       hoverCard.classList.remove("flipped-top");
     }
     if (top < 10) top = 10;
-
-    // Flip horizontally if overflow right
     if (left + cardRect.width > viewportWidth - 12) {
       left = viewportWidth - cardRect.width - 12;
     }
     if (left < 10) left = 10;
-
     hoverCard.style.top = `${top}px`;
     hoverCard.style.left = `${left}px`;
   }
-
-  // Helper: Parse Firestore REST API document format to clean JavaScript object
   function parseFirestoreDoc(doc) {
     if (!doc || !doc.fields) return null;
     const obj = {};
@@ -473,21 +447,14 @@
     obj.uid = doc.name ? doc.name.split('/').pop() : '';
     return obj;
   }
-
-  // Universal profile resolver with multi-layer fallback (Memory Cache -> Firestore SDK -> Firestore REST -> Render API)
   async function resolveUserProfile(uid, nameFallback) {
-    // 1. If valid user in window.__dpgUserCache with bio, return immediately
     if (uid && window.__dpgUserCache[uid] && window.__dpgUserCache[uid].bio) {
       return window.__dpgUserCache[uid];
     }
-
-    // 2. Try match by name if UID missing or in cache
     if (!uid && nameFallback && window.__dpgUserCache) {
       const match = Object.values(window.__dpgUserCache).find(u => u && u.name && u.name.toLowerCase() === nameFallback.toLowerCase() && u.bio);
       if (match) return match;
     }
-
-    // 3. Try Firestore SDK if present on page
     if (uid) {
       try {
         const db = window.solDb || window.db || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
@@ -519,8 +486,6 @@
           }
         }
       } catch(e) {}
-
-      // 4. Try Firestore REST API (Works universally on all static and dynamic pages with zero dependencies)
       try {
         const res = await fetch(`https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/users/${encodeURIComponent(uid)}`);
         if (res.ok) {
@@ -539,8 +504,6 @@
         }
       } catch(e) {}
     }
-
-    // 5. Fallback: Query render social list-profiles or by name lookup
     try {
       const res = await fetch((window.API_BASE_URL || 'https://dpgnotes.onrender.com') + '/api/social/list-profiles');
       if (res.ok) {
@@ -555,16 +518,11 @@
         }
       }
     } catch(e) {}
-
     return (uid && window.__dpgUserCache[uid]) || null;
   }
-
-  // Format rich bio markup and HTML
   function formatHoverBioMarkup(rawBio) {
     if (!rawBio) return "Verified academic author & study material contributor on DPGNotes.";
     let s = String(rawBio).trim();
-
-    // 1. Sanitize dangerous HTML tags and script handlers while preserving safe formatting tags
     s = s.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
          .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
          .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
@@ -573,21 +531,13 @@
          .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
          .replace(/\son\w+\s*=\s*[^>\s]+/gi, '')
          .replace(/javascript:/gi, '');
-
-    // 2. Unify paragraph tags to clean inline line breaks without excessive vertical whitespace
     s = s.replace(/<\/p>\s*<p[^>]*>/gi, '<br>')
          .replace(/<p[^>]*>/gi, '')
          .replace(/<\/p>/gi, '<br>');
-
-    // 3. Parse Markdown Bold: **text** or __text__
     s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-
-    // 4. Parse Markdown Italic: *text* or _text_
     s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
     s = s.replace(/_([^_]+)_/g, '<em>$1</em>');
-
-    // 5. Parse Inline Code: `code`
     s = s.replace(/`([^`]+)`/g, '<code class="dpg-hover-code">$1</code>');
 
     // 6. Parse Markdown Links: [text](url)

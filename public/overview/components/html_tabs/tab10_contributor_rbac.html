@@ -1,4 +1,3 @@
-<!-- Component: tab10_contributor_rbac.html - Contributor RBAC, Authentication & Identity Security -->
 <article class="overview-blog-article" data-tab="10">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -25,15 +24,12 @@
       <span class="tech-pill">Reputation Scoring</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-10">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> Multi-Provider Credential Parity, Hierarchical RBAC &amp; Silent Administrative Governance.</p>
     <p>
       The Software Requirements Specification (SRS Section 10.0) mandates seamless identity parity: whether a student signs in via Google, GitHub, or direct Student ID and password, all sessions resolve to a single authoritative Firestore document (<code>users/{uid}</code>). Contributor roles grant write access to designated academic folders, while elevated administrative operations require active clearance verification recorded in <code>confidential_requests/{uid}</code>.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -41,8 +37,6 @@
       </div>
       Clearance authorization checks must execute strictly in memory and within the Firestore security layer. In compliance with DRASA confidentiality directives, no visual clearance threshold badges, expiration timestamps, or admin approval metrics are rendered into the client DOM tree. The authorization layer exists and enforces boundaries silently.
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & RBAC WORKFLOW -->
     <h2 id="sec-2-10">2. Component Hierarchy &amp; Identity Verification Topology</h2>
     <p>The authentication and access control subsystem is structured into four decoupled layers:</p>
     <ul>
@@ -51,7 +45,6 @@
       <li><strong>3. Silent Clearance Gate Engine:</strong> Checks user approval records against Firestore <code>confidential_requests/{uid}</code>. When authorized, access is granted seamlessly without altering the public UI layout.</li>
       <li><strong>4. Contributor Gamification &amp; Reputation Engine:</strong> Awards community reputation points for verified uploads (+25 points) and approved solutions (+10 points), while deducting points for flagged inaccuracies.</li>
     </ul>
-
     <div class="arch-flow-diagram">
 +--------------------+        1. Login via Google / GitHub    +-------------------------+
 | CLIENT SPA MODAL   | ------------------------------------&gt; |  FIREBASE AUTH SERVICE  |
@@ -71,8 +64,6 @@
 | (Documents / Notes)|
 +--------------------+
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-10">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to configure and enforce RBAC within the DPGNotes architecture:</p>
     <ol class="tutorial-steps-list">
@@ -82,8 +73,6 @@
       <li><strong>Enforce Backend RBAC Middleware:</strong> Write an Express middleware verifying that <code>req.user.role</code> equals <code>contributor</code> or <code>admin</code> prior to allowing document mutations.</li>
       <li><strong>Secure Cloud Firestore Rules:</strong> Write security rules verifying <code>request.auth != null</code> and matching the document's <code>uploaderUid</code> to prevent unauthorized document edits.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-10">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -96,7 +85,6 @@
       <pre class="code-block"><code>// Module 10: Express RBAC Middleware &amp; Silent Clearance Validator
 const admin = require('firebase-admin');
 const db = admin.firestore();
-
 /**
  * Middleware enforcing verified Contributor or Admin RBAC claims
  */
@@ -106,28 +94,23 @@ async function requireRole(allowedRoles = ['contributor', 'admin']) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
-
     const token = authHeader.split('Bearer ')[1];
     try {
       const decodedToken = await admin.auth().verifyIdToken(token);
       req.user = decodedToken;
-
       // Query user record for authoritative role
       const userDoc = await db.collection('users').doc(decodedToken.uid).get();
       if (!userDoc.exists) {
         return res.status(403).json({ error: 'User record not initialized.' });
       }
-
       const userData = userDoc.data();
       const userRole = userData.role || 'guest';
-
       if (!allowedRoles.includes(userRole)) {
         return res.status(403).json({
           error: 'Access denied: Contributor privileges required.',
           currentRole: userRole
         });
       }
-
       req.userRole = userRole;
       next();
     } catch (err) {
@@ -135,7 +118,6 @@ async function requireRole(allowedRoles = ['contributor', 'admin']) {
     }
   };
 }
-
 /**
  * Silent Clearance Validator: Evaluates admin approval without leaking dates or badges to DOM
  */
@@ -143,7 +125,6 @@ async function checkSilentClearance(uid) {
   try {
     const reqDoc = await db.collection('confidential_requests').doc(uid).get();
     if (!reqDoc.exists) return { authorized: false, reason: 'NO_RECORD' };
-
     const data = reqDoc.data();
     if (data.status === 'approved') {
       return { authorized: true };
@@ -154,14 +135,9 @@ async function checkSilentClearance(uid) {
     return { authorized: false, reason: 'SYSTEM_ERROR' };
   }
 }
-
 module.exports = { requireRole, checkSilentClearance };</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-10">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -170,8 +146,6 @@ module.exports = { requireRole, checkSilentClearance };</code></pre>
       <li><strong>Verified Invariant:</strong> All write requests to academic collections require valid RS256 JWT claims verified by Firebase Admin SDK.</li>
       <li><strong>Verified Invariant:</strong> Role escalation attempts without database-backed administrator signatures result in immediate IP suspension.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-10">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

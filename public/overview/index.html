@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader -->
   <script src="/dpg-loader.js"></script>
   <script src="https://dpgnotes.web.app/redirect.js" defer></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
@@ -9,31 +8,20 @@
   <script src="../dpg-params.js"></script>
   <script src="../custom-dialogs.js"></script>
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>DPGNotes Engineering Study Notes, FSD Tutorial &amp; SRS Overview</title>
-  
-  <!-- SEO & Security Meta Tags -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="description" content="Official Project-Based Full Stack Development Study Notes, Software Requirements Specification (SRS), and Technical Architecture of DPGNotes.">
   <meta name="keywords" content="DPGNotes FSD Tutorial, Full Stack Development, SRS Overview, System Design, Cloudflare, Node.js, Firebase, Cloudinary, AI Integration, DRASA">
   <meta name="author" content="DPGNotes / Akshat Network Hub">
   <link rel="icon" type="image/png" href="https://dpgnotes.web.app/ANH.png">
-
-  <!-- Google Fonts: Inter, Outfit, Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Icons: RemixIcon & Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css?v=2.2.0">
-  
-  <!-- Instant Contributor Auth Protection Check & Inspection Prevention -->
   <style id="authGateGuardStyle">
     .overview-layout-container, .overview-header, .reading-progress-container, .search-modal, #btnScrollTop {
       display: none !important;
@@ -48,36 +36,28 @@
       }
     })();
   </script>
-
-  <!-- DPGNotes Unified Shared Auth Component -->
   <link rel="stylesheet" href="/auth-component.css">
   <script type="module" src="/auth-component.js"></script>
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body class="theme-auto">
-
-  <!-- Secure Clearance Verification Screen -->
   <div id="overviewAuthGateLoader" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#0a0f1d; color:#94a3b8; font-family:'Outfit',sans-serif; text-align:center; padding:1.5rem; position:fixed; inset:0; z-index:99999;">
     <div style="width:52px; height:52px; border:3px solid rgba(99,102,241,0.2); border-top-color:#6366f1; border-radius:50%; animation:spinOverview 0.8s linear infinite; margin-bottom:1.25rem;"></div>
     <h3 style="font-size:1.15rem; font-weight:700; color:#f8fafc; margin-bottom:0.4rem;">Verifying Contributor Clearance...</h3>
     <p style="font-size:0.86rem; color:#94a3b8; max-width:380px;">Checking active session token and cryptographic clearance credentials with DPG Vault.</p>
     <style>@keyframes spinOverview { to { transform: rotate(360deg); } }</style>
   </div>
-
   <!-- ========================================================================
        READING PROGRESS BAR (LEGAL CENTER STYLE)
        ======================================================================== -->
   <div class="reading-progress-container">
     <div id="readingProgress" class="reading-progress-bar"></div>
   </div>
-
   <!-- ========================================================================
        TOP HEADER (CLEAN EDITORIAL NAV WITHOUT CLEARANCE THRESHOLD)
        ======================================================================== -->
   <header class="overview-header" id="overviewHeader">
     <div class="header-container">
-      
-      <!-- Brand Logo -->
       <a href="https://dpgnotes.web.app/index.html" class="overview-logo" title="DPGNotes Homepage">
         <div class="logo-icon-box">
           <i class="ri-code-box-fill"></i>
@@ -87,47 +67,35 @@
           <span class="logo-subtitle">Project-Based FSD Architecture</span>
         </div>
       </a>
-
-      <!-- Quick Search Trigger (Ctrl + K) -->
       <div class="search-trigger" id="searchTrigger" title="Quick Search (Ctrl + K)">
         <i class="ri-search-line"></i>
         <span class="search-placeholder">Search 12 Modules &amp; SRS...</span>
         <span class="search-shortcut">⌘K</span>
       </div>
-
-      <!-- Header Action Links -->
       <div class="header-actions">
         <a href="https://dpgnotes.web.app/dashboard.html" class="header-nav-link" title="Contributor Dashboard">
           <i class="ri-dashboard-line"></i>
           <span class="nav-text">Dashboard</span>
         </a>
-
         <a href="https://dpgnotes.web.app/legal/index.html" class="header-nav-link" title="Legal Center &amp; Policies">
           <i class="ri-scales-3-line"></i>
           <span class="nav-text">Legal</span>
         </a>
-
-        <!-- Mobile Drawer Menu Toggle -->
         <button type="button" class="mobile-menu-btn" id="sidebarToggleBtn" aria-label="Toggle Navigation Menu">
           <i class="ri-menu-4-line menu-icon"></i>
           <i class="ri-close-line close-icon"></i>
         </button>
       </div>
-
     </div>
   </header>
-
   <!-- ========================================================================
        MOBILE BACKDROP OVERLAY
        ======================================================================== -->
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
   <!-- ========================================================================
        APP CONTAINER: SIDEBAR & MAIN SPA CONTENT
        ======================================================================== -->
   <div class="overview-layout-container">
-    
-    <!-- RESPONSIVE SPA SIDEBAR (12 CLEAN STANDALONE MODULE TABS) -->
     <aside class="overview-sidebar" id="overviewSidebar">
       <div class="sidebar-header-box">
         <div class="sidebar-search-box">
@@ -135,14 +103,10 @@
           <input type="text" id="overviewSidebarSearch" class="sidebar-search-input" placeholder="Search 12 module topics..." autocomplete="off">
         </div>
       </div>
-
       <nav class="sidebar-nav" id="sidebarNav">
-        <!-- 4 Structured Categories with 12 Standalone Modules rendered dynamically by script.js -->
         <div id="sidebarGroupsContainer">
-          <!-- Populated by script.js -->
         </div>
       </nav>
-
       <div class="sidebar-footer">
         <div class="footer-meta">
           <i class="ri-verified-badge-fill" style="color:var(--color-primary-light);"></i>
@@ -151,22 +115,15 @@
         <div class="footer-copy">&copy; 2026 Akshat Network Hub &bull; DPGNotes</div>
       </div>
     </aside>
-
-    <!-- MAIN EDITORIAL CONTENT CANVAS (SIMPLE BLOGS WITHOUT CARD IN BLOG) -->
     <main class="overview-main" id="overviewMain">
       <div id="tabContentContainer">
-        <!-- Dynamically mounted active module blog -->
         <div class="loading-state-card">
           <i class="ri-loader-4-line spin-icon"></i>
           <p>Loading High-Yield Engineering Study Notes...</p>
         </div>
       </div>
     </main>
-
   </div>
-
-
-
   <!-- ========================================================================
        LEGAL CENTER-STYLE SEARCH MODAL (DIRECT CONTENT NAVIGATION)
        ======================================================================== -->
@@ -185,20 +142,15 @@
       </div>
     </div>
   </div>
-
   <!-- ========================================================================
        FLOATING ACTION BUTTON (SCROLL TO TOP)
        ======================================================================== -->
   <button type="button" class="btn-scroll-top" id="btnScrollTop" title="Scroll to Top" aria-label="Scroll to top">
     <i class="ri-arrow-up-line"></i>
   </button>
-
-  <!-- Global Shared Parameter & Custom Dialogs Scripts -->
   <script src="https://dpgnotes.web.app/custom-dialogs.js"></script>
   <script src="https://dpgnotes.web.app/dpg-params.js"></script>
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
-
-  <!-- Modular SPA Script -->
   <script type="module" src="script.js?v=2.2.0"></script>
 </body>
 </html>

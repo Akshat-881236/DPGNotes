@@ -1,4 +1,3 @@
-<!-- Component: tab5_database_schema.html - Cloud Firestore Real-Time Database & Data Modeling -->
 <article class="overview-blog-article" data-tab="5">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -26,15 +25,12 @@
       <span class="tech-pill">SEO Sitemap Ingestion</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-5">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> Relational NoSQL Schema Design, Concurrency Control &amp; Declarative Security Governance.</p>
     <p>
       The Software Requirements Specification (SRS Section 5.0) mandates guaranteed data consistency for student metrics, verified contributor reputations, and ephemeral resource links. All database read and write pathways must execute in under 50ms, maintain zero document write conflicts during concurrent student exam surges, and enforce strict institutional privacy by isolating confidential administrative records from public queries.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -42,8 +38,6 @@
       </div>
       All modifications to numeric metrics (view counts, document download tallies, contributor upvotes) must execute via atomic Firestore <code>FieldValue.increment(1)</code> operations or inside isolated <code>runTransaction()</code> closures. Direct read-modify-write patterns on the client are strictly prohibited by Firestore Security Rules to eliminate dirty writes and race conditions.
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & ER WORKFLOW -->
     <h2 id="sec-2-5">2. Component Hierarchy, ER Diagram &amp; Multi-Tier Connectivity Workflow</h2>
     <p>The DPGNotes data model orchestrates six specialized root collections and subcollections across the multi-tier platform architecture:</p>
     <ul>
@@ -54,8 +48,6 @@
       <li><strong>5. <code>confidential_requests</code> (Protected Collection):</strong> Holds contributor access requests and justifications. Strictly guarded by Firestore Security Rules—unauthorized client read attempts are rejected at the database level.</li>
       <li><strong>6. <code>engagement_logs</code> (Telemetry Collection):</strong> Captures anonymous reading telemetry, search query frequencies, and device viewport categories to feed the platform's SERP ranking algorithms.</li>
     </ul>
-
-    <!-- COMPREHENSIVE ER DIAGRAM & CONNECTIVITY TOPOGRAPHY -->
     <div class="er-diagram-container">
       <div class="er-diagram-header">
         <div class="er-diagram-title">
@@ -64,7 +56,6 @@
         </div>
         <span style="font-size:0.75rem; color:#94a3b8; font-family:monospace;">RELATIONAL NO-SQL SCHEMA v2.4</span>
       </div>
-
       <div class="er-grid-layout">
         <div class="er-entity-card">
           <div class="er-entity-header"><span>users</span><span>Root Collection</span></div>
@@ -75,7 +66,6 @@
           <div class="er-field-row"><span class="er-field-name">reputation</span><span class="er-field-type">Number (Points)</span></div>
           <div class="er-field-row"><span class="er-field-name">createdAt</span><span class="er-field-type">Timestamp</span></div>
         </div>
-
         <div class="er-entity-card">
           <div class="er-entity-header"><span>documents</span><span>Study Notes / Papers</span></div>
           <div class="er-field-row"><span class="er-field-pk">PK docId</span><span class="er-field-type">String (UUID)</span></div>
@@ -85,7 +75,6 @@
           <div class="er-field-row"><span class="er-field-name">pdfUrl</span><span class="er-field-type">Cloudinary Secure URL</span></div>
           <div class="er-field-row"><span class="er-field-name">views</span><span class="er-field-type">Number (Atomic Increment)</span></div>
         </div>
-
         <div class="er-entity-card">
           <div class="er-entity-header"><span>share_links</span><span>Ephemeral Redirection</span></div>
           <div class="er-field-row"><span class="er-field-pk">PK token</span><span class="er-field-type">String (8-Char Token)</span></div>
@@ -95,7 +84,6 @@
           <div class="er-field-row"><span class="er-field-name">clickCount</span><span class="er-field-type">Atomic Counter</span></div>
           <div class="er-field-row"><span class="er-field-name">expiresAt</span><span class="er-field-type">Timestamp (14 Days)</span></div>
         </div>
-
         <div class="er-entity-card">
           <div class="er-entity-header"><span>confidential_requests</span><span>Admin Clearance</span></div>
           <div class="er-field-row"><span class="er-field-pk">PK uid</span><span class="er-field-type">users.uid</span></div>
@@ -104,7 +92,6 @@
           <div class="er-field-row"><span class="er-field-name">reviewedAt</span><span class="er-field-type">Timestamp</span></div>
         </div>
       </div>
-
       <div class="arch-flow-diagram">
 +--------------------+        WebSocket / onSnapshot         +-------------------------+
 | CLIENT APPLICATION | &lt;===================================&gt; |  CLOUD FIRESTORE NoSQL  |
@@ -119,8 +106,6 @@
 +--------------------+                                       +-------------------------+
       </div>
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-5">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to configure and query the DPGNotes Cloud Firestore database:</p>
     <ol class="tutorial-steps-list">
@@ -130,8 +115,6 @@
       <li><strong>Bind Real-Time Snapshots:</strong> Attach <code>onSnapshot()</code> in Vanilla JavaScript modules to instantly update UI elements when notes receive community verification or upvotes.</li>
       <li><strong>Feed Automated SEO Sitemap Pipelines:</strong> Query active document documents via Node.js batch scripts to dynamically generate <code>sitemap.xml</code> with canonical links and freshness dates for search engines.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-5">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -144,7 +127,6 @@
       <pre class="code-block"><code>// Module 5: Firestore Concurrency Transaction &amp; Atomic Engagement Counter
 const admin = require('firebase-admin');
 const db = admin.firestore();
-
 /**
  * Atomically increments document engagement and awards contributor reputation points
  * inside a single isolated Firestore transaction to eliminate race conditions.
@@ -152,31 +134,26 @@ const db = admin.firestore();
 async function recordDocumentEngagement(docId, studentUid) {
   const docRef = db.collection('documents').doc(docId);
   const logRef = db.collection('engagement_logs').doc();
-
   try {
     const result = await db.runTransaction(async (transaction) => {
       const docSnapshot = await transaction.get(docRef);
       if (!docSnapshot.exists) {
         throw new Error('Target academic document not found in Firestore.');
       }
-
       const docData = docSnapshot.data();
       const uploaderUid = docData.uploaderUid;
       const uploaderRef = db.collection('users').doc(uploaderUid);
-
       // 1. Atomically increment document view count
       transaction.update(docRef, {
         views: admin.firestore.FieldValue.increment(1),
         lastAccessedAt: admin.firestore.FieldValue.serverTimestamp()
       });
-
       // 2. Award reputation point to the verified contributor (1 point per 10 views)
       if (docData.views % 10 === 0) {
         transaction.update(uploaderRef, {
           reputation: admin.firestore.FieldValue.increment(1)
         });
       }
-
       // 3. Record audit log
       transaction.set(logRef, {
         docId: docId,
@@ -184,10 +161,8 @@ async function recordDocumentEngagement(docId, studentUid) {
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
         category: docData.category
       });
-
       return { newViewCount: docData.views + 1 };
     });
-
     console.log(`[FIRESTORE] Engagement logged atomically for ${docId}:`, result);
     return result;
   } catch (err) {
@@ -195,14 +170,9 @@ async function recordDocumentEngagement(docId, studentUid) {
     throw err;
   }
 }
-
 module.exports = { recordDocumentEngagement };</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-5">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -211,8 +181,6 @@ module.exports = { recordDocumentEngagement };</code></pre>
       <li><strong>Verified Invariant:</strong> Complete security isolation: <code>confidential_requests</code> documents cannot be read or listed by unverified users.</li>
       <li><strong>Verified Invariant:</strong> Real-time snapshot connections (<code>onSnapshot</code>) must unsubscribe immediately upon component unmount to prevent memory leaks.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-5">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

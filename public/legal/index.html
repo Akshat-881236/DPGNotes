@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <script src="../config.js"></script>
@@ -43,20 +42,14 @@
       display: none !important;
     }
   </style>
-  <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/responsive.css">
-  
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  
-  <!-- PDF & Document Watermarking Engines -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-  <!-- Markdown Parser for AI Responses -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <script>
@@ -69,26 +62,20 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body class="theme-auto">
-
-
   <div class="reading-progress-container">
     <div id="readingProgress" class="reading-progress-bar"></div>
   </div>
-
-  <!-- Header Section -->
   <header class="legal-header">
     <div class="header-container">
       <a href="../index.html" class="legal-logo">
         <i class="ri-shield-user-fill logo-icon"></i>
         <span>DPGNotes <span class="accent-text">Legal</span></span>
       </a>
-      
       <div class="search-trigger" id="searchTrigger" title="Search documentation (Ctrl + K)">
         <i class="ri-search-line"></i>
         <span class="search-placeholder">Search policies...</span>
         <span class="search-shortcut">⌘K</span>
       </div>
-
       <div class="header-actions">
         <a href="../index.html" class="nav-link" title="Main Platform" style="padding:0.4rem 0.8rem;"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
         <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme">
@@ -102,11 +89,8 @@
       </div>
     </div>
   </header>
-
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
   <div class="legal-layout-container">
-    <!-- Sidebar Navigation -->
     <aside class="legal-sidebar" id="legalSidebar">
       <nav class="sidebar-nav">
         <div class="sidebar-group">
@@ -116,7 +100,6 @@
             <li><a href="#updates" class="nav-link" data-section="updates"><i class="ri-calendar-todo-line"></i> Policy Updates</a></li>
           </ul>
         </div>
-
         <div class="sidebar-group">
           <h3 class="group-title">Standard Policies</h3>
           <ul class="nav-list">
@@ -127,7 +110,6 @@
             <li><a href="#drasa" class="nav-link" data-section="drasa"><i class="ri-scales-line"></i> DRASA Policy</a></li>
           </ul>
         </div>
-
         <div class="sidebar-group">
           <h3 class="group-title">Intellectual Property</h3>
           <ul class="nav-list">
@@ -135,7 +117,6 @@
             <li><a href="#dmca" class="nav-link" data-section="dmca"><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
           </ul>
         </div>
-
         <div class="sidebar-group">
           <h3 class="group-title">Data & Security</h3>
           <ul class="nav-list">
@@ -144,7 +125,6 @@
             <li><a href="#retention" class="nav-link" data-section="retention"><i class="ri-database-2-line"></i> Data Retention Policy</a></li>
           </ul>
         </div>
-
         <div class="sidebar-group">
           <h3 class="group-title">Monetization & Advertising</h3>
           <ul class="nav-list">
@@ -153,14 +133,12 @@
             <li><a href="#links-policy" class="nav-link" data-section="links-policy"><i class="ri-external-link-line"></i> External Links Disclaimer</a></li>
           </ul>
         </div>
-
         <div class="sidebar-group">
           <h3 class="group-title">Assessment & Quizzes</h3>
           <ul class="nav-list">
             <li><a href="#quiz-policy" class="nav-link" data-section="quiz-policy"><i class="ri-survey-line"></i> Quiz Policy</a></li>
           </ul>
         </div>
-
         <div class="sidebar-group">
           <h3 class="group-title">Help & Support</h3>
           <ul class="nav-list">
@@ -171,13 +149,9 @@
         <div class="native-ads" id="native-ads-sidebar" data-ad-variant="image" style="margin-top:1.5rem; padding:0 0.5rem;"></div>
       </nav>
     </aside>
-
-    <!-- Main Content Container -->
     <main class="legal-content has-toc">
       <div class="content-wrapper">
         <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-        
-        <!-- Breadcrumbs Navigation -->
         <nav class="legal-breadcrumbs" aria-label="Breadcrumb">
           <ol>
             <li><a href="../index.html">Home</a></li>
@@ -185,8 +159,6 @@
             <li class="current-crumb" id="currentCrumb">Overview</li>
           </ol>
         </nav>
-
-        <!-- Google Ad Unit -->
         <div class="ad-banner-section" style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; text-align: center;">
           <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; tracking-spacing: 1px;">Sponsored</span>
           <ins class="adsbygoogle"
@@ -199,8 +171,6 @@
                (adsbygoogle = window.adsbygoogle || []).push({});
           </script>
         </div>
-
-        <!-- Document Viewer and Action Panel -->
         <div class="doc-viewer-card">
           <div class="viewer-actions">
             <span class="current-policy-title" id="actionTitle">Legal Overview</span>
@@ -210,18 +180,13 @@
               <button id="downloadPdfBtn" class="action-btn primary" title="Download PDF Version"><i class="ri-file-download-line"></i> Download PDF</button>
             </div>
           </div>
-          
-          <!-- Content Sections -->
           <div class="policy-article-container">
-            <!-- Section: Overview -->
             <article id="overviewSection" class="policy-section active-section">
               <h1>DPGNotes Legal Documentation Overview</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
               <p>Welcome to the DPGNotes Legal Documentation Center. We believe in providing robust transparency, safety, and operational clarity to all contributors, university students, administrators, and visitors. This portal outlines all regulatory policies, terms of services, cookie consents, intellectual property protocols, and security standards implemented on the platform.</p>
-              
               <h2>Legal Roadmap and Compliance Directory</h2>
               <p>Use the sidebar or the navigation indicators below to review each policy document. All documentation is available as web-readable semantic HTML5 format as well as official PDF versions downloadable directly from the dashboard.</p>
-              
               <div class="policy-grid">
                 <div class="policy-card-item">
                   <i class="ri-shield-keyhole-fill"></i>
@@ -254,7 +219,6 @@
                   <a href="#quiz-policy" class="read-link">Read Quiz Policy <i class="ri-arrow-right-line"></i></a>
                 </div>
               </div>
-
               <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
                 <div>
                   <h4 style="margin: 0 0 0.4rem 0; color: var(--text-primary); font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
@@ -269,8 +233,6 @@
                 </a>
               </div>
             </article>
-
-            <!-- Section: Policy Updates -->
             <article id="updatesSection" class="policy-section">
               <h1>Recent Policy & Legal Revisions</h1>
               <p class="subtitle">Last Updated: October 19, 2026</p>
@@ -293,8 +255,6 @@
                 </div>
               </div>
             </article>
-
-            <!-- Section: Privacy Policy -->
             <article id="privacySection" class="policy-section">
               <h1>Privacy Policy</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -309,18 +269,13 @@
                 <a href="privacy-policy.html" class="detailed-policy-btn">Read Dedicated Privacy Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>This Privacy Policy describes how DPGNotes ("we", "our", or "us") collects, uses, and shares information in connection with your use of our platform. We are committed to protecting your personal data in accordance with modern privacy frameworks, including the Digital Personal Data Protection (DPDP) Act, 2023.</p>
-              
               <h2>1. Information Collection</h2>
               <p>We collect credentials and information to provide better services to our users. This includes account profile information (names, emails) and resource uploads (notes, exams, sample papers).</p>
-              
               <h2>2. Information Security</h2>
               <p>All data is hosted securely in encrypted cloud database infrastructure. We enforce strict cloud security rules, restricting read/write permissions to verified account uploaders and administrators. Sensitive transactions are processed behind secure cryptographic authorization headers.</p>
-
               <h2>3. AI Assistant Training & Telemetry</h2>
               <p>Contributor personal & network group messages are processed on the server to dynamically train and update the DPGNotes AI Assistant knowledge base. Users whose accounts are suspended or subject to copyright notices can submit an official appeal through the <a href="https://dpgnotes.web.app/suspension-support-contact-form.html" target="_blank" style="color:var(--primary-light); text-decoration:underline;">Support & Suspension Appeal Portal</a>.</p>
             </article>
-
-            <!-- Section: Terms & Conditions -->
             <article id="termsSection" class="policy-section">
               <h1>Terms & Conditions</h1>
               <p class="subtitle">Last Revised: July 13, 2026</p>
@@ -335,15 +290,11 @@
                 <a href="terms-conditions.html" class="detailed-policy-btn">Read Dedicated Terms & Conditions <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>By accessing or uploading materials to DPGNotes, you agree to comply with and be bound by the following Terms & Conditions of use. Please review them carefully.</p>
-              
               <h2>1. Platform Use & Account Eligibility</h2>
               <p>DPGNotes is designed as an open educational repository. Users may register to upload academic notes, sample papers, sessional guides, and tutorials. Contributors retain the right to delete their own uploaded documents as well as delete their entire account profile via the dashboard Danger Zone at any time.</p>
-              
               <h2>2. Administration Rights</h2>
               <p>Administrators have the authority to suspend or permanently block user profiles found violating sessional content standards or copyright guidelines. Suspended contributors are barred from uploading or generating share links for the suspension duration. Administrators can also permanently delete generated share codes, terminating access for visitors and sending automated email warnings to all interested parties.</p>
             </article>
-
-            <!-- Section: Cookie Policy -->
             <article id="cookiesSection" class="policy-section">
               <h1>Cookie Policy</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -358,18 +309,14 @@
                 <a href="cookie-policy.html" class="detailed-policy-btn">Read Dedicated Cookie Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>DPGNotes uses cookies, local storage key-values, and similar tracking technologies to enhance your interface interaction and persist session state preferences.</p>
-              
               <h2>1. What Technologies We Use</h2>
               <ul>
                 <li><strong>Local Storage:</strong> Used to persist theme preferences (dark/light mode), secure admin JWT tokens, and contributor session states.</li>
                 <li><strong>Firebase Authentication Cookies:</strong> Firebase Auth SDK utilizes browser tokens to persist logged-in statuses securely.</li>
               </ul>
-              
               <h2>2. Consent Management</h2>
               <p>By using DPGNotes, you consent to the storage of essential session tokens necessary for account authorization, security, and theme preferences.</p>
             </article>
-
-            <!-- Section: Disclaimer -->
             <article id="disclaimerSection" class="policy-section">
               <h1>Disclaimer</h1>
               <p class="subtitle">Last Updated: July 13, 2026</p>
@@ -384,15 +331,11 @@
                 <a href="disclaimer.html" class="detailed-policy-btn">Read Dedicated Disclaimer <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>The materials, documents, notes, sessional papers, and resources available on DPGNotes are provided "as is" and without warranties of any kind, either express or implied.</p>
-              
               <h2>1. Academic Content Accuracy</h2>
               <p>Uploaded documents represent user contributions. DPGNotes does not guarantee the absolute accuracy, completeness, or grades resulting from the study of resources shared on the platform.</p>
-              
               <h2>2. Third-Party Links</h2>
               <p>Shared links containing external references or PDF rendering interfaces are third-party locations. DPGNotes is not responsible for the stability, privacy, or security of external endpoints.</p>
             </article>
-
-            <!-- Section: Copyright Policy -->
             <article id="copyrightSection" class="policy-section">
               <h1>Copyright Policy</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -407,12 +350,9 @@
                 <a href="copyright-policy.html" class="detailed-policy-btn">Read Dedicated Copyright Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>DPGNotes respects the intellectual property rights of academic authors, universities, and creators. We expect our contributors to do the same.</p>
-              
               <h2>1. Contributor Submissions</h2>
               <p>Contributors must hold rights or licenses for any educational materials, books, or notes they upload to DPGNotes. Uploading copyrighted textbooks, premium guides, or restricted university materials without authorization is strictly prohibited.</p>
             </article>
-
-            <!-- Section: DMCA Policy -->
             <article id="dmcaSection" class="policy-section">
               <h1>DMCA Policy</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -427,7 +367,6 @@
                 <a href="dmca-policy.html" class="detailed-policy-btn">Read Dedicated DMCA Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>In accordance with the Digital Millennium Copyright Act (DMCA), we have established a take-down procedure to address complaints about copyright violations on our platform.</p>
-              
               <h2>1. Submitting a Take-Down Request</h2>
               <p>If you believe that any material residing on DPGNotes infringes your copyright, you may submit a formal notification containing:
                 <ul>
@@ -437,8 +376,6 @@
                 </ul>
               Requests should be sent directly via our Contact form.</p>
             </article>
-
-            <!-- Section: Tracking & Analytics Policy -->
             <article id="analyticsSection" class="policy-section">
               <h1>Tracking & Analytics Policy</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -453,7 +390,6 @@
                 <a href="analytics-policy.html" class="detailed-policy-btn">Read Dedicated Tracking & Analytics Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>We collect essential analytics to improve site load speeds, monitor security anomalies, and track academic resource engagement (Click Through Rate / CTR).</p>
-              
               <h2>1. Telemetry for Guest Users</h2>
               <p>When you visit the site anonymously, the platform may track:
                 <ul>
@@ -463,7 +399,6 @@
                   <li>Search queries and custom theme selections</li>
                 </ul>
               </p>
-
               <h2>2. Telemetry for Authenticated Contributors</h2>
               <p>For logged-in users, the platform records:
                 <ul>
@@ -473,8 +408,6 @@
                 </ul>
               </p>
             </article>
-
-            <!-- Section: Security Policy -->
             <article id="securitySection" class="policy-section">
               <h1>Security Policy</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -489,15 +422,11 @@
                 <a href="security-policy.html" class="detailed-policy-btn">Read Dedicated Security Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>We utilize best-in-class security measures to protect contributor uploads and administrative accounts from unauthorized access.</p>
-              
               <h2>1. Infrastructure Security & Cloud Protection</h2>
               <p>All database queries undergo validation via strict cloud database rules. Admin actions require signed cryptographic tokens verified on our secure cloud platform.</p>
-              
               <h2>2. Client-Side Cryptography</h2>
               <p>Sensitive user actions, passwords, and sessions are encrypted using industry standard protocols before leaving your browser.</p>
             </article>
-
-            <!-- Section: Data Retention Policy -->
             <article id="retentionSection" class="policy-section">
               <h1>Data Retention Policy</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -512,15 +441,11 @@
                 <a href="retention-policy.html" class="detailed-policy-btn">Read Dedicated Data Retention Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>We only retain collected personal data and document records for as long as necessary to fulfill academic usage and compliance mandates.</p>
-              
               <h2>1. Contributor Deletion</h2>
               <p>When a contributor deletes their account, all associated documents, user logs, and database profiles are permanently and immediately removed from our cloud records.</p>
-              
               <h2>2. Activity and Traffic Logs</h2>
               <p>Click engagements, telemetry logs, and activity entries are archived or scrubbed after 180 days to minimize data footprint.</p>
             </article>
-
-            <!-- Section: DRASA -->
             <article id="drasaSection" class="policy-section">
               <h1>DPGNotes Regulations & Suspension Act (DRASA)</h1>
               <p class="subtitle">Effective Date: July 13, 2026</p>
@@ -534,10 +459,8 @@
                 </div>
                 <a href="drasa-policy.html" class="detailed-policy-btn">Read Dedicated DRASA Regulations <i class="ri-arrow-right-line"></i></a>
               </div>
-              
               <h2>1. Introduction & Scope</h2>
               <p>The DPGNotes Regulations & Suspension Act (DRASA) establishes the official governance framework for DPGNotes. It defines conduct standards, uploader responsibilities, and administrative enforcement procedures including temporary suspensions, long-term bans, appeal procedures, and disciplinary metrics.</p>
-              
               <h2>2. Disciplinary Classifications & Referral Fraud Penalties</h2>
               <p>Violations on the portal are categorized from Level I to Level V:
                 <ul>
@@ -550,12 +473,9 @@
                   <li><strong>Level V (Critical Security):</strong> Phishing, credential scraping, database tampering, or host infrastructure attack attempts resulting in immediate, permanent ban and account deletion.</li>
                 </ul>
               </p>
-              
               <h2>3. Anonymous Guest Access Quota Rules</h2>
               <p>To preserve infrastructure stability and prevent scraping, unauthenticated guest users are granted a daily quota of <strong>6 page visits</strong> and <strong>3 PDF reads</strong> per 24 hours. Exceeding this quota requires signing up with a valid Google account to continue accessing academic materials. Legal Policy pages remain unconditionally accessible.</p>
             </article>
-
-            <!-- Section: Ads Policy and Guidelines -->
             <article id="ads-policySection" class="policy-section">
               <h1>Ads Policy & Content Safety Guidelines</h1>
               <p class="subtitle">Effective Date: August 10, 2026</p>
@@ -570,7 +490,6 @@
                 <a href="advertising-policy.html" class="detailed-policy-btn">Read Dedicated Advertising Policy <i class="ri-arrow-right-line"></i></a>
               </div>
               <p>This Advertising Policy governs all promotional campaigns, sponsored resources, external post links, media embeds, and native ad displays submitted by contributors or displayed across the DPGNotes portal.</p>
-              
               <h2>1. Scope & Sponsored Ad Categories</h2>
               <p>DPGNotes supports five distinct ad formats for academic and professional growth:</p>
               <ul>
@@ -580,7 +499,6 @@
                 <li><strong>🐙 GitHub Repository Promotion:</strong> Showcases open-source projects, developer tools, repositories, and code bases.</li>
                 <li><strong>🔴 YouTube Video / Channel Promotion:</strong> Promotes video lectures, channel trailers, software demos, and tech tutorials with hover preview capabilities.</li>
               </ul>
-
               <h2>2. Ad Upload & Submission Workflow</h2>
               <ol>
                 <li><strong>Category Selection:</strong> Choose the appropriate platform category from the <em>Promote & Upload Ads</em> tab in the Contributor Dashboard.</li>
@@ -589,7 +507,6 @@
                 <li><strong>Destination Link:</strong> Destination URLs must be direct, operational links matching the selected platform domain.</li>
                 <li><strong>Review & Approval:</strong> Submissions undergo automated and admin verification before publishing to the network.</li>
               </ol>
-
               <h2>3. Content Safety & Prohibited Practices</h2>
               <p>Submissions containing any of the following will be rejected immediately:</p>
               <ul>
@@ -598,7 +515,6 @@
                 <li>Academic dishonesty scams, paper-writing mills, or copyright-infringing downloads.</li>
                 <li>Deceptive clickbait, misleading titles, or domain spoofing.</li>
               </ul>
-
               <h2>4. Violation Criteria & Enforcement Actions</h2>
               <div class="table-responsive">
             <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.88rem; color:var(--text-main);">
@@ -629,12 +545,9 @@
               </table>
             </div>
             </article>
-
-            <!-- Section: Native Ads Monetization Policy -->
             <article id="native-ads-monetizationSection" class="policy-section">
               <h1>Native Ads Monetization & Contributor Billing Policy</h1>
               <p class="subtitle">Effective Date: October 12, 2026 &bull; Reference: POL-DPG-NATIVE-MONETIZE-2026-V1.0</p>
-              
               <div class="detailed-policy-callout">
                 <div class="detailed-policy-callout-content">
                   <i class="ri-money-dollar-circle-line" style="font-size:2.2rem; color:#f59e0b;"></i>
@@ -645,9 +558,7 @@
                 </div>
                 <a href="native-ads-monetization-policy.html" class="detailed-policy-btn">Read Dedicated Monetization Policy <i class="ri-arrow-right-line"></i></a>
               </div>
-
               <p>This Native Ads Monetization Policy outlines the financial terms, telemetry tracking mechanisms, billing calculations, and performance metrics applicable to promoted ad campaigns uploaded by contributors across the DPGNotes academic ecosystem.</p>
-
               <h2>1. Commercial Pricing Model & Unit Interaction Rates</h2>
               <p>DPGNotes employs a dual-interaction monetization architecture designed to reward authentic user engagement while penalizing synthetic, accidental, or deceptive clicks:</p>
               <ul>
@@ -657,7 +568,6 @@
                 <li><strong>Strict Self-Interaction Exclusion:</strong> Hovers and clicks by active contributors on their own uploaded ads (or ads uploaded by linked duplicate accounts) are 100% non-billable and bypassed automatically.</li>
                 <li><strong>AI Profile Check & Identity Clustering:</strong> An AI algorithm cross-references registered accounts across email variations, names, GitHub, LinkedIn, and Settings bio details. All duplicate accounts within a cluster are treated as a single entity; only one interaction across the entire cluster is valid per ad per month.</li>
               </ul>
-
               <h2>2. Contributor Academic Portfolio Discount Tiers</h2>
               <p>To support student researchers, educators, and active contributors, DPGNotes provides substantial portfolio discount subsidies applied directly against <strong>all monthly ad interaction charges (both hovers and visits)</strong> based on verified public uploads:</p>
               <div class="table-responsive">
@@ -698,21 +608,18 @@
                   </tbody>
                 </table>
               </div>
-
               <h2>2.1 Advertiser Placement Subsidy Deductions</h2>
               <p>In addition to portfolio discounts, advertisers earn direct placement subsidies when their ads are engaged on peer resources:</p>
               <ul>
                 <li><strong>Eligible Peer Placements:</strong> Valid on another contributor's Assignment/Practical solutions, PDF resources, or platform utility and legal note pages. (Self-placements on the advertiser's own resources earn ₹0 subsidy).</li>
                 <li><strong>Subsidy Rates:</strong> Hover = <strong>₹9</strong> (Contributor) / <strong>₹3</strong> (Guest); Click = <strong>₹12</strong> (Contributor) / <strong>₹8</strong> (Guest). Applied as: <code>Net Payable = MAX(0, Gross - Tier Discount - Total Subsidy Saved)</code>.</li>
               </ul>
-
               <h2>3. 12-Hour Gap Anomaly Protection & 15-Day Account Flagging</h2>
               <p>To shield advertisers from rapid unnatural loops or malicious click inflation:</p>
               <ul>
                 <li><strong>12-Hour Interaction Gap Threshold:</strong> If repeated visits or hovers on the same ad URL occur with a time gap of less than 12 hours, all Firestore charging logs for that specific ad are canceled and purged.</li>
                 <li><strong>15-Day Ads Suspension Flag:</strong> The responsible contributor UID or guest identity (Guest ID & Client Device ID) is automatically flagged for 15 days, with a Violation recorded in the Admin Portal. All historical and future interactions during this 15-day window are permanently excluded from billing.</li>
               </ul>
-
               <h2>4. Monthly Billing Cycle & Finalization on the 5th of Each Month</h2>
               <p>Each calendar month represents an isolated billing period (e.g. <code>YYYY-MM</code>):</p>
               <ul>
@@ -720,7 +627,6 @@
                 <li><strong>Immutable Ledger:</strong> Newly uploaded resources submitted during subsequent months apply only to future billing cycles and will not retroactively alter previously finalized monthly statements.</li>
                 <li><strong>Real-Time Notice:</strong> Contributors are reminded: <em>On the 5th of each month, the previous monthly cycle concludes with bill finalization, immutable ledger locking, and an automated itemized statement dispatched to your registered email</em>.</li>
               </ul>
-
               <h2>5. 15-Day Payment Window &amp; Actions for Unpaid Bills</h2>
               <p>Every monthly billing cycle finishes at the end of the month. Contributors are given a <strong>15-day grace period</strong> (from the 1st through the 15th of the new month) to clear their advertising dues or request a fee concession.</p>
               <ul>
@@ -729,25 +635,19 @@
                 <li><strong>Academic Uploads Stay 100% Untouched:</strong> Your public study notes, lab manuals, and exam solutions are never removed or penalized because of an advertising balance. Academic resources remain freely accessible.</li>
                 <li><strong>Instant Restoration:</strong> Once payment is confirmed by our administrators, your campaigns are switched back on immediately.</li>
               </ul>
-
               <h2>6. 3-Step Offline Payment &amp; Concession Procedure</h2>
               <p>Because DPGNotes does not run an automated credit card gateway, advertising charges are handled manually through offline UPI payments:</p>
               <div style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; padding: 1rem; margin: 0.8rem 0; font-size: 0.86rem;">
                 <p style="margin: 0 0 8px 0; color: #fbbf24; font-weight: 700;">Step 1: Request Payment Details / Concession via Dashboard</p>
                 <p style="margin: 0 0 10px 0; color: #cbd5e1;">Click "Request Payment QR / Concession" in your dashboard to request our official UPI QR code and verified Phone Number, or ask for a fee concession if you need student financial assistance.</p>
-                
                 <p style="margin: 0 0 8px 0; color: #38bdf8; font-weight: 700;">Step 2: Complete Payment &amp; Email Proof</p>
                 <p style="margin: 0 0 10px 0; color: #cbd5e1;">Make the payment offline and email your screenshot (showing transaction ID/UTR) along with your Contributor UID, Full Name, Email, Contact Phone, and Billing Month to <strong>both</strong> <a href="mailto:akshatpsd2005@gmail.com" style="color: #93c5fd;">akshatpsd2005@gmail.com</a> and <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color: #93c5fd;">its.akshatnetworkhub23@gmail.com</a>.</p>
-                
                 <p style="margin: 0 0 8px 0; color: #34d399; font-weight: 700;">Step 3: Verification &amp; Automated Confirmation Email</p>
                 <p style="margin: 0; color: #cbd5e1;">Our team reviews the transaction within 5 to 10 business days. When the admin marks the bill as Paid (or Waived) in the portal, an automated confirmation email is sent to your registered inbox.</p>
               </div>
-
               <h2>7. Admin Verification & Exclusions</h2>
               <p>All internal testing and quality audits conducted by platform administrators (including <code>its.akshatnetworkhub23@gmail.com</code>, <code>akshatprasad009@gmail.com</code>, or the server <code>ADMIN_EMAIL</code> configuration) are completely excluded from monetization tracking and charging.</p>
             </article>
-
-            <!-- Section: External Links Disclaimer -->
             <article id="links-policySection" class="policy-section">
               <h1>External Links & Redirect Disclaimer</h1>
               <p class="subtitle">Effective Date: July 20, 2026</p>
@@ -767,12 +667,9 @@
               <h2>2. Secure Redirect Mode</h2>
               <p>Any external domain navigation is opened in a new tab with modern safety headers (e.g. <code>noopener, noreferrer</code>) to protect your browser session from security compromises.</p>
             </article>
-
-            <!-- Section: Quiz Examination Policy -->
             <article id="quiz-policySection" class="policy-section">
               <h1>Quiz Examination & Candidate Telemetry Policy</h1>
               <p class="subtitle">Effective Date: October 19, 2026 &bull; Reference: POL-DPG-QUIZ-EVAL-2026-V1.0</p>
-              
               <div class="detailed-policy-callout">
                 <div class="detailed-policy-callout-content">
                   <i class="ri-survey-line" style="font-size:2rem; color:var(--primary);"></i>
@@ -783,9 +680,7 @@
                 </div>
                 <a href="quiz-policy.html" class="detailed-policy-btn">Read Dedicated Quiz Policy <i class="ri-arrow-right-line"></i></a>
               </div>
-
               <p>This Quiz Examination Policy governs all online academic assessments, candidate scoring, proctoring telemetry, answer key disclosures, and contributor authoring standards conducted on the DPGNotes portal.</p>
-
               <h2>1. Candidate Identity Verification & Single Attempt Rule</h2>
               <p>To preserve institutional integrity and academic fairness, every examination enforces a strict <strong>single-attempt restriction</strong>. Re-submission or retaking a completed assessment is strictly prohibited. The system validates and binds candidate submissions across three independent integrity factors:</p>
               <ul>
@@ -793,7 +688,6 @@
                 <li><strong>Authenticated Account / Guest UID:</strong> Both verified contributor sessions and guest Firebase Authentication sessions are permanently bound to their attempt record in Firestore.</li>
                 <li><strong>Workstation Session Lock:</strong> Browser local storage tokens record completed attempts to prevent unauthorized re-entry on the same client.</li>
               </ul>
-
               <h2>2. Anti-Cheat Monitoring & UMC Telemetry Engine</h2>
               <p>Assessments conducted under proctored or strict mode actively record academic integrity telemetry using modern browser security APIs:</p>
               <ul>
@@ -801,26 +695,20 @@
                 <li><strong>Fullscreen Compliance:</strong> Assessments configured for proctored mode require an uninterrupted fullscreen view. Exiting fullscreen mode registers a <code>FULLSCREEN_EXIT</code> integrity infraction.</li>
                 <li><strong>Clipboard & Context Menu Protection:</strong> Right-clicking, copying questions, and pasting unauthorized text are automatically intercepted and recorded as telemetry flags.</li>
               </ul>
-
               <h2>3. Cryptographic Answer Key Privacy & Deferred Evaluation</h2>
               <p>To prevent answer extraction or inspect-element tampering during active examinations, public quiz payloads contain only question prompts and options. Correct answer keys are stored in a contributor-only restricted document. Authors configure assessments under one of two disclosure models:</p>
               <ul>
                 <li><strong>Immediate Result Declaration:</strong> Candidates receive instant scoring, percentage calculations, and response breakdowns upon submission.</li>
                 <li><strong>Deferred Evaluation:</strong> Candidate responses are securely submitted in a <code>PENDING</code> evaluation state. Official scorecards and ranking metrics are declared only when the verified author officially releases the answer key.</li>
               </ul>
-
               <h2>4. Deterministic Scoring & Ranking Computations</h2>
               <p>Scores are calculated deterministically using the author's configured parameters: designated score per correct response, optional negative marks for incorrect options, and unattempted question penalties. Candidate ranks are evaluated dynamically based on final score, with ties resolved deterministically by submission duration (shorter durations achieve higher priority) and zero UMC infractions.</p>
-
               <h2>5. Contributor Authoring & Content Safety</h2>
               <p>Quizzes authored by contributors must uphold academic accuracy and community standards. Authors may embed interactive code containers, comparison tables, and educational math. Deceptive questions, malicious script execution, copyright infringement, or examination fraud violate DPGNotes DRASA regulations and result in contributor privileges revocation.</p>
             </article>
-
-            <!-- Section: FAQ -->
             <article id="faqSection" class="policy-section">
               <h1>Legal FAQ</h1>
               <p class="subtitle">Last Updated: July 13, 2026</p>
-              
               <div class="faq-item">
                 <h4>Can I delete notes that I uploaded to the portal?</h4>
                 <p>Yes. Contributors have full ownership and rights to edit or permanently delete any resources they uploaded directly from their Contributor Dashboard.</p>
@@ -830,8 +718,6 @@
                 <p>If an administrator terminates a share link, the link becomes invalid and redirects to DPGNotes homepage. An automated email notice is sent to you (the generator) and any regular visitors logged in our database.</p>
               </div>
             </article>
-
-            <!-- Section: Contact Center -->
             <article id="contactSection" class="policy-section">
               <h1>Contact Legal Team</h1>
               <p class="subtitle">We value your inquiries and comments</p>
@@ -845,15 +731,12 @@
               </div>
             </article>
           </div>
-          
-          <!-- Embedded PDF Viewer Container -->
           <div class="pdf-viewer-container">
             <div class="pdf-viewer-header">
               <i class="ri-file-pdf-fill pdf-icon"></i>
               <span>Official PDF Document</span>
             </div>
             <div class="pdf-iframe-wrapper" id="pdfWrapper">
-              <!-- Will be loaded dynamically, falling back to Coming Soon if PDF is not found -->
               <div class="pdf-coming-soon">
                 <i class="ri-file-warning-line"></i>
                 <h3>PDF Document Coming Soon</h3>
@@ -862,22 +745,16 @@
             </div>
           </div>
         </div>
-
       </div>
     </main>
-
-    <!-- Table of Contents (Right Sidebar) -->
     <aside class="legal-toc">
       <div class="toc-sticky-box">
         <h4 class="toc-title">On This Page</h4>
         <ul class="toc-list" id="tocList">
-          <!-- Will be loaded dynamically based on active article headers -->
         </ul>
       </div>
     </aside>
   </div>
-
-  <!-- Search Modal -->
   <div class="search-modal" id="searchModal">
     <div class="search-modal-box">
       <div class="search-modal-header">
@@ -893,11 +770,7 @@
       </div>
     </div>
   </div>
-
-  <!-- Scripts -->
   <script type="module" src="js/app.js"></script>
-
-  <!-- DPGNotes Intelligence AI Panel for Legal Center -->
   <style>
     #legalAiBtn {
       position: fixed;
@@ -992,9 +865,7 @@
     #legalAiSendBtn:hover { opacity: 0.85; }
     #legalAiSendBtn:disabled { opacity: 0.4; cursor:not-allowed; }
   </style>
-
   <button id="legalAiBtn" title="Ask DPGNotes Intelligence" onclick="toggleLegalAiPanel()">🤖</button>
-
   <div id="legalAiPanel">
     <div class="ai-panel-header">
       <h4>🤖 DPGNotes Intelligence</h4>
@@ -1012,7 +883,6 @@
       </div>
     </div>
   </div>
-
   <script>
     function toggleLegalAiPanel() {
       const panel = document.getElementById('legalAiPanel');
@@ -1021,16 +891,12 @@
         setTimeout(() => document.getElementById('legalAiInput').focus(), 100);
       }
     }
-
     let legalChatHistory = [];
-
     function appendLegalChatMessage(role, text) {
       const chatArea = document.getElementById("legalAiChatArea");
       if (!chatArea) return;
-
       const msgDiv = document.createElement("div");
       msgDiv.className = `chat-msg ${role}`;
-      
       if (role === 'user') {
         msgDiv.style.alignSelf = 'flex-end';
         msgDiv.style.background = 'linear-gradient(135deg, #8b5cf6, #6366f1)';
@@ -1054,27 +920,21 @@
         msgDiv.style.maxWidth = '85%';
         msgDiv.style.wordBreak = 'break-word';
       }
-
       msgDiv.innerHTML = role === 'ai' && typeof renderMarkdown === 'function' 
         ? renderMarkdown(text) 
         : text.replace(/\n/g, '<br>');
-
       chatArea.appendChild(msgDiv);
       chatArea.scrollTop = chatArea.scrollHeight;
       legalChatHistory.push({ role, text });
     }
-
     async function sendLegalAiQuery() {
       const input = document.getElementById('legalAiInput');
       const btn = document.getElementById('legalAiSendBtn');
       const question = input.value.trim();
       if (!question) return;
-
       input.value = '';
       btn.disabled = true;
       appendLegalChatMessage('user', question);
-
-      // Show thinking
       const chatArea = document.getElementById("legalAiChatArea");
       const thinking = document.createElement("div");
       thinking.id = "legalThinking";
@@ -1084,7 +944,6 @@
       thinking.innerHTML = '🤖 <em>Thinking...</em>';
       chatArea.appendChild(thinking);
       chatArea.scrollTop = chatArea.scrollHeight;
-
       try {
         const res = await fetch(window.API_BASE_URL + '/api/ai/chat', {
           method: 'POST',
@@ -1098,10 +957,8 @@
             }
           })
         });
-        
         const thinkingEl = document.getElementById("legalThinking");
         if (thinkingEl) thinkingEl.remove();
-
         const data = await res.json();
         if (data.answer) {
           appendLegalChatMessage('ai', data.answer);
@@ -1115,7 +972,6 @@
       }
       btn.disabled = false;
     }
-
     function checkAds() {
       document.querySelectorAll('.ad-banner-section').forEach(banner => {
         const ins = banner.querySelector('ins.adsbygoogle');
@@ -1125,8 +981,6 @@
       });
     }
     setInterval(checkAds, 1000);
-
-    // Auto-scroll to section based on URL hash fragment (#privacy, #terms, #copyright, #ads-policy, etc.)
     function scrollToHashSection() {
       let hash = window.location.hash;
       if (hash && hash.length > 1) {
@@ -1140,7 +994,6 @@
         } else if (!targetId.endsWith("Section") && document.getElementById(targetId + "Section")) {
           targetId = targetId + "Section";
         }
-        
         const targetEl = document.getElementById(targetId) || document.querySelector(`[data-policy="${targetId}"]`) || document.querySelector(`a[name="${targetId}"]`);
         if (targetEl) {
           document.querySelectorAll('.policy-section').forEach(sec => sec.classList.remove('active-section'));
@@ -1153,8 +1006,6 @@
     }
     window.addEventListener('DOMContentLoaded', scrollToHashSection);
     window.addEventListener('hashchange', scrollToHashSection);
-
-    // Auto-trigger legal query via URL parameter
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const q = urlParams.get('q');

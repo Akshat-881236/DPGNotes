@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,8 +62,6 @@
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
-
-  <!-- Header -->
   <header class="legal-header">
     <div class="header-container">
       <a href="../index.html" class="legal-logo">
@@ -79,11 +76,8 @@
       </div>
     </div>
   </header>
-
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
   <div class="legal-layout-container">
-    <!-- Sidebar Navigation -->
     <aside class="legal-sidebar" id="legalSidebar">
       <nav class="sidebar-nav">
         <div class="sidebar-group">
@@ -120,8 +114,6 @@
         </div>
       </nav>
     </aside>
-
-    <!-- Main Content -->
     <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
@@ -137,8 +129,6 @@
               <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
             </div>
           </header>
-
-          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
               <i class="ri-arrow-go-back-line"></i>
@@ -148,13 +138,10 @@
               </div>
             </div>
           </div>
-
           <article class="legal-article">
-            
             <h2>1. Defense-in-Depth Architecture &amp; Security Charter</h2>
             <p>DPGNotes is dedicated to maintaining the absolute confidentiality, integrity, and availability of student academic notes, contributor credentials, and institutional resources. Operating under Akshat Network Hub, our technical architecture implements a rigorous <strong>Defense-in-Depth</strong> security methodology. We presume hostile network environments and enforce multi-layered cryptographic, transport, database, and client-side barriers against unauthorized access, data poisoning, credential theft, and denial-of-service disruptions.</p>
             <p>This comprehensive Security Policy details our cryptographic protocols, cloud database access rules, vulnerability mitigation mechanisms, and ethical researcher disclosure guidelines in compliance with the <strong>Digital Personal Data Protection (DPDP) Act 2023</strong> and guidelines of the Indian Computer Emergency Response Team (CERT-In).</p>
-
             <div class="compliance-grid">
               <div class="compliance-card">
                 <h4><i class="ri-lock-password-line"></i> TLS 1.3 &amp; AES-256</h4>
@@ -169,10 +156,8 @@
                 <p>Safe-harbor Vulnerability Disclosure Program welcoming collegiate cybersecurity researchers to report bugs responsibly.</p>
               </div>
             </div>
-
             <h2>2. Comprehensive Security Controls &amp; Infrastructure Matrix</h2>
             <p>The matrix below outlines the specific security technologies and controls active across DPGNotes infrastructure:</p>
-
             <div class="table-responsive">
             <table class="security-matrix-table">
               <thead>
@@ -217,9 +202,6 @@
               </tbody>
             </table>
             </div>
-
-            
-            <!-- Google AdSense In-Article Ad Unit -->
             <div class="legal-adsense-container">
               <ins class="adsbygoogle"
                    style="display:block; text-align:center;"
@@ -231,7 +213,6 @@
                    (adsbygoogle = window.adsbygoogle || []).push({});
               </script>
             </div>
-
             <h2>3. Cloud Database Access Controls &amp; Tenant Isolation</h2>
             <p>Our cloud data storage utilizes strictly configured access rules evaluated directly at the database engine level:</p>
             <ul>
@@ -239,7 +220,6 @@
               <li><strong>Contributor Segregation:</strong> Contributors can only update or delete documents for which their cryptographically verified User UID matches the document's author metadata. Cross-tenant tampering is architecturally impossible.</li>
               <li><strong>Strict Field Schema Validation:</strong> Write requests to Cover Page Logs and Note collections must validate field type, character length constraints, and required fields (such as Subject Name, Subject Code, and Session). Requests containing unexpected keys or malformed JSON are immediately rejected.</li>
             </ul>
-
             <h2>4. Client-Side Integrity &amp; Cross-Site Scripting (XSS) Prevention</h2>
             <p>To ensure student browsers are never compromised when reviewing community study documents, DPGNotes maintains uncompromising DOM hygiene:</p>
             <ul>
@@ -247,9 +227,6 @@
               <li><strong>Anti-Clickjacking Framing Controls:</strong> The platform sends <code>X-Frame-Options: DENY</code> and CSP <code>frame-ancestors 'none'</code> headers to prevent hostile websites from embedding DPGNotes inside malicious transparent iframes.</li>
               <li><strong>Secure Cookie Flags:</strong> All tracking and session tokens carry mandatory <code>Secure</code>, <code>HttpOnly</code> (where server-mediated), and <code>SameSite=Lax</code> or <code>SameSite=Strict</code> attributes to prevent cross-site request forgery (CSRF).</li>
             </ul>
-
-            
-            <!-- Google AdSense In-Article Ad Unit -->
             <div class="legal-adsense-container">
               <ins class="adsbygoogle"
                    style="display:block; text-align:center;"
@@ -261,14 +238,12 @@
                    (adsbygoogle = window.adsbygoogle || []).push({});
               </script>
             </div>
-
             <h2>5. Rate Limiting, DDoS Mitigation &amp; Edge Defense</h2>
             <p>Our content delivery network (CDN) edge incorporates automated threat analysis to defend against distributed denial-of-service (DDoS) events, brute-force dictionary attacks, and headless bot crawlers:</p>
             <ul>
               <li><strong>Generator Endpoint Throttling:</strong> Cover page generation endpoints enforce token-based daily quotas (1/day for guests, 3/day for contributors). Requests exceeding allowed burst velocity are met with HTTP 429 (Too Many Requests).</li>
               <li><strong>Search Query Caps:</strong> High-frequency automated search requests are subjected to temporary cryptographic challenges (CAPTCHA) to prevent database resource exhaustion.</li>
             </ul>
-
             <h2>6. Incident Response Plan (IRP) &amp; Breach Notification Protocol</h2>
             <p>DPGNotes maintains a structured Incident Response Plan (IRP) governed by our core engineering team. In the event of a suspected cybersecurity incident or unauthorized data access:</p>
             <ul>
@@ -277,9 +252,6 @@
               <li><strong>Phase 3 — Eradication &amp; Patching:</strong> Vulnerability causes are diagnosed, patched in source control, and pushed through automated deployment pipelines.</li>
               <li><strong>Phase 4 — Statutory Reporting:</strong> In strict compliance with CERT-In directions and the DPDP Act 2023, significant cybersecurity incidents are notified to the <strong>Data Protection Board of India</strong> and affected users within <strong>72 hours</strong> of formal confirmation.</li>
             </ul>
-
-            
-            <!-- Google AdSense In-Article Ad Unit -->
             <div class="legal-adsense-container">
               <ins class="adsbygoogle"
                    style="display:block; text-align:center;"
@@ -291,7 +263,6 @@
                    (adsbygoogle = window.adsbygoogle || []).push({});
               </script>
             </div>
-
             <h2>7. Responsible Vulnerability Disclosure Program (VDP)</h2>
             <p>DPGNotes enthusiastically welcomes collegiate cybersecurity scholars, ethical penetration testers, and independent security researchers to participate in our Vulnerability Disclosure Program under full legal safe harbor:</p>
             <ul>
@@ -301,7 +272,6 @@
               <li><strong>Reporting Protocol:</strong> Send a complete vulnerability report detailing reproduction steps, request logs, and proof-of-concept payloads to our Security Officer at <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600;">its.akshatnetworkhub23@gmail.com</a>.</li>
               <li><strong>SLA Commitment:</strong> Acknowledgement within <strong>24 business hours</strong>; preliminary technical assessment within <strong>72 hours</strong>.</li>
             </ul>
-
             <div style="background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--primary); padding: 1.2rem; border-radius: 8px; margin: 2rem 0;">
               <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-size: 1.05rem;"><i class="ri-shield-keyhole-line" style="color: var(--primary);"></i> Information Security &amp; Vulnerability Desk</h4>
               <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">DPGNotes Cyber Operations &amp; Platform Defense Team</p>
@@ -309,7 +279,6 @@
               <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Grievance &amp; Security Ticket: <a href="../support-contact-form.html" style="color: var(--primary); font-weight: 600;">Support &amp; Security Escalation Portal</a></p>
               <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">SLA Commitment: Vulnerability reports acknowledged within 24 hours.</p>
             </div>
-
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color: var(--text-primary); display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
@@ -324,7 +293,6 @@
       </div>
     </main>
   </div>
-
   <script>
     const themeBtn = document.getElementById('themeToggleBtn');
     const savedTheme = localStorage.getItem('legal-theme') || 'auto';

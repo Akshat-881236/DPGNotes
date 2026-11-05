@@ -1,10 +1,5 @@
-/* =========================================================
-   DPGNotes Academic Solutions Suite Stylesheet
-   Shared class-based styling for Assignment & Practical Solutions
-   ========================================================= */
-
+/** ========================================================= */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
-
 :root {
   --sol-bg: #0b0f19;
   --sol-surface: #111827;
@@ -24,20 +19,17 @@
   --sol-radius: 12px;
   --sol-radius-lg: 18px;
 }
-
 html {
   overflow-x: hidden;
   width: 100%;
   -webkit-text-size-adjust: 100%;
   box-sizing: border-box;
 }
-
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 body {
   background-color: var(--sol-bg);
   color: var(--sol-text);
@@ -49,8 +41,6 @@ body {
   max-width: 100vw;
   position: relative;
 }
-
-/* NAVBAR */
 .sol-navbar {
   display: flex;
   justify-content: space-between;
@@ -63,8 +53,6 @@ body {
   top: 0;
   z-index: 100;
 }
-
-/* Mobile: icon-only nav for buttons, keep brand text (mirrors PDF Viewer pattern) */
 @media (max-width: 768px) {
   .sol-navbar {
     padding: 0.55rem 0.75rem;
@@ -100,12 +88,10 @@ body {
   .sol-navbar .sol-btn-sm .btn-label {
     display: none !important;
   }
-  /* Keep like count visible (it's a number, not a label) */
   .sol-navbar #likeCountText {
     display: inline !important;
   }
 }
-
 .sol-brand {
   display: flex;
   align-items: center;
@@ -115,12 +101,10 @@ body {
   font-weight: 700;
   font-size: 1.25rem;
 }
-
 .sol-brand i {
   color: var(--sol-teal);
   font-size: 1.5rem;
 }
-
 .sol-badge {
   display: inline-flex;
   align-items: center;
@@ -133,33 +117,26 @@ body {
   color: #c084fc;
   border: 1px solid rgba(139, 92, 246, 0.3);
 }
-
 .sol-badge-teal {
   background: rgba(20, 184, 166, 0.15);
   color: #2dd4bf;
   border-color: rgba(20, 184, 166, 0.3);
 }
-
 .sol-badge-red {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
   border-color: rgba(239, 68, 68, 0.3);
 }
-
 .sol-badge-green {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
   border-color: rgba(16, 185, 129, 0.3);
 }
-
-/* CONTAINER */
 .sol-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
-
-/* CARDS */
 .sol-card {
   background: var(--sol-surface);
   border: 1px solid var(--sol-border);
@@ -169,12 +146,9 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   transition: border-color 0.2s ease;
 }
-
 .sol-card:hover {
   border-color: var(--sol-border-hover);
 }
-
-/* HEADINGS */
 .sol-title {
   font-size: 1.75rem;
   font-weight: 800;
@@ -184,28 +158,23 @@ body {
   align-items: center;
   gap: 10px;
 }
-
 .sol-subtitle {
   color: var(--sol-text-muted);
   font-size: 0.92rem;
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
-
-/* FORM ELEMENTS */
 .sol-form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.2rem;
   margin-bottom: 1.2rem;
 }
-
 .sol-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .sol-label {
   font-size: 0.85rem;
   font-weight: 600;
@@ -214,11 +183,9 @@ body {
   align-items: center;
   justify-content: space-between;
 }
-
 .sol-label span.req {
   color: var(--sol-danger);
 }
-
 .sol-input, .sol-select, .sol-textarea {
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid var(--sol-border);
@@ -231,13 +198,11 @@ body {
   transition: all 0.2s ease;
   width: 100%;
 }
-
 .sol-input:focus, .sol-select:focus, .sol-textarea:focus {
   border-color: var(--sol-teal);
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
   background: rgba(15, 23, 42, 0.95);
 }
-
 .sol-textarea {
   resize: vertical;
   min-height: 140px;
@@ -245,8 +210,6 @@ body {
   font-size: 0.88rem;
   line-height: 1.5;
 }
-
-/* BUTTONS */
 .sol-btn {
   display: inline-flex;
   align-items: center;
@@ -262,58 +225,47 @@ body {
   transition: all 0.2s ease;
   text-decoration: none;
 }
-
 .sol-btn-primary {
   background: linear-gradient(135deg, var(--sol-primary), #6366f1);
   color: white;
   box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
 }
-
 .sol-btn-primary:hover {
   background: linear-gradient(135deg, var(--sol-primary-hover), #4f46e5);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
 }
-
 .sol-btn-teal {
   background: linear-gradient(135deg, var(--sol-teal), var(--sol-accent));
   color: white;
   box-shadow: 0 4px 15px rgba(20, 184, 166, 0.35);
 }
-
 .sol-btn-teal:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(20, 184, 166, 0.45);
 }
-
 .sol-btn-secondary {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--sol-border);
   color: #e2e8f0;
 }
-
 .sol-btn-secondary:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.2);
 }
-
 .sol-btn-danger {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #f87171;
 }
-
 .sol-btn-danger:hover {
   background: rgba(239, 68, 68, 0.25);
 }
-
 .sol-btn-sm {
   padding: 0.4rem 0.8rem;
   font-size: 0.82rem;
   border-radius: 8px;
 }
-
-/* QUICK TOOLS PALETTE */
 .sol-palette {
   display: flex;
   flex-wrap: wrap;
@@ -325,7 +277,6 @@ body {
   border-top-left-radius: var(--sol-radius);
   border-top-right-radius: var(--sol-radius);
 }
-
 .sol-palette-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -337,34 +288,26 @@ body {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-
 .sol-palette-btn:hover {
   background: rgba(20, 184, 166, 0.2);
   color: #2dd4bf;
   border-color: rgba(20, 184, 166, 0.4);
 }
-
 .sol-palette-btn.ad-btn {
   background: rgba(245, 158, 11, 0.15);
   color: #fbbf24;
   border-color: rgba(245, 158, 11, 0.3);
 }
-
 .sol-palette-btn.ad-btn:hover {
   background: rgba(245, 158, 11, 0.25);
 }
-
-/* CODE / ANSWER CONTAINER */
 .sol-editor-box {
   position: relative;
 }
-
 .sol-editor-box .sol-textarea {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
-
-/* QUESTION / PRACTICAL CARD */
 .sol-item-card {
   background: var(--sol-surface-elevated);
   border: 1px solid var(--sol-border);
@@ -374,14 +317,12 @@ body {
   position: relative;
   transition: all 0.2s ease;
 }
-
 .sol-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
-
 .sol-item-num {
   font-weight: 700;
   font-size: 1rem;
@@ -390,8 +331,6 @@ body {
   align-items: center;
   gap: 8px;
 }
-
-/* SECURITY / ENCRYPTION CARD */
 .sol-security-card {
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(20, 184, 166, 0.08));
   border: 1px solid rgba(239, 68, 68, 0.25);
@@ -399,8 +338,6 @@ body {
   padding: 1.2rem;
   margin-bottom: 1.5rem;
 }
-
-/* VIEWER STYLES */
 .sol-view-header {
   background: var(--sol-surface);
   border: 1px solid var(--sol-border);
@@ -408,7 +345,6 @@ body {
   padding: 2rem;
   margin-bottom: 2rem;
 }
-
 .sol-meta-row {
   display: flex;
   flex-wrap: wrap;
@@ -419,18 +355,14 @@ body {
   color: var(--sol-text-muted);
   font-size: 0.85rem;
 }
-
 .sol-meta-item {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-
 .sol-meta-item strong {
   color: white;
 }
-
-/* Q&A / PRACTICAL RENDERED BLOCK */
 .sol-block {
   background: var(--sol-surface);
   border: 1px solid var(--sol-border);
@@ -438,7 +370,6 @@ body {
   padding: 2rem;
   margin-bottom: 2rem;
 }
-
 .sol-q-title {
   font-size: 1.25rem;
   font-weight: 700;
@@ -448,31 +379,25 @@ body {
   align-items: flex-start;
   gap: 10px;
 }
-
 .sol-answer-content {
   color: #e2e8f0;
   font-size: 0.95rem;
   line-height: 1.7;
 }
-
 .sol-answer-content h1, .sol-answer-content h2, .sol-answer-content h3 {
   color: white;
   margin: 1.2rem 0 0.6rem 0;
 }
-
 .sol-answer-content p {
   margin-bottom: 0.9rem;
 }
-
 .sol-answer-content ul, .sol-answer-content ol {
   margin-left: 1.5rem;
   margin-bottom: 1rem;
 }
-
 .sol-answer-content li {
   margin-bottom: 0.3rem;
 }
-
 .sol-answer-content pre {
   background: var(--sol-code-bg);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -484,7 +409,6 @@ body {
   margin: 1rem 0;
   color: #a5f3fc;
 }
-
 .sol-answer-content code {
   background: rgba(255, 255, 255, 0.08);
   padding: 2px 6px;
@@ -493,14 +417,11 @@ body {
   font-size: 0.86rem;
   color: #f472b6;
 }
-
 /* =========================================================
    MEDIA RESPONSIVE ACADEMIC TABLES & MATRICES
    Full fallback support for table, thead, tbody, tfoot, tr,
    th, td, colspan, rowspan, and Difference/Similarity comparisons
    ========================================================= */
-
-/* Responsive Table Wrapper */
 .sol-table-responsive {
   width: 100%;
   max-width: 100%;
@@ -514,8 +435,6 @@ body {
   position: relative;
   box-sizing: border-box;
 }
-
-/* Subtle scrollbar styling for webkit */
 .sol-table-responsive::-webkit-scrollbar {
   height: 6px;
 }
@@ -530,8 +449,6 @@ body {
 .sol-table-responsive::-webkit-scrollbar-thumb:hover {
   background: rgba(20, 184, 166, 0.7);
 }
-
-/* Base Table Styling & Universal Fallbacks */
 .sol-table,
 .sol-answer-content table,
 .sol-q-preview-content table {
@@ -547,8 +464,6 @@ body {
   box-sizing: border-box;
   background: transparent;
 }
-
-/* Unnested standalone tables fallback container behavior */
 .sol-answer-content > table:not(.sol-table-responsive table),
 .sol-q-preview-content > table:not(.sol-table-responsive table) {
   margin: 1.25rem 0;
@@ -557,14 +472,11 @@ body {
   overflow: hidden;
   display: table;
 }
-
-/* Table Header */
 .sol-table thead,
 .sol-answer-content table thead,
 .sol-q-preview-content table thead {
   background: rgba(20, 184, 166, 0.14);
 }
-
 .sol-table th,
 .sol-answer-content table th,
 .sol-q-preview-content table th {
@@ -579,8 +491,6 @@ body {
   text-align: left;
   vertical-align: middle;
 }
-
-/* Table Body & Cells */
 .sol-table td,
 .sol-answer-content table td,
 .sol-q-preview-content table td {
@@ -591,24 +501,18 @@ body {
   font-size: 0.9rem;
   line-height: 1.6;
 }
-
-/* Alternating zebra stripes */
 .sol-table tbody tr:nth-child(even),
 .sol-answer-content table tbody tr:nth-child(even),
 .sol-q-preview-content table tbody tr:nth-child(even),
 .sol-table tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.02);
 }
-
-/* Row hover effect */
 .sol-table tbody tr:hover,
 .sol-answer-content table tbody tr:hover,
 .sol-q-preview-content table tbody tr:hover,
 .sol-table tr:hover {
   background: rgba(20, 184, 166, 0.07);
 }
-
-/* Spanning Cells: Colspan */
 .sol-table th[colspan],
 .sol-table td[colspan],
 .sol-answer-content table th[colspan],
@@ -619,8 +523,6 @@ body {
   text-align: inherit;
   background: rgba(20, 184, 166, 0.05);
 }
-
-/* Spanning Cells: Rowspan */
 .sol-table th[rowspan],
 .sol-table td[rowspan],
 .sol-answer-content table th[rowspan],
@@ -632,8 +534,6 @@ body {
   background: var(--sol-surface, #111827);
   border-right: 2px solid rgba(20, 184, 166, 0.3);
 }
-
-/* Table Footer */
 .sol-table tfoot,
 .sol-answer-content table tfoot,
 .sol-q-preview-content table tfoot {
@@ -646,7 +546,6 @@ body {
   border-top: 2px solid var(--sol-border);
   color: #cbd5e1;
 }
-
 /* =========================================================
    DIFFERENCE & SIMILARITY COMPARISON MATRIX STYLES
    Specialized layout for side-by-side technical comparisons
@@ -655,8 +554,6 @@ body {
 .table-diff {
   border: 1px solid var(--sol-border);
 }
-
-/* First Column: Comparison Basis / Parameter */
 .sol-table-diff thead th:first-child,
 .table-diff thead th:first-child {
   background: rgba(20, 184, 166, 0.18);
@@ -664,7 +561,6 @@ body {
   width: 25%;
   min-width: 140px;
 }
-
 .sol-table-diff tbody td:first-child,
 .table-diff tbody td:first-child {
   font-weight: 600;
@@ -672,8 +568,6 @@ body {
   background: rgba(20, 184, 166, 0.04);
   border-right: 1.5px solid rgba(20, 184, 166, 0.2);
 }
-
-/* Similarity Highlights */
 .sol-table .diff-same-row,
 .sol-table tr.similarity,
 .sol-table-diff .diff-same-row,
@@ -682,7 +576,6 @@ body {
 .table-diff tr.similarity {
   background: rgba(16, 185, 129, 0.06) !important;
 }
-
 .sol-table .diff-same-row td:first-child,
 .sol-table tr.similarity td:first-child,
 .sol-table-diff .diff-same-row td:first-child,
@@ -690,8 +583,6 @@ body {
   color: #34d399 !important;
   border-right-color: rgba(16, 185, 129, 0.3) !important;
 }
-
-/* Difference Highlights */
 .sol-table .diff-diff-row,
 .sol-table tr.difference,
 .sol-table-diff .diff-diff-row,
@@ -700,8 +591,6 @@ body {
 .table-diff tr.difference {
   background: rgba(20, 184, 166, 0.05) !important;
 }
-
-/* Comparison Badges */
 .sol-diff-badge {
   display: inline-flex;
   align-items: center;
@@ -729,7 +618,6 @@ body {
   color: #38bdf8;
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
-
 /* =========================================================
    LIGHT THEME ACADEMIC TABLE CONTRAST OVERRIDES
    Guarantees WCAG AAA Jet-Black contrast for all tables
@@ -744,7 +632,6 @@ body[data-theme="light"] .sol-q-preview-content table {
   border: 1.5px solid #cbd5e1 !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
 }
-
 html[data-theme="light"] .sol-table thead,
 html[data-theme="light"] .sol-answer-content table thead,
 html[data-theme="light"] .sol-q-preview-content table thead,
@@ -753,7 +640,6 @@ body[data-theme="light"] .sol-answer-content table thead,
 body[data-theme="light"] .sol-q-preview-content table thead {
   background: #f1f5f9 !important;
 }
-
 html[data-theme="light"] .sol-table th,
 html[data-theme="light"] .sol-answer-content table th,
 html[data-theme="light"] .sol-q-preview-content table th,
@@ -766,7 +652,6 @@ body[data-theme="light"] .sol-q-preview-content table th {
   border: 1px solid #cbd5e1 !important;
   border-bottom: 2px solid #14b8a6 !important;
 }
-
 html[data-theme="light"] .sol-table td,
 html[data-theme="light"] .sol-answer-content table td,
 html[data-theme="light"] .sol-q-preview-content table td,
@@ -778,21 +663,18 @@ body[data-theme="light"] .sol-q-preview-content table td {
   border: 1px solid #cbd5e1 !important;
   font-weight: 500 !important;
 }
-
 html[data-theme="light"] .sol-table tbody tr:nth-child(even),
 html[data-theme="light"] .sol-answer-content table tbody tr:nth-child(even),
 html[data-theme="light"] .sol-q-preview-content table tbody tr:nth-child(even),
 html[data-theme="light"] .sol-table tr:nth-child(even) {
   background: #f8fafc !important;
 }
-
 html[data-theme="light"] .sol-table tbody tr:hover,
 html[data-theme="light"] .sol-answer-content table tbody tr:hover,
 html[data-theme="light"] .sol-q-preview-content table tbody tr:hover,
 html[data-theme="light"] .sol-table tr:hover {
   background: #f1f5f9 !important;
 }
-
 html[data-theme="light"] .sol-table th[colspan],
 html[data-theme="light"] .sol-table td[colspan],
 html[data-theme="light"] .sol-answer-content table th[colspan],
@@ -802,7 +684,6 @@ html[data-theme="light"] .sol-q-preview-content table td[colspan] {
   background: #f1f5f9 !important;
   color: #0f172a !important;
 }
-
 html[data-theme="light"] .sol-table th[rowspan],
 html[data-theme="light"] .sol-table td[rowspan],
 html[data-theme="light"] .sol-answer-content table th[rowspan],
@@ -813,14 +694,12 @@ html[data-theme="light"] .sol-q-preview-content table td[rowspan] {
   color: #0f172a !important;
   border-right: 2px solid #14b8a6 !important;
 }
-
 html[data-theme="light"] .sol-table-diff thead th:first-child,
 html[data-theme="light"] .table-diff thead th:first-child {
   background: #ccfbf1 !important;
   color: #0f766e !important;
   border-right: 2px solid #14b8a6 !important;
 }
-
 html[data-theme="light"] .sol-table-diff tbody td:first-child,
 html[data-theme="light"] .table-diff tbody td:first-child {
   background: #f0fdfa !important;
@@ -828,7 +707,6 @@ html[data-theme="light"] .table-diff tbody td:first-child {
   font-weight: 700 !important;
   border-right: 2px solid #99f6e4 !important;
 }
-
 html[data-theme="light"] .sol-table .diff-same-row,
 html[data-theme="light"] .sol-table tr.similarity,
 html[data-theme="light"] .sol-table-diff .diff-same-row,
@@ -837,14 +715,12 @@ html[data-theme="light"] .table-diff .diff-same-row,
 html[data-theme="light"] .table-diff tr.similarity {
   background: #ecfdf5 !important;
 }
-
 html[data-theme="light"] .sol-table .diff-same-row td,
 html[data-theme="light"] .sol-table tr.similarity td,
 html[data-theme="light"] .sol-table-diff .diff-same-row td,
 html[data-theme="light"] .sol-table-diff tr.similarity td {
   color: #064e3b !important;
 }
-
 html[data-theme="light"] .sol-table .diff-same-row td:first-child,
 html[data-theme="light"] .sol-table tr.similarity td:first-child,
 html[data-theme="light"] .sol-table-diff .diff-same-row td:first-child,
@@ -852,7 +728,6 @@ html[data-theme="light"] .sol-table-diff tr.similarity td:first-child {
   color: #047857 !important;
   border-right-color: #6ee7b7 !important;
 }
-
 html[data-theme="light"] .sol-table .diff-diff-row,
 html[data-theme="light"] .sol-table tr.difference,
 html[data-theme="light"] .sol-table-diff .diff-diff-row,
@@ -861,14 +736,12 @@ html[data-theme="light"] .table-diff .diff-diff-row,
 html[data-theme="light"] .table-diff tr.difference {
   background: #fef2f2 !important;
 }
-
 html[data-theme="light"] .sol-table .diff-diff-row td,
 html[data-theme="light"] .sol-table tr.difference td,
 html[data-theme="light"] .sol-table-diff .diff-diff-row td,
 html[data-theme="light"] .sol-table-diff tr.difference td {
   color: #7f1d1d !important;
 }
-
 html[data-theme="light"] .sol-diff-badge-diff {
   background: #fee2e2 !important;
   color: #991b1b !important;
@@ -884,7 +757,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   color: #0f766e !important;
   border: 1px solid #99f6e4 !important;
 }
-
 /* =========================================================
    MULTI-DEVICE MEDIA RESPONSIVENESS
    Graceful mobile and tablet scaling for all viewport sizes
@@ -897,7 +769,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   border-radius: 10px;
   border: 1px solid var(--sol-border);
 }
-
 @media (max-width: 768px) {
   .sol-table-responsive {
     margin: 1rem 0;
@@ -926,7 +797,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     font-size: 0.85rem;
   }
 }
-
 @media (max-width: 480px) {
   .sol-table-responsive {
     margin: 0.85rem 0;
@@ -952,8 +822,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     font-size: 0.8rem;
   }
 }
-
-/* LIVE HTML EXECUTION SANDBOX */
 .sol-sandbox-wrapper {
   margin-top: 1rem;
   border: 1px solid rgba(6, 182, 212, 0.3);
@@ -961,7 +829,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   overflow: hidden;
   background: #ffffff;
 }
-
 .sol-sandbox-header {
   background: #0f172a;
   color: #38bdf8;
@@ -972,7 +839,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   font-size: 0.82rem;
   font-weight: 600;
 }
-
 .sol-sandbox-iframe {
   width: 100%;
   min-height: 320px;
@@ -980,8 +846,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   background: #ffffff;
   display: block;
 }
-
-/* ENGAGEMENT FOOTER BAR */
 .sol-engagement-bar {
   display: flex;
   justify-content: space-between;
@@ -994,7 +858,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   padding: 1rem 1.5rem;
   margin-top: 2rem;
 }
-
 .sol-screentime-tracker {
   display: flex;
   align-items: center;
@@ -1002,7 +865,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   font-size: 0.84rem;
   color: var(--sol-text-muted);
 }
-
 .sol-screentime-tracker .pulse-dot {
   width: 8px;
   height: 8px;
@@ -1011,14 +873,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   box-shadow: 0 0 8px #10b981;
   animation: pulseAnimation 2s infinite;
 }
-
 @keyframes pulseAnimation {
   0% { opacity: 0.4; }
   50% { opacity: 1; }
   100% { opacity: 0.4; }
 }
-
-/* MODAL OVERLAYS */
 .sol-modal-overlay,
 .sol-sandbox-modal-overlay {
   position: fixed;
@@ -1036,7 +895,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   box-sizing: border-box;
   overflow-y: auto;
 }
-
 .sol-modal-card {
   background: var(--sol-surface);
   border: 1px solid var(--sol-border);
@@ -1047,13 +905,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
   animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 @keyframes modalFadeIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
-
-/* META ROWS */
 .sol-meta-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1062,7 +917,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   padding-top: 1rem;
   border-top: 1px solid var(--sol-border);
 }
-
 .sol-meta-item {
   display: flex;
   align-items: center;
@@ -1070,8 +924,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   font-size: 0.86rem;
   color: var(--sol-text-muted);
 }
-
-/* RESPONSIVE */
 @media (max-width: 768px) {
   .sol-navbar {
     padding: 0.8rem 1rem;
@@ -1091,7 +943,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 520px) {
   .sol-navbar {
     padding: 0.45rem 0.6rem;
@@ -1156,7 +1007,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     margin-bottom: 1rem !important;
   }
 }
-
 @media (max-width: 360px) {
   .sol-navbar {
     padding: 0.5rem;
@@ -1182,7 +1032,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     font-size: 0.7rem;
   }
 }
-
 /* ==========================================
    INTERACTIVE CODE CONTAINERS & LINKED SANDBOX
    ========================================== */
@@ -1198,7 +1047,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   min-width: 0;
   box-sizing: border-box;
 }
-
 .sol-code-block-header {
   background: #161b22;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1213,7 +1061,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   min-width: 0;
   box-sizing: border-box;
 }
-
 .sol-code-block-lang {
   display: flex;
   align-items: center;
@@ -1224,11 +1071,9 @@ html[data-theme="light"] .sol-diff-badge-info {
   color: #cbd5e1;
   min-width: 0;
 }
-
 .sol-code-block-lang.lang-html { color: #f97316; }
 .sol-code-block-lang.lang-css { color: #38bdf8; }
 .sol-code-block-lang.lang-js { color: #facc15; }
-
 .sol-code-block-id-tag {
   font-size: 0.72rem;
   color: #94a3b8;
@@ -1242,14 +1087,12 @@ html[data-theme="light"] .sol-diff-badge-info {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .sol-code-block-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
-
 .sol-code-run-btn {
   background: linear-gradient(135deg, #14b8a6, #0d9488);
   color: white;
@@ -1267,13 +1110,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: all 0.2s ease;
   white-space: nowrap;
 }
-
 .sol-code-run-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(20, 184, 166, 0.5);
   background: linear-gradient(135deg, #0d9488, #0f766e);
 }
-
 .sol-code-try-btn {
   background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
@@ -1291,13 +1132,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: all 0.2s ease;
   white-space: nowrap;
 }
-
 .sol-code-try-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5);
   background: linear-gradient(135deg, #4f46e5, #4338ca);
 }
-
 .sol-code-copy-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1312,12 +1151,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: all 0.15s ease;
   white-space: nowrap;
 }
-
 .sol-code-copy-btn:hover {
   background: rgba(255, 255, 255, 0.14);
   color: white;
 }
-
 .sol-code-block-body {
   padding: 1rem 1.25rem;
   margin: 0;
@@ -1336,7 +1173,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   white-space: pre;
   word-break: normal;
 }
-
 .sol-code-block-body code {
   font-family: inherit;
   font-size: inherit;
@@ -1347,8 +1183,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   display: inline-block;
   min-width: 100%;
 }
-
-/* PER-QUESTION / PER-EXPERIMENT LIVE PREVIEW BOX */
 .sol-q-preview-box {
   margin-top: 1rem;
   background: rgba(15, 23, 42, 0.85);
@@ -1357,7 +1191,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   padding: 1.25rem;
   position: relative;
 }
-
 .sol-q-preview-header {
   display: flex;
   justify-content: space-between;
@@ -1366,7 +1199,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   margin-bottom: 0.8rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
 .sol-q-preview-badge {
   font-size: 0.75rem;
   font-weight: 700;
@@ -1377,14 +1209,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-
 .sol-q-preview-content {
   color: #e2e8f0;
   font-size: 0.92rem;
   line-height: 1.65;
 }
-
-/* ADVANCED SANDBOX MODAL */
 .sol-sandbox-modal-card {
   background: #0b1120;
   border: 1px solid rgba(20, 184, 166, 0.3);
@@ -1399,7 +1228,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   overflow: hidden;
   animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .sol-sandbox-topbar {
   background: #111827;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1410,13 +1238,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   flex-wrap: wrap;
   gap: 10px;
 }
-
 .sol-sandbox-topbar-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .sol-sandbox-title {
   color: white;
   font-size: 1.05rem;
@@ -1425,7 +1251,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   align-items: center;
   gap: 8px;
 }
-
 .sol-sandbox-tabs {
   display: flex;
   align-items: center;
@@ -1435,7 +1260,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
-
 .sol-sandbox-tab-btn {
   background: transparent;
   border: none;
@@ -1450,19 +1274,16 @@ html[data-theme="light"] .sol-diff-badge-info {
   gap: 6px;
   transition: all 0.15s ease;
 }
-
 .sol-sandbox-tab-btn.active {
   background: #1e293b;
   color: #2dd4bf;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
-
 .sol-sandbox-topbar-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .sol-sandbox-body-area {
   flex: 1;
   display: flex;
@@ -1471,7 +1292,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   background: #ffffff;
   overflow: hidden;
 }
-
 .sol-sandbox-iframe-pane {
   width: 100%;
   height: 100%;
@@ -1479,7 +1299,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   background: #ffffff;
   display: block;
 }
-
 .sol-sandbox-console-pane {
   position: absolute;
   inset: 0;
@@ -1492,7 +1311,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   display: none;
   z-index: 5;
 }
-
 .sol-console-item {
   padding: 5px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -1501,18 +1319,15 @@ html[data-theme="light"] .sol-diff-badge-info {
   gap: 10px;
   line-height: 1.5;
 }
-
 .sol-console-item .timestamp {
   color: #64748b;
   font-size: 0.74rem;
   white-space: nowrap;
 }
-
 .sol-console-item.log-info { color: #38bdf8; }
 .sol-console-item.log-warn { color: #f59e0b; }
 .sol-console-item.log-error { color: #ef4444; }
 .sol-console-item.log-success { color: #10b981; }
-
 .sol-sandbox-statusbar {
   background: #0f172a;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -1523,7 +1338,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   font-size: 0.75rem;
   color: #94a3b8;
 }
-
 /* ==========================================
    COMMUNITY TEST CASES & SANDBOX SHOWCASE
    ========================================== */
@@ -1539,7 +1353,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   max-width: 100%;
   min-width: 0;
 }
-
 .sol-community-header {
   display: flex;
   justify-content: space-between;
@@ -1550,7 +1363,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   padding-bottom: 0.8rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
 .sol-community-title {
   font-size: 1.15rem;
   font-weight: 700;
@@ -1559,7 +1371,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   align-items: center;
   gap: 8px;
 }
-
 .sol-testcase-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1567,7 +1378,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   width: 100%;
   box-sizing: border-box;
 }
-
 .sol-testcase-card {
   background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1581,27 +1391,23 @@ html[data-theme="light"] .sol-diff-badge-info {
   box-sizing: border-box;
   min-width: 0;
 }
-
 .sol-testcase-card:hover {
   border-color: rgba(45, 212, 191, 0.4);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
-
 .sol-tc-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
 }
-
 .sol-tc-title {
   font-size: 0.95rem;
   font-weight: 700;
   color: #f8fafc;
   word-break: break-word;
 }
-
 .sol-tc-meta {
   font-size: 0.78rem;
   color: #94a3b8;
@@ -1610,7 +1416,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   gap: 10px;
   flex-wrap: wrap;
 }
-
 .sol-tc-stats {
   display: flex;
   align-items: center;
@@ -1623,19 +1428,16 @@ html[data-theme="light"] .sol-diff-badge-info {
   border: 1px solid rgba(255, 255, 255, 0.05);
   flex-wrap: wrap;
 }
-
 .sol-tc-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
-
 .sol-tc-actions button {
   flex: 1;
   min-width: 100px;
 }
-
 /* ==========================================
    TRY IT AUTH PROMPT MODAL
    ========================================== */
@@ -1651,7 +1453,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   animation: modalFadeIn 0.25s ease;
   box-sizing: border-box;
 }
-
 .sol-auth-prompt-icon {
   width: 64px;
   height: 64px;
@@ -1665,7 +1466,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   font-size: 2rem;
   color: #2dd4bf;
 }
-
 .sol-auth-prompt-btn-google {
   background: #ffffff;
   color: #1e293b;
@@ -1684,13 +1484,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: all 0.2s ease;
   margin-top: 1.2rem;
 }
-
 .sol-auth-prompt-btn-google:hover {
   background: #f1f5f9;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
 }
-
 /* ==========================================
    RESPONSIVE OVERRIDES FOR CODE CONTAINERS & MODALS
    ========================================== */
@@ -1706,7 +1504,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 540px) {
   .sol-code-block-header {
     flex-direction: column;
@@ -1768,7 +1565,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     gap: 8px;
   }
 }
-
 @media (max-width: 360px) {
   .sol-code-block-actions button {
     font-size: 0.7rem;
@@ -1778,7 +1574,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     padding: 1.5rem 1rem;
   }
 }
-
 /* =========================================================
    Google-Style Academic Search Engine & SERP Interface
    ========================================================= */
@@ -1916,14 +1711,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   color: #94a3b8;
   margin-bottom: 4px;
 }
-
-/* NAVBAR HEADER SEARCH EXPANDER */
 .sol-nav-search-wrapper {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
-
 .sol-nav-search-bar {
   display: none;
   align-items: center;
@@ -1938,11 +1730,9 @@ html[data-theme="light"] .sol-diff-badge-info {
   max-width: 460px;
   width: 100%;
 }
-
 .sol-nav-search-bar.active {
   display: flex;
 }
-
 @keyframes navSearchSlide {
   from {
     opacity: 0;
@@ -1953,7 +1743,6 @@ html[data-theme="light"] .sol-diff-badge-info {
     transform: scale(1) translateX(0);
   }
 }
-
 .sol-nav-search-input {
   background: transparent;
   border: none;
@@ -1965,18 +1754,15 @@ html[data-theme="light"] .sol-diff-badge-info {
   width: 200px;
   transition: width 0.25s ease;
 }
-
 @media (min-width: 768px) {
   .sol-nav-search-input {
     width: 300px;
   }
 }
-
 .sol-nav-search-input::placeholder {
   color: #94a3b8;
   font-weight: 400;
 }
-
 .sol-nav-search-submit {
   background: linear-gradient(135deg, #14b8a6, #0d9488);
   color: #042f2e;
@@ -1992,12 +1778,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   flex-shrink: 0;
 }
-
 .sol-nav-search-submit:hover {
   transform: scale(1.1);
   box-shadow: 0 0 12px rgba(20, 184, 166, 0.6);
 }
-
 .sol-nav-search-close {
   background: transparent;
   border: none;
@@ -2013,13 +1797,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: color 0.15s ease, transform 0.15s ease;
   flex-shrink: 0;
 }
-
 .sol-nav-search-close:hover {
   color: #f87171;
   transform: scale(1.1);
 }
-
-/* GOOGLE-STYLE ACADEMIC SEARCH HOME */
 .sol-google-search-bar {
   display: flex !important;
   align-items: center !important;
@@ -2032,14 +1813,12 @@ html[data-theme="light"] .sol-diff-badge-info {
   backdrop-filter: blur(12px) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
-
 .sol-google-search-bar:focus-within,
 .sol-google-search-bar:hover {
   border-color: #14b8a6 !important;
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)) !important;
   box-shadow: 0 0 24px rgba(20, 184, 166, 0.25), 0 8px 28px rgba(0, 0, 0, 0.45) !important;
 }
-
 .sol-google-search-input {
   flex: 1 !important;
   background: transparent !important;
@@ -2052,18 +1831,15 @@ html[data-theme="light"] .sol-diff-badge-info {
   padding: 0 0.75rem !important;
   min-width: 0 !important;
 }
-
 .sol-google-search-input::placeholder {
   color: #64748b !important;
   font-weight: 400 !important;
 }
-
 .sol-search-bar-icon {
   font-size: 1.3rem !important;
   color: #14b8a6 !important;
   flex-shrink: 0 !important;
 }
-
 .sol-search-clear-btn {
   background: transparent !important;
   border: none !important;
@@ -2078,12 +1854,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: all 0.15s ease !important;
   flex-shrink: 0 !important;
 }
-
 .sol-search-clear-btn:hover {
   color: #f8fafc !important;
   background: rgba(255, 255, 255, 0.08) !important;
 }
-
 .sol-search-submit-btn {
   background: linear-gradient(135deg, #14b8a6, #0d9488) !important;
   color: #042f2e !important;
@@ -2100,12 +1874,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: transform 0.15s ease, box-shadow 0.15s ease !important;
   flex-shrink: 0 !important;
 }
-
 .sol-search-submit-btn:hover {
   transform: scale(1.08) !important;
   box-shadow: 0 0 16px rgba(20, 184, 166, 0.5) !important;
 }
-
 .sol-google-btn {
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -2122,7 +1894,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   gap: 8px !important;
   text-decoration: none !important;
 }
-
 .sol-google-btn:hover {
   background: rgba(255, 255, 255, 0.1) !important;
   border-color: rgba(20, 184, 166, 0.5) !important;
@@ -2130,7 +1901,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
 }
-
 .sol-search-chips-row {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -2138,7 +1908,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   gap: 8px !important;
   margin-top: 14px !important;
 }
-
 .sol-search-chip {
   display: inline-flex !important;
   align-items: center !important;
@@ -2154,7 +1923,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   text-decoration: none !important;
 }
-
 .sol-search-chip:hover {
   background: rgba(20, 184, 166, 0.12) !important;
   border-color: rgba(20, 184, 166, 0.4) !important;
@@ -2162,8 +1930,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2) !important;
 }
-
-/* ELEVATED SERP RESULTS CARD - MATCHING PRACTICAL SOLUTION SUITE */
 .sol-serp-card {
   background: linear-gradient(135deg, rgba(20, 24, 39, 0.85), rgba(15, 23, 42, 0.95)) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -2173,13 +1939,11 @@ html[data-theme="light"] .sol-diff-badge-info {
   position: relative !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
 }
-
 .sol-serp-card:hover {
   border-color: rgba(20, 184, 166, 0.45) !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(20, 184, 166, 0.15) !important;
   transform: translateY(-3px) !important;
 }
-
 .sol-serp-top-row {
   display: flex !important;
   justify-content: space-between !important;
@@ -2188,14 +1952,12 @@ html[data-theme="light"] .sol-diff-badge-info {
   gap: 8px !important;
   margin-bottom: 0.6rem !important;
 }
-
 .sol-serp-badges {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
   flex-wrap: wrap !important;
 }
-
 .sol-serp-breadcrumb {
   font-size: 0.78rem !important;
   color: #94a3b8 !important;
@@ -2204,7 +1966,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   align-items: center !important;
   gap: 6px !important;
 }
-
 .sol-serp-title {
   font-size: 1.35rem !important;
   font-weight: 700 !important;
@@ -2216,12 +1977,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   letter-spacing: -0.2px !important;
   transition: color 0.15s ease !important;
 }
-
 .sol-serp-title:hover {
   color: #2dd4bf !important;
   text-decoration: none !important;
 }
-
 .sol-serp-meta-pills {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -2232,7 +1991,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
   border-radius: 10px !important;
 }
-
 .sol-serp-meta-pill {
   display: inline-flex !important;
   align-items: center !important;
@@ -2241,19 +1999,16 @@ html[data-theme="light"] .sol-diff-badge-info {
   color: #cbd5e1 !important;
   white-space: nowrap !important;
 }
-
 .sol-serp-meta-pill strong {
   color: #f8fafc !important;
   margin-left: 2px !important;
 }
-
 .sol-serp-snippet {
   color: #94a3b8 !important;
   font-size: 0.88rem !important;
   line-height: 1.6 !important;
   margin-bottom: 1rem !important;
 }
-
 .sol-serp-metrics-row {
   display: flex !important;
   gap: 8px !important;
@@ -2261,7 +2016,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   flex-wrap: wrap !important;
   margin-bottom: 1rem !important;
 }
-
 .sol-serp-actions {
   display: flex !important;
   align-items: center !important;
@@ -2270,7 +2024,6 @@ html[data-theme="light"] .sol-diff-badge-info {
   padding-top: 0.8rem !important;
   border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
-
 .sol-serp-tab {
   background: transparent;
   border: none;
@@ -2291,19 +2044,10 @@ html[data-theme="light"] .sol-diff-badge-info {
   background: rgba(20, 184, 166, 0.15);
   color: #2dd4bf;
 }
-
-
-
-
-/* Gemini AI Modal & Overview Keyframes */
 @keyframes solModalPop { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
-
-
 /* ========================================================
    QUICK FORMATTER CONTENT - COMPREHENSIVE LIGHT THEME RULES
    ======================================================== */
-
-/* Headings (h1, h2, h3) across all content areas */
 html[data-theme="light"] .sol-answer-content h1,
 html[data-theme="light"] .sol-answer-content h2,
 html[data-theme="light"] .sol-answer-content h3,
@@ -2331,8 +2075,6 @@ body.theme-light .sol-answer-content h3 {
   color: #0f172a !important;
   font-weight: 700 !important;
 }
-
-/* Paragraphs & Text */
 html[data-theme="light"] .sol-answer-content p,
 html[data-theme="light"] .sol-q-preview-content p,
 html[data-theme="light"] #currentQPrompt p,
@@ -2344,8 +2086,6 @@ body.theme-light .sol-q-preview-content p {
   color: #1e293b !important;
   line-height: 1.65 !important;
 }
-
-/* Bold / Strong */
 html[data-theme="light"] .sol-answer-content strong,
 html[data-theme="light"] .sol-q-preview-content strong,
 html[data-theme="light"] #currentQPrompt strong,
@@ -2357,8 +2097,6 @@ body.theme-light .sol-q-preview-content strong {
   color: #0f172a !important;
   font-weight: 700 !important;
 }
-
-/* Links */
 html[data-theme="light"] .sol-answer-content a,
 html[data-theme="light"] .sol-q-preview-content a,
 html[data-theme="light"] #currentQPrompt a,
@@ -2377,8 +2115,6 @@ html[data-theme="light"] #currentQPrompt a:hover,
 html[data-theme="light"] .option-content a:hover {
   color: #312e81 !important;
 }
-
-/* Lists */
 html[data-theme="light"] .sol-answer-content ol,
 html[data-theme="light"] .sol-answer-content ul,
 html[data-theme="light"] .sol-q-preview-content ol,
@@ -2393,8 +2129,6 @@ html[data-theme="light"] #currentQPrompt li {
   color: #1e293b !important;
   margin-bottom: 0.35rem !important;
 }
-
-/* Inline Code */
 html[data-theme="light"] .sol-answer-content code,
 html[data-theme="light"] .sol-q-preview-content code,
 html[data-theme="light"] #currentQPrompt code,
@@ -2410,8 +2144,6 @@ body.theme-light .sol-q-preview-content code {
   padding: 2px 6px !important;
   border-radius: 4px !important;
 }
-
-/* Multi-line Pre Code Blocks */
 html[data-theme="light"] .sol-answer-content pre,
 html[data-theme="light"] .sol-q-preview-content pre,
 html[data-theme="light"] #currentQPrompt pre,
@@ -2439,8 +2171,6 @@ body.theme-light .sol-q-preview-content pre code {
   color: #0f172a !important;
   padding: 0 !important;
 }
-
-/* Interactive Sandbox Code Containers (.sol-code-block-container) */
 html[data-theme="light"] .sol-code-block-container,
 body[data-theme="light"] .sol-code-block-container,
 body.theme-light .sol-code-block-container {
@@ -2484,8 +2214,6 @@ body.theme-light .sol-code-btn:hover {
   background: #e2e8f0 !important;
   color: #0f172a !important;
 }
-
-/* Live Preview Boxes in Generators */
 html[data-theme="light"] .sol-q-preview-box,
 body[data-theme="light"] .sol-q-preview-box,
 body.theme-light .sol-q-preview-box {
@@ -2508,8 +2236,6 @@ body[data-theme="light"] .sol-q-preview-content,
 body.theme-light .sol-q-preview-content {
   color: #0f172a !important;
 }
-
-/* Demo Boxes (demo-box & demo-card) */
 html[data-theme="light"] .demo-box,
 body[data-theme="light"] .demo-box,
 body.theme-light .demo-box {
@@ -2534,8 +2260,6 @@ body[data-theme="light"] .demo-card h2,
 body.theme-light .demo-card h2 {
   color: #047857 !important;
 }
-
-/* Palette Toolbar in Light Theme */
 html[data-theme="light"] .sol-palette,
 body[data-theme="light"] .sol-palette,
 body.theme-light .sol-palette {
@@ -2556,7 +2280,6 @@ body.theme-light .sol-palette-btn:hover {
   border-color: #6366f1 !important;
   color: #3730a3 !important;
 }
-
 /* ============================================================================
    UNIVERSAL CODE SYNTAX HIGHLIGHTING ENGINE - MULTI-THEME COMPLIANCE
    Strict color contracts across Default Dark, Light, Ocean, Sunset, Forest, Sepia
@@ -2579,8 +2302,6 @@ body.theme-light .sol-palette-btn:hover {
   --tok-punct: #cbd5e1;
   --tok-op: #f472b6;
 }
-
-/* Light Theme: WCAG AAA high-contrast syntax tokens */
 html[data-theme="light"],
 body[data-theme="light"],
 body.theme-light {
@@ -2601,8 +2322,6 @@ body.theme-light {
   --tok-punct: #475569;
   --tok-op: #9333ea;
 }
-
-/* Ocean / Blue Theme: vibrant marine palette */
 html[data-theme="ocean"],
 body[data-theme="ocean"],
 body.theme-ocean,
@@ -2624,8 +2343,6 @@ body.theme-blue {
   --tok-punct: #93c5fd;
   --tok-op: #f472b6;
 }
-
-/* Sunset Theme: warm dusk palette */
 html[data-theme="sunset"],
 body[data-theme="sunset"],
 body.theme-sunset {
@@ -2646,8 +2363,6 @@ body.theme-sunset {
   --tok-punct: #fbcfe8;
   --tok-op: #fb923c;
 }
-
-/* Forest Theme: natural emerald palette */
 html[data-theme="forest"],
 body[data-theme="forest"],
 body.theme-forest {
@@ -2668,8 +2383,6 @@ body.theme-forest {
   --tok-punct: #a7f3d0;
   --tok-op: #f472b6;
 }
-
-/* Sepia Theme: warm academic paper palette */
 html[data-theme="sepia"],
 body[data-theme="sepia"],
 body.theme-sepia {
@@ -2690,8 +2403,6 @@ body.theme-sepia {
   --tok-punct: #57534e;
   --tok-op: #78350f;
 }
-
-/* Direct Token Class Selectors */
 .tok-kwd { color: var(--tok-kwd, #c084fc) !important; font-weight: 600; }
 .tok-typ { color: var(--tok-typ, #38bdf8) !important; font-weight: 600; }
 .tok-str { color: var(--tok-str, #34d399) !important; }
@@ -2708,8 +2419,6 @@ body.theme-sepia {
 .tok-css-unit { color: var(--tok-css-unit, #fb923c) !important; font-weight: 600; }
 .tok-punct { color: var(--tok-punct, #cbd5e1) !important; }
 .tok-op { color: var(--tok-op, #f472b6) !important; }
-
-/* Legacy Inline Style Overrides in Light & Sepia Themes */
 html[data-theme="light"] .sol-code-block-body span[style*="color:#38bdf8"],
 html[data-theme="light"] .sol-code-block-body span[style*="color: #38bdf8"],
 html[data-theme="light"] pre span[style*="color:#38bdf8"],
@@ -2740,14 +2449,12 @@ html[data-theme="light"] pre span[style*="color:#fb923c"],
 html[data-theme="light"] pre span[style*="color: #fb923c"] {
   color: #c2410c !important;
 }
-
 /* ============================================================================
    IN-PAGE PDF VIEWER SCOPE & ATTACHMENT CARD THEME COMPLIANCE
    ============================================================================ */
 #pdfAttachmentCard {
   transition: background 0.3s ease, border-color 0.3s ease;
 }
-
 html[data-theme="light"] #pdfAttachmentCard,
 body[data-theme="light"] #pdfAttachmentCard,
 body.theme-light #pdfAttachmentCard {
@@ -2755,19 +2462,16 @@ body.theme-light #pdfAttachmentCard {
   border: 1px solid #cbd5e1 !important;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06) !important;
 }
-
 html[data-theme="light"] #pdfAttachmentHeading,
 body[data-theme="light"] #pdfAttachmentHeading,
 body.theme-light #pdfAttachmentHeading {
   color: #0f172a !important;
 }
-
 html[data-theme="light"] #pdfScopeViewerContainer,
 body[data-theme="light"] #pdfScopeViewerContainer,
 body.theme-light #pdfScopeViewerContainer {
   border-top: 1px solid #e2e8f0 !important;
 }
-
 html[data-theme="light"] #pdfFrameWrapper,
 body[data-theme="light"] #pdfFrameWrapper,
 body.theme-light #pdfFrameWrapper {
@@ -2775,39 +2479,31 @@ body.theme-light #pdfFrameWrapper {
   border-color: #cbd5e1 !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
 }
-
 html[data-theme="light"] #pdfScopeLoading,
 body[data-theme="light"] #pdfScopeLoading,
 body.theme-light #pdfScopeLoading {
   background: #f1f5f9 !important;
   color: #475569 !important;
 }
-
-/* Sepia Theme */
 html[data-theme="sepia"] #pdfAttachmentCard,
 body[data-theme="sepia"] #pdfAttachmentCard,
 body.theme-sepia #pdfAttachmentCard {
   background: #fdf6e2 !important;
   border: 1px solid #d8cbb5 !important;
 }
-
 html[data-theme="sepia"] #pdfAttachmentHeading,
 body[data-theme="sepia"] #pdfAttachmentHeading,
 body.theme-sepia #pdfAttachmentHeading {
   color: #433422 !important;
 }
-
 html[data-theme="sepia"] #pdfScopeViewerContainer,
 body.theme-sepia #pdfScopeViewerContainer {
   border-top-color: #d8cbb5 !important;
 }
-
 html[data-theme="sepia"] #pdfFrameWrapper,
 body.theme-sepia #pdfFrameWrapper {
   border-color: #d8cbb5 !important;
 }
-
-/* Responsive in-page viewer height on smaller mobile devices */
 @media (max-width: 768px) {
   #pdfFrameWrapper {
     height: 520px !important;

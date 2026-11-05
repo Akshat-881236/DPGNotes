@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,8 +62,6 @@
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
-
-  <!-- Header -->
   <header class="legal-header">
     <div class="header-container">
       <a href="../index.html" class="legal-logo">
@@ -79,11 +76,8 @@
       </div>
     </div>
   </header>
-
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
   <div class="legal-layout-container">
-    <!-- Sidebar Navigation -->
     <aside class="legal-sidebar" id="legalSidebar">
       <nav class="sidebar-nav">
         <div class="sidebar-group">
@@ -120,8 +114,6 @@
         </div>
       </nav>
     </aside>
-
-    <!-- Main Content -->
     <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
@@ -137,8 +129,6 @@
               <span class="meta-item"><i class="ri-check-double-line"></i> Version: 3.2 (Comprehensive Edition)</span>
             </div>
           </header>
-
-          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
               <i class="ri-arrow-go-back-line"></i>
@@ -148,13 +138,10 @@
               </div>
             </div>
           </div>
-
           <article class="legal-article">
-            
             <h2>1. Institutional Objective &amp; Outbound Interception Architecture</h2>
             <p>To shield students, research scholars, and academic contributors from malicious redirects, phishing domains, malware distribution networks, and unverified commercial traps, DPGNotes operates an integrated client-side <strong>External Link Interception Architecture</strong>. Because educational notes frequently reference external syllabi, digital library archives, research papers, and software repositories, students often navigate across institutional boundaries.</p>
             <p>Whenever a user clicks a hyperlink leading beyond the trusted perimeter of DPGNotes, our system halts immediate execution, analyzes the target URL, and presents an informative confirmation modal detailing the destination domain, security status, and navigational options.</p>
-
             <div class="compliance-grid">
               <div class="compliance-card">
                 <h4><i class="ri-shield-keyhole-line"></i> Transparent Interception</h4>
@@ -169,10 +156,8 @@
                 <p>Mandatory injection of rel="noopener noreferrer" attributes to neutralize reverse tab-nabbing vulnerabilities.</p>
               </div>
             </div>
-
             <h2>2. The Trusted Internal Whitelist Architecture</h2>
             <p>To reconcile student digital safety with smooth academic navigation, DPGNotes maintains an auditable <strong>Trusted Domain Whitelist</strong>. Hyperlinks pointing to verified first-party platforms, partner academic search engines, and authorized infrastructure providers bypass the interceptor dialog entirely and execute instantly:</p>
-
             <div class="table-responsive">
             <table class="whitelist-table">
               <thead>
@@ -217,9 +202,6 @@
               </tbody>
             </table>
             </div>
-
-            
-            <!-- Google AdSense In-Article Ad Unit -->
             <div class="legal-adsense-container">
               <ins class="adsbygoogle"
                    style="display:block; text-align:center;"
@@ -231,7 +213,6 @@
                    (adsbygoogle = window.adsbygoogle || []).push({});
               </script>
             </div>
-
             <h2>3. The Link Interception Modal Lifecycle &amp; UX Safeguards</h2>
             <p>When an outbound link targeting an external domain is engaged, the platform triggers our unified modal lifecycle:</p>
             <ul>
@@ -240,23 +221,18 @@
               <li><strong>Safety Disclosure Presentation:</strong> A high-contrast modal dialog renders the exact destination hostname, alerting the student that they are stepping outside the DPGNotes legal and privacy boundary.</li>
               <li><strong>Voluntary Confirmation:</strong> The user must affirmatively choose between "Proceed to External Site" (which opens the target in an isolated new tab) or "Stay on DPGNotes" (which aborts the navigation).</li>
             </ul>
-
             <h2>4. Anti-Exploit Security Controls (Reverse Tab-Nabbing Defense)</h2>
             <p>Unrestricted hyperlinks with <code>target="_blank"</code> expose users to a critical web security vulnerability known as <strong>Reverse Tab-Nabbing</strong>, wherein the newly opened third-party site utilizes <code>window.opener.location</code> to silently redirect the background DPGNotes tab to a counterfeit phishing login screen. DPGNotes strictly neutralizes this threat:</p>
             <ul>
               <li><strong>Mandatory <code>rel="noopener"</code>:</strong> Instructs the browser to open the target link without granting the new page an execution reference to the opener tab, maintaining complete thread isolation.</li>
               <li><strong>Mandatory <code>rel="noreferrer"</code>:</strong> Prevents the browser from transmitting the full URL containing sensitive student search parameters in the <code>Referer</code> HTTP header to the foreign server.</li>
             </ul>
-
             <h2>5. Guidelines for Student Contributor Hyperlinks</h2>
             <p>Student contributors authoring study guides, revision notes, and lab manuals are encouraged to cite authoritative academic sources. However, contributor links must strictly comply with platform standards:</p>
             <ul>
               <li><strong>Permitted References:</strong> Official university syllabus pages, government statutory educational portals (NPTEL, SWAYAM, UGC, AICTE), accredited open-access academic papers (arXiv, IEEE Open), and standard textbook publisher indices.</li>
               <li><strong>Prohibited Links:</strong> Shortened URLs (e.g., bit.ly, tinyurl) that obscure destination identity; commercial essay-writing services; gambling platforms; pirated PDF torrent websites; or unencrypted HTTP links.</li>
             </ul>
-
-            
-            <!-- Google AdSense In-Article Ad Unit -->
             <div class="legal-adsense-container">
               <ins class="adsbygoogle"
                    style="display:block; text-align:center;"
@@ -268,19 +244,14 @@
                    (adsbygoogle = window.adsbygoogle || []).push({});
               </script>
             </div>
-
             <h2>6. Sponsored Hyperlinks &amp; Affiliate Disclosure Standards</h2>
             <p>Where external links lead to sponsored educational software, student discounts, or approved affiliate partnerships, DPGNotes enforces strict commercial transparency in accordance with the <strong>Federal Trade Commission (FTC) Guides (16 CFR Part 255)</strong> and the <strong>Advertising Standards Council of India (ASCI)</strong>:</p>
             <ul>
               <li>All outgoing commercial hyperlinks are tagged with mandatory <code>rel="sponsored"</code> or <code>rel="nofollow"</code> HTML attributes.</li>
               <li>Sponsored outbound destinations are clearly identified with badge markers, ensuring no confusion with non-commercial university resources.</li>
             </ul>
-
             <h2>7. Disclaimer of Third-Party Liability &amp; Non-Endorsement</h2>
             <p>DPGNotes does not exercise editorial supervision, operational control, or security monitoring over external web properties. The appearance of an external hyperlink does not constitute an institutional endorsement, warranty, or recommendation of the foreign site, its operator, or its content. DPGNotes expressly disclaims any legal liability for damages, malware infections, data interception, or financial loss incurred on third-party domains.</p>
-
-            
-            <!-- Google AdSense In-Article Ad Unit -->
             <div class="legal-adsense-container">
               <ins class="adsbygoogle"
                    style="display:block; text-align:center;"
@@ -292,10 +263,8 @@
                    (adsbygoogle = window.adsbygoogle || []).push({});
               </script>
             </div>
-
             <h2>8. Broken Link Reporting &amp; Rapid Takedown Protocol</h2>
             <p>If you encounter an outbound hyperlink within our notes that is broken, leads to a parked advertising domain, or directs students to an inappropriate or malicious website, please report it immediately to our Link Integrity Desk:</p>
-
             <div style="background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--primary); padding: 1.2rem; border-radius: 8px; margin: 2rem 0;">
               <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-size: 1.05rem;"><i class="ri-links-line" style="color: var(--primary);"></i> External Link Integrity &amp; Safety Desk</h4>
               <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">DPGNotes Platform Navigation &amp; Domain Security Board</p>
@@ -303,7 +272,6 @@
               <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #cbd5e1;">Support &amp; Malicious Link Ticket: <a href="../support-contact-form.html" style="color: var(--primary); font-weight: 600;">Support &amp; Safety Portal</a></p>
               <p style="margin: 0; font-size: 0.85rem; color: #94a3b8;">Response SLA: Malicious external links delisted within 24 business hours.</p>
             </div>
-
             <h3 style="margin-top:2.5rem; margin-bottom:1rem; font-size:1.15rem; color: var(--text-primary); display:flex; align-items:center; gap:8px;">
               <i class="ri-links-line" style="color:var(--primary);"></i> Related Compliance Policies
             </h3>
@@ -318,7 +286,6 @@
       </div>
     </main>
   </div>
-
   <script>
     const themeBtn = document.getElementById('themeToggleBtn');
     const savedTheme = localStorage.getItem('legal-theme') || 'auto';

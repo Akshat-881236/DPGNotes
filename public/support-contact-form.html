@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
@@ -16,17 +15,13 @@
   <meta property="og:description" content="Official portal for academic inquiries, contact requests, and appeals." />
   <meta property="og:image" content="ANH.png" />
   <meta property="og:type" content="website" />
-  
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-  
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
   <script src="redirect.js"></script>
   <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
-
   <style>
     body {
       background: radial-gradient(circle at top center, #1e1b4b 0%, #090d16 100%);
@@ -215,27 +210,20 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
   <div class="portal-container">
-    
     <div class="portal-header">
       <h1 id="portalTitle">Support & Appeal Portal</h1>
       <p id="portalSub">Complete the verification steps below to submit your official request.</p>
     </div>
-
     <div class="step-indicator">
       <div class="step-node active" id="stepNode1">1</div>
       <div class="step-node" id="stepNode2">2</div>
       <div class="step-node" id="stepNode3">3</div>
       <div class="step-node" id="stepNode4">4</div>
     </div>
-
     <form id="supportForm" onsubmit="event.preventDefault();">
-      
-      <!-- STEP 1 -->
       <div class="form-step active" id="step1">
         <h3 style="margin-top:0; color:#f8fafc; font-size:1.2rem;" id="step1Heading">Step 1: Requester Details</h3>
-        
         <div id="suspensionDetailsBlock" style="display:none;">
           <div class="form-group">
             <label>User ID (UID)</label>
@@ -264,7 +252,6 @@
             </div>
           </div>
         </div>
-
         <div id="copyrightDetailsBlock">
           <div class="form-group">
             <label>Full Name *</label>
@@ -284,11 +271,8 @@
           </div>
         </div>
       </div>
-
-      <!-- STEP 2 -->
       <div class="form-step" id="step2">
         <h3 style="margin-top:0; color:#f8fafc; font-size:1.2rem;">Step 2: Identity & Verification Capture</h3>
-        
         <div class="form-group">
           <label>Live Selfie Verification (Camera) *</label>
           <div class="camera-box">
@@ -302,7 +286,6 @@
           <small style="color:var(--text-muted); display:block; margin-top:6px;">Or Upload photo (Note: Live camera snapshots receive higher AI priority):</small>
           <input type="file" id="selfieFileInput" accept="image/*" class="form-control" style="margin-top:6px;" onchange="handleSelfieUpload(this)" />
         </div>
-
         <div class="form-group" style="margin-top:2rem;">
           <label>Upload National Identity Document or Valid ID Card * (Required)</label>
           <input type="file" id="idCardInput" accept="image/*,.pdf" class="form-control" onchange="handleIdCardUpload(this)" />
@@ -310,16 +293,12 @@
           <div id="idCardStatus" style="color:#10b981; font-size:0.85rem; margin-top:4px; font-weight:600;"></div>
         </div>
       </div>
-
-      <!-- STEP 3 -->
       <div class="form-step" id="step3">
         <h3 style="margin-top:0; color:#f8fafc; font-size:1.2rem;">Step 3: Testimonials & Evidence Upload</h3>
-        
         <div class="form-group">
           <label>Contact Number (For Suspension Appeals)</label>
           <input type="tel" id="suspensionContactNum" class="form-control" placeholder="Enter contact number" />
         </div>
-
         <div class="form-group">
           <label>Testimonials / Statements (Up to 5, max 350 chars each, README.md formatted)</label>
           <div id="testimonialsContainer">
@@ -331,53 +310,40 @@
           </div>
           <button type="button" class="btn btn-secondary" onclick="addTestimonialBox()" style="padding:0.5rem 1rem; font-size:0.85rem;"><i class="ri-add-line"></i> Add Statement Area</button>
         </div>
-
         <div class="form-group" style="margin-top:2rem;">
           <label>Upload Supporting Evidence Documents (Min 1, Max 6) *</label>
           <input type="file" id="evidenceFilesInput" multiple class="form-control" onchange="handleEvidenceFiles(this)" />
           <div id="evidenceFilesList" style="margin-top:0.5rem; font-size:0.85rem; color:#cbd5e1;"></div>
         </div>
       </div>
-
-      <!-- STEP 4 -->
       <div class="form-step" id="step4">
         <h3 style="margin-top:0; color:#f8fafc; font-size:1.2rem;">Step 4: Compliance & Confirmation</h3>
-        
         <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1.5rem; border-radius:16px; margin-bottom:2rem;">
           <label style="display:flex; gap:10px; align-items:flex-start; font-weight:400; color:#cbd5e1; cursor:pointer; margin-bottom:1.2rem;">
             <input type="checkbox" id="chkTerms" style="margin-top:3px; accent-color:#8b5cf6;" />
             <span>By proceeding you agree to our <a href="legal/index.html?from=contributor#retention" target="_blank" style="color:#8b5cf6; text-decoration:underline;">Data Retention Policy</a> and comply with our <a href="legal/index.html?from=contributor#terms" target="_blank" style="color:#8b5cf6; text-decoration:underline;">Terms of Use</a> and <a href="legal/index.html?from=contributor#privacy" target="_blank" style="color:#8b5cf6; text-decoration:underline;">Privacy Policy</a>.</span>
           </label>
-
           <label style="display:flex; gap:10px; align-items:flex-start; font-weight:400; color:#cbd5e1; cursor:pointer;">
             <input type="checkbox" id="chkUpdates" style="margin-top:3px; accent-color:#8b5cf6;" checked />
             <span>Allow us to send automated updates on live status of your Request via email.</span>
           </label>
         </div>
-
         <div id="formSummaryPreview" style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); padding:1.2rem; border-radius:12px; font-size:0.88rem; color:#e2e8f0; margin-bottom:2rem;">
           <strong>Request Preview:</strong> Ready to submit to DPGNotes Administration Team.
         </div>
       </div>
-
-      <!-- Navigation Buttons -->
       <div class="actions-row">
         <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display:none;"><i class="ri-arrow-left-line"></i> Previous</button>
         <div></div>
         <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Next <i class="ri-arrow-right-line"></i></button>
         <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitSupportForm()" style="display:none; background:linear-gradient(135deg, #10b981, #059669);"><i class="ri-send-plane-fill"></i> Submit Request</button>
       </div>
-
     </form>
-    
   </div>
-
   <canvas id="photoCanvas"></canvas>
-
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -386,10 +352,8 @@
       messagingSenderId: "910494426039",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
     const db = getFirestore(app);
-
     let currentStep = 1;
     let isSuspensionMode = false;
     let tokenData = null;
@@ -397,50 +361,38 @@
     let isLiveSelfie = false;
     let idCardDataUrl = "";
     let evidenceFilesData = [];
-
-    // Parse URL params
     const urlParams = new URLSearchParams(window.location.search);
     const tokenParam = urlParams.get("token");
-
     window.addEventListener("DOMContentLoaded", async () => {
       if (tokenParam) {
-        // Fetch Token details from Firestore
         try {
           const tSnap = await getDoc(doc(db, "support_tokens", tokenParam));
           if (tSnap.exists()) {
             isSuspensionMode = true;
             tokenData = tSnap.data();
-            
             document.getElementById("portalTitle").innerText = "Account Suspension Support Appeal";
             document.getElementById("portalSub").innerText = "Review your suspension parameters and submit an official reinstatement appeal.";
             document.getElementById("suspensionDetailsBlock").style.display = "block";
             document.getElementById("copyrightDetailsBlock").style.display = "none";
-            
             document.getElementById("uidField").value = tokenData.uid || "N/A";
             document.getElementById("nameField").value = tokenData.name || "N/A";
             document.getElementById("emailField").value = tokenData.email || "N/A";
             document.getElementById("reasonField").value = tokenData.reason || "Suspended under DRASA Policy";
-            
             const dur = tokenData.suspendedUntil ? `${Math.ceil((tokenData.suspendedUntil - (tokenData.createdAt?.toMillis() || Date.now())) / 86400000)} Days` : "Permanent";
             const rem = tokenData.suspendedUntil ? `${Math.max(0, Math.ceil((tokenData.suspendedUntil - Date.now()) / 86400000))} Days` : "Permanent";
-            
             document.getElementById("durationField").value = dur;
             document.getElementById("remainingField").value = rem;
           }
         } catch(e) { console.error("Error loading token:", e); }
       }
-
       if (!isSuspensionMode) {
         document.getElementById("portalTitle").innerText = "Copyright Concern & Identity Portal";
         document.getElementById("portalSub").innerText = "Submit official copyright ownership notices or intellectual property claims.";
         document.getElementById("suspensionDetailsBlock").style.display = "none";
         document.getElementById("copyrightDetailsBlock").style.display = "block";
       }
-
-      // Attach char count listener to initial testimonial
       document.querySelectorAll(".testimonial-input").forEach(attachCharCount);
     });
-
     function attachCharCount(el) {
       el.addEventListener("input", () => {
         const count = el.value.length;
@@ -448,7 +400,6 @@
         if (small) small.innerText = `${count} / 350`;
       });
     }
-
     window.addTestimonialBox = function() {
       const container = document.getElementById("testimonialsContainer");
       const currentCount = container.children.length;
@@ -466,7 +417,6 @@
       container.appendChild(card);
       attachCharCount(card.querySelector(".testimonial-input"));
     };
-
     window.startCamera = async function() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -478,30 +428,23 @@
         alert("Camera access denied or unequipped. You can upload a selfie photo instead.");
       }
     };
-
     window.takeSelfieSnap = function() {
       const video = document.getElementById("videoElement");
       const canvas = document.getElementById("photoCanvas");
       if (!video.srcObject) return alert("Please start camera first.");
-
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
       selfieDataUrl = canvas.toDataURL("image/png");
       isLiveSelfie = true;
-
       const preview = document.getElementById("selfiePreview");
       preview.src = selfieDataUrl;
       preview.style.display = "block";
       video.style.display = "none";
-
-      // Stop camera stream
       const stream = video.srcObject;
       if (stream) stream.getTracks().forEach(t => t.stop());
     };
-
     window.handleSelfieUpload = function(input) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -516,7 +459,6 @@
         reader.readAsDataURL(input.files[0]);
       }
     };
-
     window.handleIdCardUpload = function(input) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -527,12 +469,10 @@
         reader.readAsDataURL(input.files[0]);
       }
     };
-
     window.handleEvidenceFiles = function(input) {
       const list = document.getElementById("evidenceFilesList");
       list.innerHTML = "";
       evidenceFilesData = [];
-      
       if (input.files) {
         Array.from(input.files).slice(0, 6).forEach((file, index) => {
           const reader = new FileReader();
@@ -540,16 +480,13 @@
             evidenceFilesData.push({ name: file.name, dataUrl: e.target.result });
           };
           reader.readAsDataURL(file);
-
           const item = document.createElement("div");
           item.innerText = `📄 Evidence ${index + 1}: ${file.name}`;
           list.appendChild(item);
         });
       }
     };
-
     window.changeStep = function(delta) {
-      // Validate Step 1
       if (currentStep === 1 && delta > 0) {
         if (!isSuspensionMode) {
           const name = document.getElementById("cNameField").value.trim();
@@ -562,8 +499,6 @@
           }
         }
       }
-
-      // Validate Step 2
       if (currentStep === 2 && delta > 0) {
         if (!selfieDataUrl) {
           alert("Live Selfie or Photo upload is required.");
@@ -574,43 +509,33 @@
           return;
         }
       }
-
       currentStep += delta;
       if (currentStep < 1) currentStep = 1;
       if (currentStep > 4) currentStep = 4;
-
-      // Update UI tabs
       document.querySelectorAll(".form-step").forEach((step, idx) => {
         step.classList.toggle("active", idx === (currentStep - 1));
       });
-
       document.querySelectorAll(".step-node").forEach((node, idx) => {
         node.classList.toggle("active", idx === (currentStep - 1));
         node.classList.toggle("completed", idx < (currentStep - 1));
       });
-
       document.getElementById("prevBtn").style.display = currentStep > 1 ? "inline-flex" : "none";
       document.getElementById("nextBtn").style.display = currentStep < 4 ? "inline-flex" : "none";
       document.getElementById("submitBtn").style.display = currentStep === 4 ? "inline-flex" : "none";
     };
-
     window.submitSupportForm = async function() {
       const chkTerms = document.getElementById("chkTerms");
       if (!chkTerms.checked) {
         alert("You must agree to the Terms of Use, Privacy Policy, and Data Retention Policy.");
         return;
       }
-
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
       submitBtn.innerText = "Uploading files & submitting...";
-
-      // Gather Testimonials
       const statements = [];
       document.querySelectorAll(".testimonial-input").forEach(tx => {
         if (tx.value.trim()) statements.push(tx.value.trim());
       });
-
     function compressBase64Image(dataUrl, maxDim = 600, quality = 0.5) {
       return new Promise((resolve) => {
         if (!dataUrl || !dataUrl.startsWith("data:image")) return resolve(dataUrl);
@@ -638,8 +563,6 @@
         img.src = dataUrl;
       });
     }
-
-    // 1. Upload Selfie Photo if Base64 (Compressed)
     let uploadedSelfieUrl = selfieDataUrl;
     if (selfieDataUrl && selfieDataUrl.startsWith("data:")) {
       try {
@@ -653,8 +576,6 @@
         if (upJson.pdfUrl || upJson.url) uploadedSelfieUrl = upJson.pdfUrl || upJson.url;
       } catch(upErr) { console.error("Selfie upload failed", upErr); }
     }
-
-    // 2. Upload ID Card Document if Base64 (Compressed)
     let uploadedIdCardUrl = idCardDataUrl;
     if (idCardDataUrl && idCardDataUrl.startsWith("data:")) {
       try {
@@ -668,8 +589,6 @@
         if (upJson.pdfUrl || upJson.url) uploadedIdCardUrl = upJson.pdfUrl || upJson.url;
       } catch(upErr) { console.error("ID Card upload failed", upErr); }
     }
-
-    // 3. Upload Evidence Files if Base64 (Compressed)
     const uploadedEvidence = [];
     for (const ev of evidenceFilesData) {
       if (ev && ev.dataUrl && ev.dataUrl.startsWith("data:")) {
@@ -690,7 +609,6 @@
         uploadedEvidence.push({ name: ev.name || "Evidence File", url: ev.url || ev.dataUrl });
       }
     }
-
       const payload = {
         type: isSuspensionMode ? "SUSPENSION_APPEAL" : "COPYRIGHT_CLAIM",
         token: tokenParam || null,
@@ -709,11 +627,8 @@
         allowUpdates: document.getElementById("chkUpdates").checked,
         createdAt: serverTimestamp()
       };
-
       try {
         const docRef = await addDoc(collection(db, "support_requests"), payload);
-        
-        // Dispatch system emails to requester and admin
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         fetch(apiBase + '/api/support/notify', {
           method: 'POST',
@@ -728,7 +643,6 @@
             evidenceFiles: payload.evidenceFiles
           })
         }).catch(e => console.warn("Support email dispatch error:", e));
-
         alert("Your request has been submitted successfully! The DPGNotes Administration Team will review your credentials and dispatch automated status updates to your email.");
         window.location.href = `support-contact-report.html?token=${docRef.id}`;
       } catch (err) {
@@ -739,9 +653,6 @@
       }
     };
   </script>
-
-  <!-- Native Ads Container -->
   <div class="native-ads" id="native-ads-suspension" style="margin-top:2rem; width:100%; max-width:760px;"></div>
-
 </body>
 </html>

@@ -1,12 +1,7 @@
-/**
- * DPGNotes Project-Based FSD Tutorial, SRS Overview & Technical Blueprint
- * Script: script.js (Editorial Technical Blog Architecture v2.1.0)
- */
-
+/** DPGNotes Project-Based FSD Tutorial, SRS Overview & Technical Blueprint */
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
   authDomain: "dpgnotes.firebaseapp.com",
@@ -15,20 +10,13 @@ const firebaseConfig = {
   messagingSenderId: "910494426039",
   appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
-
 const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
-// State
 let currentActiveUser = null;
 let currentClearanceRecord = null;
 let currentActiveTabIndex = 1;
 const tabCache = new Map();
-
-// ============================================================================
-// 12 STANDALONE MODULE DEFINITIONS (EDITORIAL BLOG TAXONOMY)
-// ============================================================================
 export const MODULE_GROUPS = [
   {
     groupTitle: "Core Platform & Architecture",
@@ -151,12 +139,7 @@ export const MODULE_GROUPS = [
     ]
   }
 ];
-
 export const ALL_MODULES = MODULE_GROUPS.flatMap(g => g.modules);
-
-// ============================================================================
-// LENGTHY, HIGH-QUALITY STUDY NOTES REGISTRY (NO CARD-IN-CARD - SIMPLE BLOGS)
-// ============================================================================
 const BLOG_STUDY_NOTES = {
   1: {
     subtitle: "Enterprise 3-Tier System Topography, Edge CDN Proxies & Stateless Cloud Clustering",
@@ -214,7 +197,6 @@ app.get('/api/health', (req, res) => {
       { name: "Data Encryption", value: "AES-256-GCM + TLS 1.3", mechanism: "In-Memory Vault & Strict HSTS Enforcements" }
     ]
   },
-
   2: {
     subtitle: "Zero-Framework Vanilla JS Component Architecture, CSS Custom Properties & Responsive Breakpoints",
     lead: "Frontend engineering in DPGNotes prioritizes raw performance, zero-dependency reliability, and universal device responsiveness. By bypassing heavy virtual DOM frameworks, DPGNotes delivers instant First Contentful Paint (FCP) and smooth 60fps animations across devices ranging from ultra-compact 280px foldable phones to 4K desktop workstations, while embedding accessible custom modals and canvas-based DRM watermarking.",
@@ -265,7 +247,6 @@ window.customAlert = function(message, options = {}) {
       { name: "Watermark Defense", value: "In-Memory Canvas DRM", mechanism: "PDF.js Compositing Before Screen Render" }
     ]
   },
-
   3: {
     subtitle: "High-Throughput Node.js Microservices, Dual Token Validation & Resilient REST Pipelines",
     lead: "The computational core of DPGNotes operates as an Express.js microservice hosted on Render cloud infrastructure. Designed around the 12-factor application methodology, the service processes document ingestion, session authentication, transactional emails via Brevo SMTP, AI proxy requests, and telemetry tracking while defending against distributed denial-of-service (DDoS) threats.",
@@ -316,7 +297,6 @@ module.exports = { authenticateToken };`,
       { name: "Mail Gateway", value: "Brevo SMTP API", mechanism: "Transactional Only (2FA, Password Reset, Auth)" }
     ]
   },
-
   4: {
     subtitle: "Direct-to-Cloud Signed Uploads, Dynamic PDF Cover Synthesis & In-Memory DRM Watermarking",
     lead: "Academic study materials comprise diverse formats ranging from multi-page PDF lecture notes to handwritten lab records. DPGNotes offloads heavy media processing from application servers by establishing direct-to-cloud signed upload pipelines with Cloudinary, coupled with in-memory PDF parsing and adaptive CDN transformations that minimize student mobile bandwidth consumption.",
@@ -365,7 +345,6 @@ function generateUploadSignature(folder) {
       { name: "Format Support", value: "PDF, PNG, WEBP, JPEG", mechanism: "Automated MIME Validation Before Ingestion" }
     ]
   },
-
   5: {
     subtitle: "Distributed NoSQL Data Modeling, Compound Query Indexing & Real-Time Snapshot Synchronization",
     lead: "Data persistence in DPGNotes is powered by Google Cloud Firestore in multi-region configuration. By combining strategically denormalized document schemas with compound indexing and real-time reactive listeners (onSnapshot), DPGNotes achieves sub-50ms query speeds for student searches while maintaining atomic transactional consistency across high-velocity engagement metrics.",
@@ -417,7 +396,6 @@ export async function fetchFilteredNotes(stream, semester) {
       { name: "Access Control", value: "Granular Security Rules", mechanism: "Role-Based Claim Evaluation in firestore.rules" }
     ]
   },
-
   6: {
     subtitle: "Zero-Knowledge Server Execution, Authenticated AES-256-GCM & In-Memory V8 VM Sandboxing",
     lead: "To safeguard proprietary routing algorithms, AI orchestration prompts, and intellectual property from reverse-engineering, DPGNotes deploys an enterprise Cryptographic Vault. The Express server source code is compiled into an authenticated AES-256-GCM ciphertext file (server.payload.enc) and executed directly in RAM via Node's V8 VM sandbox without touching physical server disk.",
@@ -462,7 +440,6 @@ function runEncryptedServer(ciphertext, key, iv, authTag) {
       { name: "Runtime Footprint", value: "Zero Disk Plaintext", mechanism: "Node.js V8 vm.Script In-Memory Execution" }
     ]
   },
-
   7: {
     subtitle: "Tiered Multi-LLM Architecture, Google Gemini Priority & Automated xAI Grok Fallback Cascade",
     lead: "Artificial intelligence in DPGNotes assists university students with regulatory legal guidance, automated lecture note summarization, and practical assignment solutions. The platform features a resilient multi-engine gateway prioritizing Google Gemini 2.0/1.5 Pro and Flash with an automated cascade fallback to xAI Grok upon quota exhaustion or latency spikes.",
@@ -509,7 +486,6 @@ async function generateAIResponse(prompt, systemInstruction) {
       { name: "Sanitization Engine", value: "DOMPurify + Marked.js", mechanism: "Strict HTML Entity & Script Tag Stripping" }
     ]
   },
-
   8: {
     subtitle: "Inverted Indexing, Multi-Field Weighted Relevance & CTR Telemetry Dynamic Boosting",
     lead: "Finding high-yield study materials across thousands of university syllabi requires low-latency query processing. The DPGNotes search engine pairs client-side debounced memory trie lookups with server-side lexical tokenization and multi-field weighted scoring formulas that boost results based on verified student engagement.",
@@ -562,7 +538,6 @@ function rankSearchResults(documents, queryTokens) {
       { name: "SEO Protocols", value: "Dynamic OpenGraph & XML", mechanism: "Automated Sitemap Generation for Web Crawlers" }
     ]
   },
-
   9: {
     subtitle: "Dual HTML5/YouTube Player Engine, Fullscreen Theater Mode & Double-Write Share Persistence",
     lead: "Visual lecture recordings and technical workshops are delivered through DPGNotes' dedicated Educational Media Studio. The ecosystem integrates a dual HTML5 and YouTube IFrame player with fullscreen theater mode, real-time social engagement, and a resilient double-write pattern guaranteeing share link database persistence across ad-blockers.",
@@ -618,7 +593,6 @@ async function generateVideoShareLink(videoId, title) {
       { name: "Ad Integration", value: "Sponsored Educational Pool", mechanism: "Automated Interleaving After Academic Tracks" }
     ]
   },
-
   10: {
     subtitle: "Tiered Identity Hierarchy, Auth Method Parity & Admin Confidential Date-Threshold Clearance",
     lead: "Managing an open academic community requires granular Role-Based Access Control (RBAC). DPGNotes enforces strict credential parity ensuring that contributors logging in via traditional Email/Password enjoy identical capabilities to Google OAuth users, paired with dynamic reputation milestones and administrative access gates.",
@@ -662,7 +636,6 @@ function verifyClearanceThreshold(record) {
       { name: "Audit Trail", value: "Immutable Read History", mechanism: "confidential_read_history Firestore Logging" }
     ]
   },
-
   11: {
     subtitle: "DMCA Notice-and-Takedown Automation, DRASA Integrity Framework & Automated 14-Day Data Purging",
     lead: "Operating an open academic knowledge exchange demands rigorous legal engineering. DPGNotes enforces comprehensive compliance covering intellectual property protection, 24-hour DMCA notice-and-takedown workflows, the DRASA Academic Integrity Framework, and automated 14-day ephemeral data cleansing aligning with DPDP Act 2023 and GDPR.",
@@ -705,7 +678,6 @@ async function purgeExpiredTelemetryRecords() {
       { name: "Privacy Standard", value: "GDPR & COPPA Compliant", mechanism: "Zero PII Storage in Public Telemetry Streams" }
     ]
   },
-
   12: {
     subtitle: "Multi-Cloud CI/CD Pipelines, Zero-Downtime Rolling Deploys & High-Concurrency Benchmarking",
     lead: "Site Reliability Engineering (SRE) and cloud DevOps at DPGNotes guarantee 99.95% continuous operational uptime. Through automated GitHub Actions workflows, static deployments via Firebase Hosting, containerized rolling updates on Render, and mandatory pre-flight cryptographic vault verifications, releases occur without downtime or student disruption.",
@@ -755,12 +727,6 @@ jobs:
     ]
   }
 };
-
-// ============================================================================
-// UI RENDERING & SPA CONTROLLER (SIMPLE BLOG FORMAT - NO CARD IN BLOG)
-// ============================================================================
-
-// Initialize App
 document.addEventListener("DOMContentLoaded", () => {
   initHeaderControls();
   initReadingProgressBar();
@@ -768,46 +734,35 @@ document.addEventListener("DOMContentLoaded", () => {
   initHeaderSearchModal();
   checkAuthAndClearanceGate();
 });
-
-// Real-Time Contributor Auth Event Listener (from unified auth-component.js)
 window.addEventListener('dpg-auth-success', () => {
   checkAuthAndClearanceGate();
 });
-
-// Reading Progress Bar Controller
 function initReadingProgressBar() {
   const bar = document.getElementById("readingProgress");
   const btnTop = document.getElementById("btnScrollTop");
-
   window.addEventListener("scroll", () => {
     const docEl = document.documentElement;
     const scrollTop = docEl.scrollTop || document.body.scrollTop;
     const scrollHeight = docEl.scrollHeight - docEl.clientHeight;
     const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
-    
     if (bar) bar.style.width = `${progress}%`;
-
     if (btnTop) {
       if (scrollTop > 350) btnTop.classList.add("visible");
       else btnTop.classList.remove("visible");
     }
   }, { passive: true });
-
   if (btnTop) {
     btnTop.addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
 }
-
-// Header & Mobile Drawer Controls
 function initHeaderControls() {
   const toggleBtn = document.getElementById("sidebarToggleBtn");
   const sidebar = document.getElementById("overviewSidebar");
   const backdrop = document.getElementById("sidebarBackdrop");
   const searchTrigger = document.getElementById("searchTrigger");
   const sidebarSearchInput = document.getElementById("overviewSidebarSearch");
-
   function toggleSidebar() {
     const isOpen = sidebar.classList.contains("active");
     if (isOpen) {
@@ -816,35 +771,27 @@ function initHeaderControls() {
       openSidebar();
     }
   }
-
   function openSidebar() {
     sidebar.classList.add("active");
     backdrop.classList.add("active");
     toggleBtn.classList.add("active");
     document.body.style.overflow = "hidden";
   }
-
   function closeSidebar() {
     sidebar.classList.remove("active");
     backdrop.classList.remove("active");
     toggleBtn.classList.remove("active");
     document.body.style.overflow = "";
   }
-
   if (toggleBtn) toggleBtn.addEventListener("click", toggleSidebar);
   if (backdrop) backdrop.addEventListener("click", closeSidebar);
-
   window.closeMobileSidebar = closeSidebar;
-
-  // Search trigger focus
   if (searchTrigger && sidebarSearchInput) {
     searchTrigger.addEventListener("click", () => {
       openSidebar();
       sidebarSearchInput.focus();
     });
   }
-
-  // Ctrl+K / Cmd+K Shortcut
   document.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
@@ -856,12 +803,9 @@ function initHeaderControls() {
     }
   });
 }
-
-// Sidebar Groups & 12 Clean Module Items Builder (NO SUB-TABS)
 function initSidebarNavigation() {
   const container = document.getElementById("sidebarGroupsContainer");
   if (!container) return;
-
   container.innerHTML = MODULE_GROUPS.map((group, gIdx) => `
     <div class="sidebar-group" data-group-index="${gIdx}">
       <div class="group-title">
@@ -884,16 +828,12 @@ function initSidebarNavigation() {
     </div>
   `).join('');
 }
-
-// Real-Time Sidebar Search Filter
 function initSearchFilter() {
   const input = document.getElementById("overviewSidebarSearch");
   if (!input) return;
-
   input.addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase().trim();
     const items = document.querySelectorAll(".sidebar-tab-item");
-
     items.forEach(item => {
       const text = item.textContent.toLowerCase();
       if (!query || text.includes(query)) {
@@ -904,17 +844,13 @@ function initSearchFilter() {
     });
   });
 }
-
-// Legal Center-Style Search Modal Engine (Direct Content Navigation)
 function initHeaderSearchModal() {
   const searchTrigger = document.getElementById("searchTrigger");
   const searchModal = document.getElementById("searchModal");
   const closeSearchBtn = document.getElementById("closeSearchBtn");
   const searchInput = document.getElementById("searchInput");
   const searchResults = document.getElementById("searchResults");
-
   if (!searchTrigger || !searchModal || !searchInput) return;
-
   function openSearch() {
     searchModal.classList.add("active");
     setTimeout(() => {
@@ -924,7 +860,6 @@ function initHeaderSearchModal() {
       }
     }, 50);
   }
-
   function closeSearch() {
     searchModal.classList.remove("active");
     searchInput.value = "";
@@ -932,14 +867,11 @@ function initHeaderSearchModal() {
       searchResults.innerHTML = '<p class="no-results">Type keywords to search documentation...</p>';
     }
   }
-
   searchTrigger.addEventListener("click", openSearch);
   if (closeSearchBtn) closeSearchBtn.addEventListener("click", closeSearch);
-
   searchModal.addEventListener("click", (e) => {
     if (e.target === searchModal) closeSearch();
   });
-
   window.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
@@ -949,9 +881,7 @@ function initHeaderSearchModal() {
       closeSearch();
     }
   });
-
   let selectedIndex = -1;
-
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
     if (query.length < 2) {
@@ -960,11 +890,9 @@ function initHeaderSearchModal() {
     }
     performSearch(query);
   });
-
   searchInput.addEventListener("keydown", (e) => {
     const items = searchResults.querySelectorAll(".search-result-item");
     if (!items.length) return;
-
     if (e.key === "ArrowDown") {
       e.preventDefault();
       selectedIndex = (selectedIndex + 1) % items.length;
@@ -978,7 +906,6 @@ function initHeaderSearchModal() {
       items[selectedIndex].click();
     }
   });
-
   function updateSelection(items) {
     items.forEach((item, idx) => {
       if (idx === selectedIndex) {
@@ -989,7 +916,6 @@ function initHeaderSearchModal() {
       }
     });
   }
-
   function renderSearchSuggestions() {
     if (!searchResults) return;
     searchResults.innerHTML = `
@@ -1003,10 +929,8 @@ function initHeaderSearchModal() {
     `;
     selectedIndex = -1;
   }
-
   function performSearch(query) {
     const matches = [];
-
     ALL_MODULES.forEach(mod => {
       const notes = BLOG_STUDY_NOTES[mod.id] || {};
       const fullText = [
@@ -1020,7 +944,6 @@ function initHeaderSearchModal() {
         (notes.invariants || []).join(' '),
         notes.codeSnippet || ''
       ].join(' ').toLowerCase();
-
       const idx = fullText.indexOf(query);
       if (idx !== -1) {
         const start = Math.max(0, idx - 45);
@@ -1028,10 +951,8 @@ function initHeaderSearchModal() {
         let snippet = fullText.substring(start, end).replace(/\s+/g, ' ');
         const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         snippet = snippet.replace(regex, '<mark>$1</mark>');
-
         let sectionId = `sec-1-${mod.id}`;
         let sectionName = "Module Overview";
-
         if ((notes.techStack || []).join(' ').toLowerCase().includes(query)) {
           sectionName = "Tech Stack Specs";
         } else if ((notes.srsMission || '').toLowerCase().includes(query)) {
@@ -1050,7 +971,6 @@ function initHeaderSearchModal() {
           sectionId = `sec-5-${mod.id}`;
           sectionName = "5.0 Architectural Invariants";
         }
-
         matches.push({
           moduleId: mod.id,
           moduleTitle: mod.title,
@@ -1060,10 +980,8 @@ function initHeaderSearchModal() {
         });
       }
     });
-
     displaySearchResults(matches);
   }
-
   function displaySearchResults(results) {
     if (!searchResults) return;
     if (results.length === 0) {
@@ -1071,7 +989,6 @@ function initHeaderSearchModal() {
       selectedIndex = -1;
       return;
     }
-
     searchResults.innerHTML = results.map((res, index) => `
       <a href="javascript:void(0)" class="search-result-item ${index === 0 ? 'selected' : ''}" onclick="window.navigateFromSearch(${res.moduleId}, '${res.sectionId}')">
         <div class="search-result-title">
@@ -1084,36 +1001,24 @@ function initHeaderSearchModal() {
     `).join('');
     selectedIndex = 0;
   }
-
   window.navigateFromSearch = function(moduleId, sectionId = null) {
     closeSearch();
     window.switchTab(moduleId, sectionId);
   };
 }
-
-// Switch SPA Tab (Mounts Active Module, Unmounts Inactive - Cleans DOM)
 window.switchTab = async function(tabId, targetSectionId = null) {
   currentActiveTabIndex = tabId;
   const targetTab = ALL_MODULES.find(t => t.id === tabId);
   if (!targetTab) return;
-
-  // Update active sidebar state
   document.querySelectorAll(".sidebar-tab-item").forEach(item => item.classList.remove("active"));
   const activeItem = document.getElementById(`sidebarTabItem_${tabId}`);
   if (activeItem) activeItem.classList.add("active");
-
   window.closeMobileSidebar();
   await renderTabContent(targetTab);
-
-  // Hydrate Native Ads in newly mounted editorial blog
   if (typeof window.renderNativeDPGAds === "function") {
     setTimeout(window.renderNativeDPGAds, 200);
   }
-
-  // Log read history audit to Firestore
   logReadHistory(targetTab.title);
-
-  // Direct content scrolling
   if (targetSectionId) {
     setTimeout(() => {
       const targetEl = document.getElementById(targetSectionId);
@@ -1127,7 +1032,6 @@ window.switchTab = async function(tabId, targetSectionId = null) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
-
 const COMPONENT_FILE_MAP = {
   1: 'components/html_tabs/tab1_architecture.html',
   2: 'components/html_tabs/tab2_frontend.html',
@@ -1142,7 +1046,6 @@ const COMPONENT_FILE_MAP = {
   11: 'components/html_tabs/tab11_legal_compliance.html',
   12: 'components/html_tabs/tab12_devops_cicd.html'
 };
-
 function buildBreadcrumbsHtml(tab) {
   return `
     <!-- BREADCRUMBS -->
@@ -1157,7 +1060,6 @@ function buildBreadcrumbsHtml(tab) {
     </div>
   `;
 }
-
 function buildFooterNavHtml(tab) {
   return `
     <!-- BLOG NAVIGATION FOOTER -->
@@ -1180,19 +1082,13 @@ function buildFooterNavHtml(tab) {
     </footer>
   `;
 }
-
-// Render Comprehensive Hard-Coded Overview (SIMPLE BLOG FORMAT - NO CARD IN BLOG)
 async function renderTabContent(tab) {
   const container = document.getElementById("tabContentContainer");
   if (!container) return;
-
-  // Check in-memory cache
   if (tabCache.has(tab.id)) {
     container.innerHTML = tabCache.get(tab.id);
     return;
   }
-
-  // Attempt to load rich modular component from file
   const compPath = COMPONENT_FILE_MAP[tab.id];
   if (compPath) {
     try {
@@ -1210,9 +1106,7 @@ async function renderTabContent(tab) {
       console.warn(`[OVERVIEW] Component fetch error for module ${tab.id}, falling back:`, err.message);
     }
   }
-
   const notes = BLOG_STUDY_NOTES[tab.id] || BLOG_STUDY_NOTES[1];
-
   const blogHtml = `
     <!-- BREADCRUMBS -->
     <div class="breadcrumbs-bar">
@@ -1284,7 +1178,6 @@ async function renderTabContent(tab) {
               </div>
               <span style="font-size:0.75rem; color:#94a3b8; font-family:monospace;">RELATIONAL NO-SQL SCHEMA v2.4</span>
             </div>
-
             <div class="er-grid-layout">
               <div class="er-entity-card">
                 <div class="er-entity-header"><span>users</span><span>Root Collection</span></div>
@@ -1294,7 +1187,6 @@ async function renderTabContent(tab) {
                 <div class="er-field-row"><span class="er-field-name">reputation</span><span class="er-field-type">Number (Points)</span></div>
                 <div class="er-field-row"><span class="er-field-name">createdAt</span><span class="er-field-type">Timestamp</span></div>
               </div>
-
               <div class="er-entity-card">
                 <div class="er-entity-header"><span>documents</span><span>Study Notes / Papers</span></div>
                 <div class="er-field-row"><span class="er-field-pk">PK docId</span><span class="er-field-type">String</span></div>
@@ -1303,7 +1195,6 @@ async function renderTabContent(tab) {
                 <div class="er-field-row"><span class="er-field-name">discipline</span><span class="er-field-type">BCA|B.Tech|BBA|MCA</span></div>
                 <div class="er-field-row"><span class="er-field-name">pdfUrl</span><span class="er-field-type">Cloudinary Secure URL</span></div>
               </div>
-
               <div class="er-entity-card">
                 <div class="er-entity-header"><span>share_links</span><span>Ephemeral Redirection</span></div>
                 <div class="er-field-row"><span class="er-field-pk">PK token</span><span class="er-field-type">String (Token)</span></div>
@@ -1312,7 +1203,6 @@ async function renderTabContent(tab) {
                 <div class="er-field-row"><span class="er-field-name">type</span><span class="er-field-type">"pdf"|"video"|"solution"</span></div>
                 <div class="er-field-row"><span class="er-field-name">clickCount</span><span class="er-field-type">Atomic Counter</span></div>
               </div>
-
               <div class="er-entity-card">
                 <div class="er-entity-header"><span>confidential_requests</span><span>Clearance Ledger</span></div>
                 <div class="er-field-row"><span class="er-field-pk">PK uid</span><span class="er-field-type">users.uid</span></div>
@@ -1322,7 +1212,6 @@ async function renderTabContent(tab) {
                 <div class="er-field-row"><span class="er-field-name">endDate</span><span class="er-field-type">Date String (YYYY-MM-DD)</span></div>
               </div>
             </div>
-
             <div class="arch-flow-diagram">
 +--------------------+        HTTP/3 / TLS 1.3       +-------------------------+
 |   CLIENT LAYER     | ----------------------------&gt; |   EDGE REVERSE PROXY    |
@@ -1458,13 +1347,9 @@ async function renderTabContent(tab) {
 
     </article>
   `;
-
-  // Store in memory cache
   tabCache.set(tab.id, blogHtml);
   container.innerHTML = blogHtml;
 }
-
-// Copy Code Snippet Handler
 window.copyCodeSnippet = function(btn) {
   const wrap = btn.closest(".code-block-wrap");
   const code = wrap.querySelector("code").textContent;
@@ -1474,8 +1359,6 @@ window.copyCodeSnippet = function(btn) {
     setTimeout(() => { btn.innerHTML = originalText; }, 2000);
   });
 };
-
-// Escape HTML utility
 function escapeHtml(str) {
   if (!str) return '';
   return str
@@ -1485,18 +1368,12 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-
-// ============================================================================
-// CONTRIBUTOR AUTH LAYER & ADMIN APPROVAL CHECK (SILENT VERIFICATION - NO DOM THRESHOLD)
-// ============================================================================
-
 async function checkAuthAndClearanceGate() {
   onAuthStateChanged(auth, async (user) => {
     const localUid = localStorage.getItem("dpgActiveUserUid");
     const localEmail = localStorage.getItem("dpgActiveUserEmail");
     const localName = localStorage.getItem("dpgActiveUserName");
     const localRole = localStorage.getItem("dpgActiveUserRole");
-
     if (user) {
       currentActiveUser = user;
     } else if (localUid) {
@@ -1509,43 +1386,33 @@ async function checkAuthAndClearanceGate() {
     } else {
       currentActiveUser = null;
     }
-
-    // 1. Unauthenticated Contributor Check -> Redirect to Contributor Auth Gateway
     if (!currentActiveUser) {
       const dest = encodeURIComponent(window.location.pathname + window.location.search);
       window.location.replace('/auth-layer.html?go-to=' + dest);
       return;
     }
-
-    // 2. Administrator Exemption Check
     const isAdmin = currentActiveUser.email === "its.akshatnetworkhub23@gmail.com" || 
                     currentActiveUser.role === "admin" || 
                     localRole === "admin";
-
     if (isAdmin) {
       currentClearanceRecord = { status: "approved", role: "admin", exempt: true };
       sessionStorage.setItem("dpg_confidential_approved", currentActiveUser.uid);
       grantClearanceAccess();
       return;
     }
-
-    // 3. Contributor Admin Approval Check in Firestore (confidential_overview_requests)
     try {
       const reqRef = doc(db, "confidential_overview_requests", currentActiveUser.uid);
       const reqSnap = await getDoc(reqRef);
-
       if (!reqSnap.exists()) {
         const dest = encodeURIComponent(window.location.pathname + window.location.search);
         window.location.replace('/overview/access-request.html?go-to=' + dest);
         return;
       }
-
       const record = reqSnap.data();
       currentClearanceRecord = record;
       evaluateClearanceStatus(record);
     } catch(err) {
       console.warn("Clearance verification error:", err);
-      // Fallback: check session-level authorization
       const sessionApproved = sessionStorage.getItem("dpg_confidential_approved") === currentActiveUser.uid;
       if (sessionApproved) {
         grantClearanceAccess();
@@ -1556,44 +1423,29 @@ async function checkAuthAndClearanceGate() {
     }
   });
 }
-
 function evaluateClearanceStatus(record) {
   const now = new Date();
   const start = record.startDate ? new Date(record.startDate + "T00:00:00") : null;
   const end = record.endDate ? new Date(record.endDate + "T23:59:59") : null;
-
   if (record.status === "approved" && (!start || now >= start) && (!end || now <= end)) {
-    // APPROVED: Silent access grant
     sessionStorage.setItem("dpg_confidential_approved", currentActiveUser.uid);
     grantClearanceAccess();
     return;
   }
-
-  // Not approved, pending, rejected, revoked, expired, or scheduled -> open access-request.html
   const dest = encodeURIComponent(window.location.pathname + window.location.search);
   window.location.replace('/overview/access-request.html?go-to=' + dest);
 }
-
 function grantClearanceAccess() {
-  // 1. Remove security guard style concealing DOM
   const guardStyle = document.getElementById("authGateGuardStyle");
   if (guardStyle) guardStyle.remove();
-
-  // 2. Remove verification screen
   const gateLoader = document.getElementById("overviewAuthGateLoader");
   if (gateLoader) gateLoader.remove();
-
-  // 3. Populate sidebar navigation now that clearance is verified
   initSidebarNavigation();
-
-  // 4. Resolve and switch to requested tab (default 1)
   const urlParams = new URLSearchParams(window.location.search);
   const requestedTab = parseInt(urlParams.get("tab") || urlParams.get("module") || "1", 10);
   const validTab = (requestedTab >= 1 && requestedTab <= 12) ? requestedTab : 1;
   window.switchTab(validTab);
 }
-
-// Log Read History to Firestore
 async function logReadHistory(activeTabName) {
   if (!currentActiveUser) return;
   try {

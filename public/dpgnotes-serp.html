@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <script src="/redirect.js" defer></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
@@ -35,15 +34,11 @@
     }
   }
   </script>
-  
-  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
-  <!-- Core Scripts & Markdown Parsers -->
   <script src="config.js"></script>
   <script src="dpg-params.js"></script>
   <script src="custom-dialogs.js"></script>
@@ -53,7 +48,6 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <script src="solutions-sandbox-engine.js?v=2.0.0"></script>
-  
   <style>
     :root {
       --bg: #ffffff;
@@ -73,7 +67,6 @@
       --shadow-sm: 0 1px 3px rgba(32,33,36,0.1);
       --shadow-md: 0 4px 12px rgba(32,33,36,0.12);
     }
-
     html[data-theme="dark"] {
       --bg: #0b0f19;
       --bg-surface: #111827;
@@ -88,7 +81,6 @@
       --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
       --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -99,8 +91,6 @@
       flex-direction: column;
       overflow-x: hidden;
     }
-
-    /* Dark Theme Overrides for Core SERP Containers */
     html[data-theme="dark"] .serp-header,
     html[data-theme="dark"] .serp-tabs-bar {
       background: #0b0f19 !important;
@@ -248,7 +238,6 @@
     html[data-theme="dark"] .ai-chat-input {
       color: #f8fafc !important;
     }
-
     /* =======================================================
        STICKY TOP SERP HEADER (MATCHING IMAGE 5)
        ======================================================= */
@@ -264,7 +253,6 @@
       justify-content: space-between;
       gap: 1.25rem;
     }
-
     .serp-brand-link {
       display: flex;
       align-items: center;
@@ -300,13 +288,11 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-
     .serp-search-container {
       flex: 1;
       max-width: 680px;
       position: relative;
     }
-
     .serp-search-wrapper {
       background: #ffffff;
       border: 1px solid var(--border);
@@ -323,14 +309,12 @@
       box-shadow: 0 2px 8px rgba(32,33,36,0.22);
       border-color: #bdc1c6;
     }
-
     .serp-search-icon {
       color: #9aa0a6;
       font-size: 1.15rem;
       margin-left: 0.5rem;
       flex-shrink: 0;
     }
-
     .serp-search-input {
       flex: 1;
       border: none;
@@ -341,7 +325,6 @@
       font-size: 0.98rem;
       padding: 0.5rem 0.2rem;
     }
-
     .serp-search-actions {
       display: flex;
       align-items: center;
@@ -422,15 +405,12 @@
     html[data-theme="dark"] .serp-suggestion-item:hover, html[data-theme="dark"] .serp-suggestion-item.active {
       background: #0f172a;
     }
-
-    /* Top Right Auth & Navigation Controls */
     .serp-header-actions {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
     }
-
     .serp-theme-toggle-btn {
       width: 36px;
       height: 36px;
@@ -460,7 +440,6 @@
       border-color: #38bdf8;
       color: #38bdf8;
     }
-
     .serp-home-btn {
       display: inline-flex;
       align-items: center;
@@ -480,7 +459,6 @@
       border-color: #bdc1c6;
       color: #202124;
     }
-
     .nav-btn-signin {
       display: inline-flex;
       align-items: center;
@@ -498,7 +476,6 @@
     .nav-btn-signin:hover {
       background: var(--primary-hover);
     }
-
     .contributor-user-wrapper {
       display: flex;
       align-items: center;
@@ -560,7 +537,6 @@
       border-color: #fca5a5;
       color: #dc2626;
     }
-
     /* =======================================================
        HORIZONTAL TABS NAVIGATION BAR (MATCHING IMAGE 5)
        All Results | AI Overview | Websites | YouTube Videos | Academic Solutions | Contributors
@@ -581,13 +557,11 @@
       white-space: nowrap;
     }
     .serp-tabs-bar::-webkit-scrollbar { display: none; }
-
     @media (min-width: 900px) {
       .serp-tabs-bar {
         justify-content: center;
       }
     }
-
     .serp-tab-btn {
       background: none;
       border: none;
@@ -613,7 +587,6 @@
       border-bottom-color: var(--primary);
       font-weight: 600;
     }
-
     /* =======================================================
        SUBHEADER RESULTS META & SORT BAR (MATCHING IMAGE 5)
        ======================================================= */
@@ -630,7 +603,6 @@
       font-size: 0.88rem;
       color: var(--text-muted);
     }
-
     .serp-results-count {
       font-size: 0.86rem;
       color: #70757a;
@@ -638,7 +610,6 @@
     .serp-results-count strong {
       color: #202124;
     }
-
     .serp-sort-wrapper {
       display: flex;
       align-items: center;
@@ -655,8 +626,6 @@
       outline: none;
       cursor: pointer;
     }
-
-    /* Toggle Filters Button */
     .serp-filter-toggle-btn {
       background: #ffffff;
       border: 1px solid #dadce0;
@@ -675,8 +644,6 @@
       background: #f8fafc;
       border-color: #bdc1c6;
     }
-
-    /* Collapsible Filter Panel */
     .serp-filter-panel {
       max-width: 1280px;
       width: 100%;
@@ -687,7 +654,6 @@
     .serp-filter-panel.open {
       display: block;
     }
-
     .serp-filter-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -732,7 +698,6 @@
       color: #1a73e8;
       font-weight: 600;
     }
-
     /* =======================================================
        MAIN RESULTS STAGE & LOADING STATE (IMAGE 5)
        ======================================================= */
@@ -743,8 +708,6 @@
       padding: 0.75rem 1.5rem 3rem 1.5rem;
       flex: 1;
     }
-
-    /* Clean Image 5 Circular Blue Loading Spinner */
     .serp-loading-stage {
       display: flex;
       flex-direction: column;
@@ -775,7 +738,6 @@
       color: #202124;
       font-weight: 600;
     }
-
     /* =======================================================
        RESULT CARDS (CLEAN GOOGLE STYLE)
        ======================================================= */
@@ -786,7 +748,6 @@
       width: 100%;
       max-width: 900px;
     }
-
     .result-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -804,8 +765,6 @@
       border-color: #cbd5e1;
       transform: translateY(-2px);
     }
-
-    /* Breadcrumb Domain Header */
     .result-header-row {
       display: flex;
       align-items: center;
@@ -861,7 +820,6 @@
       color: #1d4ed8;
       text-decoration: underline;
     }
-
     .result-verified-pill {
       margin-left: auto;
       background: #ecfdf5;
@@ -877,8 +835,6 @@
       flex-shrink: 0;
       white-space: nowrap;
     }
-
-    /* Title Link */
     .result-title {
       font-family: 'Outfit', sans-serif;
       font-size: 1.25rem;
@@ -897,8 +853,6 @@
       color: #2563eb;
       text-decoration: underline;
     }
-
-    /* Description Snippet */
     .result-snippet {
       font-size: 0.92rem;
       color: #475569;
@@ -907,8 +861,6 @@
       word-break: break-word;
       overflow-wrap: break-word;
     }
-
-    /* Card Footer & Action Buttons */
     .result-footer-row {
       display: flex;
       align-items: center;
@@ -949,7 +901,6 @@
     .result-metric-tag i.ri-share-forward-fill {
       color: #3b82f6;
     }
-
     .result-btn-open {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #ffffff;
@@ -971,7 +922,6 @@
       box-shadow: 0 4px 10px rgba(37,99,235,0.32);
       color: #ffffff;
     }
-
     /* =======================================================
        AI OVERVIEW TAB & INTERACTIVE CHAT ENGINE
        ======================================================= */
@@ -1050,8 +1000,6 @@
       align-items: center;
       gap: 4px;
     }
-
-    /* AI Chat Card */
     .ai-chat-card {
       background: #ffffff;
       border: 1px solid var(--border);
@@ -1090,7 +1038,6 @@
       width: 100%;
       max-width: 95%;
     }
-
     .ai-chat-input-bar {
       display: flex;
       align-items: center;
@@ -1130,7 +1077,6 @@
     .ai-chat-input-bar button:hover {
       background: #6d28d9;
     }
-
     .ai-quick-prompts {
       display: flex;
       gap: 6px;
@@ -1155,8 +1101,6 @@
       border-color: #cbd5e1;
       color: #1e293b;
     }
-
-    /* Modal Styling */
     .dpg-modal-backdrop {
       position: fixed;
       inset: 0;
@@ -1199,7 +1143,6 @@
       cursor: pointer;
     }
     .dpg-modal-close:hover { color: #0f172a; }
-
     .dpg-btn {
       padding: 7px 16px;
       border-radius: 8px;
@@ -1217,7 +1160,6 @@
     .dpg-btn-secondary:hover { background: #e2e8f0; }
     .dpg-btn-danger { background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
     .dpg-btn-danger:hover { background: #ffe4e6; }
-
     /* =======================================================
        RESPONSIVENESS (MOBILE & TABLET)
        ======================================================= */
@@ -1334,12 +1276,9 @@
         max-width: 98%;
       }
     }
-
     /* =======================================================
        FOLDABLE DEVICES & DUAL-SCREEN RESPONSIVE MATRIX
        ======================================================= */
-    
-    /* 1. Folded Cover Display / Narrow Screens (max-width: 480px and max-width: 380px) */
     @media (max-width: 480px) {
       .serp-header {
         padding: 0.45rem 0.6rem;
@@ -1390,8 +1329,6 @@
         gap: 14px !important;
       }
     }
-
-    /* 2. Extra Narrow Folded Display (max-width: 360px - e.g. Galaxy Z Fold outer screen) */
     @media (max-width: 360px) {
       .serp-header {
         padding: 0.35rem 0.4rem;
@@ -1422,8 +1359,6 @@
         font-size: 0.76rem;
       }
     }
-
-    /* 3. Unfolded Foldable Screens / Tablet Portrait (600px - 900px, 3/4 to 4/3 aspect ratio) */
     @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
       .serp-main-wrapper {
         padding: 0.75rem 1.25rem 2rem 1.25rem;
@@ -1439,8 +1374,6 @@
         max-height: 520px;
       }
     }
-
-    /* 4. Dual-Screen Spanning Foldable Support */
     @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
       .serp-main-wrapper {
         padding: 1rem 1.5rem;
@@ -1453,16 +1386,12 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
-  <!-- Top SERP Navigation Header (Matching Image 5) -->
   <header class="serp-header">
     <a href="/dpgnotes-search-engine.html" class="serp-brand-link" title="DPGNotes Search Engine">
       <img src="ANH.png" alt="DPGNotes" class="serp-brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
       <span class="serp-brand-fallback-icon" style="display:none;"><i class="ri-book-open-fill"></i></span>
       <span class="serp-brand-text">DPGNotes</span>
     </a>
-
-    <!-- Rounded Search Input Bar -->
     <div class="serp-search-container">
       <div class="serp-search-wrapper">
         <i class="ri-search-line serp-search-icon"></i>
@@ -1478,8 +1407,6 @@
       </div>
       <div id="serpSuggestionsBox" class="serp-suggestions-dropdown"></div>
     </div>
-
-    <!-- Quick Navigation & Auth Actions -->
     <div class="serp-header-actions">
       <button type="button" class="serp-theme-toggle-btn" id="btnSerpThemeToggle" onclick="toggleSerpTheme()" title="Toggle Dark/Light Theme">
         <i class="ri-moon-line" id="serpThemeIcon"></i>
@@ -1488,8 +1415,6 @@
         <i class="ri-home-4-line"></i>
         <span class="serp-home-text">Home</span>
       </a>
-
-      <!-- Dynamic Auth Area: Profile photo + Dashboard + Logout OR Sign In -->
       <div id="navAuthArea" class="serp-auth-area">
         <a href="dashboard.html" class="nav-btn-signin" id="btnNavSignIn" title="Sign In">
           <i class="ri-login-box-line"></i>
@@ -1498,8 +1423,6 @@
       </div>
     </div>
   </header>
-
-  <!-- Horizontal 6-Tab Navigation Bar (Matching DPGNotes Requirements) -->
   <nav class="serp-tabs-bar" id="serpTabsBar">
     <button class="serp-tab-btn active" id="tab-btn-all" onclick="window.switchSerpTab('all')">
       <i class="ri-layout-grid-line"></i> All Results
@@ -1523,8 +1446,6 @@
       <i class="ri-team-line" style="color:#6366f1;"></i> Contributors
     </button>
   </nav>
-
-  <!-- Subheader Meta Bar (Matching Image 5) -->
   <div class="serp-meta-bar" id="serpMetaBar">
     <div class="serp-results-count" id="serpResultsCountLabel">
       About <strong id="resultsCount">0</strong> results for "<span id="queryTextLabel"></span>"
@@ -1543,8 +1464,6 @@
       </select>
     </div>
   </div>
-
-  <!-- Collapsible Filter Panel -->
   <div class="serp-filter-panel" id="serpFilterPanel">
     <div class="serp-filter-grid">
       <div class="serp-filter-col">
@@ -1581,18 +1500,12 @@
       <button class="serp-filter-chip" data-filter="Assignment Solution" onclick="selectFilterChip('Assignment Solution')">Assignment Solutions</button>
     </div>
   </div>
-
-  <!-- Main SERP Stage & Content -->
   <main class="serp-main-wrapper">
-    <!-- Image 5 Loading Stage -->
     <div class="serp-loading-stage" id="serpLoadingStage" style="display:none;">
       <div class="serp-loading-spinner"></div>
       <p class="serp-loading-text">Fetching live search results for "<span id="loadingQueryLabel">...</span>"...</p>
     </div>
-
-    <!-- Results Feed (Pre-rendered indexable cards for search engine crawlers & immediate display) -->
     <div id="resultsList" class="results-list">
-      <!-- Card 1: COA Exam Question Paper -->
       <div class="result-card">
         <div class="result-header-row">
           <div class="result-domain-icon" style="background:#eff6ff; color:#1a73e8; border-color:#bfdbfe;">C</div>
@@ -1616,8 +1529,6 @@
           <a href="/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2F97767_24BCA404DS01_20260531_122250.pdf&amp;title=COA%202026%20May%20Exam%20Question%20Paper&amp;category=UE&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad%20ANH&amp;docid=1ICAGwwrJU4nxH7wHTv7&amp;search-token=SEO_SITEMAP" class="result-btn-open">Read Notes <i class="ri-arrow-right-line"></i></a>
         </div>
       </div>
-
-      <!-- Card 2: Minor Physical Education Notes -->
       <div class="result-card">
         <div class="result-header-row">
           <div class="result-domain-icon" style="background:#eff6ff; color:#1a73e8; border-color:#bfdbfe;">M</div>
@@ -1641,8 +1552,6 @@
           <a href="/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fakshat-881236.github.io%2FDPGStudent-881238%2FPdfResources%2FMICPhysicalEducationSem-4UGPGNotes.pdf&amp;title=Minor%20Physical%20Education%20Notes%20&amp;category=T%26N&amp;discipline=UG%20%2F%20PG%20Courses&amp;uploader=Akshat%20Prasad&amp;docid=0jk3kkbwF4NJtJdp3S3d&amp;search-token=SEO_SITEMAP" class="result-btn-open">Read Notes <i class="ri-arrow-right-line"></i></a>
         </div>
       </div>
-
-      <!-- Card 3: Computer Graphics Sample Papers -->
       <div class="result-card">
         <div class="result-header-row">
           <div class="result-domain-icon" style="background:#eff6ff; color:#1a73e8; border-color:#bfdbfe;">C</div>
@@ -1666,8 +1575,6 @@
           <a href="/dpgnotes-pdf-viewer.html?pdf=https%3A%2F%2Fres.cloudinary.com%2Fdtnrhepxe%2Fraw%2Fupload%2Fv1783501948%2Fdpgnotes_pdfs%2Fuvfphopxy1qw23wdsiuo&amp;title=Computer%20Graphics%20&amp;category=SP&amp;discipline=Computer%20Science&amp;uploader=Akshat%20Prasad&amp;docid=86F8gMpLBrntqA74Q8UG&amp;search-token=SEO_SITEMAP" class="result-btn-open">Read Notes <i class="ri-arrow-right-line"></i></a>
         </div>
       </div>
-
-      <!-- Card 4: Academic Practical Solutions -->
       <div class="result-card">
         <div class="result-header-row">
           <div class="result-domain-icon" style="background:#e0f2fe; color:#0284c7; border-color:#bae6fd;"><i class="ri-code-box-line"></i></div>
@@ -1691,8 +1598,6 @@
           <a href="/PracticalSolution/index.html" class="result-btn-open">Open Solution <i class="ri-arrow-right-line"></i></a>
         </div>
       </div>
-
-      <!-- Card 5: Academic Assignment Solutions -->
       <div class="result-card">
         <div class="result-header-row">
           <div class="result-domain-icon" style="background:#e0f2fe; color:#0284c7; border-color:#bae6fd;"><i class="ri-code-box-line"></i></div>
@@ -1718,8 +1623,6 @@
       </div>
     </div>
   </main>
-
-  <!-- YouTube Video Player Modal -->
   <div id="serpVideoPlayerModal" class="dpg-modal-backdrop" style="display:none;" data-policy="no-hide">
     <div class="dpg-modal-box" style="max-width:860px; width:95%; padding:18px; border-radius:16px;">
       <div class="dpg-modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
@@ -1750,9 +1653,7 @@
       </div>
     </div>
   </div>
-
   <script>
-    // SERP Theme Engine (Syncs with Platform & Reader Themes)
     (function initSerpTheme() {
       try {
         const savedTheme = localStorage.getItem("dpg_active_theme") || localStorage.getItem("dpgReaderTheme") || "light";
@@ -1764,7 +1665,6 @@
         });
       } catch(e) {}
     })();
-
     window.toggleSerpTheme = function() {
       const current = document.documentElement.getAttribute("data-theme") || "light";
       const next = current === "dark" ? "light" : "dark";
@@ -1777,12 +1677,10 @@
       if (icon) icon.className = next === "dark" ? "ri-sun-line" : "ri-moon-line";
     };
   </script>
-
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, collection, getDocs, collectionGroup, doc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -1791,35 +1689,26 @@
       measurementId: "G-VDF1GNVCQ4",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
     const db = getFirestore(app);
     const auth = getAuth(app);
     const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com');
-
-    // ==========================================
-    // AUTH STATE & NAVBAR
-    // ==========================================
     function renderNavAuth(user) {
       const authArea = document.getElementById("navAuthArea");
       if (!authArea) return;
-
       const activeUser = user || (localStorage.getItem("dpgActiveUserUid") ? {
         uid: localStorage.getItem("dpgActiveUserUid"),
         email: localStorage.getItem("dpgActiveUserEmail") || "",
         displayName: localStorage.getItem("dpgActiveUserName") || "",
         photoURL: localStorage.getItem("dpgActiveUserPhoto") || ""
       } : null);
-
       if (activeUser) {
         const photoURL = activeUser.photoURL || '';
         const displayName = activeUser.displayName || (activeUser.email ? activeUser.email.split('@')[0] : 'Contributor');
         const initial = displayName.charAt(0).toUpperCase();
-
         const avatarHtml = photoURL 
           ? `<img src="${photoURL}" alt="${displayName}" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">`
           : initial;
-
         authArea.innerHTML = `
           <div class="contributor-user-wrapper">
             <a href="dashboard.html" class="contributor-dashboard-btn" title="Contributor Dashboard (${displayName})">
@@ -1840,13 +1729,10 @@
         `;
       }
     }
-
     renderNavAuth(auth.currentUser);
-
     onAuthStateChanged(auth, (user) => {
       renderNavAuth(user);
     });
-
     window.handleSerpSignOut = async function() {
       try {
         localStorage.removeItem("dpgActiveUserUid");
@@ -1859,15 +1745,10 @@
         console.error("Sign out error:", err);
       }
     };
-
-    // ==========================================
-    // QUERY PARAMETERS & STATE
-    // ==========================================
     let allDocs = [];
     let allContributors = [];
     window.currentSearchResults = [];
     window.activeSerpTab = 'all';
-
     function escapeHtml(str) {
       if (!str) return '';
       return String(str)
@@ -1877,16 +1758,12 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
-
     const urlParams = new URLSearchParams(window.location.search);
     const searchField = document.getElementById("serpSearchField");
     const queryLabel = document.getElementById("queryTextLabel");
     const initialQuery = urlParams.get("q") || urlParams.get("query") || urlParams.get("tag") || urlParams.get("category") || urlParams.get("discipline") || "";
-
     if (searchField) searchField.value = initialQuery;
     if (queryLabel) queryLabel.innerText = initialQuery || "All Materials";
-
-    // Auto-detect and sync filter chip from URL tag parameter
     const initialTagParam = (urlParams.get("tag") || "").toLowerCase();
     if (initialTagParam) {
       if (initialTagParam.includes("sessional") || initialTagParam === "se") window.activeFilterChip = 'SE';
@@ -1895,14 +1772,12 @@
       else if (initialTagParam.includes("practical")) window.activeFilterChip = 'Practical Solution';
       else if (initialTagParam.includes("assignment")) window.activeFilterChip = 'Assignment Solution';
     }
-
     const initialTab = urlParams.get("tab");
     if (initialTab && ['all', 'ai', 'website', 'videos', 'solutions', 'contributors', 'quizzes'].includes(initialTab.toLowerCase())) {
       window.activeSerpTab = initialTab.toLowerCase();
     } else {
       window.activeSerpTab = 'all';
     }
-
     window.clearSearchField = function() {
       if (searchField) {
         searchField.value = '';
@@ -1911,13 +1786,10 @@
         applyFilters();
       }
     };
-
     window.toggleFilterPanel = function() {
       const panel = document.getElementById("serpFilterPanel");
       if (panel) panel.classList.toggle("open");
     };
-
-    // Advanced Voice Search with Real-Time Feedback
     window.startSerpVoiceSearch = function() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -1934,14 +1806,12 @@
       recognition.lang = 'en-US';
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
-
       try {
         recognition.start();
       } catch (err) {
         console.warn("Voice search start error:", err);
         return;
       }
-
       if (micBtn) micBtn.classList.add("listening");
       if (searchWrapper) {
         searchWrapper.style.borderColor = '#ea4335';
@@ -1951,7 +1821,6 @@
         searchField.placeholder = "🎙️ Listening... Speak title, topic, category or tag now";
         searchField.focus();
       }
-
       recognition.onresult = (event) => {
         let interimText = '';
         let finalText = '';
@@ -1974,7 +1843,6 @@
           runSearch();
         }
       };
-
       recognition.onerror = (event) => {
         console.warn("Voice search error:", event.error);
         if (micBtn) micBtn.classList.remove("listening");
@@ -1984,7 +1852,6 @@
         }
         if (searchField) searchField.placeholder = "Search academic notes, solutions, PYQs, and videos...";
       };
-
       recognition.onend = () => {
         if (micBtn) micBtn.classList.remove("listening");
         if (searchWrapper) {
@@ -1999,39 +1866,28 @@
         }
       };
     };
-
-    // ==========================================
-    // TAB SWITCHING (IMAGE 5)
-    // ==========================================
     window.switchSerpTab = function(tabName) {
       if (!['all', 'ai', 'website', 'videos', 'solutions', 'quizzes', 'contributors'].includes(tabName)) {
         tabName = 'all';
       }
       window.activeSerpTab = tabName;
-
       document.querySelectorAll('.serp-tab-btn').forEach(btn => btn.classList.remove('active'));
       const activeBtn = document.getElementById(`tab-btn-${tabName}`);
       if (activeBtn) activeBtn.classList.add('active');
-
       const metaBar = document.getElementById("serpMetaBar");
       if (metaBar) {
         metaBar.style.display = (tabName === 'ai') ? 'none' : 'flex';
       }
-
-      // Update URL silently
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set("tab", tabName);
       window.history.replaceState(null, null, newUrl);
-
       showLoadingStage();
       setTimeout(() => {
         hideLoadingStage();
         renderActiveTabContent();
       }, 250);
     };
-
     function showLoadingStage() {
-      // Never hide results content or show loading spinner to search engine crawlers
       if (/bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|chrome-lighthouse|lighthouse|slurp|duckduckbot|baiduspider|yandexbot|bingbot/i.test(navigator.userAgent)) {
         return;
       }
@@ -2043,17 +1899,12 @@
       if (stage) stage.style.display = 'flex';
       if (list) list.style.display = 'none';
     }
-
     function hideLoadingStage() {
       const stage = document.getElementById("serpLoadingStage");
       const list = document.getElementById("resultsList");
       if (stage) stage.style.display = 'none';
       if (list) list.style.display = 'flex';
     }
-
-    // ==========================================
-    // DATA LOADING & MULTI-COLLECTION MERGE
-    // ==========================================
     async function loadDocuments() {
       showLoadingStage();
       try {
@@ -2067,8 +1918,6 @@
             allDocs.push({ id: d.id, ...data });
           }
         });
-
-        // Restore Multi-Collection Query: Fetch Academic Solutions (Assignments & Practicals)
         try {
           const solSnap = await getDocs(collectionGroup(db, "solutions"));
           solSnap.forEach(solDoc => {
@@ -2079,7 +1928,6 @@
             const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
             const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
             const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
-
             const subName = solData.subjectName || 'Academic Solution';
             const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
             const course = solData.course || solData.courseSec || "Academic";
@@ -2087,7 +1935,6 @@
             const isEnc = Boolean(solData.isEncrypted);
             const likesCount = typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : (Array.isArray(solData.likes) ? solData.likes.length : 0));
             const sharesCount = typeof solData.shares === 'number' ? solData.shares : (Array.isArray(solData.shares) ? solData.shares.length : (typeof solData.shareCount === 'number' ? solData.shareCount : (solData.views || 0)));
-
             allDocs.push({
               id: solDoc.id,
               isSolution: true,
@@ -2119,22 +1966,18 @@
         } catch (solErr) {
           console.warn("Solutions collectionGroup fetch error:", solErr);
         }
-
-        // Fetch Quizzes from quizDirectory and collectionGroup(quizzes)
         try {
           const processedQuizIds = new Set();
           const ingestQuizDoc = (qzId, qzData) => {
             if (!qzData || processedQuizIds.has(qzId)) return;
             if (qzData.isPublic === false || qzData.status === 'archived') return;
             processedQuizIds.add(qzId);
-
             const quizUrl = `/Quizes/index.html?quizId=${encodeURIComponent(qzId)}`;
             const subName = qzData.subjectName || qzData.subject || 'Academic Assessment';
             const subCode = qzData.subjectCode ? ` (${qzData.subjectCode})` : '';
             const author = qzData.ownerName || qzData.authorName || 'Verified Contributor';
             const qCount = qzData.totalQuestions || (Array.isArray(qzData.questions) ? qzData.questions.length : 15);
             const timeMin = qzData.timeMinutes || 20;
-
             allDocs.push({
               id: qzId,
               isQuiz: true,
@@ -2161,10 +2004,8 @@
               rawDoc: qzData
             });
           };
-
           const qzSnap = await getDocs(collection(db, "quizDirectory"));
           qzSnap.forEach(qzDoc => ingestQuizDoc(qzDoc.id, qzDoc.data()));
-
           try {
             const groupSnap = await getDocs(collectionGroup(db, "quizzes"));
             groupSnap.forEach(gDoc => ingestQuizDoc(gDoc.id, gDoc.data()));
@@ -2174,8 +2015,6 @@
         } catch (qzErr) {
           console.warn("Quiz directory load warning:", qzErr);
         }
-
-        // Fetch registered users for Contributors tab
         try {
           const userSnap = await getDocs(collection(db, "users"));
           const usersMap = new Map();
@@ -2192,13 +2031,10 @@
               likesCount: 0
             });
           });
-
-          // Match docs counts to users
           allDocs.forEach(d => {
             const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId;
             const author = d.userName || d.uploader || d.studentName || d.contributorName;
             const docLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
-
             if (authorUid && usersMap.has(authorUid)) {
               const u = usersMap.get(authorUid);
               u.docsCount++;
@@ -2222,15 +2058,12 @@
               }
             }
           });
-
           allContributors = Array.from(usersMap.values()).filter(c => c.docsCount > 0 || c.uid).sort((a, b) => b.docsCount - a.docsCount);
         } catch(uErr) {
           console.warn("Users collection load warning:", uErr);
         }
-
         populateDynamicFilters();
         applyFilters();
-
         if (window.activeSerpTab) {
           window.switchSerpTab(window.activeSerpTab);
         }
@@ -2240,15 +2073,12 @@
         hideLoadingStage();
       }
     }
-
     function populateDynamicFilters() {
       const catSelect = document.getElementById("filterCategory");
       const discSelect = document.getElementById("filterDiscipline");
       if (!catSelect || !discSelect) return;
-
       const uniqueCats = [...new Set(allDocs.map(d => d.category).filter(Boolean))].sort();
       const uniqueDiscs = [...new Set(allDocs.map(d => d.discipline).filter(Boolean))].sort();
-
       catSelect.innerHTML = '<option value="ALL">All Categories</option>';
       uniqueCats.forEach(cat => {
         const opt = document.createElement("option");
@@ -2256,7 +2086,6 @@
         opt.innerText = cat;
         catSelect.appendChild(opt);
       });
-
       discSelect.innerHTML = '<option value="ALL">All Disciplines</option>';
       uniqueDiscs.forEach(disc => {
         const opt = document.createElement("option");
@@ -2265,9 +2094,7 @@
         discSelect.appendChild(opt);
       });
     }
-
     window.activeFilterChip = 'ALL';
-
     window.selectFilterChip = function(chipVal) {
       window.activeFilterChip = chipVal || 'ALL';
       document.querySelectorAll('.serp-filter-chip').forEach(c => c.classList.remove('active'));
@@ -2275,27 +2102,21 @@
       if (activeChip) activeChip.classList.add('active');
       applyFilters();
     };
-
     window.resetAllFilters = function() {
       const catSelect = document.getElementById("filterCategory");
       const discSelect = document.getElementById("filterDiscipline");
       const specSelect = document.getElementById("specificFilter");
       const sortSelect = document.getElementById("sortOrder");
-
       if (catSelect) catSelect.value = 'ALL';
       if (discSelect) discSelect.value = 'ALL';
       if (specSelect) specSelect.value = 'ALL';
       if (sortSelect) sortSelect.value = 'relevance';
-
       window.activeFilterChip = 'ALL';
       document.querySelectorAll('.serp-filter-chip').forEach(c => c.classList.remove('active'));
       const allChip = document.querySelector('.serp-filter-chip[data-filter="ALL"]');
       if (allChip) allChip.classList.add('active');
-
       applyFilters();
     };
-
-    // ACADEMIC SYNONYMS & ACRONYM EXPANSION MATRIX
     const ACADEMIC_SYNONYMS = {
       'se': ['sessional', 'sessional exam', 'midterm', 'internal', 'sessional paper'],
       'sessional': ['se', 'sessional exam', 'midterm', 'internal', 'sessional paper'],
@@ -2335,7 +2156,6 @@
       'exam': ['examination', 'sessional', 'midterm', 'final', 'quiz', 'test', 'mock test'],
       'mock': ['quiz', 'mock test', 'practice test', 'examination']
     };
-
     function applyFilters() {
       const rawQ = (searchField ? searchField.value.trim() : '');
       const q = rawQ.toLowerCase();
@@ -2344,11 +2164,8 @@
       const specVal = document.getElementById("specificFilter")?.value || 'ALL';
       const sortVal = document.getElementById("sortOrder")?.value || 'relevance';
       const chipVal = window.activeFilterChip || 'ALL';
-
       const tokens = q ? q.split(/[\s,+-]+/).filter(t => t.length > 0) : [];
-
       let filtered = allDocs.filter(d => {
-        // 1. Advance Multi-Field Search (Title, Description, Discipline, Category, Tags, Subject, Author)
         if (q) {
           const dTitle = (d.title || '').toLowerCase();
           const dDesc = (d.description || '').toLowerCase();
@@ -2363,10 +2180,7 @@
             : (d.tags ? [String(d.tags).toLowerCase()] : []);
           const dTagsStr = dTags.join(' ');
           const fullSearchText = [dTitle, dDesc, dDisc, dCat, dSubName, dSubCode, dAuthor, dTagsStr, dQuestions].join(' ');
-
           let score = 0;
-
-          // Whole phrase match across fields
           if (fullSearchText.includes(q)) score += 50;
           if (dTitle.includes(q)) score += 40;
           if (dTagsStr.includes(q) || dTags.includes(q)) score += 35;
@@ -2376,14 +2190,10 @@
           if (dSubName.includes(q)) score += 35;
           if (dQuestions.includes(q)) score += 40;
           if (dAuthor.includes(q)) score += 25;
-
-          // Whole query synonym matching
           const phraseSyns = ACADEMIC_SYNONYMS[q] || [];
           phraseSyns.forEach(syn => {
             if (fullSearchText.includes(syn)) score += 35;
           });
-
-          // Individual token matching
           let matchedTokensCount = 0;
           tokens.forEach(tok => {
             let hit = false;
@@ -2396,8 +2206,6 @@
             if (dAuthor.includes(tok)) { score += 10; hit = true; }
             if (dDesc.includes(tok)) { score += 5; hit = true; }
             if (dQuestions.includes(tok)) { score += 15; hit = true; }
-
-            // Token-level synonym expansion
             const tokSyns = ACADEMIC_SYNONYMS[tok] || [];
             tokSyns.forEach(ts => {
               if (fullSearchText.includes(ts)) {
@@ -2405,19 +2213,14 @@
                 hit = true;
               }
             });
-
-            // Prefix and word-boundary matching for tokens >= 3 chars
             if (!hit && tok.length >= 3) {
               if (fullSearchText.split(/[\s,._\-()]+/).some(w => w.startsWith(tok) || tok.startsWith(w))) {
                 score += 15;
                 hit = true;
               }
             }
-
             if (hit) matchedTokensCount++;
           });
-
-          // Acronym fast-path: Sessional Exam (SE), Sample Paper (SP), University Exam (UE)
           if ((q === 'sessional' || q.includes('sessional') || q.includes('se')) && 
               (dCat === 'se' || dCat.includes('sessional') || dTags.some(t => t === 'se' || t.includes('sessional')))) {
             score += 45;
@@ -2433,30 +2236,20 @@
             score += 45;
             matchedTokensCount++;
           }
-
           if (score <= 0 || (tokens.length > 1 && matchedTokensCount === 0)) return false;
           d._searchScore = score;
         } else {
           d._searchScore = 0;
         }
-
-        // 2. Category Dropdown Filter
         if (catVal !== 'ALL' && (d.category || '').toLowerCase() !== catVal.toLowerCase()) return false;
-
-        // 3. Discipline Dropdown Filter
         if (discVal !== 'ALL' && (d.discipline || '').toLowerCase() !== discVal.toLowerCase()) return false;
-
-        // 4. Specific Content Filter
         if (specVal === 'notes_only' && (d.isSolution === true || d.solutionUrl)) return false;
         if (specVal === 'solutions_only' && !d.isSolution && !d.solutionUrl) return false;
         if (specVal === 'verified_only' && !d.isVerified && !d.verifiedContributor) return false;
-
-        // 5. Real-Time Filter Chips Matrix
         if (chipVal !== 'ALL') {
           const dTitle = (d.title || '').toLowerCase();
           const dCat = (d.category || '').toLowerCase();
           const dTags = Array.isArray(d.tags) ? d.tags.map(t => t.toLowerCase()) : [];
-
           if (chipVal === 'SE') {
             const matchesSe = dCat.includes('se') || dCat.includes('sessional') || dTitle.includes('se') || dTitle.includes('sessional') || dTags.some(t => t.includes('se') || t.includes('sessional'));
             if (!matchesSe) return false;
@@ -2477,11 +2270,8 @@
             if (!matchesAss) return false;
           }
         }
-
         return true;
       });
-
-      // Intelligent Relaxed Fallback: If 0 direct token hits, surface relevant related quizzes and coursework
       window.__isRelaxedFallback = false;
       if (filtered.length === 0 && q) {
         const qTokens = tokens.filter(t => t.length >= 2);
@@ -2497,8 +2287,6 @@
           window.__isRelaxedFallback = true;
         }
       }
-
-      // Sort
       if (sortVal === 'relevance' && q) {
         filtered.sort((a, b) => (b._searchScore || 0) - (a._searchScore || 0));
       } else if (sortVal === 'newest') {
@@ -2510,15 +2298,12 @@
       } else if (sortVal === 'title') {
         filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
       }
-
       window.currentSearchResults = filtered;
       const countEl = document.getElementById("resultsCount");
       if (countEl) countEl.innerText = filtered.length;
       renderActiveTabContent();
     }
     window.applyFilters = applyFilters;
-
-    // Attach immediate event listeners for instantaneous filter updates
     ['filterCategory', 'filterDiscipline', 'specificFilter', 'sortOrder'].forEach(id => {
       const el = document.getElementById(id);
       if (el) {
@@ -2526,8 +2311,6 @@
         el.addEventListener('input', () => applyFilters());
       }
     });
-
-    // Real-Time Autocomplete Suggestions Box
     function updateSuggestionsBox(val) {
       const box = document.getElementById("serpSuggestionsBox");
       if (!box) return;
@@ -2540,7 +2323,6 @@
       const matchedTitles = [];
       const matchedCats = new Set();
       const matchedTags = new Set();
-
       (allDocs || []).forEach(d => {
         const t = d.title || d.subjectName || '';
         if (t.toLowerCase().includes(lower) && matchedTitles.length < 5) {
@@ -2553,12 +2335,10 @@
           });
         }
       });
-
       if (matchedTitles.length === 0 && matchedCats.size === 0 && matchedTags.size === 0) {
         box.style.display = "none";
         return;
       }
-
       let html = '';
       if (window.__isRelaxedFallback && q) {
         html += `
@@ -2589,45 +2369,37 @@
           <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.title)}</span>
         </div>`;
       });
-
       box.innerHTML = html;
       box.style.display = "block";
     }
-
     window.selectSuggestionQuery = function(qStr) {
       if (searchField) searchField.value = qStr;
       hideSuggestionsBox();
       runSearch();
     };
-
     function hideSuggestionsBox() {
       const box = document.getElementById("serpSuggestionsBox");
       if (box) box.style.display = "none";
     }
-
     document.addEventListener("click", (e) => {
       const box = document.getElementById("serpSuggestionsBox");
       if (box && !box.contains(e.target) && e.target !== searchField) {
         box.style.display = "none";
       }
     });
-
     function runSearch() {
       const q = searchField ? searchField.value.trim() : '';
       if (queryLabel) queryLabel.innerText = q || 'All Materials';
-
       const newUrl = new URL(window.location.href);
       if (q) newUrl.searchParams.set("q", q);
       else newUrl.searchParams.delete("q");
       window.history.replaceState(null, null, newUrl);
-
       showLoadingStage();
       setTimeout(() => {
         hideLoadingStage();
         applyFilters();
       }, 150);
     }
-
     let searchDebounceTimer = null;
     if (searchField) {
       searchField.addEventListener("input", () => {
@@ -2639,7 +2411,6 @@
           applyFilters();
         }, 200);
       });
-
       searchField.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           clearTimeout(searchDebounceTimer);
@@ -2650,19 +2421,13 @@
         }
       });
     }
-
-    // ==========================================
-    // RENDER TABS CONTENT
-    // ==========================================
     function renderActiveTabContent() {
       const results = window.currentSearchResults || [];
       const list = document.getElementById("resultsList");
       const countLabel = document.getElementById("resultsCount");
       if (countLabel) countLabel.innerText = results.length;
       if (!list) return;
-
       const q = searchField ? searchField.value.trim() : '';
-
       if (window.activeSerpTab === 'all') renderAllTab(results, q);
       else if (window.activeSerpTab === 'ai') renderAiOverviewTab(results, q);
       else if (window.activeSerpTab === 'website') renderWebsitesTab(q);
@@ -2672,14 +2437,11 @@
       else if (window.activeSerpTab === 'contributors') renderContributorsTab(q);
       else renderAllTab(results, q);
     }
-
-    // TAB: QUIZZES ONLY
     function renderQuizzesTab(results, q) {
       const list = document.getElementById("resultsList");
       const quizResults = (results || []).filter(d => Boolean(d.isQuiz));
       const countLabel = document.getElementById("resultsCount");
       if (countLabel) countLabel.innerText = quizResults.length;
-
       if (quizResults.length === 0) {
         list.innerHTML = `
           <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
@@ -2690,11 +2452,8 @@
         `;
         return;
       }
-
       renderAllTab(quizResults, q);
     }
-
-    // TAB 1: ALL RESULTS (DOCUMENTS + ACADEMIC SOLUTIONS + QUIZZES)
     function renderAllTab(results, q) {
       const list = document.getElementById("resultsList");
       if (results.length === 0) {
@@ -2707,7 +2466,6 @@
         `;
         return;
       }
-
       let html = '';
       if (window.__isRelaxedFallback && q) {
         html += `
@@ -2725,18 +2483,13 @@
         const isSol = Boolean(d.isSolution);
         const uploaderName = d.userName || d.uploader || (isQuiz ? 'Verified Contributor' : (isSol ? 'Verified Contributor' : 'DPG Contributor'));
         const initial = uploaderName.charAt(0).toUpperCase();
-
         const viewerUrl = isQuiz 
           ? (d.quizUrl || `/Quizes/index.html?quizId=${encodeURIComponent(d.id)}`)
           : (d.solutionUrl || (isSol ? (d.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(d.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(d.id)}`) : `/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.id)}&title=${encodeURIComponent(d.title || '')}`));
-
-        // Engagement metrics
         const totalLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
         const totalShares = typeof d.shares === 'number' ? d.shares : (Array.isArray(d.shares) ? d.shares.length : (typeof d.shareCount === 'number' ? d.shareCount : (d.views || 0)));
-
         const categoryLabel = d.category || (isQuiz ? 'Quiz' : (isSol ? 'Academic Solution' : 'Notes'));
         const disciplineLabel = d.discipline || 'General';
-
         const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId || '';
         const authorPhoto = d.photoURL || d.profilePic || d.userPhoto || d.authorPhoto || d.avatar || '';
         const authorProfileUrl = authorUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(authorUid)}` : 'https://dpgnotes.web.app/profile.html';
@@ -2746,11 +2499,9 @@
         const authorHtml = authorUid 
           ? `<span style="display:inline-flex; align-items:center;">${authorImgHtml}<a href="${authorProfileUrl}" target="_blank" class="result-author-link contributor-name-link">${escapeHtml(uploaderName)}</a></span>` 
           : `<span style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(uploaderName)}</span>`;
-
         const domainIconBg = isQuiz ? '#fef3c7' : (isSol ? '#e0f2fe' : '#eff6ff');
         const domainIconColor = isQuiz ? '#d97706' : (isSol ? '#0284c7' : '#1a73e8');
         const domainIconBorder = isQuiz ? '#fde68a' : (isSol ? '#bae6fd' : '#bfdbfe');
-
         let badgeHtml = '';
         if (isQuiz) {
           badgeHtml = `<span class="result-verified-pill" style="background:#fef3c7; color:#b45309; border-color:#fde68a;"><i class="ri-questionnaire-line"></i> Quiz</span>`;
@@ -2761,16 +2512,13 @@
         } else if (d.isVerified) {
           badgeHtml = `<span class="result-verified-pill"><i class="ri-shield-check-fill"></i> Verified</span>`;
         }
-
         const btnOpenText = isQuiz 
           ? 'Take Assessment <i class="ri-play-fill"></i>' 
           : (isSol ? 'Open Solution <i class="ri-arrow-right-line"></i>' : 'Read Notes <i class="ri-arrow-right-line"></i>');
-
         let extraTags = '';
         if (isQuiz) {
           extraTags = `<span class="result-tag" style="background:#fef3c7; color:#b45309;"><i class="ri-questionnaire-line"></i> ${d.totalQuestions || 15} Qs</span><span class="result-tag"><i class="ri-time-line"></i> ${d.timeMinutes || 20}m</span>`;
         }
-
         html += `
           <div class="result-card">
             <div class="result-header-row">
@@ -2783,13 +2531,10 @@
               </div>
               ${badgeHtml}
             </div>
-
             <h3 class="result-title">
               <a href="${viewerUrl}">${escapeHtml(d.title)}</a>
             </h3>
-
             <p class="result-snippet">${escapeHtml(d.description || (isQuiz ? 'Verified online academic quiz and examination assessment.' : (isSol ? 'Verified programming exercise, algorithm implementation, and lab documentation.' : 'Verified academic study material, notes, and sessional examination guidance.')))}</p>
-
             <div class="result-footer-row">
               <div class="result-tags-row">
                 <span class="result-tag"><i class="ri-folder-2-line"></i> ${escapeHtml(categoryLabel)}</span>
@@ -2807,15 +2552,11 @@
       });
       list.innerHTML = html;
     }
-
-    // TAB 2: AI OVERVIEW (GEMINI + CODE SANDBOX)
     function renderAiOverviewTab(results, q) {
       const list = document.getElementById("resultsList");
       const topDoc = results[0] || { title: "DPG College Curriculum", category: "General", discipline: "Computer Science" };
-
       list.innerHTML = `
         <div style="width:100%; max-width:960px;">
-          <!-- AI Synthesis Hero Card -->
           <div class="ai-hero-card">
             <div class="ai-hero-header">
               <div>
@@ -2828,16 +2569,12 @@
                 </button>
               </div>
             </div>
-
-            <!-- Introductory synthesis badge -->
             <div style="background:#f8fafc; border-left:4px solid #7c3aed; padding:12px 14px; border-radius:8px; font-size:0.9rem; color:#334155; line-height:1.6; margin-bottom:1rem;">
               <p style="margin:0;">
                 ✨ <strong>DPGNotes NLP Synthesis Engine:</strong> Ask conceptual questions, explore exam scoring frameworks, or request runnable program implementations. Responses are dynamically generated via Gemini AI and contextualized with verified university repository documents.
               </p>
             </div>
           </div>
-
-          <!-- Interactive Study Chat & Live Sandbox Card -->
           <div class="ai-chat-card">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid #f1f3f4;">
               <div style="display:flex; align-items:center; gap:8px;">
@@ -2846,7 +2583,6 @@
               </div>
               <span style="font-size:0.78rem; color:#64748b;">Powered by Gemini NLP &amp; Live Sandbox</span>
             </div>
-
             <div id="serpAiChatLogContainer" class="ai-chat-feed">
               <div class="ai-msg-bubble assistant" id="welcomeAiMsg">
                 <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
@@ -2855,16 +2591,12 @@
                 <div>Hello! Ask me any conceptual question about <strong>${escapeHtml(q) || 'your coursework'}</strong>, request exam revision summaries, or request programming solutions.</div>
               </div>
             </div>
-
-            <!-- Quick Prompts -->
             <div class="ai-quick-prompts">
               <button onclick="sendQuickPrompt('Explain key formulas and concepts for ' + (document.getElementById('serpSearchField').value || 'Computer Science'))">📐 Key Formulas</button>
               <button onclick="sendQuickPrompt('Provide an interactive HTML, CSS and JavaScript component demonstration for ' + (document.getElementById('serpSearchField').value || 'modern web development'))">💻 Interactive Code</button>
               <button onclick="sendQuickPrompt('What are common sessional exam questions for ' + (document.getElementById('serpSearchField').value || 'this topic') + '?')">📝 Exam Questions</button>
               <button onclick="sendQuickPrompt('Give a 3-bullet revision summary for ' + (document.getElementById('serpSearchField').value || 'this course'))">⚡ 3-Bullet Summary</button>
             </div>
-
-            <!-- Input Bar -->
             <div class="ai-chat-input-bar">
               <input type="text" id="serpAiChatInput" placeholder="Ask AI anything about academic notes, code examples, or exam topics..." onkeydown="if(event.key==='Enter') sendSerpAiChatMessage()">
               <button id="serpAiSendBtn" onclick="sendSerpAiChatMessage()" title="Send Question">
@@ -2874,8 +2606,6 @@
           </div>
         </div>
       `;
-
-      // Auto-trigger initial search query synthesis if not already triggered for this query
       if (q && q.trim() && window.initialAiQueryRun !== q.trim()) {
         window.initialAiQueryRun = q.trim();
         setTimeout(() => {
@@ -2885,7 +2615,6 @@
         }, 150);
       }
     }
-
     window.clearSerpAiChat = function() {
       const feed = document.getElementById("serpAiChatLogContainer");
       if (feed) {
@@ -2899,7 +2628,6 @@
         `;
       }
     };
-
     window.sendQuickPrompt = function(promptText) {
       const input = document.getElementById("serpAiChatInput");
       if (input) {
@@ -2907,38 +2635,29 @@
         sendSerpAiChatMessage();
       }
     };
-
     window.executeSerpAiQuery = async function(questionText, isInitial = false) {
       const chatInput = document.getElementById("serpAiChatInput");
       const chatBtn = document.getElementById("serpAiSendBtn");
       const feed = document.getElementById("serpAiChatLogContainer");
       if (!feed) return;
-
       const question = questionText.trim();
       if (!question) return;
-
-      // 1. Render User Message
       const userBubble = document.createElement("div");
       userBubble.className = "ai-msg-bubble user";
       userBubble.innerHTML = `<strong>You:</strong> ${escapeHtml(question)}`;
       feed.appendChild(userBubble);
-
       if (!isInitial && chatInput) chatInput.value = "";
       if (chatBtn) {
         chatBtn.disabled = true;
         chatBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i>`;
       }
-
-      // 2. Render Loading AI Bubble
       const loadingBubble = document.createElement("div");
       loadingBubble.className = "ai-msg-bubble assistant";
       loadingBubble.innerHTML = `<i class="ri-loader-4-line ri-spin" style="color:#7c3aed;"></i> DPGNotes AI is processing your query with Gemini LLM...`;
       feed.appendChild(loadingBubble);
       feed.scrollTop = feed.scrollHeight;
-
       const userQueryParam = searchField ? searchField.value.trim() : '';
       const backendUrl = apiBase || 'https://dpgnotes.onrender.com';
-
       try {
         const res = await fetch(backendUrl + '/api/ai/serp-chat', {
           method: 'POST',
@@ -2949,7 +2668,6 @@
             contextDocs: (window.currentSearchResults || []).slice(0, 3)
           })
         });
-
         const data = await res.json();
         if (res.ok && data.answer) {
           loadingBubble.innerHTML = formatAiMessage(data.answer);
@@ -2974,19 +2692,15 @@
         feed.scrollTop = feed.scrollHeight;
       }
     };
-
     function formatAiMessage(responseText) {
       if (!responseText) return "";
       let cleanedResponse = responseText.replace(/^[ \t]+(?=<)/gm, '');
       const hasCodeBlocks = /```[a-zA-Z0-9_-]*\n[\s\S]*?```/.test(cleanedResponse) || /<div\s+class=["']code-container/i.test(cleanedResponse);
-
       let formattedHtml = typeof marked !== 'undefined' ? marked.parse(cleanedResponse) : cleanedResponse.replace(/\n/g, '<br>');
       if (typeof DOMPurify !== 'undefined') formattedHtml = DOMPurify.sanitize(formattedHtml);
-
       if (hasCodeBlocks && typeof window.formatSolutionContent === 'function') {
         formattedHtml = window.formatSolutionContent(formattedHtml, 'ai_chat_' + Date.now());
       }
-
       return `
         <div style="color:#7c3aed; font-weight:700; font-size:0.82rem; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
           <i class="ri-sparkling-fill"></i> DPGNotes AI Assistant
@@ -2996,7 +2710,6 @@
         </div>
       `;
     }
-
     window.sendSerpAiChatMessage = function() {
       const chatInput = document.getElementById("serpAiChatInput");
       if (!chatInput) return;
@@ -3004,12 +2717,9 @@
       if (!question) return;
       window.executeSerpAiQuery(question, false);
     };
-
-    // TAB 3: WEBSITES (ZERO 404 ERRORS VIA SAFE INITIAL BADGES)
     function renderWebsitesTab(q) {
       const list = document.getElementById("resultsList");
       list.innerHTML = `<div class="serp-loading-stage"><div class="serp-loading-spinner"></div><p class="serp-loading-text">Crawling & Ranking Verified Web Resources...</p></div>`;
-
       const renderWebsitesList = (websites) => {
         let webListHtml = `<div style="display:flex; flex-direction:column; gap:16px; width:100%; max-width:900px;">`;
         websites.forEach(site => {
@@ -3022,7 +2732,6 @@
           const title = site.title || `Web Resource (${domain})`;
           const description = site.description || 'External educational web resource indexed by DPGNotes search crawler.';
           const isVerified = Boolean(site.isVerified);
-
           webListHtml += `
             <div class="result-card">
               <div class="result-header-row">
@@ -3046,13 +2755,11 @@
         webListHtml += `</div>`;
         list.innerHTML = webListHtml;
       };
-
       const fallbackList = [
         { targetUrl: 'https://dpgnotes.web.app', domain: 'dpgnotes.web.app', title: 'DPGNotes Academic Portal', description: 'Official Academic Notes, PYQs, and Sessional Exam Repository for DPG College students.', isVerified: true },
         { targetUrl: 'https://dpgnotes.web.app/legal/index.html', domain: 'dpgnotes.web.app', title: 'DPGNotes Legal Policies & Compliance Portal', description: 'Standardized copyright policies, terms of service, and student academic compliance regulations.', isVerified: true },
         { targetUrl: 'https://dpgpolytechnic.com', domain: 'dpgpolytechnic.com', title: 'DPG Polytechnic & Degree Campus', description: 'Official university educational portal and curriculum resources.', isVerified: true }
       ];
-
       fetch(`${apiBase}/api/serp/web-search?q=${encodeURIComponent(q)}`)
         .then(res => res.json())
         .then(data => {
@@ -3064,8 +2771,6 @@
         })
         .catch(() => renderWebsitesList(fallbackList));
     }
-
-    // TAB 4: YOUTUBE VIDEOS (Academic Videos + Sponsored Ads Videos)
     const KNOWN_ID_REPAIR = {
       'cgdr5bgt9w0': 'CgdR5BGT9w0',
       'cuzg4tdlifm': 'Cuzg4tDliFM',
@@ -3077,7 +2782,6 @@
       'mfpg6gz0_98': 'MFPg6gz0_98',
       'gjizlopvyoy': 'GjizloPVYoY'
     };
-
     function extractYouTubeId(url) {
       if (!url) return "";
       const str = String(url).trim();
@@ -3108,7 +2812,6 @@
       }
       return extracted;
     }
-
     function findYouTubeUrl(a) {
       if (!a) return "";
       const candidates = [a.videoUrl, a.targetLink, a.targetUrl, a.url, a.link];
@@ -3120,20 +2823,16 @@
       }
       return "";
     }
-
     async function renderVideosTab(q) {
       const list = document.getElementById("resultsList");
       if (!list) return;
-
       list.innerHTML = `
         <div style="padding:2.5rem 1rem; text-align:center; color:#64748b; width:100%;">
           <div class="serp-loading-spinner" style="margin:0 auto 12px auto;"></div>
           <p style="font-size:0.92rem;">Loading verified academic videos and sponsored media...</p>
         </div>
       `;
-
       try {
-        // 1. Fetch academic videos from 'videos' collection (and fallback to 'Video')
         let academicVideos = [];
         try {
           const vSnap = await getDocs(collection(db, "videos"));
@@ -3144,7 +2843,6 @@
             }
           });
         } catch(e) { console.warn("Failed reading videos collection:", e); }
-
         if (academicVideos.length === 0) {
           try {
             const vSnap2 = await getDocs(collection(db, "Video"));
@@ -3156,8 +2854,6 @@
             });
           } catch(e) {}
         }
-
-        // Fallback predefined if collection is momentarily unreachable
         if (academicVideos.length === 0) {
           const predefined = [
             { id: 'yt-001', url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes PDF Viewer', source: 'Akshat Network Hub', status: 'approved' },
@@ -3167,11 +2863,7 @@
           ];
           academicVideos = predefined.map(p => ({ ...p, isSponsored: false, views: 0, likes: [], shares: 0 }));
         }
-
-        // Sort boosted videos to top
         academicVideos.sort((a, b) => (b.boosted ? 1 : 0) - (a.boosted ? 1 : 0));
-
-        // 2. Fetch video ads from 'user_ads' collection
         let adVideos = [];
         try {
           const adsSnap = await getDocs(collection(db, "user_ads"));
@@ -3193,10 +2885,7 @@
             }
           });
         } catch(e) { console.warn("Failed reading user_ads for videos:", e); }
-
-        // Combine pool: Academic videos + Sponsored Ad videos
         let allVideoItems = [...academicVideos, ...adVideos];
-
         if (q && q.trim()) {
           const lq = q.trim().toLowerCase();
           allVideoItems = allVideoItems.filter(v => 
@@ -3205,7 +2894,6 @@
             (v.description || '').toLowerCase().includes(lq)
           );
         }
-
         if (allVideoItems.length === 0) {
           list.innerHTML = `
             <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368; width:100%;">
@@ -3216,11 +2904,8 @@
           `;
           return;
         }
-
         window.currentVideosTabItems = allVideoItems;
-
         let vidHtml = `<div class="serp-videos-grid-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:20px; width:100%; max-width:1040px;">`;
-
         allVideoItems.forEach((v) => {
           const ytId = extractYouTubeId(v.url || '');
           const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : 'https://placehold.co/600x338/1e293b/ffffff?text=Video+Demonstration';
@@ -3228,11 +2913,9 @@
           const totalLikes = Array.isArray(v.likes) ? v.likes.length : (Number(v.likes) || 0);
           const totalViews = Number(v.views) || 0;
           const totalShares = Number(v.shares) || 0;
-
           const badgeHtml = v.isSponsored
             ? `<span class="result-verified-pill" style="background:#fef3c7; color:#b45309; border-color:#fde68a;"><i class="ri-advertisement-fill"></i> Sponsored</span>`
             : `<span class="result-verified-pill" style="background:#eff6ff; color:#2563eb; border-color:#bfdbfe;"><i class="ri-shield-check-fill"></i> Verified Academic</span>`;
-
           vidHtml += `
             <div class="result-card" style="display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:14px; border:1px solid #e2e8f0; background:#fff; transition:transform 0.2s, box-shadow 0.2s;">
               <div style="position:relative; width:100%; padding-top:56.25%; background:#000; cursor:pointer;" onclick="openSerpVideoModalById('${v.id}')">
@@ -3244,7 +2927,6 @@
                 </div>
                 ${v.boosted ? `<span style="position:absolute; top:10px; left:10px; background:#7c3aed; color:#fff; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700;"><i class="ri-rocket-fill"></i> Boosted</span>` : ''}
               </div>
-
               <div style="padding:16px; display:flex; flex-direction:column; flex:1; justify-content:space-between; gap:12px;">
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -3255,7 +2937,6 @@
                     <a href="${renderPageUrl}" target="_blank" style="text-decoration:none; color:inherit;">${escapeHtml(v.title)}</a>
                   </h4>
                 </div>
-
                 <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.78rem; color:#64748b; border-top:1px solid #f1f5f9; padding-top:10px;">
                   <div style="display:flex; gap:10px;">
                     <span title="Total Views"><i class="ri-eye-line"></i> ${totalViews}</span>
@@ -3278,7 +2959,6 @@
             </div>
           `;
         });
-
         vidHtml += `</div>`;
         list.innerHTML = vidHtml;
       } catch (err) {
@@ -3286,15 +2966,12 @@
         list.innerHTML = `<div style="padding:2rem; text-align:center; color:#ef4444;">Failed to load videos: ${escapeHtml(err.message)}</div>`;
       }
     }
-
-    // TAB 5: ACADEMIC SOLUTIONS
     function renderSolutionsTab(results, q) {
       const list = document.getElementById("resultsList");
       let solutions = results.filter(r => r.isSolution || (r.category && r.category.toLowerCase().includes('solution')));
       if (solutions.length === 0 && (!q || q === '')) {
         solutions = allDocs.filter(r => r.isSolution || (r.category && r.category.toLowerCase().includes('solution')));
       }
-
       if (solutions.length === 0) {
         list.innerHTML = `
           <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
@@ -3305,17 +2982,14 @@
         `;
         return;
       }
-
       let solHtml = `<div style="display:flex; flex-direction:column; gap:16px; width:100%; max-width:900px;">`;
       solutions.forEach(s => {
         const viewerUrl = s.solutionUrl || (s.solutionType === 'practical' ? `PracticalSolution/index.html?id=${encodeURIComponent(s.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(s.id)}`);
         const totalLikes = Array.isArray(s.likes) ? s.likes.length : (typeof s.likes === 'number' ? s.likes : (Array.isArray(s.likedBy) ? s.likedBy.length : 0));
         const totalShares = typeof s.shares === 'number' ? s.shares : (Array.isArray(s.shares) ? s.shares.length : (typeof s.shareCount === 'number' ? s.shareCount : (s.views || 0)));
-
         const encBadge = s.isEncrypted
           ? `<span class="result-verified-pill" style="background:#fef2f2; color:#dc2626; border-color:#fecaca;"><i class="ri-lock-2-line"></i> Encrypted</span>`
           : `<span class="result-verified-pill" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;"><i class="ri-code-box-line"></i> Solution</span>`;
-
         const authorUid = s.contributorUid || s.userId || s.uid || '';
         const authorName = s.userName || s.uploader || 'Verified Contributor';
         const authorPhoto = s.photoURL || s.profilePic || s.userPhoto || s.authorPhoto || s.avatar || '';
@@ -3326,7 +3000,6 @@
         const authorHtml = authorUid 
           ? `<a href="${authorProfileUrl}" target="_blank" class="result-author-link" style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(authorName)}</a>` 
           : `<span style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(authorName)}</span>`;
-
         solHtml += `
           <div class="result-card">
             <div class="result-header-row">
@@ -3354,8 +3027,6 @@
       solHtml += `</div>`;
       list.innerHTML = solHtml;
     }
-
-    // TAB 6: CONTRIBUTORS (WITH DIRECT FIREBASE UID PROFILE LINK)
     function renderContributorsTab(q) {
       const list = document.getElementById("resultsList");
       let contributors = allContributors;
@@ -3367,7 +3038,6 @@
           (c.role && c.role.toLowerCase().includes(qLower))
         );
       }
-
       if (contributors.length === 0) {
         list.innerHTML = `
           <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
@@ -3378,16 +3048,13 @@
         `;
         return;
       }
-
       let html = `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; width:100%; max-width:960px;">`;
       contributors.forEach(c => {
         const initial = (c.name || 'C').charAt(0).toUpperCase();
         const avatarContent = c.photoURL 
           ? `<img src="${c.photoURL}" alt="${escapeHtml(c.name)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">` 
           : initial;
-
         const profileLink = c.uid ? `profile.html?uid=${encodeURIComponent(c.uid)}` : 'profile.html';
-
         html += `
           <div class="result-card" style="display:flex; align-items:center; gap:14px; padding:1.1rem;">
             <div style="width:48px; height:48px; border-radius:50%; background:#1a73e8; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.2rem; flex-shrink:0; overflow:hidden;">
@@ -3413,38 +3080,27 @@
       html += `</div>`;
       list.innerHTML = html;
     }
-
-    // =======================================================
-    // YOUTUBE VIDEO MODAL HANDLERS (ENFORCING NO HIDE & AUTO RESTART)
-    // =======================================================
     window.openSerpVideoModalById = function(id) {
       const item = (window.currentVideosTabItems || []).find(v => v.id === id);
       if (!item) return;
-
       const modal = document.getElementById("serpVideoPlayerModal");
       const iframe = document.getElementById("serpModalIframe");
       const title = document.getElementById("serpModalVideoTitle");
       const channel = document.getElementById("serpModalChannel");
       const fullBtn = document.getElementById("serpModalFullScreenBtn");
       const spBadge = document.getElementById("serpModalSponsoredBadge");
-
       const ytId = extractYouTubeId(item.url || '');
       if (iframe && ytId) {
-        // Enforce Auto Restart Policy: enablejsapi=1, loop=1, playlist=ytId
         iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1&loop=1&playlist=${ytId}&rel=0`;
       }
-
       if (title) title.innerText = item.title || 'Educational Demonstration';
       if (channel) channel.innerText = `Source: ${item.source || 'Akshat Network Hub'}`;
       if (spBadge) spBadge.style.display = item.isSponsored ? 'inline-block' : 'none';
-
       const renderUrl = item.isSponsored ? `dpgnotes-video.html?adId=${encodeURIComponent(item.id)}` : `dpgnotes-video.html?id=${encodeURIComponent(item.id)}`;
       if (fullBtn) fullBtn.href = renderUrl;
-
       window.activeModalVideoItem = item;
       if (modal) modal.style.display = "flex";
     };
-
     window.closeSerpVideoModal = function() {
       const modal = document.getElementById("serpVideoPlayerModal");
       const iframe = document.getElementById("serpModalIframe");
@@ -3452,19 +3108,16 @@
       if (modal) modal.style.display = "none";
       window.activeModalVideoItem = null;
     };
-
     window.shareSerpModalVideo = async function() {
       const item = window.activeModalVideoItem;
       if (!item) return;
       await window.shareVideoItemNative(item);
     };
-
     window.shareSerpVideoItem = async function(id) {
       const item = (window.currentVideosTabItems || []).find(v => v.id === id);
       if (!item) return;
       await window.shareVideoItemNative(item);
     };
-
     window.shareVideoItemNative = async function(item) {
       if (!item) return;
       const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
@@ -3473,7 +3126,6 @@
       const targetId = item.id || "";
       const videoTitle = item.title || (isSpon ? "Sponsored Video Ad" : "Academic Video");
       const videoSource = item.source || item.company || "DPGNotes Contributor";
-
       const shareData = {
         token: token,
         type: isSpon ? "ad_video" : "video",
@@ -3485,15 +3137,11 @@
         clicks: 0,
         createdAt: new Date().toISOString()
       };
-
-      // 1. Direct Firestore write
       try {
         await setDoc(doc(db, "share_links", token), shareData, { merge: true });
       } catch (e) {
         console.warn("Share token creation warning:", e);
       }
-
-      // 2. Redundant backend API call
       try {
         fetch('/api/share/generate-video', {
           method: 'POST',
@@ -3501,8 +3149,6 @@
           body: JSON.stringify(shareData)
         }).catch(() => {});
       } catch(_) {}
-
-      // 3. Increment counters
       try {
         if (targetId) {
           updateDoc(doc(db, targetCol, targetId), { shares: increment(1) }).catch(() => {});
@@ -3511,11 +3157,9 @@
           }
         }
       } catch(_) {}
-
       const shareUrl = `https://dpgnotes.web.app/dpgnotes-video.html?token=${token}`;
       const shareTitle = `${videoTitle} — DPGNotes`;
       const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
-
       if (navigator.share) {
         try {
           await navigator.share({
@@ -3529,7 +3173,6 @@
           console.warn("navigator.share failed, fallback to clipboard:", shareErr);
         }
       }
-
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
           await navigator.clipboard.writeText(shareUrl);
@@ -3543,8 +3186,6 @@
       }
       prompt("Copy video share link:", shareUrl);
     };
-
-    // Initialize Page
     loadDocuments();
   </script>
 </body>

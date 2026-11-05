@@ -1,4 +1,3 @@
-<!-- Component: tab11_legal_compliance.html - Legal Compliance, DMCA Governance & Data Retention -->
 <article class="overview-blog-article" data-tab="11">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -25,15 +24,12 @@
       <span class="tech-pill">E-E-A-T SEO Compliance</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-11">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> DMCA Copyright Arbitration, Automated Ephemeral Sweeping &amp; Privacy Preservation.</p>
     <p>
       The Software Requirements Specification (SRS Section 11.0) mandates strict adherence to international copyright safe harbor provisions. All uploaded study guides must allow copyright holders to submit digitally signed takedown requests. Upon verification, the target asset must be de-indexed immediately across the platform. Furthermore, to minimize legal liability and storage waste, ephemeral share links and temporary upload chunks are automatically scrubbed after 14 days.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -41,8 +37,6 @@
       </div>
       All verified copyright takedown notices must trigger automated asset quarantines within 60 seconds of administrative confirmation. Ephemeral share links exceeding their 14-day lifecycle (<code>expiresAt &lt; now()</code>) must be permanently purged by daily background cron workers without manual intervention.
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & GOVERNANCE TOPOGRAPHY -->
     <h2 id="sec-2-11">2. Component Hierarchy &amp; Compliance Workflow Topography</h2>
     <p>The legal compliance subsystem is organized into four core functional pillars:</p>
     <ul>
@@ -51,7 +45,6 @@
       <li><strong>3. DRASA Academic Honor Governance:</strong> Enforces community guidelines prohibiting the publication of live exam answer keys, proprietary corporate training modules, or leaked confidential university documents.</li>
       <li><strong>4. Privacy &amp; Data Portability Engine (GDPR/CCPA):</strong> Provides self-service account deletion and data export endpoints (<code>DELETE /api/users/me</code>), stripping all personal identifiers and anonymizing reading logs.</li>
     </ul>
-
     <div class="arch-flow-diagram">
 +---------------------+        1. Copyright Infringement Claim +-------------------------+
 | COPYRIGHT HOLDER    | ------------------------------------&gt; |  DMCA TRIAGE PORTAL     |
@@ -72,8 +65,6 @@
                             | (Resource De-Indexed)|                                   | (Record Deleted)     |
                             +----------------------+                                   +----------------------+
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-11">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to establish and maintain the DPGNotes Legal Compliance subsystem:</p>
     <ol class="tutorial-steps-list">
@@ -83,8 +74,6 @@
       <li><strong>Build Single-Click Quarantine Controller:</strong> Provide administrators with an authenticated dashboard toggle that instantly updates a document's status to <code>quarantined</code>, removing it from public search feeds.</li>
       <li><strong>Ensure E-E-A-T Search Quality Guidelines:</strong> Include clear authorship, institutional affiliations, and publication dates in page metadata to maximize Google E-E-A-T quality ratings.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-11">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -97,31 +86,26 @@
       <pre class="code-block"><code>// Module 11: 14-Day Ephemeral Data Sweeper &amp; Privacy Anonymizer
 const admin = require('firebase-admin');
 const db = admin.firestore();
-
 /**
  * Sweeps expired share tokens and ephemeral resources older than 14 days
  */
 async function sweepEphemeralRecords() {
   const now = admin.firestore.Timestamp.now();
   console.log('[SWEEPER] Starting 14-day ephemeral cleanup cycle at', now.toDate().toISOString());
-
   try {
     // 1. Query expired share links
     const snapshot = await db.collection('share_links')
       .where('expiresAt', '&lt;=', now)
       .limit(500)
       .get();
-
     if (snapshot.empty) {
       console.log('[SWEEPER] Zero expired share links found.');
       return { purgedCount: 0 };
     }
-
     const batch = db.batch();
     snapshot.docs.forEach((doc) => {
       batch.delete(doc.ref);
     });
-
     await batch.commit();
     console.log(`[SWEEPER] Successfully purged ${snapshot.size} expired share links.`);
     return { purgedCount: snapshot.size };
@@ -130,7 +114,6 @@ async function sweepEphemeralRecords() {
     throw err;
   }
 }
-
 /**
  * GDPR Right-to-be-Forgotten: Purges personal data and anonymizes audit logs
  */
@@ -138,7 +121,6 @@ async function purgeUserData(uid) {
   const userRef = db.collection('users').doc(uid);
   const userSnap = await userRef.get();
   if (!userSnap.exists) return { success: false, message: 'User not found' };
-
   await db.runTransaction(async (transaction) => {
     // Anonymize user record
     transaction.update(userRef, {
@@ -150,18 +132,12 @@ async function purgeUserData(uid) {
       anonymizedAt: admin.firestore.FieldValue.serverTimestamp()
     });
   });
-
   console.log(`[GDPR-COMPLIANCE] User ${uid} successfully anonymized.`);
   return { success: true };
 }
-
 module.exports = { sweepEphemeralRecords, purgeUserData };</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-11">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -170,8 +146,6 @@ module.exports = { sweepEphemeralRecords, purgeUserData };</code></pre>
       <li><strong>Verified Invariant:</strong> Client IP addresses stored in telemetry logs must be salt-hashed to maintain student privacy.</li>
       <li><strong>Verified Invariant:</strong> All legal and policy URLs must remain public and accessible without authentication gates.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-11">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

@@ -1,8 +1,3 @@
-// ============================================================================
-// DPGNotes - Modern Academic & Examination Hub
-// Homepage Client Script (v3.1.0)
-// ============================================================================
-
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import {
   getAuth,
@@ -33,8 +28,6 @@ import {
   serverTimestamp,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
   authDomain: "dpgnotes.firebaseapp.com",
@@ -43,19 +36,14 @@ const firebaseConfig = {
   messagingSenderId: "910494426039",
   appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
-
 const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
 const auth = getAuth(app);
 const db = getFirestore(app);
-
 window.dpgDb = db;
 window.dpgAuth = auth;
-
 const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined') 
   ? window.API_BASE_URL 
   : (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://dpgnotes.onrender.com');
-
-// Universal HTML sanitizer
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
@@ -66,8 +54,6 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 window.escapeHtml = escapeHtml;
-
-// 8 Academic Classifications Definition (Image 3 Reference)
 const ACADEMIC_CATEGORIES = [
   {
     key: "SE",
@@ -136,7 +122,6 @@ const ACADEMIC_CATEGORIES = [
     desc: "Company-specific recruitment tests, coding assessment challenges, and placement drives."
   }
 ];
-
 function matchCategory(docCat) {
   if (!docCat) return null;
   const clean = String(docCat).trim().toLowerCase();
@@ -151,15 +136,10 @@ function matchCategory(docCat) {
   }
   return null;
 }
-
-// Global state
 let currentUser = null;
 let pendingSignInEmail = null;
 let pendingSignInUser = null;
 let pendingRecoveryEmailScript = "";
-
-// ============================================================================
-// Helper: Check if contributor mode is currently active
 window.isContributorModeActive = function() {
   try {
     if (typeof currentUser !== "undefined" && currentUser) return true;
@@ -169,15 +149,10 @@ window.isContributorModeActive = function() {
   } catch(e) {}
   return false;
 };
-
-// ============================================================================
-// AUTH STATE LISTENER
-// ============================================================================
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   updateNavbarAuth(user);
 });
-
 function updateNavbarAuth(user) {
   const guestAreaDesktop = document.getElementById("navGuestArea");
   const userAreaDesktop = document.getElementById("navUserArea");
@@ -187,12 +162,10 @@ function updateNavbarAuth(user) {
   const userAvatarEl = document.getElementById("navUserAvatar");
   const userNameMobileEl = document.getElementById("navUserNameMobile");
   const userAvatarMobileEl = document.getElementById("navUserAvatarMobile");
-
   const drawerGuestArea = document.getElementById("drawerGuestArea");
   const drawerUserArea = document.getElementById("drawerUserArea");
   const drawerUserName = document.getElementById("drawerUserName");
   const drawerUserAvatar = document.getElementById("drawerUserAvatar");
-
   if (user) {
     document.documentElement.classList.add("dpg-user-authenticated");
     if (guestAreaDesktop) {
@@ -220,16 +193,13 @@ function updateNavbarAuth(user) {
     if (drawerUserArea) {
       drawerUserArea.style.setProperty("display", "flex", "important");
     }
-    
     const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Contributor');
     if (userNameEl) userNameEl.innerText = displayName;
     if (userNameMobileEl) userNameMobileEl.innerText = displayName;
     if (drawerUserName) drawerUserName.innerText = displayName;
-
     const avatarHtml = user.photoURL 
       ? `<img src="${user.photoURL}" alt="${displayName}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
       : displayName.charAt(0).toUpperCase();
-
     if (userAvatarEl) {
       if (user.photoURL) {
         userAvatarEl.innerHTML = avatarHtml;
@@ -279,17 +249,12 @@ function updateNavbarAuth(user) {
     }
   }
 }
-
-// ============================================================================
-// GOOGLE & GITHUB AUTHENTICATION
-// ============================================================================
 async function handlePostOAuthLogin(user) {
   try {
     const userDocRef = doc(db, "users", user.uid);
     const snap = await getDoc(userDocRef);
     const userData = snap.exists() ? snap.data() : null;
     const isComplete = userData && userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
-
     if (!snap.exists()) {
       await setDoc(userDocRef, {
         uid: user.uid,
@@ -309,7 +274,6 @@ async function handlePostOAuthLogin(user) {
         lastLoginAt: serverTimestamp()
       }, { merge: true });
     }
-
     if (!isComplete) {
       window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
     } else {
@@ -320,7 +284,6 @@ async function handlePostOAuthLogin(user) {
     window.location.href = "dashboard.html";
   }
 }
-
 window.loginWithGoogle = async function() {
   const provider = new GoogleAuthProvider();
   try {
@@ -331,7 +294,6 @@ window.loginWithGoogle = async function() {
     alert("Google Sign-In Error: " + (err.message || err));
   }
 };
-
 window.loginWithGithub = async function() {
   const provider = new GithubAuthProvider();
   try {
@@ -342,8 +304,6 @@ window.loginWithGithub = async function() {
     alert("GitHub Sign-In Error: " + (err.message || err));
   }
 };
-
-// Inline Auth Error Helpers for script.js
 function showScriptAuthError(boxId, msg, inputId) {
   const box = document.getElementById(boxId);
   if (box) {
@@ -359,7 +319,6 @@ function showScriptAuthError(boxId, msg, inputId) {
     }
   }
 }
-
 function clearScriptAuthError(boxId, inputId) {
   const box = document.getElementById(boxId);
   if (box) {
@@ -372,7 +331,6 @@ function clearScriptAuthError(boxId, inputId) {
     if (inp) inp.classList.remove("dpg-input-error");
   }
 }
-
 function getScriptFriendlyAuthError(err) {
   if (typeof window.getFriendlyAuthError === "function") {
     return window.getFriendlyAuthError(err);
@@ -405,7 +363,6 @@ function getScriptFriendlyAuthError(err) {
   }
   return (err && err.message) || "Authentication failed. Please check your details and try again.";
 }
-
 window.logoutUser = async function() {
   try {
     await signOut(auth);
@@ -422,10 +379,6 @@ window.logoutUser = async function() {
     console.error("Sign out error:", err);
   }
 };
-
-// ============================================================================
-// SIGN UP (EMAIL & PASSWORD)
-// ============================================================================
 window.handleEmailSignUp = async function(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (window.isContributorModeActive && window.isContributorModeActive()) {
@@ -433,7 +386,6 @@ window.handleEmailSignUp = async function(e) {
     return false;
   }
   clearScriptAuthError("signUpErrorAlert");
-
   const userType = document.getElementById("signupUserType")?.value || "";
   const name = document.getElementById("signupName")?.value.trim() || "";
   const studentId = document.getElementById("signupStudentId")?.value.trim() || "";
@@ -443,7 +395,6 @@ window.handleEmailSignUp = async function(e) {
   const github = document.getElementById("signupGithub")?.value.trim() || "";
   const password = document.getElementById("signupPassword")?.value || "";
   const confirmPassword = document.getElementById("signupConfirmPassword")?.value || "";
-
   if (!userType) {
     showScriptAuthError("signUpErrorAlert", "Please select your User Role (Student or Teacher).", "signupUserType");
     return;
@@ -468,11 +419,8 @@ window.handleEmailSignUp = async function(e) {
     showScriptAuthError("signUpErrorAlert", "Passwords do not match. Please verify both password fields.", "signupConfirmPassword");
     return;
   }
-
   const btn = document.getElementById("btnSubmitSignUp");
   if (btn) { btn.disabled = true; btn.innerText = "Checking Account..."; }
-
-  // 1. Verify New Email already does NOT exist as an Old Verified Contributor
   try {
     const chkRes = await fetch(apiBase + "/api/auth/check-contributor-exists", {
       method: "POST",
@@ -490,12 +438,8 @@ window.handleEmailSignUp = async function(e) {
   } catch (chkErr) {
     console.warn("Pre-signup check error:", chkErr);
   }
-
   if (btn) { btn.innerText = "Validating Email & Account..."; }
-
   try {
-    // 2. Dispatch backend verification request (Zero-Creation Policy: NO Firebase Auth account created yet!)
-    // Strictly validates email format, blocks disposable burner domains, and verifies live DNS MX records
     const startRes = await fetch(apiBase + "/api/auth/start-signup-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -508,12 +452,10 @@ window.handleEmailSignUp = async function(e) {
       })
     });
     const startData = await startRes.json();
-
     if (!startRes.ok || !startData.success) {
       showScriptAuthError("signUpErrorAlert", startData.error || "Failed to start registration verification. Please check your email.", "signupEmail");
       return;
     }
-
     window._scriptPendingSignup = {
       name,
       email,
@@ -524,19 +466,14 @@ window.handleEmailSignUp = async function(e) {
       github,
       password
     };
-
-    // Transition to Verification Pending Step
     const s1 = document.getElementById("signUpStep1");
     const s2 = document.getElementById("signUpVerificationStep");
     const emailDisp = document.getElementById("signUpVerifyEmailDisplay");
     if (emailDisp) emailDisp.textContent = email;
     if (s1) s1.style.display = "none";
     if (s2) s2.style.display = "block";
-
-    // Clear any previous OTP input
     const otpInput = document.getElementById("signUpOtpInput");
     if (otpInput) otpInput.value = "";
-
     startScriptSignupPolling();
   } catch(err) {
     console.error("Email sign up error:", err);
@@ -545,16 +482,11 @@ window.handleEmailSignUp = async function(e) {
     if (btn) { btn.disabled = false; btn.innerText = "Create Contributor Account"; }
   }
 };
-
 let scriptSignupPollTimer = null;
-
 function startScriptSignupPolling() {
   if (scriptSignupPollTimer) clearInterval(scriptSignupPollTimer);
-
   const pending = window._scriptPendingSignup;
   if (!pending || !pending.email) return;
-
-  // Real-time backend status polling: instantly detects when verification link is clicked
   scriptSignupPollTimer = setInterval(async () => {
     const p = window._scriptPendingSignup;
     if (!p || !p.email) {
@@ -574,18 +506,14 @@ function startScriptSignupPolling() {
         await activateScriptVerifiedProfile(data.customToken, p);
       }
     } catch (e) {
-      // Passive poll error ignored
     }
   }, 3000);
 }
-
 async function activateScriptVerifiedProfile(customToken, data) {
   if (scriptSignupPollTimer) {
     clearInterval(scriptSignupPollTimer);
     scriptSignupPollTimer = null;
   }
-
-  // Sign in to Firebase Auth using custom token
   if (customToken) {
     try {
       const cred = await signInWithCustomToken(auth, customToken);
@@ -600,26 +528,17 @@ async function activateScriptVerifiedProfile(customToken, data) {
       console.warn("Custom token sign-in notice:", tokErr);
     }
   }
-
   window._scriptPendingSignup = null;
-
-  // Close modal cleanly
   const suEl = document.getElementById("signUpModal");
   if (suEl && window.bootstrap) {
     const suModal = bootstrap.Modal.getInstance(suEl);
     if (suModal) suModal.hide();
   }
-
-  // Clear guest quota locks
   localStorage.removeItem("dpg_quota_locked");
   sessionStorage.removeItem("dpg_quota_locked");
   document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
-  // Landing Dashboard --> Setting tab
   window.location.href = "dashboard.html?verified=1#settings";
 }
-
-// Auto-call verify when OTP input is filled (6 digits)
 window.onScriptSignUpOtpInput = function(inp) {
   clearScriptAuthError("signUpVerifyAlert");
   const cleaned = (inp.value || "").replace(/\D/g, '').slice(0, 6);
@@ -628,7 +547,6 @@ window.onScriptSignUpOtpInput = function(inp) {
     window.verifySignUpOtpCode();
   }
 };
-
 window.verifySignUpOtpCode = async function() {
   clearScriptAuthError("signUpVerifyAlert");
   const pending = window._scriptPendingSignup;
@@ -643,9 +561,7 @@ window.verifySignUpOtpCode = async function() {
   }
   const btn = document.getElementById("btnVerifySignUpOtp");
   if (btn) { btn.disabled = true; btn.innerText = "Verifying Code..."; }
-
   try {
-    // Backend verifies 6-digit OTP, creates Firebase Auth user & Firestore profile, and returns customToken
     const res = await fetch(apiBase + "/api/auth/complete-signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -655,7 +571,6 @@ window.verifySignUpOtpCode = async function() {
     if (!res.ok || !result.success) {
       throw new Error(result.error || "Invalid or expired verification code.");
     }
-
     await activateScriptVerifiedProfile(result.customToken, pending);
   } catch (err) {
     showScriptAuthError("signUpVerifyAlert", err.message || "Failed to verify code.");
@@ -663,7 +578,6 @@ window.verifySignUpOtpCode = async function() {
     if (btn) { btn.disabled = false; btn.innerText = "Verify Code & Activate Account"; }
   }
 };
-
 window.checkSignUpEmailVerified = async function() {
   clearScriptAuthError("signUpVerifyAlert");
   const pending = window._scriptPendingSignup;
@@ -673,7 +587,6 @@ window.checkSignUpEmailVerified = async function() {
   }
   const btn = document.getElementById("btnCheckSignUpEmailLink");
   if (btn) { btn.disabled = true; btn.innerText = "Checking Verification..."; }
-
   try {
     const res = await fetch(apiBase + "/api/auth/check-pending-signup-status", {
       method: "POST",
@@ -692,7 +605,6 @@ window.checkSignUpEmailVerified = async function() {
     if (btn) { btn.disabled = false; btn.innerHTML = `<i class="ri-refresh-line"></i> I Clicked the Link in My Email`; }
   }
 };
-
 window.resendSignUpVerificationEmail = async function() {
   clearScriptAuthError("signUpVerifyAlert");
   const pending = window._scriptPendingSignup;
@@ -712,7 +624,6 @@ window.resendSignUpVerificationEmail = async function() {
     showScriptAuthError("signUpVerifyAlert", "Failed to resend: " + (e.message || e));
   }
 };
-
 window.backToSignUpStep1 = function() {
   if (scriptSignupPollTimer) clearInterval(scriptSignupPollTimer);
   const s1 = document.getElementById("signUpStep1");
@@ -720,8 +631,6 @@ window.backToSignUpStep1 = function() {
   if (s1) s1.style.display = "block";
   if (s2) s2.style.display = "none";
 };
-
-// Dynamic label switch for Sign Up
 const signupUserTypeEl = document.getElementById("signupUserType");
 if (signupUserTypeEl) {
   signupUserTypeEl.addEventListener("change", () => {
@@ -736,10 +645,6 @@ if (signupUserTypeEl) {
     }
   });
 }
-
-// ============================================================================
-// SIGN IN (STUDENT/EMPLOYEE ID OR EMAIL + 2FA)
-// ============================================================================
 window.handlePasswordSignIn = async function(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (window.isContributorModeActive && window.isContributorModeActive()) {
@@ -747,10 +652,8 @@ window.handlePasswordSignIn = async function(e) {
     return false;
   }
   clearScriptAuthError("signInErrorAlert");
-
   const identifier = document.getElementById("loginIdentifier")?.value.trim() || "";
   const password = document.getElementById("loginPassword")?.value || "";
-
   if (!identifier) {
     showScriptAuthError("signInErrorAlert", "Please enter your Student ID, Employee ID, or Email.", "loginIdentifier");
     return;
@@ -759,14 +662,11 @@ window.handlePasswordSignIn = async function(e) {
     showScriptAuthError("signInErrorAlert", "Please enter your password.", "loginPassword");
     return;
   }
-
   const btn = document.getElementById("btnSubmitSignIn");
   if (btn) { btn.disabled = true; btn.innerText = "Verifying Credentials..."; }
-
   let resolvedEmail = identifier;
   if (!identifier.includes('@')) {
     let resolved = false;
-    // 1. Try backend API with 3.5s timeout
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
@@ -787,8 +687,6 @@ window.handlePasswordSignIn = async function(e) {
     } catch(resolveErr) {
       console.warn("Backend resolve fallback, querying Firestore directly:", resolveErr.message);
     }
-
-    // 2. Direct client Firestore query fallback checking both fields & casing
     if (!resolved) {
       try {
         const candidates = [identifier, identifier.toUpperCase(), identifier.toLowerCase()];
@@ -810,21 +708,15 @@ window.handlePasswordSignIn = async function(e) {
         console.warn("Firestore client identifier lookup error:", fsErr);
       }
     }
-
     if (!resolved) {
       if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
       showScriptAuthError("signInErrorAlert", `No account found matching Student/Employee ID "${identifier}". Please check your ID or create a free account.`, "loginIdentifier");
       return;
     }
   }
-
-  // Normalize email to clean lowercase
   resolvedEmail = resolvedEmail.trim().toLowerCase();
-
   try {
     const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
-
-    // Ensure Contributor Verification Status in Firestore
     try {
       await setDoc(doc(db, "users", cred.user.uid), {
         isVerified: true,
@@ -833,18 +725,13 @@ window.handlePasswordSignIn = async function(e) {
         lastLoginAt: serverTimestamp()
       }, { merge: true });
     } catch (e) {}
-
     pendingSignInUser = cred.user;
     pendingSignInEmail = resolvedEmail;
-
-    // Check if user disabled 2FA in settings
     try {
       const userDocRef = doc(db, "users", cred.user.uid);
       const snap = await getDoc(userDocRef);
       const userData = snap.exists() ? snap.data() : null;
-
       if (userData && userData.twoFactorEnabled === false) {
-        // 2FA is explicitly disabled by user: complete sign in directly
         const isComplete = userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
         if (!isComplete) {
           window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
@@ -856,8 +743,6 @@ window.handlePasswordSignIn = async function(e) {
     } catch(profileErr) {
       console.warn("User profile check error:", profileErr);
     }
-
-    // Default: Dispatch 2FA OTP
     try {
       await fetch(apiBase + "/api/auth/send-otp", {
         method: "POST",
@@ -871,8 +756,6 @@ window.handlePasswordSignIn = async function(e) {
     } catch(otpErr) {
       console.warn("2FA send failed:", otpErr);
     }
-
-    // Transition to 2FA view in modal
     document.getElementById("signInFormStep").style.display = "none";
     document.getElementById("twoFactorStep").style.display = "block";
     document.getElementById("twoFactorEmailDisplay").innerText = resolvedEmail;
@@ -883,7 +766,6 @@ window.handlePasswordSignIn = async function(e) {
     if (btn) { btn.disabled = false; btn.innerText = "Sign In"; }
   }
 };
-
 window.verify2FACode = async function() {
   clearScriptAuthError("twoFactorErrorAlert");
   const code = document.getElementById("twoFactorInput")?.value.trim() || "";
@@ -891,10 +773,8 @@ window.verify2FACode = async function() {
     showScriptAuthError("twoFactorErrorAlert", "Please enter the 6-digit verification code sent to your email.", "twoFactorInput");
     return;
   }
-
   const btn = document.getElementById("btnVerify2FA");
   if (btn) { btn.disabled = true; btn.innerText = "Verifying..."; }
-
   try {
     const res = await fetch(apiBase + "/api/auth/verify-otp", {
       method: "POST",
@@ -905,13 +785,10 @@ window.verify2FACode = async function() {
     if (!res.ok || !data.success) {
       throw new Error(data.error || "Invalid or expired verification code.");
     }
-
-    // 2FA Successful! Check profile completion
     const userDocRef = doc(db, "users", pendingSignInUser.uid);
     const snap = await getDoc(userDocRef);
     const userData = snap.exists() ? snap.data() : null;
     const isComplete = userData && userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
-
     if (!isComplete) {
       window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
     } else {
@@ -923,7 +800,6 @@ window.verify2FACode = async function() {
     if (btn) { btn.disabled = false; btn.innerText = "Verify & Complete Sign In"; }
   }
 };
-
 window.resend2FACode = async function() {
   if (!pendingSignInEmail) return;
   try {
@@ -941,10 +817,6 @@ window.resend2FACode = async function() {
     alert("Failed to resend code: " + e.message);
   }
 };
-
-// ============================================================================
-// PASSWORD RECOVERY (FORGOT PASSWORD)
-// ============================================================================
 window.handlePasswordRecovery = async function(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (window.isContributorModeActive && window.isContributorModeActive()) {
@@ -952,16 +824,13 @@ window.handlePasswordRecovery = async function(e) {
     return false;
   }
   clearScriptAuthError("recoveryErrorAlert");
-
   const rawId = document.getElementById("recoveryIdentifier")?.value.trim() || "";
   if (!rawId) {
     showScriptAuthError("recoveryErrorAlert", "Please enter your Student/Employee ID or Email.", "recoveryIdentifier");
     return;
   }
-
   const btn = document.getElementById("btnSubmitRecovery");
   if (btn) { btn.disabled = true; btn.innerText = "Sending Reset Link & OTP..."; }
-
   let targetEmail = rawId;
   if (!rawId.includes('@')) {
     let resolved = false;
@@ -985,7 +854,6 @@ window.handlePasswordRecovery = async function(e) {
     } catch(err) {
       console.warn("Backend recovery resolve fallback:", err.message);
     }
-
     if (!resolved) {
       try {
         const candidates = [rawId, rawId.toUpperCase(), rawId.toLowerCase()];
@@ -999,17 +867,13 @@ window.handlePasswordRecovery = async function(e) {
         console.warn("Firestore recovery lookup error:", fsErr);
       }
     }
-
     if (!resolved) {
       if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
       showScriptAuthError("recoveryErrorAlert", `Account lookup failed for ID "${rawId}". Please enter your registered email address.`, "recoveryIdentifier");
       return;
     }
   }
-
   targetEmail = targetEmail.trim().toLowerCase();
-
-  // Rigorous verification of user existence
   let userFound = false;
   try {
     const qEmail = await getDocs(query(collection(db, "users"), where("email", "==", targetEmail), limit(1)));
@@ -1017,7 +881,6 @@ window.handlePasswordRecovery = async function(e) {
   } catch(fsErr) {
     console.warn("Firestore recovery email check fallback:", fsErr);
   }
-
   if (!userFound) {
     try {
       const res = await fetch(apiBase + "/api/auth/resolve-identifier", {
@@ -1033,14 +896,11 @@ window.handlePasswordRecovery = async function(e) {
       console.warn("API resolve check error:", apiErr);
     }
   }
-
   if (!userFound) {
     if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
     showScriptAuthError("recoveryErrorAlert", `No registered contributor account found with email "${targetEmail}". Please verify your email or create a free account.`, "recoveryIdentifier");
     return;
   }
-
-  // User exists: Dispatch Recovery OTP and transition to Step 2
   try {
     const otpRes = await fetch(apiBase + "/api/auth/send-otp", {
       method: "POST",
@@ -1055,11 +915,8 @@ window.handlePasswordRecovery = async function(e) {
     if (!otpRes.ok || !otpData.success) {
       throw new Error(otpData.error || "Failed to dispatch verification code.");
     }
-
     sendPasswordResetEmail(auth, targetEmail).catch(console.warn);
-
     pendingRecoveryEmailScript = targetEmail;
-
     const step1 = document.getElementById("recoveryStep1");
     const step2 = document.getElementById("recoveryStep2");
     const emailDisp = document.getElementById("recoveryEmailDisplay");
@@ -1067,7 +924,6 @@ window.handlePasswordRecovery = async function(e) {
     if (step2) step2.style.display = "block";
     if (emailDisp) emailDisp.textContent = targetEmail;
     clearScriptAuthError("recoveryOtpErrorAlert");
-
     const otpInp = document.getElementById("recoveryOtpCode");
     if (otpInp) {
       otpInp.value = "";
@@ -1079,16 +935,13 @@ window.handlePasswordRecovery = async function(e) {
     if (btn) { btn.disabled = false; btn.innerText = "Send Password Recovery Code"; }
   }
 };
-
 window.handleRecoveryOtpSubmit = async function(e) {
   e.preventDefault();
   clearScriptAuthError("recoveryOtpErrorAlert");
-
   const otp = document.getElementById("recoveryOtpCode")?.value.trim() || "";
   const newPass = document.getElementById("recoveryNewPassword")?.value || "";
   const confirmPass = document.getElementById("recoveryConfirmPassword")?.value || "";
   const btn = document.getElementById("btnSubmitRecoveryOtp");
-
   if (!otp || otp.length !== 6) {
     showScriptAuthError("recoveryOtpErrorAlert", "Please enter the 6-digit verification code sent to your email.", "recoveryOtpCode");
     return;
@@ -1101,9 +954,7 @@ window.handleRecoveryOtpSubmit = async function(e) {
     showScriptAuthError("recoveryOtpErrorAlert", "Passwords do not match. Please re-enter.", "recoveryConfirmPassword");
     return;
   }
-
   if (btn) { btn.disabled = true; btn.innerText = "Resetting Password..."; }
-
   try {
     const res = await fetch(apiBase + "/api/auth/reset-password-with-otp", {
       method: "POST",
@@ -1114,7 +965,6 @@ window.handleRecoveryOtpSubmit = async function(e) {
     if (!res.ok || !data.success) {
       throw new Error(data.error || "Failed to reset password. Please check your verification code.");
     }
-
     alert("Password reset successful! You can now sign in with your new password.");
     const fpEl = document.getElementById("forgotPasswordModal");
     if (fpEl && window.bootstrap) {
@@ -1132,7 +982,6 @@ window.handleRecoveryOtpSubmit = async function(e) {
     if (btn) { btn.disabled = false; btn.innerText = "Reset Password & Sign In"; }
   }
 };
-
 window.resendRecoveryOtpScript = async function() {
   if (!pendingRecoveryEmailScript) return;
   try {
@@ -1155,24 +1004,17 @@ window.resendRecoveryOtpScript = async function() {
     alert("Failed to resend code: " + e.message);
   }
 };
-
 window.backToRecoveryStep1Script = function() {
   const step1 = document.getElementById("recoveryStep1");
   const step2 = document.getElementById("recoveryStep2");
   if (step1) step1.style.display = "block";
   if (step2) step2.style.display = "none";
 };
-
-// ============================================================================
-// MODAL SWITCHING HELPERS
-// (Delegates to auth-component overlay when quota is locked or overlay exists)
-// ============================================================================
 window.openSignInModal = function() {
   if (window.isContributorModeActive && window.isContributorModeActive()) {
     console.log("[Auth Guard] Contributor session is active. Suppressing Sign In modal.");
     return false;
   }
-  // Always close mobile offcanvas drawer and guest prompt first
   const drawer = document.getElementById("mobileNavDrawer");
   if (drawer && window.bootstrap) {
     const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
@@ -1183,8 +1025,6 @@ window.openSignInModal = function() {
     const gpInst = bootstrap.Modal.getInstance(guestPromptEl);
     if (gpInst) gpInst.hide();
   }
-
-  // Clean reset of forms and fields (unless 2FA is in progress)
   if (!pendingSignInUser) {
     ["formSignIn", "formSignUp", "formRecovery"].forEach(fId => {
       const f = document.getElementById(fId);
@@ -1196,8 +1036,6 @@ window.openSignInModal = function() {
     });
     ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert", "twoFactorErrorAlert"].forEach(id => clearScriptAuthError(id));
   }
-
-  // Always prefer the auth-component overlay (dpgSignInModal) if it exists
   const dpgOverlay = document.getElementById("dpgAuthOverlay");
   if (dpgOverlay && typeof window.dpgBackToSignInStep1 === "function") {
     ["signUpModal", "forgotPasswordModal", "signInModal"].forEach(mId => {
@@ -1217,8 +1055,6 @@ window.openSignInModal = function() {
     }
     return;
   }
-
-  // Fallback: legacy Bootstrap modal
   const suEl = document.getElementById("signUpModal");
   if (suEl && window.bootstrap) { const suModal = bootstrap.Modal.getInstance(suEl); if (suModal) suModal.hide(); }
   const fpEl = document.getElementById("forgotPasswordModal");
@@ -1235,7 +1071,6 @@ window.openSignInModal = function() {
   const siModal = new bootstrap.Modal(document.getElementById("signInModal"));
   siModal.show();
 };
-
 window.openSignUpModal = function() {
   if (window.isContributorModeActive && window.isContributorModeActive()) {
     console.log("[Auth Guard] Contributor session is active. Suppressing Sign Up modal.");
@@ -1251,8 +1086,6 @@ window.openSignUpModal = function() {
     const gpInst = bootstrap.Modal.getInstance(guestPromptEl);
     if (gpInst) gpInst.hide();
   }
-
-  // Never show previous log credentials: clean reset
   ["formSignIn", "formSignUp", "formRecovery"].forEach(fId => {
     const f = document.getElementById(fId);
     if (f && typeof f.reset === "function") f.reset();
@@ -1262,8 +1095,6 @@ window.openSignUpModal = function() {
     if (el) { el.value = ""; el.classList.remove("dpg-input-error"); }
   });
   ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert", "twoFactorErrorAlert"].forEach(id => clearScriptAuthError(id));
-
-  // Always prefer the auth-component overlay (dpgSignUpModal) if it exists
   const dpgOverlay = document.getElementById("dpgAuthOverlay");
   if (dpgOverlay) {
     ["signUpModal", "signInModal", "forgotPasswordModal"].forEach(mId => {
@@ -1277,14 +1108,11 @@ window.openSignUpModal = function() {
     dpgOverlay.classList.add("active");
     return;
   }
-
-  // Fallback
   const siEl = document.getElementById("signInModal");
   if (siEl && window.bootstrap) { const siModal = bootstrap.Modal.getInstance(siEl); if (siModal) siModal.hide(); }
   const suModal = new bootstrap.Modal(document.getElementById("signUpModal"));
   suModal.show();
 };
-
 window.openForgotPasswordModal = function() {
   if (window.isContributorModeActive && window.isContributorModeActive()) {
     console.log("[Auth Guard] Contributor session is active. Suppressing Forgot Password modal.");
@@ -1295,10 +1123,7 @@ window.openForgotPasswordModal = function() {
     const offcanvas = bootstrap.Offcanvas.getInstance(drawer);
     if (offcanvas) offcanvas.hide();
   }
-
   ["signInErrorAlert", "signUpErrorAlert", "recoveryErrorAlert"].forEach(id => clearScriptAuthError(id));
-
-  // Always prefer the auth-component overlay (dpgForgotPasswordModal) if it exists
   const dpgOverlay = document.getElementById("dpgAuthOverlay");
   if (dpgOverlay) {
     ["signInModal", "signUpModal", "forgotPasswordModal"].forEach(mId => {
@@ -1312,24 +1137,15 @@ window.openForgotPasswordModal = function() {
     dpgOverlay.classList.add("active");
     return;
   }
-
-  // Fallback
   const siEl = document.getElementById("signInModal");
   if (siEl && window.bootstrap) { const siModal = bootstrap.Modal.getInstance(siEl); if (siModal) siModal.hide(); }
   const fpModal = new bootstrap.Modal(document.getElementById("forgotPasswordModal"));
   fpModal.show();
 };
-
-
-
-// ============================================================================
-// THEME SWITCHER ENGINE (Dark Nebula / Light Academic / Midnight Emerald)
-// ============================================================================
 window.toggleDpgTheme = function() {
   const current = document.documentElement.getAttribute("data-theme") || "dark";
   let next = "dark";
   let iconClass = "ri-moon-line";
-
   if (current === "dark") {
     next = "light";
     iconClass = "ri-sun-line";
@@ -1340,19 +1156,15 @@ window.toggleDpgTheme = function() {
     next = "dark";
     iconClass = "ri-moon-line";
   }
-
   document.documentElement.setAttribute("data-theme", next);
   try {
     localStorage.setItem("dpg_active_theme", next);
   } catch(e) {}
-
   ["themeToggleIconDesktop", "themeToggleIconMobile"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.className = iconClass;
   });
 };
-
-// Initialize theme icon on load
 (function initThemeIcon() {
   try {
     const saved = localStorage.getItem("dpg_active_theme") || "dark";
@@ -1364,34 +1176,22 @@ window.toggleDpgTheme = function() {
     });
   } catch(e) {}
 })();
-
-// ============================================================================
-// SMART & ADVANCED GUEST USER PROMPT (NON-INTRUSIVE)
-// ============================================================================
 let guestPromptRetryCount = 0;
 function tryShowSmartGuestPrompt() {
-  // 1. Is user already a signed-in Contributor?
   if (auth.currentUser || localStorage.getItem("dpgActiveUser") || localStorage.getItem("dpgActiveUserUid") || document.documentElement.classList.contains("dpg-user-authenticated")) {
     return;
   }
-
-  // 2. Has the user already seen/dismissed the prompt in this session?
   if (sessionStorage.getItem("dpg_guest_prompt_dismissed") === "true") {
     return;
   }
-
-  // 3. Is ANY modal (Sign In, Sign Up, Forgot Password, OTP / 2FA, Custom Alert) active?
   const anyActiveModal = document.querySelector(".modal.show, .dpg-custom-dialog-overlay, [id*='Modal'].show");
   if (anyActiveModal) {
-    // User is actively authenticating or interacting: retry gracefully in 30 seconds
     if (guestPromptRetryCount < 3) {
       guestPromptRetryCount++;
       setTimeout(tryShowSmartGuestPrompt, 30000);
     }
     return;
   }
-
-  // 4. Is the user currently typing in a search bar or form input?
   const activeTag = document.activeElement ? document.activeElement.tagName : "";
   if (activeTag === "INPUT" || activeTag === "TEXTAREA" || activeTag === "SELECT") {
     if (guestPromptRetryCount < 3) {
@@ -1400,29 +1200,18 @@ function tryShowSmartGuestPrompt() {
     }
     return;
   }
-
-  // 5. Safe to show prompt gently
   const el = document.getElementById("guestPromptModal");
   if (el && window.bootstrap) {
     const modal = new bootstrap.Modal(el);
     modal.show();
-
-    // Mark as shown for this session so it never interrupts the user repeatedly
     sessionStorage.setItem("dpg_guest_prompt_dismissed", "true");
   }
 }
-
-// Check after 2 minutes of passive browsing
 setTimeout(tryShowSmartGuestPrompt, 120000);
-
-// ============================================================================
-// BLOGS & DOCUMENTATION EXPANDER (R3)
-// ============================================================================
 window.toggleDocCard = function(id) {
   const content = document.getElementById(`docDetail_${id}`);
   const btn = document.getElementById(`docBtn_${id}`);
   if (!content || !btn) return;
-
   const isHidden = content.style.display === "none" || !content.style.display;
   if (isHidden) {
     content.style.display = "block";
@@ -1432,15 +1221,9 @@ window.toggleDocCard = function(id) {
     btn.innerHTML = `Read More <i class="ri-arrow-down-s-line"></i>`;
   }
 };
-
-// ============================================================================
-// 8 VERTICAL RESOURCE GRIDS ENGINE (R3.1 & R3.2)
-// NOTE: Download feature is completely removed per user instruction.
-// ============================================================================
 async function loadAcademicResources() {
   const statusEl = document.getElementById("resourceLoadingStatus");
   if (statusEl) statusEl.innerText = "Fetching academic resources...";
-
   try {
     const [snap, solutionsSnap, usersSnap, quizzesSnap] = await Promise.all([
       getDocs(query(collection(db, "documents"), limit(150))),
@@ -1456,7 +1239,6 @@ async function loadAcademicResources() {
         return { forEach: () => {} };
       })
     ]);
-
     const usersMap = {};
     usersSnap.forEach(u => {
       const uData = u.data();
@@ -1464,10 +1246,8 @@ async function loadAcademicResources() {
       window.__dpgUserCache = window.__dpgUserCache || {};
       window.__dpgUserCache[u.id] = { uid: u.id, ...uData };
     });
-
     const grouped = {};
     ACADEMIC_CATEGORIES.forEach(c => { grouped[c.key] = []; });
-
     window._allDocsCache = [];
     snap.forEach(d => {
       const data = d.data();
@@ -1480,8 +1260,6 @@ async function loadAcademicResources() {
         grouped[matchedKey].push({ id: docId, ...data });
       }
     });
-
-    // Populate verified solutions
     const solutions = [];
     window._allSolutionsCache = [];
     solutionsSnap.forEach(d => {
@@ -1491,8 +1269,6 @@ async function loadAcademicResources() {
       solutions.push(solObj);
       window._allSolutionsCache.push(solObj);
     });
-
-    // Populate published quizzes
     window._allQuizzesCache = [];
     if (quizzesSnap && typeof quizzesSnap.forEach === 'function') {
       quizzesSnap.forEach(d => {
@@ -1500,42 +1276,28 @@ async function loadAcademicResources() {
         window._allQuizzesCache.push({ id: d.id, isQuiz: true, ...qData });
       });
     }
-
     if (statusEl) statusEl.style.display = "none";
-
-    // 1. Fetch user feed weights from IndexedDB & cookies
     const feedWeights = window.dpgFeed ? await window.dpgFeed.getUserFeedWeights() : { disciplines: {}, categories: {}, keywords: new Set() };
-
-    // 2. Perform daily sync of feed profile & cookies to Firestore
     if (window.dpgFeed) {
       window.dpgFeed.dailySyncToFirestore(db, currentUser, setDoc, doc, serverTimestamp);
     }
-
     let totalRendered = 0;
-
-    // Render 0. Assignment & Practical Solutions (SOL)
-    // Rule: Only render if solutions have a total of 4 or more resources
     const solContainer = document.getElementById("gridContainer_SOL");
     const solCardsWrapper = document.getElementById("cardsWrapper_SOL");
     const solCountBadge = document.getElementById("countBadge_SOL");
-
     if (solutions.length >= 4) {
       totalRendered++;
       if (solContainer) solContainer.style.display = "block";
       if (solCountBadge) solCountBadge.innerText = `${solutions.length} Items`;
-
-      // Sort solutions by date desc
       solutions.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       const isTabletMode = window.innerWidth >= 641 && window.innerWidth <= 1024;
       const solLimit = isTabletMode ? Math.min(solutions.length, 4) : 3;
       const displaySolutions = solutions.slice(0, solLimit);
-
       if (solCardsWrapper) {
         solCardsWrapper.innerHTML = "";
         displaySolutions.forEach(item => {
           const card = document.createElement("div");
           card.className = "col-12 col-md-6 col-lg-4";
-
           const title = item.subjectName || item.title || item.subjectCode || "Assignment Solution";
           const isPractical = item.type === 'practical' || (item.title && item.title.toLowerCase().includes('practical'));
           const solTypeLabel = isPractical ? "Practical Solution" : "Assignment Solution";
@@ -1549,7 +1311,6 @@ async function loadAcademicResources() {
           const profileUrl = authorUid ? `profile.html?uid=${encodeURIComponent(authorUid)}` : `profile.html`;
           const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
           const viewerUrl = isPractical ? `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(item.id)}` : `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(item.id)}`;
-
           card.innerHTML = `
             <div class="academic-res-card">
               <div class="res-card-top">
@@ -1589,40 +1350,30 @@ async function loadAcademicResources() {
     } else {
       if (solContainer) solContainer.style.display = "none";
     }
-
-    // Render other categories (Sample Papers & Model Sets + All other categories only if >= 4 resources)
     ACADEMIC_CATEGORIES.forEach(cat => {
       const container = document.getElementById(`gridContainer_${cat.key}`);
       const cardsWrapper = document.getElementById(`cardsWrapper_${cat.key}`);
       const countBadge = document.getElementById(`countBadge_${cat.key}`);
       const docs = grouped[cat.key] || [];
-
-      // Requirement: Only show if category has 4 or more resources!
       if (docs.length < 4) {
         if (container) container.style.display = "none";
       } else {
         totalRendered++;
         if (container) container.style.display = "block";
         if (countBadge) countBadge.innerText = `${docs.length} Items`;
-
-        // Rank resources by user feed relevance (PDF visits, SERP searches, and cookies)
         const rankedDocs = [...docs].sort((a, b) => {
           const scoreA = window.dpgFeed ? window.dpgFeed.scoreResource(a, feedWeights) : 0;
           const scoreB = window.dpgFeed ? window.dpgFeed.scoreResource(b, feedWeights) : 0;
           return scoreB - scoreA;
         });
-
-        // In tablet media only, render 4 resource cards per stream (2x2 grid); otherwise 3 on desktop/mobile
         const isTabletScreen = window.innerWidth >= 641 && window.innerWidth <= 1024;
         const streamLimit = isTabletScreen ? Math.min(rankedDocs.length, 4) : 3;
         const displayDocs = rankedDocs.slice(0, streamLimit);
-
         if (cardsWrapper) {
           cardsWrapper.innerHTML = "";
           displayDocs.forEach(item => {
             const card = document.createElement("div");
             card.className = "col-12 col-md-6 col-lg-4";
-            
             const title = item.title || "Academic Resource";
             const discipline = item.discipline || "General Science";
             const uploader = item.uploader || item.userName || "Verified Contributor";
@@ -1633,7 +1384,6 @@ async function loadAcademicResources() {
             const date = item.createdAt ? new Date(item.createdAt.seconds ? item.createdAt.seconds * 1000 : item.createdAt).toLocaleDateString() : "Recent";
             const pdfUrl = item.pdfUrl || "#";
             const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(pdfUrl)}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(cat.fullName)}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(uploader)}&docid=${encodeURIComponent(item.id)}`;
-
             card.innerHTML = `
               <div class="academic-res-card">
                 <div class="res-card-top">
@@ -1672,13 +1422,10 @@ async function loadAcademicResources() {
         }
       }
     });
-
     if (totalRendered === 0 && statusEl) {
       statusEl.style.display = "block";
       statusEl.innerText = "No academic resources published yet in the database.";
     }
-
-    // Initialize homepage live search suggestions
     setupHomepageLiveSearch();
   } catch(err) {
     console.error("Resource load error:", err);
@@ -1687,13 +1434,10 @@ async function loadAcademicResources() {
     }
   }
 }
-
-// Setup Homepage Live Search Autocomplete (Feature Parity with dpgnotes-search-engine.html)
 function setupHomepageLiveSearch() {
   const input = document.getElementById("homeSearchInput");
   const panel = document.getElementById("homeSuggestionsPanel");
   if (!input || !panel) return;
-
   let debounceTimer = null;
   input.addEventListener("input", (e) => {
     clearTimeout(debounceTimer);
@@ -1704,7 +1448,6 @@ function setupHomepageLiveSearch() {
         panel.classList.remove("active");
         return;
       }
-
       const docMatches = (window._allDocsCache || []).filter(d => 
         (d.title && d.title.toLowerCase().includes(q)) ||
         (d.description && d.description.toLowerCase().includes(q)) ||
@@ -1712,7 +1455,6 @@ function setupHomepageLiveSearch() {
         (d.category && d.category.toLowerCase().includes(q)) ||
         (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q)))
       ).slice(0, 4);
-
       const solMatches = (window._allSolutionsCache || []).filter(s => 
         (s.subjectName && s.subjectName.toLowerCase().includes(q)) ||
         (s.subjectCode && s.subjectCode.toLowerCase().includes(q)) ||
@@ -1720,7 +1462,6 @@ function setupHomepageLiveSearch() {
         (s.course && s.course.toLowerCase().includes(q)) ||
         (s.contributorName && s.contributorName.toLowerCase().includes(q))
       ).slice(0, 3);
-
       const quizMatches = (window._allQuizzesCache || []).filter(qz =>
         (qz.title && qz.title.toLowerCase().includes(q)) ||
         (qz.subjectName && qz.subjectName.toLowerCase().includes(q)) ||
@@ -1729,18 +1470,14 @@ function setupHomepageLiveSearch() {
         (qz.ownerName && qz.ownerName.toLowerCase().includes(q)) ||
         (Array.isArray(qz.tags) && qz.tags.some(t => t.toLowerCase().includes(q)))
       ).slice(0, 3);
-
       const totalMatches = [...docMatches, ...solMatches, ...quizMatches];
-
       if (totalMatches.length === 0) {
         panel.innerHTML = '<div class="no-results-item">No matching documents, solutions, or quizzes found.</div>';
       } else {
         panel.innerHTML = "";
-        // Render document matches
         docMatches.forEach(d => {
           const tagsString = Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || "");
           const viewerUrl = `dpgnotes-pdf-viewer.html?pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.userName || d.uploader || 'Contributor')}&docid=${encodeURIComponent(d.id)}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(tagsString)}`;
-
           const item = document.createElement("a");
           item.className = "suggestion-item";
           item.href = viewerUrl;
@@ -1756,13 +1493,10 @@ function setupHomepageLiveSearch() {
           `;
           panel.appendChild(item);
         });
-
-        // Render solution matches
         solMatches.forEach(s => {
           const isPractical = s.type === 'practical' || (s.title && s.title.toLowerCase().includes('practical'));
           const viewerUrl = isPractical ? `PracticalSolution/index.html?id=${encodeURIComponent(s.id)}` : `AssignmentSolution/index.html?id=${encodeURIComponent(s.id)}`;
           const title = s.subjectName || s.title || s.subjectCode || "Assignment Solution";
-
           const item = document.createElement("a");
           item.className = "suggestion-item";
           item.href = viewerUrl;
@@ -1778,13 +1512,10 @@ function setupHomepageLiveSearch() {
           `;
           panel.appendChild(item);
         });
-
-        // Render quiz matches
         quizMatches.forEach(qz => {
           const viewerUrl = `Quizes/index.html?quizId=${encodeURIComponent(qz.id)}`;
           const title = qz.title || `${qz.subjectName || 'Academic'} Assessment`;
           const subCode = qz.subjectCode ? ` [${qz.subjectCode}]` : '';
-
           const item = document.createElement("a");
           item.className = "suggestion-item quiz-suggestion-item";
           item.href = viewerUrl;
@@ -1805,23 +1536,17 @@ function setupHomepageLiveSearch() {
       panel.classList.add("active");
     }, 150);
   });
-
-  // Close suggestions on outside click
   document.addEventListener("click", (e) => {
     if (!input.contains(e.target) && !panel.contains(e.target)) {
       panel.classList.remove("active");
     }
   });
-
-  // Close on Escape
   input.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       panel.classList.remove("active");
     }
   });
 }
-
-// Global search submit
 window.handleHomeSearch = function(e) {
   e.preventDefault();
   const q = document.getElementById("homeSearchInput")?.value.trim() || document.getElementById("drawerSearchInput")?.value.trim();
@@ -1829,28 +1554,18 @@ window.handleHomeSearch = function(e) {
     window.location.href = `dpgnotes-serp.html?query=${encodeURIComponent(q)}`;
   }
 };
-
-// ============================================================================
-// LIVE STATS FROM FIRESTORE (Image 2 Data Cards)
-// ============================================================================
-
 async function loadLiveStats() {
   const resourceEl = document.getElementById("statResourceCount");
   const streamEl   = document.getElementById("statStreamCount");
-
   try {
-    // 1. Total academic resource count from 'documents' collection
     let totalDocs = 0;
     try {
       const countSnap = await getCountFromServer(collection(db, "documents"));
       totalDocs = countSnap.data().count;
     } catch (countErr) {
-      // Fallback: full getDocs (for environments where getCountFromServer is unavailable)
       const snap = await getDocs(collection(db, "documents"));
       totalDocs = snap.size;
     }
-
-    // Format: show exact count if < 1000, else "N+" rounded to nearest 50
     let resourceLabel;
     if (totalDocs >= 1000) {
       resourceLabel = Math.floor(totalDocs / 100) * 100 + "+";
@@ -1861,11 +1576,7 @@ async function loadLiveStats() {
     } else {
       resourceLabel = String(totalDocs);
     }
-
     if (resourceEl) resourceEl.textContent = resourceLabel;
-
-    // 2. Count active streams (categories with ≥ 3 resources)
-    // Re-use documents already loaded by loadAcademicResources if available, else query
     let activeStreams = 0;
     try {
       const docsSnap = await getDocs(query(collection(db, "documents"), limit(500)));
@@ -1876,43 +1587,30 @@ async function loadLiveStats() {
         if (key && catCounts[key] !== undefined) catCounts[key]++;
       });
       activeStreams = Object.values(catCounts).filter(count => count >= 3).length;
-      // Always at least show 1 stream if documents exist
       if (activeStreams === 0 && totalDocs > 0) activeStreams = 1;
     } catch {
       activeStreams = ACADEMIC_CATEGORIES.length; // fallback: all defined categories
     }
-
     if (streamEl) streamEl.textContent = activeStreams + " Stream" + (activeStreams !== 1 ? "s" : "");
-
   } catch (err) {
     console.warn("Stats load error:", err);
-    // Graceful fallback values
     if (resourceEl) resourceEl.textContent = "500+";
     if (streamEl)   streamEl.textContent = "8 Streams";
   }
 }
-
-// Initialize
 document.addEventListener("DOMContentLoaded", () => {
   loadAcademicResources();
   loadLiveStats(); // Load real Firestore stats for stat pills
-
   const searchForm = document.getElementById("homeSearchForm");
   if (searchForm) searchForm.addEventListener("submit", window.handleHomeSearch);
-
   const drawerSearchForm = document.getElementById("drawerSearchForm");
   if (drawerSearchForm) drawerSearchForm.addEventListener("submit", window.handleHomeSearch);
-
   const signUpForm = document.getElementById("formSignUp");
   if (signUpForm) signUpForm.addEventListener("submit", window.handleEmailSignUp);
-
   const signInForm = document.getElementById("formSignIn");
   if (signInForm) signInForm.addEventListener("submit", window.handlePasswordSignIn);
-
   const recoveryForm = document.getElementById("formRecovery");
   if (recoveryForm) recoveryForm.addEventListener("submit", window.handlePasswordRecovery);
-
-  // Close offcanvas menu when any in-page link is clicked
   document.querySelectorAll("#mobileNavDrawer a[href^='#']").forEach(link => {
     link.addEventListener("click", () => {
       const drawer = document.getElementById("mobileNavDrawer");
@@ -1922,8 +1620,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
-  // Deep-linked Auth Modals (?action=signin, ?action=signup)
   const urlParams = new URLSearchParams(window.location.search);
   const actionParam = urlParams.get("action") || urlParams.get("auth");
   if (actionParam === "signin" || actionParam === "login") {
@@ -1935,9 +1631,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => { if (window.openSignUpModal) window.openSignUpModal(); }, 350);
     }
   }
-
-  // Universal WAI-ARIA modal & offcanvas focus safety listener:
-  // Prevents "Blocked aria-hidden on an element because its descendant retained focus"
   document.addEventListener("hide.bs.modal", (e) => {
     if (document.activeElement && e.target && e.target.contains(document.activeElement)) {
       document.activeElement.blur();
@@ -1954,4 +1647,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-

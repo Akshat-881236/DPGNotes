@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader -->
   <script src="/dpg-loader.js"></script>
   <script src="https://dpgnotes.web.app/redirect.js" defer></script>
   <meta charset="UTF-8">
@@ -11,28 +10,19 @@
   <script src="/pwa.js" defer></script>
   <title>Practical File Cover Page Generator | DPGNotes</title>
   <meta name="description" content="Generate and download standard A4 practical file cover pages for DPG School of Technology & Management (Affiliated to MDU Rohtak) with real-time canvas preview." />
-
-  <!-- Global Config & Native Ads Engine -->
   <script src="../config.js"></script>
   <script src="/dpg-params.js"></script>
   <script src="../custom-dialogs.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
   <script src="../native-dpgnotes-ads.js?v=2.6.0"></script>
-
-  <!-- Google Fonts & Remix Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Tinos:wght@700&family=Merriweather:wght@700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="/auth-component.css">
   <script type="module" src="/auth-component.js"></script>
-
-  <!-- PDF-Lib & JSPDF for Client-Side A4 Vector Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- Firebase Modular SDK for Direct Client Firestore Operations -->
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
     const cfg = {
       apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -41,7 +31,6 @@
       messagingSenderId: "910494426039",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
     const db = getFirestore(app);
     window.dpgDb = db;
@@ -55,16 +44,13 @@
     window.query = query;
     window.where = where;
     window.serverTimestamp = serverTimestamp;
-
     if (typeof window.initQuotaAndCleanup === 'function') {
       window.initQuotaAndCleanup();
     }
-
     if (typeof window.loadUserPracticals === 'function') {
       window.loadUserPracticals();
     }
   </script>
-
   <style>
     :root {
       --bg-main: #0b0f19;
@@ -81,9 +67,7 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       background-color: var(--bg-main);
       color: var(--text-main);
@@ -92,8 +76,6 @@
       display: flex;
       flex-direction: column;
     }
-
-    /* Navbar */
     .top-navbar {
       height: 70px;
       background: rgba(15, 23, 42, 0.9);
@@ -118,7 +100,6 @@
       font-size: 1.25rem;
     }
     .brand-logo i { color: #a855f7; font-size: 1.5rem; }
-
     .nav-actions {
       display: flex;
       align-items: center;
@@ -155,8 +136,6 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(236, 72, 153, 0.45);
     }
-
-    /* Main Container */
     .generator-container {
       max-width: 1440px;
       width: 100%;
@@ -168,8 +147,6 @@
       gap: 2rem;
       align-items: flex-start;
     }
-
-    /* Form Card */
     .form-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -193,7 +170,6 @@
       margin-bottom: 1.4rem;
       line-height: 1.5;
     }
-
     .form-group {
       margin-bottom: 1.1rem;
     }
@@ -236,8 +212,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
-
-    /* Actions Bar */
     .btn-generate {
       width: 100%;
       padding: 0.85rem;
@@ -287,8 +261,6 @@
       color: #fff;
       border-color: rgba(255, 255, 255, 0.3);
     }
-
-    /* Preview Canvas Area */
     .preview-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -327,8 +299,6 @@
       display: block;
       background: #ffffff;
     }
-
-    /* Logs & History Section */
     .logs-section {
       max-width: 1440px;
       width: 100%;
@@ -433,8 +403,6 @@
     .log-btn:hover {
       transform: scale(1.04);
     }
-
-    /* Quota Lockdown Full Overlay */
     .quota-lock-overlay {
       position: fixed;
       inset: 0;
@@ -462,7 +430,6 @@
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
     }
-
     @media (max-width: 960px) {
       .generator-container {
         grid-template-columns: 1fr;
@@ -471,7 +438,6 @@
         position: static;
       }
     }
-
     @media (max-width: 640px) {
       .form-row {
         grid-template-columns: 1fr !important;
@@ -499,8 +465,6 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
-  <!-- Top Navigation Bar -->
   <nav class="top-navbar">
     <a href="../index.html" class="brand-logo">
       <i class="ri-file-shield-2-fill"></i>
@@ -516,11 +480,7 @@
       </a>
     </div>
   </nav>
-
-  <!-- Main Generator Container -->
   <main class="generator-container">
-
-    <!-- Form Section -->
     <section class="form-card">
       <h1 class="card-title">
         <i class="ri-file-code-line" style="color:#8b5cf6;"></i> Practical File Details
@@ -528,7 +488,6 @@
       <p class="card-subtitle">
         Fill the fields below. The live A4 canvas preview on the right will update in real time.
       </p>
-
       <form id="coverForm" onsubmit="event.preventDefault(); handleGenerateClick();">
         <div class="form-row" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 12px; margin-bottom:1rem;">
           <div class="form-group" style="margin-bottom:0;">
@@ -553,7 +512,6 @@
             </select>
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Subject Name <span class="req">*</span></label>
@@ -564,7 +522,6 @@
             <input type="text" id="inpSession" class="form-control" value="2025-2026" placeholder="2025-2026" required oninput="renderLiveCanvas()">
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Subject Code <span class="req">*</span></label>
@@ -649,12 +606,10 @@
         </datalist>
           </div>
         </div>
-
         <div class="form-group">
           <label class="form-label">Requirement of Degree / Course Title <span class="rule">(Auto-detected)</span></label>
           <input type="text" id="inpDegreeName" class="form-control" value="BACHELOR OF COMPUTER APPLICATION" oninput="renderLiveCanvas()">
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Professor Name <span class="req">*</span></label>
@@ -665,12 +620,10 @@
             <input type="text" id="inpDesignation" class="form-control" value="ASSISTANT PROFESSOR" placeholder="e.g. ASSISTANT PROFESSOR, HOD" required oninput="renderLiveCanvas()">
           </div>
         </div>
-
         <div class="form-group">
           <label class="form-label">Department <span class="req">*</span> <span class="rule">DEPARTMENT OF ...</span></label>
           <input type="text" id="inpDept" class="form-control" value="COMPUTER SCIENCE & APPLICATIONS" placeholder="e.g. COMPUTER SCIENCE & APPLICATIONS" required oninput="renderLiveCanvas()">
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Student Name <span class="req">*</span></label>
@@ -687,7 +640,6 @@
             </div>
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Student ID / Roll No <span class="req">*</span></label>
@@ -701,11 +653,9 @@
             </div>
           </div>
         </div>
-
         <button type="submit" id="btnSubmitGenerate" class="btn-generate">
           <i class="ri-flashlight-line"></i> Generate &amp; Save Practical Cover Page
         </button>
-
         <div class="btn-secondary-group">
           <button type="button" class="btn-sub" onclick="downloadClientPdf()">
             <i class="ri-download-2-line"></i> Instant Fast PDF
@@ -716,8 +666,6 @@
         </div>
       </form>
     </section>
-
-    <!-- Canvas Live Preview Section -->
     <section class="preview-card">
       <div class="preview-header">
         <h2 style="font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
@@ -727,20 +675,14 @@
           Standard A4 (300 DPI)
         </span>
       </div>
-
       <div class="canvas-wrapper">
-        <!-- 300 DPI A4 Resolution: 2480 x 3508 pixels -->
         <canvas id="coverCanvas" width="2480" height="3508"></canvas>
       </div>
-
       <p style="font-size:0.75rem; color:#64748b; margin-top:0.8rem; text-align:center;">
         <i class="ri-information-line"></i> The rendered canvas matches the strict official A4 template layout irrespective of your device screen size.
       </p>
     </section>
-
   </main>
-
-  <!-- Saved Logs & History Section -->
   <section class="logs-section">
     <div class="logs-header">
       <div>
@@ -755,7 +697,6 @@
         <i class="ri-refresh-line"></i> Refresh Logs
       </button>
     </div>
-
     <div class="logs-grid" id="logsGrid">
       <div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:#64748b;">
         <i class="ri-loader-4-line spin-icon" style="font-size:1.8rem; color:#8b5cf6;"></i>
@@ -763,8 +704,6 @@
       </div>
     </div>
   </section>
-
-  <!-- Quota Lockdown & Automated Sponsor Ads Overlay -->
   <div class="quota-lock-overlay" id="quotaLockOverlay">
     <div class="quota-lock-card">
       <div style="width:68px; height:68px; border-radius:50%; background:rgba(236,72,153,0.12); border:1px solid rgba(236,72,153,0.3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.2rem;">
@@ -776,10 +715,7 @@
       <p id="quotaLockSubtitle" style="color:#94a3b8; font-size:0.9rem; line-height:1.6; max-width:540px; margin:0 auto 1.5rem auto;">
         You have reached your daily quota limit for practical cover page generation. Choose how you would like to proceed:
       </p>
-
-      <!-- Confirmation / Selection Mode: Watch Ads vs Sign In with Google -->
       <div id="quotaChoiceSection" style="display:flex; flex-direction:column; gap:1rem; max-width:540px; margin:0 auto 1.5rem auto;">
-        <!-- Option 1: Watch Ads -->
         <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(236,72,153,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; color:#f472b6; font-weight:700; font-size:1rem;">
             <i class="ri-play-circle-line" style="font-size:1.3rem;"></i> Option 1: Watch Learning Sponsor Ads
@@ -791,8 +727,6 @@
             <i class="ri-advertisement-line"></i> Watch Ads to Restore Tokens
           </button>
         </div>
-
-        <!-- Option 2: Sign In / Create Contributor Account -->
         <div id="quotaGoogleSignInOption" style="background:rgba(255,255,255,0.03); border:1px solid rgba(99,102,241,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; color:#818cf8; font-weight:700; font-size:1rem;">
             <i class="ri-shield-user-fill" style="font-size:1.3rem;"></i> Option 2: Sign In / Create Contributor Account
@@ -817,31 +751,21 @@
           </div>
         </div>
       </div>
-
-      <!-- Automated Ad Playback Mode -->
       <div id="adPlaybackSection" style="display:none;">
         <div id="adCountdownBadge" style="display:inline-flex; align-items:center; gap:8px; background:rgba(139,92,246,0.18); color:#c084fc; border:1px solid rgba(139,92,246,0.35); padding:6px 16px; border-radius:999px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
           <i class="ri-loader-4-line spin-icon"></i> <span id="adStatusText">Checking Google AdSense availability (15s timeout)...</span>
         </div>
-
         <div style="width:100%; max-width:580px; height:6px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; margin:0 auto 1rem auto;">
           <div id="adProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #ec4899, #8b5cf6); transition:width 1s linear;"></div>
         </div>
-
         <p style="font-size:0.82rem; color:#64748b; margin-bottom:0.5rem;">
           <i class="ri-information-line"></i> Priority given to Google AdSense with 15s connection check. After 15s, smoothly falls back to Native Ads.
         </p>
-
-        <!-- AdSense Slot Container -->
         <div id="adsenseContainer" style="width:100%; max-width:600px; margin:1rem auto; display:none;"></div>
-
-        <!-- Native Ads Container (Strictly initialized ONLY when Quota Reached and Modal Active) -->
         <div id="nativeAdsContainer" style="display:flex; justify-content:center; width:100%; display:none;">
           <div id="native-ads" class="cover-modal-native-ad" data-ad-variant="cover_video" data-ad-count="1" style="margin-top:1rem; width:100%; max-width:600px; transition:margin-top 0.3s ease;"></div>
         </div>
       </div>
-
-      <!-- Lockout in Absence of Adsense/Ads -->
       <div id="adBlockedLockoutSection" style="display:none; margin-top:1rem;">
         <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:14px; padding:1.5rem; max-width:540px; margin:0 auto;">
           <i class="ri-time-line" style="font-size:2.4rem; color:#f87171; display:block; margin-bottom:0.6rem;"></i>
@@ -853,25 +777,19 @@
           <div id="midnightCountdownText" style="font-size:2.2rem; font-weight:800; font-family:monospace; color:#38bdf8; letter-spacing:2px;">--:--:--</div>
         </div>
       </div>
-
       <div style="margin-top:1.8rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:1.2rem; display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:#64748b;">
         <span>Cloud Quota Protection Active</span>
         <a href="../legal/index.html" style="color:#a855f7; text-decoration:none;"><i class="ri-scales-line"></i> Advertising Policy</a>
       </div>
     </div>
   </div>
-
   <script>
-    // Asset image objects
     let currentHeaderLogo = 'Header_Image.jpg';
     let currentCenterLogo = 'Center_Logo.jpg';
-
     const headerImg = new Image();
     headerImg.src = currentHeaderLogo;
-
     const centerLogoImg = new Image();
     centerLogoImg.src = currentCenterLogo;
-
     let imagesLoaded = 0;
     function onImgLoad() {
       imagesLoaded++;
@@ -881,7 +799,6 @@
     }
     headerImg.onload = onImgLoad;
     centerLogoImg.onload = onImgLoad;
-
     function handleLogoChange() {
       const hVal = document.getElementById('selHeaderLogo')?.value || 'Header_Image.jpg';
       const cVal = document.getElementById('selCenterLogo')?.value || 'Center_Logo.jpg';
@@ -893,11 +810,6 @@
       centerLogoImg.src = cVal;
       renderLiveCanvas();
     }
-
-    // Retrieve or initialize user identity
-    // ==========================================
-    // DETERMINISTIC HARDWARE FINGERPRINT & QUOTA
-    // ==========================================
     let currentDeviceFingerprint = null;
     let currentQuotaTokens = 1;
     let currentMaxQuota = 1;
@@ -907,7 +819,6 @@
     let adsRemainingToWatch = 3;
     let currentAdSecondsLeft = 10;
     const AD_DURATION_SEC = 10;
-
     async function getDeviceFingerprint() {
       if (currentDeviceFingerprint) return currentDeviceFingerprint;
       try {
@@ -924,13 +835,11 @@
         ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
         ctx.fillText('DPGNotes,CoverPage<fp>~!', 6, 20);
         const dataUrl = canvas.toDataURL();
-
         const screenInfo = `${screen.width}x${screen.height}x${screen.colorDepth}`;
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
         const lang = navigator.language || '';
         const platform = navigator.platform || '';
         const raw = `${dataUrl}___${screenInfo}___${tz}___${lang}___${platform}`;
-
         let h1 = 0xdeadbeef, h2 = 0x41c64e6d;
         for (let i = 0; i < raw.length; i++) {
           const ch = raw.charCodeAt(i);
@@ -948,11 +857,9 @@
       }
       return currentDeviceFingerprint;
     }
-
     function isContributor() {
       return !!localStorage.getItem("dpgActiveUserUid");
     }
-
     function getActiveUserId() {
       const authUid = localStorage.getItem("dpgActiveUserUid");
       if (authUid) return authUid;
@@ -964,26 +871,21 @@
       }
       return guestId;
     }
-
     function getTodayDateStr() {
       return new Date().toISOString().split('T')[0];
     }
-
     async function getQuotaDocId() {
       const fp = await getDeviceFingerprint();
       const isContrib = isContributor();
       const prefix = isContrib ? `user_${localStorage.getItem("dpgActiveUserUid")}` : `guest_${fp}`;
       return `${prefix}_${getTodayDateStr()}`;
     }
-
-    // Auto Clean-up old records in cover_page_quotas where date < today
     async function cleanupOldQuotaRecords() {
       const today = getTodayDateStr();
       try {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         fetch(`${apiBase}/api/cover-page/quota-cleanup`, { method: 'POST' }).catch(() => {});
       } catch (e) {}
-
       try {
         if (window.dpgDb && window.collection && window.getDocs && window.query && window.where && window.deleteDoc) {
           const q = window.query(window.collection(window.dpgDb, "cover_page_quotas"), window.where("date", "<", today));
@@ -996,14 +898,11 @@
         console.warn("Client quota cleanup error:", e);
       }
     }
-
-    // Synchronize Quota from Firestore (Strict Anti-Bypass)
     async function syncQuotaFromFirestore() {
       const isContrib = isContributor();
       currentMaxQuota = isContrib ? 3 : 1;
       const today = getTodayDateStr();
       const quotaId = await getQuotaDocId();
-
       try {
         if (window.dpgDb && window.doc && window.getDoc) {
           const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
@@ -1029,9 +928,7 @@
       } catch (err) {
         console.warn("Firestore quota sync error:", err);
       }
-
       updateTokenBadgeUI();
-
       if (currentQuotaTokens <= 0) {
         enterQuotaLockdown();
       } else {
@@ -1039,19 +936,16 @@
       }
       return currentQuotaTokens;
     }
-
     function updateTokenBadgeUI() {
       const badge = document.getElementById('tokenCountText');
       if (badge) {
         badge.textContent = `Tokens: ${currentQuotaTokens} / ${currentMaxQuota}`;
       }
     }
-
     async function consumeOneToken() {
       const quotaId = await getQuotaDocId();
       currentQuotaTokens = Math.max(0, currentQuotaTokens - 1);
       updateTokenBadgeUI();
-
       try {
         if (window.dpgDb && window.doc && window.setDoc) {
           const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
@@ -1063,31 +957,23 @@
       } catch (err) {
         console.warn("Failed to persist consumed quota:", err);
       }
-
       if (currentQuotaTokens <= 0) {
         enterQuotaLockdown();
       }
     }
-
-    // Quota Lockdown State: first shows Choice Screen
     function enterQuotaLockdown() {
       const genContainer = document.querySelector('.generator-container');
       const logsSec = document.querySelector('.saved-logs-section') || document.querySelector('.logs-section');
       if (genContainer) genContainer.style.setProperty('display', 'none', 'important');
       if (logsSec) logsSec.style.setProperty('display', 'none', 'important');
-
       const overlay = document.getElementById('quotaLockOverlay');
       if (overlay) overlay.style.display = 'flex';
-
       const choiceSec = document.getElementById('quotaChoiceSection');
       const adPlaybackSec = document.getElementById('adPlaybackSection');
       const adBlockedSec = document.getElementById('adBlockedLockoutSection');
-
       if (choiceSec) choiceSec.style.display = 'flex';
       if (adPlaybackSec) adPlaybackSec.style.display = 'none';
       if (adBlockedSec) adBlockedSec.style.display = 'none';
-
-      // Smart Quota lockdown check: if user is already a contributor, hide Sign Up/Sign In with Google
       const googleOption = document.getElementById('quotaGoogleSignInOption');
       const subtitle = document.getElementById('quotaLockSubtitle');
       if (isContributor()) {
@@ -1102,23 +988,18 @@
         }
       }
     }
-
     function exitQuotaLockdown() {
       const overlay = document.getElementById('quotaLockOverlay');
       if (overlay) overlay.style.display = 'none';
-
       const genContainer = document.querySelector('.generator-container');
       const logsSec = document.querySelector('.saved-logs-section') || document.querySelector('.logs-section');
       if (genContainer) genContainer.style.removeProperty('display');
       if (logsSec) logsSec.style.removeProperty('display');
-
       adWatchInProgress = false;
       if (adWatchTimer) { clearInterval(adWatchTimer); adWatchTimer = null; }
       if (midnightTimer) { clearInterval(midnightTimer); midnightTimer = null; }
       if (adsenseCheckTimer) { clearInterval(adsenseCheckTimer); adsenseCheckTimer = null; }
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
-      // Clear all active ad players, iframes, and AdSense DOM
       if (typeof window.cleanupAllNativeAds === 'function') {
         window.cleanupAllNativeAds();
       }
@@ -1136,15 +1017,12 @@
         adsenseBox.innerHTML = '';
       }
     }
-
-    // Google Sign Up / Sign In helper for Cover Pages
     window.signInWithGoogleForCoverQuota = async function() {
       const btn = event?.currentTarget;
       if (btn) btn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Connecting to Google...';
       try {
         const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js");
         const { getAuth, signInWithPopup, GoogleAuthProvider } = await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js");
-
         const cfg = {
           apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
           authDomain: "dpgnotes.firebaseapp.com",
@@ -1153,11 +1031,9 @@
           messagingSenderId: "910494426039",
           appId: "1:910494426039:web:adeae5315caaf846c43e32"
         };
-
         const app = !getApps().length ? initializeApp(cfg) : getApps()[0];
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
-
         const res = await signInWithPopup(auth, provider);
         if (res && res.user) {
           localStorage.setItem("dpgActiveUserUid", res.user.uid);
@@ -1168,11 +1044,9 @@
             avatar: res.user.photoURL,
             role: 'contributor'
           }));
-
           currentMaxQuota = 2;
           currentQuotaTokens = 2;
           updateTokenBadgeUI();
-
           const quotaId = await getQuotaDocId();
           if (window.dpgDb && window.doc && window.setDoc) {
             const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
@@ -1184,10 +1058,8 @@
               date: new Date().toISOString().split('T')[0]
             }, { merge: true });
           }
-
           exitQuotaLockdown();
           if (typeof window.loadUserPracticals === 'function') window.loadUserPracticals();
-
           await window.customAlert("🎉 Welcome Contributor! Your daily cover page quota has been doubled (2 tokens) and permanent cloud storage enabled.", { title: "Signed In Successfully" });
         }
       } catch (err) {
@@ -1196,10 +1068,7 @@
         await window.customAlert("Sign in error: " + (err.message || err), { title: "Authentication Error", isDanger: true });
       }
     };
-
     let adWatchInProgress = false;
-
-    // Callback when cover ad completes/skipped
     window.onCoverAdWatched = async function() {
       const overlay = document.getElementById('quotaLockOverlay');
       if (!overlay || window.getComputedStyle(overlay).display === 'none') {
@@ -1211,7 +1080,6 @@
       if (adWatchTimer) { clearInterval(adWatchTimer); adWatchTimer = null; }
       if (adsenseCheckTimer) { clearInterval(adsenseCheckTimer); adsenseCheckTimer = null; }
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
       adsRemainingToWatch--;
       if (adsRemainingToWatch > 0) {
         setTimeout(() => {
@@ -1223,58 +1091,43 @@
         await restoreQuotaTokens();
       }
     };
-
     let adsenseCheckTimer = null;
     let coverAdObserver = null;
-
-    // Start Ad Flow after User Confirmation
     function startQuotaAdFlow() {
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (midnightTimer) clearInterval(midnightTimer);
       if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
       const isContrib = isContributor();
       adsRequiredTotal = isContrib ? 2 : 3;
       adsRemainingToWatch = adsRequiredTotal;
-
       const choiceSec = document.getElementById('quotaChoiceSection');
       const adPlaybackSec = document.getElementById('adPlaybackSection');
       const adBlockedSec = document.getElementById('adBlockedLockoutSection');
-
       if (!navigator.onLine) {
         showMidnightLockout();
         return;
       }
-
       if (choiceSec) choiceSec.style.display = 'none';
       if (adBlockedSec) adBlockedSec.style.display = 'none';
       if (adPlaybackSec) adPlaybackSec.style.display = 'block';
-
       startNextCoverAd();
     }
-
     function startNextCoverAd() {
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
       const currentAdIndex = (adsRequiredTotal - adsRemainingToWatch) + 1;
       const statusEl = document.getElementById('adStatusText');
       const barEl = document.getElementById('adProgressBar');
       const adsenseBox = document.getElementById('adsenseContainer');
       const nativeBox = document.getElementById('nativeAdsContainer');
-
       if (statusEl) statusEl.textContent = `Sponsor Ad ${currentAdIndex} of ${adsRequiredTotal}: Checking Google AdSense availability...`;
       if (barEl) barEl.style.width = '0%';
-
-      // If offline or AdSense library absent, fallback immediately to Native Ads
       if (!navigator.onLine) {
         fallbackToNativeCoverAd(currentAdIndex);
         return;
       }
-
-      // 1. Mount Google AdSense container
       if (adsenseBox) {
         adsenseBox.style.display = 'block';
         adsenseBox.innerHTML = `
@@ -1287,7 +1140,6 @@
         `;
       }
       if (nativeBox) nativeBox.style.display = 'none';
-
       try {
         (adsbygoogle = window.adsbygoogle || []).push({});
       } catch(e) {
@@ -1295,16 +1147,13 @@
         fallbackToNativeCoverAd(currentAdIndex);
         return;
       }
-
       const ins = adsenseBox ? adsenseBox.querySelector('ins.adsbygoogle') : null;
       if (!ins) {
         fallbackToNativeCoverAd(currentAdIndex);
         return;
       }
-
       let adResolved = false;
       let checkElapsed = 0;
-
       const onAdsenseAbsent = () => {
         if (adResolved) return;
         adResolved = true;
@@ -1312,7 +1161,6 @@
         if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
         fallbackToNativeCoverAd(currentAdIndex);
       };
-
       const onAdsenseFilled = () => {
         if (adResolved) return;
         adResolved = true;
@@ -1320,41 +1168,30 @@
         if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
         playAdsenseDuration(currentAdIndex);
       };
-
-      // Real-time DOM attribute observer to detect AdSense absence or fill immediately
       coverAdObserver = new MutationObserver(() => {
         const status = ins.getAttribute('data-ad-status');
         const isCollapsed = ins.style.display === 'none';
-
-        // Definitively unfilled by AdSense (e.g. unapproved account, empty bid, no inventory)
         if (status === 'unfilled' || (isCollapsed && checkElapsed > 500)) {
           onAdsenseAbsent();
           return;
         }
-
-        // Definitively filled with actual visible creative
         if (status === 'filled' && ins.offsetHeight > 50 && !isCollapsed) {
           onAdsenseFilled();
         }
       });
       coverAdObserver.observe(ins, { attributes: true, attributeFilter: ['data-ad-status', 'style', 'class'] });
-
-      // Fast check every 250ms with 3.5-second total timeout
       adsenseCheckTimer = setInterval(() => {
         checkElapsed += 250;
         const status = ins.getAttribute('data-ad-status');
         const isCollapsed = ins.style.display === 'none';
-
         if (status === 'unfilled' || isCollapsed) {
           onAdsenseAbsent();
           return;
         }
-
         if (status === 'filled' && ins.offsetHeight > 50 && !isCollapsed) {
           onAdsenseFilled();
           return;
         }
-
         const secLeft = Math.max(0, ((3500 - checkElapsed) / 1000).toFixed(1));
         if (statusEl && !adResolved) {
           statusEl.textContent = `Connecting to Google AdSense... (${secLeft}s)`;
@@ -1362,55 +1199,43 @@
         if (barEl && !adResolved) {
           barEl.style.width = `${Math.round((checkElapsed / 3500) * 40)}%`;
         }
-
-        // If after 3.5s AdSense has not explicitly confirmed 'filled', detect as absent and fallback to Native Ads
         if (checkElapsed >= 3500) {
           onAdsenseAbsent();
         }
       }, 250);
     }
-
     function playAdsenseDuration(currentAdIndex) {
       const statusEl = document.getElementById('adStatusText');
       const barEl = document.getElementById('adProgressBar');
       let adSec = 15;
       if (statusEl) statusEl.textContent = `Viewing Google AdSense ${currentAdIndex} of ${adsRequiredTotal} (${adSec}s remaining...)`;
-
       adWatchTimer = setInterval(() => {
         adSec--;
         if (statusEl) statusEl.textContent = `Viewing Google AdSense ${currentAdIndex} of ${adsRequiredTotal} (${adSec}s remaining...)`;
         if (barEl) barEl.style.width = `${Math.round(((15 - adSec) / 15) * 100)}%`;
-
         if (adSec <= 0) {
           clearInterval(adWatchTimer);
           window.onCoverAdWatched();
         }
       }, 1000);
     }
-
     function fallbackToNativeCoverAd(currentAdIndex) {
       if (adWatchTimer) clearInterval(adWatchTimer);
       if (adsenseCheckTimer) clearInterval(adsenseCheckTimer);
       if (coverAdObserver) { coverAdObserver.disconnect(); coverAdObserver = null; }
-
       const statusEl = document.getElementById('adStatusText');
       const barEl = document.getElementById('adProgressBar');
       const adsenseBox = document.getElementById('adsenseContainer');
       const nativeBox = document.getElementById('nativeAdsContainer');
       const adNativeInner = document.getElementById('native-ads');
-
-      // 1. Hide and clear AdSense container completely
       if (adsenseBox) {
         adsenseBox.style.display = 'none';
         adsenseBox.innerHTML = '';
       }
-
-      // 2. Reveal and render Native Ad
       if (nativeBox) nativeBox.style.display = 'flex';
       let nativeSec = 15;
       if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal} (${nativeSec}s remaining...)`;
       if (barEl) barEl.style.width = '0%';
-
       if (adNativeInner) {
         adNativeInner.classList.add('native-ads');
         const hasVideo = (window.DPG_APPROVED_ADS || []).some(a => a.videoUrl && a.videoUrl.trim() !== '');
@@ -1421,12 +1246,10 @@
           window.renderNativeDPGAds();
         }
       }
-
       adWatchTimer = setInterval(() => {
         nativeSec--;
         if (statusEl) statusEl.textContent = `Viewing Sponsor Native Ad ${currentAdIndex} of ${adsRequiredTotal} (${nativeSec}s remaining...)`;
         if (barEl) barEl.style.width = `${Math.round(((15 - nativeSec) / 15) * 100)}%`;
-
         if (nativeSec <= 0) {
           clearInterval(adWatchTimer);
           adWatchTimer = null;
@@ -1434,7 +1257,6 @@
         }
       }, 1000);
     }
-
     function showMidnightLockout() {
       const choiceSec = document.getElementById('quotaChoiceSection');
       const adPlaybackSec = document.getElementById('adPlaybackSection');
@@ -1442,37 +1264,30 @@
       if (choiceSec) choiceSec.style.display = 'none';
       if (adPlaybackSec) adPlaybackSec.style.display = 'none';
       if (adBlockedSec) adBlockedSec.style.display = 'block';
-
       updateMidnightCountdown();
       midnightTimer = setInterval(updateMidnightCountdown, 1000);
     }
-
     function updateMidnightCountdown() {
       const countdownEl = document.getElementById('midnightCountdownText');
       if (!countdownEl) return;
-
       const now = new Date();
       const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
       const diffMs = midnight - now;
-
       if (diffMs <= 0) {
         if (midnightTimer) clearInterval(midnightTimer);
         syncQuotaFromFirestore();
         return;
       }
-
       const totalSec = Math.floor(diffMs / 1000);
       const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
       const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
       const s = String(totalSec % 60).padStart(2, '0');
       countdownEl.textContent = `${h}:${m}:${s}`;
     }
-
     async function restoreQuotaTokens() {
       const quotaId = await getQuotaDocId();
       currentQuotaTokens = currentMaxQuota;
       updateTokenBadgeUI();
-
       try {
         if (window.dpgDb && window.doc && window.setDoc) {
           const quotaRef = window.doc(window.dpgDb, "cover_page_quotas", quotaId);
@@ -1484,7 +1299,6 @@
       } catch (e) {
         console.warn("Failed to update restored tokens:", e);
       }
-
       exitQuotaLockdown();
       if (typeof window.customAlert === 'function') {
         await window.customAlert("🎉 Thank you for supporting DPGNotes! Your daily generation tokens have been restored. You may now create and download your practical cover page.", { title: "Tokens Restored" });
@@ -1492,14 +1306,11 @@
         alert("🎉 Thank you! Your daily tokens have been restored.");
       }
     }
-
     window.initQuotaAndCleanup = async function() {
       await getDeviceFingerprint();
       await cleanupOldQuotaRecords();
       await syncQuotaFromFirestore();
     };
-
-    // Degree Name Inference Helper
     function getDegreeFromCourse(courseStr) {
       const c = (courseStr || '').toUpperCase().trim();
       if (c.includes('BCA-CTIS') || c.includes('CTIS')) return "BACHELOR OF COMPUTER APPLICATION (CLOUD TECH & INFO SECURITY)";
@@ -1577,7 +1388,6 @@
       if (c.includes('DIPLOMA') || c.includes('POLYTECHNIC')) return "DIPLOMA IN ENGINEERING & TECHNOLOGY";
       return "BACHELOR OF COMPUTER APPLICATION";
     }
-
     function handleCourseSecInput() {
       const courseSec = document.getElementById('inpCourseSec')?.value || '';
       const degreeInput = document.getElementById('inpDegreeName');
@@ -1586,7 +1396,6 @@
       }
       renderLiveCanvas();
     }
-
     function handleDateChange() {
       const dateVal = document.getElementById('inpDate')?.value;
       const dayInput = document.getElementById('inpDay');
@@ -1600,8 +1409,6 @@
       }
       renderLiveCanvas();
     }
-
-    // Set today's date and day immediately on initial load
     function initDefaultDate() {
       const dateInput = document.getElementById('inpDate');
       const dayInput = document.getElementById('inpDay');
@@ -1611,7 +1418,6 @@
       const dd = String(now.getDate()).padStart(2, '0');
       const todayStr = `${yyyy}-${mm}-${dd}`;
       const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-      
       if (dateInput) {
         dateInput.value = todayStr;
       }
@@ -1619,8 +1425,6 @@
         dayInput.value = days[now.getDay()];
       }
     }
-
-    // Get current form data
     function getFormData() {
       const rawDate = document.getElementById('inpDate')?.value || '';
       let formattedDate = rawDate;
@@ -1630,11 +1434,8 @@
           formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
         }
       }
-
       const rawCourseSec = document.getElementById('inpCourseSec')?.value.trim() || 'BCA-3A';
-      // Normalize spaces around hyphens and within section: e.g. "BCA - FSD - 5A" -> "BCA-FSD-5A", "BCA - 3 A" -> "BCA-3A"
       const normalizedCourseSec = rawCourseSec.split('-').map(p => p.trim().replace(/\s+/g, '')).filter(Boolean).join('-');
-
       return {
         docType: 'practical',
         assignmentNo: '',
@@ -1656,36 +1457,23 @@
         day: document.getElementById('inpDay')?.value || 'FRIDAY'
       };
     }
-
-    // Ultra-High-DPI Canvas Rendering (300 DPI A4: 2480 x 3508 px)
     function renderLiveCanvas() {
       const canvas = document.getElementById('coverCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const W = canvas.width;  // 2480
       const H = canvas.height; // 3508
-
-      // Background: Pure White
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, W, H);
-
       const d = getFormData();
-
-      // Scale factors from template points (612 x 792) to 300 DPI Canvas (2480 x 3508)
       const scaleX = W / 612.0;
       const scaleY = H / 792.0;
-
-      // 1. Header Banner Image: Dynamic Banner Width & Aspect Ratio Engine
       const hStr = String(d.headerLogo || currentHeaderLogo || '');
       const isHeaderLogo4 = hStr.includes('DPGDegreeHeader_Image2') || hStr.includes('Header2') || hStr.includes('Logo 4') || hStr === 'DPGDegreeHeader_Image2.jpeg';
       const isHeaderLogo3 = !isHeaderLogo4 && (hStr.includes('DPGDegreeHeader') || hStr.includes('Degree') || hStr === 'DPGDegreeHeader_Image.jpeg');
       const isHeaderLogo2 = hStr.includes('DPGSTM-2') || hStr.includes('2Header') || hStr === 'DPGSTM-2HeaderImage.png';
-
-      // Width allocation: Header logos occupy full available space leaving 0.5 in margin from left and right
-      // Total coordinate base = 612.0 pt. Margin = 0.5 in = 36.0 pt. Target width = 612.0 - 2 * 36.0 = 540.0 pt.
       const targetBannerW = (612.0 - 2 * (0.5 * 72.0)) * scaleX;
       const targetBannerTopY = isHeaderLogo2 ? (23.0 * scaleY) : ((isHeaderLogo3 || isHeaderLogo4) ? (27.0 * scaleY) : (33.84 * scaleY));
-
       if (headerImg.complete && (headerImg.naturalWidth > 0 || headerImg.width > 0)) {
         const nw = headerImg.naturalWidth || headerImg.width;
         const nh = headerImg.naturalHeight || headerImg.height;
@@ -1705,13 +1493,9 @@
           ctx.drawImage(headerImg, (W - targetBannerW) / 2.0, targetBannerTopY, targetBannerW, 77.88 * scaleY);
         }
       }
-
-      // Font styling: Crisp Times New Roman typography matching official template
       const fontTitleSize = Math.round(13.17 * scaleY);
       const fontBold = `bold ${fontTitleSize}px 'Times New Roman', 'Tinos', Times, Georgia, serif`;
       const fontRegular = `normal ${fontTitleSize}px 'Times New Roman', 'Tinos', Times, Georgia, serif`;
-
-      // Helper function to render sharp BOLD text
       function drawBoldText(text, x, y, align = 'center') {
         if (!text) return;
         ctx.save();
@@ -1722,8 +1506,6 @@
         ctx.fillText(text, x, y);
         ctx.restore();
       }
-
-      // Helper function to render lightweight / REGULAR text
       function drawRegularText(text, x, y, align = 'center') {
         if (!text) return;
         ctx.save();
@@ -1734,9 +1516,6 @@
         ctx.fillText(text, x, y);
         ctx.restore();
       }
-
-      // Department line optimization: When Department char count crosses 17 including space,
-      // the rest part is written in place of DPG STM, and DPG STM moves to the line just below.
       function splitDepartmentText(rawDept) {
         let text = (rawDept || '').trim();
         if (/^department\s+of\s+/i.test(text)) {
@@ -1769,25 +1548,18 @@
           };
         }
       }
-
-      // 2. Headings (Centered - Matches PracticalCoverPageTemplate.pdf)
-      // 'A' placed at 130 pt to comfortably clear header banner
       drawRegularText("A", W / 2.0, 130.0 * scaleY, 'center');
       drawBoldText("PRACTICAL FILE", W / 2.0, 149.0 * scaleY, 'center');
       drawRegularText("OF", W / 2.0, 168.0 * scaleY, 'center');
       drawBoldText(d.subjectName.toUpperCase(), W / 2.0, 188.0 * scaleY, 'center');
       drawBoldText(d.subjectCode.toUpperCase(), W / 2.0, 208.0 * scaleY, 'center');
       drawBoldText(d.courseSection.toUpperCase(), W / 2.0, 228.0 * scaleY, 'center');
-
       drawRegularText("IN PARTIAL FULLFILLMENT OF THE REQUIREMENT OF", W / 2.0, 249.0 * scaleY, 'center');
       drawBoldText(d.degreeName.toUpperCase(), W / 2.0, 268.0 * scaleY, 'center');
-
-      // 3. Center Logo (Emblem)
       const logoW = 134.76 * scaleX;
       const logoH = 114.84 * scaleY;
       const logoX = (W - logoW) / 2.0;
       const logoY = 280.0 * scaleY;
-
       if (centerLogoImg.complete && (centerLogoImg.naturalWidth > 0 || centerLogoImg.width > 0)) {
         const cnw = centerLogoImg.naturalWidth || centerLogoImg.width;
         const cnh = centerLogoImg.naturalHeight || centerLogoImg.height;
@@ -1808,56 +1580,32 @@
         }
         ctx.drawImage(centerLogoImg, cDrawX, cDrawY, cDrawW, cDrawH);
       }
-
-      // 4. Session (Bold)
       drawBoldText(`SESSION: ${d.session.toUpperCase()}`, W / 2.0, 414.0 * scaleY, 'center');
-
-      // 5. Two Columns (Submitted To on Left, Submitted By on Right)
       const leftColX = 59.76 * scaleX;
       const rightColX = 364.25 * scaleX;
-
-      // Row 1: Headers (Bold)
       drawBoldText("SUBMITTED TO", leftColX, 462.0 * scaleY, 'left');
       drawBoldText("SUBMITTED BY", rightColX, 462.0 * scaleY, 'left');
-
-      // Row 2: Names (Bold)
       drawBoldText(d.profName.toUpperCase(), leftColX, 486.0 * scaleY, 'left');
       drawBoldText(d.studentName.toUpperCase(), rightColX, 486.0 * scaleY, 'left');
-
-      // Row 3: Designation / Father (Regular)
       drawRegularText(d.designation.toUpperCase(), leftColX, 510.0 * scaleY, 'left');
       drawRegularText(`${d.relation.toUpperCase()} ${d.fatherName.toUpperCase()}`, rightColX, 510.0 * scaleY, 'left');
-
-      // Row 4, 5, 6: Department / Student ID / DPG STM / Course & Section
       const deptParsed = splitDepartmentText(d.department);
       if (deptParsed.line2) {
-        // When department character count crosses 17:
-        // Row 4: Left = Department Part 1 (Regular), Right = Student ID (Regular)
         drawRegularText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
         drawRegularText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY, 'left');
-
-        // Row 5: in place of DPG STM, write the rest part! (Regular), Right = Course & Section (Bold)
         drawRegularText(deptParsed.line2, leftColX, 558.0 * scaleY, 'left');
         drawBoldText(d.courseSection.toUpperCase(), rightColX, 558.0 * scaleY, 'left');
-
-        // Row 6: DPG STM moves to the next line just below! (Bold)
         drawBoldText("DPG STM", leftColX, 582.0 * scaleY, 'left');
       } else {
-        // Standard <= 17 characters
         drawRegularText(deptParsed.line1, leftColX, 534.0 * scaleY, 'left');
         drawRegularText(`STUDENT ID: ${d.studentId.toUpperCase()}`, rightColX, 534.0 * scaleY, 'left');
-
         drawBoldText("DPG STM", leftColX, 558.0 * scaleY, 'left');
         drawBoldText(d.courseSection.toUpperCase(), rightColX, 558.0 * scaleY, 'left');
       }
-
-      // 6. Footer Section (Centered - Regular)
       const dayText = d.day ? ` (${d.day.toUpperCase()})` : '';
       drawRegularText(`SUBMITTED ON ${d.date.toUpperCase()}${dayText}`, W / 2.0, 701.0 * scaleY, 'center');
       drawRegularText("MDU ROHTAK, HARYANA", W / 2.0, 725.0 * scaleY, 'center');
     }
-
-    // Validation rule: Course & Section format (supports BCA-FSD-5A, BCA - FSD - 5A, BCA-3A, BCA - 3A, BCA - 3 A, BTECH-CSE-3A)
     function validateCourseSection(str) {
       if (!str || typeof str !== 'string') return false;
       const trimmed = str.trim();
@@ -1865,11 +1613,8 @@
       if (parts.length < 2) return false;
       return parts.every(part => /[A-Za-z0-9]/.test(part));
     }
-
-    // Submit handler
     async function handleGenerateClick() {
       const d = getFormData();
-
       if (!validateCourseSection(d.courseSection)) {
         if (typeof window.customAlert === 'function') {
           await window.customAlert("Invalid Course & Section format! Please follow the rule: {Course}-{Section}, e.g. BCA-5A, BBA-3A, MCA-1B.", { title: "Format Rule", isDanger: true });
@@ -1879,13 +1624,10 @@
         document.getElementById('inpCourseSec')?.focus();
         return;
       }
-
-      // Check strict cloud quota
       if (currentQuotaTokens <= 0) {
         enterQuotaLockdown();
         return;
       }
-
       const uid = getActiveUserId();
       const isContrib = isContributor();
       const submitBtn = document.getElementById('btnSubmitGenerate');
@@ -1893,7 +1635,6 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Generating &amp; Saving...';
       }
-
       try {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         const payload = {
@@ -1902,32 +1643,26 @@
           docType: 'practical',
           ...d
         };
-
         const res = await fetch(`${apiBase}/api/assignment/save`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         const resData = await res.json();
         if (res.ok && resData.success) {
-          // Decrement cloud token
           await consumeOneToken();
           if (typeof window.customAlert === 'function') {
             await window.customAlert("Practical cover page generated and saved to your cloud records successfully!", { title: "Success" });
           } else {
             alert("Practical cover page generated and saved to your cloud records successfully!");
           }
-          // Trigger instant client download
           downloadClientPdf();
-          // Reload history list
           await loadUserPracticals();
         } else {
           throw new Error(resData.error || "Failed to save practical record");
         }
       } catch (err) {
         console.warn("Backend save failed, trying Firestore client fallback:", err);
-        // Direct Client Firestore fallback
         try {
           if (window.dpgDb && window.collection && window.setDoc && window.doc) {
             const aid = `pract_${Date.now()}`;
@@ -1942,7 +1677,6 @@
               alert("Saved successfully to your cloud records!");
             }
           } else {
-            // If offline, still download client PDF
             downloadClientPdf();
           }
         } catch (e2) {
@@ -1955,27 +1689,21 @@
         }
       }
     }
-
-    // Instant Client A4 Vector/Raster PDF Download
     function downloadClientPdf() {
       const canvas = document.getElementById('coverCanvas');
       if (!canvas) return;
       const { jsPDF } = window.jspdf;
-      // Standard A4: 210mm x 297mm
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
-
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
       const d = getFormData();
       const filename = `Practical_File_${d.assignmentNo || '1'}_${d.subjectCode || 'Cover'}.pdf`;
       pdf.save(filename);
     }
-
-    // Download Server Vector PDF (Python Engine)
     async function downloadServerPdf() {
       const d = getFormData();
       const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
@@ -1985,7 +1713,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(d)
         });
-
         if (res.ok) {
           const blob = await res.blob();
           const url = window.URL.createObjectURL(blob);
@@ -2005,13 +1732,10 @@
         downloadClientPdf();
       }
     }
-
-    // Load User Saved Assignment Logs
     async function loadUserPracticals() {
       const container = document.getElementById('logsGrid');
       if (!container) return;
       const uid = getActiveUserId();
-
       try {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         const res = await fetch(`${apiBase}/api/assignment/list/${encodeURIComponent(uid)}`);
@@ -2025,8 +1749,6 @@
       } catch (err) {
         console.warn("API assignment list error, trying client Firestore:", err);
       }
-
-      // Client Firestore fallback
       try {
         if (window.dpgDb && window.collection && window.getDocs) {
           const snap = await window.getDocs(window.collection(window.dpgDb, "Assignment", uid, "records"));
@@ -2039,18 +1761,15 @@
       } catch (e) {
         console.warn("Client firestore logs error:", e);
       }
-
       container.innerHTML = `
         <div style="grid-column:1/-1; text-align:center; padding:2rem; color:#94a3b8;">
           No previous assignments saved yet. Create your first cover page above!
         </div>
       `;
     }
-
     function renderLogsCards(records) {
       const container = document.getElementById('logsGrid');
       if (!container) return;
-
       if (!records || records.length === 0) {
         container.innerHTML = `
           <div style="grid-column:1/-1; text-align:center; padding:2rem; color:#94a3b8;">
@@ -2059,7 +1778,6 @@
         `;
         return;
       }
-
       container.innerHTML = records.map(r => {
         const dateStr = r.date || (r.createdAt ? r.createdAt.split('T')[0] : '');
         return `
@@ -2071,15 +1789,12 @@
               </div>
               <span style="font-size:0.72rem; color:#64748b;">${escapeHtml(dateStr)}</span>
             </div>
-
             <div class="log-card-title">${escapeHtml(r.subjectName || 'Untitled Subject')}</div>
-
             <div class="log-card-details">
               <div><strong>Course:</strong> ${escapeHtml(r.courseSection || '—')} &bull; <strong>Session:</strong> ${escapeHtml(r.session || '—')}</div>
               <div><strong>Student:</strong> ${escapeHtml(r.studentName || '—')} (${escapeHtml(r.studentId || '—')})</div>
               <div><strong>Teacher:</strong> ${escapeHtml(r.profName || '—')}</div>
             </div>
-
             <div class="log-actions">
               <button type="button" class="log-btn log-btn-view" onclick='viewSavedPractical(${JSON.stringify(r)})' title="View in Canvas Preview">
                 <i class="ri-eye-line"></i> View
@@ -2098,13 +1813,10 @@
         `;
       }).join('');
     }
-
-    // Quick Actions
     window.viewSavedPractical = function(r) {
       editSavedPractical(r);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
     window.editSavedPractical = function(r) {
       if (!r) return;
       if (document.getElementById('inpAssignNo')) document.getElementById('inpAssignNo').value = r.assignmentNo || '1';
@@ -2144,18 +1856,15 @@
         }
       }
       handleLogoChange();
-
       renderLiveCanvas();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
     window.downloadSinglePractLogPdf = function(r) {
       editSavedPractical(r);
       setTimeout(() => {
         downloadClientPdf();
       }, 100);
     };
-
     window.deleteSavedPractical = async function(aid) {
       let confirmed = false;
       if (typeof window.customConfirm === 'function') {
@@ -2165,13 +1874,11 @@
       }
       if (!confirmed) return;
       const uid = getActiveUserId();
-
       try {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         const res = await fetch(`${apiBase}/api/assignment/${encodeURIComponent(uid)}/${encodeURIComponent(aid)}`, {
           method: 'DELETE'
         });
-
         if (res.ok) {
           const card = document.getElementById(`card-${aid}`);
           if (card) card.remove();
@@ -2205,19 +1912,15 @@
         }
       }
     };
-
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-
-    // Re-verify quota when signed in via shared auth component
     window.addEventListener('dpg-auth-success', async (e) => {
       currentMaxQuota = 2;
       currentQuotaTokens = 2;
       updateTokenBadgeUI();
       exitQuotaLockdown();
-
       try {
         const uid = (e.detail && e.detail.user && e.detail.user.uid) || getActiveUserId();
         const quotaId = await getQuotaDocId();
@@ -2234,11 +1937,8 @@
       } catch (err) {
         console.warn("Could not sync restored contributor quota to Firestore:", err);
       }
-
       await loadUserPracticals();
     });
-
-    // Initialization
     window.addEventListener('DOMContentLoaded', async () => {
       initDefaultDate();
       await initQuotaAndCleanup();

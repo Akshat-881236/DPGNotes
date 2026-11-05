@@ -1,16 +1,6 @@
-/**
- * DPGNotes Solutions NLP & Gemini AI Search Engine
- * Version 1.0.0
- * 
- * Provides resilient, order-independent, case-insensitive, typo-tolerant,
- * and sense-based academic search for Assignment and Practical Solutions.
- */
+/** DPGNotes Solutions NLP & Gemini AI Search Engine */
 (function(window) {
   'use strict';
-
-  // ==========================================
-  // 1. NLP STOPWORDS & ACADEMIC SYNONYM MAP
-  // ==========================================
   const STOP_WORDS = new Set([
     'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are',
     'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by',
@@ -24,8 +14,6 @@
     'why', 'with', 'would', 'you', 'your', 'yours', 'give', 'show', 'find', 'get', 'list', 'please',
     'want', 'need', 'tell', 'looking'
   ]);
-
-  // Concept & Academic Synonym Clusters
   const ACADEMIC_SYNONYMS = {
     'dsa': ['data', 'structure', 'structures', 'algorithm', 'algorithms', 'stack', 'queue', 'tree', 'linked list', 'sorting', 'searching'],
     'algo': ['algorithm', 'algorithms', 'dsa'],
@@ -62,12 +50,6 @@
     'practical': ['practical', 'practicals', 'lab', 'laboratory', 'experiment', 'experiments', 'code', 'program', 'sandbox', 'testcase'],
     'lab': ['practical', 'practicals', 'laboratory', 'experiment', 'experiments', 'code', 'program', 'sandbox']
   };
-
-  // ==========================================
-  // 2. STRING NORMALIZATION & TOKENIZATION
-  // ==========================================
-
-  // Strips accents, lowers case, replaces non-alphanumeric punctuation with space
   function cleanText(str) {
     if (!str) return '';
     return String(str)
@@ -78,25 +60,18 @@
       .replace(/\s+/g, ' ')
       .trim();
   }
-
-  // Normalizes academic subject/course codes (e.g. 'BCA - FSD - 5A' -> 'bcafsd5a')
   function normalizeCode(codeStr) {
     if (!codeStr) return '';
     return String(codeStr).toLowerCase().replace(/[^a-z0-9]/g, '');
   }
-
-  // Splits code into constituent alphanumeric tokens (e.g. 'BCA-301' -> ['bca', '301'])
   function splitCodeTokens(codeStr) {
     if (!codeStr) return [];
     const cleaned = String(codeStr).toLowerCase().replace(/[^a-z0-9]/g, ' ');
     return cleaned.split(/\s+/).filter(Boolean);
   }
-
-  // Lightweight English stemmer
   function stemWord(word) {
     if (!word || word.length <= 3) return word;
     let w = word.toLowerCase();
-
     if (w.endsWith('ies') && w.length > 4) return w.slice(0, -3) + 'y';
     if (w.endsWith('es') && w.length > 4) return w.slice(0, -2);
     if (w.endsWith('s') && !w.endsWith('ss') && w.length > 3) return w.slice(0, -1);
@@ -106,11 +81,8 @@
     if (w.endsWith('tions') && w.length > 6) return w.slice(0, -5);
     if (w.endsWith('ment') && w.length > 5) return w.slice(0, -4);
     if (w.endsWith('ments') && w.length > 6) return w.slice(0, -5);
-
     return w;
   }
-
-  // Levenshtein Distance for fuzzy typo tolerance
   function levenshtein(a, b) {
     if (a === b) return 0;
     const lenA = a.length;
@@ -118,11 +90,9 @@
     if (lenA === 0) return lenB;
     if (lenB === 0) return lenA;
     if (Math.abs(lenA - lenB) > 2) return 999; // Bailout early
-
     const matrix = [];
     for (let i = 0; i <= lenB; i++) matrix[i] = [i];
     for (let j = 0; j <= lenA; j++) matrix[0][j] = j;
-
     for (let i = 1; i <= lenB; i++) {
       for (let j = 1; j <= lenA; j++) {
         const cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
@@ -135,8 +105,6 @@
     }
     return matrix[lenB][lenA];
   }
-
-  // Checks whether word 'a' matches word 'b' tolerating character typos
   function isTypoMatch(a, b) {
     if (a === b) return true;
     const lenA = a.length;
@@ -146,8 +114,6 @@
     if (lenA <= 5) return levenshtein(a, b) <= 1;
     return levenshtein(a, b) <= 2;
   }
-
-  // Extracts word tokens from string excluding non-essential stopwords
   function tokenize(str, keepStopwords) {
     const cleaned = cleanText(str);
     if (!cleaned) return [];
@@ -161,17 +127,13 @@
     });
     return filtered.length > 0 ? filtered : words;
   }
-
-  // Generates semantic expansion tokens for a set of query tokens (including typo-tolerance on keys)
   function expandSynonyms(tokens) {
     const expanded = new Set(tokens);
     for (const token of tokens) {
-      // Direct dictionary lookup
       const directSyns = ACADEMIC_SYNONYMS[token];
       if (Array.isArray(directSyns)) {
         directSyns.forEach(s => expanded.add(s));
       }
-      // Typo-tolerant lookup on dictionary keys (e.g. 'pratical' matches 'practical')
       for (const [key, syns] of Object.entries(ACADEMIC_SYNONYMS)) {
         if (isTypoMatch(token, key)) {
           expanded.add(key);
@@ -183,11 +145,6 @@
     }
     return Array.from(expanded);
   }
-
-  // ==========================================
-  // 3. NLP SEARCH & SENSE SCORING ENGINE
-  // ==========================================
-
   /**
    * Executes order-independent, typo-tolerant, sense-based scoring on candidate documents.
    * 
@@ -207,44 +164,32 @@
         _matchedConcepts: []
       }));
     }
-
     const cleanedQuery = cleanText(qTrimmed);
     const queryTokens = tokenize(cleanedQuery, false);
     const queryCodeNormalized = normalizeCode(cleanedQuery);
     const queryStems = queryTokens.map(stemWord);
     const expandedQueryTokens = expandSynonyms(queryTokens);
-
     const scoredResults = [];
-
     for (const item of candidates) {
       let score = 0;
       let matchedTokensCount = 0;
       const matchedTokens = new Set();
       const matchedConcepts = new Set();
       let hasExactCodeMatch = false;
-
-      // Extract field values
       const subCode = item.subjectCode || '';
       const subName = item.subjectName || '';
       const course = item.course || item.courseSec || '';
       const prof = item.profName || '';
       const student = item.studentName || '';
       const contrib = item.contributorName || '';
-      
-      // Determine document type (Assignment vs Practical)
       const isAssignmentDoc = Array.isArray(item.questions) || (item.docPath && item.docPath.includes('assignment_solutions'));
       const isPracticalDoc = Array.isArray(item.practicals) || (item.docPath && item.docPath.includes('practical_solutions'));
-
-      // Questions / practicals titles
       const itemsList = Array.isArray(item.questions) ? item.questions : (Array.isArray(item.practicals) ? item.practicals : []);
       const itemTitles = itemsList.map(it => (it.title || '') + ' ' + (it.code || '')).join(' ');
-
-      // Normalized field representations
       const normSubCode = normalizeCode(subCode);
       const subCodeTokens = splitCodeTokens(subCode);
       const normCourse = normalizeCode(course);
       const courseTokens = splitCodeTokens(course);
-
       const fieldTokens = {
         code: subCodeTokens,
         title: tokenize(subName, true),
@@ -254,7 +199,6 @@
         contrib: tokenize(contrib, true),
         content: tokenize(itemTitles, false)
       };
-
       const fieldStems = {
         code: subCodeTokens.map(stemWord),
         title: fieldTokens.title.map(stemWord),
@@ -264,8 +208,6 @@
         contrib: fieldTokens.contrib.map(stemWord),
         content: fieldTokens.content.map(stemWord)
       };
-
-      // 1. Direct Code Matching (e.g. BCA-301, bca 301, BCA301)
       if (normSubCode && queryCodeNormalized) {
         if (normSubCode === queryCodeNormalized) {
           score += 120;
@@ -276,36 +218,26 @@
           matchedConcepts.add(subCode);
         }
       }
-
-      // Course section matching (e.g. BCA-FSD-5A vs bcafsd5a)
       if (normCourse && queryCodeNormalized) {
         if (normCourse === queryCodeNormalized || normCourse.includes(queryCodeNormalized) || queryCodeNormalized.includes(normCourse)) {
           score += 50;
           matchedConcepts.add(course);
         }
       }
-
-      // 2. Full Query Phrase Matching in Title / Code (Bonus for consecutive phrasing)
       const cleanSubName = cleanText(subName);
       if (cleanSubName.includes(cleanedQuery)) {
         score += 80;
         matchedConcepts.add(subName);
       }
-
-      // 3. Order-Independent Bag-of-Words Multi-Field Scoring
       for (let i = 0; i < queryTokens.length; i++) {
         const qToken = queryTokens[i];
         const qStem = queryStems[i];
         let tokenMatchedInDoc = false;
-
-        // A. Match in Subject Code
         if (fieldTokens.code.includes(qToken) || fieldStems.code.includes(qStem)) {
           score += 40;
           tokenMatchedInDoc = true;
           matchedConcepts.add(subCode);
         }
-
-        // B. Match in Subject Title (High weight)
         if (fieldTokens.title.includes(qToken)) {
           score += 35;
           tokenMatchedInDoc = true;
@@ -315,7 +247,6 @@
           tokenMatchedInDoc = true;
           matchedConcepts.add(qToken);
         } else {
-          // Typo fuzzy match in title
           for (const tToken of fieldTokens.title) {
             if (isTypoMatch(qToken, tToken)) {
               score += 24;
@@ -325,15 +256,11 @@
             }
           }
         }
-
-        // C. Match in Course / Section
         if (fieldTokens.course.includes(qToken) || fieldStems.course.includes(qStem)) {
           score += 25;
           tokenMatchedInDoc = true;
           matchedConcepts.add(course);
         }
-
-        // D. Match in Questions / Practicals Content
         if (fieldTokens.content.includes(qToken)) {
           score += 20;
           tokenMatchedInDoc = true;
@@ -349,21 +276,15 @@
             }
           }
         }
-
-        // E. Match in Faculty Name
         if (fieldTokens.faculty.includes(qToken) || fieldStems.faculty.includes(qStem)) {
           score += 25;
           tokenMatchedInDoc = true;
           matchedConcepts.add(prof);
         }
-
-        // F. Match in Student / Contributor Name
         if (fieldTokens.student.includes(qToken) || fieldTokens.contrib.includes(qToken)) {
           score += 18;
           tokenMatchedInDoc = true;
         }
-
-        // G. Match in Document Category Type ('assignment' for assignment docs, 'practical' for lab docs)
         if (isAssignmentDoc && (qToken === 'assignment' || qStem === 'assign' || qToken === 'hw' || qToken === 'homework')) {
           score += 20;
           tokenMatchedInDoc = true;
@@ -372,18 +293,14 @@
           score += 20;
           tokenMatchedInDoc = true;
         }
-
         if (tokenMatchedInDoc) {
           matchedTokensCount++;
           matchedTokens.add(qToken);
         }
       }
-
-      // 4. Semantic / Concept / Synonym Matching
       for (const sToken of expandedQueryTokens) {
         if (matchedTokens.has(sToken)) continue;
         const sStem = stemWord(sToken);
-
         if (fieldTokens.title.includes(sToken) || fieldStems.title.includes(sStem)) {
           score += 20;
           matchedConcepts.add(sToken);
@@ -395,18 +312,12 @@
           score += 14;
         }
       }
-
-      // 5. Token Coverage Percentage & Confidence Calculation
       const tokenCoverage = queryTokens.length > 0 ? (matchedTokensCount / queryTokens.length) : 1;
-      
-      // Coverage boost: If all query tokens matched somewhere in the document, massive boost!
       if (tokenCoverage === 1 && queryTokens.length > 1) {
         score += 50;
       } else if (tokenCoverage >= 0.75) {
         score += 25;
       }
-
-      // Calculate confidence percentage (capped at 100%)
       let matchPercentage = 0;
       if (hasExactCodeMatch) {
         matchPercentage = 100;
@@ -415,15 +326,11 @@
         matchPercentage = Math.min(100, Math.round((score / baseNorm) * 100));
         matchPercentage = Math.max(matchPercentage, Math.round(tokenCoverage * 85));
       }
-
-      // Determine match classification
       let matchType = 'semantic';
       if (hasExactCodeMatch || cleanSubName === cleanedQuery) matchType = 'exact';
       else if (tokenCoverage === 1) matchType = 'topic_match';
       else if (matchPercentage >= 70) matchType = 'high_sense';
       else matchType = 'partial';
-
-      // Keep results that have relevant match
       if (score > 12 || hasExactCodeMatch || tokenCoverage >= 0.5) {
         scoredResults.push({
           ...item,
@@ -435,21 +342,12 @@
         });
       }
     }
-
-    // Sort: highest score first, then views as tie-breaker
     scoredResults.sort((a, b) => {
       if (b._searchScore !== a._searchScore) return b._searchScore - a._searchScore;
       return (Number(b.views) || 0) - (Number(a.views) || 0);
     });
-
     return scoredResults;
   }
-
-  // ==========================================
-  // 4. GEMINI API AI SENSE INTEGRATION
-  // ==========================================
-
-  // Retrieves available Gemini API Key (User custom localStorage -> window config)
   function getGeminiApiKey() {
     return (
       localStorage.getItem('dpgnotes_gemini_key') ||
@@ -458,8 +356,6 @@
       ''
     ).trim();
   }
-
-  // Sets user custom Gemini API Key
   function setGeminiApiKey(key) {
     if (!key) {
       localStorage.removeItem('dpgnotes_gemini_key');
@@ -468,7 +364,6 @@
       localStorage.setItem('dpgnotes_gemini_key', key.trim());
     }
   }
-
   /**
    * Calls Gemini Generative Language API or Render backend fallback to perform
    * deep semantic sense analysis and generate an academic SERP overview.
@@ -481,7 +376,6 @@
   async function fetchGeminiAiSense(rawQuery, candidates, solutionType) {
     const qTrimmed = (rawQuery || '').trim();
     if (!qTrimmed) return null;
-
     const topCandidates = (candidates || []).slice(0, 4).map(c => ({
       id: c.id,
       code: c.subjectCode,
@@ -492,9 +386,7 @@
         ? c.questions.slice(0, 2).map(q => q.title).join('; ')
         : (Array.isArray(c.practicals) ? c.practicals.slice(0, 2).map(p => p.title).join('; ') : '')
     }));
-
     const typeLabel = solutionType === 'practical' ? 'Practical Laboratory Experiments' : 'Assignment Solutions';
-
     const prompt = 'You are DPGNotes Academic AI Search Intelligence for DPG College.\n' +
       'Analyze this academic student query for ' + typeLabel + ':\n' +
       'Query: "' + qTrimmed + '"\n\n' +
@@ -508,10 +400,7 @@
       '  "recommendedCode": "' + (topCandidates[0] ? topCandidates[0].code : '') + '",\n' +
       '  "studyTip": "A brief 1-sentence tip or viva focus related to this topic"\n' +
       '}';
-
     const apiKey = getGeminiApiKey();
-
-    // 1. Try Direct Gemini Generative Language API if Key is present
     if (apiKey) {
       const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
       for (const model of models) {
@@ -527,7 +416,6 @@
               }
             })
           });
-
           if (resp.ok) {
             const data = await resp.json();
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -544,8 +432,6 @@
         }
       }
     }
-
-    // 2. Try Render Backend AI Endpoint (/api/ai/chat)
     try {
       const apiBase = (window.API_BASE_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
       const backendResp = await fetch(apiBase + '/api/ai/chat', {
@@ -556,7 +442,6 @@
           systemInstruction: 'Respond only with strict valid JSON. Do not include markdown or backticks.'
         })
       });
-
       if (backendResp.ok) {
         const bData = await backendResp.json();
         const text = bData.answer || bData.reply || bData.response || '';
@@ -573,8 +458,6 @@
     } catch (bErr) {
       console.warn('Backend AI chat fallback failed:', bErr.message);
     }
-
-    // 3. Resilient Local NLP Semantic Synthesis Fallback (0ms, 100% offline uptime)
     const matchedConcepts = [];
     const qLower = qTrimmed.toLowerCase();
     for (const [key, syns] of Object.entries(ACADEMIC_SYNONYMS)) {
@@ -582,7 +465,6 @@
         matchedConcepts.push(key.toUpperCase());
       }
     }
-
     const firstDoc = topCandidates[0];
     return {
       interpretedIntent: 'Inquiry for ' + (firstDoc ? (firstDoc.subject + ' (' + firstDoc.code + ')') : 'academic solutions') + ' covering "' + qTrimmed + '"',
@@ -596,17 +478,11 @@
       isCustomKey: false
     };
   }
-
-  // ==========================================
-  // 5. GEMINI API KEY MANAGEMENT MODAL UI
-  // ==========================================
   function openApiKeyModal() {
     const existing = document.getElementById('solGeminiKeyModal');
     if (existing) existing.remove();
-
     const currentKey = getGeminiApiKey();
     const hasKey = !!currentKey;
-
     const modalHtml = `
       <div id="solGeminiKeyModal" class="sol-gemini-modal-backdrop">
         <div class="sol-gemini-modal-card">
@@ -666,10 +542,8 @@
         </div>
       </div>
     `;
-
     document.body.insertAdjacentHTML('beforeend', modalHtml);
   }
-
   function toggleKeyVisibility() {
     const input = document.getElementById('geminiKeyModalInput');
     const icon = document.getElementById('geminiKeyEyeIcon');
@@ -682,13 +556,11 @@
       icon.className = 'ri-eye-line';
     }
   }
-
   async function testAndSaveKey() {
     const input = document.getElementById('geminiKeyModalInput');
     const statusDiv = document.getElementById('geminiTestStatus');
     const saveBtn = document.getElementById('btnSaveGeminiKey');
     if (!input || !statusDiv) return;
-
     const key = input.value.trim();
     if (!key) {
       setGeminiApiKey('');
@@ -700,21 +572,18 @@
       }
       return;
     }
-
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite;"></i> Verifying...';
     statusDiv.style.display = 'block';
     statusDiv.style.background = 'rgba(56,189,248,0.1)';
     statusDiv.style.color = '#38bdf8';
     statusDiv.innerHTML = 'Connecting to Google Generative AI API...';
-
     try {
       const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: 'Ping' }] }] })
       });
-
       if (res.ok) {
         setGeminiApiKey(key);
         statusDiv.style.background = 'rgba(16,185,129,0.15)';
@@ -740,7 +609,6 @@
       saveBtn.innerHTML = '<i class="ri-save-line"></i> Try Again';
     }
   }
-
   function clearKey() {
     setGeminiApiKey('');
     document.getElementById('solGeminiKeyModal')?.remove();
@@ -750,10 +618,6 @@
       window.executePracticalSearch(document.getElementById('serpSearchInput')?.value || '');
     }
   }
-
-  // ==========================================
-  // 6. SERP AI OVERVIEW RENDERER
-  // ==========================================
   function renderAiOverview(containerEl, queryStr, aiData, isPending) {
     if (!containerEl) return;
     if (!queryStr || !queryStr.trim()) {
@@ -761,9 +625,7 @@
       containerEl.innerHTML = '';
       return;
     }
-
     containerEl.style.display = 'block';
-
     if (isPending && !aiData) {
       containerEl.innerHTML = `
         <div class="sol-ai-overview-card">
@@ -788,13 +650,10 @@
       `;
       return;
     }
-
     if (!aiData) return;
-
     const concepts = Array.isArray(aiData.concepts) ? aiData.concepts : [];
     const sourceLabel = aiData.source || 'Gemini AI';
     const isCustom = !!aiData.isCustomKey;
-
     containerEl.innerHTML = `
       <div class="sol-ai-overview-card">
         <!-- Top Title & Badge Bar -->
@@ -849,7 +708,6 @@
       </div>
     `;
   }
-
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -859,10 +717,6 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
   }
-
-  // ==========================================
-  // 7. GLOBAL EXPORT
-  // ==========================================
   window.DPGNotesAI = {
     cleanText,
     normalizeCode,
@@ -883,5 +737,4 @@
     renderAiOverview,
     escapeHtml
   };
-
 })(window);

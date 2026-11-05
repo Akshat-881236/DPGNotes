@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,8 +76,6 @@
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
-
-  <!-- Header -->
   <header class="legal-header">
     <div class="header-container">
       <a href="../index.html" class="legal-logo">
@@ -93,11 +90,8 @@
       </div>
     </div>
   </header>
-
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
   <div class="legal-layout-container">
-    <!-- Sidebar Navigation -->
     <aside class="legal-sidebar" id="legalSidebar">
       <nav class="sidebar-nav">
         <div class="sidebar-group">
@@ -134,8 +128,6 @@
         </div>
       </nav>
     </aside>
-
-    <!-- Main Content -->
     <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
@@ -151,8 +143,6 @@
               <span class="meta-item"><i class="ri-check-double-line"></i> Version: 1.0 (Comprehensive Edition)</span>
             </div>
           </header>
-
-          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
               <i class="ri-arrow-go-back-line"></i>
@@ -162,30 +152,24 @@
               </div>
             </div>
           </div>
-
           <article class="legal-article">
-            
             <h2>1. Commercial Purpose &amp; Academic Charter</h2>
             <p>DPGNotes is committed to democratizing access to high-quality academic notes, engineering handbooks, laboratory solutions, and syllabus tools. To maintain server capacity, protect user privacy, and sustain operational reliability without charging tuition subscriptions to students, DPGNotes offers verified contributors the capability to promote high-value educational resources, coding repositories, technical blogs, and professional profiles through our ethical Native Ads engine.</p>
             <p>Unlike predatory third-party advertising networks that flood viewports with misleading pop-ups, DPGNotes Native Ads are strictly non-intrusive, academic-first, and governed by transparent unit pricing tied to verified human engagement. This policy sets forth the exact commercial terms, telemetry tracking mechanisms, academic portfolio discount subsidies, and monthly ledger locking procedures applicable to all ad campaigns created on DPGNotes.</p>
-
             <h2>2. Dual-Interaction Unit Pricing Model &amp; Single Engagement Rule</h2>
             <p>Every active native advertisement deployed on DPGNotes is billed strictly according to a dual-interaction engagement framework. Contributors are charged only for authenticated, non-fraudulent interactions, with guest rates discounted by 50%:</p>
-
             <div class="pricing-grid">
               <div class="pricing-card">
                 <h4><i class="ri-cursor-line"></i> Genuine Hover Interaction (≥ 5s)</h4>
                 <div class="price-tag">&#8377;12 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">(Contrib) / &#8377;6 (Guest)</span></div>
                 <p>Billed when an authentic user hovers their cursor over an ad call-to-action button for a continuous dwell period of at least <strong>5 continuous seconds (5000 milliseconds)</strong>. Fast mouse sweeps, robotic cursor emulations, and unintentional passes are algorithmically filtered out.</p>
               </div>
-
               <div class="pricing-card">
                 <h4><i class="ri-external-link-line"></i> Genuine Destination Visit</h4>
                 <div class="price-tag">&#8377;20 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">(Contrib) / &#8377;10 (Guest)</span></div>
                 <p>Billed when a user deliberately clicks the advertisement's destination action button and navigates in the same tab through the platform's <strong>Safe Destination Gateway</strong>. Direct URL pasting is classified as invalid and never counted for billing.</p>
               </div>
             </div>
-
             <div class="legal-callout-indigo">
               <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
                 <i class="ri-shield-check-line"></i> Strict Single Engagement per Ad per Month Rule
@@ -194,7 +178,6 @@
                 For each unique verified contributor or guest visitor, exactly <strong>one billable interaction (hover OR click, whichever occurs earlier)</strong> per ad campaign per calendar month is recorded in Firestore. Subsequent interactions for the same ad from the same visitor within the same monthly cycle are permanently rejected and never billed. Guest interactions are billed at ₹6 / hover and ₹10 / visit (50% reduction) to reflect guest traffic analytics.
               </p>
             </div>
-
             <div class="legal-callout-emerald">
               <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
                 <i class="ri-user-unfollow-line"></i> Strict Self-Interaction Prohibition &amp; Own-Ad Exclusion
@@ -203,7 +186,6 @@
                 Hovers and clicks performed by the active contributor on advertisements they uploaded themselves—or advertisements uploaded by any linked or duplicate account associated with that individual—are <strong>strictly non-billable and automatically bypassed</strong>. The telemetry engine verifies active session tokens and author identifiers in real time to prevent self-inflated metrics or inadvertent owner charges.
               </p>
             </div>
-
             <div class="legal-callout-amber">
               <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
                 <i class="ri-fingerprint-line"></i> AI Profile Check Algorithm &amp; Multi-Attribute Identity Clustering
@@ -222,7 +204,6 @@
                 All accounts clustered under the same physical identity are treated as a <strong>single entity</strong>: one valid hover or click across the entire cluster is allowed per ad per calendar month. Subsequent interactions from alternate accounts in that cluster are rejected with zero additional billing charges.
               </p>
             </div>
-
             <h2>3. Safe Destination Gateway &amp; Same-Tab Verification</h2>
             <p>To safeguard our student community against malicious redirects, phishing sites, and deceptive downloads, direct unverified external links are prohibited in all native advertisements. Every promotional link is routed through our dedicated security inspection gateway opened in the same tab:</p>
             <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; font-family:'Fira Code', monospace; font-size:0.85rem; color:#a5b4fc; margin:1rem 0; word-break:break-all;">
@@ -235,7 +216,6 @@
               <li><strong>Protocol &amp; TLS Certificate Validation:</strong> Enforcement of HTTPS encryption on destination landing pages.</li>
               <li><strong>Visual Transparency &amp; Destination Preview:</strong> Presentation of the target destination domain and verified campaign information to the student before handoff.</li>
             </ul>
-
             <h2>4. Deep Analytics Telemetry &amp; Transparent Metrics</h2>
             <p>When a visitor navigates via the Safe Destination Gateway, DPGNotes captures detailed telemetry parameters to provide advertisers with actionable intelligence while preserving end-user privacy:</p>
             <ul>
@@ -248,10 +228,8 @@
                 </ul>
               </li>
             </ul>
-
             <h2>5. Contributor Academic Portfolio Discount Matrix</h2>
             <p>In accordance with our mission to reward students and educators who enrich the DPGNotes open repository, we provide substantial, progressive portfolio discounts applied directly against <strong>all gross monthly interaction charges (both hovers and visits)</strong>. Contributors earn discounts based on verified, public educational materials submitted to the platform:</p>
-
             <div class="table-responsive">
               <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.9rem; color:var(--text-main);">
                 <thead>
@@ -290,8 +268,6 @@
                 </tbody>
               </table>
             </div>
-
-            <!-- SECTION 5.1: ADVERTISER PLACEMENT SUBSIDY DEDUCTION -->
             <h2>5.1 Advertiser Placement Subsidy Deduction</h2>
             <p>In addition to portfolio tier discounts, DPGNotes rewards advertisers through a dedicated <strong>Placement Subsidy Deduction</strong> based on genuine peer engagement earned across the portal:</p>
             <ul>
@@ -313,14 +289,12 @@
                 <br><code>Net Payable = MAX(0, Gross Charges - Tier Discount - Total Subsidy Saved)</code>.</li>
               <li><strong>Monthly Interaction Limits:</strong> At most one valid interaction (hover or visit) per unique contributor or guest per ad campaign per month qualifies for the subsidy discount.</li>
             </ul>
-
             <h2>6. 12-Hour Gap Anomaly Protection &amp; 15-Day Account Flagging</h2>
             <p>To eliminate synthetic traffic inflation and protect advertisers against abnormal interaction spikes:</p>
             <ul>
               <li><strong>12-Hour Gap Anomaly Purge:</strong> When the telemetry engine detects that interactions on the same ad URL occur with a gap of less than 12 hours, all Firestore charging logs for that specific ad are immediately canceled and purged.</li>
               <li><strong>15-Day Account Suspension Flag:</strong> The corresponding Contributor UID or Guest identity (Guest ID & Client Device ID) is placed under a 15-day Ads Flag. An Ads Violation is logged in the Admin Portal Violation Tab, and all past and future engagements during the 15-day window are permanently excluded from billing.</li>
             </ul>
-
             <h2>7. Monthly Billing Cycle &amp; Automated Email Statements on the 5th</h2>
             <p>Native ad campaigns operate on a transparent calendar monthly billing cycle (<code>YYYY-MM</code>):</p>
             <ul>
@@ -337,7 +311,6 @@
               <li><strong>Immutable Ledger Locking:</strong> Once finalized on the 5th, previous monthly ledgers cannot be retrospectively altered. Additional resources uploaded in the new month apply toward future billing cycles.</li>
               <li><strong>Dashboard Real-Time Visibility:</strong> The Contributor Dashboard displays real-time running estimates throughout the month alongside the reminder: <em>"On the 5th of each month, the previous monthly cycle concludes with bill finalization, immutable ledger locking, and an automated itemized statement dispatched to your registered email"</em>.</li>
             </ul>
-
             <h2>8. 15-Day Payment Window &amp; What Happens If Bills Are Unpaid</h2>
             <p>Every monthly billing cycle finishes on the last day of the calendar month. When a new month begins, contributors have a <strong>15-day grace period</strong> (from the 1st through the 15th day of the month) to review and settle their monthly advertising dues or request a fee concession.</p>
             <p>If an outstanding balance remains unpaid after the 15th day of the new month, here is what happens:</p>
@@ -347,22 +320,18 @@
               <li><strong>Your Study Notes &amp; Academic Uploads Remain 100% Safe:</strong> DPGNotes is first and foremost an educational community. We never take down, hide, or penalize your uploaded notes, lab solutions, or question banks because of an unpaid ad bill. Your academic contributions stay public and untouched.</li>
               <li><strong>Prompt Reactivation Upon Payment:</strong> As soon as your payment is confirmed and marked as Paid (or Waived) in our system, your paused ad campaigns are immediately turned back on.</li>
             </ul>
-
             <h2>9. How to Pay: Step-by-Step Payment &amp; Concession Guide</h2>
             <p>DPGNotes does not use automated third-party payment gateways. This keeps processing fees at zero and helps us keep advertising rates as low as possible for students. Because payments are handled offline via UPI, please follow these three simple steps:</p>
-
             <div class="legal-callout-indigo" style="margin: 1.2rem 0;">
               <h3 style="margin-top: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
                 <i class="ri-wallet-3-line"></i> The 3-Step Offline Payment Workflow
               </h3>
-
               <div style="margin-bottom: 1.15rem;">
                 <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; color: #b45309;">Step 1: Request Payment Details or a Bill Concession from Your Dashboard</h4>
                 <p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">
                   Go to your <strong>Contributor Dashboard</strong> and find the <em>Ads Monetization &amp; Billing Status</em> card. Click the <strong>"Request Payment QR / Concession"</strong> button. You can request our official UPI QR code and verified Phone Number (these are the only direct payment channels we support), or apply for a fee concession if you have financial constraints. Submitting this sends an automated system email to our admin team right away.
                 </p>
               </div>
-
               <div style="margin-bottom: 1.15rem;">
                 <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; color: #0369a1;">Step 2: Make the Payment &amp; Email Proof to Both Admin Inboxes</h4>
                 <p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">
@@ -377,7 +346,6 @@
                   <li>Billing Month (e.g. 2026-10) and Total Net Amount Paid</li>
                 </ul>
               </div>
-
               <div>
                 <h4 style="margin: 0 0 4px 0; font-size: 0.95rem; color: #047857;">Step 3: Verification &amp; Automated Confirmation Email</h4>
                 <p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">
@@ -385,14 +353,12 @@
                 </p>
               </div>
             </div>
-
             <h2>10. Administrative Auditing Exclusions</h2>
             <p>To protect contributors from incurring charges during routine platform monitoring, quality assurance, or customer support reviews, all traffic generated by verified platform administrators is completely excluded from monetization telemetry. Specifically:</p>
             <ul>
               <li>Visits, hovers, and redirects performed by <code>its.akshatnetworkhub23@gmail.com</code>, <code>akshatprasad009@gmail.com</code>, or any authenticated admin token designated by the system environment (<code>ADMIN_EMAIL</code>) are bypassed automatically.</li>
               <li>Internal administrator audits never increment billable hover counts or destination visit metrics.</li>
             </ul>
-
             <h2>11. Campaign Delisting &amp; Prohibited Content</h2>
             <p>DPGNotes reserves the unconditional right to suspend, remove, or permanently delist any native ad campaign that violates our Academic Integrity Standards or Community Guidelines. Prohibited content includes:</p>
             <ul>
@@ -401,7 +367,6 @@
               <li>Gambling, sports betting, predatory student loans, or age-inappropriate material.</li>
               <li>Violations of intellectual property rights, unauthorized copyright reproduction, or DMCA infringements.</li>
             </ul>
-
             <h2>12. Billing Settlement &amp; Grievance Redressal</h2>
             <p>At the conclusion of each billing cycle, applicable payable amounts are displayed under the contributor's dashboard. Inquiries regarding billing statements, tier recalculations, payment reconciliation, or fee concessions may be submitted to our administrative desk:</p>
             <div class="legal-contact-card" style="margin-top:1rem;">
@@ -409,15 +374,12 @@
               <p style="margin:0; font-size:0.9rem;">Emails: <a href="mailto:akshatpsd2005@gmail.com" style="color:var(--primary); font-weight:600; text-decoration:underline;">akshatpsd2005@gmail.com</a> &bull; <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600; text-decoration:underline;">its.akshatnetworkhub23@gmail.com</a></p>
               <p style="margin:0.3rem 0 0 0; font-size:0.9rem;">DPGNotes Legal &amp; Monetization Compliance Office &bull; New Delhi, India</p>
             </div>
-
           </article>
         </div>
       </div>
     </main>
   </div>
-
   <script>
-    // Theme toggle & Mobile menu handling
     const savedTheme = localStorage.getItem('legal-theme') || 'auto';
     const themeBtn = document.getElementById('themeToggleBtn');
     applyTheme(savedTheme);

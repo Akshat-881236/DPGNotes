@@ -1,4 +1,3 @@
-<!-- Component: tab3_backend_api.html - Express Backend, Server API Endpoints & Microservices -->
 <article class="overview-blog-article" data-tab="3">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -26,15 +25,12 @@
       <span class="tech-pill">Brevo SMTP API</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-3">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> High-Throughput Node.js Microservices, Dual Token Validation &amp; Resilient REST Pipelines.</p>
     <p>
       The Software Requirements Specification (SRS Section 3.0) mandates a stateless, horizontally scalable API tier capable of processing thousands of concurrent student queries during peak university exam cycles without thread-locking. The backend acts as the authoritative security gateway between untrusted public client browsers, Google Cloud Firestore multi-region clusters, Cloudinary media storage, and Python-powered PDF analytics workers.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -42,8 +38,6 @@
       </div>
       All incoming requests to state-mutating endpoints (/api/documents, /api/share/*, /api/auth/*) must pass three consecutive validation gates: (1) IP-based rate limiting, (2) strict CORS origin verification, and (3) cryptographic RS256 Firebase Admin session token validation. Requests failing any gate are terminated immediately with standard HTTP 401/403/429 status codes before executing database reads or memory-intensive tasks.
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & MULTI-TIER FLOW -->
     <h2 id="sec-2-3">2. Component Hierarchy, Multi-Tier Connectivity &amp; Microservices Flow</h2>
     <p>The backend architecture decouples concerns across five specialized middleware and routing modules:</p>
     <ul>
@@ -53,7 +47,6 @@
       <li><strong>4. Python Microservice Inter-Process Bridge:</strong> Node.js proxies complex document parsing and OCR extraction requests to an internal Python FastAPI worker via secured HTTP/2 channels, keeping the Node.js event loop completely non-blocking.</li>
       <li><strong>5. Resilient Transactional Mailer (Brevo SMTP):</strong> Dispatches critical security notices (2FA codes, account approvals, and password reset confirmations) with automated timeout fallbacks, suppressing non-essential marketing emails.</li>
     </ul>
-
     <div class="arch-flow-diagram">
 +---------------------+         HTTPS / JSON API         +--------------------------------+
 |  CLIENT APPLICATION | -------------------------------&gt; |   NODE.JS EXPRESS API GATEWAY  |
@@ -75,8 +68,6 @@
                             | (Multi-Region eur3)  |                                   | (RS256 JWT Verify)   |
                             +----------------------+                                   +----------------------+
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-3">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to configure, implement, and deploy the DPGNotes Node.js backend subsystem:</p>
     <ol class="tutorial-steps-list">
@@ -87,8 +78,6 @@
       <li><strong>Bridge to Python Worker:</strong> Implement an asynchronous proxy controller using native <code>fetch</code> with an <code>AbortController</code> timeout (10 seconds) to delegate PDF cover extraction and text parsing to the Python microservice.</li>
       <li><strong>Deploy Uptime &amp; Health Probes:</strong> Expose a lightweight <code>/api/health</code> endpoint returning memory statistics and process uptime for automated micro-daemon keep-alive pings.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-3">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -104,19 +93,16 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const admin = require('firebase-admin');
-
 // 1. Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault()
   });
 }
-
 const app = express();
 app.set('trust proxy', 1); // Crucial for Firebase Hosting &amp; Cloudflare reverse proxy
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '10mb' }));
-
 // 2. Strict CORS Security Whitelist
 const ALLOWED_ORIGINS = ['https://dpgnotes.web.app', 'https://dpgnotes.firebaseapp.com'];
 app.use(cors({
@@ -128,7 +114,6 @@ app.use(cors({
   },
   credentials: true
 }));
-
 // 3. Sliding-Window Rate Limiting
 const globalApiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -138,14 +123,12 @@ const globalApiLimiter = rateLimit({
   message: { error: 'Too many requests. Please slow down and retry in 15 minutes.' }
 });
 app.use('/api/', globalApiLimiter);
-
 // 4. Cryptographic Authentication &amp; Contributor RBAC Guard
 async function authenticateContributor(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized: Missing or malformed authorization header.' });
   }
-
   const token = authHeader.split('Bearer ')[1];
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
@@ -155,18 +138,15 @@ async function authenticateContributor(req, res, next) {
     return res.status(401).json({ error: 'Session expired or invalid cryptographic token: ' + err.message });
   }
 }
-
 // 5. Python Microservice Delegation Bridge
 app.post('/api/documents/process-pdf', authenticateContributor, async (req, res) => {
   const { pdfUrl, documentId } = req.body;
   if (!pdfUrl || !documentId) {
     return res.status(400).json({ error: 'Parameters pdfUrl and documentId are required.' });
   }
-
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
-
     const pyWorkerUrl = process.env.PYTHON_WORKER_URL || 'http://127.0.0.1:8000';
     const pyResponse = await fetch(`${pyWorkerUrl}/api/py/extract-metadata`, {
       method: 'POST',
@@ -178,11 +158,9 @@ app.post('/api/documents/process-pdf', authenticateContributor, async (req, res)
       signal: controller.signal
     });
     clearTimeout(timeout);
-
     if (!pyResponse.ok) {
       throw new Error(`Python worker returned status ${pyResponse.status}`);
     }
-
     const result = await pyResponse.json();
     return res.status(200).json({ success: true, metadata: result });
   } catch (err) {
@@ -190,7 +168,6 @@ app.post('/api/documents/process-pdf', authenticateContributor, async (req, res)
     return res.status(502).json({ error: 'Media extraction worker temporarily unavailable.' });
   }
 });
-
 // 6. High-Availability Health Probe
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -200,17 +177,12 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`[DPG-BACKEND] Node.js cluster active on port ${PORT}`);
 });</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-3">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -219,8 +191,6 @@ app.listen(PORT, () => {
       <li><strong>Verified Invariant:</strong> Zero hardcoded API keys or cryptographic secrets in source code repositories; all values injected via runtime environment vaults.</li>
       <li><strong>Verified Invariant:</strong> External HTTP requests must maintain strict 10-second timeout abort barriers to prevent thread-exhaustion denial of service.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-3">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

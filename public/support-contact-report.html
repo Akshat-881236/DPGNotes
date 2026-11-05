@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
@@ -16,17 +15,13 @@
   <meta property="og:description" content="AI-assisted academic inquiry and student support ticketing system." />
   <meta property="og:image" content="ANH.png" />
   <meta property="og:type" content="website" />
-  
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-  
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
   <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
   <script src="redirect.js"></script>
-
   <style>
     body {
       background: #090d16;
@@ -166,21 +161,14 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
   <div style="max-width:1100px; margin:0 auto 1.5rem auto; display:flex; justify-content:space-between; align-items:center;">
     <a href="admin.html" style="color:var(--primary-light); text-decoration:none; font-weight:600; font-size:0.9rem;"><i class="ri-arrow-left-line"></i> Back to Admin Portal</a>
     <h2 style="font-family:'Outfit', sans-serif; margin:0;">Support Contact Investigation Report</h2>
   </div>
-
   <div class="report-shell">
-    
-    <!-- Left Main Column -->
     <div>
-      
-      <!-- Requester Overview Card -->
       <div class="card">
         <div class="card-title"><i class="ri-user-search-line"></i> Requester Profile Credentials</div>
-        
         <div class="info-grid">
           <div class="info-item">
             <div class="info-label">Full Name</div>
@@ -208,11 +196,8 @@
           </div>
         </div>
       </div>
-
-      <!-- Identity Verification Card -->
       <div class="card">
         <div class="card-title"><i class="ri-shield-user-line"></i> Biometric & Identity Documents</div>
-        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
           <div>
             <label style="font-size:0.85rem; font-weight:600; color:#cbd5e1;">Selfie Verification</label>
@@ -229,75 +214,52 @@
           </div>
         </div>
       </div>
-
-      <!-- Testimony & Evidence Card -->
       <div class="card">
         <div class="card-title"><i class="ri-article-line"></i> Written Statements & Evidence Proofs</div>
-        
         <h4 style="color:#cbd5e1; margin:0 0 0.8rem 0;">Statements / Testimonials</h4>
         <div id="statementsList" style="display:flex; flex-direction:column; gap:0.8rem; margin-bottom:1.5rem;">
           <p style="color:var(--text-muted);">No statements provided.</p>
         </div>
-
         <h4 style="color:#cbd5e1; margin:0 0 0.8rem 0;">Evidence Documents</h4>
         <div id="evidenceList" style="display:flex; flex-direction:column; gap:0.5rem;">
           <p style="color:var(--text-muted);">No evidence files attached.</p>
         </div>
       </div>
-
     </div>
-
-    <!-- Right Sidebar Column (AI Analysis & Judgement) -->
     <div>
-      
-      <!-- AI Deep Analysis Card -->
       <div class="card">
         <div class="card-title"><i class="ri-cpu-line"></i> Deep AI Risk Analysis</div>
         <div id="aiOverviewBox" style="font-size:0.85rem; line-height:1.6; color:#cbd5e1;">
           Analyzing requester credentials and identity match...
         </div>
       </div>
-
-      <!-- Interactive AI Support Chat -->
       <div class="card">
         <div class="card-title"><i class="ri-robot-line"></i> AI Support Assistant</div>
-        
         <div class="ai-chat-box" id="aiChatBox">
           <div class="chat-msg chat-ai">🤖 Hello Administrator! Ask me anything about this requester's identity, claims, or policy rules.</div>
         </div>
-
         <div style="display:flex; gap:0.5rem; margin-top:0.8rem;">
           <input type="text" id="aiChatInput" class="form-control" placeholder="Ask AI..." onkeydown="if(event.key==='Enter') sendAiChat()" />
           <button type="button" class="btn btn-primary" onclick="sendAiChat()"><i class="ri-send-plane-fill"></i></button>
         </div>
       </div>
-
-      <!-- Admin Judgement & Resolution Token Card -->
       <div class="card">
         <div class="card-title"><i class="ri-gavel-line"></i> Admin Judgement</div>
-        
         <div class="form-group">
           <label>Judgement Verdict *</label>
           <textarea id="judgementText" class="form-control" placeholder="Enter investigation findings and verdict..."></textarea>
         </div>
-
         <div id="resolveTokenBox" style="display:none; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.8rem; border-radius:10px; font-size:0.8rem; color:#10b981; margin-bottom:1rem; word-break:break-all;">
           <strong>Resolve Token Generated:</strong><br><span id="resolveTokenVal"></span>
         </div>
-
         <button type="button" class="btn btn-success" id="genResolveBtn" onclick="generateResolveToken()" style="width:100%; margin-bottom:0.8rem;"><i class="ri-checkbox-circle-line"></i> Generate Resolve Token</button>
-        
         <button type="button" class="btn btn-danger" id="deleteReqBtn" onclick="deleteRequest()" style="width:100%; opacity:0.5; cursor:not-allowed;" disabled><i class="ri-delete-bin-line"></i> Delete Request</button>
       </div>
-
     </div>
-
   </div>
-
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -306,14 +268,11 @@
       messagingSenderId: "910494426039",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
     const db = getFirestore(app);
-
     const urlParams = new URLSearchParams(window.location.search);
     const reqId = urlParams.get("token");
     let reqData = null;
-
     function formatBioContent(text) {
       if (!text) return "";
       let html = text;
@@ -323,7 +282,6 @@
       if (!html.includes('<br')) html = html.replace(/\n/g, '<br>');
       return html;
     }
-
     window.addEventListener("DOMContentLoaded", async () => {
       const token = localStorage.getItem("adminToken");
       if (!token) {
@@ -331,13 +289,11 @@
         window.location.href = "admin.html";
         return;
       }
-
       if (!reqId) {
         alert("Invalid or missing request token parameter.");
         window.location.href = "admin.html";
         return;
       }
-
       try {
         const snap = await getDoc(doc(db, "support_requests", reqId));
         if (!snap.exists()) {
@@ -345,17 +301,13 @@
           window.location.href = "admin.html";
           return;
         }
-
         reqData = snap.data();
-        
         document.getElementById("repName").innerText = reqData.name || "N/A";
         document.getElementById("repEmail").innerText = reqData.email || "N/A";
         document.getElementById("repContact").innerText = reqData.contact || "N/A";
         document.getElementById("repCountry").innerText = reqData.country || "N/A";
         document.getElementById("repType").innerText = reqData.type || "GENERAL";
         document.getElementById("repStatus").innerText = reqData.status || "PENDING";
-
-        // Selfie rendering
         const selfieBadge = document.getElementById("selfieBadge");
         if (selfieBadge) {
           if (reqData.isLiveSelfie) {
@@ -364,18 +316,14 @@
             selfieBadge.innerHTML = `<span class="badge badge-upload"><i class="ri-alert-line"></i> Uploaded Photo (Flagged for Verification)</span>`;
           }
         }
-
         if (reqData.selfiePhoto) {
           document.getElementById("selfieBox").innerHTML = `
             <img src="${reqData.selfiePhoto}" alt="Selfie" style="cursor:pointer;" onclick="openImageModal('${reqData.selfiePhoto}', 'Selfie Verification')" />
           `;
         }
-
-        // ID Card rendering
         if (reqData.idCardDocument) {
           const idUrl = reqData.idCardDocument;
           const isImg = idUrl.startsWith("data:image") || idUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i) || idUrl.includes("cloudinary.com");
-          
           if (isImg) {
             document.getElementById("idCardBox").innerHTML = `
               <div style="width:100%; height:100%; position:relative; cursor:pointer;" onclick="openImageModal('${idUrl}', 'National Identity Document / Valid ID')">
@@ -387,8 +335,6 @@
             document.getElementById("idCardBox").innerHTML = `<a href="javascript:void(0)" onclick="openImageModal('${idUrl}', 'National Identity Document / Valid ID')" style="color:var(--primary-light); font-weight:600; text-decoration:underline;">📄 View Identity Document</a>`;
           }
         }
-
-        // Statements rendering
         const stList = document.getElementById("statementsList");
         if (reqData.statements && reqData.statements.length > 0) {
           stList.innerHTML = "";
@@ -399,13 +345,9 @@
             stList.appendChild(box);
           });
         }
-
-        // Evidence files rendering
         const evList = document.getElementById("evidenceList");
         if (reqData.evidenceFiles && reqData.evidenceFiles.length > 0) {
           evList.innerHTML = "";
-          
-          // Container button for viewing all evidence in PDF Grid nature
           const viewAllBtn = document.createElement("button");
           viewAllBtn.type = "button";
           viewAllBtn.className = "btn";
@@ -413,12 +355,10 @@
           viewAllBtn.innerHTML = `<i class="ri-layout-grid-line"></i> View All Evidence Proofs in Grid Modal (${reqData.evidenceFiles.length})`;
           viewAllBtn.onclick = () => openEvidenceGridModal(reqData.evidenceFiles);
           evList.appendChild(viewAllBtn);
-
           reqData.evidenceFiles.forEach((ev, i) => {
             const item = document.createElement("div");
             const fileUrl = ev.url || ev.pdfUrl || ev.dataUrl || ev.fileUrl || "";
             const fileName = ev.name || `Evidence Document ${i+1}`;
-            
             item.style.cssText = "display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); padding:0.6rem 0.9rem; border-radius:8px; border:1px solid rgba(255,255,255,0.06);";
             item.innerHTML = `
               <div style="display:flex; align-items:center; gap:8px;">
@@ -433,38 +373,29 @@
             evList.appendChild(item);
           });
         }
-
-        // Generate AI Overview summary
         document.getElementById("aiOverviewBox").innerHTML = `
           <strong>AI Risk Score:</strong> ${reqData.isLiveSelfie ? 'Low Risk (15/100)' : 'Medium Priority (45/100)'}<br>
           <strong>Identity Integrity:</strong> ${reqData.idCardDocument ? 'Verified Document Attached' : 'Missing ID'}<br>
           <strong>Summary:</strong> Request ${reqId.substring(0,8)} submitted by ${reqData.name} (${reqData.email}). Requester has submitted ${reqData.statements ? reqData.statements.length : 0} detailed statement(s).
         `;
-
-        // Check if already resolved
         if (reqData.resolveToken) {
           document.getElementById("resolveTokenBox").style.display = "block";
           document.getElementById("resolveTokenVal").innerText = reqData.resolveToken;
           document.getElementById("judgementText").value = reqData.judgement || "";
-          
           const delBtn = document.getElementById("deleteReqBtn");
           delBtn.disabled = false;
           delBtn.style.opacity = "1";
           delBtn.style.cursor = "pointer";
         }
-
       } catch (err) { console.error(err); }
     });
-
     window.sendAiChat = function() {
       const input = document.getElementById("aiChatInput");
       const text = input.value.trim();
       if (!text) return;
       input.value = "";
-
       const box = document.getElementById("aiChatBox");
       box.innerHTML += `<div class="chat-msg chat-user">${text}</div>`;
-      
       setTimeout(() => {
         let reply = `🤖 Based on request record ${reqId.substring(0,8)}, requester ${reqData.name} has provided verified identity documents. You may proceed with generating a Resolve Token verdict.`;
         if (text.toLowerCase().includes("risk") || text.toLowerCase().includes("priority")) {
@@ -475,14 +406,11 @@
       }, 500);
       box.scrollTop = box.scrollHeight;
     };
-
     window.generateResolveToken = async function() {
       const judgement = document.getElementById("judgementText").value.trim();
       if (!judgement) return alert("Please enter a judgement verdict before generating the Resolve Token.");
-
       const resolveToken = "RESOLVE_" + Math.random().toString(36).substring(2, 10).toUpperCase() + "_" + Date.now();
       const expiresAtMs = Date.now() + (20 * 24 * 60 * 60 * 1000); // Auto prune in 20 days
-
       try {
         await updateDoc(doc(db, "support_requests", reqId), {
           status: "RESOLVED",
@@ -490,23 +418,19 @@
           resolveToken: resolveToken,
           pruneAt: expiresAtMs
         });
-
         document.getElementById("resolveTokenBox").style.display = "block";
         document.getElementById("resolveTokenVal").innerText = resolveToken;
         document.getElementById("repStatus").innerText = "RESOLVED";
-
         const delBtn = document.getElementById("deleteReqBtn");
         delBtn.disabled = false;
         delBtn.style.opacity = "1";
         delBtn.style.cursor = "pointer";
-
         alert("Resolve Token generated! Delete Request option unlocked.");
       } catch (err) {
         console.error(err);
         alert("Failed to generate resolve token.");
       }
     };
-
     window.deleteRequest = async function() {
       if (!document.getElementById("deleteReqBtn").disabled) {
         if (!confirm("Are you sure you want to permanently delete this support request?")) return;
@@ -517,19 +441,15 @@
         } catch (err) { alert("Delete failed."); }
       }
     };
-
     window.openImageModal = function(imageUrl, titleStr = "Document View") {
       const modal = document.getElementById("mediaImageModal");
       const title = document.getElementById("modalMediaTitle");
       const body = document.getElementById("modalMediaBody");
-
       if (!imageUrl) {
         alert("Image URL not available.");
         return;
       }
-
       title.textContent = titleStr;
-      
       const isPdf = imageUrl.match(/\.pdf($|\?)/i);
       if (isPdf) {
         body.innerHTML = `
@@ -548,28 +468,22 @@
       }
       modal.style.display = "flex";
     };
-
     window.openEvidenceGridModal = function(evidenceFiles) {
       const modal = document.getElementById("mediaImageModal");
       const title = document.getElementById("modalMediaTitle");
       const body = document.getElementById("modalMediaBody");
-
       if (!evidenceFiles || evidenceFiles.length === 0) {
         alert("No evidence proof files available.");
         return;
       }
-
       title.textContent = `Evidence Proof PDF Grid Viewer (${evidenceFiles.length} Items)`;
-
       let gridHtml = `
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1.2rem; max-height:75vh; overflow-y:auto; padding:0.5rem;">
       `;
-
       evidenceFiles.forEach((ev, i) => {
         const fileUrl = ev.url || ev.pdfUrl || ev.dataUrl || ev.fileUrl || "";
         const fileName = ev.name || `Evidence Document ${i+1}`;
         const isPdf = fileUrl.match(/\.pdf($|\?)/i);
-
         gridHtml += `
           <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(139,92,246,0.3); border-radius:14px; padding:0.8rem; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
@@ -589,22 +503,17 @@
           </div>
         `;
       });
-
       gridHtml += `</div>`;
       body.innerHTML = gridHtml;
       modal.style.display = "flex";
     };
-
     window.closeMediaModal = function() {
       document.getElementById("mediaImageModal").style.display = "none";
     };
-
     if (typeof window.renderNativeDPGAds === "function") {
       setTimeout(window.renderNativeDPGAds, 300);
     }
   </script>
-
-  <!-- Interactive Image Card Modal with Cross Icon (✕) -->
   <div id="mediaImageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999; background:rgba(2,6,23,0.85); backdrop-filter:blur(14px); align-items:center; justify-content:center; padding:1.5rem; box-sizing:border-box;">
     <div style="background:rgba(15,23,42,0.96); border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:100%; max-width:900px; max-height:92vh; box-shadow:0 25px 60px rgba(0,0,0,0.8); display:flex; flex-direction:column; overflow:hidden;">
       <div style="padding:1.2rem 1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
@@ -616,12 +525,9 @@
         </button>
       </div>
       <div id="modalMediaBody" style="padding:1.5rem; overflow-y:auto; flex:1;">
-        <!-- Loaded dynamically -->
       </div>
     </div>
   </div>
-
-  <!-- Footer Native Sponsored Banner -->
   <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1100px; margin:2rem auto 1rem auto; padding:0 1rem; box-sizing:border-box;"></div>
 </body>
 </html>

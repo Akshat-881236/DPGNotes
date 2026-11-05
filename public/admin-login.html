@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
@@ -136,15 +135,11 @@
   </style>
 </head>
 <body>
-
   <div class="auth-card">
-    
-    <!-- STEP 1: CREDENTIALS -->
     <div id="step1" class="step-container active">
       <i class="ri-shield-keyhole-line" style="font-size: 3.2rem; color: var(--admin-primary); margin-bottom: 0.8rem;"></i>
       <h2>Enterprise Admin</h2>
       <p>Authorized personnel only. Enter administrator credentials to request a one-time passcode.</p>
-      
       <form id="adminLoginForm">
         <input type="email" id="adminEmail" class="admin-input" placeholder="Admin Email" autocomplete="email" required />
         <input type="password" id="adminPassword" class="admin-input" placeholder="Password" autocomplete="current-password" required />
@@ -153,34 +148,27 @@
         </button>
       </form>
     </div>
-
-    <!-- STEP 2: OTP VERIFICATION -->
     <div id="step2" class="step-container">
       <i class="ri-mail-check-line" style="font-size: 3.2rem; color: var(--admin-success); margin-bottom: 0.8rem;"></i>
       <h2>Verify Passcode</h2>
       <p>A secure 6-digit verification code was dispatched to your email.</p>
-      
       <form id="adminOtpForm">
         <input type="text" id="adminOtp" class="admin-input" placeholder="Enter 6-digit OTP code" maxlength="6" style="text-align:center; font-size:1.4rem; letter-spacing:6px; font-weight:700;" required />
         <button type="submit" id="btnOtpSubmit" class="admin-btn">
           <i class="ri-shield-check-line"></i> Authenticate Session
         </button>
       </form>
-      
       <div style="margin-top: 1rem;">
         <button type="button" onclick="returnToStep1()" style="background:none; border:none; color:var(--admin-muted); font-size:0.82rem; cursor:pointer; text-decoration:underline;">
           ← Back to Credentials
         </button>
       </div>
     </div>
-
     <a href="index.html" class="back-home"><i class="ri-arrow-left-line"></i> Back to DPGNotes Homepage</a>
   </div>
-
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -189,13 +177,10 @@
       messagingSenderId: "910494426039",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
     const auth = getAuth(app);
     const API_URL = (window.API_BASE_URL || "") + "/api";
-
     let adminEmailGlobal = "";
-
     function getValidRedirectTarget() {
       const p = new URLSearchParams(window.location.search);
       const target = p.get('go-to') || p.get('redirect') || '';
@@ -209,34 +194,27 @@
       if (target.startsWith('/') && !target.startsWith('//')) return target;
       return "admin.html";
     }
-
-    // If already authenticated with valid token, redirect to target
     const existingToken = localStorage.getItem("adminToken");
     auth.authStateReady().then(() => {
       if (existingToken && auth.currentUser) {
         window.location.href = getValidRedirectTarget();
       }
     });
-
     const step1 = document.getElementById("step1");
     const step2 = document.getElementById("step2");
     const loginForm = document.getElementById("adminLoginForm");
     const otpForm = document.getElementById("adminOtpForm");
-
     window.returnToStep1 = function() {
       step2.classList.remove("active");
       step1.classList.add("active");
     };
-
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("adminEmail").value.trim();
       const password = document.getElementById("adminPassword").value;
       const btn = document.getElementById("btnLoginSubmit");
-      
       btn.disabled = true;
       btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Verifying Credentials...`;
-
       try {
         const res = await fetch(`${API_URL}/admin/login`, {
           method: "POST",
@@ -244,7 +222,6 @@
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-
         if (res.ok) {
           adminEmailGlobal = email;
           step1.classList.remove("active");
@@ -269,15 +246,12 @@
         btn.innerHTML = `<i class="ri-mail-send-line"></i> Send OTP Verification Code`;
       }
     });
-
     otpForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const otp = document.getElementById("adminOtp").value.trim();
       const btn = document.getElementById("btnOtpSubmit");
-
       btn.disabled = true;
       btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Authenticating...`;
-
       try {
         let res = await fetch(`${API_URL}/admin/verify`, {
           method: "POST",
@@ -292,11 +266,8 @@
           });
         }
         const data = await res.json();
-
         if (res.ok) {
           localStorage.setItem("adminToken", data.token);
-
-          // Sign in to Firebase Auth with Custom Token
           const fbToken = data.firebaseCustomToken || data.firebaseToken;
           if (fbToken) {
             try {
@@ -305,7 +276,6 @@
               console.error("Firebase custom token login failed:", fbErr);
             }
           }
-
           if (window.customAlert) {
             await window.customAlert("Admin authentication successful! Redirecting...", { title: "Success" });
           }

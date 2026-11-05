@@ -1,14 +1,10 @@
-// Premium DPGNotes Custom Dialogs & Modal Overlays
 (function() {
-  // Inject remixicon if not present
   if (!document.querySelector('link[href*="remixicon"]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css';
     document.head.appendChild(link);
   }
-
-  // Create style sheet
   const style = document.createElement('style');
   style.textContent = `
     .dpg-modal-overlay {
@@ -432,22 +428,16 @@
 
   `;
   document.head.appendChild(style);
-
-  // Global humanizer converting raw technical/Firebase errors into empathetic student copy
   window.humanizeErrorMessage = function(err) {
     if (!err) return "An unexpected event occurred. Please refresh the page and try again.";
     let msg = typeof err === "string" ? err : (err.message || String(err));
-    
-    // Strip technical wrappers and prefixes
     msg = msg.replace(/^Firebase:\s*Error\s*\(([^)]+)\)\.?/i, '$1');
     msg = msg.replace(/^Sign\s*In\s*Error:\s*/i, '');
     msg = msg.replace(/^Registration\s*Failed:\s*/i, '');
     msg = msg.replace(/^Registration\s*Error:\s*/i, '');
     msg = msg.replace(/^Error:\s*/i, '');
     msg = msg.trim();
-
     const lower = msg.toLowerCase();
-
     if (lower.includes("auth/invalid-credential") || lower.includes("auth/wrong-password") || lower.includes("invalid-credential")) {
       return "The email, Student/Employee ID, or password you entered doesn't match our records. Please verify your details or use 'Forgot Password' if you need to reset it.";
     }
@@ -478,11 +468,8 @@
     if (lower.includes("cannot read properties of null") || lower.includes("typeerror")) {
       return "A temporary interface element could not be loaded. Please refresh the page.";
     }
-
     return msg;
   };
-
-  // Safe element attacher supporting pre-DOM execution
   function attachOverlay(overlay) {
     const show = () => {
       if (document.body) {
@@ -496,16 +483,11 @@
       document.addEventListener('DOMContentLoaded', show, { once: true });
     }
   }
-
-  // Helper for alert dialogs (Promise-based)
   window.customAlert = function(message, options = {}) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
       overlay.className = 'dpg-modal-overlay';
-      
       const rawMsg = typeof message === 'string' ? message : (message?.message || String(message));
-      
-      // Scenario Detection: Quiz URL Exported Dialog (Special Auto-Styling for this Scenario Only)
       const isUrlExport = options.isUrlExport ||
         options.title === 'Quiz URL Exported' ||
         (typeof rawMsg === 'string' && (
@@ -513,17 +495,14 @@
           (rawMsg.includes('quiz-generator.html?') && rawMsg.includes('Shareable URL')) ||
           (rawMsg.includes('quiz questions and settings has been generated') && rawMsg.includes('http'))
         ));
-
       if (isUrlExport) {
         let targetUrl = options.url || '';
         if (!targetUrl && typeof rawMsg === 'string') {
           const match = rawMsg.match(/https?:\/\/[^\s\n"']+/i);
           if (match) targetUrl = match[0];
         }
-
         const safeUrl = targetUrl ? targetUrl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : '';
         const titleText = options.title || 'Quiz URL Exported';
-
         overlay.innerHTML = `
           <div class="dpg-modal-box dpg-url-export-box">
             <div class="dpg-url-export-header">
@@ -569,12 +548,9 @@
             <button class="dpg-modal-btn dpg-url-done-btn" id="dpgAlertOkBtn">Done</button>
           </div>
         `;
-
         attachOverlay(overlay);
-
         const okBtn = overlay.querySelector('#dpgAlertOkBtn');
         const copyAgainBtn = overlay.querySelector('#dpgUrlCopyAgainBtn');
-
         if (copyAgainBtn && targetUrl) {
           copyAgainBtn.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -593,7 +569,6 @@
             }
           });
         }
-
         const closeAlert = () => {
           overlay.classList.remove('active');
           document.removeEventListener('keydown', keyHandler);
@@ -602,26 +577,21 @@
             resolve();
           }, 300);
         };
-
         const keyHandler = (e) => {
           if (e.key === 'Enter' || e.key === 'Escape') {
             e.preventDefault();
             closeAlert();
           }
         };
-
         okBtn.addEventListener('click', closeAlert);
         document.addEventListener('keydown', keyHandler);
         setTimeout(() => okBtn.focus(), 50);
         return;
       }
-
-      // Default Standard Alert Dialog Handling
       const humanMessage = window.humanizeErrorMessage(message);
       let iconClass = 'ri-notification-3-line';
       let titleText = options.title || 'Notice';
       const isDanger = options.isDanger || false;
-      
       const msgLower = String(humanMessage).toLowerCase();
       if (!options.title) {
         if (msgLower.includes('success') || msgLower.includes('complete') || msgLower.includes('saved') || msgLower.includes('congratulations') || msgLower.includes('welcome') || msgLower.includes('restored')) {
@@ -638,9 +608,7 @@
           iconClass = 'ri-checkbox-circle-line';
         }
       }
-      
       const themeColor = isDanger || titleText === 'Account Notice' || titleText === 'Oops!' ? '#ef4444' : (titleText === 'Success' ? '#10b981' : '#8b5cf6');
-      
       overlay.innerHTML = `
         <div class="dpg-modal-box">
           <i class="${iconClass} dpg-modal-icon" style="color: ${themeColor}"></i>
@@ -649,9 +617,7 @@
           <button class="dpg-modal-btn" id="dpgAlertOkBtn" style="background: linear-gradient(135deg, ${themeColor}, #6366f1); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);">OK</button>
         </div>
       `;
-      
       attachOverlay(overlay);
-      
       const okBtn = overlay.querySelector('#dpgAlertOkBtn');
       const closeAlert = () => {
         overlay.classList.remove('active');
@@ -661,47 +627,35 @@
           resolve();
         }, 300);
       };
-
       const keyHandler = (e) => {
         if (e.key === 'Enter' || e.key === 'Escape') {
           e.preventDefault();
           closeAlert();
         }
       };
-
       okBtn.addEventListener('click', closeAlert);
       document.addEventListener('keydown', keyHandler);
       setTimeout(() => okBtn.focus(), 50);
     });
   };
-
-  // Overwrite native window.alert globally with custom modal
   window.alert = function(message, options) {
     return window.customAlert(message, options);
   };
-
-  // Overwrite native window.confirm globally with custom modal
   window.confirm = function(message, options) {
     return window.customConfirm(message, options);
   };
-
-  // Overwrite native window.prompt globally with custom modal
   window.prompt = function(message, defaultValue) {
     return window.customPrompt(message, defaultValue);
   };
-
-  // Helper for confirm dialogs (Promise-based)
   window.customConfirm = function(message, options = {}) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
       overlay.className = 'dpg-modal-overlay';
-      
       const humanMessage = window.humanizeErrorMessage(message);
       const titleText = options.title || 'Are you sure?';
       const isDanger = options.isDanger || false;
       const confirmText = options.confirmText || 'Yes, Proceed';
       const cancelText = options.cancelText || 'Cancel';
-      
       overlay.innerHTML = `
         <div class="dpg-modal-box">
           <i class="ri-question-line dpg-modal-icon" style="color: ${isDanger ? '#ef4444' : '#8b5cf6'}"></i>
@@ -713,12 +667,9 @@
           </div>
         </div>
       `;
-      
       attachOverlay(overlay);
-      
       const cancelBtn = overlay.querySelector('#dpgConfirmCancelBtn');
       const yesBtn = overlay.querySelector('#dpgConfirmYesBtn');
-
       const finish = (result) => {
         overlay.classList.remove('active');
         document.removeEventListener('keydown', keyHandler);
@@ -727,7 +678,6 @@
           resolve(result);
         }, 300);
       };
-
       const keyHandler = (e) => {
         if (e.key === 'Escape') {
           e.preventDefault();
@@ -737,20 +687,16 @@
           finish(true);
         }
       };
-
       cancelBtn.addEventListener('click', () => finish(false));
       yesBtn.addEventListener('click', () => finish(true));
       document.addEventListener('keydown', keyHandler);
       setTimeout(() => yesBtn.focus(), 50);
     });
   };
-
-  // Helper for prompt dialogs (Promise-based)
   window.customPrompt = function(message, defaultValue = "") {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
       overlay.className = 'dpg-modal-overlay';
-      
       overlay.innerHTML = `
         <div class="dpg-modal-box" style="text-align:left;">
           <h3 class="dpg-modal-title" style="text-align:center; margin-bottom:1.5rem;">Action Required</h3>
@@ -762,15 +708,12 @@
           </div>
         </div>
       `;
-      
       attachOverlay(overlay);
-      
       const input = overlay.querySelector('#dpgPromptInput');
       if (input) {
         input.focus();
         input.select();
       }
-      
       overlay.querySelector('#dpgPromptCancelBtn').addEventListener('click', () => {
         overlay.classList.remove('active');
         setTimeout(() => {
@@ -778,7 +721,6 @@
           resolve(null);
         }, 300);
       });
-      
       overlay.querySelector('#dpgPromptOkBtn').addEventListener('click', () => {
         const val = input.value;
         overlay.classList.remove('active');
@@ -787,8 +729,6 @@
           resolve(val);
         }, 300);
       });
-
-      // Handle Enter key
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           overlay.querySelector('#dpgPromptOkBtn').click();

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,8 +62,6 @@
 </head>
 <body class="theme-auto">
   <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
-
-  <!-- Header -->
   <header class="legal-header">
     <div class="header-container">
       <a href="../index.html" class="legal-logo">
@@ -79,11 +76,8 @@
       </div>
     </div>
   </header>
-
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
   <div class="legal-layout-container">
-    <!-- Sidebar Navigation -->
     <aside class="legal-sidebar" id="legalSidebar">
       <nav class="sidebar-nav">
         <div class="sidebar-group">
@@ -120,8 +114,6 @@
         </div>
       </nav>
     </aside>
-
-    <!-- Main Content -->
     <main class="legal-content">
       <div class="legal-container">
         <div class="legal-content-area">
@@ -137,8 +129,6 @@
               <span class="meta-item"><i class="ri-check-double-line"></i> Version: 1.0 (Comprehensive Edition)</span>
             </div>
           </header>
-
-          <!-- Back to Summary Callout -->
           <div class="summary-back-callout">
             <div class="summary-back-content">
               <i class="ri-arrow-go-back-line"></i>
@@ -148,13 +138,10 @@
               </div>
             </div>
           </div>
-
           <article class="legal-article">
-            
             <h2>1. Institutional Assessment Charter &amp; Educational Integrity</h2>
             <p>The DPGNotes Quiz &amp; Examination Engine provides higher-education students, faculty, and verified contributors with a resilient, tamper-evident digital assessment platform. Built as an open academic infrastructure under Akshat Network Hub, our mission is to facilitate objective self-evaluation, continuous coursework revision, competitive mock preparation, and verified academic benchmark testing without compromising privacy or student fairness.</p>
             <p>This comprehensive document establishes binding operational guidelines for candidates sitting for online examinations, contributors generating quiz questions, automated proctoring telemetry mechanisms, cryptographic answer key security, deterministic rank scoring, and analytical data retention under the <strong>Digital Personal Data Protection (DPDP) Act, 2023</strong>.</p>
-
             <div class="compliance-grid">
               <div class="compliance-card">
                 <h4><i class="ri-shield-check-line"></i> Single-Attempt Lock</h4>
@@ -173,7 +160,6 @@
                 <p>Mathematical scoring algorithms calculate rank, percentage, and tie-breaking by duration and zero infractions.</p>
               </div>
             </div>
-
             <h2>2. Candidate Identity Verification &amp; Strict Single-Attempt Lock</h2>
             <p>To preserve evaluation integrity and ensure meritocratic standing across competitive leaderboards, every published assessment on DPGNotes strictly enforces a <strong>single-attempt policy</strong>. Once an attempt is initiated or submitted, retakes or duplicate entries by the same individual are strictly prohibited.</p>
             <p>The system enforces this restriction across three independent architectural layers:</p>
@@ -182,7 +168,6 @@
               <li><strong>Authenticated Session Binding (UID):</strong> Both verified contributor sessions and anonymous Firebase Authentication guest sessions assign an immutable <code>candidateUid</code>. This UID is bound directly to the attempt document, preventing account hopping or credential spoofing.</li>
               <li><strong>Client Device &amp; Local Workstation Lock:</strong> Upon attempt initialization, a cryptographically generated session token is stored in browser <code>localStorage</code> (keyed by <code>quiz_attempt_{quizId}</code>). If a candidate clears session cookies or attempts to re-enter from the same browser, local token checks block duplicate assessment sessions.</li>
             </ul>
-
             <div class="table-responsive">
               <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.88rem; color:var(--text-main);">
                 <thead>
@@ -211,7 +196,6 @@
                 </tbody>
               </table>
             </div>
-
             <h2>3. Anti-Cheat Monitoring &amp; UMC Telemetry Engine</h2>
             <p>During live examination sessions, the platform utilizes modern, non-invasive browser APIs to safeguard academic honesty. The system operates an automated <strong>Unfair Means Case (UMC) Telemetry Engine</strong> that monitors candidate workstation activity without accessing private files, camera streams, or unauthorized peripherals:</p>
             <ul>
@@ -220,7 +204,6 @@
               <li><strong>Clipboard &amp; Context Interception (<code>CLIPBOARD_ACCESS</code>):</strong> Copying questions, cutting text, right-clicking to inspect elements, or pasting external snippets are intercepted and disabled. Each attempt increments the candidate's violation counter.</li>
               <li><strong>Developer Tools &amp; Keyboard Shortcutting:</strong> Shortcuts associated with browser inspection (F12, Ctrl+Shift+I, Ctrl+U) are suppressed and logged as potential tampering events.</li>
             </ul>
-
             <h2>4. Cryptographic Answer Key Privacy &amp; Deferred Evaluation</h2>
             <p>Unlike conventional web quizzes where answer keys are embedded in hidden HTML attributes or JSON payloads accessible via browser DevTools, DPGNotes maintains a strict <strong>Zero-Knowledge Client Payload Architecture</strong>:</p>
             <ul>
@@ -233,7 +216,6 @@
                 </ul>
               </li>
             </ul>
-
             <h2>5. Deterministic Scoring Algorithm &amp; Tie-Breaking Policy</h2>
             <p>Candidate performance is evaluated with complete mathematical determinism based on the author's configured parameters:</p>
             <div class="table-responsive">
@@ -264,7 +246,6 @@
                 </tbody>
               </table>
             </div>
-
             <h3>Deterministic Tie-Breaking Protocol</h3>
             <p>When multiple candidates achieve identical net percentage scores on the public or class leaderboard, rank ties are resolved strictly according to the following hierarchy:</p>
             <ol>
@@ -274,10 +255,8 @@
               <li><strong>Higher Correct Answer Ratio:</strong> Candidate with fewer incorrect attempts.</li>
               <li><strong>Submission Timestamp:</strong> In the rare event of parity across all criteria, the earlier submission timestamp is assigned the higher rank.</li>
             </ol>
-
             <h2>6. Proctored Code Sandbox Security &amp; Runtime Disabling</h2>
             <p>For computer science, software engineering, and technical coding quizzes, question bodies may embed live code containers (supporting HTML, CSS, JavaScript, Python, C++, and Java syntax highlighting). During an active unsubmitted examination, code sandbox execution capabilities are intentionally restricted or disabled to prevent candidates from using the browser's console as an unauthorized external compiler or sandbox escape vehicle. Full interactive execution is restored upon scorecard generation.</p>
-
             <h2>7. Assessment Analytics, Aggregated Metrics &amp; Data Privacy</h2>
             <p>In adherence to the <strong>DPDP Act 2023</strong> and collegiate data protection standards, examination analytics are handled with strict privacy safeguards:</p>
             <ul>
@@ -285,14 +264,10 @@
               <li><strong>Audit Logging:</strong> Administrative overrides, answer key updates, manual score recalculations, and UMC dispute investigations generate immutable records in the platform audit log (<code>auditLogs/{eventId}</code>).</li>
               <li><strong>Data Retention &amp; Right to Erasure:</strong> Candidate attempt records are retained for the duration of the active academic term (or until deleted by the author). Candidates may request data anonymization or removal in accordance with the DPGNotes Data Retention Policy.</li>
             </ul>
-
             <h2>8. Contributor Ethics, Quality Standards &amp; Redressal</h2>
             <p>Authors who create and publish quizzes on DPGNotes must ensure all question statements, code snippets, and answer explanations are academically sound, unambiguous, and free from copyright infringement or defamatory language. Quizzes exhibiting malicious script injection, misleading distractors, or academic fraud will be purged, and responsible contributor accounts will be subject to permanent suspension under DRASA regulations.</p>
             <p>Students or faculty members who identify inaccuracies or unfair question formulation may lodge an official review through the <a href="../support-contact-form.html" style="color:var(--primary); font-weight:600;">Grievance Redressal Desk</a> referencing the specific <code>quizId</code>.</p>
-
           </article>
-
-          <!-- Dynamic Legal AdSense Container -->
           <div class="legal-adsense-container" style="margin: 2rem 0; min-height: 100px;">
             <ins class="adsbygoogle"
                  style="display:block"
@@ -304,21 +279,16 @@
                  (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
           </div>
-
-          <!-- Document Footer -->
           <footer class="document-footer" style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: var(--text-muted);">
             <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
               <span>&copy; 2026 DPGNotes. All rights reserved.</span>
               <span>Operated under Akshat Network Hub &bull; Legal Center</span>
             </div>
           </footer>
-
         </div>
       </div>
     </main>
   </div>
-
-  <!-- Client-side Scripts -->
   <script>
     const themeBtn = document.getElementById('themeToggleBtn');
     const savedTheme = localStorage.getItem('legal-theme') || 'auto';
@@ -361,8 +331,6 @@
       const bar = document.getElementById('readingProgress');
       if (bar) bar.style.width = percent + '%';
     });
-
-    // Dynamic Legal Ad Container Visibility Guardian: Eliminates empty whitespace when ads are unavailable
     function checkLegalAds() {
       document.querySelectorAll('.legal-adsense-container').forEach(container => {
         const ins = container.querySelector('ins.adsbygoogle');

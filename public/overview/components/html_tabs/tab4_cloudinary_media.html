@@ -1,4 +1,3 @@
-<!-- Component: tab4_cloudinary_media.html - Cloudinary Media Pipeline & PDF Processing Engine -->
 <article class="overview-blog-article" data-tab="4">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -26,15 +25,12 @@
       <span class="tech-pill">SEO &amp; OpenGraph Media</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-4">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> Direct-to-Cloud Signed Uploads, Dynamic PDF Cover Synthesis &amp; Bandwidth-Optimized Edge CDN Delivery.</p>
     <p>
       The Software Requirements Specification (SRS Section 4.0) mandates that media ingestion must never saturate application server RAM or block Node.js HTTP event loops. All binary media payloads (PDF documents, diagrams, and assignment blueprints) bypass intermediate reverse proxies, streaming directly from the client browser into secure Cloudinary cloud storage via short-lived cryptographic upload signatures.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -42,8 +38,6 @@
       </div>
       Every document asset served on DPGNotes must include an automated preview card generated from its authentic first page, verified byte size, total page count, and an immutable Cloudinary <code>public_id</code>. All image thumbnails must deliver sub-100ms first paints on 3G mobile networks using automated format conversion (<code>f_auto</code>) and progressive lossy compression (<code>q_auto:good</code>).
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & PYTHON WORKFLOW -->
     <h2 id="sec-2-4">2. Component Hierarchy, ER Workflow &amp; Python Processing Pipeline</h2>
     <p>The media ecosystem unites client-side Vanilla JavaScript, Node.js cryptographic signers, and a dedicated Python analytics worker:</p>
     <ul>
@@ -53,8 +47,6 @@
       <li><strong>4. Dynamic Cloudinary URL Transformer:</strong> On-the-fly edge transformations that generate responsive thumbnails (<code>w_400,h_300,c_fill,g_auto,q_auto,f_auto</code>), eliminating costly manual image resizing.</li>
       <li><strong>5. SEO Open Graph &amp; Schema Metadata Generator:</strong> Generates semantic <code>&lt;meta property="og:image"&gt;</code> and JSON-LD <code>schema.org/DigitalDocument</code> payloads allowing search engines and social platforms to render rich preview snippets.</li>
     </ul>
-
-    <!-- ER ENTITY RELATIONSHIP FOR MEDIA PIPELINE -->
     <div class="er-diagram-container">
       <div class="er-diagram-header">
         <div class="er-diagram-title">
@@ -63,7 +55,6 @@
         </div>
         <span style="font-size:0.75rem; color:#94a3b8; font-family:monospace;">MEDIA NO-SQL LINKAGE v2.1</span>
       </div>
-
       <div class="er-grid-layout">
         <div class="er-entity-card">
           <div class="er-entity-header"><span>documents</span><span>Academic Note Record</span></div>
@@ -72,7 +63,6 @@
           <div class="er-field-row"><span class="er-field-name">category</span><span class="er-field-type">SE|SP|UE|EV|T&amp;N|IQ|A&amp;LR|PQ</span></div>
           <div class="er-field-row"><span class="er-field-name">mediaRef</span><span class="er-field-type">media_assets.mediaId</span></div>
         </div>
-
         <div class="er-entity-card">
           <div class="er-entity-header"><span>media_assets</span><span>Cloudinary Metadata</span></div>
           <div class="er-field-row"><span class="er-field-pk">PK mediaId</span><span class="er-field-type">String (public_id)</span></div>
@@ -82,7 +72,6 @@
           <div class="er-field-row"><span class="er-field-name">bytes</span><span class="er-field-type">Integer (File Size)</span></div>
         </div>
       </div>
-
       <div class="arch-flow-diagram">
 +---------------------+    1. Request Signed Token     +----------------------+
 | CLIENT BROWSER      | -----------------------------&gt; | NODE.JS SIGNING API  |
@@ -104,8 +93,6 @@
 +---------------------+                                +----------------------+
       </div>
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-4">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to configure and operate the DPGNotes media processing subsystem:</p>
     <ol class="tutorial-steps-list">
@@ -115,8 +102,6 @@
       <li><strong>Build Python Cover Extraction Logic:</strong> In Python, fetch the first page of the uploaded PDF, convert it to a 300 DPI PIL Image, compress it to WebP format in an in-memory <code>io.BytesIO</code> buffer, and upload it as a companion thumbnail.</li>
       <li><strong>Optimize SEO &amp; Mobile Responsive Viewports:</strong> Output semantic HTML5 <code>&lt;picture&gt;</code> elements with responsive <code>srcset</code> queries serving 320px, 480px, and 768px variants to prevent mobile layout shifts.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-4">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -134,9 +119,7 @@ import pdfplumber
 from PIL import Image
 import cloudinary
 import cloudinary.uploader
-
 app = FastAPI(title="DPGNotes Python Media Engine", version="2.4.0")
-
 # Configure Cloudinary SDK within Python environment
 cloudinary.config(
     cloud_name="dpgnotes",
@@ -144,37 +127,30 @@ cloudinary.config(
     api_secret="YOUR_SECRET_IN_VAULT",
     secure=True
 )
-
 @app.post("/api/py/extract-metadata")
 async def process_pdf_document(payload: dict, x_internal_secret: str = Header(None)):
     if x_internal_secret != "dpg-vault-secret":
         raise HTTPException(status_code=403, detail="Forbidden: Invalid internal cryptographic secret")
-
     pdf_url = payload.get("pdfUrl")
     doc_id = payload.get("documentId")
     if not pdf_url or not doc_id:
         raise HTTPException(status_code=400, detail="Missing pdfUrl or documentId")
-
     try:
         # 1. Download PDF stream in-memory without persistent disk writes
         response = requests.get(pdf_url, timeout=15)
         response.raise_for_status()
         pdf_bytes = io.BytesIO(response.content)
-
         # 2. Parse PDF metadata and page count using pdfplumber
         with pdfplumber.open(pdf_bytes) as pdf:
             total_pages = len(pdf.pages)
             first_page = pdf.pages[0]
-
             # 3. Render page 1 to high-resolution raster image
             page_image = first_page.to_image(resolution=150).original
-
             # 4. Resize and optimize using Pillow
             thumbnail = page_image.resize((600, 800), Image.Resampling.LANCZOS)
             output_buffer = io.BytesIO()
             thumbnail.save(output_buffer, format="WEBP", quality=85)
             output_buffer.seek(0)
-
         # 5. Upload synthesized thumbnail back to Cloudinary
         upload_result = cloudinary.uploader.upload(
             output_buffer,
@@ -183,22 +159,16 @@ async def process_pdf_document(payload: dict, x_internal_secret: str = Header(No
             overwrite=True,
             resource_type="image"
         )
-
         return {
             "documentId": doc_id,
             "totalPages": total_pages,
             "thumbnailUrl": upload_result.get("secure_url"),
             "status": "PROCESSED_SUCCESSFULLY"
         }
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PDF parsing error: {str(e)}")</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-4">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -207,8 +177,6 @@ async def process_pdf_document(payload: dict, x_internal_secret: str = Header(No
       <li><strong>Verified Invariant:</strong> All client image requests leverage automated WebP/AVIF content negotiation via Cloudinary <code>f_auto,q_auto</code>.</li>
       <li><strong>Verified Invariant:</strong> Total PDF processing time across the Python microservice pipeline must complete in under 3.5 seconds.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-4">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

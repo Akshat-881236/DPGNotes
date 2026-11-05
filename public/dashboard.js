@@ -1,13 +1,10 @@
 import { getAuth, onAuthStateChanged, signOut, updatePassword, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getFirestore, collection, collectionGroup, addDoc, getDocs, query, orderBy, where, limit, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-
-// Prevent duplicate execution of dashboard module
 if (window._dpgDashboardScriptLoaded) {
   console.warn("dashboard.js already loaded, preventing duplicate bindings.");
 }
 window._dpgDashboardScriptLoaded = true;
-
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -18,7 +15,6 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 window.escapeHtml = escapeHtml;
-
 window.toggleResourcePasswordUI = function() {
   const vis = document.getElementById("resourceVisibility")?.value;
   const grp = document.getElementById("resourcePasswordGroup");
@@ -30,7 +26,6 @@ window.toggleResourcePasswordUI = function() {
     pw.value = "";
   }
 };
-
 window.toggleResourcePasswordVisibility = function(iconEl) {
   const pw = document.getElementById("resourcePassword");
   if (!pw) return;
@@ -48,7 +43,6 @@ window.toggleResourcePasswordVisibility = function(iconEl) {
     }
   }
 };
-
 window.toggleModalResourcePasswordUI = function() {
   const vis = document.getElementById("modalVisibility")?.value;
   const grp = document.getElementById("modalPasswordGroup");
@@ -62,7 +56,6 @@ window.toggleModalResourcePasswordUI = function() {
     badge.style.borderColor = isPriv ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)";
   }
 };
-
 window.toggleModalPasswordVisibility = function(iconEl) {
   const pw = document.getElementById("modalResourcePassword");
   if (!pw) return;
@@ -80,7 +73,6 @@ window.toggleModalPasswordVisibility = function(iconEl) {
     }
   }
 };
-
 window.toggleVaultNewPasswordEye = function(iconEl) {
   const inp = document.getElementById("vaultNewPasswordInput");
   if (!inp) return;
@@ -98,7 +90,6 @@ window.toggleVaultNewPasswordEye = function(iconEl) {
     }
   }
 };
-
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
   authDomain: "dpgnotes.firebaseapp.com",
@@ -107,12 +98,9 @@ const firebaseConfig = {
   messagingSenderId: "910494426039",
   appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
-
 const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-// Check for authToken in URL parameters (from email verification link)
 let customAuthTokenPromise = null;
 const urlParams = new URLSearchParams(window.location.search);
 const authToken = urlParams.get("authToken");
@@ -132,52 +120,35 @@ if (authToken) {
     }
   })();
 }
-
 let currentUser = null;
-
-// =========================================
-// SIDEBAR & SWIPE LOGIC
-// =========================================
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("sidebarOverlay");
 const openBtn = document.getElementById("openSidebarBtn");
 const closeBtn = document.getElementById("closeSidebarBtn");
-
 function openSidebar() {
   sidebar.classList.add("active");
 }
-
 function closeSidebar() {
   sidebar.classList.remove("active");
 }
-
 if(openBtn) openBtn.addEventListener("click", openSidebar);
 if(closeBtn) closeBtn.addEventListener("click", closeSidebar);
 if(overlay) overlay.addEventListener("click", closeSidebar);
-
 let touchstartX = 0;
 let touchendX = 0;
-
 function handleGesture() {
   if (touchendX < touchstartX - 50) closeSidebar(); // Swipe Left
   if (touchendX > touchstartX + 50) openSidebar();  // Swipe Right
 }
-
 document.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
 document.addEventListener('touchend', e => {
   touchendX = e.changedTouches[0].screenX;
   handleGesture();
 });
-
-// =========================================
-// TAB SWITCHING
-// =========================================
 const tabBtns = document.querySelectorAll(".tab-btn[data-target]");
 const tabs = document.querySelectorAll(".dashboard-tab");
-
 tabBtns.forEach(btn => {
   btn.addEventListener("click", (e) => {
-    // Check if profile setup is required
     if (window.dpgProfileIncomplete && btn.dataset.target !== "settingsTab" && !btn.classList.contains("logout-btn")) {
       e.preventDefault();
       e.stopPropagation();
@@ -192,19 +163,12 @@ tabBtns.forEach(btn => {
       }
       return;
     }
-
-    // UI Update
     tabBtns.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    
     tabs.forEach(t => t.classList.remove("active"));
     const targetTab = document.getElementById(btn.dataset.target);
     if (targetTab) targetTab.classList.add("active");
-    
-    // Close sidebar on mobile after click
     if (window.innerWidth <= 768) closeSidebar();
-    
-    // Load specific tab data
     if (btn.dataset.target === "notificationTab") {
       loadNotifications();
     } else if (btn.dataset.target === "manageResourcesTab") {
@@ -218,33 +182,23 @@ tabBtns.forEach(btn => {
     }
   });
 });
-
-// =========================================
-// NOTIFICATIONS ENGINE
-// =========================================
 async function loadNotifications() {
   const notifList = document.getElementById("notificationList");
   notifList.innerHTML = "<p>Loading notifications...</p>";
-  
   if (!currentUser) return;
-  
   try {
     const q = query(collection(db, "notifications"), where("email", "==", currentUser.email));
     const snap = await getDocs(q);
-    
-    // Sort newest first, exclude read notifications
     const docs = [];
     snap.forEach(d => {
       const data = d.data();
       if (!data.isRead) docs.push({ id: d.id, ...data });
     });
     docs.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-    
     if (docs.length === 0) {
       notifList.innerHTML = "<p style='color: var(--text-muted);'>No new notifications.</p>";
       return;
     }
-    
     notifList.innerHTML = "";
     docs.forEach(data => {
       let icon = "🔔";
@@ -254,13 +208,11 @@ async function loadNotifications() {
       if (data.type === "success") icon = "✅";
       if (data.type === "milestone") icon = "🎉";
       if (data.type === "system") icon = "🤖";
-      
       let timeString = "Just now";
       if (data.createdAt) {
         const millis = data.createdAt.toMillis ? data.createdAt.toMillis() : (data.createdAt.seconds * 1000);
         timeString = new Date(millis).toLocaleString();
       }
-      
       const card = document.createElement("div");
       card.id = `notif-${data.id}`;
       card.style.cssText = "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;display:flex;gap:1rem;align-items:flex-start;transition:opacity 0.3s;";
@@ -275,8 +227,6 @@ async function loadNotifications() {
       `;
       notifList.appendChild(card);
     });
-    
-    // Mark-as-read handlers
     notifList.querySelectorAll(".mark-read-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
         const notifId = btn.dataset.notifid;
@@ -289,7 +239,6 @@ async function loadNotifications() {
             card.style.opacity = "0";
             setTimeout(() => card.remove(), 300);
           }
-          // Show empty state if no cards left
           setTimeout(() => {
             if (notifList.querySelectorAll("[id^='notif-']").length === 0) {
               notifList.innerHTML = "<p style='color:var(--text-muted);'>No new notifications.</p>";
@@ -302,17 +251,11 @@ async function loadNotifications() {
         }
       });
     });
-    
   } catch (err) {
     console.error("Failed to load notifications:", err);
     notifList.innerHTML = "<p style='color:#ef4444;'>Failed to load notifications.</p>";
   }
 }
-
-// =========================================
-// THEME ENGINE
-// =========================================
-
 function applyTheme(themeName) {
   document.body.classList.remove("theme-ocean", "theme-sunset", "theme-forest");
   if (themeName && themeName !== "default") {
@@ -320,14 +263,8 @@ function applyTheme(themeName) {
   }
   localStorage.setItem("dpgTheme", themeName || "default");
 }
-
-// Initial Load Theme
 const savedTheme = localStorage.getItem("dpgTheme");
 if (savedTheme) applyTheme(savedTheme);
-
-// =========================================
-// MIGRATION: GUEST QUIZ ATTEMPTS TO CONTRIBUTOR
-// =========================================
 async function migrateGuestQuizAttempts(user) {
   if (!user || user.isAnonymous) return;
   try {
@@ -335,11 +272,8 @@ async function migrateGuestQuizAttempts(user) {
     if (!raw) return;
     const guestList = JSON.parse(raw);
     if (!Array.isArray(guestList) || guestList.length === 0) return;
-
     for (const item of guestList) {
       if (!item.quizId || !item.ownerUid) continue;
-
-      // 1. Delete old guest attempt document from author's quiz attempts if attemptId exists
       if (item.attemptId) {
         try {
           await deleteDoc(doc(db, "contributors", item.ownerUid, "quizzes", item.quizId, "attempts", item.attemptId));
@@ -347,11 +281,7 @@ async function migrateGuestQuizAttempts(user) {
           console.warn("Could not delete old guest attempt:", delErr);
         }
       }
-
-      // 2. Generate new registered attempt ID under new Contributor identity
       const newAttemptId = 'att_' + user.uid.slice(0, 8) + '_' + Date.now().toString(36);
-
-      // 3. Re-push under author's quiz attempts collection
       try {
         const attemptRef = doc(db, "contributors", item.ownerUid, "quizzes", item.quizId, "attempts", newAttemptId);
         await setDoc(attemptRef, {
@@ -383,8 +313,6 @@ async function migrateGuestQuizAttempts(user) {
       } catch(pushErr) {
         console.warn("Failed to re-push author attempt:", pushErr);
       }
-
-      // 4. Push into candidate's personal attempt history: contributors/{user.uid}/myQuizAttempts/{newAttemptId}
       try {
         const myAttemptRef = doc(db, "contributors", user.uid, "myQuizAttempts", newAttemptId);
         await setDoc(myAttemptRef, {
@@ -416,18 +344,12 @@ async function migrateGuestQuizAttempts(user) {
         console.warn("Failed to push myQuizAttempts:", myErr);
       }
     }
-
-    // Clear local guest attempts once migrated
     localStorage.removeItem('dpg_guest_quiz_attempts');
     console.log("Successfully migrated guest quiz attempts to contributor account:", user.uid);
   } catch(e) {
     console.error("Migration error:", e);
   }
 }
-
-// =========================================
-// AUTH STATE & BACKEND HOOKS
-// =========================================
 onAuthStateChanged(auth, async (user) => {
   if (customAuthTokenPromise) {
     try {
@@ -436,7 +358,6 @@ onAuthStateChanged(auth, async (user) => {
     customAuthTokenPromise = null;
     user = auth.currentUser;
   }
-
   if (user) {
     currentUser = user;
     localStorage.setItem("dpgActiveUserUid", user.uid);
@@ -444,15 +365,11 @@ onAuthStateChanged(auth, async (user) => {
     localStorage.setItem("dpgActiveUserEmail", user.email || "");
     localStorage.setItem("dpgActiveUserName", user.displayName || "");
     localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
-
-    // Reveal Dashboard UI & dismiss security overlay
     const overlay = document.getElementById("authCheckOverlay");
     if (overlay) overlay.style.display = "none";
     if (sidebar) sidebar.style.display = "";
     const mainEl = document.getElementById("dashboardMain");
     if (mainEl) mainEl.style.display = "";
-    
-    // Check for active referrer code
     const refCode = sessionStorage.getItem('dpgReferrerCode') || localStorage.getItem('dpgReferrerCode');
     if (refCode) {
       try {
@@ -465,21 +382,15 @@ onAuthStateChanged(auth, async (user) => {
         localStorage.removeItem('dpgReferrerCode');
       } catch(e) { console.error("Referrer accept log failed", e); }
     }
-
-    // Create/Update User Document on Login
     try {
       const userDocRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userDocRef);
-      
       if (!userSnap.exists()) {
-        // First Login! Trigger Welcome Email
         fetch(window.API_BASE_URL + "/api/email/welcome", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email, name: user.displayName })
         }).catch(console.error);
-
-        // Show Legal Consent Modal
         setTimeout(() => {
           if (window.customConfirm) {
             window.customConfirm(
@@ -489,7 +400,6 @@ onAuthStateChanged(auth, async (user) => {
           }
         }, 1000);
       }
-      
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
@@ -498,12 +408,9 @@ onAuthStateChanged(auth, async (user) => {
         lastLogin: serverTimestamp()
       }, { merge: true });
     } catch(e) { console.error("Login hook failed", e); }
-    
     loadProfile();
     loadExplore();
     loadLeaderboard();
-    
-    // Check for Share Token parameter in dashboard (?share=, ?token=, ?share_token=, ?shareToken=, ?code=)
     const urlParams = new URLSearchParams(window.location.search);
     const rawShareParam = urlParams.get('share') || urlParams.get('share_token') || urlParams.get('shareToken') || urlParams.get('code') || urlParams.get('token');
     const shareToken = rawShareParam ? rawShareParam.trim() : null;
@@ -515,8 +422,6 @@ onAuthStateChanged(auth, async (user) => {
       (async () => {
         try {
           let docData = null;
-
-          // 1. Direct Firestore client SDK lookup
           try {
             if (db && doc && getDoc) {
               const snap = await getDoc(doc(db, "share_links", shareToken));
@@ -530,8 +435,6 @@ onAuthStateChanged(auth, async (user) => {
           } catch(fsErr) {
             console.warn("Firestore share link lookup warning:", fsErr);
           }
-
-          // 2. Direct Firestore REST fallback
           if (!docData) {
             try {
               const fsUrl = `https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/share_links/${encodeURIComponent(shareToken)}`;
@@ -549,8 +452,6 @@ onAuthStateChanged(auth, async (user) => {
               }
             } catch(e) {}
           }
-
-          // 3. Server API fallback
           if (!docData) {
             try {
               const res = await fetch(`${window.API_BASE_URL}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(currentUser?.uid || 'Guest')}`);
@@ -560,42 +461,29 @@ onAuthStateChanged(auth, async (user) => {
               }
             } catch(e) {}
           }
-
           if (docData) {
             const d = docData;
-
-            // Legal Document
             if (d.docId && d.docId.startsWith('legal_')) {
               window.location.href = `https://dpgnotes.web.app/legal/index.html#${encodeURIComponent(d.docId.replace('legal_', ''))}`;
               return;
             }
-
-            // Video or Video Ad
             if (d.type === 'video' || d.type === 'ad_video' || (d.token && (d.token.startsWith('VSH_') || d.token.startsWith('VSH_AD_'))) || d.videoId) {
               const vParam = d.videoId ? (d.type === 'ad_video' ? `&adId=${encodeURIComponent(d.videoId)}` : `&id=${encodeURIComponent(d.videoId)}`) : '';
               window.location.href = `https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(d.token || shareToken)}${vParam}`;
               return;
             }
-
-            // Quiz Examination
             if (d.type === 'quiz' || d.subType === 'quiz' || d.isQuiz || (d.docId && d.docId.startsWith('quiz_')) || (d.token && d.token.startsWith('qz_')) || d.category === 'Examination Quiz') {
               window.location.href = `https://dpgnotes.web.app/Quizes/index.html?quizId=${encodeURIComponent(d.docId || d.quizId || d.targetId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
               return;
             }
-
-            // Practical Solution
             if (d.type === 'practical_solution' || d.subType === 'practical' || (d.docId && d.docId.startsWith('prac_'))) {
               window.location.href = `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(d.docId || d.solutionId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
               return;
             }
-
-            // Assignment Solution
             if (d.type === 'assignment_solution' || d.type === 'solution' || (d.docId && (d.docId.startsWith('assign_') || d.docId.startsWith('sol_')))) {
               window.location.href = `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(d.docId || d.solutionId || '')}&share_token=${encodeURIComponent(d.token || shareToken)}`;
               return;
             }
-
-            // Standard PDF Document
             const viewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${encodeURIComponent(d.docId || '')}&pdf=${encodeURIComponent(d.pdfUrl || '')}&title=${encodeURIComponent(d.title || '')}&category=${encodeURIComponent(d.category || '')}&discipline=${encodeURIComponent(d.discipline || '')}&uploader=${encodeURIComponent(d.uploader || '')}&docid=${encodeURIComponent(d.docId || '')}&description=${encodeURIComponent(d.description || '')}&tags=${encodeURIComponent(Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || ''))}&share=${encodeURIComponent(shareToken)}`;
             window.location.href = viewerUrl;
           } else {
@@ -607,8 +495,6 @@ onAuthStateChanged(auth, async (user) => {
         }
       })();
     }
-    
-    // 1. Check Permanent Blocks Directory
     (async () => {
       const blockQ = query(collection(db, "permanent_blocks"), where("block_email", "==", currentUser.email));
       const blockSnap = await getDocs(blockQ);
@@ -619,8 +505,6 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "index.html";
       }
     })();
-
-    // 2. Listen for Account Block
     onSnapshot(doc(db, "users", currentUser.uid), (snap) => {
       if (snap.exists() && snap.data().isBlocked) {
         alert("Your account has been suspended by an Administrator.");
@@ -628,7 +512,6 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "index.html";
       }
     });
-    
   } else {
     currentUser = null;
     const statusTxt = document.getElementById("authStatusText");
@@ -645,7 +528,6 @@ onAuthStateChanged(auth, async (user) => {
     }, 1200);
   }
 });
-
 const logoutBtn = document.getElementById("logoutBtn");
 if(logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
@@ -656,113 +538,75 @@ if(logoutBtn) {
     await signOut(auth);
   });
 }
-
-// =========================================
-// PROFILE DATA
-// =========================================
 function formatBioContent(bioText) {
   if (!bioText) return "No bio provided yet.";
   let html = bioText;
-
-  // Markdown Headers: #, ##, ###
   html = html.replace(/^### (.*$)/gim, '<h3 style="color:var(--primary-light,#818cf8); margin:0.6rem 0 0.3rem 0; font-size:1.1rem;">$1</h3>');
   html = html.replace(/^## (.*$)/gim, '<h2 style="color:var(--primary-light,#818cf8); margin:0.8rem 0 0.4rem 0; font-size:1.25rem;">$1</h2>');
   html = html.replace(/^# (.*$)/gim, '<h1 style="color:var(--primary-light,#818cf8); margin:1rem 0 0.5rem 0; font-size:1.4rem;">$1</h1>');
-
-  // Bold: **text** or __text__
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-
-  // Italics: *text* or _text_
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
   html = html.replace(/_(.*?)_/g, '<em>$1</em>');
-
-  // Inline Code: `code`
   html = html.replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:monospace; font-size:0.85em;">$1</code>');
-
-  // Markdown Links: [text](url)
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--primary-light); text-decoration:underline;">$1</a>');
-
-  // Raw URLs: https://...
   html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" style="color:var(--primary-light); text-decoration:underline;">$2</a>');
-
-  // Bullet Lists: - item
   html = html.replace(/^\s*-\s+(.*$)/gim, '<li style="margin-left:1.2rem;">$1</li>');
-
-  // Line breaks
   if (!html.includes('<br') && !html.includes('<p') && !html.includes('<h')) {
     html = html.replace(/\n/g, '<br>');
   }
   return html;
 }
-
 async function loadProfile() {
   document.getElementById("profileName").innerText = currentUser.displayName || "Contributor";
   document.getElementById("profileEmail").innerText = currentUser.email || "";
-  
   const avatarEl = document.getElementById("profileAvatar");
   avatarEl.onclick = () => {
     window.location.href = `/profile.html?uid=${currentUser.uid}`;
   };
-
   if (currentUser.photoURL) {
     avatarEl.innerHTML = `<img src="${currentUser.photoURL}" alt="Profile">`;
   }
-
-  // Pre-fill email and name from auth
   const settingNameEl = document.getElementById("settingName");
   const settingEmailEl = document.getElementById("settingEmail");
   if (settingNameEl && !settingNameEl.value) settingNameEl.value = currentUser.displayName || "";
   if (settingEmailEl) settingEmailEl.value = currentUser.email || "";
-  
   try {
     const userDoc = await getDoc(doc(db, "users", currentUser.uid));
     let userData = {};
     if (userDoc.exists()) {
       userData = userDoc.data();
-      
       if (userData.name && settingNameEl) settingNameEl.value = userData.name;
       if (userData.email && settingEmailEl) settingEmailEl.value = userData.email;
-      
       const settingUserType = document.getElementById("settingUserType");
       if (settingUserType && userData.userType) {
         settingUserType.value = userData.userType;
       }
-      
       const settingStudentId = document.getElementById("settingStudentId");
       if (settingStudentId && (userData.studentIdOrEmployeeId || userData.studentId)) {
         settingStudentId.value = userData.studentIdOrEmployeeId || userData.studentId;
       }
-
       const settingContact = document.getElementById("settingContact");
       if (settingContact && userData.contactNumber) {
         settingContact.value = userData.contactNumber;
       }
-
-      // Update ID label
       const lblId = document.getElementById("lblSettingId");
       if (lblId) {
         lblId.innerText = (userData.userType === "Teacher") ? "Employee ID / Teacher ID*" : "Student ID / Roll No*";
       }
-
-      // Override with Cloudinary Profile Photo if exists
       if (userData.profilePic) {
         document.getElementById("profileAvatar").innerHTML = `<img src="${userData.profilePic}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
       }
-      
       if (userData.bio) {
         document.getElementById("profileBio").innerHTML = formatBioContent(userData.bio);
         document.getElementById("settingBio").value = userData.bio;
       }
-      
       if (userData.theme) {
         document.getElementById("settingTheme").value = userData.theme;
         applyTheme(userData.theme);
       }
-      
       const socialLinksContainer = document.getElementById("profileSocialLinks");
       socialLinksContainer.innerHTML = "";
-      
       if (userData.linkedin) {
         document.getElementById("settingLinkedin").value = userData.linkedin;
         socialLinksContainer.innerHTML += `<a href="${userData.linkedin}" target="_blank" style="color:#0a66c2; font-size:1.35rem; text-decoration:none; display:inline-flex; align-items:center;" title="LinkedIn"><i class="bi bi-linkedin"></i></a>`;
@@ -771,14 +615,11 @@ async function loadProfile() {
         document.getElementById("settingGithub").value = userData.github;
         socialLinksContainer.innerHTML += `<a href="${userData.github}" target="_blank" style="color:#fff; font-size:1.35rem; text-decoration:none; display:inline-flex; align-items:center;" title="GitHub"><i class="bi bi-github"></i></a>`;
       }
-
       const twoFactorEl = document.getElementById("settingTwoFactorEnabled");
       if (twoFactorEl) {
         twoFactorEl.checked = userData.twoFactorEnabled !== false;
       }
     }
-
-    // Auto-fill from imported Guest Quiz candidate profile cache if fields are empty
     try {
       const pendingAutofillRaw = localStorage.getItem("dpg_pending_settings_autofill");
       if (pendingAutofillRaw) {
@@ -796,18 +637,12 @@ async function loadProfile() {
         }
       }
     } catch(e) {}
-
-    // Profile completion validation: User Type and Student/Employee ID are mandatory
     const isProfileIncomplete = !userData.userType || !(userData.studentIdOrEmployeeId || userData.studentId);
     window.dpgProfileIncomplete = isProfileIncomplete;
-
     const alertEl = document.getElementById("profileIncompleteAlert");
     if (alertEl) alertEl.style.display = isProfileIncomplete ? "block" : "none";
-
     const urlParams = new URLSearchParams(window.location.search);
     const isVerifiedLanding = urlParams.get("verified") === "1" || window.location.hash === "#settings";
-
-    // Dynamic verified banner in settings when landing after email verification
     let verifiedBanner = document.getElementById("profileVerifiedBanner");
     if (isVerifiedLanding && !verifiedBanner) {
       const st = document.getElementById("settingsTab");
@@ -828,7 +663,6 @@ async function loadProfile() {
         if (formEl) st.insertBefore(verifiedBanner, formEl);
       }
     }
-
     if (isProfileIncomplete || urlParams.get("tab") === "settingsTab" || isVerifiedLanding) {
       const settingsTabBtn = document.querySelector('.tab-btn[data-target="settingsTab"]');
       if (settingsTabBtn) {
@@ -840,23 +674,17 @@ async function loadProfile() {
       }
     }
   } catch(e) { console.error("Error loading user profile", e); }
-  
-  // Calculate contributions
   const q = query(collection(db, "documents"));
   const snap = await getDocs(q);
   let count = 0;
   let totalLikes = 0;
-  
   let totalShares = 0;
   let totalCtr = 0;
-  
   const delSelect = document.getElementById("contributorDelDocSelect");
   if (delSelect) {
     delSelect.innerHTML = '<option value="">-- Choose Document --</option>';
   }
-  
   window.myDocsCache = []; // Cache to lookup doc titles later
-  
   snap.forEach(doc => {
     const data = doc.data();
     if (data.userId === currentUser.uid) {
@@ -864,9 +692,7 @@ async function loadProfile() {
       if (data.likes) totalLikes += data.likes.length;
       if (data.shareCount) totalShares += data.shareCount;
       if (data.ctrCount) totalCtr += data.ctrCount;
-      
       window.myDocsCache.push({ id: doc.id, ...data });
-      
       if (delSelect) {
         const opt = document.createElement("option");
         opt.value = doc.id;
@@ -875,37 +701,26 @@ async function loadProfile() {
       }
     }
   });
-  
   document.getElementById("statContributions").innerText = count;
   document.getElementById("statLikes").innerText = totalLikes;
-  
   const statShares = document.getElementById("statShares");
   if (statShares) statShares.innerText = totalShares;
-  
   const statCtr = document.getElementById("statCtr");
   if (statCtr) statCtr.innerText = totalCtr;
 }
-
-// =========================================
-// LEADERBOARD
-// =========================================
 let isLeaderboardLoading = false;
 async function loadLeaderboard() {
   const leaderboardList = document.getElementById("leaderboardList");
   if (!leaderboardList || isLeaderboardLoading) return;
   isLeaderboardLoading = true;
-  
   try {
     const q = query(collection(db, "documents"));
     const snap = await getDocs(q);
-    
     const userStats = {};
-    
     snap.forEach(d => {
       const data = d.data();
       const uid = data.userId || data.uploaderUid || data.userEmail || data.userName;
       if (!uid) return;
-      
       const key = String(uid).trim().toLowerCase();
       if (!userStats[key]) {
         userStats[key] = { uid: data.userId || uid, name: data.userName || "Unknown", likes: 0, uploads: 0 };
@@ -913,24 +728,18 @@ async function loadLeaderboard() {
       userStats[key].uploads++;
       if (data.likes && Array.isArray(data.likes)) userStats[key].likes += data.likes.length;
     });
-    
     const sortedUsers = Object.values(userStats)
       .sort((a, b) => b.likes - a.likes || b.uploads - a.uploads)
       .slice(0, 3);
-      
     if (sortedUsers.length === 0) {
       leaderboardList.innerHTML = `<li style="color:var(--text-muted);">No contributors yet.</li>`;
       return;
     }
-    
-    // Fetch photos upfront in parallel
     const userDocs = await Promise.all(
       sortedUsers.map(u => getDoc(doc(db, "users", u.uid)).catch(() => null))
     );
-    
     const badges = ["🥇", "🥈", "🥉"];
     let htmlContent = "";
-    
     for (let i = 0; i < sortedUsers.length; i++) {
       const user = sortedUsers[i];
       const uDoc = userDocs[i];
@@ -939,7 +748,6 @@ async function loadLeaderboard() {
         const pic = uDoc.data().profilePic || uDoc.data().photoURL;
         photoHtml = `<img src="${pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />`;
       }
-      
       htmlContent += `
         <li style="display:flex; align-items:center; gap:1rem; padding:0.8rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
           <div style="font-size:1.5rem;">${badges[i]}</div>
@@ -951,10 +759,7 @@ async function loadLeaderboard() {
         </li>
       `;
     }
-    
-    // Atomic Single DOM Replacement
     leaderboardList.innerHTML = htmlContent;
-
   } catch (err) {
     console.error("Leaderboard Error:", err);
     leaderboardList.innerHTML = `<li style="color:#ef4444;">Failed to load leaderboard</li>`;
@@ -962,13 +767,6 @@ async function loadLeaderboard() {
     isLeaderboardLoading = false;
   }
 }
-
-// =========================================
-// EXPLORE TAB (Cards with Like/Share)
-// =========================================
-// =========================================
-// ACADEMIC CATEGORIES CONFIGURATION FOR EXPLORE
-// =========================================
 const DASHBOARD_EXPLORE_CATEGORIES = [
   { key: "SP", fullName: "Sample Papers & Model Sets", shortCode: "SP", icon: "ri-draft-line", accent: "#0ea5e9" },
   { key: "SE", fullName: "Sessional Exam Papers", shortCode: "SE", icon: "ri-file-list-3-line", accent: "#6366f1" },
@@ -979,7 +777,6 @@ const DASHBOARD_EXPLORE_CATEGORIES = [
   { key: "A&LR", fullName: "Aptitude & LR", shortCode: "A&LR", icon: "ri-brain-line", accent: "#f97316" },
   { key: "PQ", fullName: "Placement Question", shortCode: "PQ", icon: "ri-briefcase-line", accent: "#14b8a6" }
 ];
-
 function matchDashboardDocCategory(cat) {
   if (!cat) return "T&N";
   const c = String(cat).toLowerCase().trim();
@@ -993,16 +790,10 @@ function matchDashboardDocCategory(cat) {
   if (c.includes("placement") || c === "pq") return "PQ";
   return "T&N";
 }
-
-// =========================================
-// EXPLORE TAB (Categorized Grids matching Image 5)
-// =========================================
 async function loadExplore() {
   const hubContainer = document.getElementById("exploreHubContainer") || document.getElementById("exploreGrid");
   if (!hubContainer) return;
   hubContainer.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:2rem;'><i class='ri-loader-4-line spin-icon'></i> Loading curated academic collections...</p>";
-  
-  // Fetch users cache for social links & avatars
   let usersCache = window.__dpgUserCache || {};
   try {
     const uSnap = await getDocs(collection(db, "users"));
@@ -1012,8 +803,6 @@ async function loadExplore() {
       window.__dpgUserCache[uDoc.id] = { uid: uDoc.id, ...uData };
     });
   } catch(e) {}
-
-  // Parallel fetch documents, verified solutions, and published quizzes
   let docsSnap = { forEach: () => {} };
   let solutionsSnap = { forEach: () => {} };
   let quizzesSnap = { forEach: () => {} };
@@ -1035,8 +824,6 @@ async function loadExplore() {
   } catch (err) {
     console.error("Dashboard explore fetch error:", err);
   }
-  
-  // Filter approved docs
   let docsArray = [];
   docsSnap.forEach(doc => {
     const d = doc.data();
@@ -1048,31 +835,24 @@ async function loadExplore() {
     ));
     const isApproved = d.status === "approved" || d.isApproved === true;
     const isPrivate = d.visibility === "private" || d.isPasswordProtected === true || d.isPublic === false;
-
     if (isOwner) {
       docsArray.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: 'documents', ...d });
     } else if (!isPrivate && isApproved) {
       docsArray.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: 'documents', ...d });
     }
   });
-
-  // Extract verified solutions
   const solutions = [];
   solutionsSnap.forEach(doc => {
     const d = doc.data();
     if (d.status === 'unverified' || d.isVerified === false) return;
     solutions.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: (d.type === 'practical' || doc.ref.path.includes('practical')) ? 'practical_solutions' : 'assignment_solutions', ...d });
   });
-
-  // Extract published quizzes
   const quizzes = [];
   quizzesSnap.forEach(doc => {
     const d = doc.data();
     if (d.isPublic === false || d.status === 'archived') return;
     quizzes.push({ id: doc.id, _docRefPath: doc.ref.path, _coll: 'quizDirectory', isQuiz: true, ...d });
   });
-  
-  // Sort values
   const sortVal = document.getElementById("exploreSort") ? document.getElementById("exploreSort").value : "newest";
   const sortFn = (a, b) => {
     if (sortVal === "oldest") {
@@ -1089,16 +869,12 @@ async function loadExplore() {
              (a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime());
     }
   };
-
   docsArray.sort(sortFn);
   solutions.sort(sortFn);
   quizzes.sort(sortFn);
-  
-  // Apply search query filter if user typed in search box
   const searchInput = document.getElementById("exploreSearch");
   const queryStr = searchInput ? searchInput.value.toLowerCase().trim() : "";
   let isFiltered = Boolean(queryStr);
-
   if (isFiltered) {
     docsArray = docsArray.filter(d =>
       (d.title || "").toLowerCase().includes(queryStr) ||
@@ -1122,14 +898,8 @@ async function loadExplore() {
       (Array.isArray(q.tags) ? q.tags.join(" ") : "").toLowerCase().includes(queryStr)
     ));
   }
-
-  // Device-Specific Feed Count Rule:
-  // Desktop (>1024px) & Phone (<=640px): 3 Resources per stream
-  // Tablet (641px - 1024px): 4 Resources per stream (2x2 grid as shown in Image 5)
   const isTablet = window.innerWidth >= 641 && window.innerWidth <= 1024;
   const feedLimit = isTablet ? 4 : 3;
-
-  // Group docs by category
   const grouped = {};
   DASHBOARD_EXPLORE_CATEGORIES.forEach(c => { grouped[c.key] = []; });
   docsArray.forEach(d => {
@@ -1138,8 +908,6 @@ async function loadExplore() {
       grouped[catKey].push(d);
     }
   });
-
-  // Helper to render card HTML
   function renderCardHtml(data, isSol = false, isQuiz = false) {
     const isQuizCard = isQuiz || Boolean(data.isQuiz);
     const docId = data.id;
@@ -1149,26 +917,21 @@ async function loadExplore() {
     const hasLiked = activeUid ? likedByArr.includes(activeUid) : false;
     const isApproved = data.status === "approved" || data.isApproved === true || isSol || isQuizCard;
     const isPrivate = data.visibility === "private" || data.isPasswordProtected === true;
-
     const authorUid = data.userId || data.uploaderId || data.uploaderUid || data.contributorUid || data.ownerUid || "";
     const authorUser = (authorUid && usersCache[authorUid]) || null;
     const authorName = data.userName || data.uploader || data.contributorName || data.ownerName || (authorUser && authorUser.name) || "Verified Contributor";
     const authorPhoto = (authorUser && (authorUser.profilePic || authorUser.photoURL || authorUser.avatarUrl)) || data.contributorPhoto || data.userPhoto || "https://dpgnotes.web.app/ANH.png";
-
     const title = data.title || data.subjectName || "Academic Resource";
     const discipline = data.discipline || data.course || data.subjectName || "Computer Science";
     const categoryName = isQuizCard ? "Examination Quiz" : (isSol ? (data.type === 'practical' ? "Practical Solution" : "Assignment Solution") : (data.category || "Academic Notes"));
     const catColor = isQuizCard ? "#f59e0b" : (isSol ? (data.type === 'practical' ? "#10b981" : "#06b6d4") : "#6366f1");
     const catIcon = isQuizCard ? "ri-questionnaire-line" : (isSol ? (data.type === 'practical' ? "ri-flask-line" : "ri-file-code-line") : "ri-file-text-line");
-
     const targetUrl = isQuizCard
       ? `https://dpgnotes.web.app/Quizes/index.html?quizId=${encodeURIComponent(docId)}`
       : (isSol
         ? (data.type === 'practical' ? `https://dpgnotes.web.app/PracticalSolution/index.html?id=${encodeURIComponent(docId)}` : `https://dpgnotes.web.app/AssignmentSolution/index.html?id=${encodeURIComponent(docId)}`)
         : `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?resourceID=${docId}&pdf=${encodeURIComponent(data.pdfUrl || '')}&title=${encodeURIComponent(title)}&category=${encodeURIComponent(data.category || '')}&discipline=${encodeURIComponent(discipline)}&uploader=${encodeURIComponent(authorName)}&docid=${encodeURIComponent(data.documentId || '')}`);
-
     const profileUrl = authorUid ? `profile.html?uid=${encodeURIComponent(authorUid)}` : `profile.html`;
-
     return `
       <article class="academic-res-card" style="background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.25s, border-color 0.25s;">
         <div>
@@ -1235,12 +998,8 @@ async function loadExplore() {
       </article>
     `;
   }
-
-  // Render Streams
   let renderedStreams = 0;
   hubContainer.innerHTML = "";
-
-  // 0. Interactive Examination Quizzes Stream
   if (quizzes.length > 0 && !isFiltered) {
     renderedStreams++;
     const displayQuizzes = quizzes.slice(0, feedLimit);
@@ -1263,8 +1022,6 @@ async function loadExplore() {
     `;
     hubContainer.appendChild(qzSection);
   }
-
-  // 1. Assignment & Practical Solutions (Only if both solutions total >= 4)
   if (solutions.length >= 4) {
     renderedStreams++;
     const displaySols = solutions.slice(0, feedLimit);
@@ -1287,8 +1044,6 @@ async function loadExplore() {
     `;
     hubContainer.appendChild(solSection);
   }
-
-  // 2. Sample Papers & Model Sets + All other categories (Only if category docs >= 4)
   DASHBOARD_EXPLORE_CATEGORIES.forEach(cat => {
     const docs = grouped[cat.key] || [];
     if (docs.length >= 4) {
@@ -1314,8 +1069,6 @@ async function loadExplore() {
       hubContainer.appendChild(catSection);
     }
   });
-
-  // Fallback: If user searched and filtered out specific categories, or total streams is 0
   if (renderedStreams === 0 || isFiltered) {
     const combined = [
       ...quizzes.map(q => ({ item: q, isSol: false, isQuiz: true })),
@@ -1335,32 +1088,25 @@ async function loadExplore() {
       hubContainer.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:3rem;'>No resources or quizzes found matching the criteria.</p>";
     }
   }
-
   attachEngagementListeners();
 }
-
-// Enable touch & mouse horizontal drag & key navigation for Ads Itemized breakdown table
 window.scrollAdsTable = function(delta) {
   const scroller = document.getElementById("contribAdsTableScroller");
   if (scroller) {
     scroller.scrollBy({ left: delta, behavior: 'smooth' });
   }
 };
-
 function initDashboardTableDragScroll() {
   const scrollers = [
     document.getElementById("contribAdsTableScroller"),
     document.getElementById("ytVideosTableScroller")
   ].filter(Boolean);
-
   scrollers.forEach(scroller => {
     let isDown = false;
     let startX;
     let scrollLeft;
     let touchStartX = 0;
     let touchScrollLeft = 0;
-
-    // Mouse drag support
     scroller.addEventListener('mousedown', (e) => {
       isDown = true;
       scroller.style.cursor = 'grabbing';
@@ -1382,27 +1128,21 @@ function initDashboardTableDragScroll() {
       const walk = (x - startX) * 1.5;
       scroller.scrollLeft = scrollLeft - walk;
     });
-
-    // Touch gesture support for mobile & tablet hand gesture swapping
     scroller.addEventListener('touchstart', (e) => {
       if (e.touches && e.touches.length > 0) {
         touchStartX = e.touches[0].pageX - scroller.offsetLeft;
         touchScrollLeft = scroller.scrollLeft;
       }
     }, { passive: true });
-
     scroller.addEventListener('touchmove', (e) => {
       if (!touchStartX || !e.touches || e.touches.length === 0) return;
       const currentX = e.touches[0].pageX - scroller.offsetLeft;
       const diff = (currentX - touchStartX) * 1.2;
       scroller.scrollLeft = touchScrollLeft - diff;
     }, { passive: true });
-
     scroller.addEventListener('touchend', () => {
       touchStartX = 0;
     }, { passive: true });
-
-    // Arrow key navigation when table scroller has focus
     scroller.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -1415,10 +1155,6 @@ function initDashboardTableDragScroll() {
   });
 }
 setTimeout(initDashboardTableDragScroll, 1000);
-
-// =========================================
-// UPLOAD LOGIC
-// =========================================
 let isResourceUploading = false;
 const uploadForm = document.getElementById("uploadForm");
 if(uploadForm) {
@@ -1427,72 +1163,53 @@ if(uploadForm) {
     if(!currentUser) return alert("Please login first");
     if(isResourceUploading) return;
     isResourceUploading = true;
-    
     const submitBtn = uploadForm.querySelector("button[type='submit']");
     submitBtn.innerText = "Uploading...";
     submitBtn.disabled = true;
-
     try {
-      // 2. FILE UPLOAD (PDF)
       let finalPdfUrl = document.getElementById("pdfUrl").value.trim();
       const pdfFile = document.getElementById("pdfFile").files[0];
-      
       if (pdfFile) {
-        // ILovePDF free tier limit is 250MB
         if (pdfFile.size > 262144000) {
           throw new Error("File size exceeds 250MB limit. Please provide a direct link instead.");
         }
-        
-        // INTERCEPT > 10MB (Cloudinary Free Tier Raw Limit)
         if (pdfFile.size > 10 * 1024 * 1024) {
           document.getElementById("compressionModal").style.display = "flex";
           submitBtn.innerText = "Upload Document";
           submitBtn.disabled = false;
-          
-          // Wait for user to interact with modal
           return new Promise((resolve, reject) => {
             document.getElementById("cancelCompressBtn").onclick = () => {
               document.getElementById("compressionModal").style.display = "none";
               reject(new Error("Compression cancelled by user."));
             };
-            
             document.getElementById("startCompressBtn").onclick = async () => {
               const actionsDiv = document.getElementById("compressActions");
               const progressDiv = document.getElementById("compressProgressContainer");
               const progressStatus = document.getElementById("compressProgressStatus");
               const progressPercent = document.getElementById("compressProgressPercent");
               const progressBar = document.getElementById("compressProgressBar");
-              
               actionsDiv.style.display = "none";
               progressDiv.style.display = "block";
-              
               const updateProgress = (pct, status) => {
                 progressBar.style.width = pct + "%";
                 progressPercent.innerText = pct + "%";
                 progressStatus.innerText = status;
               };
-              
               updateProgress(0, "Preparing file...");
-              
               try {
                 const quality = document.querySelector('input[name="compressQuality"]:checked').value;
                 const formData = new FormData();
                 formData.append("pdfFile", pdfFile);
                 formData.append("quality", quality);
-                
                 const xhr = new XMLHttpRequest();
                 xhr.open("POST", window.API_BASE_URL + "/api/compress");
-                
-                // Track Upload Progress (first 50% of overall progress)
                 xhr.upload.addEventListener("progress", (e) => {
                   if (e.lengthComputable) {
                     const pct = Math.round((e.loaded / e.total) * 50);
                     updateProgress(pct, `Uploading to server (${(e.loaded / (1024*1024)).toFixed(1)}MB / ${(e.total / (1024*1024)).toFixed(1)}MB)...`);
                   }
                 });
-                
                 let processInterval;
-                // Once upload completes, process state kicks in
                 xhr.upload.addEventListener("load", () => {
                   let currentPct = 50;
                   updateProgress(currentPct, "Upload complete. Connecting to ILovePDF API...");
@@ -1506,9 +1223,7 @@ if(uploadForm) {
                     }
                   }, 250);
                 });
-                
                 xhr.responseType = "blob";
-                
                 xhr.onload = () => {
                   clearInterval(processInterval);
                   if (xhr.status >= 200 && xhr.status < 300) {
@@ -1524,7 +1239,6 @@ if(uploadForm) {
                     a.click();
                     setTimeout(() => window.URL.revokeObjectURL(url), 40000);
                     document.body.removeChild(a);
-                    
                     setTimeout(() => {
                       alert("Compression successful! The compressed PDF has been downloaded. Please upload the new compressed file.");
                       document.getElementById("compressionModal").style.display = "none";
@@ -1543,7 +1257,6 @@ if(uploadForm) {
                     reader.readAsText(xhr.response);
                   }
                 };
-                
                 xhr.onerror = () => {
                   clearInterval(processInterval);
                   alert("Network error occurred during compression.");
@@ -1551,9 +1264,7 @@ if(uploadForm) {
                   progressDiv.style.display = "none";
                   reject(new Error("Network error"));
                 };
-                
                 xhr.send(formData);
-                
               } catch (e) {
                 alert(e.message);
                 actionsDiv.style.display = "flex";
@@ -1563,39 +1274,30 @@ if(uploadForm) {
             };
           });
         }
-        
         const formData = new FormData();
         formData.append("pdfFile", pdfFile);
-        
         const res = await fetch(window.API_BASE_URL + "/api/upload", {
           method: "POST",
           body: formData
         });
-        
         if(!res.ok) throw new Error("Upload failed");
-        
         const data = await res.json();
         finalPdfUrl = data.pdfUrl;
       }
-      
       if (!finalPdfUrl) throw new Error("Please provide a PDF link or file.");
-
       const title = document.getElementById("title").value;
       const visibilityVal = document.getElementById("resourceVisibility")?.value || "public";
       const isPrivate = visibilityVal === "private";
-
       let passwordHash = "";
       if (isPrivate) {
         const rawPw = document.getElementById("resourcePassword")?.value.trim() || "";
         if (!rawPw || rawPw.length < 4) {
           throw new Error("Private resources require an access password of at least 4 characters.");
         }
-        // Compute SHA-256 hash of password
         const msgBuffer = new TextEncoder().encode(rawPw);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
         passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
       }
-
       const docData = {
         category: document.getElementById("category").value,
         discipline: document.getElementById("discipline").value,
@@ -1619,10 +1321,7 @@ if(uploadForm) {
         createdAt: serverTimestamp(),
         likes: []
       };
-
       await addDoc(collection(db, "documents"), docData);
-      
-      // LOG UPLOAD ACTIVITY
       try {
         await addDoc(collection(db, "activity_logs"), {
           userId: currentUser.uid,
@@ -1632,15 +1331,11 @@ if(uploadForm) {
           timestamp: serverTimestamp()
         });
       } catch(e) {}
-      
-      // Calculate Follower & First Contribution Logic
       try {
         const qDocs = query(collection(db, "documents"));
         const snapDocs = await getDocs(qDocs);
-        
         const followerSet = new Set();
         let userDocCount = 0;
-        
         snapDocs.forEach(d => {
           const data = d.data();
           if (data.userId === currentUser.uid) {
@@ -1650,18 +1345,12 @@ if(uploadForm) {
             }
           }
         });
-        
-        // Exclude self from followers
         followerSet.delete(currentUser.uid);
-        
-        // 1. Thank You Email (Standard)
         fetch(window.API_BASE_URL + "/api/upload/notify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: currentUser.email, title: title })
         }).catch(console.error);
-        
-        // 2. First Contribution Check
         if (userDocCount === 1) {
           fetch(window.API_BASE_URL + "/api/email/first-contribution", {
             method: "POST",
@@ -1669,8 +1358,6 @@ if(uploadForm) {
             body: JSON.stringify({ email: currentUser.email, title: title })
           }).catch(console.error);
         }
-        
-        // 3. New Resource Alert for Followers
         if (followerSet.size > 0) {
           const followerEmails = [];
           for (let uid of followerSet) {
@@ -1694,34 +1381,26 @@ if(uploadForm) {
       } catch(e) {
         console.error("Follower notification notice:", e);
       }
-
-      // Accurate DOM Success Message reflecting Admin Approval requirement
       const uploadSuccessHtml = `Resource <strong>"${title}"</strong> submitted successfully! 🎓<br><br>
       • Status: <span style="color:#f59e0b;font-weight:700;">⏳ Pending Administrator Review</span><br>
       • Access Control: <strong>${isPrivate ? '🔒 Private (Password Protected)' : '🌐 Public'}</strong><br><br>
       To maintain academic quality, your document requires Administrator approval before it appears publicly in Explore, Home page, and Search Results.<br><br>
       You can review and manage your resource in the <strong>"Manage Resources"</strong> tab.`;
-
       if (window.customAlert) {
         await window.customAlert(uploadSuccessHtml, { title: "Resource Submitted for Approval 📄" });
       } else {
         alert(`Resource "${title}" submitted successfully!\n\nStatus: Pending Administrator Review\nAccess: ${isPrivate ? 'Private (Password Protected)' : 'Public'}\n\nYour resource will appear publicly once approved by an Administrator.`);
       }
-
       uploadForm.reset();
       const pwGroup = document.getElementById("resourcePasswordGroup");
       if (pwGroup) pwGroup.style.display = "none";
-
       loadProfile();
       loadExplore();
       loadContributorManageResources();
-      
-      // Switch to Manage Resources tab so contributor sees their submitted resource and status
       const manageBtn = document.querySelector('.tab-btn[data-target="manageResourcesTab"]');
       if (manageBtn) {
         manageBtn.click();
       }
-      
     } catch(err) {
       console.error(err);
       alert("Upload Failed: " + err.message);
@@ -1732,10 +1411,6 @@ if(uploadForm) {
     }
   });
 }
-
-// =========================================
-// CONTRIBUTOR DELETE LOGIC
-// =========================================
 const contributorDeleteForm = document.getElementById("contributorDeleteForm");
 if (contributorDeleteForm) {
   contributorDeleteForm.addEventListener("submit", async (e) => {
@@ -1743,10 +1418,8 @@ if (contributorDeleteForm) {
     const docId = document.getElementById("contributorDelDocSelect").value;
     const reasonInput = document.getElementById("contributorDelReason").value.trim();
     if (!docId) return;
-    
     const docItem = window.myDocsCache.find(d => d.id === docId);
     if (!docItem) return;
-    
     if (window.customConfirm) {
       const confirmDelete = await window.customConfirm(
         `Are you sure you want to delete "${docItem.title}"? This will permanently delete the resource under our <a href="legal/index.html#retention" target="_blank" style="color:var(--primary-light);text-decoration:underline;">Data Retention Policy</a>.`,
@@ -1754,19 +1427,15 @@ if (contributorDeleteForm) {
       );
       if (!confirmDelete) return;
     }
-    
     let reason = reasonInput;
     if (reason.length > 0 && (reason.length < 50 || reason.length > 150)) {
       alert("Custom reason must be between 50 and 150 characters.");
       return;
     }
-    
     if (!reason) {
       reason = "The author has decided to remove this document from the platform. We apologize for any inconvenience caused.";
     }
-    
     try {
-      // 1. Send Notification request to Backend FIRST (so backend can read 'likes' array before it's deleted)
       await fetch(window.API_BASE_URL + "/api/email/contributor-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1778,10 +1447,7 @@ if (contributorDeleteForm) {
           likerUids: docItem.likes || []
         })
       });
-      
-      // 2. Delete from Firestore
       await deleteDoc(doc(db, "documents", docId));
-      
       alert("Document successfully deleted. Admins and likers have been notified.");
       contributorDeleteForm.reset();
       loadProfile(); // Refresh list
@@ -1792,10 +1458,6 @@ if (contributorDeleteForm) {
     }
   });
 }
-
-// =========================================
-// SETTINGS LOGIC
-// =========================================
 const settingsForm = document.getElementById("settingsForm");
 const settingUserTypeEl = document.getElementById("settingUserType");
 if (settingUserTypeEl) {
@@ -1806,22 +1468,18 @@ if (settingUserTypeEl) {
     }
   });
 }
-
 if(settingsForm) {
   settingsForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if(!currentUser) return;
-    
     const submitBtn = settingsForm.querySelector("button[type='submit']");
     submitBtn.innerText = "Saving...";
     submitBtn.disabled = true;
-    
     try {
       const name = document.getElementById("settingName")?.value.trim() || currentUser.displayName || "";
       const userType = document.getElementById("settingUserType")?.value || "";
       const studentIdOrEmployeeId = document.getElementById("settingStudentId")?.value.trim() || "";
       const contactNumber = document.getElementById("settingContact")?.value.trim() || "";
-
       if (!userType) {
         alert("Please select your User Type (Student or Teacher).");
         submitBtn.innerText = "Save Changes";
@@ -1834,7 +1492,6 @@ if(settingsForm) {
         submitBtn.disabled = false;
         return;
       }
-
       const bio = document.getElementById("settingBio").value;
       const linkedin = document.getElementById("settingLinkedin").value.trim();
       const github = document.getElementById("settingGithub").value.trim();
@@ -1842,20 +1499,15 @@ if(settingsForm) {
       const photoFile = document.getElementById("settingPhoto").files[0];
       const bannerInput = document.getElementById("settingBanner");
       const bannerFile = bannerInput ? bannerInput.files[0] : null;
-
-      // Apply theme immediately
       applyTheme(theme);
-      
       let profileUrl = null;
       if (photoFile) {
         const formData = new FormData();
         formData.append("pdfFile", photoFile); // API expects pdfFile key
-        
         const res = await fetch(window.API_BASE_URL + "/api/upload?type=profile", {
           method: "POST",
           body: formData
         });
-        
         if(res.ok) {
           const data = await res.json();
           profileUrl = data.pdfUrl;
@@ -1863,7 +1515,6 @@ if(settingsForm) {
           alert("Profile photo upload failed.");
         }
       }
-
       let bannerUrl = null;
       if (bannerFile) {
         const formData = new FormData();
@@ -1879,7 +1530,6 @@ if(settingsForm) {
           alert("Header banner photo upload failed.");
         }
       }
-
       const updateData = { 
         bio, 
         linkedin, 
@@ -1896,13 +1546,9 @@ if(settingsForm) {
       if (bannerUrl) {
         updateData.bannerPic = bannerUrl;
       }
-
-      // Two-Factor Authentication preference
       const twoFactorCheckbox = document.getElementById("settingTwoFactorEnabled");
       const twoFactorEnabled = twoFactorCheckbox ? twoFactorCheckbox.checked : true;
       updateData.twoFactorEnabled = twoFactorEnabled;
-
-      // Password setup / update for existing & new users
       const newPassword = document.getElementById("settingNewPassword")?.value || "";
       const confirmPassword = document.getElementById("settingConfirmPassword")?.value || "";
       if (newPassword) {
@@ -1918,38 +1564,27 @@ if(settingsForm) {
           submitBtn.disabled = false;
           return;
         }
-
-        // Store encrypted / SHA-256 hash in Firestore
         const msgUint8 = new TextEncoder().encode(newPassword);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         updateData.passwordHash = hashHex;
-
-        // Also update / set Firebase Auth user password
         try {
           await updatePassword(currentUser, newPassword);
           console.log("Firebase Auth password successfully updated/set.");
         } catch(pwErr) {
           console.warn("Direct updatePassword error (may require re-authentication):", pwErr);
         }
-
-        // Clear password fields
         const np = document.getElementById("settingNewPassword");
         const cp = document.getElementById("settingConfirmPassword");
         if (np) np.value = "";
         if (cp) cp.value = "";
       }
-
-      // Update Firestore securely by merging
-      // Check for first setting update
       const isFirstUpdate = !localStorage.getItem("firstSettingUpdateDone");
       await setDoc(doc(db, "users", currentUser.uid), updateData, { merge: true });
-      
       window.dpgProfileIncomplete = false;
       const verifiedBanner = document.getElementById("profileVerifiedBanner");
       if (verifiedBanner) verifiedBanner.remove();
-
       if (isFirstUpdate) {
         localStorage.setItem("firstSettingUpdateDone", "true");
         if (window.customConfirm) {
@@ -1973,25 +1608,19 @@ if(settingsForm) {
     }
   });
 }
-
-// Account Deletion Logic
 const deleteAccountBtn = document.getElementById("deleteAccountBtn");
 if (deleteAccountBtn) {
   deleteAccountBtn.addEventListener("click", async () => {
     if (!currentUser) return;
-    
     const confirm1 = await window.customConfirm("Are you absolutely sure you want to delete your account? This will permanently delete your profile and ALL your uploaded documents from DPGNotes. This action CANNOT be undone.", { title: "Delete Account?", isDanger: true });
     if (!confirm1) return;
-    
     const confirm2 = await window.customConfirm("Click confirm to permanently delete your account and all files. This is your final warning.", { title: "Final Warning", isDanger: true, confirmText: "Delete Permanently" });
     if (!confirm2) {
       alert("Account deletion cancelled.");
       return;
     }
-    
     deleteAccountBtn.innerText = "Deleting Account...";
     deleteAccountBtn.disabled = true;
-    
     try {
       const idToken = await currentUser.getIdToken(true);
       const res = await fetch(window.API_BASE_URL + "/api/contributor/delete-account", {
@@ -1999,7 +1628,6 @@ if (deleteAccountBtn) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken })
       });
-      
       const data = await res.json();
       if (res.ok) {
         alert("Your account and all associated documents have been successfully deleted. Thank you for your contributions.");
@@ -2016,25 +1644,18 @@ if (deleteAccountBtn) {
     }
   });
 }
-
-// =========================================
-// ENGAGEMENT
-// =========================================
 function attachEngagementListeners() {
   document.querySelectorAll(".like-action").forEach(btn => {
     if (btn.dataset.likeBound === "true") return;
     btn.dataset.likeBound = "true";
-
     btn.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
-
       const activeUser = currentUser || (auth && auth.currentUser) || (localStorage.getItem("dpgActiveUserUid") ? {
         uid: localStorage.getItem("dpgActiveUserUid"),
         displayName: localStorage.getItem("dpgActiveUserName") || "Verified Contributor",
         email: localStorage.getItem("dpgActiveUserEmail") || ""
       } : null);
-
       if (!activeUser || !activeUser.uid) {
         if (typeof window.customAlert === 'function') {
           await window.customAlert("Please sign in with your account to like and appreciate this resource.", { title: "Sign In Required" });
@@ -2043,7 +1664,6 @@ function attachEngagementListeners() {
         }
         return;
       }
-
       const docId = btn.dataset.id;
       const isSol = btn.dataset.isSol === "true";
       const docPath = btn.dataset.path;
@@ -2051,12 +1671,10 @@ function attachEngagementListeners() {
       const title = btn.dataset.title || "Academic Resource";
       const originalHtml = btn.innerHTML;
       btn.innerText = "⏳...";
-
       let userHasLiked = false;
       let newLikesCount = 0;
       let newlyUseful = false;
       let shareCount = 0;
-
       try {
         let docRef;
         if (docPath && docPath.includes("/")) {
@@ -2068,29 +1686,23 @@ function attachEngagementListeners() {
         } else {
           docRef = doc(db, "documents", docId);
         }
-
         await runTransaction(db, async (t) => {
           const docSnap = await t.get(docRef);
           if (!docSnap.exists()) throw "Resource document not found!";
-
           const dData = docSnap.data();
           let likedByArr = Array.isArray(dData.likedBy) ? [...dData.likedBy] : (Array.isArray(dData.likes) ? [...dData.likes] : []);
           let currentLikesCount = typeof dData.likes === "number" ? dData.likes : likedByArr.length;
           shareCount = dData.shareCount || dData.shares || 0;
           const usefulResourceEmailed = dData.usefulResourceEmailed || false;
-
           if (likedByArr.includes(activeUser.uid)) {
-            // Unlike
             likedByArr = likedByArr.filter(id => id !== activeUser.uid);
             currentLikesCount = Math.max(0, currentLikesCount - 1);
             userHasLiked = false;
           } else {
-            // Like
             likedByArr.push(activeUser.uid);
             currentLikesCount = currentLikesCount + 1;
             userHasLiked = true;
           }
-
           const updates = {};
           if (isSol || typeof dData.likes === "number") {
             updates.likes = currentLikesCount;
@@ -2099,34 +1711,26 @@ function attachEngagementListeners() {
             updates.likes = likedByArr;
             updates.likedBy = likedByArr;
           }
-
           if (userHasLiked && (currentLikesCount >= 15 || shareCount >= 5) && !usefulResourceEmailed) {
             updates.usefulResourceEmailed = true;
             newlyUseful = true;
           }
-
           t.update(docRef, updates);
           newLikesCount = currentLikesCount;
         });
-
-        // Update UI in-place
         btn.innerHTML = `${userHasLiked ? '❤️ Liked' : '🤍 Like'} (${newLikesCount})`;
         btn.classList.toggle('liked', userHasLiked);
-
-        // Notify owner if newly liked
         if (userHasLiked && ownerUid) {
           try {
             const ownerDoc = await getDoc(doc(db, "users", ownerUid));
             if (ownerDoc.exists() && ownerDoc.data().email) {
               const ownerEmail = ownerDoc.data().email;
               const ownerName = ownerDoc.data().name;
-
               fetch((window.API_BASE_URL || 'https://dpgnotes.onrender.com') + "/api/email/like-notification", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: ownerEmail, resourceTitle: title, likerName: activeUser.displayName || "Someone" })
               }).catch(e => console.error("Email API failed:", e));
-
               addDoc(collection(db, "notifications"), {
                 email: ownerEmail,
                 type: "like",
@@ -2139,7 +1743,6 @@ function attachEngagementListeners() {
             console.warn("Notification error:", notifErr);
           }
         }
-
         if (typeof loadProfile === 'function') loadProfile();
       } catch (err) {
         console.error("Like error:", err);
@@ -2153,19 +1756,16 @@ function attachEngagementListeners() {
     });
   });
 }
-
   window.handleDashboardShare = async function(event, docId, title, category, discipline, uploader, pdfUrl, description, tags, resourceType = 'document') {
     const btn = event.currentTarget;
     const originalText = btn.innerText;
     btn.innerText = "⏳ Generating...";
-
     try {
       const isQuiz = resourceType === 'quiz';
     const isSol = resourceType === 'practical_solution' || resourceType === 'assignment_solution' || resourceType === 'solution';
     const prefix = isQuiz ? 'qz_' : (isSol ? 'sol_' : 'sh_');
     const token = prefix + Math.random().toString(36).substring(2, 9);
     const uploaderUid = (currentUser && currentUser.uid) || localStorage.getItem('dpgActiveUserUid') || '';
-
     const shareData = {
       token: token,
       type: isQuiz ? 'quiz' : (isSol ? 'solution' : 'document'),
@@ -2183,7 +1783,6 @@ function attachEngagementListeners() {
       clicks: 0,
       createdAt: new Date().toISOString()
     };
-
     try {
       if (db && doc && setDoc) {
         await setDoc(doc(db, "share_links", token), shareData, { merge: true });
@@ -2191,7 +1790,6 @@ function attachEngagementListeners() {
     } catch (fsErr) {
       console.warn("Direct Firestore share_links write warning:", fsErr);
     }
-    
     let shareUrl = `${window.location.origin}/dashboard.html?share=${token}`;
     try {
       const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
@@ -2209,7 +1807,6 @@ function attachEngagementListeners() {
       }
     } catch(_) {}
       let shared = false;
-      
       if (navigator.share) {
         try {
           await navigator.share({
@@ -2224,16 +1821,12 @@ function attachEngagementListeners() {
           }
         }
       } 
-      
       if (!shared) {
         await navigator.clipboard.writeText(shareUrl);
         alert("Smart Link copied to clipboard!");
         shared = true;
       }
-      
       btn.innerText = "✅ Shared";
-      
-      // Track share
       if (shared && currentUser) {
         try {
           await runTransaction(db, async (t) => {
@@ -2245,15 +1838,12 @@ function attachEngagementListeners() {
             }
             currentShares++;
             t.set(userRef, { shares: currentShares }, { merge: true });
-            
-            // Email milestones
             if (currentShares === 10) {
               fetch(window.API_BASE_URL + "/api/email/ten-shares-generation", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: currentUser.email, name: currentUser.displayName })
               }).catch(e => console.error(e));
-              
               addDoc(collection(db, "notifications"), {
                 email: currentUser.email,
                 type: "milestone",
@@ -2262,14 +1852,12 @@ function attachEngagementListeners() {
                 createdAt: serverTimestamp()
               }).catch(e => console.error(e));
             }
-            
             if (currentShares === 15) {
               fetch(window.API_BASE_URL + "/api/email/fifteen-shares", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: currentUser.email, name: currentUser.displayName })
               }).catch(e => console.error(e));
-              
               addDoc(collection(db, "notifications"), {
                 email: currentUser.email,
                 type: "milestone",
@@ -2283,8 +1871,6 @@ function attachEngagementListeners() {
           console.error("Share tracking failed", err);
         }
       }
-      
-      // Useful Resource check on Share
       if (shared) {
         (async () => {
           try {
@@ -2294,10 +1880,8 @@ function attachEngagementListeners() {
               const lCount = dData.likes ? dData.likes.length : 0;
               const sCount = dData.shareCount || 0;
               const usefulEmailed = dData.usefulResourceEmailed || false;
-              
               if ((lCount >= 15 || sCount >= 5) && !usefulEmailed) {
                 await updateDoc(doc(db, "documents", docId), { usefulResourceEmailed: true });
-                
                 const ownerDoc = await getDoc(doc(db, "users", dData.userId));
                 if (ownerDoc.exists() && ownerDoc.data().email) {
                   fetch(window.API_BASE_URL + "/api/email/useful-resource-honour", {
@@ -2311,7 +1895,6 @@ function attachEngagementListeners() {
                       sharesCount: sCount 
                     })
                   }).catch(e => console.error(e));
-                  
                   addDoc(collection(db, "notifications"), {
                     email: ownerDoc.data().email,
                     type: "milestone",
@@ -2331,33 +1914,23 @@ function attachEngagementListeners() {
     }
     setTimeout(() => btn.innerText = originalText, 3000);
   };
-
-// Live Search for Explore Tab
 const exploreSearchInput = document.getElementById('exploreSearch');
 if (exploreSearchInput) {
   exploreSearchInput.addEventListener('input', () => {
     loadExplore();
   });
 }
-
 const exploreSortSelect = document.getElementById('exploreSort');
 if (exploreSortSelect) {
   exploreSortSelect.addEventListener('change', () => {
     loadExplore();
   });
 }
-
-// ==========================================
-// MANAGE RESOURCES TAB & EDIT MODAL
-// ==========================================
 let contributorDocsCache = {};
-
 async function loadContributorManageResources() {
   const tbody = document.getElementById("manageResourcesTableBody");
   if (!tbody || !currentUser) return;
-
   tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:var(--text-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading resources...</td></tr>`;
-
   try {
     const docsMap = new Map();
     const tryFetch = async (field, val) => {
@@ -2380,27 +1953,22 @@ async function loadContributorManageResources() {
       await tryFetch("uploaderUid", currentUser.uid);
     }
     const docs = Array.from(docsMap.values());
-
     if (docs.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="padding:1.5rem; text-align:center; color:var(--text-muted);">No uploaded resources found. Upload notes using the Upload tab!</td></tr>`;
       return;
     }
-
     tbody.innerHTML = "";
     contributorDocsCache = {};
     docs.forEach((docData, idx) => {
       contributorDocsCache[docData.id] = docData;
       const isApproved = docData.status === "approved" || docData.isApproved === true;
       const isPrivate = docData.visibility === "private" || docData.isPasswordProtected === true || docData.isPublic === false;
-
       const statusBadge = isApproved
         ? `<span style="background:rgba(34,197,94,0.18); color:#4ade80; border:1px solid rgba(34,197,94,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-checkbox-circle-line"></i> Approved</span>`
         : `<span style="background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-time-line"></i> Pending Approval</span>`;
-
       const visibilityBadge = isPrivate
         ? `<span style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-lock-2-line"></i> Private (Password)</span>`
         : `<span style="background:rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35); padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; gap:3px;"><i class="ri-global-line"></i> Public</span>`;
-
       const tr = document.createElement("tr");
       tr.className = "manage-res-row";
       tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
@@ -2425,19 +1993,15 @@ async function loadContributorManageResources() {
       `;
       tbody.appendChild(tr);
     });
-
   } catch (err) {
     console.error("Failed loading contributor resources:", err);
     tbody.innerHTML = `<tr><td colspan="4" style="padding:1rem; text-align:center; color:#ef4444;">Failed to load resources: ${err.message}</td></tr>`;
   }
 }
-
 window.loadContributorManageResources = loadContributorManageResources;
-
 window.openEditResourceModal = function(docId) {
   const data = contributorDocsCache[docId];
   if (!data) return;
-
   document.getElementById("modalResDocId").value = docId;
   document.getElementById("modalCategory").value = data.category || "T&N";
   document.getElementById("modalDiscipline").value = data.discipline || "";
@@ -2445,14 +2009,11 @@ window.openEditResourceModal = function(docId) {
   document.getElementById("modalDescription").value = data.description || "";
   document.getElementById("modalTags").value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || "");
   document.getElementById("modalPdfUrl").value = data.pdfUrl || "";
-
-  // Visibility and Access Password setup
   const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
   const visSel = document.getElementById("modalVisibility");
   const visBadge = document.getElementById("modalVisBadge");
   const pwdGrp = document.getElementById("modalPasswordGroup");
   const pwdInput = document.getElementById("modalResourcePassword");
-
   if (visSel) visSel.value = isPrivate ? "private" : "public";
   if (visBadge) {
     visBadge.textContent = isPrivate ? "Private" : "Public";
@@ -2462,11 +2023,8 @@ window.openEditResourceModal = function(docId) {
   }
   if (pwdGrp) pwdGrp.style.display = isPrivate ? "block" : "none";
   if (pwdInput) pwdInput.value = data.password || "";
-
   const modal = document.getElementById("editResourceModal");
   if (modal) modal.style.display = "flex";
-
-  // Reset modal file upload elements
   const fileInput = document.getElementById("modalPdfFileInput");
   if (fileInput) fileInput.value = "";
   const fileText = document.getElementById("modalFileNameText");
@@ -2474,12 +2032,10 @@ window.openEditResourceModal = function(docId) {
   const progressDiv = document.getElementById("modalUploadProgressContainer");
   if (progressDiv) progressDiv.style.display = "none";
 };
-
 window.closeEditResourceModal = function() {
   const modal = document.getElementById("editResourceModal");
   if (modal) modal.style.display = "none";
 };
-
 window.handleModalPdfFileSelect = async function(e) {
   const file = e.target.files[0];
   const textSpan = document.getElementById("modalFileNameText");
@@ -2489,38 +2045,28 @@ window.handleModalPdfFileSelect = async function(e) {
   const progressBar = document.getElementById("modalUploadProgressBar");
   const pdfUrlInput = document.getElementById("modalPdfUrl");
   const saveBtn = document.getElementById("saveResourceModalBtn");
-
   if (!file) {
     if (textSpan) textSpan.textContent = "No new file selected";
     return;
   }
-
   if (textSpan) textSpan.textContent = file.name + ` (${(file.size / (1024*1024)).toFixed(1)}MB)`;
-
   if (file.size > 262144000) {
     alert("File size exceeds 250MB limit. Please enter a direct URL link.");
     return;
   }
-
-  // Intercept > 10MB for Compression Modal or upload directly
   if (file.size > 10 * 1024 * 1024) {
     alert("File exceeds 10MB Cloudinary raw limit. Triggering ILovePDF compression...");
     const compModal = document.getElementById("compressionModal");
     if (compModal) compModal.style.display = "flex";
     return;
   }
-
-  // Direct Cloudinary Upload via Backend
   if (progressContainer) progressContainer.style.display = "block";
   if (saveBtn) saveBtn.disabled = true;
-
   try {
     const formData = new FormData();
     formData.append("pdfFile", file);
-
     const xhr = new XMLHttpRequest();
     xhr.open("POST", window.API_BASE_URL + "/api/upload");
-
     xhr.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable) {
         const pct = Math.round((event.loaded / event.total) * 100);
@@ -2529,7 +2075,6 @@ window.handleModalPdfFileSelect = async function(e) {
         if (statusText) statusText.textContent = `Uploading fresh PDF to Cloudinary... (${(event.loaded / (1024*1024)).toFixed(1)}MB / ${(event.total / (1024*1024)).toFixed(1)}MB)`;
       }
     });
-
     xhr.onload = function() {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
@@ -2550,24 +2095,20 @@ window.handleModalPdfFileSelect = async function(e) {
       }
       if (saveBtn) saveBtn.disabled = false;
     };
-
     xhr.onerror = function() {
       alert("Network error during Cloudinary PDF upload.");
       if (saveBtn) saveBtn.disabled = false;
     };
-
     xhr.send(formData);
   } catch(err) {
     alert("Upload error: " + err.message);
     if (saveBtn) saveBtn.disabled = false;
   }
 };
-
 window.handleEditResourceSubmit = async function(e) {
   e.preventDefault();
   const docId = document.getElementById("modalResDocId").value;
   if (!docId) return;
-
   const category = document.getElementById("modalCategory").value;
   const discipline = document.getElementById("modalDiscipline").value.trim();
   const title = document.getElementById("modalTitle").value.trim();
@@ -2576,16 +2117,12 @@ window.handleEditResourceSubmit = async function(e) {
   const pdfUrl = document.getElementById("modalPdfUrl").value.trim();
   const visibilityVal = document.getElementById("modalVisibility")?.value || "public";
   const isPrivate = visibilityVal === "private";
-
   const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
-
   const saveBtn = document.getElementById("saveResourceModalBtn");
   saveBtn.disabled = true;
   saveBtn.innerText = "Saving...";
-
   let rawPw = "";
   let passwordHash = "";
-
   if (isPrivate) {
     rawPw = document.getElementById("modalResourcePassword")?.value.trim() || "";
     if (!rawPw || rawPw.length < 4) {
@@ -2598,12 +2135,10 @@ window.handleEditResourceSubmit = async function(e) {
       }
       return;
     }
-    // Compute SHA-256 hash of password
     const msgBuffer = new TextEncoder().encode(rawPw);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
     passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
-
   try {
     const docRef = doc(db, "documents", docId);
     const updatePayload = {
@@ -2620,15 +2155,10 @@ window.handleEditResourceSubmit = async function(e) {
       passwordHash: isPrivate ? passwordHash : "",
       updatedAt: serverTimestamp()
     };
-
     await updateDoc(docRef, updatePayload);
-
-    // Update local cache
     if (contributorDocsCache[docId]) {
       Object.assign(contributorDocsCache[docId], updatePayload);
     }
-
-    // Log Activity
     try {
       await addDoc(collection(db, "activity_logs"), {
         userId: currentUser.uid,
@@ -2638,13 +2168,11 @@ window.handleEditResourceSubmit = async function(e) {
         timestamp: serverTimestamp()
       });
     } catch(e) {}
-
     if (window.customAlert) {
       await window.customAlert(`Resource updated successfully! (${isPrivate ? 'Private / Password Protected' : 'Set to Public'})`, { title: "Success" });
     } else {
       alert(`Resource updated successfully! (${isPrivate ? 'Private / Password Protected' : 'Set to Public'})`);
     }
-
     closeEditResourceModal();
     loadContributorManageResources();
     loadPasswordVaultData(true);
@@ -2660,13 +2188,7 @@ window.handleEditResourceSubmit = async function(e) {
     saveBtn.innerText = "Save Changes";
   }
 };
-
-// =========================================
-// PASSWORD VAULT ENGINE
-// =========================================
 let vaultItemsCache = [];
-
-// Web Crypto PBKDF2/AES-GCM encryption & decryption helpers for solutions
 async function encryptSolutionData(dataObj, password) {
   const enc = new TextEncoder();
   const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -2694,7 +2216,6 @@ async function encryptSolutionData(dataObj, password) {
   const passHash = Array.from(new Uint8Array(passHashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
   return { encryptedData, salt: saltBase64, passHash };
 }
-
 async function decryptSolutionData(encryptedBase64, saltBase64, password) {
   const rawCipher = atob(encryptedBase64);
   const cipherBytes = new Uint8Array(rawCipher.length);
@@ -2714,7 +2235,6 @@ async function decryptSolutionData(encryptedBase64, saltBase64, password) {
   const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, dataBytes);
   return JSON.parse(new TextDecoder().decode(decrypted));
 }
-
 async function loadPasswordVaultData(forceReload = false) {
   const tbody = document.getElementById("vaultTableBody");
   if (!tbody) return;
@@ -2722,15 +2242,11 @@ async function loadPasswordVaultData(forceReload = false) {
     tbody.innerHTML = `<tr><td colspan="5" style="padding:2rem; text-align:center; color:var(--text-muted);">Please authenticate to access your Password Vault.</td></tr>`;
     return;
   }
-
   tbody.innerHTML = `<tr><td colspan="5" style="padding:2rem; text-align:center; color:var(--text-muted);"><i class="ri-loader-4-line spin-icon"></i> Loading Password Vault...</td></tr>`;
-
   try {
     const items = [];
     const uid = currentUser.uid;
     const email = currentUser.email;
-
-    // 1. Fetch Private Documents from Firestore across all contributor identifiers
     try {
       const userDocsMap = new Map();
       const tryFetchDocs = async (field, val) => {
@@ -2741,7 +2257,6 @@ async function loadPasswordVaultData(forceReload = false) {
           s.forEach(d => userDocsMap.set(d.id, d.data()));
         } catch(e) {}
       };
-
       if (email) {
         await tryFetchDocs("uploaderEmail", email);
         if (email.toLowerCase() !== email) {
@@ -2753,7 +2268,6 @@ async function loadPasswordVaultData(forceReload = false) {
         await tryFetchDocs("userId", uid);
         await tryFetchDocs("uploaderUid", uid);
       }
-
       userDocsMap.forEach((data, docId) => {
         const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
         if (isPrivate) {
@@ -2773,8 +2287,6 @@ async function loadPasswordVaultData(forceReload = false) {
     } catch (docErr) {
       console.warn("Vault documents fetch error:", docErr);
     }
-
-    // 2. Fetch Encrypted Assignment Solutions
     try {
       const qAssign = collection(db, "assignment_solutions", uid, "solutions");
       const snapAssign = await getDocs(qAssign);
@@ -2801,8 +2313,6 @@ async function loadPasswordVaultData(forceReload = false) {
     } catch (assignErr) {
       console.warn("Vault assignment solutions fetch warning:", assignErr);
     }
-
-    // 3. Fetch Encrypted Practical Solutions
     try {
       const qPract = collection(db, "practical_solutions", uid, "solutions");
       const snapPract = await getDocs(qPract);
@@ -2829,45 +2339,37 @@ async function loadPasswordVaultData(forceReload = false) {
     } catch (practErr) {
       console.warn("Vault practical solutions fetch warning:", practErr);
     }
-
     vaultItemsCache = items;
     updateVaultMetrics(items);
     renderPasswordVaultTable(items);
-
   } catch (err) {
     console.error("loadPasswordVaultData error:", err);
     tbody.innerHTML = `<tr><td colspan="5" style="padding:2rem; text-align:center; color:#ef4444;">Failed to load Password Vault: ${err.message}</td></tr>`;
   }
 }
 window.loadPasswordVaultData = loadPasswordVaultData;
-
 function updateVaultMetrics(items) {
   const total = items.length;
   const docs = items.filter(i => i.type === "document").length;
   const assign = items.filter(i => i.type === "assignment").length;
   const pract = items.filter(i => i.type === "practical").length;
-
   const totalEl = document.getElementById("vaultTotalCount");
   const docsEl = document.getElementById("vaultDocsCount");
   const assignEl = document.getElementById("vaultAssignCount");
   const practEl = document.getElementById("vaultPractCount");
   const badgeEl = document.getElementById("vaultSidebarBadge");
-
   if (totalEl) totalEl.textContent = total;
   if (docsEl) docsEl.textContent = docs;
   if (assignEl) assignEl.textContent = assign;
   if (practEl) practEl.textContent = pract;
-
   if (badgeEl) {
     badgeEl.textContent = total;
     badgeEl.style.display = total > 0 ? "inline-block" : "none";
   }
 }
-
 function renderPasswordVaultTable(items) {
   const tbody = document.getElementById("vaultTableBody");
   if (!tbody) return;
-
   if (!items || items.length === 0) {
     tbody.innerHTML = `
       <tr>
@@ -2882,7 +2384,6 @@ function renderPasswordVaultTable(items) {
     `;
     return;
   }
-
   tbody.innerHTML = "";
   items.forEach((item, idx) => {
     let typeBadge = "";
@@ -2893,10 +2394,8 @@ function renderPasswordVaultTable(items) {
     } else {
       typeBadge = `<span style="background:rgba(52,211,153,0.15); color:#34d399; border:1px solid rgba(52,211,153,0.35); padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><i class="ri-flask-line"></i> Practical Solution</span>`;
     }
-
     const plainPw = item.password || item.accessPassword || "";
     const hasPw = !!plainPw;
-
     const tr = document.createElement("tr");
     tr.className = "manage-res-row vault-row";
     tr.style.cssText = "border-bottom:1px solid var(--border); transition:background 0.2s;";
@@ -2943,7 +2442,6 @@ function renderPasswordVaultTable(items) {
     tbody.appendChild(tr);
   });
 }
-
 window.toggleVaultPasswordMask = function(id) {
   const span = document.getElementById(`vaultPwSpan_${id}`);
   const eye = document.getElementById(`vaultEye_${id}`);
@@ -2960,11 +2458,9 @@ window.toggleVaultPasswordMask = function(id) {
     if (eye) eye.className = "ri-eye-line";
   }
 };
-
 window.filterPasswordVault = function() {
   const searchVal = (document.getElementById("vaultSearchInput")?.value || "").toLowerCase().trim();
   const typeVal = document.getElementById("vaultTypeFilter")?.value || "all";
-
   let filtered = vaultItemsCache;
   if (typeVal !== "all") {
     filtered = filtered.filter(i => i.type === typeVal);
@@ -2980,7 +2476,6 @@ window.filterPasswordVault = function() {
   }
   renderPasswordVaultTable(filtered);
 };
-
 window.copyVaultPassword = async function(pw) {
   if (!pw || pw.startsWith("(") || pw === "Not Set") {
     if (window.customAlert) {
@@ -3001,7 +2496,6 @@ window.copyVaultPassword = async function(pw) {
     alert("Copied: " + pw);
   }
 };
-
 window.openVaultChangePasswordModal = function(id, type, title) {
   const modal = document.getElementById("vaultChangePasswordModal");
   if (!modal) return;
@@ -3011,55 +2505,44 @@ window.openVaultChangePasswordModal = function(id, type, title) {
   document.getElementById("vaultNewPasswordInput").value = "";
   modal.style.display = "flex";
 };
-
 window.closeVaultChangePasswordModal = function() {
   const modal = document.getElementById("vaultChangePasswordModal");
   if (modal) modal.style.display = "none";
 };
-
 window.handleVaultChangePasswordSubmit = async function(e) {
   e.preventDefault();
   const id = document.getElementById("vaultModalItemId").value;
   const type = document.getElementById("vaultModalItemType").value;
   const newPw = document.getElementById("vaultNewPasswordInput").value.trim();
   const title = document.getElementById("vaultModalTargetTitle").textContent;
-
   if (!newPw || newPw.length < 4) {
     alert("Password must be at least 4 characters.");
     return;
   }
-
   const saveBtn = document.getElementById("vaultSavePasswordBtn");
   saveBtn.disabled = true;
   saveBtn.innerText = "Updating...";
-
   try {
     if (type === "document") {
-      // Compute SHA-256
       const msgBuffer = new TextEncoder().encode(newPw);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
       const passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-
       await updateDoc(doc(db, "documents", id), {
         password: newPw,
         passwordHash: passwordHash,
         updatedAt: serverTimestamp()
       });
-
       if (contributorDocsCache[id]) {
         contributorDocsCache[id].password = newPw;
         contributorDocsCache[id].passwordHash = passwordHash;
       }
     } else {
-      // Assignment or Practical Solution
       const colName = type === "practical" ? "practical_solutions" : "assignment_solutions";
       const item = vaultItemsCache.find(it => it.id === id);
       const updateData = {
         password: newPw,
         updatedAt: new Date().toISOString()
       };
-
-      // If old cipher exists and old password is known, re-encrypt questions
       if (item && item.raw?.encryptedData && item.password) {
         try {
           const dec = await decryptSolutionData(item.raw.encryptedData, item.raw.salt, item.password);
@@ -3071,12 +2554,9 @@ window.handleVaultChangePasswordSubmit = async function(e) {
           console.warn("Re-encryption warning:", decErr);
         }
       }
-
       await updateDoc(doc(db, colName, currentUser.uid, "solutions", id), updateData);
       localStorage.setItem('dpg_sol_pass_' + id, newPw);
     }
-
-    // Log Activity
     try {
       await addDoc(collection(db, "activity_logs"), {
         userId: currentUser.uid,
@@ -3086,14 +2566,12 @@ window.handleVaultChangePasswordSubmit = async function(e) {
         timestamp: serverTimestamp()
       });
     } catch(e) {}
-
     closeVaultChangePasswordModal();
     if (window.customAlert) {
       await window.customAlert(`Access password for "${title}" successfully updated on Firestore!`, { title: "Password Updated" });
     } else {
       alert(`Access password for "${title}" successfully updated on Firestore!`);
     }
-
     await loadPasswordVaultData(true);
     loadContributorManageResources();
   } catch(err) {
@@ -3108,7 +2586,6 @@ window.handleVaultChangePasswordSubmit = async function(e) {
     saveBtn.innerText = "Update Password";
   }
 };
-
 window.removeVaultPasswordMakePublic = async function(id, type, title) {
   let confirmed = false;
   const promptText = `Make "${title}" 100% Public?\n\nPassword protection will be removed, the asset will immediately appear in SERP search results, and this record will be deleted from your Password Vault.`;
@@ -3118,7 +2595,6 @@ window.removeVaultPasswordMakePublic = async function(id, type, title) {
     confirmed = confirm(promptText);
   }
   if (!confirmed) return;
-
   try {
     if (type === "document") {
       await updateDoc(doc(db, "documents", id), {
@@ -3137,7 +2613,6 @@ window.removeVaultPasswordMakePublic = async function(id, type, title) {
         contributorDocsCache[id].passwordHash = "";
       }
     } else {
-      // Assignment or Practical Solution
       const colName = type === "practical" ? "practical_solutions" : "assignment_solutions";
       const item = vaultItemsCache.find(it => it.id === id);
       const updateData = {
@@ -3148,7 +2623,6 @@ window.removeVaultPasswordMakePublic = async function(id, type, title) {
         encryptedData: "",
         updatedAt: new Date().toISOString()
       };
-
       if (item && item.raw?.encryptedData && item.password) {
         try {
           const dec = await decryptSolutionData(item.raw.encryptedData, item.raw.salt, item.password);
@@ -3161,17 +2635,12 @@ window.removeVaultPasswordMakePublic = async function(id, type, title) {
           console.warn("Could not decrypt before unprotecting:", decErr);
         }
       }
-
       await updateDoc(doc(db, colName, currentUser.uid, "solutions", id), updateData);
       localStorage.removeItem('dpg_sol_pass_' + id);
     }
-
-    // Auto delete that log on exist (remove from local vault list)
     vaultItemsCache = vaultItemsCache.filter(it => it.id !== id);
     updateVaultMetrics(vaultItemsCache);
     renderPasswordVaultTable(vaultItemsCache);
-
-    // Log Activity
     try {
       await addDoc(collection(db, "activity_logs"), {
         userId: currentUser.uid,
@@ -3181,13 +2650,11 @@ window.removeVaultPasswordMakePublic = async function(id, type, title) {
         timestamp: serverTimestamp()
       });
     } catch(e) {}
-
     if (window.customAlert) {
       await window.customAlert(`"${title}" is now Public! It appears in SERP search results and has been removed from your Password Vault.`, { title: "Made Public" });
     } else {
       alert(`"${title}" is now Public! It appears in SERP search results and has been removed from your Password Vault.`);
     }
-
     loadContributorManageResources();
   } catch(err) {
     console.error("removeVaultPasswordMakePublic error:", err);
@@ -3198,7 +2665,6 @@ window.removeVaultPasswordMakePublic = async function(id, type, title) {
     }
   }
 };
-
 onAuthStateChanged(auth, user => {
   if (user) {
     currentUser = user;
@@ -3217,12 +2683,9 @@ onAuthStateChanged(auth, user => {
     populateAdResourceSuggestions();
   }
 });
-// MULTI-PLATFORM AD UPLOAD & AI TAGS ENGINE
-// =========================================
 window.updateAdFormFields = function() {
   const platformSel = document.getElementById("adPlatformSelect");
   if (!platformSel) return;
-
   const val = platformSel.value;
   const resourceBox = document.getElementById("adResourceSelectorBox");
   const videoBox = document.getElementById("adVideoUrlBox");
@@ -3230,7 +2693,6 @@ window.updateAdFormFields = function() {
   const titleInput = document.getElementById("adTitle");
   const targetLinkInput = document.getElementById("adTargetLink");
   const videoUrlInput = document.getElementById("adVideoUrl");
-
   if (val === "dpgnotes_resource") {
     if (resourceBox) resourceBox.style.display = "block";
     if (videoBox) videoBox.style.display = "block";
@@ -3264,7 +2726,6 @@ window.updateAdFormFields = function() {
     if (videoUrlInput) videoUrlInput.placeholder = "https://www.youtube.com/watch?v=... (Required for hover autoplay preview)";
   }
 };
-
 window.generateAiAdTags = async function() {
   const title = document.getElementById("adTitle")?.value.trim() || "";
   const desc = document.getElementById("adDesc")?.value.trim() || "";
@@ -3272,17 +2733,14 @@ window.generateAiAdTags = async function() {
   const platformVal = document.getElementById("adPlatformSelect")?.value || "dpgnotes_resource";
   const tagsInput = document.getElementById("adTags");
   const btn = document.getElementById("aiSuggestTagsBtn");
-
   if (!title && !desc && !url) {
     alert("Please enter a Title, Description, or Destination Link first so AI can analyze and suggest relevant tags!");
     return;
   }
-
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> AI Analyzing...`;
   }
-
   try {
     const rawText = `${title} ${desc} ${url} ${platformVal}`.toLowerCase();
     const commonTagsMap = [
@@ -3308,26 +2766,21 @@ window.generateAiAdTags = async function() {
       { key: "pdf", tag: "Study Notes" },
       { key: "interview", tag: "Interview Prep" }
     ];
-
     const suggested = new Set();
     if (platformVal.includes("linkedin")) suggested.add("LinkedIn");
     if (platformVal.includes("medium")) suggested.add("Medium");
     if (platformVal.includes("github")) suggested.add("GitHub");
     if (platformVal.includes("youtube")) { suggested.add("YouTube"); suggested.add("Video Tutorial"); }
-
     commonTagsMap.forEach(item => {
       if (rawText.includes(item.key)) suggested.add(item.tag);
     });
-
     if (suggested.size < 3) {
       if (title.length > 3) suggested.add(title.split(" ")[0]);
       suggested.add("Education");
       suggested.add("Notes");
     }
-
     const resultStr = Array.from(suggested).slice(0, 6).join(", ");
     if (tagsInput) tagsInput.value = resultStr;
-
   } catch(err) {
     console.error("AI tag generation error:", err);
   } finally {
@@ -3337,38 +2790,30 @@ window.generateAiAdTags = async function() {
     }
   }
 };
-
 window.handleAdThumbnailSelect = async function(event) {
   const file = event.target.files[0];
   if (!file) return;
-
   const fileNameSpan = document.getElementById("adThumbnailFileName");
   if (fileNameSpan) fileNameSpan.textContent = file.name;
-
   const progressContainer = document.getElementById("adUploadProgressContainer");
   const progressBar = document.getElementById("adUploadProgressBar");
   const percentText = document.getElementById("adUploadPercent");
   const statusText = document.getElementById("adUploadStatus");
   const urlInput = document.getElementById("adThumbnailUrl");
-
   if (progressContainer) progressContainer.style.display = "block";
   if (statusText) statusText.textContent = "Uploading image to Cloudinary...";
   if (progressBar) progressBar.style.width = "10%";
   if (percentText) percentText.textContent = "10%";
-
   const formData = new FormData();
   formData.append("pdfFile", file);
   formData.append("file", file);
-
   try {
     const res = await fetch(window.API_BASE_URL + "/api/upload", {
       method: "POST",
       body: formData
     });
-
     if (!res.ok) throw new Error("Server response " + res.status);
     const data = await res.json();
-
     const finalUrl = data.pdfUrl || data.secure_url || data.url;
     if (finalUrl) {
       if (urlInput) urlInput.value = finalUrl;
@@ -3386,11 +2831,9 @@ window.handleAdThumbnailSelect = async function(event) {
     }
   }
 };
-
 async function populateAdResourceSuggestions() {
   const datalist = document.getElementById("contributorResourceTitles");
   if (!datalist || !currentUser) return;
-
   try {
     const q = query(collection(db, "documents"), where("userId", "==", currentUser.uid));
     const snap = await getDocs(q);
@@ -3409,7 +2852,6 @@ async function populateAdResourceSuggestions() {
     console.warn("Failed fetching ad resource suggestions:", e);
   }
 }
-
 function generateAdTrackIdLocal(seedStr) {
   if (!seedStr) return "74920184";
   let hash = 0;
@@ -3420,33 +2862,22 @@ function generateAdTrackIdLocal(seedStr) {
   const positiveHash = Math.abs(hash);
   return (positiveHash % 90000000 + 10000000).toString();
 }
-
-// ============================================================================
-// CONTRIBUTOR PAYABLE ADS AMOUNT & DISCOUNT STATUS ENGINE
-// ============================================================================
 async function loadContributorPayableAds() {
   const card = document.getElementById("contributorMonetizationCard");
   if (!card) return;
-
   const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
   const uid = activeUser.uid || "";
   const email = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase();
-
   if (!uid) return;
-
   try {
     const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL !== "undefined") ? window.API_BASE_URL : "";
     const res = await fetch(`${baseUrl}/api/contributor/payable-ads?contributorId=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`);
     const data = await res.json();
-
     if (!data || !data.success) return;
-
     const active = data.activeMonetization || {};
     const tier = active.tierInfo || {};
-
     const monthCycleText = document.getElementById("contribBillingCycleText");
     if (monthCycleText) monthCycleText.textContent = `Active Billing Cycle: ${active.month || data.currentMonth || "Current Month"}`;
-
     const tierBadge = document.getElementById("contribTierBadge");
     if (tierBadge) {
       tierBadge.textContent = `${tier.discountPct || 0}% Discount (${tier.tierName || "Standard"})`;
@@ -3460,7 +2891,6 @@ async function loadContributorPayableAds() {
         tierBadge.style.color = "#fcd34d";
       }
     }
-
     if (document.getElementById("contribHoversCount")) {
       document.getElementById("contribHoversCount").textContent = (active.totalHovers || 0).toLocaleString();
     }
@@ -3484,7 +2914,6 @@ async function loadContributorPayableAds() {
     if (document.getElementById("contribNetPayable")) {
       document.getElementById("contribNetPayable").textContent = `₹${(active.totalNetPayable || 0).toLocaleString()}`;
     }
-
     const itemizedBody = document.getElementById("contribAdsItemizedTableBody");
     if (itemizedBody) {
       itemizedBody.innerHTML = "";
@@ -3506,7 +2935,6 @@ async function loadContributorPayableAds() {
           const gHov = item.guestHovers != null ? item.guestHovers : 0;
           const cVis = item.contributorVisits != null ? item.contributorVisits : (item.contribVisits != null ? item.contribVisits : 0);
           const gVis = item.guestVisits != null ? item.guestVisits : 0;
-
           tr.innerHTML = `
             <td style="padding: 6px 8px; font-weight: 600; color: #f8fafc; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${itemTitle}">
               ${itemTitle}
@@ -3526,7 +2954,6 @@ async function loadContributorPayableAds() {
         });
       }
     }
-
     const statusSub = document.getElementById("contribPaymentStatusSub");
     if (statusSub) {
       const st = active.status || "Pending";
@@ -3541,7 +2968,6 @@ async function loadContributorPayableAds() {
         statusSub.style.color = "#f87171";
       }
     }
-
     const portfolioStats = document.getElementById("contribPortfolioStats");
     if (portfolioStats) {
       portfolioStats.textContent = `${tier.publicResourcesCount || 0} Public Docs · ${tier.assignmentSolutionsCount || 0} Assignment Sols · ${tier.practicalSolutionsCount || 0} Practical Sols`;
@@ -3551,19 +2977,12 @@ async function loadContributorPayableAds() {
   }
 }
 window.loadContributorPayableAds = loadContributorPayableAds;
-
-// ============================================================================
-// NATIVE ADS MONETIZATION POLICY CONFIRMATION MODAL
-// ============================================================================
 function showNativeAdsMonetizationModal() {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'dpg-modal-overlay';
-
-    // Retrieve current contributor tier details if available
     const tierBadge = document.getElementById('contribTierBadge')?.textContent || '';
     const portfolioStats = document.getElementById('contribPortfolioStats')?.textContent || '';
-
     overlay.innerHTML = `
       <div class="dpg-modal-box dpg-monetization-modal-box">
         <div style="text-align: center; margin-bottom: 1.2rem;">
@@ -3628,13 +3047,10 @@ function showNativeAdsMonetizationModal() {
         </div>
       </div>
     `;
-
     document.body.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add('active'));
-
     const cancelBtn = overlay.querySelector('#dpgPolicyCancelBtn');
     const acceptBtn = overlay.querySelector('#dpgPolicyAcceptBtn');
-
     const finish = (result) => {
       overlay.classList.remove('active');
       setTimeout(() => {
@@ -3642,34 +3058,26 @@ function showNativeAdsMonetizationModal() {
         resolve(result);
       }, 300);
     };
-
     cancelBtn.addEventListener('click', () => finish(false));
     acceptBtn.addEventListener('click', () => finish(true));
   });
 }
-
-// ============================================================================
-// OFFLINE PAYMENT & CONCESSION REQUEST MODAL HANDLERS
-// ============================================================================
 window.openRequestPaymentModal = function() {
   const modal = document.getElementById("requestPaymentModal");
   if (!modal) return;
   modal.style.display = "flex";
   const fb = document.getElementById("reqPayFeedback");
   if (fb) { fb.style.display = "none"; fb.textContent = ""; }
-  
   const phoneInput = document.getElementById("reqPayPhone");
   if (phoneInput && !phoneInput.value) {
     const savedPhone = localStorage.getItem("dpg_user_phone") || "";
     if (savedPhone) phoneInput.value = savedPhone;
   }
 };
-
 window.closeRequestPaymentModal = function() {
   const modal = document.getElementById("requestPaymentModal");
   if (modal) modal.style.display = "none";
 };
-
 window.submitPaymentDetailsRequest = async function(e) {
   if (e) e.preventDefault();
   const reqType = document.getElementById("reqPayType")?.value || "payment_details";
@@ -3677,7 +3085,6 @@ window.submitPaymentDetailsRequest = async function(e) {
   const message = document.getElementById("reqPayMessage")?.value?.trim() || "";
   const submitBtn = document.getElementById("reqPaySubmitBtn");
   const fb = document.getElementById("reqPayFeedback");
-
   if (!contactPhone) {
     if (fb) {
       fb.style.display = "block";
@@ -3688,7 +3095,6 @@ window.submitPaymentDetailsRequest = async function(e) {
     }
     return;
   }
-
   const activeUserRaw = localStorage.getItem("dpgActiveUser");
   const activeUserObj = activeUserRaw ? JSON.parse(activeUserRaw) : {};
   const user = (typeof currentUser !== 'undefined' && currentUser) || (typeof auth !== 'undefined' && auth.currentUser) || window.currentUser;
@@ -3697,7 +3103,6 @@ window.submitPaymentDetailsRequest = async function(e) {
   const name = (user && user.displayName) || localStorage.getItem("dpgActiveUserName") || activeUserObj.name || (email ? email.split("@")[0] : "Contributor");
   const monthRaw = document.getElementById("contribBillingCycleText")?.textContent || "";
   const month = monthRaw.replace("Active Billing Cycle:", "").trim() || new Date().toISOString().substring(0, 7);
-
   if (!uid || !email) {
     if (fb) {
       fb.style.display = "block";
@@ -3708,16 +3113,13 @@ window.submitPaymentDetailsRequest = async function(e) {
     }
     return;
   }
-
   try {
     localStorage.setItem("dpg_user_phone", contactPhone);
   } catch(e) {}
-
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Sending Request...`;
   }
-
   try {
     const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL !== "undefined") ? window.API_BASE_URL : "";
     const res = await fetch(`${baseUrl}/api/ads/request-payment-details`, {
@@ -3733,13 +3135,11 @@ window.submitPaymentDetailsRequest = async function(e) {
         message
       })
     });
-
     const data = await res.json();
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.innerHTML = `<i class="ri-mail-send-line"></i> Send Request via System Email`;
     }
-
     if (data && data.success) {
       if (fb) {
         fb.style.display = "block";
@@ -3775,7 +3175,6 @@ window.submitPaymentDetailsRequest = async function(e) {
     }
   }
 };
-
 let isAdSubmitting = false;
 const adForm = document.getElementById("uploadAdForm");
 if (adForm) {
@@ -3795,47 +3194,36 @@ if (adForm) {
       }
     });
   }
-
   adForm.addEventListener("submit", async function(e) {
     e.preventDefault();
     if (isAdSubmitting) return;
-
     if (!adForm.checkValidity()) {
       adForm.reportValidity();
       return;
     }
-
-    // Remind contributor of Native Ads Monetization Policy with custom confirmation modal
     const policyAccepted = await showNativeAdsMonetizationModal();
     if (!policyAccepted) {
       return;
     }
-
     isAdSubmitting = true;
-
     const btn = document.getElementById("submitAdBtn");
     btn.disabled = true;
     btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Submitting Ad...`;
-
     try {
       const platformSelectVal = document.getElementById("adPlatformSelect")?.value || "dpgnotes_resource";
       let platform = "dpgnotes";
       let adCategory = "resource";
-
       if (platformSelectVal === "linkedin_post") { platform = "linkedin"; adCategory = "post"; }
       else if (platformSelectVal === "linkedin_blog") { platform = "linkedin"; adCategory = "blog"; }
       else if (platformSelectVal === "medium_story") { platform = "medium"; adCategory = "story"; }
       else if (platformSelectVal === "github_repo") { platform = "github"; adCategory = "repo"; }
       else if (platformSelectVal === "youtube_video") { platform = "youtube"; adCategory = "video"; }
-
       const title = document.getElementById("adTitle").value.trim();
       const description = document.getElementById("adDesc").value.trim();
       const tagsStr = document.getElementById("adTags").value.trim();
       const thumbnailUrl = document.getElementById("adThumbnailUrl").value.trim();
       const targetLink = document.getElementById("adTargetLink").value.trim();
       const videoUrl = document.getElementById("adVideoUrl")?.value.trim() || "";
-
-      // Calculate target placement priority based on platform and uploaded media assets
       let targetPlacement = ["header", "footer"];
       if (platform === "medium" && thumbnailUrl) {
         targetPlacement = ["sidebar", "feed", "main", "header", "footer"];
@@ -3844,9 +3232,7 @@ if (adForm) {
       } else if (thumbnailUrl) {
         targetPlacement = ["sidebar", "header", "footer", "feed"];
       }
-
       const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
-
       const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
       const res = await fetch(apiBase + '/api/ads/submit-with-verification', {
         method: 'POST',
@@ -3865,10 +3251,8 @@ if (adForm) {
           userId: currentUser ? currentUser.uid : "anonymous"
         })
       });
-
       const resJson = await res.json();
       if (!res.ok) throw new Error(resJson.error || "Submission failed");
-
       if (window.customAlert) {
         await window.customAlert(`Ad campaign (${platform.toUpperCase()} ${adCategory.toUpperCase()}) submitted successfully! It is now pending Administrator review and approval. Once approved, your ad campaign will be published live.`, { title: "Ad Submitted for Approval 🚀" });
       } else {
@@ -3876,7 +3260,6 @@ if (adForm) {
       }
       adForm.reset();
       updateAdFormFields();
-
       const fileNameSpan = document.getElementById("adThumbnailFileName");
       if (fileNameSpan) fileNameSpan.textContent = "No image selected";
       const progressContainer = document.getElementById("adUploadProgressContainer");
@@ -3895,27 +3278,19 @@ if (adForm) {
     }
   });
 }
-
-// ==========================================
-// CONTRIBUTOR WEBSITE SUBMISSION & VERIFICATION LOGIC
-// ==========================================
 window.currentVerificationWebsiteId = null;
-
 window.handleWebsiteSubmit = async function(e) {
   if (e) e.preventDefault();
   const urlInput = document.getElementById("contributorWebsiteUrl");
   const btn = document.getElementById("submitWebsiteBtn");
   if (!urlInput || !urlInput.value) return;
-
   const targetUrl = urlInput.value.trim();
   const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-
   try {
     if (btn) {
       btn.disabled = true;
       btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Crawling Source Code...`;
     }
-
     const user = currentUser || auth.currentUser;
     const reqBody = JSON.stringify({
       url: targetUrl,
@@ -3924,13 +3299,11 @@ window.handleWebsiteSubmit = async function(e) {
       contributorName: user ? (user.displayName || 'Contributor') : 'Contributor',
       contributorAvatar: user ? (user.photoURL || '') : ''
     });
-
     let res = await fetch(`${apiBase}/api/website/submit-site`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: reqBody
     });
-
     if (!res.ok && res.status === 404) {
       res = await fetch(`${apiBase}/submit-site`, {
         method: 'POST',
@@ -3938,10 +3311,8 @@ window.handleWebsiteSubmit = async function(e) {
         body: reqBody
       });
     }
-
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || "Failed submitting website");
-
     window.currentVerificationWebsiteId = data.websiteId;
     window.openWebsiteVerificationModal(data.websiteId);
     urlInput.value = "";
@@ -3960,26 +3331,21 @@ window.handleWebsiteSubmit = async function(e) {
     }
   }
 };
-
 window.openWebsiteVerificationModal = function(websiteId) {
   window.currentVerificationWebsiteId = websiteId;
   const user = currentUser || auth.currentUser;
   const cUid = user ? user.uid : 'guest';
-
   const metaEl = document.getElementById("verificationMetaTagCode");
   const scriptEl = document.getElementById("verificationScriptCode");
-
   if (metaEl) {
     metaEl.textContent = `<meta name="dpg-notes-verification-tag" content="${websiteId}">`;
   }
   if (scriptEl) {
     scriptEl.textContent = `<script src="https://dpgnotes.web.app/track-init.js?referer-to=${websiteId}&used-by=${cUid}" defer></script>`;
   }
-
   const modal = document.getElementById("websiteVerificationModal");
   if (modal) modal.style.display = "flex";
 };
-
 window.copyVerificationCode = function(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
@@ -3991,7 +3357,6 @@ window.copyVerificationCode = function(elementId) {
     }
   }).catch(() => {});
 };
-
 window.copyBothVerificationCodes = function() {
   const metaEl = document.getElementById("verificationMetaTagCode");
   const scriptEl = document.getElementById("verificationScriptCode");
@@ -4005,35 +3370,28 @@ window.copyBothVerificationCodes = function() {
     }
   }).catch(() => {});
 };
-
 window.runMetaTagVerification = async function() {
   const websiteId = window.currentVerificationWebsiteId;
   if (!websiteId) return;
-
   const btn = document.getElementById("verifyMetaTagBtn");
   const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-
   try {
     if (btn) {
       btn.disabled = true;
       btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Checking Head Tags Live...`;
     }
-
     const res = await fetch(`${apiBase}/api/website/verify-meta`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ websiteId })
     });
-
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || "Meta tag verification failed.");
-
     if (window.customAlert) {
       await window.customAlert(data.message || "Meta tag verified successfully!", { title: "Verification Successful! ✅" });
     } else {
       alert(data.message || "Meta tag verified successfully!");
     }
-
     document.getElementById("websiteVerificationModal").style.display = "none";
     window.loadContributorWebsites();
   } catch(err) {
@@ -4050,39 +3408,30 @@ window.runMetaTagVerification = async function() {
     }
   }
 };
-
 window.loadContributorWebsites = async function() {
   const tbody = document.getElementById("contributorWebsitesTableBody");
   if (!tbody) return;
-
   const user = currentUser || auth.currentUser;
   if (!user) return;
-
   const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-
   try {
     const res = await fetch(`${apiBase}/api/website/contributor-sites?uid=${user.uid}`);
     if (!res.ok) throw new Error("Failed fetching websites");
     const data = await res.json();
     const sites = data.websites || [];
-
     if (sites.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="padding:1.5rem; text-align:center; color:var(--text-muted);">No websites registered yet. Submit your website URL above!</td></tr>`;
       return;
     }
-
     tbody.innerHTML = "";
     sites.forEach(s => {
       const tr = document.createElement("tr");
       tr.className = "manage-res-row";
-      
       const isVerified = s.status === 'Verified' || s.status === 'Approved' || s.status === 'Verified & Active';
       const statusBadge = isVerified ?
         `<span style="background:rgba(16,185,129,0.2); color:#34d399; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">Verified & Active</span>` :
         `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">Pending Meta Verification</span>`;
-
       const favicon = s.iconUrl ? `<img src="${s.iconUrl}" style="width:16px; height:16px; vertical-align:middle; margin-right:6px; border-radius:3px;">` : `<i class="ri-global-line" style="color:#38bdf8; margin-right:6px;"></i>`;
-
       tr.innerHTML = `
         <td style="padding:0.75rem 0.9rem; font-weight:700; color:white;">
           ${favicon} ${s.title || 'Untitled Website'}
@@ -4107,11 +3456,9 @@ window.loadContributorWebsites = async function() {
     console.warn("loadContributorWebsites error:", e);
   }
 };
-
 window.deleteContributorWebsite = async function(siteId) {
   if (!confirm("Are you sure you want to delete this registered website?")) return;
   const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-
   try {
     const res = await fetch(`${apiBase}/api/website/delete-site`, {
       method: 'POST',
@@ -4124,14 +3471,9 @@ window.deleteContributorWebsite = async function(siteId) {
     alert("Delete error: " + err.message);
   }
 };
-
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => window.loadContributorWebsites(), 1200);
 });
-
-// =========================================
-// YT VIDEOS REFERENCE MANAGEMENT
-// =========================================
 async function getNextYtVideoId() {
   try {
     let maxNum = 0;
@@ -4150,25 +3492,20 @@ async function getNextYtVideoId() {
     return `yt-001`;
   }
 }
-
 async function loadYtVideosData() {
   const tbody = document.getElementById("myVideosTableBody");
   const idInput = document.getElementById("ytVideoIdInput");
   if (!tbody) return;
-
   tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">Loading your submitted videos...</td></tr>`;
-
   try {
     if (idInput) {
       const nextId = await getNextYtVideoId();
       idInput.value = nextId;
     }
-
     if (!currentUser) {
       tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">Please sign in to view your video submissions.</td></tr>`;
       return;
     }
-
     const snap = await getDocs(collection(db, "videos"));
     const myVideos = [];
     snap.forEach(d => {
@@ -4177,12 +3514,10 @@ async function loadYtVideosData() {
         myVideos.push({ id: d.id, ...data });
       }
     });
-
     if (myVideos.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="padding:2.5rem; text-align:center; color:var(--text-muted);">You have not submitted any academic video references yet. Use the form above to submit your first video.</td></tr>`;
       return;
     }
-
     tbody.innerHTML = "";
     myVideos.forEach(v => {
       const status = (v.status || 'pending').toLowerCase();
@@ -4192,11 +3527,9 @@ async function loadYtVideosData() {
       } else if (status === 'blocked' || status === 'rejected') {
         statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;"><i class="ri-close-circle-line"></i> ${status.toUpperCase()}</span>`;
       }
-
       const totalViews = Number(v.views) || 0;
       const totalLikes = Array.isArray(v.likes) ? v.likes.length : (Number(v.likes) || 0);
       const totalShares = Number(v.shares) || 0;
-
       const tr = document.createElement("tr");
       tr.style.borderBottom = "1px solid var(--border)";
       tr.innerHTML = `
@@ -4222,7 +3555,6 @@ async function loadYtVideosData() {
       `;
       tbody.appendChild(tr);
     });
-
     const countEl = document.getElementById("ytVideosCount");
     if (countEl) countEl.textContent = `${myVideos.length} video${myVideos.length === 1 ? '' : 's'}`;
   } catch (err) {
@@ -4231,7 +3563,6 @@ async function loadYtVideosData() {
   }
 }
 window.loadYtVideosData = loadYtVideosData;
-
 window.shareContributorVideo = async function(id, title) {
   const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
   const uploader = currentUser?.displayName || currentUser?.email || "Contributor";
@@ -4246,7 +3577,6 @@ window.shareContributorVideo = async function(id, title) {
     clicks: 0,
     createdAt: new Date().toISOString()
   };
-
   try {
     await setDoc(doc(db, "share_links", token), shareData, { merge: true });
     updateDoc(doc(db, "videos", id), { shares: increment(1) }).catch(() => {});
@@ -4254,8 +3584,6 @@ window.shareContributorVideo = async function(id, title) {
   } catch(e) {
     console.warn("Share token creation warning:", e);
   }
-
-  // Redundant backend API call to guarantee push to Firestore DB
   try {
     fetch('/api/share/generate-video', {
       method: 'POST',
@@ -4263,11 +3591,9 @@ window.shareContributorVideo = async function(id, title) {
       body: JSON.stringify(shareData)
     }).catch(() => {});
   } catch(_) {}
-
   const shareUrl = `https://dpgnotes.web.app/dpgnotes-video.html?token=${token}`;
   const shareTitle = `${videoTitle} — DPGNotes`;
   const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
-
   if (navigator.share) {
     try {
       await navigator.share({
@@ -4281,7 +3607,6 @@ window.shareContributorVideo = async function(id, title) {
       console.warn("navigator.share failed, fallback to clipboard:", err);
     }
   }
-
   if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
       await navigator.clipboard.writeText(shareUrl);
@@ -4295,38 +3620,31 @@ window.shareContributorVideo = async function(id, title) {
   }
   prompt("Copy video share link:", shareUrl);
 };
-
 window.handleYtVideoSubmit = async function(e) {
   e.preventDefault();
   if (!currentUser) {
     alert("Please sign in as a verified contributor to submit video references.");
     return;
   }
-
   const submitBtn = document.getElementById("ytVideoSubmitBtn");
   const sourceInput = document.getElementById("ytVideoSourceInput");
   const urlInput = document.getElementById("ytVideoUrlInput");
   const titleInput = document.getElementById("ytVideoTitleInput");
-
   const source = sourceInput?.value.trim();
   const url = urlInput?.value.trim();
   const title = titleInput?.value.trim();
-
   if (!source || !url || !title) {
     alert("Please fill in all required fields.");
     return;
   }
-
   if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
     alert("Please enter a valid YouTube video URL (youtube.com or youtu.be).");
     return;
   }
-
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Submitting Reference...`;
   }
-
   try {
     const nextId = await getNextYtVideoId();
     const videoDoc = {
@@ -4343,10 +3661,8 @@ window.handleYtVideoSubmit = async function(e) {
       boosted: false,
       createdAt: serverTimestamp()
     };
-
     await setDoc(doc(db, "videos", nextId), videoDoc);
     await setDoc(doc(db, "Video", nextId), videoDoc);
-
     try {
       await addDoc(collection(db, "activity_logs"), {
         userId: currentUser.uid,
@@ -4355,13 +3671,10 @@ window.handleYtVideoSubmit = async function(e) {
         timestamp: serverTimestamp()
       });
     } catch(le) {}
-
     alert(`✅ Video Reference "${title}" successfully submitted with ID: ${nextId}!\nStatus is set to 'pending' and awaiting administrator review.`);
-
     if (sourceInput) sourceInput.value = "";
     if (urlInput) urlInput.value = "";
     if (titleInput) titleInput.value = "";
-
     await loadYtVideosData();
   } catch (err) {
     console.error("Video submission failed:", err);

@@ -25,7 +25,6 @@
       --green: #10b981;
       --amber: #f59e0b;
     }
-
     body {
       font-family: 'Outfit', sans-serif;
       background: var(--bg);
@@ -35,8 +34,6 @@
       flex-direction: column;
       overflow-x: hidden;
     }
-
-    /* TOPBAR */
     .topbar {
       height: 60px;
       background: var(--sb);
@@ -85,7 +82,6 @@
     }
     .brand-tag i { color: #ef4444; font-size: 1.3rem; }
     .brand-sub { color: #a5b4fc; font-weight: 500; font-size: 0.82rem; }
-
     .topbar-right {
       display: flex;
       align-items: center;
@@ -126,8 +122,6 @@
     .act-btn.primary:hover {
       background: linear-gradient(135deg, #4f46e5, #4338ca);
     }
-
-    /* MAIN LAYOUT */
     .player-main {
       flex: 1;
       width: 100%;
@@ -139,16 +133,12 @@
       gap: 1.5rem;
       align-items: start;
     }
-
-    /* LEFT COLUMN: PLAYER & METADATA */
     .player-col-left {
       display: flex;
       flex-direction: column;
       gap: 1.2rem;
       min-width: 0;
     }
-
-    /* 16:9 VIDEO CONTAINER */
     .player-screen-box {
       width: 100%;
       background: #000;
@@ -167,8 +157,6 @@
       height: 100%;
       border: none;
     }
-
-    /* FULLSCREEN CSS MODES */
     .player-screen-box:fullscreen,
     .player-screen-box:-webkit-full-screen,
     .player-screen-box:-moz-full-screen,
@@ -194,8 +182,6 @@
       height: 100% !important;
       border: none !important;
     }
-
-    /* QUICK PLAYBAR CONTROLS */
     .player-quick-bar {
       display: flex;
       justify-content: space-between;
@@ -213,8 +199,6 @@
       align-items: center;
       gap: 8px;
     }
-
-    /* METADATA CARD */
     .meta-card {
       background: var(--surface);
       border: 1px solid var(--bdr);
@@ -288,8 +272,6 @@
       align-items: center;
       gap: 5px;
     }
-
-    /* RIGHT COLUMN: VIDEO SWITCHER & PLAYLIST */
     .player-col-right {
       background: var(--surface);
       border: 1px solid var(--bdr);
@@ -302,8 +284,6 @@
       position: sticky;
       top: 75px;
     }
-
-    /* SWITCHER TABS */
     .switcher-tabs-wrap {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -342,8 +322,6 @@
       color: #fbbf24;
       border: 1px solid rgba(245,158,11,0.3);
     }
-
-    /* PLAYLIST ITEMS SCROLL LIST */
     .playlist-scroll {
       flex: 1;
       overflow-y: auto;
@@ -360,8 +338,6 @@
       background: rgba(255,255,255,0.15);
       border-radius: 4px;
     }
-
-    /* PLAYLIST ITEM CARD */
     .video-item-card {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--bdr);
@@ -440,8 +416,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    /* SHARE FALLBACK MODAL */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -503,12 +477,6 @@
       font-family: inherit;
       font-size: 0.82rem;
     }
-
-    /* ======================================================== */
-    /* FOLDABLE DEVICES & MEDIA RESPONSIVENESS MATRIX           */
-    /* ======================================================== */
-
-    /* 1. Unfolded Foldable Screens / Tablet Portrait (600px - 960px) */
     @media (max-width: 960px) {
       .player-main {
         grid-template-columns: 1fr;
@@ -523,8 +491,6 @@
         max-height: 400px;
       }
     }
-
-    /* 2. Foldable Square-ish / Unfolded Dual-View (600px - 900px aspect ratios) */
     @media (min-width: 600px) and (max-width: 900px) and (max-aspect-ratio: 4/3) {
       .player-main {
         padding: 0.8rem;
@@ -538,8 +504,6 @@
         font-size: 1.25rem;
       }
     }
-
-    /* 3. Mobile / Folded Narrow Screen (< 500px, e.g. iPhone 16 @ 393px, Fold @ 340px) */
     @media (max-width: 500px) {
       .topbar {
         padding: 0 0.6rem;
@@ -589,8 +553,6 @@
         border-radius: 12px;
       }
     }
-
-    /* 4. Extra Narrow Folded Display (< 350px, e.g. Galaxy Z Fold Outer Screen @ 340px) */
     @media (max-width: 350px) {
       .topbar {
         padding: 0 0.4rem;
@@ -605,8 +567,6 @@
         padding: 6px 4px;
       }
     }
-
-    /* 5. Dual-Screen Spanning Foldable Support */
     @media (spanning: single-fold-vertical), (screen-spanning: single-fold-vertical) {
       .player-main {
         display: grid !important;
@@ -622,8 +582,6 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
-  <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
       <a href="dpgnotes-serp.html" class="back-btn" title="Back to Search Engine">
@@ -634,36 +592,26 @@
         <span>DPGNotes <span class="brand-sub">Video Studio</span></span>
       </div>
     </div>
-
     <div class="topbar-right">
       <button type="button" class="act-btn" id="likeBtn" onclick="window.toggleVideoLike()" title="Verified Like">
         <i class="ri-heart-3-line" id="likeIcon"></i> <span id="likeCount">0</span>
       </button>
-
       <button type="button" class="act-btn primary" onclick="window.shareCurrentVideo()" title="Native Chrome Share (WhatsApp, Email &amp; Apps)">
         <i class="ri-share-forward-line"></i> <span class="btn-text-full">Share</span>
       </button>
-
       <button type="button" class="act-btn" id="fullScreenBtn" onclick="window.toggleFullScreenPlayer()" title="Full Screen Video View">
         <i class="ri-fullscreen-line" id="fsIcon"></i> <span class="btn-text-full">Full Screen</span>
       </button>
-
       <a href="#" target="_blank" rel="noopener" class="act-btn" id="openYtBtn" title="Watch on YouTube">
         <i class="ri-external-link-line"></i>
       </a>
     </div>
   </header>
-
-  <!-- MAIN WRAPPER -->
   <main class="player-main">
-    
-    <!-- LEFT: PLAYER, CONTROLS & METADATA -->
     <div class="player-col-left">
       <div class="player-screen-box" id="playerScreenBox">
         <iframe id="videoIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen="true"></iframe>
       </div>
-
-      <!-- Quick Playbar Controls -->
       <div class="player-quick-bar">
         <div class="quick-bar-left">
           <button type="button" class="act-btn" onclick="window.playPreviousVideo()" style="padding:4px 10px; font-size:0.78rem;">
@@ -673,7 +621,6 @@
             Next <i class="ri-skip-forward-line"></i>
           </button>
         </div>
-
         <div class="quick-bar-right">
           <button type="button" class="act-btn" onclick="window.restartCurrentVideo()" style="padding:4px 10px; font-size:0.78rem;" title="Replay Video">
             <i class="ri-restart-line"></i> Replay
@@ -683,8 +630,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Video Metadata Details Card -->
       <div class="meta-card">
         <div class="meta-header">
           <div>
@@ -696,7 +641,6 @@
               <i class="ri-user-line"></i> <span id="sourceName">Loading Creator...</span>
             </div>
           </div>
-
           <div class="telemetry-pills">
             <div class="tel-pill">
               <i class="ri-eye-line" style="color:#38bdf8;"></i> Views: <strong id="telViews">0</strong>
@@ -709,14 +653,11 @@
             </div>
           </div>
         </div>
-
         <div style="color:var(--mut); font-size:0.88rem; line-height:1.6; border-top:1px solid var(--bdr); padding-top:0.85rem;">
           <p id="videoDesc">Verified academic lecture and educational walkthrough hosted within DPGNotes digital repository. Synchronized with the university syllabus framework.</p>
         </div>
       </div>
     </div>
-
-    <!-- RIGHT: SWITCHER & VIDEO PLAYLIST BROWSER -->
     <div class="player-col-right">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3 style="font-size:0.95rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
@@ -724,8 +665,6 @@
         </h3>
         <span id="playlistCurrentIndex" style="font-size:0.75rem; color:var(--mut);">1 of 4</span>
       </div>
-
-      <!-- Switcher: Academic Video vs Sponsored Ad Video -->
       <div class="switcher-tabs-wrap">
         <button type="button" class="switcher-tab-btn tab-academic active" id="tabBtnAcademic" onclick="window.switchVideoPool('academic')">
           <i class="ri-graduation-cap-line"></i> Academic (<span id="countAcademicVids">0</span>)
@@ -734,10 +673,7 @@
           <i class="ri-advertisement-line"></i> Sponsored (<span id="countSponsoredVids">0</span>)
         </button>
       </div>
-
-      <!-- Video Cards Playlist -->
       <div class="playlist-scroll" id="playlistItemsContainer">
-        <!-- Rendered dynamically -->
         <div style="text-align:center; padding:2rem 1rem; color:var(--mut); font-size:0.85rem;">
           <i class="ri-loader-4-line ri-spin" style="font-size:1.5rem; display:block; margin-bottom:8px;"></i>
           Loading media collection...
@@ -745,8 +681,6 @@
       </div>
     </div>
   </main>
-
-  <!-- SHARE FALLBACK MODAL -->
   <div class="modal-overlay" id="shareModal">
     <div class="modal-card">
       <div class="modal-title">
@@ -767,14 +701,10 @@
       </div>
     </div>
   </div>
-
-  <!-- Firebase Scripts with Inlined Configuration Safeguard -->
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    // Direct inlined configuration prevents 404 network failure on any client
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -783,19 +713,15 @@
       messagingSenderId: "910494426039",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
     const db = getFirestore(app);
     const auth = getAuth(app);
-
-    // Default Predefined Academic Videos
     const PREDEFINED_ACADEMIC = [
       { id: 'yt-001', url: 'https://www.youtube.com/watch?v=CgdR5BGT9w0', title: 'Introducing DPGNotes PDF Viewer', source: 'Akshat Network Hub', views: 0, likes: [], shares: 0, isSponsored: false },
       { id: 'yt-002', url: 'https://www.youtube.com/watch?v=Cuzg4tDliFM', title: 'Neon Calculator', source: 'Codagenda Success Story', views: 0, likes: [], shares: 0, isSponsored: false },
       { id: 'yt-003', url: 'https://www.youtube.com/watch?v=hcOz0sm5rvU', title: 'NovaPlay Suite', source: 'Horizon TechX Internship', views: 0, likes: [], shares: 0, isSponsored: false },
       { id: 'yt-004', url: 'https://www.youtube.com/watch?v=Yh2jQJWzbsI', title: 'Gallery Demonstration', source: 'Horizon TechX Internship', views: 0, likes: [], shares: 0, isSponsored: false }
     ];
-
     let academicVideos = [...PREDEFINED_ACADEMIC];
     let sponsoredVideos = [];
     let currentPoolType = "academic"; // "academic" or "sponsored"
@@ -808,8 +734,6 @@
       email: localStorage.getItem("dpgActiveUserEmail") || "",
       displayName: localStorage.getItem("dpgActiveUserName") || "Contributor"
     } : null;
-
-    // Case sensitivity repair map for known legacy lowercased IDs
     const KNOWN_ID_REPAIR = {
       'cgdr5bgt9w0': 'CgdR5BGT9w0',
       'cuzg4tdlifm': 'Cuzg4tDliFM',
@@ -821,7 +745,6 @@
       'mfpg6gz0_98': 'MFPg6gz0_98',
       'gjizlopvyoy': 'GjizloPVYoY'
     };
-
     function extractYouTubeId(url) {
       if (!url) return "";
       const str = String(url).trim();
@@ -852,7 +775,6 @@
       }
       return extracted;
     }
-
     function findYouTubeUrl(a) {
       if (!a) return "";
       const candidates = [a.videoUrl, a.targetLink, a.targetUrl, a.url, a.link];
@@ -864,8 +786,6 @@
       }
       return "";
     }
-
-    // Toggle Full Screen Function (Native browser + Webkit + Moz + MS prefixes)
     window.toggleFullScreenPlayer = function() {
       const box = document.getElementById("playerScreenBox");
       const icon = document.getElementById("fsIcon");
@@ -893,7 +813,6 @@
         if (icon) icon.className = "ri-fullscreen-line";
       }
     };
-
     ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
       document.addEventListener(evt, () => {
         const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
@@ -903,13 +822,10 @@
         }
       });
     });
-
-    // Play video
     window.loadAndPlayVideo = function(item, updateUrl = true) {
       if (!item) return;
       currentVideoItem = item;
       currentToken = ""; // Clear share token on manual track change
-
       if (item.isSponsored) {
         currentPoolType = "sponsored";
         currentAdId = item.id;
@@ -917,7 +833,6 @@
         if (updateUrl) {
           window.history.pushState(null, '', `dpgnotes-video.html?adId=${encodeURIComponent(item.id)}`);
         }
-        // Increment ad views
         updateDoc(doc(db, "user_ads", item.id), {
           views: increment(1),
           impressionsCount: increment(1)
@@ -929,12 +844,9 @@
         if (updateUrl) {
           window.history.pushState(null, '', `dpgnotes-video.html?id=${encodeURIComponent(item.id)}`);
         }
-        // Increment academic views
         updateDoc(doc(db, "videos", item.id), { views: increment(1) }).catch(() => {});
         updateDoc(doc(db, "Video", item.id), { views: increment(1) }).catch(() => {});
       }
-
-      // Render Player iframe
       let rawUrl = item.url || item.videoUrl || item.targetLink || item.targetUrl || "";
       if (!rawUrl) rawUrl = findYouTubeUrl(item);
       const ytId = extractYouTubeId(rawUrl);
@@ -946,17 +858,13 @@
           iframe.src = rawUrl;
         }
       }
-
-      // Update Metadata
       document.getElementById("videoTitle").innerText = item.title || "Academic Educational Demonstration";
       document.getElementById("sourceName").innerText = item.source || item.company || item.brand || item.advertiserName || item.uploaderName || "Verified Creator";
-
       const ytBtn = document.getElementById("openYtBtn");
       if (ytBtn) {
         if (ytId) ytBtn.href = `https://www.youtube.com/watch?v=${ytId}`;
         else if (rawUrl) ytBtn.href = rawUrl;
       }
-
       const badgeContainer = document.getElementById("typeBadgeContainer");
       if (badgeContainer) {
         if (item.isSponsored) {
@@ -965,20 +873,16 @@
           badgeContainer.innerHTML = `<span class="badge-academic"><i class="ri-shield-check-fill"></i> Verified Academic Video</span>`;
         }
       }
-
       const views = (Number(item.views) || 0) + 1;
       const likesCount = Array.isArray(item.likes) ? item.likes.length : (Number(item.likes) || 0);
       const sharesCount = Number(item.shares) || 0;
-
       document.getElementById("telViews").innerText = views.toLocaleString();
       document.getElementById("telLikes").innerText = likesCount.toLocaleString();
       document.getElementById("telShares").innerText = sharesCount.toLocaleString();
       document.getElementById("likeCount").innerText = likesCount.toLocaleString();
-
       updateLikeButtonState();
       renderPlaylistUI();
     };
-
     window.restartCurrentVideo = function() {
       if (currentVideoItem) {
         let rawUrl = currentVideoItem.url || currentVideoItem.videoUrl || currentVideoItem.targetLink || currentVideoItem.targetUrl || "";
@@ -990,8 +894,6 @@
         }
       }
     };
-
-    // Cycle Previous / Next
     window.playPreviousVideo = function() {
       const activeList = (currentPoolType === "sponsored") ? sponsoredVideos : academicVideos;
       if (activeList.length === 0) return;
@@ -999,7 +901,6 @@
       const prevIdx = (currIdx - 1 + activeList.length) % activeList.length;
       window.loadAndPlayVideo(activeList[prevIdx]);
     };
-
     window.playNextVideo = function() {
       const activeList = (currentPoolType === "sponsored") ? sponsoredVideos : academicVideos;
       if (activeList.length === 0) return;
@@ -1007,21 +908,15 @@
       const nextIdx = (currIdx + 1) % activeList.length;
       window.loadAndPlayVideo(activeList[nextIdx]);
     };
-
-    // Switch between Academic and Sponsored pool
     window.switchVideoPool = function(type) {
       currentPoolType = type;
       const tabAcademic = document.getElementById("tabBtnAcademic");
       const tabSponsored = document.getElementById("tabBtnSponsored");
-
       if (tabAcademic && tabSponsored) {
         tabAcademic.classList.toggle("active", type === "academic");
         tabSponsored.classList.toggle("active", type === "sponsored");
       }
-
       renderPlaylistUI();
-
-      // If switching to pool that doesn't contain currently playing video, play first from that pool
       const activeList = (type === "sponsored") ? sponsoredVideos : academicVideos;
       if (activeList.length > 0) {
         const isCurrentInPool = activeList.some(v => v.id === currentVideoItem?.id);
@@ -1030,20 +925,15 @@
         }
       }
     };
-
-    // Render Playlist UI
     function renderPlaylistUI() {
       const container = document.getElementById("playlistItemsContainer");
       if (!container) return;
-
       const activeList = (currentPoolType === "sponsored") ? sponsoredVideos : academicVideos;
       const countEl = document.getElementById("playlistCurrentIndex");
-      
       const currIdx = activeList.findIndex(v => v.id === (currentVideoItem?.id));
       if (countEl) {
         countEl.innerText = `${activeList.length ? (currIdx >= 0 ? currIdx + 1 : 1) : 0} of ${activeList.length}`;
       }
-
       if (activeList.length === 0) {
         container.innerHTML = `
           <div style="text-align:center; padding:2rem 1rem; color:var(--mut); font-size:0.85rem;">
@@ -1053,7 +943,6 @@
         `;
         return;
       }
-
       container.innerHTML = "";
       activeList.forEach((item, idx) => {
         let rawItemUrl = item.url || item.videoUrl || item.targetLink || item.targetUrl || "";
@@ -1062,11 +951,9 @@
         const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='54' fill='%23111427'></svg>";
         const isCurrent = currentVideoItem && (currentVideoItem.id === item.id);
         const likes = Array.isArray(item.likes) ? item.likes.length : (Number(item.likes) || 0);
-
         const card = document.createElement("div");
         card.className = `video-item-card ${isCurrent ? 'active' : ''} ${item.isSponsored ? 'card-sponsored' : ''}`;
         card.onclick = () => window.loadAndPlayVideo(item);
-
         card.innerHTML = `
           <div class="item-thumb-box">
             <img src="${thumbUrl}" alt="Thumbnail" loading="lazy">
@@ -1086,25 +973,19 @@
         container.appendChild(card);
       });
     }
-
     function escapeHtml(str) {
       if (!str) return "";
       return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
-
-    // Like Button
     function updateLikeButtonState() {
       const btn = document.getElementById("likeBtn");
       const icon = document.getElementById("likeIcon");
       if (!btn || !icon || !currentVideoItem) return;
-
       const activeUser = currentUser || auth.currentUser || (localStorage.getItem("dpgActiveUserUid") ? {
         uid: localStorage.getItem("dpgActiveUserUid")
       } : null);
-
       const likesArr = Array.isArray(currentVideoItem.likes) ? currentVideoItem.likes : [];
       const hasLiked = activeUser && likesArr.includes(activeUser.uid);
-
       if (hasLiked) {
         btn.classList.add("liked");
         icon.className = "ri-heart-3-fill";
@@ -1113,14 +994,12 @@
         icon.className = "ri-heart-3-line";
       }
     }
-
     window.toggleVideoLike = async function() {
       const activeUser = currentUser || auth.currentUser || (localStorage.getItem("dpgActiveUserUid") ? {
         uid: localStorage.getItem("dpgActiveUserUid"),
         email: localStorage.getItem("dpgActiveUserEmail") || "",
         displayName: localStorage.getItem("dpgActiveUserName") || "Contributor"
       } : null);
-
       if (!activeUser) {
         if (typeof window.customAlert === 'function') {
           await window.customAlert("Please sign in as a verified contributor to like this video.", { title: "Authentication Required" });
@@ -1131,12 +1010,10 @@
       }
       currentUser = activeUser;
       if (!currentVideoItem) return;
-
       const likesArr = Array.isArray(currentVideoItem.likes) ? currentVideoItem.likes : [];
       const hasLiked = likesArr.includes(activeUser.uid);
       const targetCol = currentVideoItem.isSponsored ? "user_ads" : "videos";
       const targetId = currentVideoItem.id;
-
       try {
         if (hasLiked) {
           currentVideoItem.likes = likesArr.filter(u => u !== activeUser.uid);
@@ -1151,7 +1028,6 @@
             updateDoc(doc(db, "Video", targetId), { likes: arrayUnion(activeUser.uid) }).catch(() => {});
           }
         }
-
         const count = currentVideoItem.likes.length;
         document.getElementById("telLikes").innerText = count.toLocaleString();
         document.getElementById("likeCount").innerText = count.toLocaleString();
@@ -1161,14 +1037,10 @@
         console.error("Like toggle failed:", err);
       }
     };
-
-    // Native Chrome / Web Share
     window.shareCurrentVideo = async function() {
       if (!currentVideoItem) return;
       const modal = document.getElementById("shareModal");
       const input = document.getElementById("shareUrlInput");
-
-      // Generate a fresh, unique share token specifically for this video share event
       const token = "VSH_" + Math.random().toString(36).substring(2, 9).toUpperCase();
       const isSpon = Boolean(currentVideoItem.isSponsored);
       const targetCol = isSpon ? "user_ads" : "videos";
@@ -1181,7 +1053,6 @@
         uid: localStorage.getItem("dpgActiveUserUid")
       } : null);
       const uploaderName = activeUser?.displayName || activeUser?.email || videoSource;
-
       const shareData = {
         token: token,
         type: isSpon ? "ad_video" : "video",
@@ -1194,15 +1065,11 @@
         clicks: 0,
         createdAt: new Date().toISOString()
       };
-
-      // 1. Direct Firestore write
       try {
         await setDoc(doc(db, "share_links", token), shareData, { merge: true });
       } catch(e) {
         console.warn("Direct Firestore setDoc warning:", e);
       }
-
-      // 2. Redundant backend API call to guarantee push to Firestore DB
       try {
         fetch('/api/share/generate-video', {
           method: 'POST',
@@ -1210,8 +1077,6 @@
           body: JSON.stringify(shareData)
         }).catch(() => {});
       } catch(_) {}
-
-      // 3. Increment counters
       try {
         if (targetId) {
           updateDoc(doc(db, targetCol, targetId), { shares: increment(1) }).catch(() => {});
@@ -1220,15 +1085,12 @@
           }
         }
       } catch(_) {}
-
       currentVideoItem.shares = (Number(currentVideoItem.shares) || 0) + 1;
       const telSharesEl = document.getElementById("telShares");
       if (telSharesEl) telSharesEl.innerText = currentVideoItem.shares.toLocaleString();
-
       const shareUrl = `https://dpgnotes.web.app/dpgnotes-video.html?token=${token}`;
       const shareTitle = `${videoTitle} — DPGNotes`;
       const shareText = `Watch "${videoTitle}" on DPGNotes - Verified Academic Resource:\n`;
-
       if (navigator.share) {
         try {
           await navigator.share({
@@ -1242,17 +1104,13 @@
           console.warn("navigator.share failed, fallback to modal:", shareErr);
         }
       }
-
-      // Fallback: Copy to modal
       if (input) input.value = shareUrl;
       if (modal) modal.classList.add("active");
     };
-
     window.closeShareModal = function() {
       const modal = document.getElementById("shareModal");
       if (modal) modal.classList.remove("active");
     };
-
     window.copyShareUrl = function() {
       const input = document.getElementById("shareUrlInput");
       if (!input) return;
@@ -1261,20 +1119,15 @@
         if (msg) msg.style.display = "block";
       });
     };
-
     onAuthStateChanged(auth, (user) => {
       if (user) currentUser = user;
       updateLikeButtonState();
     });
-
-    // Main Initializer
     async function initPlayer() {
       const params = new URLSearchParams(window.location.search);
       currentVideoId = params.get("id") || "";
       currentAdId = params.get("adId") || "";
       currentToken = (params.get("token") || params.get("share") || "").trim();
-
-      // 1. Fetch Academic Videos from Firestore
       try {
         const vSnap = await getDocs(collection(db, "videos"));
         let firestoreAcademic = [];
@@ -1284,7 +1137,6 @@
             firestoreAcademic.push({ id: d.id, ...v, isSponsored: false });
           }
         });
-
         if (firestoreAcademic.length === 0) {
           const vSnap2 = await getDocs(collection(db, "Video"));
           vSnap2.forEach(d => {
@@ -1294,9 +1146,7 @@
             }
           });
         }
-
         if (firestoreAcademic.length > 0) {
-          // Merge unique with predefined
           const map = new Map();
           firestoreAcademic.forEach(v => map.set(v.id, v));
           PREDEFINED_ACADEMIC.forEach(v => {
@@ -1307,8 +1157,6 @@
       } catch (e) {
         console.warn("Firestore academic videos load error, keeping predefined:", e);
       }
-
-      // 2. Fetch Sponsored Video Ads from user_ads preserving original case
       try {
         const adsSnap = await getDocs(collection(db, "user_ads"));
         sponsoredVideos = [];
@@ -1333,14 +1181,10 @@
       } catch (e) {
         console.warn("user_ads videos load error:", e);
       }
-
-      // Update Tab Badges
       const countAcadEl = document.getElementById("countAcademicVids");
       if (countAcadEl) countAcadEl.innerText = academicVideos.length;
       const countSponEl = document.getElementById("countSponsoredVids");
       if (countSponEl) countSponEl.innerText = sponsoredVideos.length;
-
-      // 3. Resolve Token if present
       if (currentToken) {
         try {
           const sDoc = await getDoc(doc(db, "share_links", currentToken));
@@ -1356,7 +1200,6 @@
             }
             updateDoc(doc(db, "share_links", currentToken), { clicks: increment(1) }).catch(() => {});
           } else {
-            // Fallback via server API
             try {
               const apiResp = await fetch(`/api/share/click?token=${encodeURIComponent(currentToken)}`);
               if (apiResp.ok) {
@@ -1379,8 +1222,6 @@
           console.warn("Share token resolution notice:", e);
         }
       }
-
-      // 4. Select Video to Play
       let toPlay = null;
       if (currentAdId) {
         currentPoolType = "sponsored";
@@ -1433,7 +1274,6 @@
           } catch(err) {}
         }
       }
-
       if (!toPlay) {
         if (currentPoolType === "sponsored" && sponsoredVideos.length > 0) {
           toPlay = sponsoredVideos[0];
@@ -1442,19 +1282,14 @@
           toPlay = academicVideos[0] || PREDEFINED_ACADEMIC[0];
         }
       }
-
-      // Set active tab
       const tabAcademic = document.getElementById("tabBtnAcademic");
       const tabSponsored = document.getElementById("tabBtnSponsored");
       if (tabAcademic && tabSponsored) {
         tabAcademic.classList.toggle("active", currentPoolType === "academic");
         tabSponsored.classList.toggle("active", currentPoolType === "sponsored");
       }
-
       window.loadAndPlayVideo(toPlay, false);
     }
-
-    // Run initializer immediately
     initPlayer();
   </script>
 </body>

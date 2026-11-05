@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>404 - Page Not Found | DPGNotes</title>
@@ -11,24 +9,17 @@
   <meta name="author" content="DPGNotes by Akshat Network Hub">
   <meta name="theme-color" content="#020617">
   <meta name="robots" content="noindex, follow">
-
   <meta property="og:title" content="404 - Page Not Found | DPGNotes">
   <meta property="og:description" content="The page you are looking for could not be found on DPGNotes. Explore our verified academic notes and study materials.">
   <meta property="og:image" content="https://dpgnotes.web.app/ANH.png">
   <meta property="og:url" content="https://dpgnotes.web.app/404.html">
-
   <link rel="icon" type="image/png" href="/ANH.png">
   <link rel="manifest" href="/manifest.json">
   <script src="/pwa.js" defer></script>
-
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
-
   <style>
     :root {
       --bg-top: #0f172a;
@@ -44,13 +35,11 @@
       --text: #ffffff;
       --text-muted: #cbd5e1;
     }
-
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
@@ -65,8 +54,6 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
-
-    /* Ambient background grid */
     body::before {
       content: "";
       position: absolute;
@@ -77,7 +64,6 @@
       background-size: 40px 40px;
       pointer-events: none;
     }
-
     .error-container {
       position: relative;
       z-index: 10;
@@ -96,7 +82,6 @@
       text-align: center;
       animation: cardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-
     @keyframes cardFadeIn {
       from {
         opacity: 0;
@@ -107,8 +92,6 @@
         transform: translateY(0) scale(1);
       }
     }
-
-    /* Brand badge centered directly above 404 */
     .brand-badge {
       display: inline-flex;
       align-items: center;
@@ -123,13 +106,11 @@
       letter-spacing: 0.02em;
       margin-bottom: 1.25rem;
     }
-
     .brand-badge img {
       width: 22px;
       height: 22px;
       border-radius: 50%;
     }
-
     .error-code-wrapper {
       display: flex;
       align-items: center;
@@ -137,7 +118,6 @@
       width: 100%;
       margin-bottom: 0.5rem;
     }
-
     .error-code {
       font-family: 'Outfit', sans-serif;
       font-size: clamp(4.8rem, 14vw, 7.2rem);
@@ -149,7 +129,6 @@
       -webkit-text-fill-color: transparent;
       text-shadow: 0 0 35px rgba(99, 102, 241, 0.4);
     }
-
     .error-title {
       font-family: 'Outfit', sans-serif;
       font-size: clamp(1.4rem, 4.5vw, 1.85rem);
@@ -157,7 +136,6 @@
       color: #ffffff;
       margin-bottom: 0.75rem;
     }
-
     .error-desc {
       color: var(--text-muted);
       font-size: 0.98rem;
@@ -165,7 +143,6 @@
       max-width: 520px;
       margin: 0 auto 1.25rem;
     }
-
     .requested-path-box {
       display: inline-flex;
       align-items: center;
@@ -181,18 +158,14 @@
       word-break: break-all;
       max-width: 100%;
     }
-
     .requested-path-box svg {
       flex-shrink: 0;
       color: #f87171;
     }
-
-    /* Fluid responsive search form */
     .search-section {
       width: 100%;
       margin-bottom: 1.8rem;
     }
-
     .search-box {
       display: flex;
       align-items: center;
@@ -203,12 +176,10 @@
       transition: all 0.3s;
       width: 100%;
     }
-
     .search-box:focus-within {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
     }
-
     .search-box input {
       flex: 1;
       min-width: 0; /* Prevents overflow bug on small screens! */
@@ -219,11 +190,9 @@
       color: #ffffff;
       font-size: 0.95rem;
     }
-
     .search-box input::placeholder {
       color: #94a3b8;
     }
-
     .search-box button {
       display: inline-flex;
       align-items: center;
@@ -240,20 +209,16 @@
       transition: all 0.2s;
       flex-shrink: 0;
     }
-
     .search-box button:hover {
       opacity: 0.95;
       transform: translateY(-1px);
     }
-
-    /* Action buttons: Desktop/Tablet 3 columns, Mobile stacked */
     .action-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       width: 100%;
     }
-
     .btn-action {
       display: inline-flex;
       align-items: center;
@@ -268,33 +233,27 @@
       white-space: nowrap;
       min-height: 44px;
     }
-
     .btn-primary {
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: #ffffff;
       box-shadow: 0 4px 15px var(--primary-glow);
     }
-
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px var(--primary-glow);
       color: #ffffff;
     }
-
     .btn-secondary {
       background: rgba(30, 41, 59, 0.7);
       border: 1px solid var(--border);
       color: #f1f5f9;
     }
-
     .btn-secondary:hover {
       background: var(--surface-hover);
       border-color: rgba(255, 255, 255, 0.2);
       color: #ffffff;
       transform: translateY(-2px);
     }
-
-    /* Footer */
     .error-footer {
       margin-top: 2rem;
       text-align: center;
@@ -303,24 +262,18 @@
       position: relative;
       z-index: 10;
     }
-
     .error-footer a {
       color: #818cf8;
       text-decoration: none;
     }
-
     .error-footer a:hover {
       text-decoration: underline;
     }
-
-    /* Tablet breakpoint (481px - 768px) */
     @media (max-width: 768px) {
       .error-container {
         padding: 2.5rem 1.8rem;
       }
     }
-
-    /* Mobile breakpoint (<= 480px) */
     @media (max-width: 480px) {
       .error-container {
         padding: 2.2rem 1.25rem;
@@ -341,22 +294,18 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
   <main class="error-container" role="main">
     <div class="brand-badge">
       <img src="/ANH.png" alt="DPGNotes Logo" />
       <span>DPGNotes</span>
     </div>
-
     <div class="error-code-wrapper">
       <div class="error-code">404</div>
     </div>
-
     <h1 class="error-title">Page Not Found</h1>
     <p class="error-desc">
       The resource or URL you requested is missing, moved, or temporarily unavailable.
     </p>
-
     <div class="requested-path-box" id="brokenPathContainer" style="display: none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
@@ -365,8 +314,6 @@
       </svg>
       <span id="brokenPathText"></span>
     </div>
-
-    <!-- Quick Search -->
     <div class="search-section">
       <form class="search-box" id="errorSearchForm" onsubmit="handleSearch(event)">
         <input type="text" id="errorSearchInput" placeholder="Search syllabus, papers, notes..." autocomplete="off" />
@@ -379,8 +326,6 @@
         </button>
       </form>
     </div>
-
-    <!-- Actions -->
     <div class="action-grid">
       <a href="/" class="btn-action btn-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -389,7 +334,6 @@
         </svg>
         Home
       </a>
-
       <a href="/study-hub.html" class="btn-action btn-secondary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -397,7 +341,6 @@
         </svg>
         Study Hub
       </a>
-
       <a href="/legal/index.html" class="btn-action btn-secondary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
@@ -407,23 +350,17 @@
       </a>
     </div>
   </main>
-
   <footer class="error-footer">
     <p>&copy; DPGNotes &bull; Powered by <a href="https://akshat-881236.github.io/AkshatNetworkHub/" target="_blank" rel="noopener">Akshat Network Hub</a></p>
   </footer>
-
   <script>
-    // 1. Ensure 404 page runs in its own scope and URL, resolving browser console 404 error
     (function ensureScopeAndUrl() {
       try {
         const path = window.location.pathname;
         if (path !== '/404.html' && path !== '/404') {
-          // Transition to /404.html URL so page is in its own scope and returns clean HTTP 200
           window.location.replace('/404.html?missing=' + encodeURIComponent(path + window.location.search));
           return;
         }
-
-        // Display missing path from query parameter
         const urlParams = new URLSearchParams(window.location.search);
         const missingPath = urlParams.get('missing');
         if (missingPath) {
@@ -436,8 +373,6 @@
         }
       } catch(e) {}
     })();
-
-    // 2. Search redirect handler
     function handleSearch(e) {
       e.preventDefault();
       const input = document.getElementById('errorSearchInput');

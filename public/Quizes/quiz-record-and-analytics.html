@@ -6,8 +6,6 @@
   <title>Contributor Quiz Analytics &amp; Examination Records | DPGNotes</title>
   <meta name="description" content="Review candidate scorecards, ranking distributions, anti-cheat telemetry, manage retest requests, and publish answer keys for your authored quizzes on DPGNotes." />
   <link rel="icon" href="/ANH.png" type="image/png" />
-
-  <!-- Instant Contributor Auth Protection Check -->
   <script>
     (function() {
       const uid = localStorage.getItem("dpgActiveUserUid");
@@ -16,8 +14,6 @@
       }
     })();
   </script>
-
-  <!-- Google Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,7 +22,6 @@
   <link rel="stylesheet" href="/reader-theme.css">
   <script src="/reader-theme.js"></script>
   <script src="/custom-dialogs.js"></script>
-
   <style>
     :root {
       --qz-bg: #090d16;
@@ -43,7 +38,6 @@
       --qz-text: #f8fafc;
       --qz-text-muted: #94a3b8;
     }
-
     html[data-theme="light"],
     body[data-theme="light"],
     body.theme-light {
@@ -57,7 +51,6 @@
       --qz-primary-hover: #3730a3;
       --qz-accent: #0284c7;
     }
-
     html[data-theme="dark"],
     body[data-theme="dark"],
     body.theme-dark {
@@ -69,7 +62,6 @@
       --qz-text-muted: #9ca3af;
       --qz-accent: #38bdf8;
     }
-
     * { box-sizing: border-box; }
     body {
       background: var(--qz-bg);
@@ -79,7 +71,6 @@
       margin: 0;
       padding-bottom: 4rem;
     }
-
     .analytics-nav {
       padding: 0.85rem 1.75rem;
       background: var(--qz-surface, rgba(10, 14, 23, 0.85));
@@ -102,14 +93,11 @@
       font-size: 1.15rem;
     }
     .brand-link img { width: 32px; height: 32px; border-radius: 8px; }
-
     .analytics-container {
       max-width: 1240px;
       margin: 2rem auto;
       padding: 0 1.25rem;
     }
-
-    /* Tabs Bar */
     .qz-tab-nav {
       display: flex;
       gap: 8px;
@@ -139,8 +127,6 @@
       border-bottom-color: var(--qz-primary);
       font-weight: 700;
     }
-
-    /* KPI Summary Cards */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -168,8 +154,6 @@
       font-weight: 800;
       color: var(--qz-text);
     }
-
-    /* Quiz Detail Section */
     .qz-box {
       background: var(--qz-surface);
       border: 1px solid var(--qz-border);
@@ -179,7 +163,6 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       margin-bottom: 2rem;
     }
-
     .custom-table {
       width: 100%;
       border-collapse: separate;
@@ -206,7 +189,6 @@
     .custom-table tbody tr:hover td {
       background: rgba(255, 255, 255, 0.02);
     }
-
     .rank-pill {
       width: 26px;
       height: 26px;
@@ -221,7 +203,6 @@
     .rank-pill.first { background: #fbbf24; color: #78350f; }
     .rank-pill.second { background: #94a3b8; color: #0f172a; }
     .rank-pill.third { background: #d97706; color: #fff; }
-
     .umc-badge-clean {
       background: rgba(16, 185, 129, 0.15);
       color: #10b981;
@@ -242,8 +223,6 @@
       font-weight: 600;
       white-space: nowrap;
     }
-
-    /* Modal */
     .qz-modal-overlay {
       position: fixed;
       inset: 0;
@@ -267,8 +246,6 @@
       overflow-y: auto;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
     }
-
-    /* Light Theme Direct Overrides */
     html[data-theme="light"] .analytics-nav {
       background: #ffffff !important;
       border-bottom: 1px solid #cbd5e1 !important;
@@ -326,8 +303,6 @@
       color: #0f172a !important;
       border-color: #cbd5e1 !important;
     }
-
-    /* Tab Header Action Buttons */
     .btn-export-csv {
       background: rgba(99, 102, 241, 0.15);
       border: 1px solid rgba(99, 102, 241, 0.4);
@@ -354,8 +329,6 @@
       color: #ffffff;
       border-color: rgba(255, 255, 255, 0.35);
     }
-
-    /* Light Theme Button Visibility Overrides (WCAG AAA) */
     html[data-theme="light"] .btn-export-csv,
     body[data-theme="light"] .btn-export-csv,
     body.theme-light .btn-export-csv {
@@ -394,8 +367,6 @@
       border-color: #6366f1 !important;
       color: #4338ca !important;
     }
-
-    /* General Light Theme fallback for all .btn-outline-light elements */
     html[data-theme="light"] .btn-outline-light,
     body[data-theme="light"] .btn-outline-light,
     body.theme-light .btn-outline-light {
@@ -411,10 +382,8 @@
       color: #000000 !important;
       border-color: #94a3b8 !important;
     }
-
   </style>
   <script src="/history-monitoring.js" defer></script>
-  <!-- Hardcoded Contributor Quiz Analytics Structured Data (JSON-LD) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -455,8 +424,6 @@
   </script>
 </head>
 <body>
-
-  <!-- Navbar -->
   <header class="analytics-nav">
     <a href="/index.html" class="brand-link">
       <img src="/ANH.png" alt="DPGNotes">
@@ -471,17 +438,13 @@
       </a>
     </div>
   </header>
-
   <main class="analytics-container">
-
     <div style="margin-bottom:1.5rem;">
       <h1 style="font-size:2rem; font-weight:800; margin-bottom:0.4rem;">Examination Analytics &amp; Records Studio</h1>
       <p style="color:var(--qz-text-muted); font-size:0.95rem;">
         Monitor candidate rankings, manage student re-test authorizations, edit or delete authored quizzes, and audit your personal examination history.
       </p>
     </div>
-
-    <!-- TABS BAR -->
     <div class="qz-tab-nav">
       <button type="button" class="qz-tab-btn active" id="tabBtnAuthored" onclick="switchAnalyticsTab('authored')">
         <i class="ri-book-read-line"></i> Authored Quizzes &amp; Attempters
@@ -493,12 +456,7 @@
         <i class="ri-git-pull-request-line"></i> Retest Requests <span id="badgePendingRequests" class="badge bg-danger ms-1" style="display:none; font-size:0.7rem;">0</span>
       </button>
     </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 1: AUTHORED QUIZZES & ATTEMPTERS                     -->
-    <!-- ======================================================== -->
     <section id="viewTabAuthored">
-      <!-- Top KPIs Across All Contributor Quizzes -->
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-label">Authored Quizzes</div>
@@ -517,8 +475,6 @@
           <div class="kpi-val" id="kpiUmcFlags" style="color:var(--qz-danger);">--</div>
         </div>
       </div>
-
-      <!-- Active Quiz Selector -->
       <div class="qz-box">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
           <div>
@@ -531,8 +487,6 @@
             </select>
           </div>
         </div>
-
-        <!-- Selected Quiz Summary Box -->
         <div id="quizMetaDetailBox" style="display:none; background:rgba(15, 23, 42, 0.6); border:1px solid var(--qz-border); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem;">
           <div class="row g-3 align-items-center">
             <div class="col-md-7">
@@ -562,8 +516,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Candidates Scorecard Table -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
           <h4 style="font-size:1.1rem; font-weight:700; color:var(--qz-text); margin-bottom:0;">
             <i class="ri-trophy-line" style="color:#fbbf24;"></i> Candidate Leaderboard &amp; Submissions
@@ -572,7 +524,6 @@
             <i class="ri-download-cloud-2-line"></i> Export CSV Roster
           </button>
         </div>
-
         <div class="table-responsive">
           <table class="custom-table" id="candidatesTable">
             <thead>
@@ -598,13 +549,8 @@
             </tbody>
           </table>
         </div>
-
       </div>
     </section>
-
-    <!-- ======================================================== -->
-    <!-- TAB 2: MY QUIZ ATTEMPT HISTORY                           -->
-    <!-- ======================================================== -->
     <section id="viewTabMyHistory" style="display:none;">
       <div class="qz-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px;">
@@ -616,7 +562,6 @@
             <i class="ri-refresh-line"></i> Refresh History
           </button>
         </div>
-
         <div class="table-responsive">
           <table class="custom-table" id="myHistoryTable">
             <thead>
@@ -644,10 +589,6 @@
         </div>
       </div>
     </section>
-
-    <!-- ======================================================== -->
-    <!-- TAB 3: CANDIDATE RETEST REQUESTS                         -->
-    <!-- ======================================================== -->
     <section id="viewTabRequests" style="display:none;">
       <div class="qz-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px;">
@@ -659,7 +600,6 @@
             <i class="ri-refresh-line"></i> Refresh Requests
           </button>
         </div>
-
         <div class="table-responsive">
           <table class="custom-table" id="requestsTable">
             <thead>
@@ -684,10 +624,7 @@
         </div>
       </div>
     </section>
-
   </main>
-
-  <!-- Scorecard Detail Modal -->
   <div id="modalScorecardDetail" class="qz-modal-overlay" style="display:none;">
     <div class="qz-modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid var(--qz-border); padding-bottom:0.75rem;">
@@ -700,8 +637,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Firebase Script & Analytics Logic -->
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -719,7 +654,6 @@
       writeBatch,
       serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -728,11 +662,9 @@
       messagingSenderId: "910494426039",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
     const auth = getAuth(app);
     const db = getFirestore(app);
-
     let activeUid = null;
     let activeUser = null;
     let authoredQuizzes = [];
@@ -740,7 +672,6 @@
     let currentAttemptsList = [];
     let myAttemptsList = [];
     let incomingRequestsList = [];
-
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
@@ -752,16 +683,11 @@
       loadMyQuizAttempts();
       loadRetestRequests();
     });
-
-    // -------------------------------------------------------------
-    // TAB SWITCHER
-    // -------------------------------------------------------------
     window.switchAnalyticsTab = function(tabName) {
       document.querySelectorAll('.qz-tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('viewTabAuthored').style.display = 'none';
       document.getElementById('viewTabMyHistory').style.display = 'none';
       document.getElementById('viewTabRequests').style.display = 'none';
-
       if (tabName === 'authored') {
         document.getElementById('tabBtnAuthored').classList.add('active');
         document.getElementById('viewTabAuthored').style.display = 'block';
@@ -775,34 +701,24 @@
         loadRetestRequests();
       }
     };
-
-    // -------------------------------------------------------------
-    // TAB 1: AUTHORED QUIZZES & CANDIDATE ATTEMPTS
-    // -------------------------------------------------------------
     async function loadContributorQuizzes() {
       try {
         const qSnap = await getDocs(collection(db, "contributors", activeUid, "quizzes"));
         authoredQuizzes = [];
         qSnap.forEach(d => authoredQuizzes.push(d.data()));
-
         document.getElementById('kpiTotalQuizzes').textContent = authoredQuizzes.length;
-
         const select = document.getElementById('contributorQuizSelect');
         select.innerHTML = '<option value="">-- Choose an Author Exam --</option>';
-
         authoredQuizzes.forEach(q => {
           const opt = document.createElement('option');
           opt.value = q.quizId;
           opt.textContent = `${q.subjectCode} - ${q.title} (${q.totalQuestions} Qs)`;
           select.appendChild(opt);
         });
-
-        // Compute cross-quiz stats
         let totalAttemptsCount = 0;
         let totalUmcCount = 0;
         let totalScoreSum = 0;
         let totalScoreEntries = 0;
-
         for (const q of authoredQuizzes) {
           const aSnap = await getDocs(collection(db, "contributors", activeUid, "quizzes", q.quizId, "attempts"));
           totalAttemptsCount += aSnap.size;
@@ -815,13 +731,10 @@
             }
           });
         }
-
         document.getElementById('kpiTotalAttempts').textContent = totalAttemptsCount;
         document.getElementById('kpiUmcFlags').textContent = totalUmcCount;
         document.getElementById('kpiAvgScore').textContent = totalScoreEntries > 0 ? 
           `${Math.round(totalScoreSum / totalScoreEntries)}%` : '0%';
-
-        // Check if query param specified a quizId
         const urlQId = new URLSearchParams(window.location.search).get('quizId');
         if (urlQId && authoredQuizzes.some(q => q.quizId === urlQId)) {
           select.value = urlQId;
@@ -830,12 +743,10 @@
           select.value = authoredQuizzes[0].quizId;
           onQuizSelected(authoredQuizzes[0].quizId);
         }
-
       } catch (err) {
         console.error("Contributor quizzes load error:", err);
       }
     }
-
     window.onQuizSelected = async function(quizId) {
       if (!quizId) {
         document.getElementById('quizMetaDetailBox').style.display = 'none';
@@ -843,8 +754,6 @@
       }
       currentSelectedQuiz = authoredQuizzes.find(q => q.quizId === quizId);
       if (!currentSelectedQuiz) return;
-
-      // Populate meta summary
       document.getElementById('quizMetaDetailBox').style.display = 'block';
       document.getElementById('sqSubjectBadge').textContent = `${currentSelectedQuiz.subjectCode} • ${currentSelectedQuiz.subjectName}`;
       document.getElementById('sqVisBadge').textContent = currentSelectedQuiz.isPublic ? 'Public' : 'Private';
@@ -853,8 +762,6 @@
       document.getElementById('sqDesc').textContent = currentSelectedQuiz.description;
       document.getElementById('sqExamLink').href = `/Quizes/index.html?quizId=${currentSelectedQuiz.quizId}`;
       document.getElementById('sqEditBtn').href = `/Quizes/quiz-generator.html?edit=${currentSelectedQuiz.quizId}`;
-
-      // Check answer key status
       const keyStatusBadge = document.getElementById('sqKeyStatusBadge');
       const releaseBtn = document.getElementById('btnReleaseKey');
       if (currentSelectedQuiz.immediateResult && currentSelectedQuiz.hasAnswerKey) {
@@ -866,24 +773,19 @@
         keyStatusBadge.className = "badge bg-warning";
         releaseBtn.style.display = "inline-flex";
       }
-
       await loadAttemptsForQuiz(quizId);
     };
-
     async function loadAttemptsForQuiz(quizId) {
       const tbody = document.getElementById('candidatesTableBody');
       tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:1.5rem; color:#94a3b8;"><i class="ri-loader-4-line ri-spin"></i> Fetching scorecards...</td></tr>';
-
       try {
         const snap = await getDocs(collection(db, "contributors", activeUid, "quizzes", quizId, "attempts"));
         currentAttemptsList = [];
         snap.forEach(d => currentAttemptsList.push(d.data()));
-
         if (currentAttemptsList.length === 0) {
           tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:2rem; color:#94a3b8;">No candidates have undertaken this examination yet.</td></tr>';
           return;
         }
-
         currentAttemptsList.sort((a, b) => {
           if ((b.score || 0) !== (a.score || 0)) {
             return (b.score || 0) - (a.score || 0);
@@ -893,24 +795,19 @@
           }
           return 0;
         });
-
         tbody.innerHTML = '';
         currentAttemptsList.forEach((att, idx) => {
           const rank = idx + 1;
           const tr = document.createElement('tr');
-          
           let rankPillClass = 'rank-pill';
           if (rank === 1) rankPillClass += ' first';
           else if (rank === 2) rankPillClass += ' second';
           else if (rank === 3) rankPillClass += ' third';
-
           const umcClass = att.umcFlag ? 'umc-badge-flagged' : 'umc-badge-clean';
           const umcText = att.umcFlag ? `Flagged (${att.violationCount || 1})` : 'Clean Session';
-
           const retestAllowedBadge = att.allowedRetest ? 
             `<span class="badge bg-success mb-1 d-inline-block"><i class="ri-check-line"></i> Retest Allowed</span>` :
             `<button type="button" class="btn btn-outline-warning btn-sm me-1" onclick="allowCandidateRetest('${att.attemptId}', '${escapeHtml(att.candidateName)}')"><i class="ri-restart-line"></i> Allow Retest</button>`;
-
           tr.innerHTML = `
             <td><span class="${rankPillClass}">${rank}</span></td>
             <td><strong style="color:var(--qz-text); font-weight:700;">${escapeHtml(att.candidateName || 'Anonymous')}</strong></td>
@@ -935,14 +832,11 @@
           `;
           tbody.appendChild(tr);
         });
-
       } catch (err) {
         console.error("Attempts query error:", err);
         tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#fca5a5;">Failed to load candidate scorecards: ${err.message}</td></tr>`;
       }
     }
-
-    // CRUD: Allow Candidate to Retake Examination
     window.allowCandidateRetest = async function(attemptId, candName) {
       if (!currentSelectedQuiz) return;
       const confirmed = await customConfirm(
@@ -950,14 +844,12 @@
         { title: "Authorize Re-Test", confirmText: "Yes, Allow Retest", cancelText: "Cancel" }
       );
       if (!confirmed) return;
-
       try {
         const attemptRef = doc(db, "contributors", activeUid, "quizzes", currentSelectedQuiz.quizId, "attempts", attemptId);
         await updateDoc(attemptRef, {
           allowedRetest: true,
           retestGrantedAt: serverTimestamp()
         });
-
         await customAlert(`Candidate "${candName}" is now authorized to re-take this examination.`, { title: "Re-Test Granted" });
         await loadAttemptsForQuiz(currentSelectedQuiz.quizId);
       } catch (err) {
@@ -965,8 +857,6 @@
         await customAlert("Failed to grant re-test: " + err.message, { title: "Error", isDanger: true });
       }
     };
-
-    // CRUD: Delete Candidate Attempt Record
     window.deleteCandidateAttemptRecord = async function(attemptId, candName) {
       if (!currentSelectedQuiz) return;
       const confirmed = await customConfirm(
@@ -974,7 +864,6 @@
         { title: "Delete Scorecard Confirmation", confirmText: "Yes, Delete Record", isDanger: true }
       );
       if (!confirmed) return;
-
       try {
         const attemptRef = doc(db, "contributors", activeUid, "quizzes", currentSelectedQuiz.quizId, "attempts", attemptId);
         await deleteDoc(attemptRef);
@@ -985,8 +874,6 @@
         await customAlert("Failed to delete record: " + err.message, { title: "Error", isDanger: true });
       }
     };
-
-    // CRUD: Delete Authored Quiz Completely
     window.deleteSelectedQuiz = async function() {
       if (!currentSelectedQuiz) return;
       const confirmed = await customConfirm(
@@ -994,27 +881,20 @@
         { title: "Delete Examination", confirmText: "Yes, Delete Quiz", isDanger: true }
       );
       if (!confirmed) return;
-
       try {
         const qId = currentSelectedQuiz.quizId;
-        // 1. Delete questions
         const pageSnap = await getDocs(collection(db, "contributors", activeUid, "quizzes", qId, "questionPages"));
         const b1 = writeBatch(db);
         pageSnap.forEach(d => b1.delete(d.ref));
         await b1.commit();
-
-        // 2. Delete attempts
         const attSnap = await getDocs(collection(db, "contributors", activeUid, "quizzes", qId, "attempts"));
         const b2 = writeBatch(db);
         attSnap.forEach(d => b2.delete(d.ref));
         await b2.commit();
-
-        // 3. Delete key and doc
         try { await deleteDoc(doc(db, "contributors", activeUid, "quizzes", qId, "privateAnswerKey", "main")); } catch(e) {}
         await deleteDoc(doc(db, "contributors", activeUid, "quizzes", qId));
         try { await deleteDoc(doc(db, "quizDirectory", qId)); } catch(e) {}
         try { await deleteDoc(doc(db, "quizAnalytics", qId)); } catch(e) {}
-
         await customAlert("Examination deleted successfully.", { title: "Quiz Deleted" });
         window.location.reload();
       } catch (err) {
@@ -1022,8 +902,6 @@
         await customAlert("Failed to delete quiz: " + err.message, { title: "Error", isDanger: true });
       }
     };
-
-    // Release Answer Key & Batch Re-evaluating
     window.releaseAnswerKey = async function() {
       if (!currentSelectedQuiz) return;
       const confirmed = await customConfirm(
@@ -1031,19 +909,16 @@
         { title: "Release Official Answer Key", confirmText: "Yes, Release Key", cancelText: "Cancel" }
       );
       if (!confirmed) return;
-
       try {
         await updateDoc(doc(db, "contributors", activeUid, "quizzes", currentSelectedQuiz.quizId, "privateAnswerKey", "main"), {
           isReleased: true,
           updatedAt: serverTimestamp()
         });
-
         await updateDoc(doc(db, "contributors", activeUid, "quizzes", currentSelectedQuiz.quizId), {
           immediateResult: true,
           hasAnswerKey: true,
           updatedAt: serverTimestamp()
         });
-
         await customAlert("Answer key released successfully! Pending scorecards are now available.", { title: "Answer Key Released" });
         location.reload();
       } catch (err) {
@@ -1051,44 +926,32 @@
         await customAlert("Failed to release key: " + err.message, { title: "Release Failed", isDanger: true });
       }
     };
-
-    // -------------------------------------------------------------
-    // TAB 2: MY QUIZ ATTEMPT HISTORY
-    // -------------------------------------------------------------
     async function loadMyQuizAttempts(isRefresh = false) {
       const tbody = document.getElementById('myHistoryTableBody');
       if (isRefresh) {
         tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:1.5rem; color:#94a3b8;"><i class="ri-loader-4-line ri-spin"></i> Refreshing your examination history...</td></tr>';
       }
-
       try {
         const snap = await getDocs(collection(db, "contributors", activeUid, "myQuizAttempts"));
         myAttemptsList = [];
         snap.forEach(d => myAttemptsList.push(d.data()));
-
-        // Also check if any retest requests exist for my attempts
         const reqSnap = await getDocs(query(collection(db, "retestRequests"), where("candidateUid", "==", activeUid)));
         const reqMap = {};
         reqSnap.forEach(d => {
           const reqData = d.data();
           reqMap[reqData.quizId] = reqData;
         });
-
         if (myAttemptsList.length === 0) {
           tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:2rem; color:var(--qz-text-muted);">You have not attempted any academic quizzes on DPGNotes yet.</td></tr>';
           return;
         }
-
-        // Sort descending by date
         myAttemptsList.sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
-
         tbody.innerHTML = '';
         myAttemptsList.forEach((att, idx) => {
           const tr = document.createElement('tr');
           const umcClass = att.umcFlag ? 'umc-badge-flagged' : 'umc-badge-clean';
           const umcText = att.umcFlag ? `Flagged (${att.violationCount || 1})` : 'Clean Session';
           const reqInfo = reqMap[att.quizId];
-
           let retestActionHtml = '';
           if (att.allowedRetest) {
             retestActionHtml = `<a href="/Quizes/index.html?quizId=${att.quizId}" class="btn btn-sm btn-success"><i class="ri-play-line"></i> Retake Allowed</a>`;
@@ -1114,10 +977,8 @@
               </button>
             `;
           }
-
           const dateStr = att.submittedAt?.seconds ? 
             new Date(att.submittedAt.seconds * 1000).toLocaleDateString() : 'Recent';
-
           tr.innerHTML = `
             <td><strong>${idx + 1}</strong></td>
             <td><strong style="color:var(--qz-text); font-weight:700;">${escapeHtml(att.quizTitle || att.title || 'Academic Assessment')}</strong></td>
@@ -1139,24 +1000,18 @@
           `;
           tbody.appendChild(tr);
         });
-
       } catch (err) {
         console.error("My attempts load error:", err);
         tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#fca5a5;">Failed to load examination history: ${err.message}</td></tr>`;
       }
     }
-
-    // Candidate Sends Retest / Delete Request to Author
     window.requestRetest = async function(quizId, attemptId, ownerUid, quizTitle) {
       const promptPromptMsg = `Send a Re-Test Request to the author of "${quizTitle}"?\nState your reason (e.g., technical glitch, review attempt):`;
       const defaultReason = "Requesting permission to retake examination.";
-      
       let reason = (typeof customPrompt === 'function') ? 
         await customPrompt(promptPromptMsg, defaultReason) : 
         await prompt(promptPromptMsg, defaultReason);
-
       if (typeof reason !== 'string' || !reason.trim()) return;
-
       try {
         const requestId = 'req_' + activeUid.slice(0, 6) + '_' + Date.now().toString(36);
         const reqPayload = {
@@ -1173,13 +1028,10 @@
           status: 'pending',
           createdAt: serverTimestamp()
         };
-
-        // Write to global retestRequests and author's incoming requests
         await setDoc(doc(db, "retestRequests", requestId), reqPayload);
         if (ownerUid) {
           await setDoc(doc(db, "contributors", ownerUid, "retestRequests", requestId), reqPayload);
         }
-
         await customAlert("Your re-test request has been delivered to the quiz author.", { title: "Request Sent" });
         await loadMyQuizAttempts();
       } catch (err) {
@@ -1187,22 +1039,16 @@
         await customAlert("Failed to send request: " + err.message, { title: "Error", isDanger: true });
       }
     };
-
-    // -------------------------------------------------------------
-    // TAB 3: CANDIDATE RETEST REQUESTS (FOR QUIZ AUTHOR)
-    // -------------------------------------------------------------
     async function loadRetestRequests(isRefresh = false) {
       const tbody = document.getElementById('requestsTableBody');
       const badge = document.getElementById('badgePendingRequests');
       if (isRefresh) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:#94a3b8;"><i class="ri-loader-4-line ri-spin"></i> Refreshing requests...</td></tr>';
       }
-
       try {
         const snap = await getDocs(collection(db, "contributors", activeUid, "retestRequests"));
         incomingRequestsList = [];
         snap.forEach(d => incomingRequestsList.push(d.data()));
-
         const pendingCount = incomingRequestsList.filter(r => r.status === 'pending').length;
         if (pendingCount > 0) {
           badge.textContent = pendingCount;
@@ -1210,32 +1056,25 @@
         } else {
           badge.style.display = 'none';
         }
-
         if (incomingRequestsList.length === 0) {
           tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--qz-text-muted);">No candidate retest requests currently received.</td></tr>';
           return;
         }
-
         tbody.innerHTML = '';
         incomingRequestsList.forEach(req => {
           const tr = document.createElement('tr');
           const dateStr = req.createdAt?.seconds ? 
             new Date(req.createdAt.seconds * 1000).toLocaleDateString() : 'Recent';
-
           let statusBadgeClass = 'bg-warning';
           if (req.status === 'acknowledged') statusBadgeClass = 'bg-info';
           if (req.status === 'accepted') statusBadgeClass = 'bg-success';
           if (req.status === 'rejected') statusBadgeClass = 'bg-danger';
-
-          // "Once a action happen out of those thrice, Delete Icon will be shown"
           const isActioned = req.status === 'acknowledged' || req.status === 'accepted' || req.status === 'rejected';
-
           const deleteIconHtml = isActioned ? `
             <button type="button" class="btn btn-sm btn-danger ms-1" onclick="purgeCandidateAttempt('${req.quizId}', '${req.attemptId}', '${req.requestId}')" title="Delete Scorecard & Fully Reset Lock">
               <i class="ri-delete-bin-line"></i>
             </button>
           ` : '';
-
           tr.innerHTML = `
             <td><strong style="color:var(--qz-text); font-weight:700;">${escapeHtml(req.candidateName || 'Candidate')}</strong></td>
             <td>${escapeHtml(req.studentId || 'N/A')}</td>
@@ -1260,24 +1099,18 @@
           `;
           tbody.appendChild(tr);
         });
-
       } catch (err) {
         console.error("Requests query error:", err);
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#fca5a5;">Failed to load candidate requests: ${err.message}</td></tr>`;
       }
     }
-
-    // Author Responds to Retest Request (Acknowledge, Reject, Accept)
     window.respondRetestRequest = async function(requestId, newStatus, quizId, attemptId) {
       try {
         const batch = writeBatch(db);
         const authorReqRef = doc(db, "contributors", activeUid, "retestRequests", requestId);
         const globalReqRef = doc(db, "retestRequests", requestId);
-
         batch.update(authorReqRef, { status: newStatus, respondedAt: serverTimestamp() });
         batch.update(globalReqRef, { status: newStatus, respondedAt: serverTimestamp() });
-
-        // If accepted, grant retest on the candidate's attempt record & clear locks
         const req = incomingRequestsList.find(r => r.requestId === requestId);
         if (newStatus === 'accepted' && quizId) {
           if (attemptId) {
@@ -1297,7 +1130,6 @@
             }
           }
         }
-
         await batch.commit();
         await customAlert(`Request status updated to "${newStatus}". A delete icon is now available to purge historical scorecards if needed.`, { title: "Response Recorded" });
         await loadRetestRequests();
@@ -1306,15 +1138,12 @@
         await customAlert("Failed to update request: " + err.message, { title: "Error", isDanger: true });
       }
     };
-
-    // Purge candidate attempt from Firestore so student can retake completely fresh
     window.purgeCandidateAttempt = async function(quizId, attemptId, requestId) {
       const confirmed = await customConfirm(
         "Permanently purge candidate attempt document from database?\n\nThis will remove their old submission and clear all hardware/student locks so they can take the examination fresh.",
         { title: "Purge Candidate Attempt", confirmText: "Yes, Purge Record", isDanger: true }
       );
       if (!confirmed) return;
-
       try {
         const req = incomingRequestsList.find(r => r.requestId === requestId);
         if (quizId) {
@@ -1338,7 +1167,6 @@
           status: 'accepted_purged',
           purgedAt: serverTimestamp()
         });
-
         await customAlert("Candidate attempt has been purged and all hardware/student locks cleared.", { title: "Scorecard Purged" });
         await loadRetestRequests();
       } catch (err) {
@@ -1346,32 +1174,23 @@
         await customAlert("Failed to purge attempt: " + err.message, { title: "Error", isDanger: true });
       }
     };
-
-    // Render Complete Scorecard & Proctoring Telemetry Modal
     function renderScorecardModal(att) {
       if (!att) return;
       document.getElementById('scModalTitle').textContent = `Scorecard: ${att.quizTitle || att.title || 'Academic Assessment'}`;
-
       const maxScoreVal = att.maximumScore || att.maxScore || (att.totalQuestions ? (att.totalQuestions * 1.0) : 100);
       const scoreVal = att.score !== undefined ? att.score : 0;
       const percentageVal = att.percentage !== undefined ? att.percentage : (maxScoreVal > 0 ? Math.round((scoreVal / maxScoreVal) * 100) : 0);
-
       const isClean = !att.umcFlag && (!att.violationCount || att.violationCount === 0);
       const integrityBadge = isClean ?
         `<span class="badge bg-success"><i class="ri-shield-check-line"></i> Clean Session (Verified)</span>` :
         `<span class="badge bg-danger"><i class="ri-shield-flash-line"></i> Monitored Flags (${att.violationCount || 1})</span>`;
-
       const dateStr = att.submittedAt?.seconds ? 
         new Date(att.submittedAt.seconds * 1000).toLocaleString() : 
         (att.submittedAt ? new Date(att.submittedAt).toLocaleString() : 'Recent');
-
-      // Question breakdown metrics
       const correctCnt = att.correctCount !== undefined ? att.correctCount : '--';
       const incorrectCnt = att.incorrectCount !== undefined ? att.incorrectCount : '--';
       const unattemptedCnt = att.unattemptedCount !== undefined ? att.unattemptedCount : '--';
       const totalCnt = att.totalQuestions !== undefined ? att.totalQuestions : (typeof att.answers === 'object' ? Object.keys(att.answers).length : '--');
-
-      // Proctoring Event Timeline
       let proctorEventsHtml = '';
       const events = att.proctorEvents || [];
       if (events.length > 0) {
@@ -1397,7 +1216,6 @@
                     else if (ev.severity === 'medium') sevClass = 'bg-warning text-dark';
                     else if (ev.severity === 'low') sevClass = 'bg-info text-dark';
                     else if (ev.severity === 'technical_warning') sevClass = 'bg-primary';
-
                     const timeLabel = ev.timestampSec ? `${Math.floor(ev.timestampSec / 60)}m ${ev.timestampSec % 60}s` : (ev.occurredAt ? new Date(ev.occurredAt).toLocaleTimeString() : '+0s');
                     return `
                       <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
@@ -1423,7 +1241,6 @@
           </div>
         `;
       }
-
       document.getElementById('scModalBody').innerHTML = `
         <div style="background:var(--qz-card, rgba(255,255,255,0.03)); border:1px solid var(--qz-border); border-radius:14px; padding:1.25rem; margin-bottom:0.5rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
@@ -1435,17 +1252,13 @@
               ${integrityBadge}
             </div>
           </div>
-
           <div class="row g-2" style="font-size:0.85rem; margin-bottom:12px;">
             <div class="col-6"><span style="color:var(--qz-text-muted);">Student ID:</span> <strong style="color:var(--qz-text);">${escapeHtml(att.studentId || 'N/A')}</strong></div>
             <div class="col-6"><span style="color:var(--qz-text-muted);">Course:</span> <strong style="color:var(--qz-text);">${escapeHtml(att.course || 'General')}</strong></div>
             <div class="col-6"><span style="color:var(--qz-text-muted);">Institution:</span> <strong style="color:var(--qz-text);">${escapeHtml(att.collegeName || att.universityName || 'DPGNotes Portal')}</strong></div>
             <div class="col-6"><span style="color:var(--qz-text-muted);">Submitted:</span> <strong style="color:var(--qz-text);">${dateStr}</strong></div>
           </div>
-
           <hr style="border-color:var(--qz-border); margin:12px 0;">
-
-          <!-- Score & Metric Cards -->
           <div class="row g-2 text-center" style="margin-bottom:12px;">
             <div class="col-3">
               <div style="background:rgba(99, 102, 241, 0.08); border:1px solid var(--qz-border); border-radius:10px; padding:8px 4px;">
@@ -1472,35 +1285,26 @@
               </div>
             </div>
           </div>
-
-          <!-- Breakdown pills -->
           <div style="display:flex; justify-content:space-around; background:rgba(0,0,0,0.03); border:1px solid var(--qz-border); border-radius:10px; padding:8px; font-size:0.82rem;">
             <div><i class="ri-checkbox-circle-fill" style="color:var(--qz-success);"></i> Correct: <strong style="color:var(--qz-success);">${correctCnt}</strong></div>
             <div><i class="ri-close-circle-fill" style="color:var(--qz-danger);"></i> Incorrect: <strong style="color:var(--qz-danger);">${incorrectCnt}</strong></div>
             <div><i class="ri-indeterminate-circle-fill" style="color:var(--qz-warning);"></i> Unattempted: <strong style="color:var(--qz-warning);">${unattemptedCnt}</strong></div>
           </div>
-
           ${proctorEventsHtml}
         </div>
       `;
       document.getElementById('modalScorecardDetail').style.display = 'flex';
     }
-
-    // View Candidate Scorecard (Instructor inspecting candidate attempt in Tab 1)
     window.viewCandidateScorecard = function(attemptId) {
       const att = currentAttemptsList.find(a => a.attemptId === attemptId);
       if (!att) return;
       renderScorecardModal(att);
     };
-
-    // View Candidate Scorecard (Candidate inspecting own attempt in Tab 2)
     window.viewMyScorecardDetail = function(attemptId) {
       const att = myAttemptsList.find(a => a.attemptId === attemptId);
       if (!att) return;
       renderScorecardModal(att);
     };
-
-    // CSV Export
     window.exportCsv = async function() {
       if (!currentAttemptsList || currentAttemptsList.length === 0) {
         await customAlert("No candidate records available to export.", { title: "Export Notice" });
@@ -1510,7 +1314,6 @@
       currentAttemptsList.forEach((att, idx) => {
         csv += `${idx + 1},"${att.candidateName || ''}","${att.studentId || ''}","${att.course || ''}","${att.collegeName || ''}","${att.universityName || ''}",${att.score || 0},${att.maximumScore || 0},${att.percentage || 0},${att.durationSeconds || 0},"${att.umcFlag ? 'FLAGGED' : 'CLEAN'}","${att.submissionReason || ''}"\n`;
       });
-
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -1520,7 +1323,6 @@
       link.click();
       document.body.removeChild(link);
     };
-
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

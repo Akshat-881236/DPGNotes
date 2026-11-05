@@ -1,23 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader -->
   <script src="/dpg-loader.js"></script>
   <script src="https://dpgnotes.web.app/redirect.js" defer></script>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Safe Destination Gateway & Ad Telemetry | DPGNotes</title>
   <link rel="icon" href="ANH.png" type="image/png">
   <script src="config.js"></script>
   <script src="custom-dialogs.js"></script>
-
-  <!-- Google Fonts & Remix Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-
   <style>
     * {
       box-sizing: border-box;
@@ -240,19 +235,14 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
   <div class="gateway-card" id="gatewayCard">
     <a href="index.html" class="brand-header">
       <img src="ANH.png" alt="DPGNotes">
       <span>DPGNotes Safety Gateway</span>
     </a>
-
-    <!-- Security Status Badge -->
     <div id="securityBadge" class="security-badge">
       <i class="ri-shield-check-line"></i> Destination Verified & Encrypted
     </div>
-
-    <!-- Ad Uploader Profile Card -->
     <div class="uploader-profile-box" id="uploaderBox">
       <img id="uploaderPhoto" class="uploader-avatar" src="ANH.png" alt="Uploader Avatar">
       <div class="uploader-info">
@@ -264,41 +254,30 @@
         <span id="viewerTypeBadge" style="background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.35); color:#6ee7b7; font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700;">Guest</span>
       </div>
     </div>
-
     <h3 id="adTitle" class="ad-title-label">Promoted Campaign Destination</h3>
     <div id="destUrlBox" class="dest-url-box">Connecting...</div>
-
-    <!-- Security Checkpoints -->
     <div class="checks-grid" id="checksGrid">
       <span class="check-chip"><i class="ri-check-line"></i> TLS/SSL Validated</span>
       <span class="check-chip"><i class="ri-check-line"></i> Malware Scan Clean</span>
       <span class="check-chip"><i class="ri-check-line"></i> Ad Policy Compliance</span>
     </div>
-
-    <!-- Warning container if suspicious -->
     <div id="warningContainer" class="warning-box" style="display:none;"></div>
-
-    <!-- Navigation Actions -->
     <div class="action-btn-row" id="actionRow">
       <a href="index.html" class="btn-cancel">Return Home</a>
       <a href="#" id="proceedBtn" class="btn-proceed">
         Proceed Safely <span id="countdownSec">(3s)</span> <i class="ri-arrow-right-line"></i>
       </a>
     </div>
-
-    <!-- Countdown Progress Bar -->
     <div class="countdown-bar-wrap" id="barWrap">
       <div class="countdown-bar" id="countdownBar"></div>
     </div>
   </div>
-
   <script>
     (async function initRedirectGateway() {
       const params = new URLSearchParams(window.location.search);
       const trackId = params.get("track_id") || params.get("trackId") || "";
       const adId = params.get("ad_id") || params.get("adId") || params.get("firebase_id") || "";
       const rawDest = params.get("go-to") || params.get("goto") || params.get("target") || "index.html";
-
       const proceedBtn = document.getElementById("proceedBtn");
       const destUrlBox = document.getElementById("destUrlBox");
       const countdownSec = document.getElementById("countdownSec");
@@ -307,41 +286,29 @@
       const securityBadge = document.getElementById("securityBadge");
       const trackIdBadge = document.getElementById("trackIdBadge");
       const viewerTypeBadge = document.getElementById("viewerTypeBadge");
-
       if (trackId) trackIdBadge.textContent = "Track: " + trackId;
       destUrlBox.textContent = rawDest;
-
-      // =========================================================================
-      // 1. STRICT SECURITY & MALWARE VALIDATION
-      // =========================================================================
       let validUrl = null;
       let isSecurityViolation = false;
       let violationReason = "";
-
       try {
         validUrl = new URL(rawDest, window.location.origin);
       } catch (err) {
         isSecurityViolation = true;
         violationReason = "Malformed or invalid destination URL structure.";
       }
-
       if (validUrl) {
-        // Enforce safe protocols
         const protocol = validUrl.protocol.toLowerCase();
         if (protocol !== "http:" && protocol !== "https:") {
           isSecurityViolation = true;
           violationReason = `Unsafe protocol (${protocol}) rejected. Only standard HTTPS/HTTP protocols are permitted.`;
         }
-
-        // Suspicious binary / malware extension heuristics
         const lowerPath = validUrl.pathname.toLowerCase();
         const forbiddenExts = [".exe", ".scr", ".bat", ".cmd", ".vbs", ".apk", ".msi", ".ps1", ".jar"];
         if (forbiddenExts.some(ext => lowerPath.endsWith(ext))) {
           isSecurityViolation = true;
           violationReason = "Suspicious executable file download target detected and blocked by DPGNotes Anti-Malware Shield.";
         }
-
-        // Suspicious raw IP with non-standard ports
         const host = validUrl.hostname;
         const rawIpRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
         if (rawIpRegex.test(host) && validUrl.port && !["80", "443"].includes(validUrl.port)) {
@@ -349,7 +316,6 @@
           violationReason = "Raw IP destination with suspicious port detected and quarantined.";
         }
       }
-
       if (isSecurityViolation) {
         securityBadge.className = "security-badge warning";
         securityBadge.innerHTML = '<i class="ri-error-warning-line"></i> Blocked by Security Gateway';
@@ -361,21 +327,14 @@
         document.getElementById("barWrap").style.display = "none";
         return;
       }
-
       proceedBtn.href = validUrl.toString();
-
-      // =========================================================================
-      // 2. VIEWER CLASSIFICATION & ADMIN CHECK
-      // =========================================================================
       const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
       const visitorEmail = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase().trim();
       const ADMIN_EMAILS = ["its.akshatnetworkhub23@gmail.com", "akshatprasad009@gmail.com"];
       const isAdminUser = ADMIN_EMAILS.includes(visitorEmail) || !!activeUser.isAdmin || activeUser.role === 'admin';
-
       let viewerType = "Guest";
       const ua = navigator.userAgent || "";
       const isBot = /bot|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|linkedinbot/i.test(ua);
-
       let botType = "";
       if (isBot) {
         viewerType = "Anonymous";
@@ -393,15 +352,12 @@
       } else {
         viewerType = "Guest";
       }
-
       viewerTypeBadge.textContent = viewerType + (botType ? ` (${botType})` : "");
       if (viewerType === "Contributor") {
         viewerTypeBadge.style.background = "rgba(99,102,241,0.25)";
         viewerTypeBadge.style.borderColor = "rgba(99,102,241,0.4)";
         viewerTypeBadge.style.color = "#a5b4fc";
       }
-
-      // Guest / Device Identity Persistence
       let guestId = localStorage.getItem("dpg_guest_id");
       if (!guestId) {
         guestId = "guest_" + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
@@ -412,13 +368,10 @@
         clientDeviceId = "dev_" + Math.random().toString(36).substr(2, 9) + "_" + screen.width + "x" + screen.height;
         localStorage.setItem("dpg_client_device_id", clientDeviceId);
       }
-
-      // Origin and direct URL check (Must open via DPGNotes source for billable validity)
       const srcParam = params.get("src") || "";
       const ref = document.referrer || "";
       const isFromDpg = (srcParam === "dpgnotes_platform") || (ref && (ref.includes("dpgnotes") || ref.includes(window.location.host)));
       const isDirectAccess = !isFromDpg;
-
       if (isDirectAccess) {
         securityBadge.className = "security-badge";
         securityBadge.style.background = "rgba(245, 158, 11, 0.15)";
@@ -426,8 +379,6 @@
         securityBadge.style.color = "#fbbf24";
         securityBadge.innerHTML = '<i class="ri-information-line"></i> Direct Access (Non-Billable Navigation)';
       }
-
-      // Check if user is currently under a 15-day Ads Flag
       let isFlagged = false;
       const flaggedUntilStr = localStorage.getItem("dpg_ads_flagged_until");
       if (flaggedUntilStr) {
@@ -438,30 +389,23 @@
           localStorage.removeItem("dpg_ads_flagged_until");
         }
       }
-
-      // 12-Hour Gap Anomaly Logging & Cancellation Engine
       const now = Date.now();
       let clickLogs = {};
       try {
         clickLogs = JSON.parse(localStorage.getItem("dpg_ad_click_logs") || "{}");
       } catch(e) { clickLogs = {}; }
-
       const adKey = adId || trackId || rawDest;
       const history = clickLogs[adKey] || [];
       const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
       let isRapidAnomaly = false;
-
       if (history.length > 0) {
         const lastLog = history[history.length - 1];
         if (now - lastLog < TWELVE_HOURS_MS) {
           isRapidAnomaly = true;
           console.warn("⚠️ Rapid Ad Gateway visit detected (< 12 hours gap). Flagging contributor/guest for 15 days and canceling charging logs.");
-          // Flag locally for 15 days
           const flagExpiry = now + (15 * 86400 * 1000);
           localStorage.setItem("dpg_ads_flagged_until", flagExpiry.toString());
           isFlagged = true;
-
-          // Dispatch Ads Violation to Firestore
           fetch((window.API_BASE_URL || '') + '/api/ads/report-violation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -481,8 +425,6 @@
               }
             })
           }).catch(err => console.warn("Error reporting violation:", err));
-
-          // Cancel all firestore charge & engagement logs for this ad to protect advertisers
           fetch((window.API_BASE_URL || '') + '/api/ads/cancel-engagement-anomaly', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -495,22 +437,15 @@
           }).catch(err => console.warn("Error canceling anomaly charges:", err));
         }
       }
-
-      // Record this visit timestamp in clickLogs
       history.push(now);
       clickLogs[adKey] = history.slice(-20);
       try {
         localStorage.setItem("dpg_ad_click_logs", JSON.stringify(clickLogs));
       } catch(e) {}
-
-      // =========================================================================
-      // 3. FETCH AD METADATA & UPLOADER PROFILE
-      // =========================================================================
       let uploaderPhoto = "ANH.png";
       let uploaderName = "Verified Contributor";
       let uploaderUid = "anon_contributor";
       let adTitleStr = "Sponsored Academic Campaign";
-
       try {
         if (adId && window.API_BASE_URL) {
           const adRes = await fetch(`${window.API_BASE_URL}/api/ad-details?adId=${encodeURIComponent(adId)}`).catch(() => null);
@@ -528,21 +463,16 @@
       } catch (e) {
         console.warn("Could not fetch remote ad metadata:", e);
       }
-
-      // Fallback from localStorage map
       try {
         const trackMap = JSON.parse(localStorage.getItem("dpg_ad_track_map") || "{}");
         if (trackMap[trackId] && trackMap[trackId].adTitle) {
           adTitleStr = trackMap[trackId].adTitle;
         }
       } catch (e) {}
-
       document.getElementById("adTitle").textContent = adTitleStr;
       document.getElementById("uploaderPhoto").src = uploaderPhoto;
       document.getElementById("uploaderName").textContent = uploaderName;
       document.getElementById("uploaderUid").textContent = "uploader-firebase-id: " + uploaderUid;
-
-      // Rule 2: Active Contributor clicks on their own uploaded ad are invalid
       const isSelfClick = (activeUser && activeUser.uid && uploaderUid && activeUser.uid === uploaderUid);
       if (isSelfClick) {
         console.log("ℹ️ Self-click on own ad detected — non-billable navigation.");
@@ -552,10 +482,6 @@
         securityBadge.style.color = "#a5b4fc";
         securityBadge.innerHTML = '<i class="ri-user-follow-line"></i> Author Navigation (Self-Click Non-Billable)';
       }
-
-      // =========================================================================
-      // 4. DEEP ANALYTICS TELEMETRY DISPATCH (EXCLUDING ADMIN & INVALID ACCESS)
-      // =========================================================================
       if (!isAdminUser && !isDirectAccess && !isFlagged && !isRapidAnomaly && !isSelfClick) {
         const trackingPayload = {
           adId: adId || "global",
@@ -579,8 +505,6 @@
           hostResourceOwnerUid: params.get("host_owner") || null,
           timestamp: new Date().toISOString()
         };
-
-        // Fire-and-forget backend dispatch
         fetch((window.API_BASE_URL || '') + '/api/ad-external-click', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -592,27 +516,20 @@
         if (isSelfClick) console.log("ℹ️ Self-click on own ad detected — ad charge tracking bypassed.");
         if (isFlagged || isRapidAnomaly) console.log("⚠️ Visitor flagged for ad violation — ad charge tracking bypassed.");
       }
-
-      // =========================================================================
-      // 5. TIMED REDIRECT ENGINE (3-SECOND SAFETY COUNTDOWN)
-      // =========================================================================
       let remainingMs = 3000;
       const totalMs = 3000;
       const interval = 50;
-
       const countdownTimer = setInterval(() => {
         remainingMs -= interval;
         const progress = Math.max(0, (remainingMs / totalMs) * 100);
         countdownBar.style.width = progress + "%";
         const secDisplay = Math.max(0, Math.ceil(remainingMs / 1000));
         countdownSec.textContent = `(${secDisplay}s)`;
-
         if (remainingMs <= 0) {
           clearInterval(countdownTimer);
           window.location.href = validUrl.toString();
         }
       }, interval);
-
       proceedBtn.onclick = (e) => {
         clearInterval(countdownTimer);
       };

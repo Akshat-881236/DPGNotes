@@ -1,17 +1,10 @@
-/**
- * DPGNotes Feed & Interaction Tracking Engine (dpg-feed.js)
- * Manages local IndexedDB storage for PDF visits, SERP searches, and cookies.
- * Provides relevance scoring for academic grids and daily Firestore sync.
- */
+/** DPGNotes Feed & Interaction Tracking Engine (dpg-feed.js) */
 (function() {
   const DB_NAME = "dpg_feed_db";
   const DB_VERSION = 1;
   const STORE_INTERACTIONS = "interactions";
   const STORE_COOKIES = "cookies_store";
-
   let dbInstance = null;
-
-  // 1. Initialize IndexedDB
   function openDB() {
     return new Promise((resolve) => {
       if (dbInstance) return resolve(dbInstance);
@@ -19,9 +12,7 @@
         console.warn("IndexedDB not supported by client environment");
         return resolve(null);
       }
-
       const request = indexedDB.open(DB_NAME, DB_VERSION);
-
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
         if (!db.objectStoreNames.contains(STORE_INTERACTIONS)) {
@@ -33,20 +24,16 @@
           db.createObjectStore(STORE_COOKIES, { keyPath: "key" });
         }
       };
-
       request.onsuccess = (e) => {
         dbInstance = e.target.result;
         resolve(dbInstance);
       };
-
       request.onerror = (e) => {
         console.warn("IndexedDB open error:", e);
         resolve(null);
       };
     });
   }
-
-  // Helper to get or create client device ID
   function getClientDeviceId() {
     let id = localStorage.getItem("dpg_client_device_id");
     if (!id) {
@@ -55,8 +42,6 @@
     }
     return id;
   }
-
-  // 2. Log PDF Viewer Visit
   async function logPdfVisit(docInfo) {
     if (!docInfo) return;
     try {
@@ -70,13 +55,10 @@
         tags: docInfo.tags || "",
         timestamp: Date.now()
       };
-
       if (db) {
         const tx = db.transaction(STORE_INTERACTIONS, "readwrite");
         tx.objectStore(STORE_INTERACTIONS).add(entry);
       }
-
-      // Save cookie preference
       if (docInfo.discipline) {
         document.cookie = `dpg_pref_discipline=${encodeURIComponent(docInfo.discipline)}; path=/; max-age=2592000; SameSite=Lax`;
       }
@@ -87,8 +69,6 @@
       console.warn("logPdfVisit failed:", e);
     }
   }
-
-  // 3. Log SERP / Home Search Query
   async function logSerpSearch(queryStr) {
     if (!queryStr || !queryStr.trim()) return;
     const q = queryStr.trim();
@@ -99,27 +79,21 @@
         query: q,
         timestamp: Date.now()
       };
-
       if (db) {
         const tx = db.transaction(STORE_INTERACTIONS, "readwrite");
         tx.objectStore(STORE_INTERACTIONS).add(entry);
       }
-
       document.cookie = `dpg_last_query=${encodeURIComponent(q)}; path=/; max-age=2592000; SameSite=Lax`;
     } catch (e) {
       console.warn("logSerpSearch failed:", e);
     }
   }
-
-  // 4. Calculate User Feed Weights from IndexedDB & Cookies
   async function getUserFeedWeights() {
     const weights = {
       disciplines: {},
       categories: {},
       keywords: new Set()
     };
-
-    // Parse Cookies
     const cookies = document.cookie.split(";");
     cookies.forEach(c => {
       const [k, v] = c.split("=").map(s => s.trim());
@@ -136,8 +110,6 @@
         q.split(/\s+/).forEach(w => { if (w.length > 2) weights.keywords.add(w); });
       }
     });
-
-    // Query IndexedDB for recent interactions
     try {
       const db = await openDB();
       if (db) {
@@ -147,8 +119,6 @@
           req.onsuccess = () => resolve(req.result || []);
           req.onerror = () => resolve([]);
         });
-
-        // Weigh recent items heavily
         const recent = events.slice(-35);
         recent.forEach(evt => {
           if (evt.type === "pdf_visit") {
@@ -169,39 +139,27 @@
     } catch (e) {
       console.warn("getUserFeedWeights reading error:", e);
     }
-
     return weights;
   }
-
-  // 5. Score a Resource Item
   function scoreResource(item, weights) {
     if (!item) return 0;
     let score = 0;
-
     const disc = item.discipline || "";
     const cat = item.category || "";
     const title = (item.title || "").toLowerCase();
     const tags = (Array.isArray(item.tags) ? item.tags.join(" ") : (item.tags || "")).toLowerCase();
-
-    // Discipline match
     if (disc && weights.disciplines[disc]) {
       score += weights.disciplines[disc] * 5;
     }
-
-    // Category match
     if (cat && weights.categories[cat]) {
       score += weights.categories[cat] * 4;
     }
-
-    // Keyword match
     if (weights.keywords && weights.keywords.size > 0) {
       weights.keywords.forEach(kw => {
         if (title.includes(kw)) score += 6;
         if (tags.includes(kw)) score += 3;
       });
     }
-
-    // Freshness & engagement
     if (item.likes && Array.isArray(item.likes)) {
       score += item.likes.length * 0.5;
     }
@@ -213,31 +171,21 @@
       const daysOld = Math.max(1, (Date.now() - ts) / (1000 * 3600 * 24));
       score += Math.max(0, 10 - daysOld * 0.2);
     }
-
     return score;
   }
-
-  // 6. Daily Auto-Push to Firestore
   async function dailySyncToFirestore(firestoreDb, currentUser, setDocFn, docFn, serverTimestampFn) {
     if (!firestoreDb || !setDocFn || !docFn) return;
     try {
-      // Safely skip search crawlers to conserve firestore writes during live inspection tests
       const isBot = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent);
       if (isBot) return;
-
       const todayStr = new Date().toISOString().split("T")[0];
       const lastSync = localStorage.getItem("dpg_last_feed_sync");
-
       if (lastSync === todayStr) {
         return; // Already synced today
       }
-
       const clientId = (currentUser && currentUser.uid) ? currentUser.uid : getClientDeviceId();
       const feedWeights = await getUserFeedWeights();
-
-      // Convert Set to Array for Firestore serialization
       const serializedKeywords = Array.from(feedWeights.keywords || []);
-
       let attribution = null;
       try {
         if (window.dpgAttribution && typeof window.dpgAttribution.get === 'function') {
@@ -246,7 +194,6 @@
           attribution = JSON.parse(sessionStorage.getItem("dpg_attribution") || localStorage.getItem("dpg_attribution_last") || "null");
         }
       } catch(e) {}
-
       const payload = {
         clientId: clientId,
         userId: currentUser ? currentUser.uid : null,
@@ -259,7 +206,6 @@
         lastSyncDate: todayStr,
         updatedAt: serverTimestampFn ? serverTimestampFn() : new Date()
       };
-
       await setDocFn(docFn(firestoreDb, "user_activity_feeds", clientId), payload, { merge: true });
       localStorage.setItem("dpg_last_feed_sync", todayStr);
       console.log("Daily user feed and cookies pushed to Firestore successfully.");
@@ -267,8 +213,6 @@
       console.warn("dailySyncToFirestore sync warning:", e);
     }
   }
-
-  // Expose global methods
   window.dpgFeed = {
     logPdfVisit,
     logSerpSearch,

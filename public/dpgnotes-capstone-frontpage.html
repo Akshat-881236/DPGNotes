@@ -7,14 +7,12 @@
   <link rel="icon" type="image/png" href="ANH.png">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       background: #0f111a;
       color: #1e293b;
@@ -25,7 +23,6 @@
       align-items: center;
       padding-bottom: 3rem;
     }
-
     /* =========================================================
        NON-PRINTABLE TOP CONTROLS BAR
        ========================================================= */
@@ -88,8 +85,6 @@
       background: rgba(255, 255, 255, 0.15);
       color: #fff;
     }
-
-    /* CUSTOMIZER DRAWER / MODAL */
     .edit-drawer {
       background: #111424;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -134,7 +129,6 @@
     .drawer-field input:focus {
       border-color: #6366f1;
     }
-
     /* =========================================================
        STANDARD A4 CANVAS CONTAINER
        ======================================================== */
@@ -145,7 +139,6 @@
       width: 100%;
       padding: 0 1rem;
     }
-
     .a4-page {
       width: 210mm;
       min-height: 297mm;
@@ -160,8 +153,6 @@
       box-sizing: border-box;
       overflow: hidden;
     }
-
-    /* ELEGANT DOUBLE ACADEMIC BORDER */
     .page-border {
       position: absolute;
       inset: 8mm;
@@ -174,8 +165,6 @@
       inset: 2.5px;
       border: 1px solid #0f172a;
     }
-
-    /* CORNER ORNAMENTS */
     .corner-decor {
       position: absolute;
       width: 16px;
@@ -188,8 +177,6 @@
     .corner-tr { top: 9.5mm; right: 9.5mm; border-width: 3px 3px 0 0; }
     .corner-bl { bottom: 9.5mm; left: 9.5mm; border-width: 0 0 3px 3px; }
     .corner-br { bottom: 9.5mm; right: 9.5mm; border-width: 0 3px 3px 0; }
-
-    /* CONTENT SECTIONS */
     .page-inner-content {
       position: relative;
       z-index: 10;
@@ -200,8 +187,6 @@
       text-align: center;
       padding: 4mm 6mm;
     }
-
-    /* 1. TOP HEADER IMAGE */
     .header-img-box {
       width: 100%;
       display: flex;
@@ -213,8 +198,6 @@
       max-height: 27mm;
       object-fit: contain;
     }
-
-    /* 2. PROJECT TITLE BLOCK */
     .project-title-block {
       margin: 3mm 0 2mm 0;
     }
@@ -254,8 +237,6 @@
       margin: 0 auto;
       line-height: 1.35;
     }
-
-    /* 3. DEGREE SUBMISSION NOTICE */
     .degree-notice-block {
       margin: 2mm 0;
       font-size: 0.86rem;
@@ -280,8 +261,6 @@
       margin-top: 1mm;
       font-weight: 600;
     }
-
-    /* 4. CENTER UNIVERSITY EMBLEM / SEAL */
     .center-logo-box {
       margin: 2mm auto;
       width: 34mm;
@@ -296,8 +275,6 @@
       object-fit: contain;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
     }
-
-    /* 5. TWO-COLUMN DETAILS BLOCK (GUIDED BY / SUBMITTED BY) */
     .metadata-columns-block {
       display: flex;
       justify-content: space-between;
@@ -342,8 +319,6 @@
       line-height: 1.45;
       font-weight: 500;
     }
-
-    /* 6. BOTTOM INSTITUTION FOOTER */
     .institution-footer-block {
       border-top: 1px solid #cbd5e1;
       padding-top: 2.5mm;
@@ -379,7 +354,6 @@
       color: #0f172a;
       letter-spacing: 0.05em;
     }
-
     /* =========================================================
        PRINT OPTIMIZATIONS (A4 EXACT PAPER)
        ========================================================= */
@@ -419,8 +393,6 @@
         margin: 0;
       }
     }
-
-    /* MOBILE & TABLET PREVIEW RESPONSIVENESS */
     @media (max-width: 820px) {
       .a4-page {
         transform-origin: top center;
@@ -443,7 +415,6 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
   <!-- =========================================================
        CONTROLS BAR (Hidden in print)
        ========================================================= -->
@@ -464,8 +435,6 @@
       </a>
     </div>
   </header>
-
-  <!-- CUSTOMIZER FORM DRAWER -->
   <div id="editDrawer" class="edit-drawer">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
       <h4 style="color:#fff; font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:700;">
@@ -520,29 +489,20 @@
       </div>
     </div>
   </div>
-
   <!-- =========================================================
        PRINTABLE A4 SHEET CANVAS
        ========================================================= -->
   <main class="sheet-wrapper">
     <article class="a4-page" id="printableA4Page">
-      
-      <!-- DOUBLE ACADEMIC BORDER -->
       <div class="page-border"></div>
       <div class="corner-decor corner-tl"></div>
       <div class="corner-decor corner-tr"></div>
       <div class="corner-decor corner-bl"></div>
       <div class="corner-decor corner-br"></div>
-
-      <!-- INNER STRUCTURE -->
       <div class="page-inner-content">
-
-        <!-- 1. OFFICIAL COLLEGE HEADER -->
         <header class="header-img-box">
           <img src="AssignmentCoverPageGenerator/DPGSTM-2HeaderImage.png" alt="DPG School of Technology & Management" onerror="this.src='ANH.png'">
         </header>
-
-        <!-- 2. PROJECT TITLE BLOCK (Matches user image exactly) -->
         <section class="project-title-block">
           <h2 class="report-type-heading" id="lblReportType">Minor Capstone Project Report</h2>
           <div class="conjunction-on">On</div>
@@ -551,8 +511,6 @@
             An Intelligent Academic Resource Management &amp; Collaborative Knowledge System
           </p>
         </section>
-
-        <!-- 3. DEGREE FULFILLMENT NOTICE -->
         <section class="degree-notice-block">
           <p>
             Submitted in partial fulfillment of the requirements for the award of the degree of
@@ -564,16 +522,10 @@
             Affiliated to Maharshi Dayanand University (MDU), Rohtak, Haryana
           </div>
         </section>
-
-        <!-- 4. UNIVERSITY / COLLEGE EMBLEM -->
         <section class="center-logo-box">
           <img src="AssignmentCoverPageGenerator/Center_Logo.jpg" alt="University Seal" onerror="this.src='AssignmentCoverPageGenerator/DPGDegreeCenter_Logo2.png'">
         </section>
-
-        <!-- 5. GUIDED BY & SUBMITTED BY (2 COLUMNS) -->
         <section class="metadata-columns-block">
-          
-          <!-- LEFT: UNDER GUIDANCE -->
           <div class="meta-col">
             <div class="meta-col-header">Under the Guidance of:</div>
             <div class="person-name" id="lblGuideName">Prof. / Dr. [Guide Name]</div>
@@ -583,8 +535,6 @@
               DPG School of Technology &amp; Management
             </div>
           </div>
-
-          <!-- RIGHT: SUBMITTED BY -->
           <div class="meta-col meta-col-right">
             <div class="meta-col-header">Submitted by:</div>
             <div class="person-name" id="lblStudentName">Akshat Prasad</div>
@@ -594,10 +544,7 @@
               <span id="lblSemester">BCA – 5th Semester</span>
             </div>
           </div>
-
         </section>
-
-        <!-- 6. INSTITUTION FOOTER -->
         <footer class="institution-footer-block">
           <div class="dept-title">Department of Computer Applications</div>
           <div class="college-name">DPG SCHOOL OF TECHNOLOGY &amp; MANAGEMENT</div>
@@ -608,18 +555,14 @@
             Academic Session: <span id="lblSession">2025 – 2026</span>
           </div>
         </footer>
-
       </div>
-
     </article>
   </main>
-
   <script>
     function toggleEditDrawer() {
       const drawer = document.getElementById("editDrawer");
       if (drawer) drawer.classList.toggle("active");
     }
-
     function updateField(targetId, value) {
       const el = document.getElementById(targetId);
       if (el) el.innerText = value;

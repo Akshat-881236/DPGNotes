@@ -1,4 +1,3 @@
-<!-- Component: tab7_ai_engine.html - Multi-Engine AI Orchestration & Fallback Pipelines -->
 <article class="overview-blog-article" data-tab="7">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -25,15 +24,12 @@
       <span class="tech-pill">Python Text Chunking</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-7">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> Tiered Multi-Model AI Cascade, Streaming Markdown Hydration &amp; Fault-Tolerant Failover.</p>
     <p>
       The Software Requirements Specification (SRS Section 7.0) requires the Assignment Generator and AI Tutor to maintain 99.9% availability during peak exam periods. Upstream AI vendor downtime must never result in broken user interfaces. Responses must stream incrementally to client browsers, render complex mathematical expressions with KaTeX LaTeX notation, and enforce strict pedagogical safety guardrails preventing AI hallucinations.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -41,8 +37,6 @@
       </div>
       The AI orchestrator must implement an automated 3-tier cascade: (1) Gemini 1.5/2.0 Flash for sub-second responses, (2) Gemini 1.5 Pro for deep mathematical problem-solving, and (3) xAI Grok as an immediate failover gateway. Switching between providers must occur in under 500ms without user-visible error dialogs.
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & MULTI-MODEL TOPOGRAPHY -->
     <h2 id="sec-2-7">2. Component Hierarchy &amp; AI Failover Topography</h2>
     <p>The AI orchestration subsystem bridges client interfaces with multi-cloud intelligence clusters:</p>
     <ul>
@@ -52,7 +46,6 @@
       <li><strong>4. xAI Grok Engine (Automated Fallback):</strong> Standby endpoint powered by Grok REST interfaces, instantly activated when Gemini endpoints return HTTP 429, 500, or 503 errors.</li>
       <li><strong>5. Python Token Chunking Worker:</strong> Pre-processes lengthy multi-page assignment PDFs, tokenizing text into semantically coherent 2,000-token chunks to prevent context-window overflow.</li>
     </ul>
-
     <div class="arch-flow-diagram">
 +--------------------+        1. POST /api/ai/query          +-------------------------+
 | CLIENT APPLICATION | ------------------------------------&gt; |  NODE.JS AI ORCHESTRATOR|
@@ -67,8 +60,6 @@
                             | (1.5 / 2.0 Models)   |                                   | (grok-beta Cluster)  |
                             +----------------------+                                   +----------------------+
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-7">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to build and deploy the DPGNotes AI Orchestration engine:</p>
     <ol class="tutorial-steps-list">
@@ -78,8 +69,6 @@
       <li><strong>Implement Streaming Output Handlers:</strong> Pipe the upstream chunked stream directly into Express <code>res</code> with headers <code>Content-Type: text/event-stream</code> and <code>Cache-Control: no-cache</code>.</li>
       <li><strong>Client-Side Markdown &amp; Math Hydration:</strong> Use a lightweight client markdown parser coupled with KaTeX auto-render to transform incoming text tokens into interactive equations without UI freezing.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-7">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -92,15 +81,12 @@
       <pre class="code-block"><code>// Module 7: Node.js Multi-Engine AI Orchestrator with Grok Fallback
 const express = require('express');
 const router = express.Router();
-
 let isGeminiHealthy = true;
 let geminiFailureCount = 0;
 const MAX_FAILURES = 3;
-
 async function callGeminiStream(prompt, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${apiKey}`;
-
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -109,15 +95,12 @@ async function callGeminiStream(prompt, res) {
       systemInstruction: { parts: [{ text: 'You are DPGNotes Academic AI Tutor. Provide step-by-step verified explanations using LaTeX math formatting.' }] }
     })
   });
-
   if (!response.ok) throw new Error(`Gemini HTTP Error ${response.status}`);
   return response.body;
 }
-
 async function callGrokStream(prompt, res) {
   const apiKey = process.env.XAI_GROK_API_KEY;
   const endpoint = 'https://api.x.ai/v1/chat/completions';
-
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -133,18 +116,14 @@ async function callGrokStream(prompt, res) {
       stream: true
     })
   });
-
   if (!response.ok) throw new Error(`xAI Grok HTTP Error ${response.status}`);
   return response.body;
 }
-
 router.post('/api/ai/query', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt is required.' });
-
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Transfer-Encoding', 'chunked');
-
   try {
     let stream;
     if (isGeminiHealthy) {
@@ -162,7 +141,6 @@ router.post('/api/ai/query', async (req, res) => {
       console.log('[AI-ROUTER] Routing directly to xAI Grok fallback.');
       stream = await callGrokStream(prompt, res);
     }
-
     const reader = stream.getReader();
     const decoder = new TextDecoder();
     while (true) {
@@ -177,14 +155,9 @@ router.post('/api/ai/query', async (req, res) => {
     else res.end('\n[SYSTEM: Transmission interrupted due to upstream network error.]');
   }
 });
-
 module.exports = router;</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-7">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -193,8 +166,6 @@ module.exports = router;</code></pre>
       <li><strong>Verified Invariant:</strong> Strict streaming delivery; tokens are emitted to client viewports as they generate, preventing connection timeouts.</li>
       <li><strong>Verified Invariant:</strong> All AI outputs undergo client-side sanitization to prevent prompt injection and cross-site scripting vulnerabilities.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-7">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

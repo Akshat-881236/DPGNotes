@@ -1,4 +1,3 @@
-<!-- Component: tab9_video_ecosystem.html - Educational Media Studio & Video Ecosystem -->
 <article class="overview-blog-article" data-tab="9">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -25,15 +24,12 @@
       <span class="tech-pill">Fullscreen Web API</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-9">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> Dual Video Rendering Engines, Resilient Playback Checkpointing &amp; Native Sponsor Swapping.</p>
     <p>
       The Software Requirements Specification (SRS Section 9.0) mandates seamless playback across desktop workstations, mobile phones, and foldable devices. The video subsystem must handle unstable network connections without resetting lecture timestamps, support instant sharing via 8-character token links (<code>/video.html?v=&lt;token&gt;</code>), and provide contextual academic advertising while adhering to strict privacy protections.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -41,8 +37,6 @@
       </div>
       Every lecture viewing session must save playback timestamps every 5 seconds. If network connectivity drops or the student accidentally reloads the browser, the player must immediately resume playback from the exact second recorded in the double-write persistence layer without buffering delays.
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & WORKFLOW -->
     <h2 id="sec-2-9">2. Component Hierarchy &amp; Dual-Engine Playback Architecture</h2>
     <p>The video subsystem coordinates five key components to ensure uninterrupted educational media delivery:</p>
     <ul>
@@ -52,7 +46,6 @@
       <li><strong>4. Ephemeral Share Link Resolver:</strong> Parses <code>?v=&lt;token&gt;</code> query parameters via <code>redirect.js</code> and expands short tokens to authentic lecture IDs with atomic view incrementation.</li>
       <li><strong>5. Fluid Responsive Frame (CSS3):</strong> Enforces modern <code>aspect-ratio: 16 / 9</code> rules with dark letterboxing, glassmorphic scrubber bars, and mobile touch gestures (double-tap to seek 10 seconds).</li>
     </ul>
-
     <div class="arch-flow-diagram">
 +--------------------+        1. Detects URL Type            +-------------------------+
 | MEDIA URL / TOKEN  | ------------------------------------&gt; | DPG VIDEO CONTROLLER    |
@@ -75,8 +68,6 @@
                                                              | LocalStorage + Firestore|
                                                              +-------------------------+
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-9">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to build and deploy the DPGNotes Video Studio:</p>
     <ol class="tutorial-steps-list">
@@ -86,8 +77,6 @@
       <li><strong>Debounce Firestore Synchronization:</strong> Dispatch an asynchronous Firestore update every 5 seconds to persist progress across devices for authenticated students.</li>
       <li><strong>Attach Keyboard Accessibility Shortcuts:</strong> Bind document keydown events: Spacebar to toggle Play/Pause, Left Arrow to rewind 5 seconds, Right Arrow to advance 5 seconds, and 'F' key to toggle fullscreen.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-9">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -106,25 +95,20 @@ class DPGVideoPlayer {
     this.playerType = this.detectType(this.videoUrl);
     this.lastSavedSec = 0;
   }
-
   detectType(url) {
     if (!url) return 'html5';
     if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
     return 'html5';
   }
-
   getSavedPosition() {
     const local = localStorage.getItem(`dpg_pos_${this.videoId}`);
     return local ? parseFloat(local) : 0;
   }
-
   savePosition(seconds) {
     if (Math.abs(seconds - this.lastSavedSec) &lt; 2) return;
     this.lastSavedSec = seconds;
-
     // 1. Instant local persistence
     localStorage.setItem(`dpg_pos_${this.videoId}`, seconds.toString());
-
     // 2. Debounced asynchronous cloud persistence
     if (window.firebase &amp;&amp; window.currentAuthUser) {
       window.firebase.firestore().collection('video_progress').doc(`${window.currentAuthUser.uid}_${this.videoId}`).set({
@@ -133,26 +117,21 @@ class DPGVideoPlayer {
       }, { merge: true }).catch(() =&gt; {});
     }
   }
-
   render() {
     this.container.innerHTML = '';
     const initialPos = this.getSavedPosition();
-
     if (this.playerType === 'html5') {
       const videoEl = document.createElement('video');
       videoEl.className = 'dpg-native-video';
       videoEl.src = this.videoUrl;
       videoEl.controls = true;
       videoEl.playsInline = true;
-
       videoEl.addEventListener('loadedmetadata', () =&gt; {
         if (initialPos &gt; 0) videoEl.currentTime = initialPos;
       });
-
       videoEl.addEventListener('timeupdate', () =&gt; {
         this.savePosition(videoEl.currentTime);
       });
-
       this.container.appendChild(videoEl);
     } else {
       // YouTube IFrame Integration
@@ -165,21 +144,15 @@ class DPGVideoPlayer {
       this.container.appendChild(iframe);
     }
   }
-
   extractYouTubeId(url) {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&amp;v=)([^#\&amp;\?]*).*/;
     const match = url.match(regExp);
     return (match &amp;&amp; match[2].length === 11) ? match[2] : '';
   }
 }
-
 window.DPGVideoPlayer = DPGVideoPlayer;</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-9">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -188,8 +161,6 @@ window.DPGVideoPlayer = DPGVideoPlayer;</code></pre>
       <li><strong>Verified Invariant:</strong> Custom video player containers strictly enforce <code>aspect-ratio: 16 / 9</code> without layout jumps.</li>
       <li><strong>Verified Invariant:</strong> Native sponsor interstitials must never block playback controls or require payment details.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-9">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

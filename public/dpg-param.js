@@ -1,5 +1,2 @@
-/**
- * DPGNotes Universal URL Parameter & Analytics (Singular Alias)
- * Direct alias / re-export for dpg-params.js
- */
+/** DPGNotes Universal URL Parameter & Analytics (Singular Alias) */
 import('/dpg-params.js');

@@ -1,9 +1,5 @@
-// ============================================================================
-// DPGNOTES EXTERNAL REDIRECT WARNING COMPONENT
-// ============================================================================
 (function() {
   document.addEventListener('DOMContentLoaded', () => {
-    // Dynamically inject professional styling for the redirect warning modal
     const style = document.createElement('style');
     style.innerHTML = `
       .redirect-modal-overlay {
@@ -327,8 +323,6 @@
       }
     `;
     document.head.appendChild(style);
-
-    // Create Modal Element structure with professional icons & accessible layout
     const overlay = document.createElement('div');
     overlay.className = 'redirect-modal-overlay';
     overlay.innerHTML = `
@@ -398,24 +392,18 @@
       </div>
     `;
     document.body.appendChild(overlay);
-
     let pendingUrl = '';
-
     function getLegalLinksPolicyUrl() {
       return 'https://dpgnotes.web.app/legal/index.html#links-policy';
     }
-
     const learnMoreEl = document.getElementById('redirectLearnMoreLink');
     if (learnMoreEl) {
       learnMoreEl.setAttribute('href', getLegalLinksPolicyUrl());
     }
-
-    // Helper: Enrich external URLs with UTM parameters and runtime referrer URL
     function enrichExternalUrl(targetUrlStr) {
       try {
         const url = new URL(targetUrlStr, window.location.href);
         if (url.protocol !== 'http:' && url.protocol !== 'https:') return targetUrlStr;
-
         const activePage = window.location.href;
         let campaign = 'dpgnotes_academic_portal';
         const path = window.location.pathname.toLowerCase();
@@ -428,47 +416,37 @@
         } else if (path.includes('serp') || path.includes('search')) {
           campaign = 'dpgnotes_search_engine';
         }
-
         url.searchParams.set('utm_source', 'dpgnotes');
         url.searchParams.set('utm_medium', 'referral');
         url.searchParams.set('utm_campaign', campaign);
         url.searchParams.set('utm_referrer', activePage);
         url.searchParams.set('utm_referrer_url', activePage);
-
         return url.href;
       } catch (err) {
         return targetUrlStr;
       }
     }
-
     function closeRedirectModal() {
       overlay.classList.remove('active');
       pendingUrl = '';
     }
-
     function proceedRedirect() {
       if (pendingUrl) {
         window.open(pendingUrl, '_blank', 'noopener,noreferrer');
       }
       closeRedirectModal();
     }
-
-    // Bind event handlers
     const cancelBtn = document.getElementById('redirectCancelBtn');
     if (cancelBtn) cancelBtn.addEventListener('click', closeRedirectModal);
-
     const closeXBtn = document.getElementById('redirectCloseXBtn');
     if (closeXBtn) closeXBtn.addEventListener('click', closeRedirectModal);
-
     const proceedBtn = document.getElementById('redirectProceedBtn');
     if (proceedBtn) proceedBtn.addEventListener('click', proceedRedirect);
-
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
         closeRedirectModal();
       }
     });
-
     document.addEventListener('keydown', (e) => {
       if (!overlay.classList.contains('active')) return;
       if (e.key === 'Escape') {
@@ -477,7 +455,6 @@
         proceedRedirect();
       }
     });
-
     const copyBtn = document.getElementById('redirectCopyUrlBtn');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
@@ -497,7 +474,6 @@
         }
       });
     }
-
     function fallbackCopy(text, copyTextEl) {
       const tempInp = document.createElement('textarea');
       tempInp.value = text;
@@ -514,12 +490,7 @@
       } catch(e) {}
       document.body.removeChild(tempInp);
     }
-
-        // ============================================================================
-    // VERIFIED CONTRIBUTOR SOCIAL REGISTRY & AUTO-BYPASS ENGINE
-    // ============================================================================
     const verifiedContributorSocials = new Set();
-
     function normalizeSocialUrl(raw) {
       if (!raw || typeof raw !== 'string') return '';
       try {
@@ -535,7 +506,6 @@
         return raw.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, '');
       }
     }
-
     function registerContributorSocial(userData) {
       if (!userData || typeof userData !== 'object') return;
       const isVerified = userData.isVerified === true ||
@@ -556,12 +526,10 @@
         }
       }
     }
-
     window.__dpgRegisterVerifiedSocial = function(url) {
       const norm = normalizeSocialUrl(url);
       if (norm) verifiedContributorSocials.add(norm);
     };
-
     (function initVerifiedSocialSync() {
       try {
         const cached = localStorage.getItem('dpg_verified_contributor_socials');
@@ -570,11 +538,9 @@
           if (Array.isArray(arr)) arr.forEach(u => verifiedContributorSocials.add(u));
         }
       } catch (e) {}
-
       if (window.__dpgUserCache && typeof window.__dpgUserCache === 'object') {
         Object.values(window.__dpgUserCache).forEach(registerContributorSocial);
       }
-
       const syncWithFirestore = async () => {
         try {
           const firestore = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : (window.db || null);
@@ -585,7 +551,6 @@
             return;
           }
         } catch (e) {}
-
         try {
           const res = await fetch((window.API_BASE_URL || 'https://dpgnotes.onrender.com') + '/api/social/list-profiles');
           if (res.ok) {
@@ -597,15 +562,10 @@
           }
         } catch (e) {}
       };
-
       setTimeout(syncWithFirestore, 800);
     })();
-
-    // Helper: Provide tailored domain-specific explanations for common trusted external sites
     function getDomainExplanation(url) {
       const host = (url.hostname || '').toLowerCase().replace(/^www\./, '');
-
-      // YouTube
       if (host === 'youtube.com' || host === 'youtu.be' || host.endsWith('.youtube.com')) {
         return {
           title: 'Navigating to YouTube',
@@ -613,8 +573,6 @@
           notice: 'You are opening an external video lecture on YouTube. DPGNotes enforces an isolated no-referrer policy. Video streaming, recommendations, and cookies operate under Google & YouTube Terms of Service.'
         };
       }
-
-      // Google Search / Google Scholar / Drive
       if (host === 'google.com' || host.endsWith('.google.com') || host.endsWith('.google.co.in')) {
         return {
           title: 'Navigating to Google Search',
@@ -622,8 +580,6 @@
           notice: 'You are redirecting to Google Search or Google Scholar for supplementary study references. Query terms and searches outside DPGNotes are subject to Google Privacy Policy and Terms of Service.'
         };
       }
-
-      // GitHub (external / non-verified contributor profiles or general repositories)
       if (host === 'github.com' || host.endsWith('.github.com')) {
         return {
           title: 'Navigating to GitHub',
@@ -631,8 +587,6 @@
           notice: 'You are viewing an external code repository, project documentation, or user account on GitHub. This destination is not an official verified DPGNotes contributor profile. Verify code security before cloning or running scripts.'
         };
       }
-
-      // LinkedIn (external / non-verified contributor profiles or organization pages)
       if (host === 'linkedin.com' || host.endsWith('.linkedin.com')) {
         return {
           title: 'Navigating to LinkedIn',
@@ -640,8 +594,6 @@
           notice: 'You are navigating to an external LinkedIn profile, organization, or publication. This link does not belong to a verified DPGNotes Contributor registry. LinkedIn User Agreement and privacy practices apply.'
         };
       }
-
-      // Wikipedia / Wikimedia
       if (host === 'wikipedia.org' || host.endsWith('.wikipedia.org') || host === 'wikimedia.org' || host.endsWith('.wikimedia.org')) {
         return {
           title: 'Navigating to Wikipedia',
@@ -649,8 +601,6 @@
           notice: 'You are opening an open-access encyclopedic article on Wikipedia. Content is user-curated and licensed under CC BY-SA 4.0. Cross-reference academic citations with primary textbook sources.'
         };
       }
-
-      // SWAYAM / NPTEL (Govt. of India)
       if (host === 'nptel.ac.in' || host.endsWith('.nptel.ac.in') || host === 'swayam.gov.in' || host.endsWith('.swayam.gov.in')) {
         return {
           title: 'Navigating to NPTEL / SWAYAM Portal',
@@ -658,8 +608,6 @@
           notice: 'You are navigating to the official SWAYAM / NPTEL platform for certified Indian engineering syllabi, video lectures, and assignments. Course certification and exam policies are managed by MoE.'
         };
       }
-
-      // Stack Overflow / Stack Exchange
       if (host === 'stackoverflow.com' || host.endsWith('.stackoverflow.com') || host === 'stackexchange.com' || host.endsWith('.stackexchange.com')) {
         return {
           title: 'Navigating to Stack Overflow',
@@ -667,8 +615,6 @@
           notice: 'You are viewing community-contributed technical Q&A on Stack Overflow. Code snippets and technical discussions are governed by Stack Exchange terms and CC BY-SA licensing.'
         };
       }
-
-      // LeetCode / GeeksforGeeks / HackerRank / Codeforces
       if (host === 'geeksforgeeks.org' || host.endsWith('.geeksforgeeks.org') ||
           host === 'leetcode.com' || host.endsWith('.leetcode.com') ||
           host === 'hackerrank.com' || host.endsWith('.hackerrank.com') ||
@@ -680,31 +626,22 @@
           notice: 'You are leaving DPGNotes to access external coding problem sets or technical tutorials. Interactive sandboxes, code submissions, and problems are hosted independently by the platform.'
         };
       }
-
-      // Default fallback
       return {
         title: 'External Link Confirmation',
         subtitle: 'You are navigating outside the verified DPGNotes Academic Network',
         notice: 'DPGNotes applies an isolated no-referrer policy and academic UTM campaign tags. Third-party content is governed by external terms.'
       };
     }
-
-    // Intercept clicks on links globally
     document.addEventListener('click', (e) => {
       const anchor = e.target.closest('a');
       if (!anchor) return;
-
-      // 1. Bypass download links, in-memory data exports, or programmatic bypasses
       if (anchor.hasAttribute('download') || anchor.download || 
           anchor.getAttribute('data-bypass-redirect') === 'true' || 
           anchor.closest('[data-bypass-redirect]')) {
         return;
       }
-
       const href = anchor.getAttribute('href');
       if (!href) return;
-
-      // 2. Bypass internal anchors, empty links, javascript actions, mailto/tel protocols, and in-memory local data URLs
       if (href.startsWith('#') || 
           href.startsWith('javascript:') || 
           href.startsWith('mailto:') || 
@@ -715,35 +652,23 @@
           href === '') {
         return;
       }
-
       try {
         const url = new URL(href, window.location.href);
-
-        // 3. Only intercept standard web navigations (http and https)
         if (url.protocol !== 'http:' && url.protocol !== 'https:') {
           return;
         }
-
-        // 4. Same origin is strictly internal
         if (url.origin === window.location.origin) {
           return;
         }
-
-        // 5. Must have a valid hostname to be considered external
         if (!url.hostname) {
           return;
         }
-
-        // 1. Quizzone portal auto-bypass
         if (href.includes('akshat-881236.github.io/Quizzone') || url.href.includes('akshat-881236.github.io/Quizzone')) {
           return;
         }
-
-        // 2. Only and Only Verified Contributor LinkedIn and Github Profile auto-bypass
         const hostNorm = url.hostname.toLowerCase().replace(/^www\./, '');
         const isLinkedInOrGitHub = (hostNorm === 'linkedin.com' || hostNorm.endsWith('.linkedin.com') ||
                                     hostNorm === 'github.com' || hostNorm.endsWith('.github.com'));
-
         if (isLinkedInOrGitHub) {
           const normTarget = normalizeSocialUrl(url.href);
           const isVerifiedLink = verifiedContributorSocials.has(normTarget) ||
@@ -753,7 +678,6 @@
             return;
           }
         }
-
         const internalHosts = [
           window.location.hostname,
           'dpgnotes.web.app', 
@@ -768,29 +692,19 @@
           'digiindia-student-platform.onrender.com',
           'digiindia'
         ];
-        
-        // If it is external (not in trusted internal hosts)
         if (!internalHosts.some(host => host && url.hostname.toLowerCase().includes(host.toLowerCase()))) {
           e.preventDefault();
           const enriched = enrichExternalUrl(url.href);
           pendingUrl = enriched;
-
-          // Ensure anchor element in DOM is updated with enriched URL and no-referrer
           anchor.href = enriched;
           anchor.setAttribute('referrerpolicy', 'no-referrer');
           anchor.setAttribute('rel', 'noopener noreferrer');
-
-          // Populate modal details
           const destEl = document.getElementById('redirectDestUrl');
           if (destEl) destEl.textContent = pendingUrl;
-
           const hostEl = document.getElementById('redirectDestHost');
           if (hostEl) hostEl.textContent = url.hostname;
-
           const protocolText = document.getElementById('redirectProtocolText');
           if (protocolText) protocolText.textContent = url.protocol === 'https:' ? 'HTTPS Secure' : 'HTTP External';
-
-          // Tailored Domain Explanation
           const explanation = getDomainExplanation(url);
           const titleEl = document.getElementById('redirectModalTitle');
           if (titleEl) titleEl.textContent = explanation.title;
@@ -798,30 +712,18 @@
           if (subEl) subEl.textContent = explanation.subtitle;
           const noticeTextEl = document.getElementById('redirectNoticeText');
           if (noticeTextEl) noticeTextEl.textContent = explanation.notice;
-
           const copyText = document.getElementById('redirectCopyText');
           if (copyText) copyText.textContent = 'Copy';
-
           overlay.classList.add('active');
         }
       } catch (err) {
-        // Safe fallback for unparseable href strings
       }
     }, true);
-
-    // ============================================================================
-    // DPGNOTES GUEST ACCESS QUOTA ENFORCEMENT (6 Visits / 3 PDFs per day)
-    // ============================================================================
     (function checkGuestQuota() {
-      // 0. Search Engine Crawlers & Bot Inspection Transparency (Googlebot, Bingbot, Google-InspectionTool, etc.)
       const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|chrome-lighthouse|lighthouse|slurp|duckduckbot|baiduspider|yandexbot|bingbot|facebookexternalhit|whatsapp|telegram/i.test(navigator.userAgent);
       if (isCrawler) return;
-
-      // 1. Authenticated Users have Unlimited Access
       const activeUid = localStorage.getItem("dpgActiveUserUid");
       if (activeUid) return;
-
-      // 2. Search Engines, SERP, Public Portals, Legal Policy Pages, Quota Lockdown Screen, and Contributor Creator Studios are strictly Exempt from Guest Quota
       const p = window.location.pathname.toLowerCase();
       if (p === '' || p === '/' || p.includes('index.html') || 
           p.includes('dpgnotes-serp.html') || 
@@ -835,18 +737,12 @@
           p.includes('train_model')) {
         return;
       }
-
-      // 3. Retrieve or initialize Anonymous Guest ID
       let guestId = localStorage.getItem("dpg_guest_id");
       if (!guestId) {
         guestId = "guest_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
         localStorage.setItem("dpg_guest_id", guestId);
       }
-
-      // Action: PDF view vs Page visit
       const isPdfViewer = window.location.pathname.includes('dpgnotes-pdf-viewer.html');
-
-      // Cookie helper functions for multi-layer tamper protection
       function getCookie(name) {
         const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
         return match ? match[2] : null;
@@ -857,18 +753,13 @@
       function clearCookie(name) {
         document.cookie = name + '=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
       }
-
-      // Local storage & multi-layer offline tracking fallback
       const todayStr = new Date().toISOString().split('T')[0];
       const savedDate = localStorage.getItem("dpg_quota_date");
       let pageVisits = parseInt(localStorage.getItem("dpg_quota_visits") || "0", 10);
       let pdfViews = parseInt(localStorage.getItem("dpg_quota_pdfs") || "0", 10);
-
-      // Check tamper lock across localStorage, sessionStorage, and cookies
       const isLockedLocal = localStorage.getItem("dpg_quota_locked") === "true";
       const isLockedSession = sessionStorage.getItem("dpg_quota_locked") === "true";
       const isLockedCookie = getCookie("dpg_quota_locked") === "true";
-
       if (savedDate !== todayStr) {
         pageVisits = 0;
         pdfViews = 0;
@@ -877,29 +768,22 @@
         sessionStorage.removeItem("dpg_quota_locked");
         clearCookie("dpg_quota_locked");
       } else if (isLockedLocal || isLockedSession || isLockedCookie) {
-        // Tamper detected or lock previously set: enforce lock across all 3 layers & immediately bounce to quota-lockdown.html
         localStorage.setItem("dpg_quota_locked", "true");
         sessionStorage.setItem("dpg_quota_locked", "true");
         setCookie("dpg_quota_locked", "true");
         pageVisits = 99;
         pdfViews = 99;
-
         if (!window.location.pathname.includes('quota-lockdown.html')) {
           window.location.href = "https://dpgnotes.web.app/quota-lockdown.html?returnUrl=" + encodeURIComponent(window.location.href);
           return;
         }
       }
-
       if (isPdfViewer) pdfViews += 1;
       else pageVisits += 1;
-
       localStorage.setItem("dpg_quota_visits", pageVisits);
       localStorage.setItem("dpg_quota_pdfs", pdfViews);
-
-      // Server-side Python Service Quota Verification (Backed by IP + Firestore)
       const PYTHON_SERVICE = "https://dpgnotes-python-service.onrender.com";
       const currentAction = isPdfViewer ? "pdf_view" : "page_visit";
-
       fetch(PYTHON_SERVICE + "/api/guest-quota", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -911,30 +795,21 @@
       }).catch(err => {
         console.warn("Python Server quota check error:", err);
       });
-
       function triggerQuotaReachedPhase() {
         if (isCrawler) return;
         const curPath = window.location.pathname.toLowerCase();
         if (curPath.includes('quota-lockdown.html') || curPath.includes('dpgnotes-serp.html') || curPath.includes('dpgnotes-search-engine.html') || curPath.includes('index.html')) {
           return;
         }
-
-        // Enforce lock across all 3 storage layers
         localStorage.setItem("dpg_quota_locked", "true");
         sessionStorage.setItem("dpg_quota_locked", "true");
         setCookie("dpg_quota_locked", "true");
-
-        // Always redirect user to quota-lockdown.html with complete absolute URL
         window.location.href = "https://dpgnotes.web.app/quota-lockdown.html?returnUrl=" + encodeURIComponent(window.location.href);
       }
-
-      // Check local limit first
       if (pageVisits > 6 || pdfViews > 3 || new URLSearchParams(location.search).get('quotaReached') === 'true') {
         triggerQuotaReachedPhase();
         return;
       }
-
-      // Server IP + Guest ID verification
       fetch((window.API_BASE_URL || '') + '/api/guest-quota', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -945,8 +820,6 @@
         }
       }).catch(err => console.warn('Server guest quota tracking error:', err));
     })();
-
-    // Automatically trigger Device Logging for page load (logs once per user per IP per day)
     (function logDeviceTelemetry() {
       if (/bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent)) {
         return;
@@ -955,7 +828,6 @@
       const userType = activeUser.role === 'admin' || activeUser.email === 'its.akshatnetworkhub23@gmail.com' ? 'Admin' : (activeUser.uid ? 'Contributor' : 'Anonymous');
       const userId = activeUser.uid || localStorage.getItem("dpg_guest_id") || "guest_anon";
       const email = activeUser.email || "guest@dpgnotes.app";
-
       const perm = localStorage.getItem("dpg_device_perm_granted") === "true";
       const hwInfo = perm ? {
         screenResolution: `${window.screen.width}x${window.screen.height}`,
@@ -964,7 +836,6 @@
         platform: navigator.platform,
         touchSupport: ('ontouchstart' in window)
       } : null;
-
       fetch((window.API_BASE_URL || '') + '/api/device-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -977,35 +848,27 @@
         })
       }).catch(err => console.warn('Device log tracking error:', err));
     })();
-
-    // Automatically trigger Ad Track-ID Attribution & Screentime Telemetry
     (function initAdTrackTelemetry() {
       const params = new URLSearchParams(window.location.search);
       const trackId = params.get('track_id') || params.get('trackId');
       if (!trackId) return;
-
-      // Set cookie for track_id
       const d = new Date();
       d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000));
       document.cookie = `dpg_ad_click_track_id=${encodeURIComponent(trackId)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
-
       const pageUrl = window.location.href;
       const pageTitle = document.title || "DPGNotes Resource Page";
       const pageDesc = document.querySelector('meta[name="description"]')?.content || "";
       const startTime = Date.now();
-
       let adId = "";
       try {
         const map = JSON.parse(localStorage.getItem('dpg_ad_track_map') || '{}');
         if (map[trackId]) adId = map[trackId].adId;
       } catch(e) {}
-
       async function syncAdTrackSession(screentimeSec = 0) {
         try {
           const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
           const visitorUid = activeUser.uid || localStorage.getItem("dpgActiveUserUid") || localStorage.getItem("dpg_guest_id") || "guest_anon";
           const visitorEmail = activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "guest@dpgnotes.app";
-
           const trackingData = {
             trackId,
             adId,
@@ -1019,7 +882,6 @@
             timestamp: new Date().toISOString(),
             lastActiveAt: new Date().toISOString()
           };
-
           if (window.dpgDb && window.doc && window.setDoc) {
             await window.setDoc(window.doc(window.dpgDb, "ad_trackings", `${trackId}_${visitorUid}`), trackingData, { merge: true }).catch(console.warn);
           } else {
@@ -1033,14 +895,11 @@
           console.warn("Sync ad track session error:", e);
         }
       }
-
       syncAdTrackSession(0);
-
       setInterval(() => {
         const elapsedSec = Math.round((Date.now() - startTime) / 1000);
         syncAdTrackSession(elapsedSec);
       }, 5000);
-
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           const elapsedSec = Math.round((Date.now() - startTime) / 1000);

@@ -1,12 +1,8 @@
-// Legal Documentation Center Client Application Orchestrator
 import { initTheme } from './theme.js';
 import { initSidebar } from './sidebar.js';
 import { initSearch } from './search.js';
-
-// Import Firebase dependencies for state checks
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
   authDomain: "dpgnotes.firebaseapp.com",
@@ -15,11 +11,8 @@ const firebaseConfig = {
   messagingSenderId: "910494426039",
   appId: "1:910494426039:web:adeae5315caaf846c43e32"
 };
-
 const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
 const auth = getAuth(app);
-
-// Actual PDF filenames uploaded to legal/docs
 const pdfFileMapping = {
   analytics: 'DOC_ANH_06_2026_001_DOC_ANH_06_2026_001_20260714_130156.pdf',
   cookies: 'DOC_ANH_06_2026_002_DOC_ANH_06_2026_002_20260714_130555.pdf',
@@ -33,36 +26,25 @@ const pdfFileMapping = {
   terms: 'DOC_ANH_06_2026_010_DOC_ANH_06_2026_010_20260714_132730.pdf',
   drasa: 'DOC_ANH_06_2026_011_DOC_ANH_06_2026_010_20260714_140930.pdf'
 };
-
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize Theme Engine
   initTheme();
-
-  // PDF Viewer reference
   const pdfWrapper = document.getElementById('pdfWrapper');
   const downloadPdfBtn = document.getElementById('downloadPdfBtn');
   const printBtn = document.getElementById('printBtn');
   const shareBtn = document.getElementById('shareBtn');
-
-  // Active section track
   let currentSection = 'overview';
   let watermarkText = '';
   let lastWatermarkText = '';
   let renderSessionId = 0;
   let isSharing = false; // Track when native share/print is active
-
-  // Get or Generate unique Guest ID
   let guestId = localStorage.getItem('guestId');
   if (!guestId) {
     guestId = 'GST-' + Math.random().toString(36).substring(2, 8).toUpperCase();
     localStorage.setItem('guestId', guestId);
   }
-
-  // Parse redirection origin parameters and referrers
   const urlParams = new URLSearchParams(window.location.search);
   const fromParam = urlParams.get('from');
   const referrer = document.referrer;
-
   let userContext = 'guest';
   if (fromParam === 'contributor' || referrer.includes('dashboard.html')) {
     userContext = 'contributor';
@@ -71,13 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
   } else if (referrer.includes('index.html')) {
     userContext = 'guest';
   }
-
-  // Setup Dynamic Watermark based on User Authentication state
   onAuthStateChanged(auth, async (user) => {
     const adminToken = localStorage.getItem('adminToken');
     let newWatermark = '';
     let isGuestUser = true;
-
     if (userContext === 'admin' && adminToken) {
       isGuestUser = false;
       const loginTime = localStorage.getItem('adminLoginTime') || new Date().toLocaleString();
@@ -90,8 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
       isGuestUser = true;
       newWatermark = `Guest-${guestId}`;
     }
-
-    // Block Download feature for Guest Users
     if (downloadPdfBtn) {
       if (isGuestUser) {
         downloadPdfBtn.style.display = 'none';
@@ -101,42 +78,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
-
     if (newWatermark !== lastWatermarkText) {
       watermarkText = newWatermark;
       lastWatermarkText = newWatermark;
-      
-      // Refresh viewer if showing a PDF
       if (pdfWrapper && !['overview', 'updates', 'contact'].includes(currentSection)) {
         updatePdfViewer(currentSection);
       }
     }
   });
-
-  // Section Change callback handler
   const handleSectionChange = (sectionName) => {
     currentSection = sectionName;
     updatePdfViewer(sectionName);
   };
-
-  // Initialize Nav Sidebar
   const sidebarController = initSidebar(handleSectionChange);
-
-  // Initialize Search Modal
   initSearch((sectionName) => {
     if (sidebarController) {
       sidebarController.navigateToSection(sectionName);
       window.location.hash = `#${sectionName}`;
     }
   });
-
-  // Dynamic Custom PDF Viewer using PDF.js & Canvas Watermark Overlay
   function updatePdfViewer(sectionName) {
     if (!pdfWrapper) return;
-    
     renderSessionId++;
     const localSessionId = renderSessionId;
-
     pdfWrapper.innerHTML = `
       <div class="pdf-loading-spinner" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem; color:var(--text-muted); width:100%;">
         <i class="ri-loader-4-line ri-spin" style="font-size:3rem; color:#6366f1; margin-bottom:1rem;"></i>
@@ -144,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
     pdfWrapper.style.display = 'flex';
-
     const noPdfSections = ['overview', 'updates', 'contact', 'ads-policy', 'links-policy'];
     if (noPdfSections.includes(sectionName)) {
       pdfWrapper.innerHTML = `
@@ -157,34 +120,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (downloadPdfBtn) downloadPdfBtn.style.display = 'none';
       return;
     }
-
     const adminToken = localStorage.getItem('adminToken');
     let isGuestUser = true;
     if (userContext === 'admin' && adminToken) {
       isGuestUser = false;
     }
     if (downloadPdfBtn) downloadPdfBtn.style.display = isGuestUser ? 'none' : 'inline-flex';
-
     const pdfName = pdfFileMapping[sectionName];
     if (!pdfName) {
       showPdfPlaceholder(sectionName);
       return;
     }
-
-    // PDF.js Canvas Rendering with Watermark
     pdfWrapper.style.display = 'block';
     pdfWrapper.style.height = 'auto';
-
     const pdfPath = `docs/${pdfName}`;
     pdfjsLib.getDocument(pdfPath).promise.then(pdf => {
       if (localSessionId !== renderSessionId) return;
-
-      // Clear the loading spinner right before rendering the viewer container
       pdfWrapper.innerHTML = '';
-
       let currentPageNum = 1;
       const totalPages = pdf.numPages;
-
       const viewerDiv = document.createElement('div');
       viewerDiv.style.width = '100%';
       viewerDiv.style.minHeight = '500px';
@@ -193,15 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
       viewerDiv.style.display = 'block';
       viewerDiv.style.position = 'relative';
       pdfWrapper.appendChild(viewerDiv);
-
-      // Create Page Container
       const pageContainer = document.createElement('div');
       pageContainer.style.width = '100%';
       pageContainer.style.display = 'flex';
       pageContainer.style.justifyContent = 'center';
       viewerDiv.appendChild(pageContainer);
-
-      // Create Controls Overlay
       const controlsDiv = document.createElement('div');
       controlsDiv.style.display = 'flex';
       controlsDiv.style.alignItems = 'center';
@@ -213,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
       controlsDiv.style.borderRadius = '12px';
       controlsDiv.style.border = '1px solid var(--border-color)';
       viewerDiv.appendChild(controlsDiv);
-
       const prevBtn = document.createElement('button');
       prevBtn.className = 'action-btn';
       prevBtn.style.padding = '8px 16px';
@@ -223,13 +172,11 @@ document.addEventListener('DOMContentLoaded', () => {
       prevBtn.style.gap = '6px';
       prevBtn.innerHTML = '<i class="ri-arrow-left-s-line"></i> Prev';
       controlsDiv.appendChild(prevBtn);
-
       const pageIndicator = document.createElement('span');
       pageIndicator.style.fontWeight = '600';
       pageIndicator.style.fontFamily = 'var(--font-heading)';
       pageIndicator.innerText = `Page 1 of ${totalPages}`;
       controlsDiv.appendChild(pageIndicator);
-
       const nextBtn = document.createElement('button');
       nextBtn.className = 'action-btn';
       nextBtn.style.padding = '8px 16px';
@@ -239,16 +186,13 @@ document.addEventListener('DOMContentLoaded', () => {
       nextBtn.style.gap = '6px';
       nextBtn.innerHTML = 'Next <i class="ri-arrow-right-s-line"></i>';
       controlsDiv.appendChild(nextBtn);
-
       function renderPage(pageNum) {
         pageContainer.innerHTML = '';
         pdf.getPage(pageNum).then(page => {
           if (localSessionId !== renderSessionId) return;
-
           const viewport = page.getViewport({ scale: 1.1 });
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          
           canvas.height = viewport.height;
           canvas.width = viewport.width;
           canvas.style.display = 'block';
@@ -258,10 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
           canvas.style.maxWidth = '100%';
           canvas.style.height = 'auto';
           pageContainer.appendChild(canvas);
-
           page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
             if (localSessionId !== renderSessionId) return;
-            // Apply Watermark Overlay
             ctx.save();
             ctx.font = 'bold 22px Outfit';
             ctx.fillStyle = 'rgba(100, 100, 100, 0.12)';
@@ -271,55 +213,41 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillText(watermarkText, 0, 0);
             ctx.restore();
           });
-
           pageIndicator.innerText = `Page ${pageNum} of ${totalPages}`;
           prevBtn.disabled = (pageNum === 1);
           nextBtn.disabled = (pageNum === totalPages);
         });
       }
-
-      // Initial render
       renderPage(currentPageNum);
-
-      // Prev Page Action
       prevBtn.addEventListener('click', () => {
         if (currentPageNum > 1) {
           currentPageNum--;
           renderPage(currentPageNum);
         }
       });
-
-      // Next Page Action
       nextBtn.addEventListener('click', () => {
         if (currentPageNum < totalPages) {
           currentPageNum++;
           renderPage(currentPageNum);
         }
       });
-
-      // Touch / Hand Swipe gestures support
       let touchStartX = 0;
       let touchEndX = 0;
-
       viewerDiv.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
       }, { passive: true });
-
       viewerDiv.addEventListener('touchend', (e) => {
         touchEndX = e.changedTouches[0].screenX;
         handleSwipeGesture();
       }, { passive: true });
-
       function handleSwipeGesture() {
         const threshold = 55; // swipe distance threshold in pixels
         if (touchEndX < touchStartX - threshold) {
-          // Swipe Left -> Next Page
           if (currentPageNum < totalPages) {
             currentPageNum++;
             renderPage(currentPageNum);
           }
         } else if (touchEndX > touchStartX + threshold) {
-          // Swipe Right -> Prev Page
           if (currentPageNum > 1) {
             currentPageNum--;
             renderPage(currentPageNum);
@@ -331,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showPdfPlaceholder(sectionName);
     });
   }
-
   function showPdfPlaceholder(sectionName) {
     pdfWrapper.style.display = 'flex';
     pdfWrapper.innerHTML = `
@@ -342,8 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
   }
-
-  // Watermark PDF using PDF-Lib and download
   if (downloadPdfBtn) {
     downloadPdfBtn.addEventListener('click', async () => {
       const adminToken = localStorage.getItem('adminToken');
@@ -357,24 +282,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const pdfName = pdfFileMapping[currentSection];
       if (!pdfName) return alert('PDF not found.');
-
       const pdfPath = `docs/${pdfName}`;
       downloadPdfBtn.innerText = 'Watermarking...';
       downloadPdfBtn.disabled = true;
-
       try {
         const existingPdfBytes = await fetch(pdfPath).then(res => res.arrayBuffer());
         const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
         const pages = pdfDoc.getPages();
-        
-        // Standard built-in font
         const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-
-        // Watermark all pages
         pages.forEach(page => {
           const { width, height } = page.getSize();
-          
-          // Draw watermark
           page.drawText(watermarkText, {
             x: width / 3,
             y: height / 2,
@@ -385,8 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
             rotate: PDFLib.degrees(45)
           });
         });
-
-        // Write Disclaimer on last page: Subject to Copyright in exactly 10 words
         const lastPage = pages[pages.length - 1];
         const { width: pageW } = lastPage.getSize();
         lastPage.drawText("Subject to copyright: Unauthorized replication of this material is prohibited.", {
@@ -397,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
           color: PDFLib.rgb(0.4, 0.4, 0.4),
           opacity: 0.8
         });
-
         const pdfBytes = await pdfDoc.save();
         const blob = new Blob([pdfBytes], { type: "application/pdf" });
         const link = document.createElement('a');
@@ -412,8 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  // Print Action
   if (printBtn) {
     printBtn.addEventListener('click', () => {
       isSharing = true;
@@ -423,15 +335,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 2000);
     });
   }
-
-  // Share link action handler
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       const pdfName = pdfFileMapping[currentSection];
       const originalText = shareBtn.innerHTML;
       shareBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Generating...';
       shareBtn.disabled = true;
-
       try {
         const res = await fetch(window.API_BASE_URL + "/api/share/generate", {
           method: "POST",
@@ -451,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed");
-
         const shareUrl = data.shareUrl;
         if (navigator.share) {
           isSharing = true;
@@ -481,15 +389,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  // Reading Progress Tracker
   window.addEventListener('scroll', () => {
     const readingProgress = document.getElementById('readingProgress');
     if (!readingProgress) return;
-
     const scrollTop = window.scrollY;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    
     if (docHeight > 0) {
       const scrolled = (scrollTop / docHeight) * 100;
       readingProgress.style.width = `${scrolled}%`;
@@ -497,8 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
       readingProgress.style.width = '0%';
     }
   });
-
-  // Dynamic Legal Ad Container Visibility Guardian: Eliminates empty whitespace when ads are unavailable
   function checkLegalAds() {
     document.querySelectorAll('.legal-adsense-container').forEach(container => {
       const ins = container.querySelector('ins.adsbygoogle');
@@ -513,5 +415,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   checkLegalAds();
   setInterval(checkLegalAds, 1000);
-
 });

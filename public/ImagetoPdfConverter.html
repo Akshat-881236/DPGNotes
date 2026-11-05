@@ -41,7 +41,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         :root {
             --bg-primary: #101010;
             --bg-secondary: #1B1B1B;
@@ -54,7 +53,6 @@
             --border-radius: 15px;
             --transition: 0.3s ease;
         }
-
         html, body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-primary);
@@ -63,21 +61,17 @@
             overflow-y: auto;
             overflow-x: hidden;
         }
-
-        /* Glassmorphism Effect */
         .glass {
             background: rgba(27, 27, 27, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 212, 255, 0.1);
         }
-
         .container {
             display: flex;
             min-height: calc(100vh - 80px);
             height: auto;
             overflow: visible;
         }
-
         .header {
             position: fixed;
             top: 0;
@@ -93,7 +87,6 @@
             z-index: 1000;
             box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
         }
-
         .header-title {
             font-size: 24px;
             font-weight: 700;
@@ -102,7 +95,6 @@
             align-items: center;
             gap: 10px;
         }
-
         .logo-icon {
             width: 30px;
             height: 30px;
@@ -113,13 +105,11 @@
             justify-content: center;
             font-weight: bold;
         }
-
         .header-status {
             display: flex;
             gap: 15px;
             align-items: center;
         }
-
         .status-indicator {
             display: flex;
             align-items: center;
@@ -127,8 +117,6 @@
             font-size: 14px;
             color: var(--text-secondary);
         }
-
-        /* Mobile & Tablet Header Media Optimization */
         @media (max-width: 768px) {
             .header {
                 height: auto;
@@ -167,7 +155,6 @@
                 margin-right: 2px !important;
             }
         }
-
         .status-dot {
             width: 10px;
             height: 10px;
@@ -175,12 +162,10 @@
             background: var(--accent-secondary);
             animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-
         .main-content {
             display: flex;
             width: 100%;
@@ -188,15 +173,12 @@
             height: calc(100vh - 70px);
             overflow: hidden;
         }
-
-        /* Desktop Layout */
         .left-panel {
             flex: 1;
             overflow-y: auto;
             padding: 30px;
             background: var(--bg-primary);
         }
-
         .right-panel {
             flex: 1;
             overflow-y: auto;
@@ -204,8 +186,6 @@
             background: var(--bg-secondary);
             border-left: 2px solid rgba(0, 212, 255, 0.1);
         }
-
-        /* Form Styling */
         .form-section {
             background: var(--bg-secondary);
             padding: 25px;
@@ -214,12 +194,10 @@
             border: 1px solid rgba(0, 212, 255, 0.1);
             transition: all var(--transition);
         }
-
         .form-section:hover {
             border-color: rgba(0, 212, 255, 0.3);
             box-shadow: 0 5px 20px rgba(0, 212, 255, 0.1);
         }
-
         .section-title {
             font-size: 18px;
             font-weight: 600;
@@ -229,11 +207,9 @@
             align-items: center;
             gap: 8px;
         }
-
         .form-group {
             margin-bottom: 18px;
         }
-
         label {
             display: block;
             font-size: 14px;
@@ -241,7 +217,6 @@
             margin-bottom: 8px;
             font-weight: 500;
         }
-
         input[type="text"],
         input[type="number"],
         input[type="url"],
@@ -258,7 +233,6 @@
             transition: all var(--transition);
             font-family: inherit;
         }
-
         input[type="text"]:focus,
         input[type="number"]:focus,
         input[type="url"]:focus,
@@ -270,11 +244,9 @@
             background: rgba(0, 212, 255, 0.05);
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
         }
-
         input[type="file"] {
             padding: 8px 12px;
         }
-
         .file-input-label {
             display: block;
             padding: 15px;
@@ -287,13 +259,10 @@
             color: var(--accent-primary);
             font-weight: 500;
         }
-
         .file-input-label:hover {
             border-color: var(--accent-primary);
             background: rgba(0, 212, 255, 0.1);
         }
-
-        /* Button Styling */
         .btn {
             padding: 12px 24px;
             border: none;
@@ -307,70 +276,56 @@
             gap: 8px;
             white-space: nowrap;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-primary), #0099CC);
             color: var(--bg-primary);
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
         }
-
         .btn-primary:active {
             transform: translateY(0);
         }
-
         .btn-secondary {
             background: rgba(0, 212, 255, 0.1);
             color: var(--accent-primary);
             border: 1px solid var(--accent-primary);
         }
-
         .btn-secondary:hover {
             background: rgba(0, 212, 255, 0.2);
         }
-
         .btn-success {
             background: linear-gradient(135deg, var(--accent-secondary), #00CC77);
             color: var(--bg-primary);
         }
-
         .btn-success:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0, 255, 153, 0.3);
         }
-
         .btn-danger {
             background: var(--error);
             color: white;
         }
-
         .btn-danger:hover {
             background: #FF6666;
         }
-
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
-
         .btn-group {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-
-        /* Page Upload Grid */
         .pages-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
-
         .page-upload-card {
             background: var(--bg-primary);
             border: 2px dashed rgba(0, 212, 255, 0.2);
@@ -382,24 +337,20 @@
             position: relative;
             overflow: hidden;
         }
-
         .page-upload-card:hover {
             border-color: var(--accent-primary);
             background: rgba(0, 212, 255, 0.05);
         }
-
         .page-upload-card.filled {
             border-style: solid;
             border-color: var(--accent-secondary);
         }
-
         .page-number {
             font-size: 24px;
             font-weight: 700;
             color: var(--accent-primary);
             margin-bottom: 10px;
         }
-
         .page-preview {
             width: 100%;
             height: 120px;
@@ -407,17 +358,13 @@
             border-radius: 8px;
             margin-bottom: 8px;
         }
-
         .page-status {
             font-size: 12px;
             color: var(--text-secondary);
         }
-
         .page-status.ready {
             color: var(--accent-secondary);
         }
-
-        /* Preview Panel */
         .preview-container {
             background: var(--bg-secondary);
             border-radius: var(--border-radius);
@@ -427,7 +374,6 @@
             display: flex;
             flex-direction: column;
         }
-
         .preview-header {
             display: flex;
             justify-content: space-between;
@@ -436,18 +382,15 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.1);
         }
-
         .preview-title {
             font-size: 16px;
             font-weight: 600;
             color: var(--accent-primary);
         }
-
         .preview-controls {
             display: flex;
             gap: 8px;
         }
-
         .preview-viewer {
             flex: 1;
             display: flex;
@@ -458,12 +401,10 @@
             overflow: auto;
             margin-bottom: 15px;
         }
-
         #pdfCanvas {
             max-width: 100%;
             max-height: 100%;
         }
-
         .preview-footer {
             display: flex;
             justify-content: space-between;
@@ -473,17 +414,13 @@
             font-size: 12px;
             color: var(--text-secondary);
         }
-
-        /* Progress Bar */
         .progress-container {
             margin-bottom: 20px;
             display: none;
         }
-
         .progress-container.active {
             display: block;
         }
-
         .progress-label {
             font-size: 12px;
             color: var(--text-secondary);
@@ -491,7 +428,6 @@
             display: flex;
             justify-content: space-between;
         }
-
         .progress-bar {
             width: 100%;
             height: 6px;
@@ -499,15 +435,12 @@
             border-radius: 3px;
             overflow: hidden;
         }
-
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
             width: 0%;
             transition: width 0.3s ease;
         }
-
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -521,11 +454,9 @@
             justify-content: center;
             backdrop-filter: blur(5px);
         }
-
         .modal.active {
             display: flex;
         }
-
         .modal-content {
             background: var(--bg-secondary);
             padding: 30px;
@@ -536,7 +467,6 @@
             border: 1px solid rgba(0, 212, 255, 0.2);
             animation: slideUp 0.3s ease;
         }
-
         @keyframes slideUp {
             from {
                 transform: translateY(50px);
@@ -547,7 +477,6 @@
                 opacity: 1;
             }
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -556,13 +485,11 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.1);
         }
-
         .modal-title {
             font-size: 20px;
             font-weight: 600;
             color: var(--accent-primary);
         }
-
         .modal-close {
             background: none;
             border: none;
@@ -571,12 +498,9 @@
             cursor: pointer;
             transition: color var(--transition);
         }
-
         .modal-close:hover {
             color: var(--accent-primary);
         }
-
-        /* Messages */
         .message {
             padding: 15px;
             border-radius: 8px;
@@ -586,7 +510,6 @@
             gap: 10px;
             animation: slideIn 0.3s ease;
         }
-
         @keyframes slideIn {
             from {
                 transform: translateX(-20px);
@@ -597,26 +520,21 @@
                 opacity: 1;
             }
         }
-
         .message.success {
             background: rgba(0, 255, 153, 0.1);
             color: var(--accent-secondary);
             border: 1px solid var(--accent-secondary);
         }
-
         .message.error {
             background: rgba(255, 68, 68, 0.1);
             color: var(--error);
             border: 1px solid var(--error);
         }
-
         .message.info {
             background: rgba(0, 212, 255, 0.1);
             color: var(--accent-primary);
             border: 1px solid var(--accent-primary);
         }
-
-        /* Spinner */
         .spinner {
             width: 20px;
             height: 20px;
@@ -625,156 +543,125 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        /* Responsive Design */
         @media (max-width: 1024px) {
             .main-content {
                 flex-direction: column;
             }
-
             .right-panel {
                 border-left: none;
                 border-top: 2px solid rgba(0, 212, 255, 0.1);
             }
-
             .left-panel, .right-panel {
                 flex: auto;
                 height: auto;
                 max-height: 50%;
             }
         }
-
         @media (max-width: 768px) {
             .header {
                 padding: 0 15px;
             }
-
             .header-title {
                 font-size: 18px;
             }
-
             .left-panel, .right-panel {
                 padding: 15px;
             }
-
             .form-section {
                 padding: 15px;
             }
-
             .pages-grid {
                 grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
                 gap: 10px;
             }
-
             .modal-content {
                 max-width: 95%;
                 padding: 20px;
             }
         }
-
         @media (max-width: 425px) {
             .header {
                 height: 60px;
                 padding: 0 10px;
             }
-
             .header-title {
                 font-size: 16px;
             }
-
             .header-status {
                 flex-direction: column;
                 gap: 5px;
                 font-size: 12px;
             }
-
             .container {
                 flex-direction: column;
             }
-
             .main-content {
                 margin-top: 60px;
                 height: auto;
                 min-height: calc(100vh - 60px);
                 flex-direction: column;
             }
-
             .left-panel, .right-panel {
                 width: 100%;
                 flex: none;
                 overflow-y: visible;
                 padding: 10px;
             }
-
             .form-section {
                 margin-bottom: 15px;
                 padding: 12px;
             }
-
             .pages-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
                 gap: 8px;
             }
-
             .btn {
                 padding: 10px 16px;
                 font-size: 12px;
             }
-
             .btn-group {
                 flex-direction: column;
             }
-
             .btn-group .btn {
                 width: 100%;
                 justify-content: center;
             }
         }
-
         @media (max-width: 375px) {
             .section-title {
                 font-size: 15px;
             }
-
             .form-group label {
                 font-size: 12px;
             }
-
             input, textarea {
                 padding: 10px 12px;
                 font-size: 13px;
             }
-
             .pages-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-
         @media (max-width: 320px) {
             .header-title {
                 font-size: 14px;
                 gap: 5px;
             }
-
             .logo-icon {
                 width: 24px;
                 height: 24px;
                 font-size: 12px;
             }
-
             .pages-grid {
                 grid-template-columns: 1fr;
             }
-
             .btn {
                 padding: 8px 12px;
                 font-size: 11px;
             }
-
             .modal-content {
                 padding: 15px;
             }
@@ -783,7 +670,6 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="header-title">
             <img src="ANH.png" alt="DPGNotes Logo" style="width:30px; height:30px; border-radius:8px; object-fit:contain; box-shadow:0 0 10px rgba(0,212,255,0.4);">
@@ -798,71 +684,52 @@
             </div>
         </div>
     </div>
-
-    <!-- Top Header Native Ad Banner -->
     <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="max-width:1100px; margin:76px auto 0.6rem auto; padding:0 10px; box-sizing:border-box;"></div>
-
-    <!-- Main Container -->
     <div class="container">
         <div class="main-content">
-            <!-- Left Panel: Form -->
             <div class="left-panel">
                 <div id="messagesContainer"></div>
-
-                <!-- Metadata Section -->
                 <div class="form-section">
                     <div class="section-title">📋 Paper Metadata</div>
-                    
                     <div class="form-group">
                         <label for="paperID">Paper ID *</label>
                         <input type="text" id="paperID" placeholder="e.g., ANH-SEM1-CS101" required>
                     </div>
-
                     <div class="form-group">
                         <label for="paperName">Paper Name *</label>
                         <input type="text" id="paperName" placeholder="e.g., Data Structures" required>
                     </div>
-
                     <div class="form-group">
                         <label for="subjectName">Subject Name *</label>
                         <input type="text" id="subjectName" placeholder="e.g., Computer Science" required>
                     </div>
-
                     <div class="form-group">
                         <label for="subjectCode">Subject Code *</label>
                         <input type="text" id="subjectCode" placeholder="e.g., CS101" required>
                     </div>
-
                     <div class="form-group">
                         <label for="copyrightValue">Copyright Notice *</label>
                         <input type="text" id="copyrightValue" placeholder="e.g., © 2026 Akshat Network Hub" required>
                     </div>
-
                     <div class="form-group">
                         <label for="referenceLink">Reference Link *</label>
                         <input type="url" id="referenceLink" placeholder="https://example.com" required>
                     </div>
-
                     <div class="form-group">
                         <label for="anhSiteUrl">ANH Site URL *</label>
                         <input type="url" id="anhSiteUrl" value="https://akshat-881236.github.io/" required>
                     </div>
-
                     <div class="form-group">
                         <label for="anhLogoUpload">ANH Logo (Optional)</label>
                         <input type="file" id="anhLogoUpload" accept="image/*">
                     </div>
                 </div>
-
-                <!-- Pages Configuration -->
                 <div class="form-section">
                     <div class="section-title">📄 Pages Configuration</div>
-                    
                     <div class="form-group">
                         <label for="totalPages">Total Number of Pages *</label>
                         <input type="number" id="totalPages" min="1" max="500" placeholder="e.g., 15" required>
                     </div>
-
                     <div class="form-group">
                         <label for="orientation">Page Orientation</label>
                         <select id="orientation">
@@ -871,7 +738,6 @@
                             <option value="landscape">Landscape (A4)</option>
                         </select>
                     </div>
-
                     <div class="progress-container" id="progressContainer">
                         <div class="progress-label">
                             <span>Generating PDF...</span>
@@ -881,21 +747,16 @@
                             <div class="progress-fill" id="progressFill"></div>
                         </div>
                     </div>
-
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="generatePages()">🔄 Generate Pages</button>
                         <button class="btn btn-success" onclick="generatePDF()" id="generatePdfBtn" disabled>✓ Generate PDF</button>
                     </div>
                 </div>
-
-                <!-- Pages Upload Area -->
                 <div class="form-section">
                     <div class="section-title">📸 Upload Pages</div>
                     <div class="pages-grid" id="pagesGrid"></div>
                 </div>
             </div>
-
-            <!-- Right Panel: Preview -->
             <div class="right-panel">
                 <div class="preview-container">
                     <div class="preview-header">
@@ -920,22 +781,11 @@
             </div>
         </div>
     </div>
-
-    <!-- Scripts: External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-    <!-- Main Application Script -->
     <script>
-        // ============================================
-        // ANH ADVANCED IMAGE TO PDF CONVERTER
-        // Production-Ready Single File Application
-        // FIXED: Base64 Image Handling
-        // ============================================
-
-        // Global State Management
         const state = {
             metadata: {
                 paperID: '',
@@ -954,11 +804,6 @@
             totalPages: 0,
             trackingID: generateUUID()
         };
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-
         /**
          * Generate UUID for PDF tracking
          */
@@ -969,14 +814,12 @@
                 return v.toString(16);
             });
         }
-
         /**
          * Get current ISO timestamp
          */
         function getCurrentTimestamp() {
             return new Date().toISOString();
         }
-
         /**
          * Get current date-time string for filename
          */
@@ -990,7 +833,6 @@
             const seconds = String(now.getSeconds()).padStart(2, '0');
             return `${year}${month}${day}_${hours}${minutes}${seconds}`;
         }
-
         /**
          * Show message to user
          */
@@ -998,25 +840,20 @@
             const container = document.getElementById('messagesContainer');
             const msgElement = document.createElement('div');
             msgElement.className = `message ${type}`;
-            
             const iconMap = {
                 success: '✓',
                 error: '✕',
                 info: 'ℹ'
             };
-            
             msgElement.innerHTML = `<span>${iconMap[type]}</span><span>${message}</span>`;
             container.appendChild(msgElement);
-            
             setTimeout(() => msgElement.remove(), 5000);
         }
-
         /**
          * Validate metadata form
          */
         function validateMetadata() {
             const required = ['paperID', 'paperName', 'subjectName', 'subjectCode', 'copyrightValue', 'referenceLink'];
-            
             for (const field of required) {
                 const value = document.getElementById(field).value.trim();
                 if (!value) {
@@ -1024,10 +861,8 @@
                     return false;
                 }
             }
-            
             return true;
         }
-
         /**
          * Update metadata from form
          */
@@ -1040,32 +875,24 @@
             state.metadata.referenceLink = document.getElementById('referenceLink').value.trim();
             state.metadata.anhSiteUrl = document.getElementById('anhSiteUrl').value.trim();
         }
-
         /**
          * Convert base64 data URL to Uint8Array
          * FIXED: Properly handle base64 images without fetch()
          */
         function base64ToUint8Array(base64String) {
             try {
-                // Extract base64 part from data URL
                 const base64 = base64String.split(',')[1] || base64String;
-                
-                // Decode base64 to binary string
                 const binaryString = atob(base64);
-                
-                // Convert binary string to Uint8Array
                 const bytes = new Uint8Array(binaryString.length);
                 for (let i = 0; i < binaryString.length; i++) {
                     bytes[i] = binaryString.charCodeAt(i);
                 }
-                
                 return bytes;
             } catch (error) {
                 console.error('Error converting base64:', error);
                 throw new Error('Failed to process image data');
             }
         }
-
         /**
          * Detect image type from base64
          */
@@ -1077,7 +904,6 @@
             }
             return 'jpg'; // Default
         }
-
         /**
          * Detect image orientation
          */
@@ -1098,7 +924,6 @@
                 reader.readAsDataURL(file);
             });
         }
-
         /**
          * Compress image for better performance
          */
@@ -1115,28 +940,19 @@
             }
             return canvas.toDataURL('image/jpeg', quality);
         }
-
-        // ============================================
-        // PAGE MANAGEMENT
-        // ============================================
-
         /**
          * Generate page upload cards
          */
         function generatePages() {
             const totalPages = parseInt(document.getElementById('totalPages').value);
-            
             if (!totalPages || totalPages < 1 || totalPages > 500) {
                 showMessage('Please enter a valid number of pages (1-500)', 'error');
                 return;
             }
-
             state.totalPages = totalPages;
             state.pages = new Array(totalPages).fill(null);
-
             const grid = document.getElementById('pagesGrid');
             grid.innerHTML = '';
-
             for (let i = 0; i < totalPages; i++) {
                 const card = document.createElement('div');
                 card.className = 'page-upload-card';
@@ -1146,7 +962,6 @@
                     <input type="file" id="input-${i}" accept="image/*" style="display: none;">
                     <div class="page-status" id="status-${i}">Click to upload</div>
                 `;
-                
                 card.addEventListener('click', () => document.getElementById(`input-${i}`).click());
                 card.addEventListener('dragover', (e) => {
                     e.preventDefault();
@@ -1163,30 +978,23 @@
                         handlePageUpload(i);
                     }
                 });
-
                 const input = card.querySelector(`#input-${i}`);
                 input.addEventListener('change', () => handlePageUpload(i));
-
                 grid.appendChild(card);
             }
-
             showMessage(`Generated ${totalPages} page upload cards`, 'info');
         }
-
         /**
          * Handle individual page upload
          */
         function handlePageUpload(pageIndex) {
             const input = document.getElementById(`input-${pageIndex}`);
             const file = input.files[0];
-
             if (!file) return;
-
             if (!file.type.startsWith('image/')) {
                 showMessage('Please upload an image file', 'error');
                 return;
             }
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
@@ -1196,30 +1004,22 @@
                     canvas.height = img.height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
-
                     const compressedData = compressImage(canvas);
                     state.pages[pageIndex] = compressedData;
-
-                    // Update UI
                     const preview = document.getElementById(`preview-${pageIndex}`);
                     preview.src = compressedData;
                     preview.style.display = 'block';
-
                     const card = preview.closest('.page-upload-card');
                     card.classList.add('filled');
-
                     const status = document.getElementById(`status-${pageIndex}`);
                     status.textContent = '✓ Ready';
                     status.classList.add('ready');
-
-                    // Enable PDF generation if all pages are filled
                     checkAllPagesReady();
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
-
         /**
          * Check if all pages are ready
          */
@@ -1227,11 +1027,6 @@
             const allReady = state.pages.every(page => page !== null);
             document.getElementById('generatePdfBtn').disabled = !allReady || state.totalPages === 0;
         }
-
-        // ============================================
-        // PDF GENERATION
-        // ============================================
-
         /**
          * Main PDF generation function
          */
@@ -1241,19 +1036,14 @@
                 showMessage('All pages must be uploaded', 'error');
                 return;
             }
-
             if (window.DpgUtilityQuota) {
                 const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('Image to PDF Converter');
                 if (!allowed) return;
             }
-
             updateMetadata();
-
             const progressContainer = document.getElementById('progressContainer');
             progressContainer.classList.add('active');
-
             try {
-                // Use PDF-LIB for advanced metadata support
                 const pdfDoc = await PDFLib.PDFDocument.create();
                 pdfDoc.setTitle(state.metadata.paperName);
                 pdfDoc.setSubject(state.metadata.subjectName);
@@ -1261,24 +1051,16 @@
                 pdfDoc.setAuthor('Akshat Network Hub');
                 pdfDoc.setCreator('ANH Advanced Image To PDF Converter');
                 pdfDoc.setProducer('Akshat Network Hub PDF Engine');
-
-                // Process each page
                 for (let i = 0; i < state.pages.length; i++) {
                     await addPageToPDF(pdfDoc, state.pages[i], i + 1, state.pages.length);
                     updateProgress((i + 1) / state.pages.length * 100);
                 }
-
-                // Add QR code on last page
                 await addQRCodeToLastPage(pdfDoc);
-                
                 pdfDoc.setTitle(state.metadata.paperName);
-
                 pdfDoc.setAuthor('Akshat Network Hub');
-
                 pdfDoc.setSubject(
                     `${state.metadata.subjectName} (${state.metadata.subjectCode})`
                 );
-
                 pdfDoc.setKeywords([
                     state.metadata.paperID,
                     state.metadata.subjectCode,
@@ -1286,25 +1068,18 @@
                     state.metadata.referenceLink,
                     state.trackingID
                 ]);
-
-                // Save PDF
                 const pdfBytes = await pdfDoc.save();
                 state.generatedPDF = pdfBytes;
-
                 progressContainer.classList.remove('active');
                 showMessage('PDF generated successfully!', 'success');
                 document.getElementById('downloadBtn').disabled = false;
-
-                // Display preview
                 await displayPDFPreview(pdfBytes);
-
             } catch (error) {
                 progressContainer.classList.remove('active');
                 showMessage(`Error generating PDF: ${error.message}`, 'error');
                 console.error('PDF Generation Error:', error);
             }
         }
-
         /**
          * Add page to PDF with metadata and watermarks
          * FIXED: Properly handle base64 images
@@ -1313,84 +1088,59 @@
             try {
                 const imageBytes = base64ToUint8Array(imageData);
                 const imageType = detectImageType(imageData);
-
                 let image;
-
                 if (imageType === 'png') {
                     image = await pdfDoc.embedPng(imageBytes);
                 } else {
                     image = await pdfDoc.embedJpg(imageBytes);
                 }
-
                 const orientation = document.getElementById('orientation').value;
-
                 let page;
                 let pageWidth;
                 let pageHeight;
-
                 const imgWidth = image.width;
                 const imgHeight = image.height;
                 const imgAspect = imgWidth / imgHeight;
-
                 if (orientation === 'portrait') {
-
                     pageWidth = 595;
                     pageHeight = 842;
                     page = pdfDoc.addPage([pageWidth, pageHeight]);
-
                 } else if (orientation === 'landscape') {
-
                     pageWidth = 842;
                     pageHeight = 595;
                     page = pdfDoc.addPage([pageWidth, pageHeight]);
-
                 } else {
-
-                    // AUTO MODE
-                    // Create page matching image dimensions
-
                     pageWidth = imgWidth;
                     pageHeight = imgHeight;
-
                     page = pdfDoc.addPage([
                         pageWidth,
                         pageHeight
                     ]);
                 }
-
                 const pageAspect = pageWidth / pageHeight;
-
                 let drawWidth;
                 let drawHeight;
-
                 if (imgAspect > pageAspect) {
-
                     drawWidth = pageWidth;
                     drawHeight = pageWidth / imgAspect;
-
                 } else {
-
                     drawHeight = pageHeight;
                     drawWidth = pageHeight * imgAspect;
                 }
-
                 const x = (pageWidth - drawWidth) / 2;
                 const y = (pageHeight - drawHeight) / 2;
-
                 page.drawImage(image, {
                     x,
                     y,
                     width: drawWidth,
                     height: drawHeight
                 });
-
                 await drawLogo(
                     pdfDoc,
                     page,
                     pageWidth,
                     pageHeight
                 );
-
                 addWatermark(page, pageWidth, pageHeight);
                 addBordersWithLink(page, pageWidth, pageHeight);
                 addPageMetadata(
@@ -1400,18 +1150,15 @@
                     pageNumber,
                     totalPages
                 );
-
             } catch (error) {
                 console.error(error);
                 throw error;
             }
         }
-
         /**
          * Add watermark to page
          */
         function addWatermark(page, width, height) {
-
             page.drawText(
                 'DPGNotes • Akshat Network Hub',
                 {
@@ -1428,7 +1175,6 @@
                 }
             );
         }
-
         /**
          * Add borders with reference link
          */
@@ -1437,8 +1183,6 @@
             const borderSize = 20;
             const fontSize = 8;
             const textColor = PDFLib.rgb(0.6, 0.6, 0.6);
-
-            // Top border
             const topText = link + ' • ' + link + ' • ' + link;
             page.drawText(topText, {
                 x: borderSize,
@@ -1447,8 +1191,6 @@
                 color: textColor,
                 opacity: 0.5
             });
-
-            // Bottom border
             page.drawText(topText, {
                 x: borderSize,
                 y: borderSize - 5,
@@ -1456,8 +1198,6 @@
                 color: textColor,
                 opacity: 0.5
             });
-
-            // Left border (rotated)
             page.drawText(link, {
                 x: borderSize - 10,
                 y: height / 2 - 50,
@@ -1466,8 +1206,6 @@
                 opacity: 0.5,
                 rotate: PDFLib.degrees(90)
             });
-
-            // Right border (rotated)
             page.drawText(link, {
                 x: width - borderSize + 5,
                 y: height / 2 - 50,
@@ -1477,7 +1215,6 @@
                 rotate: PDFLib.degrees(90)
             });
         }
-
         /**
          * Add page metadata
          */
@@ -1485,8 +1222,6 @@
             const fontSize = 9;
             const textColor = PDFLib.rgb(0.4, 0.4, 0.4);
             const margin = 10;
-
-            // Top left: Copyright
             page.drawText('© Akshat Network Hub', {
                 x: margin,
                 y: height - margin - 10,
@@ -1494,8 +1229,6 @@
                 color: textColor,
                 opacity: 0.7
             });
-
-            // Top right: Paper ID
             page.drawText(state.metadata.paperID, {
                 x: width - margin - 80,
                 y: height - margin - 10,
@@ -1503,8 +1236,6 @@
                 color: textColor,
                 opacity: 0.7
             });
-
-            // Bottom left: Reference Link
             page.drawText(state.metadata.referenceLink.substring(0, 40), {
                 x: margin,
                 y: margin,
@@ -1512,8 +1243,6 @@
                 color: textColor,
                 opacity: 0.7
             });
-
-            // Bottom right: Page number
             page.drawText(`Page ${pageNumber} of ${totalPages}`, {
                 x: width - margin - 60,
                 y: margin,
@@ -1522,7 +1251,6 @@
                 opacity: 0.7
             });
         }
-
         /**
          * Add QR code to last page
          */
@@ -1533,8 +1261,6 @@
             pdfDoc.getPageCount() - 1
             );
             const { width, height } = lastPage.getSize();
-
-            // Generate QR code data
             const qrData = JSON.stringify({
                 PaperID: state.metadata.paperID,
                 SubjectCode: state.metadata.subjectCode,
@@ -1543,13 +1269,10 @@
                 ReferenceLink: state.metadata.referenceLink,
                 TrackingID: state.trackingID
             });
-
-            // Create QR code canvas
             const qrContainer = document.createElement('div');
             qrContainer.style.position = 'absolute';
             qrContainer.style.left = '-9999px';
             document.body.appendChild(qrContainer);
-
             const qr = new QRCode(qrContainer, {
                 text: qrData,
                 width: 200,
@@ -1563,26 +1286,20 @@
             const qrDataUrl = qrCanvas.toDataURL('image/png');
             const qrBytes = base64ToUint8Array(qrDataUrl);
             const qrImage = await pdfDoc.embedPng(qrBytes);
-
-            // Draw QR code on last page
             lastPage.drawImage(qrImage, {
                 x: width - 120,
                 y: 30,
                 width: 100,
                 height: 100
             });
-
-            // Label
             lastPage.drawText('Scan QR', {
                 x: width - 120,
                 y: 20,
                 size: 8,
                 color: PDFLib.rgb(0.4, 0.4, 0.4)
             });
-
             document.body.removeChild(qrContainer);
         }
-
         /**
          * Update progress bar
          */
@@ -1592,63 +1309,45 @@
             progressFill.style.width = percent + '%';
             progressPercent.textContent = Math.round(percent) + '%';
         }
-
-        // ============================================
-        // PDF PREVIEW
-        // ============================================
-
         /**
          * Display PDF preview
          */
         async function displayPDFPreview(pdfBytes) {
             const blobUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
-            
-            // Set up PDF.js worker
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
             const pdf = await pdfjsLib.getDocument(blobUrl).promise;
             state.currentPDFDoc = pdf;
-
-            // Display first page
             displayPDFPage(1);
         }
-
         /**
          * Display specific PDF page
          */
         async function displayPDFPage(pageNum) {
             const pdf = state.currentPDFDoc;
             if (!pdf || pageNum < 1 || pageNum > pdf.numPages) return;
-
             try {
                 const page = await pdf.getPage(pageNum);
                 const viewport = page.getViewport({
                     scale: state.currentScale || 1
                 });
-
                 const canvas = document.getElementById('pdfCanvas') || document.createElement('canvas');
                 canvas.id = 'pdfCanvas';
                 canvas.width = Math.max(1, viewport.width);
                 canvas.height = Math.max(1, viewport.height);
-
                 const context = canvas.getContext('2d');
                 await page.render({
                     canvasContext: context,
                     viewport: viewport
                 }).promise;
-
                 const viewer = document.getElementById('pdfViewer');
                 viewer.innerHTML = '';
                 viewer.appendChild(canvas);
-
                 document.getElementById('previewPageInfo').textContent = 
                     `Page ${pageNum} of ${pdf.numPages}`;
-
             } catch (error) {
                 console.error('Error displaying PDF page:', error);
             }
         }
-
         /**
          * Zoom PDF
          */
@@ -1658,7 +1357,6 @@
             state.currentScale = Math.max(0.5, Math.min(3, state.currentScale));
             displayPDFPage(parseInt(document.getElementById('previewPageInfo').textContent.split(' ')[1]) || 1);
         }
-
         /**
          * Reset zoom
          */
@@ -1668,11 +1366,6 @@
                 displayPDFPage(1);
             }
         }
-
-        // ============================================
-        // PDF DOWNLOAD
-        // ============================================
-
         /**
          * Download generated PDF
          */
@@ -1681,7 +1374,6 @@
                 showMessage('No PDF to download', 'error');
                 return;
             }
-
             const filename = `${state.metadata.paperID}_${state.metadata.subjectCode}_${getDateTimeString()}.pdf`;
             const blob = new Blob([state.generatedPDF], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
@@ -1693,92 +1385,62 @@
             link.click();
             document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(url), 40000);
-
             showMessage(`PDF downloaded as ${filename}`, 'success');
         }
-
-        // ============================================
-        // MODAL MANAGEMENT
-        // ============================================
-
         /**
          * Close page modal
          */
         function closePageModal() {
             document.getElementById('pageModal').classList.remove('active');
         }
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('anhLogoUpload')
                 .addEventListener('change', handleLogoUpload);
             showMessage('ANH PDF Converter ready. All processing is offline and local.', 'info');
         });
-
         function handleLogoUpload(event) {
-
             const file = event.target.files[0];
-
             if (!file) return;
-
             const reader = new FileReader();
-
             reader.onload = function(e) {
-
                 state.metadata.anhLogo = {
                     data: e.target.result,
                     type: file.type
                 };
-
                 showMessage(
                     'ANH Logo loaded successfully',
                     'success'
                 );
             };
-
             reader.readAsDataURL(file);
         }
-
         async function drawLogo(
     pdfDoc,
     page,
     pageWidth,
     pageHeight
 ) {
-
     if (!state.metadata.anhLogo) return;
-
     try {
-
         const logoBytes =
             base64ToUint8Array(
                 state.metadata.anhLogo.data
             );
-
         let logoImage;
-
         if (
             state.metadata.anhLogo.type.includes('png')
         ) {
-
             logoImage =
                 await pdfDoc.embedPng(
                     logoBytes
                 );
-
         } else {
-
             logoImage =
                 await pdfDoc.embedJpg(
                     logoBytes
                 );
         }
-
         const logoSize = 40;
-
         page.drawImage(
             logoImage,
             {
@@ -1788,18 +1450,13 @@
                 height: logoSize
             }
         );
-
     } catch (error) {
-
         console.error(
             'Logo drawing failed:',
             error
         );
     }
 }
-
-
-
         document.addEventListener('DOMContentLoaded', () => {
             const pill = document.getElementById("userHeaderPillConverter");
             if (pill) {
@@ -1814,8 +1471,6 @@
                 setTimeout(window.renderNativeDPGAds, 350);
             }
         });
-
-        // Prevent accidental navigation
         window.addEventListener('beforeunload', (e) => {
             if (state.generatedPDF) {
                 e.preventDefault();
@@ -1823,8 +1478,6 @@
             }
         });
     </script>
-
-    <!-- Bottom Footer Native Sponsored Ad Banner -->
     <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1100px; margin:2rem auto 1rem auto; padding:0 10px; box-sizing:border-box;"></div>
 </body>
 </html>

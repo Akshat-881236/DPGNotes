@@ -30,19 +30,16 @@
     <link rel="manifest" href="/manifest.json">
     <script src="/pwa.js" defer></script>
     <title>ANH Advanced PDF Meta Analyzer - PDF Metadata Extraction & Validation</title>
-
     <script src="config.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
     <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         :root {
             --bg-primary: #101010;
             --bg-secondary: #1B1B1B;
@@ -56,7 +53,6 @@
             --border-radius: 15px;
             --transition: 0.3s ease;
         }
-
         html, body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-primary);
@@ -65,13 +61,11 @@
             overflow-y: auto;
             overflow-x: hidden;
         }
-
         .glass {
             background: rgba(27, 27, 27, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 212, 255, 0.1);
         }
-
         .container {
             display: flex;
             min-height: calc(100vh - 80px);
@@ -79,7 +73,6 @@
             flex-direction: column;
             overflow: visible;
         }
-
         .header {
             height: 70px;
             background: var(--bg-secondary);
@@ -90,7 +83,6 @@
             padding: 0 30px;
             box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
         }
-
         .header-title {
             font-size: 24px;
             font-weight: 700;
@@ -99,7 +91,6 @@
             align-items: center;
             gap: 10px;
         }
-
         .logo-icon {
             width: 30px;
             height: 30px;
@@ -111,7 +102,6 @@
             font-weight: bold;
             font-size: 16px;
         }
-
         .header-info {
             display: flex;
             gap: 20px;
@@ -119,8 +109,6 @@
             font-size: 13px;
             color: var(--text-secondary);
         }
-
-        /* Mobile & Tablet Header Media Optimization */
         @media (max-width: 768px) {
             .header {
                 height: auto;
@@ -151,7 +139,6 @@
                 margin-right: 2px !important;
             }
         }
-
         .status-dot {
             width: 10px;
             height: 10px;
@@ -159,18 +146,15 @@
             background: var(--accent-secondary);
             animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-
         .main-content {
             flex: 1;
             display: flex;
             overflow: hidden;
         }
-
         .upload-panel {
             width: 350px;
             background: var(--bg-secondary);
@@ -181,7 +165,6 @@
             flex-direction: column;
             gap: 15px;
         }
-
         .upload-zone {
             border: 2px dashed rgba(0, 212, 255, 0.3);
             border-radius: var(--border-radius);
@@ -190,31 +173,25 @@
             cursor: pointer;
             transition: all var(--transition);
         }
-
         .upload-zone:hover {
             border-color: var(--accent-primary);
             background: rgba(0, 212, 255, 0.05);
         }
-
         .upload-zone.dragover {
             border-color: var(--accent-primary);
             background: rgba(0, 212, 255, 0.1);
         }
-
         .upload-icon {
             font-size: 40px;
             margin-bottom: 10px;
         }
-
         .upload-text {
             font-size: 13px;
             color: var(--text-secondary);
         }
-
         #pdfInput {
             display: none;
         }
-
         .analysis-results {
             flex: 1;
             overflow-y: auto;
@@ -222,14 +199,12 @@
             flex-direction: column;
             gap: 10px;
         }
-
         .content-area {
             flex: 1;
             overflow-y: auto;
             padding: 30px;
             background: var(--bg-primary);
         }
-
         .tabs {
             display: flex;
             gap: 10px;
@@ -237,7 +212,6 @@
             border-bottom: 1px solid rgba(0, 212, 255, 0.1);
             overflow-x: auto;
         }
-
         .tab-btn {
             padding: 10px 20px;
             background: none;
@@ -250,24 +224,19 @@
             transition: all var(--transition);
             white-space: nowrap;
         }
-
         .tab-btn:hover {
             color: var(--accent-primary);
         }
-
         .tab-btn.active {
             color: var(--accent-primary);
             border-bottom-color: var(--accent-primary);
         }
-
         .tab-content {
             display: none;
         }
-
         .tab-content.active {
             display: block;
         }
-
         .section {
             background: var(--bg-secondary);
             border-radius: var(--border-radius);
@@ -276,7 +245,6 @@
             border: 1px solid rgba(0, 212, 255, 0.1);
             transition: all var(--transition);
         }
-
         .section-title {
             font-size: 16px;
             font-weight: 600;
@@ -286,20 +254,17 @@
             align-items: center;
             gap: 8px;
         }
-
         .metadata-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 15px;
         }
-
         .metadata-item {
             background: rgba(0, 212, 255, 0.05);
             border: 1px solid rgba(0, 212, 255, 0.1);
             border-radius: 8px;
             padding: 12px;
         }
-
         .metadata-label {
             font-size: 12px;
             color: var(--accent-primary);
@@ -308,25 +273,21 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .metadata-value {
             font-size: 13px;
             color: var(--text-primary);
             word-break: break-all;
             font-family: 'Courier New', monospace;
         }
-
         .metadata-value.empty {
             color: var(--text-secondary);
             font-style: italic;
         }
-
         .validation-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-
         .validation-item {
             display: flex;
             align-items: center;
@@ -337,26 +298,21 @@
             background: rgba(0, 0, 0, 0.2);
             border-left: 3px solid;
         }
-
         .validation-item.pass {
             border-left-color: var(--success);
             color: var(--success);
         }
-
         .validation-item.fail {
             border-left-color: var(--error);
             color: var(--error);
         }
-
         .validation-item.warning {
             border-left-color: var(--warning);
             color: var(--warning);
         }
-
         .validation-icon {
             font-size: 16px;
         }
-
         .json-viewer {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
@@ -367,19 +323,15 @@
             max-height: 400px;
             overflow-y: auto;
         }
-
         .json-key {
             color: var(--accent-primary);
         }
-
         .json-value {
             color: var(--accent-secondary);
         }
-
         .json-string {
             color: #FF9999;
         }
-
         .stat-box {
             background: rgba(0, 212, 255, 0.05);
             border: 1px solid rgba(0, 212, 255, 0.2);
@@ -387,20 +339,17 @@
             padding: 15px;
             text-align: center;
         }
-
         .stat-value {
             font-size: 24px;
             font-weight: 700;
             color: var(--accent-primary);
             margin-bottom: 5px;
         }
-
         .stat-label {
             font-size: 12px;
             color: var(--text-secondary);
             text-transform: uppercase;
         }
-
         .btn {
             padding: 10px 20px;
             border: none;
@@ -414,32 +363,26 @@
             gap: 6px;
             white-space: nowrap;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-primary), #0099CC);
             color: var(--bg-primary);
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
         }
-
         .btn-secondary {
             background: rgba(0, 212, 255, 0.1);
             color: var(--accent-primary);
             border: 1px solid var(--accent-primary);
         }
-
         .btn-secondary:hover {
             background: rgba(0, 212, 255, 0.2);
         }
-
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-
         .message {
             padding: 12px 15px;
             border-radius: 8px;
@@ -449,7 +392,6 @@
             gap: 8px;
             animation: slideIn 0.3s ease;
         }
-
         @keyframes slideIn {
             from {
                 transform: translateX(-20px);
@@ -460,25 +402,21 @@
                 opacity: 1;
             }
         }
-
         .message.success {
             background: rgba(0, 255, 153, 0.1);
             color: var(--accent-secondary);
             border: 1px solid var(--accent-secondary);
         }
-
         .message.error {
             background: rgba(255, 68, 68, 0.1);
             color: var(--error);
             border: 1px solid var(--error);
         }
-
         .message.info {
             background: rgba(0, 212, 255, 0.1);
             color: var(--accent-primary);
             border: 1px solid var(--accent-primary);
         }
-
         .spinner {
             width: 20px;
             height: 20px;
@@ -487,11 +425,9 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
         .modal {
             display: none;
             position: fixed;
@@ -505,11 +441,9 @@
             justify-content: center;
             backdrop-filter: blur(5px);
         }
-
         .modal.active {
             display: flex;
         }
-
         .modal-content {
             background: var(--bg-secondary);
             padding: 30px;
@@ -519,7 +453,6 @@
             overflow-y: auto;
             border: 1px solid rgba(0, 212, 255, 0.2);
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -528,13 +461,11 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.1);
         }
-
         .modal-title {
             font-size: 20px;
             font-weight: 600;
             color: var(--accent-primary);
         }
-
         .modal-close {
             background: none;
             border: none;
@@ -542,20 +473,17 @@
             font-size: 24px;
             cursor: pointer;
         }
-
         .export-options {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-
         .comparison-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
             margin-top: 10px;
         }
-
         .comparison-table th {
             background: rgba(0, 212, 255, 0.1);
             padding: 10px;
@@ -564,112 +492,88 @@
             font-weight: 600;
             border-bottom: 1px solid rgba(0, 212, 255, 0.2);
         }
-
         .comparison-table td {
             padding: 10px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.1);
         }
-
         .comparison-table tr:hover {
             background: rgba(0, 212, 255, 0.05);
         }
-
-        /* Responsive Design */
         @media (max-width: 1024px) {
             .main-content {
                 flex-direction: column;
             }
-
             .upload-panel {
                 width: 100%;
                 border-right: none;
                 border-bottom: 2px solid rgba(0, 212, 255, 0.1);
                 max-height: 200px;
             }
-
             .content-area {
                 flex: 1;
             }
-
             .metadata-grid {
                 grid-template-columns: 1fr;
             }
         }
-
         @media (max-width: 768px) {
             .header {
                 padding: 0 15px;
             }
-
             .header-title {
                 font-size: 18px;
             }
-
             .header-info {
                 display: none;
             }
-
             .content-area {
                 padding: 15px;
             }
-
             .section {
                 padding: 15px;
             }
-
             .modal-content {
                 max-width: 95%;
                 padding: 20px;
             }
         }
-
         @media (max-width: 425px) {
             .header {
                 height: 60px;
                 padding: 0 10px;
             }
-
             .header-title {
                 font-size: 16px;
             }
-
             .upload-zone {
                 padding: 20px;
             }
-
             .tabs {
                 gap: 5px;
             }
-
             .tab-btn {
                 padding: 8px 12px;
                 font-size: 12px;
             }
-
             .btn {
                 padding: 8px 12px;
                 font-size: 12px;
             }
-
             .stat-value {
                 font-size: 20px;
             }
         }
-
         @media (max-width: 320px) {
             .header-title {
                 font-size: 14px;
             }
-
             .upload-panel {
                 max-height: 150px;
             }
-
             .metadata-grid {
                 grid-template-columns: 1fr;
             }
         }
-
         .file-info {
             background: rgba(0, 212, 255, 0.05);
             border: 1px solid rgba(0, 212, 255, 0.2);
@@ -678,18 +582,15 @@
             margin-bottom: 15px;
             font-size: 12px;
         }
-
         .file-name {
             color: var(--accent-primary);
             font-weight: 600;
             word-break: break-all;
         }
-
         .file-size {
             color: var(--text-secondary);
             margin-top: 5px;
         }
-
         .loading-spinner {
             display: flex;
             justify-content: center;
@@ -697,21 +598,18 @@
             gap: 10px;
             padding: 20px;
         }
-
         .chart-container {
             background: rgba(0, 0, 0, 0.2);
             border-radius: 8px;
             padding: 15px;
             margin-top: 10px;
         }
-
         .bar-chart {
             display: flex;
             align-items: flex-end;
             gap: 5px;
             height: 100px;
         }
-
         .bar {
             flex: 1;
             background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
@@ -719,7 +617,6 @@
             min-height: 10px;
             position: relative;
         }
-
         .bar-label {
             position: absolute;
             bottom: -20px;
@@ -733,7 +630,6 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="header-title">
             <img src="ANH.png" alt="DPGNotes Logo" style="width:30px; height:30px; border-radius:8px; object-fit:contain; box-shadow:0 0 10px rgba(0,212,255,0.4);">
@@ -745,14 +641,9 @@
             <div class="status-dot"></div>
         </div>
     </div>
-
-    <!-- Top Header Native Ad Banner -->
     <div class="native-ads" data-ad-variant="header" data-ad-count="1" style="max-width:1100px; margin:76px auto 0.6rem auto; padding:0 10px; box-sizing:border-box;"></div>
-
-    <!-- Main Container -->
     <div class="container">
         <div class="main-content">
-            <!-- Upload Panel -->
             <div class="upload-panel">
                 <div class="upload-zone" id="uploadZone">
                     <div class="upload-icon">📄</div>
@@ -761,30 +652,21 @@
                         <small>Drop your PDF here to analyze</small>
                     </div>
                 </div>
-
                 <input type="file" id="pdfInput" accept=".pdf" />
-
                 <div id="fileInfo" class="file-info" style="display: none;"></div>
-
                 <div id="messagesPanel"></div>
-
                 <div class="analysis-results" id="analysisResults"></div>
-
                 <button class="btn btn-secondary" onclick="clearAnalysis()" id="clearBtn" disabled>
                     🗑 Clear Analysis
                 </button>
             </div>
-
-            <!-- Content Area -->
             <div class="content-area">
                 <div id="emptyState" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
                     <div style="font-size: 60px; margin-bottom: 20px;">📊</div>
                     <div style="font-size: 16px; margin-bottom: 10px;">No PDF Loaded</div>
                     <div style="font-size: 13px;">Upload a PDF file to begin analysis</div>
                 </div>
-
                 <div id="analysisContainer" style="display: none;">
-                    <!-- Tabs -->
                     <div class="tabs">
                         <button class="tab-btn active" onclick="switchTab('overview')">📋 Overview</button>
                         <button class="tab-btn" onclick="switchTab('metadata')">🏷️ Metadata</button>
@@ -794,8 +676,6 @@
                         <button class="tab-btn" onclick="switchTab('anh')">🌐 ANH Data</button>
                         <button class="tab-btn" onclick="switchTab('raw')">{'}'} Raw JSON</button>
                     </div>
-
-                    <!-- Overview Tab -->
                     <div id="overview" class="tab-content active">
                         <div class="section">
                             <div class="section-title">📊 Document Statistics</div>
@@ -818,48 +698,38 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">✓ Quick Validation</div>
                             <div class="validation-list" id="quickValidation"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">📝 Document Info Summary</div>
                             <div class="metadata-grid" id="summaryGrid"></div>
                         </div>
                     </div>
-
-                    <!-- Metadata Tab -->
                     <div id="metadata" class="tab-content">
                         <div class="section">
                             <div class="section-title">📋 Standard Metadata</div>
                             <div class="metadata-grid" id="standardMetadata"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">🔗 Custom Metadata</div>
                             <div class="metadata-grid" id="customMetadata"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">📄 XMP Metadata</div>
                             <div class="json-viewer" id="xmpViewer"></div>
                         </div>
                     </div>
-
-                    <!-- Validation Tab -->
                     <div id="validation" class="tab-content">
                         <div class="section">
                             <div class="section-title">✓ Comprehensive Validation Report</div>
                             <div class="validation-list" id="validationList"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">🎯 Compliance Checklist</div>
                             <div class="validation-list" id="complianceList"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">⚠️ Issues & Warnings</div>
                             <div id="issuesWarnings" style="font-size: 13px; color: var(--text-secondary); padding: 20px; text-align: center;">
@@ -867,8 +737,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Structure Tab -->
                     <div id="structure" class="tab-content">
                         <div class="section">
                             <div class="section-title">📑 PDF Structure Analysis</div>
@@ -880,55 +748,43 @@
                                 <tbody id="structureTable"></tbody>
                             </table>
                         </div>
-
                         <div class="section">
                             <div class="section-title">🎨 Rendering Properties</div>
                             <div class="metadata-grid" id="renderingProps"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">🔍 Page Analysis</div>
                             <div class="metadata-grid" id="pageAnalysis"></div>
                         </div>
                     </div>
-
-                    <!-- Security Tab -->
                     <div id="security" class="tab-content">
                         <div class="section">
                             <div class="section-title">🔒 Security Analysis</div>
                             <div class="validation-list" id="securityList"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">🛡️ Encryption Status</div>
                             <div class="metadata-grid" id="encryptionStatus"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">📋 Permissions</div>
                             <div class="metadata-grid" id="permissionsGrid"></div>
                         </div>
                     </div>
-
-                    <!-- ANH Data Tab -->
                     <div id="anh" class="tab-content">
                         <div class="section">
                             <div class="section-title">🌐 ANH Internal Metadata</div>
                             <div class="metadata-grid" id="anhMetadata"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">📊 ANH Verification Report</div>
                             <div class="validation-list" id="anhVerification"></div>
                         </div>
-
                         <div class="section">
                             <div class="section-title">🎯 ANH Compliance</div>
                             <div class="metadata-grid" id="anhCompliance"></div>
                         </div>
                     </div>
-
-                    <!-- Raw JSON Tab -->
                     <div id="raw" class="tab-content">
                         <div class="section">
                             <div class="section-title">{'}'} Complete PDF Metadata (JSON)</div>
@@ -943,28 +799,14 @@
             </div>
         </div>
     </div>
-
-    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
     <script>
-        // ============================================
-        // ANH ADVANCED PDF META ANALYZER
-        // Comprehensive PDF Metadata Extraction & Analysis
-        // ============================================
-
-        // Global State
         const analyzer = {
             pdfDoc: null,
             analysisData: null,
             currentFile: null,
             currentScale: 1
         };
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-
         /**
          * Show message to user
          */
@@ -972,20 +814,16 @@
             const container = document.getElementById('messagesPanel');
             const msgElement = document.createElement('div');
             msgElement.className = `message ${type}`;
-            
             const iconMap = {
                 success: '✓',
                 error: '✕',
                 info: 'ℹ',
                 warning: '⚠'
             };
-            
             msgElement.innerHTML = `<span>${iconMap[type]}</span><span>${message}</span>`;
             container.appendChild(msgElement);
-            
             setTimeout(() => msgElement.remove(), 5000);
         }
-
         /**
          * Format file size
          */
@@ -996,7 +834,6 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-
         /**
          * Format date
          */
@@ -1008,7 +845,6 @@
                 return dateString;
             }
         }
-
         /**
          * Escape HTML
          */
@@ -1023,14 +859,12 @@
             };
             return text.replace(/[&<>"']/g, m => map[m]);
         }
-
         /**
          * Create metadata item HTML
          */
         function createMetadataItem(label, value, isCopy = false) {
             const displayValue = value || 'Not available';
             const isEmpty = !value;
-            
             return `
                 <div class="metadata-item">
                     <div class="metadata-label">${label}</div>
@@ -1040,7 +874,6 @@
                 </div>
             `;
         }
-
         /**
          * Create validation item HTML
          */
@@ -1050,7 +883,6 @@
                 fail: { icon: '✕', class: 'fail' },
                 warning: { icon: '⚠', class: 'warning' }
             };
-            
             const s = statusMap[status] || statusMap.warning;
             return `
                 <div class="validation-item ${s.class}">
@@ -1059,33 +891,23 @@
                 </div>
             `;
         }
-
-        // ============================================
-        // FILE UPLOAD HANDLING
-        // ============================================
-
         /**
          * Setup upload zone
          */
         function setupUploadZone() {
             const uploadZone = document.getElementById('uploadZone');
             const pdfInput = document.getElementById('pdfInput');
-
             uploadZone.addEventListener('click', () => pdfInput.click());
-
             uploadZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadZone.classList.add('dragover');
             });
-
             uploadZone.addEventListener('dragleave', () => {
                 uploadZone.classList.remove('dragover');
             });
-
             uploadZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 uploadZone.classList.remove('dragover');
-                
                 if (e.dataTransfer.files.length > 0) {
                     const file = e.dataTransfer.files[0];
                     if (file.type === 'application/pdf') {
@@ -1095,14 +917,12 @@
                     }
                 }
             });
-
             pdfInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
                     handlePDFUpload(e.target.files[0]);
                 }
             });
         }
-
         /**
          * Handle PDF upload
          */
@@ -1111,7 +931,6 @@
                 showMessage('Invalid file type. Please upload a PDF.', 'error');
                 return;
             }
-
             if (window.DpgUtilityQuota) {
                 const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('PDF Meta Analyzer');
                 if (!allowed) {
@@ -1120,42 +939,28 @@
                     return;
                 }
             }
-
             analyzer.currentFile = file;
-
-            // Show file info
             const fileInfo = document.getElementById('fileInfo');
             fileInfo.innerHTML = `
                 <div class="file-name">📄 ${escapeHtml(file.name)}</div>
                 <div class="file-size">📊 ${formatFileSize(file.size)}</div>
             `;
             fileInfo.style.display = 'block';
-
-            // Start analysis
             showMessage('Analyzing PDF...', 'info');
             await analyzePDF(file);
         }
-
-        // ============================================
-        // PDF ANALYSIS
-        // ============================================
-
         /**
          * Main PDF analysis function
          */
         async function analyzePDF(file) {
             try {
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
                 analyzer.pdfDoc = pdf;
-
-                // Extract metadata
                 const metadata = await pdf.getMetadata();
                 const info = metadata.info || {};
                 const params = metadata.parameters || {};
-
                 analyzer.analysisData = {
                     file: {
                         name: file.name,
@@ -1170,12 +975,9 @@
                     metadata: info,
                     pages: []
                 };
-
-                // Analyze each page
                 for (let i = 1; i <= Math.min(pdf.numPages, 50); i++) {
                     const page = await pdf.getPage(i);
                     const viewport = page.getViewport({ scale: 1 });
-                    
                     analyzer.analysisData.pages.push({
                         number: i,
                         width: viewport.width,
@@ -1183,78 +985,43 @@
                         rotate: page.rotate
                     });
                 }
-
-                // Display analysis
                 displayAnalysis();
                 showMessage('PDF analysis complete!', 'success');
-
                 document.getElementById('emptyState').style.display = 'none';
                 document.getElementById('analysisContainer').style.display = 'block';
                 document.getElementById('clearBtn').disabled = false;
-
             } catch (error) {
                 showMessage(`Error analyzing PDF: ${error.message}`, 'error');
                 console.error('PDF Analysis Error:', error);
             }
         }
-
-        // ============================================
-        // DISPLAY ANALYSIS RESULTS
-        // ============================================
-
         /**
          * Display analysis results
          */
         function displayAnalysis() {
             const data = analyzer.analysisData;
-
-            // Update statistics
             document.getElementById('pageCount').textContent = data.pdf.numPages;
             document.getElementById('fileSizeMB').textContent = (data.file.size / (1024 * 1024)).toFixed(2);
             document.getElementById('creationTime').textContent = formatDate(data.metadata.CreationDate);
             document.getElementById('modificationTime').textContent = formatDate(data.metadata.ModDate);
-
-            // Quick validation
             displayQuickValidation(data);
-
-            // Summary
             displaySummary(data);
-
-            // Standard metadata
             displayStandardMetadata(data);
-
-            // Custom metadata
             displayCustomMetadata(data);
-
-            // XMP Metadata
             displayXMPMetadata(data);
-
-            // Validation
             displayValidation(data);
-
-            // Compliance
             displayCompliance(data);
-
-            // Structure
             displayStructure(data);
-
-            // Security
             displaySecurity(data);
-
-            // ANH Data
             displayANHData(data);
-
-            // Raw JSON
             displayRawJSON(data);
         }
-
         /**
          * Display quick validation
          */
         function displayQuickValidation(data) {
             const container = document.getElementById('quickValidation');
             container.innerHTML = '';
-
             const checks = [
                 {
                     label: 'Valid PDF Format',
@@ -1282,12 +1049,10 @@
                     message: data.metadata.Author || 'Missing'
                 }
             ];
-
             checks.forEach(check => {
                 container.innerHTML += createValidationItem(check.label, check.status, check.message);
             });
         }
-
         /**
          * Display summary
          */
@@ -1302,7 +1067,6 @@
                 ${createMetadataItem('Producer', data.metadata.Producer)}
             `;
         }
-
         /**
          * Display standard metadata
          */
@@ -1320,20 +1084,17 @@
                 ${createMetadataItem('Trapped', data.metadata.Trapped || 'N/A')}
             `;
         }
-
         /**
          * Display custom metadata
          */
         function displayCustomMetadata(data) {
             const container = document.getElementById('customMetadata');
             const custom = {};
-
             Object.entries(data.metadata).forEach(([key, value]) => {
                 if (!['Title', 'Author', 'Subject', 'Keywords', 'Creator', 'Producer', 'CreationDate', 'ModDate', 'Trapped'].includes(key)) {
                     custom[key] = value;
                 }
             });
-
             if (Object.keys(custom).length === 0) {
                 container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No custom metadata found</div>';
             } else {
@@ -1342,21 +1103,17 @@
                 ).join('');
             }
         }
-
         /**
          * Display XMP metadata
          */
         function displayXMPMetadata(data) {
             const container = document.getElementById('xmpViewer');
-            
-            // Extract ANH metadata if present
             const anhData = {};
             Object.entries(data.metadata).forEach(([key, value]) => {
                 if (key.startsWith('ANH_')) {
                     anhData[key] = value;
                 }
             });
-
             const xmpObj = {
                 'pdf:Creator': data.metadata.Creator,
                 'pdf:Producer': data.metadata.Producer,
@@ -1366,17 +1123,14 @@
                 'dc:subject': data.metadata.Keywords ? data.metadata.Keywords.split(', ') : [],
                 ...anhData
             };
-
             container.innerHTML = `<pre>${JSON.stringify(xmpObj, null, 2)}</pre>`;
         }
-
         /**
          * Display validation
          */
         function displayValidation(data) {
             const container = document.getElementById('validationList');
             container.innerHTML = '';
-
             const validations = [
                 {
                     label: 'PDF Structure',
@@ -1400,19 +1154,16 @@
                     status: data.metadata.Title && data.metadata.Author ? 'pass' : 'warning'
                 }
             ];
-
             validations.forEach(v => {
                 container.innerHTML += createValidationItem(v.label, v.status, v.message);
             });
         }
-
         /**
          * Display compliance
          */
         function displayCompliance(data) {
             const container = document.getElementById('complianceList');
             container.innerHTML = '';
-
             const checks = [
                 {
                     label: 'PDF/A Compatible',
@@ -1434,26 +1185,22 @@
                     message: 'Not found'
                 }
             ];
-
             checks.forEach(check => {
                 container.innerHTML += createValidationItem(check.label, check.status, check.message);
             });
         }
-
         /**
          * Display structure
          */
         function displayStructure(data) {
             const container = document.getElementById('structureTable');
             container.innerHTML = '';
-
             const structure = [
                 { prop: 'PDF Version', value: data.pdf.version },
                 { prop: 'Total Pages', value: data.pdf.numPages },
                 { prop: 'File Size', value: formatFileSize(data.file.size) },
                 { prop: 'Orientation', value: data.pages[0] ? (data.pages[0].width > data.pages[0].height ? 'Landscape' : 'Portrait') : 'N/A' }
             ];
-
             structure.forEach(item => {
                 container.innerHTML += `
                     <tr>
@@ -1462,21 +1209,16 @@
                     </tr>
                 `;
             });
-
-            // Rendering properties
             const renderContainer = document.getElementById('renderingProps');
             renderContainer.innerHTML = `
                 ${createMetadataItem('Default Zoom', 'Fit to Page')}
                 ${createMetadataItem('Page Layout', 'Single Page')}
                 ${createMetadataItem('Rendering Mode', 'Normal')}
             `;
-
-            // Page analysis
             const pageContainer = document.getElementById('pageAnalysis');
             if (data.pages.length > 0) {
                 const avgWidth = Math.round(data.pages.reduce((a, p) => a + p.width, 0) / data.pages.length);
                 const avgHeight = Math.round(data.pages.reduce((a, p) => a + p.height, 0) / data.pages.length);
-                
                 pageContainer.innerHTML = `
                     ${createMetadataItem('Average Page Width', `${avgWidth}px`)}
                     ${createMetadataItem('Average Page Height', `${avgHeight}px`)}
@@ -1484,14 +1226,12 @@
                 `;
             }
         }
-
         /**
          * Display security
          */
         function displaySecurity(data) {
             const secContainer = document.getElementById('securityList');
             secContainer.innerHTML = '';
-
             const securityChecks = [
                 {
                     label: 'Encryption',
@@ -1514,12 +1254,9 @@
                     message: 'Safe'
                 }
             ];
-
             securityChecks.forEach(check => {
                 secContainer.innerHTML += createValidationItem(check.label, check.status, check.message);
             });
-
-            // Encryption status
             const encContainer = document.getElementById('encryptionStatus');
             encContainer.innerHTML = `
                 ${createMetadataItem('Encryption Level', 'None')}
@@ -1527,8 +1264,6 @@
                 ${createMetadataItem('Owner Password', 'Not Set')}
                 ${createMetadataItem('Print Allowed', 'Yes')}
             `;
-
-            // Permissions
             const permContainer = document.getElementById('permissionsGrid');
             permContainer.innerHTML = `
                 ${createMetadataItem('Print', '✓ Allowed')}
@@ -1537,21 +1272,17 @@
                 ${createMetadataItem('Extract', '✓ Allowed')}
             `;
         }
-
         /**
          * Display ANH data
          */
         function displayANHData(data) {
             const anhContainer = document.getElementById('anhMetadata');
-            
-            // Extract ANH fields
             const anhFields = {};
             Object.entries(data.metadata).forEach(([key, value]) => {
                 if (key.startsWith('ANH_')) {
                     anhFields[key] = value;
                 }
             });
-
             if (Object.keys(anhFields).length === 0) {
                 anhContainer.innerHTML = '<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-secondary);">No ANH metadata detected</div>';
             } else {
@@ -1559,11 +1290,8 @@
                     createMetadataItem(key.replace('ANH_', ''), value)
                 ).join('');
             }
-
-            // ANH Verification
             const anhVerContainer = document.getElementById('anhVerification');
             anhVerContainer.innerHTML = '';
-
             const anhChecks = [
                 {
                     label: 'ANH Network Metadata',
@@ -1586,12 +1314,9 @@
                     status: anhFields['ANH_TIMESTAMP'] ? 'pass' : 'warning'
                 }
             ];
-
             anhChecks.forEach(check => {
                 anhVerContainer.innerHTML += createValidationItem(check.label, check.status);
             });
-
-            // ANH Compliance
             const anhCompContainer = document.getElementById('anhCompliance');
             anhCompContainer.innerHTML = `
                 ${createMetadataItem('ANH License', anhFields['ANH_LICENSE'] || 'Not specified')}
@@ -1600,13 +1325,11 @@
                 ${createMetadataItem('Copyright', anhFields['ANH_COPYRIGHT'] || 'Not specified')}
             `;
         }
-
         /**
          * Display raw JSON
          */
         function displayRawJSON(data) {
             const container = document.getElementById('rawJsonViewer');
-            
             const displayData = {
                 file: data.file,
                 pdf: {
@@ -1617,39 +1340,21 @@
                 metadata: data.metadata,
                 pages_sample: data.pages.slice(0, 5)
             };
-
             container.innerHTML = `<pre>${JSON.stringify(displayData, null, 2)}</pre>`;
         }
-
-        // ============================================
-        // TAB NAVIGATION
-        // ============================================
-
         /**
          * Switch tab
          */
         function switchTab(tabName) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-
-            // Remove active from all buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-
-            // Show selected tab
             document.getElementById(tabName).classList.add('active');
-
-            // Add active to clicked button
             event.target.classList.add('active');
         }
-
-        // ============================================
-        // EXPORT FUNCTIONS
-        // ============================================
-
         /**
          * Export analysis data
          */
@@ -1658,9 +1363,7 @@
                 showMessage('No analysis data available', 'error');
                 return;
             }
-
             let content, filename, mimeType;
-
             if (format === 'json') {
                 content = JSON.stringify(analyzer.analysisData, null, 2);
                 filename = `pdf-analysis-${Date.now()}.json`;
@@ -1670,7 +1373,6 @@
                 filename = `pdf-analysis-${Date.now()}.csv`;
                 mimeType = 'text/csv';
             }
-
             const blob = new Blob([content], { type: mimeType });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -1681,16 +1383,13 @@
             link.click();
             document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(url), 40000);
-
             showMessage(`Exported as ${format.toUpperCase()}`, 'success');
         }
-
         /**
          * Convert to CSV
          */
         function convertToCSV(data) {
             let csv = 'Key,Value\n';
-
             const flatten = (obj, prefix = '') => {
                 Object.entries(obj).forEach(([key, value]) => {
                     const fullKey = prefix ? `${prefix}.${key}` : key;
@@ -1702,15 +1401,9 @@
                     }
                 });
             };
-
             flatten(data.metadata);
             return csv;
         }
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-
         /**
          * Clear analysis
          */
@@ -1718,25 +1411,17 @@
             analyzer.pdfDoc = null;
             analyzer.analysisData = null;
             analyzer.currentFile = null;
-
             document.getElementById('emptyState').style.display = 'block';
             document.getElementById('analysisContainer').style.display = 'none';
             document.getElementById('fileInfo').style.display = 'none';
             document.getElementById('messagesPanel').innerHTML = '';
             document.getElementById('clearBtn').disabled = true;
             document.getElementById('pdfInput').value = '';
-
             showMessage('Analysis cleared', 'info');
         }
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-
         document.addEventListener('DOMContentLoaded', () => {
             setupUploadZone();
             showMessage('PDF Meta Analyzer ready. Upload a PDF to begin analysis.', 'info');
-
             const pill = document.getElementById("userHeaderPillAnalyzer");
             if (pill) {
                 const uid = localStorage.getItem("dpgActiveUserUid");
@@ -1751,8 +1436,6 @@
             }
         });
     </script>
-
-    <!-- Bottom Footer Native Sponsored Ad Banner -->
     <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="max-width:1100px; margin:2rem auto 1rem auto; padding:0 10px; box-sizing:border-box;"></div>
 </body>
 </html>

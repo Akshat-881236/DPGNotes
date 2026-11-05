@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Universal DPGNotes Pre-loader (Loads before other scripts/styles) -->
   <script src="/dpg-loader.js"></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
@@ -186,7 +185,6 @@
       width: 100%;
       box-sizing: border-box;
     }
-    /* SEGMENTED CONTROL TABS */
     .train-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -233,7 +231,6 @@
       font-weight: 700;
       line-height: 1.2;
     }
-    /* RENDERING POSITION SEGMENTED RADIO GROUP */
     .rend-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -274,7 +271,6 @@
       border-color: rgba(239, 68, 68, 0.25);
       color: #fca5a5;
     }
-    /* TOOLS PALETTE */
     .tools-palette {
       display: flex;
       flex-wrap: wrap;
@@ -316,7 +312,6 @@
       border-color: #ef4444;
       color: white;
     }
-    /* AI TAG ASSISTANT BAR */
     .ai-tag-bar {
       display: flex;
       align-items: center;
@@ -356,7 +351,6 @@
       align-items: center;
       gap: 5px;
     }
-    /* NOTE LAYOUT RULES CHECKLIST */
     .note-layout-rules-bar {
       display: flex;
       flex-wrap: wrap;
@@ -391,7 +385,6 @@
       border-color: rgba(239, 68, 68, 0.4);
       color: #fca5a5;
     }
-    /* AI CONTENT ASSIST BAR */
     .ai-content-assist-bar {
       display: flex;
       align-items: center;
@@ -423,7 +416,6 @@
       background: rgba(99, 102, 241, 0.4);
       color: white;
     }
-    /* FORMULA INSPECTOR */
     .formula-inspector {
       display: flex;
       align-items: center;
@@ -438,7 +430,6 @@
       color: #93c5fd;
       word-break: break-all;
     }
-    /* AI VERIFICATION MODAL */
     .ai-modal-overlay {
       position: fixed;
       top: 0;
@@ -464,7 +455,6 @@
       padding: 1.8rem;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
-    /* STATUS NOTICE */
     .status-notice {
       padding: 0.75rem 1rem;
       border-radius: 10px;
@@ -487,7 +477,6 @@
       border: 1px solid rgba(239, 68, 68, 0.35);
       color: #fca5a5;
     }
-    /* VIEW MODE TABS */
     .view-mode-tabs {
       display: inline-flex;
       background: rgba(0, 0, 0, 0.35);
@@ -598,8 +587,6 @@
       margin-bottom: 1rem;
       position: relative;
     }
-
-    /* MOBILE PRO-DESIGNER MEDIA QUERIES (Pixel 7 / <= 640px) */
     @media (max-width: 640px) {
       .header-nav {
         padding: 0.6rem 0.85rem;
@@ -618,7 +605,6 @@
         display: inline !important;
         font-size: 0.95rem;
       }
-      /* STRICT DPGNOTES PDF VIEWER ICON HYPERLINK RULE: No text on mobile buttons! */
       .header-nav .btn-label {
         display: none !important;
       }
@@ -704,8 +690,6 @@
         gap: 10px;
       }
     }
-
-    /* AUTH OVERLAY & LOGIN PROMPT */
     .auth-overlay-modal {
       position: fixed;
       inset: 0;
@@ -763,8 +747,6 @@
       background: #24292e;
       border-color: rgba(255, 255, 255, 0.25);
     }
-
-    /* AUTHORIZED RESOURCES SELECTION HUB */
     .res-selection-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -815,7 +797,6 @@
   <script src="/history-monitoring.js" defer></script>
 </head>
 <body>
-
   <header class="header-nav">
     <div class="header-left-group">
       <a href="train_model.html" class="brand" title="DPGNotes AI Trainer">
@@ -842,10 +823,6 @@
       </button>
     </div>
   </header>
-
-  <!-- ======================================================= -->
-  <!-- AUTH OVERLAY: PROMPT USER WITH ALL POSSIBLE LOGIN MODES -->
-  <!-- ======================================================= -->
   <div id="trainAuthOverlay" class="auth-overlay-modal" style="display:none;">
     <div class="auth-card-shell">
       <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.6rem; color:white;">
@@ -855,8 +832,6 @@
       <p style="color:#94a3b8; font-size:0.86rem; margin-bottom:1.4rem; line-height:1.5;">
         To train artificial intelligence models and curate in-document academic notes, please authenticate your contributor account.
       </p>
-
-      <!-- OAuth Login Providers -->
       <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:1.2rem;">
         <button type="button" class="btn-oauth-provider google-btn" onclick="window.trainLoginWithGoogle()">
           <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.7s.1-1.9.4-2.7L1.6 6.4C.6 8.4 0 10.6 0 13s.6 4.6 1.6 6.6l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5.3L1.6 16c1.9 3.8 5.8 7 10.4 7z"/></svg>
@@ -867,14 +842,11 @@
           Continue with GitHub
         </button>
       </div>
-
       <div style="display:flex; align-items:center; gap:10px; margin:1rem 0; color:#64748b; font-size:0.75rem; text-transform:uppercase;">
         <div style="flex:1; height:1px; background:rgba(255,255,255,0.08);"></div>
         <span>or sign in with password</span>
         <div style="flex:1; height:1px; background:rgba(255,255,255,0.08);"></div>
       </div>
-
-      <!-- Password / ID Form -->
       <form id="trainLoginForm" onsubmit="window.handleTrainPasswordLogin(event)" style="text-align:left;">
         <div id="trainLoginFields">
           <div style="margin-bottom:0.8rem;">
@@ -889,8 +861,6 @@
             <i class="ri-login-box-line"></i> Sign In to Workbench
           </button>
         </div>
-
-        <!-- 2FA OTP Container inside modal -->
         <div id="trainTwoFactorStep" style="display:none; text-align:center;">
           <div style="font-size:2rem; color:#10b981; margin-bottom:0.4rem;"><i class="ri-shield-check-line"></i></div>
           <h3 style="font-size:1.1rem; color:#f8fafc; margin:0 0 0.3rem;">Verify 2FA Security Code</h3>
@@ -901,15 +871,12 @@
           </button>
         </div>
       </form>
-
       <div style="margin-top:1.25rem; font-size:0.82rem; color:#94a3b8;">
         New contributor? <a href="index.html?action=signup" style="color:#818cf8; text-decoration:underline;">Create Account</a>
       </div>
     </div>
   </div>
-
   <div class="container">
-    <!-- ACCESS DENIED -->
     <div id="accessDeniedBanner" class="denied-banner" style="display:none;">
       <i class="ri-shield-keyhole-line" style="font-size:3.5rem; color:#ef4444;"></i>
       <h2 style="color:#f87171; margin:10px 0;">ACCESS DENIED — OWNERSHIP VIOLATION</h2>
@@ -919,10 +886,6 @@
         <a href="train_model.html" class="btn-secondary"><i class="ri-arrow-left-line"></i> View Your Authorized Resources</a>
       </div>
     </div>
-
-    <!-- ======================================================= -->
-    <!-- AUTHORIZED RESOURCES SELECTION HUB (WITHOUT PARAMETER)  -->
-    <!-- ======================================================= -->
     <div id="authorizedResourcesSection" style="display:none;">
       <div style="margin-bottom:1.75rem; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
         <div>
@@ -938,11 +901,7 @@
           Loading resources...
         </div>
       </div>
-
-      <!-- Resource List Cards -->
       <div id="authResourcesList" class="res-selection-grid"></div>
-
-      <!-- Empty State if 0 resources -->
       <div id="emptyResourcesState" style="display:none; text-align:center; padding:3rem 1.5rem; background:var(--surface); border:1px solid var(--border); border-radius:16px;">
         <div style="font-size:3.2rem; color:#6366f1; margin-bottom:1rem;"><i class="ri-folder-upload-line"></i></div>
         <h2 style="font-size:1.35rem; color:white; margin:0 0 0.5rem; font-family:'Outfit',sans-serif;">No Uploaded Resources Found</h2>
@@ -954,10 +913,6 @@
         </a>
       </div>
     </div>
-
-    <!-- ======================================================= -->
-    <!-- TRAINING WORKBENCH CARD (WITH PARAMETER ?id=...)        -->
-    <!-- ======================================================= -->
     <div id="trainCard" class="card" style="display:none;">
       <div style="margin-bottom:1rem;">
         <a href="train_model.html" class="back-link" style="color:#818cf8; font-weight:600; font-size:0.85rem;"><i class="ri-arrow-left-line"></i> Back to My Authorized Resources</a>
@@ -970,8 +925,6 @@
         </div>
         <span style="font-size:2rem; color:var(--primary-light);"><i class="ri-brain-line"></i></span>
       </div>
-
-      <!-- NAVIGATION TABS (Segmented Control) -->
       <div class="train-tabs">
         <button type="button" id="tabBtnAi" onclick="switchTrainTab('ai')" class="tab-btn active">
           <i class="ri-brain-line"></i> Knowledge Base
@@ -980,21 +933,16 @@
           <i class="ri-sticky-note-line"></i> Notes Manager <span id="notesCountBadge" class="badge-pill">0</span>
         </button>
       </div>
-
-      <!-- TAB PANE 1: AI Knowledge Base -->
       <div id="tabPaneAi">
         <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6; margin-bottom:2rem;">
           Add external web links for automated AI knowledge indexing and structured FAQs to build a custom runtime knowledge base (<code style="color:#c4b5fd;">knowledge.md</code>) for this resource's DPGNotes PDF Viewer AI Assistant.
         </p>
-
         <form id="trainForm" onsubmit="handleTrainSubmit(event)">
-          <!-- WEB LINKS SECTION -->
           <div style="margin-bottom:2rem;">
             <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
               <i class="ri-link" style="color:var(--primary-light);"></i> External Reference Web Links
             </h3>
             <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Provide URLs to documentation, academic portals, or notes that the AI engine will extract knowledge from.</p>
-
             <div id="linksContainer">
               <div style="display:flex; gap:8px; margin-bottom:8px;">
                 <input type="url" class="input-field crawler-url" placeholder="https://example.com/reference-notes">
@@ -1002,16 +950,12 @@
             </div>
             <button type="button" onclick="addLinkInput()" class="btn-secondary"><i class="ri-add-line"></i> Add Another Link</button>
           </div>
-
-          <!-- FAQ SECTION -->
           <div style="margin-bottom:2rem;">
             <h3 style="color:white; font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:8px;">
               <i class="ri-question-answer-line" style="color:var(--primary-light);"></i> Resource FAQs & Custom Q&A Pair
             </h3>
             <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1rem;">Query field maximum length is <strong>80 characters</strong>. Solution field maximum length is <strong>300 characters</strong>.</p>
-
             <div id="faqsContainer">
-              <!-- FAQ item 1 -->
               <div class="faq-item">
                 <div style="margin-bottom:1rem;">
                   <label style="display:block; margin-bottom:4px; font-size:0.82rem; color:var(--text-muted);">Query / Question (Max 80 chars) *</label>
@@ -1027,7 +971,6 @@
             </div>
             <button type="button" onclick="addFaqInput()" class="btn-secondary"><i class="ri-add-line"></i> Add FAQ Pair</button>
           </div>
-
           <div style="margin-top:2.5rem; text-align:right; border-top:1px solid var(--border); padding-top:1.5rem;">
             <button type="submit" id="submitTrainBtn" class="btn-primary">
               <i class="ri-cpu-line"></i> Process & Generate Runtime Knowledge Model
@@ -1035,11 +978,8 @@
           </div>
         </form>
       </div>
-
-      <!-- TAB PANE 2: In-Document Notes Manager -->
       <div id="tabPaneNotes" style="display:none;">
         <div id="noteEditorSection" style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:2rem;">
-          <!-- Active Editing Banner -->
           <div id="editingNoteBanner" style="display:none; background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.45); border-radius:10px; padding:0.75rem 1.2rem; margin-bottom:1.2rem; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
             <span style="font-size:0.85rem; color:#c4b5fd; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
               <i class="ri-edit-circle-line" style="color:#a855f7; font-size:1.15rem;"></i>
@@ -1049,16 +989,13 @@
               <i class="ri-close-circle-line"></i> Cancel Editing Mode
             </button>
           </div>
-
           <h2 style="color:white; font-size:1.25rem; font-family:'Outfit',sans-serif; margin-bottom:0.4rem; display:flex; align-items:center; gap:8px;">
             <i class="ri-sticky-note-line" style="color:var(--primary-light);"></i> <span id="noteCardTitleText">Add In-Document Note</span>
           </h2>
           <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem; line-height:1.5;">
             Attach contributor notes, syllabus formulas, or exam insights before or after specific pages in the PDF reader. Real-time slot collision protection prevents overlaps.
           </p>
-
           <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.2rem;">
-            <!-- Page Number Input with PDF Length Counter -->
             <div>
               <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
                 Target Page Number *
@@ -1068,8 +1005,6 @@
                 <i class="ri-file-pdf-line"></i> Document Total: <strong id="docTotalPagesVal" style="margin-left:3px;">Detecting...</strong>
               </div>
             </div>
-
-            <!-- Rendering Option Segmented Radio Group -->
             <div>
               <label style="display:block; margin-bottom:6px; font-size:0.85rem; color:var(--text-muted); font-weight:600;">
                 Rendering Position *
@@ -1086,11 +1021,7 @@
               </div>
             </div>
           </div>
-
-          <!-- Real-Time Slot Collision Notice -->
           <div id="slotStatusNotice" style="display:none;"></div>
-
-          <!-- Tags Input with AI Real-Time Crawler & Typo Fixer -->
           <div style="margin:1.2rem 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <label style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">
@@ -1104,7 +1035,6 @@
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
               Enter concise topic keywords separated by commas (e.g. Gogle &rarr; Google, Binge &rarr; Bing).
             </div>
-            <!-- Real-Time AI Tag Suggestions Bar -->
             <div id="aiTagSuggestionsBar" class="ai-tag-bar" style="display:none;">
               <span class="ai-status-indicator" id="aiTagStatus">
                 <i class="ri-sparkling-fill" style="color:#a855f7;"></i> AI Tag Standardizer:
@@ -1115,8 +1045,6 @@
               </button>
             </div>
           </div>
-
-          <!-- Content Formatting Tools (Clean Non-Technical Labels + Native Ad) -->
           <div style="margin-top:1.4rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <label style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">
@@ -1162,10 +1090,7 @@
               </button>
             </div>
           </div>
-
-          <!-- Dual Mode: Note Editor / Live Preview -->
           <div style="margin-top:1rem;">
-            <!-- Real-Time Layout Quality Checklist -->
             <div class="note-layout-rules-bar" id="noteLayoutChecklist">
               <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-right:4px;">
                 <i class="ri-shield-check-line" style="color:var(--primary-light);"></i> Layout Quality:
@@ -1183,7 +1108,6 @@
                 <i class="ri-close-circle-line"></i> Accompanying Content
               </span>
             </div>
-
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:8px;">
               <div class="view-mode-tabs">
                 <button type="button" id="btnModeEdit" class="view-mode-btn active" onclick="switchNoteViewMode('edit')">
@@ -1197,12 +1121,8 @@
                 Live preview auto-updates as you type
               </span>
             </div>
-
-            <!-- Note Editor Area with Real-Time AI Auto-Complete -->
             <div id="noteEditorWrap">
               <textarea id="noteHtmlContent" class="input-field" style="height:190px; font-family:'Fira Code', 'Courier New', monospace; font-size:0.88rem; line-height:1.6;" placeholder="Draft your note here or tap formatting tools above (Heading, Keynote, Paragraph, Link, Lists, Code, Native Ad)..." oninput="handleContentInput()"></textarea>
-              
-              <!-- Floating AI Content Assistant (Next 5 Words & Typo Check) -->
               <div id="aiContentAssistBar" class="ai-content-assist-bar" style="display:none;">
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                   <span style="display:inline-flex; align-items:center; gap:4px; color:#c4b5fd; font-weight:600;">
@@ -1216,8 +1136,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- Live Preview Area with Formula Inspector -->
             <div id="notePreviewWrap" style="display:none;">
               <div class="formula-inspector" id="formulaInspectorBadge">
                 <span><i class="ri-code-s-slash-line" style="color:#a855f7;"></i> Formula: &lt;div class="added-notes" type="after" page-id="..." id="..."&gt;&lt;/div&gt;</span>
@@ -1232,8 +1150,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Submit Button -->
           <div style="margin-top:1.8rem; text-align:right; border-top:1px solid var(--border); padding-top:1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <span style="font-size:0.8rem; color:var(--text-muted);" id="noteTargetSlotLabel">
               Target Slot: Page 1 (After Page)
@@ -1243,8 +1159,6 @@
             </button>
           </div>
         </div>
-
-        <!-- EXISTING NOTES ACCORDION / LIST -->
         <div>
           <h3 style="color:white; font-size:1.15rem; font-family:'Outfit',sans-serif; margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between;">
             <span><i class="ri-stack-line" style="color:var(--primary-light);"></i> Active In-Document Notes for this Resource</span>
@@ -1259,12 +1173,10 @@
       </div>
     </div>
   </div>
-
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, deleteDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-
     const cfg = {
       apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
       projectId:"dpgnotes",storageBucket:"dpgnotes.firebasestorage.app",
@@ -1273,18 +1185,12 @@
     const fbApp = getApps().find(a=>a.name==="dpgnotes") || initializeApp(cfg,"dpgnotes");
     const db = getFirestore(fbApp);
     const auth = getAuth(fbApp);
-
     const P = new URLSearchParams(location.search);
     const targetId = P.get('id') || P.get('docId');
-
     let currentAuthUser = null;
     let pendingTrainEmail = "";
     let pendingTrainUser = null;
     let faqCounter = 1;
-
-    // ====================================================
-    // AUTHENTICATION WORKBENCH HANDLERS
-    // ====================================================
     window.trainLoginWithGoogle = async function() {
       try {
         const provider = new GoogleAuthProvider();
@@ -1295,7 +1201,6 @@
         else alert("Google Sign In failed: " + (err.message || err));
       }
     };
-
     window.trainLoginWithGithub = async function() {
       try {
         const provider = new GithubAuthProvider();
@@ -1306,7 +1211,6 @@
         else alert("GitHub Sign In failed: " + (err.message || err));
       }
     };
-
     window.handleTrainPasswordLogin = async function(e) {
       e.preventDefault();
       const identifier = document.getElementById("trainLoginId").value.trim();
@@ -1314,10 +1218,8 @@
       if (!identifier || !password) {
         return alert("Please enter your Student/Employee ID or Email, and Password.");
       }
-
       const btn = document.getElementById("btnTrainLoginSubmit");
       if (btn) { btn.disabled = true; btn.innerText = "Verifying..."; }
-
       let resolvedEmail = identifier;
       if (!identifier.includes('@')) {
         try {
@@ -1339,25 +1241,19 @@
           resolvedEmail = qSnap.docs[0].data().email;
         }
       }
-
       try {
         const cred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
         pendingTrainUser = cred.user;
         pendingTrainEmail = resolvedEmail;
-
-        // Check if user disabled 2FA
         try {
           const userDocRef = doc(db, "users", cred.user.uid);
           const snap = await getDoc(userDocRef);
           const userData = snap.exists() ? snap.data() : null;
           if (userData && userData.twoFactorEnabled === false) {
-            // 2FA disabled, proceed directly
             document.getElementById("trainAuthOverlay").style.display = "none";
             return;
           }
         } catch(profErr) { console.warn("Prof check:", profErr); }
-
-        // Default: Dispatch 2FA OTP
         try {
           await fetch((window.API_BASE_URL || "") + "/api/auth/send-otp", {
             method: "POST",
@@ -1365,7 +1261,6 @@
             body: JSON.stringify({ email: resolvedEmail, purpose: "2fa" })
           });
         } catch(otpErr) { console.warn("2FA send failed:", otpErr); }
-
         document.getElementById("trainLoginFields").style.display = "none";
         document.getElementById("trainTwoFactorStep").style.display = "block";
         document.getElementById("train2faEmailSpan").innerText = resolvedEmail;
@@ -1376,13 +1271,11 @@
         if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ri-login-box-line"></i> Sign In to Workbench'; }
       }
     };
-
     window.verifyTrain2FA = async function() {
       const code = document.getElementById("train2faOtpInput").value.trim();
       if (code.length !== 6) return alert("Please enter the 6-digit verification code.");
       const btn = document.getElementById("btnVerifyTrain2FA");
       if (btn) { btn.disabled = true; btn.innerText = "Verifying..."; }
-
       try {
         const res = await fetch((window.API_BASE_URL || "") + "/api/auth/verify-otp", {
           method: "POST",
@@ -1391,7 +1284,6 @@
         });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || "Invalid or expired verification code.");
-
         document.getElementById("trainAuthOverlay").style.display = "none";
       } catch(err) {
         alert("Verification Error: " + err.message);
@@ -1399,24 +1291,17 @@
         if (btn) { btn.disabled = false; btn.innerText = "Verify & Enter Workbench"; }
       }
     };
-
     window.trainLogout = async function() {
       await signOut(auth);
       localStorage.removeItem("dpgActiveUserUid");
       window.location.reload();
     };
-
-    // ----------------------------------------------------
-    // IN-DOCUMENT NOTES MANAGEMENT & COLLISION VALIDATION
-    // ----------------------------------------------------
     window.currentResourceNotes = [];
-
     window.switchTrainTab = function(tab) {
       const btnAi = document.getElementById('tabBtnAi');
       const btnNotes = document.getElementById('tabBtnNotes');
       const paneAi = document.getElementById('tabPaneAi');
       const paneNotes = document.getElementById('tabPaneNotes');
-
       if (tab === 'notes') {
         btnAi?.classList.remove('active');
         btnNotes?.classList.add('active');
@@ -1431,13 +1316,11 @@
         if (paneAi) paneAi.style.display = 'block';
       }
     };
-
     window.switchNoteViewMode = function(mode) {
       const btnEdit = document.getElementById('btnModeEdit');
       const btnPreview = document.getElementById('btnModePreview');
       const wrapEdit = document.getElementById('noteEditorWrap');
       const wrapPreview = document.getElementById('notePreviewWrap');
-
       if (mode === 'preview') {
         btnEdit?.classList.remove('active');
         btnPreview?.classList.add('active');
@@ -1451,7 +1334,6 @@
         if (wrapEdit) wrapEdit.style.display = 'block';
       }
     };
-
     window.selectRendering = function(val, force) {
       if (val === 'before') {
         const r = document.getElementById('rendBefore');
@@ -1462,7 +1344,6 @@
       }
       window.handlePageSlotValidation();
     };
-
     window.handlePageSlotValidation = function() {
       const pageInput = document.getElementById('notePageNum');
       const pgVal = pageInput ? pageInput.value.trim() : '';
@@ -1474,11 +1355,8 @@
       const statusNotice = document.getElementById('slotStatusNotice');
       const slotLabel = document.getElementById('noteTargetSlotLabel');
       const saveBtn = document.getElementById('btnSaveNote');
-
       if (!beforeRadio || !afterRadio) return;
-
       const maxPages = window.resourceTotalPages;
-
       if (isNaN(pg) || pg < 1) {
         lblBefore?.classList.remove('disabled');
         lblAfter?.classList.remove('disabled');
@@ -1488,8 +1366,6 @@
         if (slotLabel) slotLabel.textContent = maxPages ? `Target Slot: Enter Page (1 to ${maxPages})` : 'Target Slot: Enter Page Number';
         return;
       }
-
-      // Check if page exceeds document pdf.length
       if (maxPages && pg > maxPages) {
         lblBefore?.classList.add('disabled');
         lblAfter?.classList.add('disabled');
@@ -1504,16 +1380,10 @@
         if (saveBtn) saveBtn.disabled = true;
         return;
       }
-
       const rawNotes = window.currentResourceNotes || [];
-      // When editing an existing note, exclude it from collision check so it won't collide with its own current slot
       const notes = window.editingNoteId 
         ? rawNotes.filter(n => (n.notesId || n.id) !== window.editingNoteId)
         : rawNotes;
-
-      // Check slot collisions:
-      // 1. Direct 'before' on Page N
-      // 2. If N > 1, 'after' on Page N-1 occupies the same slot
       let beforeCollision = null;
       const directBefore = notes.some(n => parseInt(n.pageNumber, 10) === pg && String(n.rendering).toLowerCase() === 'before');
       if (directBefore) {
@@ -1524,10 +1394,6 @@
           beforeCollision = `Page ${pg - 1} has an "After Page" note, which occupies the slot before Page ${pg}.`;
         }
       }
-
-      // Check slot collisions for 'after':
-      // 1. Direct 'after' on Page N
-      // 2. 'before' on Page N+1 occupies the same slot
       let afterCollision = null;
       const directAfter = notes.some(n => parseInt(n.pageNumber, 10) === pg && String(n.rendering).toLowerCase() === 'after');
       if (directAfter) {
@@ -1538,8 +1404,6 @@
           afterCollision = `Page ${pg + 1} has a "Before Page" note, which occupies the slot after Page ${pg}.`;
         }
       }
-
-      // Update 'before' controls
       if (beforeCollision) {
         lblBefore?.classList.add('disabled');
         beforeRadio.disabled = true;
@@ -1550,8 +1414,6 @@
         lblBefore?.classList.remove('disabled');
         beforeRadio.disabled = false;
       }
-
-      // Update 'after' controls
       if (afterCollision) {
         lblAfter?.classList.add('disabled');
         afterRadio.disabled = true;
@@ -1562,13 +1424,10 @@
         lblAfter?.classList.remove('disabled');
         afterRadio.disabled = false;
       }
-
-      // Notification messages & button state
       const curRend = beforeRadio.checked ? 'before' : 'after';
       if (slotLabel) {
         slotLabel.textContent = `Target Slot: Page ${pg} (${curRend === 'before' ? 'Before Page' : 'After Page'})`;
       }
-
       if (beforeCollision && afterCollision) {
         if (statusNotice) {
           statusNotice.style.display = 'block';
@@ -1598,12 +1457,9 @@
         }
         if (saveBtn) saveBtn.disabled = false;
       }
-
-      // Native & AdSense Tool button availability check
       const btnNativeAd = document.getElementById('btnToolNativeAd');
       const btnAdsenseAd = document.getElementById('btnToolAdsenseAd');
       const isDiv3After = (curRend === 'after' && pg % 3 === 0);
-
       if (btnNativeAd) {
         if (isDiv3After) {
           btnNativeAd.disabled = true;
@@ -1617,7 +1473,6 @@
           btnNativeAd.title = 'Insert DPGNotes Native Ad Block (Optional)';
         }
       }
-
       if (btnAdsenseAd) {
         if (isDiv3After) {
           btnAdsenseAd.disabled = true;
@@ -1631,16 +1486,12 @@
           btnAdsenseAd.title = 'Insert Google AdSense Fluid In-Article Unit (Optional)';
         }
       }
-
       window.updateLiveNotePreview();
     };
-
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
-
-    // Strict Layout Rules Validator (1 H1, 1-3 H2, H3 within H2, Content present)
     window.checkNoteLayoutRules = function(html) {
       const h1Matches = (html || '').match(/<h1[\s>][\s\S]*?<\/h1>/gi) || [];
       const h2Matches = (html || '').match(/<h2[\s>][\s\S]*?<\/h2>/gi) || [];
@@ -1648,17 +1499,14 @@
       const firstH2Idx = (html || '').search(/<h2[\s>]/i);
       const firstH3Idx = (html || '').search(/<h3[\s>]/i);
       const cleanText = (html || '').replace(/<[^>]+>/g, '').trim();
-
       const isH1Valid = h1Matches.length === 1;
       const isH2Valid = h2Matches.length >= 1 && h2Matches.length <= 3;
       const isH3Valid = h3Matches.length === 0 || (firstH2Idx !== -1 && firstH3Idx > firstH2Idx);
       const isContentValid = cleanText.length >= 10;
-
       const pillH1 = document.getElementById('ruleH1');
       const pillH2 = document.getElementById('ruleH2');
       const pillH3 = document.getElementById('ruleH3');
       const pillContent = document.getElementById('ruleContent');
-
       if (pillH1) {
         pillH1.className = `rule-pill ${isH1Valid ? 'valid' : 'invalid'}`;
         pillH1.innerHTML = `<i class="${isH1Valid ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'}"></i> ${h1Matches.length === 1 ? '1 Main Title (H1)' : (h1Matches.length === 0 ? 'H1 Title Missing' : 'Only 1 H1 Allowed')}`;
@@ -1675,7 +1523,6 @@
         pillContent.className = `rule-pill ${isContentValid ? 'valid' : 'invalid'}`;
         pillContent.innerHTML = `<i class="${isContentValid ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'}"></i> ${isContentValid ? 'Content Body Ready' : 'Content Body Missing'}`;
       }
-
       if (!isH1Valid) {
         return { valid: false, error: h1Matches.length === 0 ? "Note layout requires exactly ONE main <h1> title at the top." : "Note layout allows only ONE <h1> title. Multiple <h1> headings are prohibited." };
       }
@@ -1690,7 +1537,6 @@
       }
       return { valid: true };
     };
-
     function wrapOrInsert(textarea, beforeTag, afterTag, placeholder) {
       const start = textarea.selectionStart || 0;
       const end = textarea.selectionEnd || 0;
@@ -1702,13 +1548,10 @@
       textarea.setSelectionRange(newPos, newPos);
       textarea.focus();
     }
-
     window.insertTool = async function(type) {
       const textarea = document.getElementById('noteHtmlContent');
       if (!textarea) return;
-
       const currentVal = textarea.value;
-
       if (type === 'h1') {
         const h1Count = (currentVal.match(/<h1[\s>]/gi) || []).length;
         if (h1Count >= 1) {
@@ -1798,11 +1641,9 @@
           }
         }
       }
-
       window.checkNoteLayoutRules(textarea.value);
       window.updateLiveNotePreview();
     };
-
     window.clearNoteContent = function() {
       const textarea = document.getElementById('noteHtmlContent');
       if (textarea) {
@@ -1811,8 +1652,6 @@
         window.updateLiveNotePreview();
       }
     };
-
-    // Real-Time As-You-Type AI Tag Suggestions & Typo Correction
     let tagDebounceTimer = null;
     window.handleTagInput = function() {
       window.updateLiveNotePreview();
@@ -1822,19 +1661,16 @@
       const applyAllBtn = document.getElementById('btnApplyAllTags');
       const status = document.getElementById('aiTagStatus');
       if (!input) return;
-
       clearTimeout(tagDebounceTimer);
       const raw = input.value.trim();
       if (raw.length < 3) {
         if (bar) bar.style.display = 'none';
         return;
       }
-
       tagDebounceTimer = setTimeout(async () => {
         try {
           if (status) status.innerHTML = `<i class="ri-loader-4-line spin-icon" style="color:#a855f7;"></i> AI Analyzing &amp; Fixing Tags...`;
           if (bar) bar.style.display = 'flex';
-
           const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
           const res = await fetch(`${apiBase}/api/ai/suggest-tags`, {
             method: 'POST',
@@ -1867,7 +1703,6 @@
         }
       }, 450);
     };
-
     window.applySingleAiTag = function(tag) {
       const input = document.getElementById('noteTags');
       if (!input) return;
@@ -1878,7 +1713,6 @@
       }
       window.updateLiveNotePreview();
     };
-
     window.applyAllAiTags = function() {
       const input = document.getElementById('noteTags');
       if (input && Array.isArray(window.lastAiSuggestedTags) && window.lastAiSuggestedTags.length > 0) {
@@ -1888,28 +1722,22 @@
         window.updateLiveNotePreview();
       }
     };
-
-    // Real-Time As-You-Type AI Content Assistant (Next 5 Words & Typo Check)
     let contentDebounceTimer = null;
     window.handleContentInput = function() {
       const textarea = document.getElementById('noteHtmlContent');
       if (!textarea) return;
-
       const html = textarea.value;
       window.checkNoteLayoutRules(html);
       window.updateLiveNotePreview();
-
       const assistBar = document.getElementById('aiContentAssistBar');
       const nextWordsEl = document.getElementById('aiNextWordsSuggestion');
       const typoEl = document.getElementById('aiTypoBadge');
-
       clearTimeout(contentDebounceTimer);
       const plainText = html.replace(/<[^>]+>/g, ' ').trim();
       if (plainText.length < 8) {
         if (assistBar) assistBar.style.display = 'none';
         return;
       }
-
       contentDebounceTimer = setTimeout(async () => {
         try {
           const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
@@ -1944,7 +1772,6 @@
         }
       }, 600);
     };
-
     window.insertAiNextWords = function() {
       const textarea = document.getElementById('noteHtmlContent');
       if (!textarea || !window.currentAiNextWords) return;
@@ -1958,30 +1785,24 @@
       const newPos = start + insert.length;
       textarea.setSelectionRange(newPos, newPos);
       textarea.focus();
-
       const assistBar = document.getElementById('aiContentAssistBar');
       if (assistBar) assistBar.style.display = 'none';
       window.currentAiNextWords = '';
       window.checkNoteLayoutRules(textarea.value);
       window.updateLiveNotePreview();
     };
-
-    // Live Note Preview with Formula Spec Inspector
     window.updateLiveNotePreview = function() {
       const target = document.getElementById('liveNotePreviewTarget');
       if (!target) return;
-
       const pageInput = document.getElementById('notePageNum');
       const pg = parseInt(pageInput?.value, 10) || 1;
       const beforeRadio = document.getElementById('rendBefore');
       const rend = (beforeRadio && beforeRadio.checked) ? 'before' : 'after';
       const tagsVal = document.getElementById('noteTags')?.value || '';
       const htmlVal = document.getElementById('noteHtmlContent')?.value || '';
-
       const pageId = `${targetId}-${pg}`;
       const elementId = `${rend === 'before' ? 'be' : 'af'}-preview`;
       const formulaStr = `<div class="added-notes" type="${rend}" page-id="${pageId}" id="${elementId}"></div>`;
-
       const formulaBadge = document.getElementById('formulaInspectorBadge');
       if (formulaBadge) {
         formulaBadge.innerHTML = `
@@ -1989,12 +1810,10 @@
           <span style="font-size:0.7rem; color:var(--text-muted);">${rend === 'before' ? 'be (Before)' : 'af (After)'}</span>
         `;
       }
-
       const slotLabel = document.getElementById('noteTargetSlotLabel');
       if (slotLabel) {
         slotLabel.innerHTML = `Target Slot: <strong>Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})</strong> • Formula ID: <code style="color:#a5b4fc;">${elementId}</code>`;
       }
-
       if (!htmlVal.trim()) {
         target.innerHTML = `
           <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem 0;">
@@ -2003,7 +1822,6 @@
         `;
         return;
       }
-
       const mockNote = {
         resourceId: targetId,
         pageNumber: pg,
@@ -2013,7 +1831,6 @@
         tags: tagsVal.split(',').map(s => s.trim()).filter(Boolean),
         htmlContent: htmlVal
       };
-
       if (window.renderNoteElement) {
         const el = window.renderNoteElement(mockNote);
         target.innerHTML = '';
@@ -2042,15 +1859,12 @@
         `;
       }
     };
-
     window.loadExistingNotes = async function() {
       const container = document.getElementById('existingNotesList');
       const summary = document.getElementById('existingNotesSummary');
       const badge = document.getElementById('notesCountBadge');
-
       try {
         let notes = [];
-        // Try Backend API
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         try {
           const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`);
@@ -2063,8 +1877,6 @@
         } catch(apiErr) {
           console.warn("Backend notes fetch error, falling back to Firestore client:", apiErr);
         }
-
-        // Client Firestore Fallback
         if (notes.length === 0 && db) {
           try {
             const subCol = collection(db, "resource-notes", targetId, "notes");
@@ -2081,16 +1893,13 @@
             }
           }
         }
-
         notes.sort((a, b) => {
           if (a.pageNumber !== b.pageNumber) return a.pageNumber - b.pageNumber;
           return a.rendering === 'before' ? -1 : 1;
         });
-
         window.currentResourceNotes = notes;
         if (badge) badge.textContent = notes.length;
         if (summary) summary.textContent = `${notes.length} Active Note${notes.length === 1 ? '' : 's'}`;
-
         renderExistingNotesList(notes);
         window.handlePageSlotValidation();
       } catch (err) {
@@ -2100,11 +1909,9 @@
         }
       }
     };
-
     function renderExistingNotesList(notes) {
       const container = document.getElementById('existingNotesList');
       if (!container) return;
-
       if (!notes || notes.length === 0) {
         container.innerHTML = `
           <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:2rem; background:rgba(0,0,0,0.15); border-radius:12px; border:1px dashed var(--border);">
@@ -2114,7 +1921,6 @@
         `;
         return;
       }
-
       container.innerHTML = notes.map((note) => {
         const nid = note.notesId || note.id;
         const rend = (String(note.rendering || '').toLowerCase() === 'before') ? 'before' : 'after';
@@ -2123,11 +1929,9 @@
         const elementId = note.elementId || `${rend === 'before' ? 'be' : 'af'}-${nid}`;
         const formulaTag = `<div class="added-notes" type="${rend}" page-id="${pageId}" id="${elementId}"></div>`;
         const tagsArr = Array.isArray(note.tags) ? note.tags : (note.tags ? String(note.tags).split(',') : []);
-
         const likes = typeof note.likesCount === 'number' ? note.likesCount : (Array.isArray(note.likedBy) ? note.likedBy.length : 0);
         const noteDirectUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetId)}&note=${encodeURIComponent(elementId)}#note-${encodeURIComponent(elementId)}`;
         const waShareMsg = encodeURIComponent(`Read this verified academic note on DPGNotes (Page ${note.pageNumber}):\n${noteDirectUrl}`);
-
         return `
           <div class="faq-item" style="margin-bottom:1.2rem; border-left:4px solid ${rend === 'before' ? '#8b5cf6' : '#10b981'};">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:0.8rem;">
@@ -2160,18 +1964,14 @@
                 </button>
               </div>
             </div>
-
-            <!-- Prominent Formula Inspector Specification Tag -->
             <div style="font-family:'Fira Code', 'Courier New', monospace; font-size:0.72rem; color:#93c5fd; background:rgba(0,0,0,0.35); padding:5px 10px; border-radius:6px; border:1px solid rgba(99,102,241,0.25); margin-bottom:0.8rem; word-break:break-all;">
               <i class="ri-code-s-slash-line" style="color:#a855f7;"></i> Formula: <strong>${escapeHtml(formulaTag)}</strong>
             </div>
-
             ${tagsArr.length ? `
               <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:0.8rem;">
                 ${tagsArr.map(t => `<span style="background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#94a3b8; font-size:0.7rem; padding:2px 8px; border-radius:4px;">${escapeHtml(t.trim())}</span>`).join('')}
               </div>
             ` : ''}
-
             <details style="margin-top:0.6rem; cursor:pointer;">
               <summary style="font-size:0.82rem; color:var(--primary-light); font-weight:600; outline:none; display:inline-flex; align-items:center; gap:5px;">
                 <i class="ri-eye-line"></i> View Rendered Note Content Preview
@@ -2184,10 +1984,7 @@
         `;
       }).join('');
     }
-
-    // State for Editing Existing Note
     window.editingNoteId = null;
-
     window.startEditingNote = function(nid) {
       const notes = window.currentResourceNotes || [];
       const note = notes.find(n => (n.notesId || n.id) === nid);
@@ -2196,71 +1993,50 @@
         else alert("Selected note could not be found.");
         return;
       }
-
       window.editingNoteId = nid;
-
-      // Set form fields
       const pgInput = document.getElementById('notePageNum');
       if (pgInput) pgInput.value = note.pageNumber;
-
       const rend = String(note.rendering || '').toLowerCase();
       window.selectRendering(rend === 'before' ? 'before' : 'after', true);
-
       const tagsInput = document.getElementById('noteTags');
       if (tagsInput) {
         tagsInput.value = Array.isArray(note.tags) ? note.tags.join(', ') : (note.tags || '');
       }
-
       const htmlInput = document.getElementById('noteHtmlContent');
       if (htmlInput) {
         htmlInput.value = note.htmlContent || '';
       }
-
-      // Show editing banner
       const banner = document.getElementById('editingNoteBanner');
       const bannerText = document.getElementById('editingNoteBannerText');
       if (banner) banner.style.display = 'flex';
       if (bannerText) {
         bannerText.innerHTML = `Editing Note for <strong>Page ${note.pageNumber} (${rend === 'before' ? 'Before Page' : 'After Page'})</strong> &bull; Slot: <code style="color:#a5b4fc;">${note.elementId || nid}</code>`;
       }
-
       const cardTitle = document.getElementById('noteCardTitleText');
       if (cardTitle) cardTitle.textContent = "Edit In-Document Note";
-
       const btnSave = document.getElementById('btnSaveNote');
       if (btnSave) {
         btnSave.innerHTML = `<i class="ri-check-double-line"></i> Update &amp; Publish Note`;
       }
-
-      // Switch to edit view mode
       window.switchNoteViewMode('edit');
-
-      // Trigger real-time helpers (Layout Quality, Collision Protection, Live Preview)
       window.checkNoteLayoutRules(note.htmlContent || '');
       window.handlePageSlotValidation();
       window.updateLiveNotePreview();
-
-      // Smooth scroll to editor
       const editorEl = document.getElementById('noteEditorSection');
       if (editorEl) {
         editorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     };
-
     window.cancelEditingNote = function() {
       window.editingNoteId = null;
-
       const banner = document.getElementById('editingNoteBanner');
       if (banner) banner.style.display = 'none';
-
       const cardTitle = document.getElementById('noteCardTitleText');
       if (cardTitle) cardTitle.textContent = "Add In-Document Note";
-
       const btnSave = document.getElementById('btnSaveNote');
       if (btnSave) {
         btnSave.innerHTML = `<i class="ri-upload-cloud-line"></i> Save &amp; Publish Note`;
       }
-
       const htmlInput = document.getElementById('noteHtmlContent');
       const tagsInput = document.getElementById('noteTags');
       const pgInput = document.getElementById('notePageNum');
@@ -2268,20 +2044,15 @@
       if (tagsInput) tagsInput.value = '';
       if (pgInput) pgInput.value = '1';
       window.selectRendering('after', true);
-
       const tagBar = document.getElementById('aiTagSuggestionsBar');
       if (tagBar) tagBar.style.display = 'none';
-
       const assistBar = document.getElementById('aiContentAssistBar');
       if (assistBar) assistBar.style.display = 'none';
-
       window.switchNoteViewMode('edit');
       window.checkNoteLayoutRules('');
       window.handlePageSlotValidation();
       window.updateLiveNotePreview();
     };
-
-    // Save Note with Layout Verification and Submit-Time AI Fact-Checking
     window.submitNewNote = async function() {
       const pgInput = document.getElementById('notePageNum');
       const pg = parseInt(pgInput?.value, 10);
@@ -2290,13 +2061,11 @@
         else alert("Please enter a valid Page Number (>= 1).");
         return;
       }
-
       if (window.resourceTotalPages && pg > window.resourceTotalPages) {
         if (window.customAlert) await window.customAlert(`Page ${pg} exceeds total document pages (${window.resourceTotalPages}). Please enter a page between 1 and ${window.resourceTotalPages}.`, { title: "Page Out of Range", isDanger: true });
         else alert(`Page ${pg} exceeds total document pages (${window.resourceTotalPages}).`);
         return;
       }
-
       const tagsInput = document.getElementById('noteTags');
       const tagsVal = tagsInput?.value.trim() || '';
       if (!tagsVal) {
@@ -2304,7 +2073,6 @@
         else alert("Please provide tags for quick topics covered.");
         return;
       }
-
       const htmlInput = document.getElementById('noteHtmlContent');
       const htmlVal = htmlInput?.value.trim() || '';
       if (!htmlVal) {
@@ -2312,8 +2080,6 @@
         else alert("Please provide note content using the formatting tools or editor.");
         return;
       }
-
-      // Check Note Layout Rules (1 H1, 1-3 H2, H3 in H2)
       const layoutCheck = window.checkNoteLayoutRules(htmlVal);
       if (!layoutCheck.valid) {
         if (window.customAlert) {
@@ -2323,8 +2089,6 @@
         }
         return;
       }
-
-      // Ads (Native & AdSense) Restriction Check:
       const rendVal = (document.querySelector('input[name="noteRendering"]:checked')?.value || 'after').toLowerCase();
       const isAfterDiv3 = (rendVal === 'after' && pg % 3 === 0);
       const hasAdBlock = /class=["'][^"']*(?:native-ads|dpg-native-ad-block|note-adsense-unit|adsbygoogle)[^"']*["']|data-ad-variant|data-ad-slot/i.test(htmlVal);
@@ -2333,16 +2097,13 @@
         await window.customAlert(errorMsg, { title: "Ads Restriction", isDanger: true });
         return;
       }
-
       const isEditing = !!window.editingNoteId;
       const btn = document.getElementById('btnSaveNote');
       if (btn) {
         btn.disabled = true;
         btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> AI Verification &amp; Fact-Checking...`;
       }
-
       try {
-        // Run submit-time AI verification with internet knowledge
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         let verifyData = null;
         try {
@@ -2362,15 +2123,12 @@
         } catch(aiErr) {
           console.warn("AI verification call error:", aiErr);
         }
-
         if (verifyData && verifyData.hasChanges && verifyData.suggestedHtml && verifyData.suggestedHtml.trim() !== htmlVal.trim()) {
           window.pendingOriginalHtml = htmlVal;
           window.pendingRefinedHtml = verifyData.suggestedHtml;
-          
           const modal = document.getElementById('aiVerifyModal');
           const notice = document.getElementById('aiVerifyStatusNotice');
           const preview = document.getElementById('aiVerifyPreviewBox');
-          
           if (notice) {
             notice.innerHTML = `<strong><i class="ri-sparkling-fill" style="color:#a855f7;"></i> AI Verification Completed:</strong> ${escapeHtml(verifyData.summary || 'Minimal fact-checking and grammar polish recommended.')}`;
           }
@@ -2380,10 +2138,7 @@
           if (modal) modal.style.display = 'flex';
           return;
         }
-
-        // If no AI changes or fallback, publish directly
         await window.publishFinalNote(false);
-
       } catch (err) {
         console.error("Submit note error:", err);
         if (window.customAlert) {
@@ -2400,42 +2155,34 @@
         }
       }
     };
-
     window.closeAiVerifyModal = function() {
       const modal = document.getElementById('aiVerifyModal');
       if (modal) modal.style.display = 'none';
     };
-
     window.publishFinalNote = async function(useRefined) {
       const pgInput = document.getElementById('notePageNum');
       const pg = parseInt(pgInput?.value, 10);
       const beforeRadio = document.getElementById('rendBefore');
       const rend = (beforeRadio && beforeRadio.checked) ? 'before' : 'after';
       const tagsVal = document.getElementById('noteTags')?.value.trim() || '';
-      
       const htmlInput = document.getElementById('noteHtmlContent');
       let finalHtml = useRefined 
         ? (window.pendingRefinedHtml || htmlInput?.value.trim()) 
         : (window.pendingOriginalHtml || htmlInput?.value.trim());
-
       window.closeAiVerifyModal();
-
       const isEditing = !!window.editingNoteId;
       const targetNoteId = window.editingNoteId;
-
       const btn = document.getElementById('btnSaveNote');
       if (btn) {
         btn.disabled = true;
         btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> ${isEditing ? 'Updating Note...' : 'Publishing Note...'}`;
       }
-
       try {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         const url = isEditing
           ? `${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}/${encodeURIComponent(targetNoteId)}`
           : `${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`;
         const method = isEditing ? 'PUT' : 'POST';
-
         const res = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
@@ -2447,28 +2194,20 @@
             userId: activeUid
           })
         });
-
         const resData = await res.json();
         if (!res.ok || !resData.success) {
           throw new Error(resData.error || (isEditing ? "Failed to update note" : "Failed to save note"));
         }
-
         const successMsg = isEditing
           ? `In-Document Note updated successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`
           : `In-Document Note published successfully for Page ${pg} (${rend === 'before' ? 'Before Page' : 'After Page'})!`;
-
         if (window.customAlert) {
           await window.customAlert(successMsg, { title: isEditing ? "Note Updated" : "Note Published" });
         } else {
           alert(successMsg);
         }
-
-        // Reset editing state and inputs
         window.cancelEditingNote();
-
-        // Reload existing notes and slot validation
         await window.loadExistingNotes();
-
       } catch (err) {
         console.error("Publish note error:", err);
         if (window.customAlert) {
@@ -2485,7 +2224,6 @@
         }
       }
     };
-
     window.handleDeleteNote = async function(nid) {
       let ok = false;
       if (window.customConfirm) {
@@ -2494,28 +2232,23 @@
         ok = confirm("Are you sure you want to permanently delete this in-document note?");
       }
       if (!ok) return;
-
       try {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
         const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}/${encodeURIComponent(nid)}`, {
           method: 'DELETE'
         });
-
         const resData = await res.json();
         if (!res.ok || !resData.success) {
           throw new Error(resData.error || "Failed to delete note");
         }
-
         if (window.customAlert) {
           await window.customAlert("Note deleted successfully.", { title: "Note Deleted" });
         } else {
           alert("Note deleted successfully.");
         }
-
         if (window.editingNoteId === nid) {
           window.cancelEditingNote();
         }
-
         await window.loadExistingNotes();
       } catch (err) {
         console.error("Delete note error:", err);
@@ -2526,7 +2259,6 @@
         }
       }
     };
-
     window.updateCounter = function(el, countId, maxLen) {
       const len = el.value.length;
       const countEl = document.getElementById(countId);
@@ -2536,7 +2268,6 @@
         else countEl.style.color = "var(--text-muted)";
       }
     };
-
     window.addLinkInput = function() {
       const container = document.getElementById('linksContainer');
       const div = document.createElement('div');
@@ -2547,7 +2278,6 @@
       `;
       container.appendChild(div);
     };
-
     window.addFaqInput = function() {
       faqCounter++;
       const container = document.getElementById('faqsContainer');
@@ -2570,9 +2300,7 @@
       `;
       container.appendChild(div);
     };
-
     window.resourceTotalPages = null;
-
     async function detectPdfLength(pdfUrl) {
       const valEl = document.getElementById('docTotalPagesVal');
       try {
@@ -2591,7 +2319,6 @@
         }
       }
     }
-
     function updateDocPageLimit(total) {
       if (!total || total < 1) return;
       window.resourceTotalPages = total;
@@ -2606,16 +2333,11 @@
       }
       window.handlePageSlotValidation();
     }
-
-    // ====================================================
-    // LOAD ALL AUTHORIZED RESOURCES UPLOADED BY CURRENT USER
-    // ====================================================
     async function loadAuthorizedResources(user) {
       const listEl = document.getElementById("authResourcesList");
       const countBadge = document.getElementById("resourceCountBadge");
       const emptyState = document.getElementById("emptyResourcesState");
       const section = document.getElementById("authorizedResourcesSection");
-
       section.style.display = "block";
       listEl.innerHTML = `
         <div style="grid-column:1/-1; text-align:center; padding:3rem 1.5rem; color:var(--text-muted);">
@@ -2623,11 +2345,8 @@
           <p style="margin-top:0.8rem; font-size:0.92rem;">Retrieving your authorized academic resources from secure repository...</p>
         </div>
       `;
-
       try {
         const docsMap = new Map();
-
-        // Query by registered email
         if (user.email) {
           try {
             const qEmail = query(collection(db, "documents"), where("uploaderEmail", "==", user.email));
@@ -2635,43 +2354,34 @@
             sEmail.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
           } catch(e) { console.warn("Query by email:", e); }
         }
-
-        // Query by user ID
         if (user.uid) {
           try {
             const qUid = query(collection(db, "documents"), where("userId", "==", user.uid));
             const sUid = await getDocs(qUid);
             sUid.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
           } catch(e) { console.warn("Query by userId:", e); }
-
           try {
             const qUploaderId = query(collection(db, "documents"), where("uploaderId", "==", user.uid));
             const sUploaderId = await getDocs(qUploaderId);
             sUploaderId.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
           } catch(e) { console.warn("Query by uploaderId:", e); }
         }
-
-        // Check if admin: if user has no personal docs, allow viewing all
         const isAdmin = user.email === 'its.akshatnetworkhub23@gmail.com';
         if (isAdmin && docsMap.size === 0) {
           const qAll = query(collection(db, "documents"));
           const sAll = await getDocs(qAll);
           sAll.forEach(d => docsMap.set(d.id, { id: d.id, ...d.data() }));
         }
-
         const docs = Array.from(docsMap.values());
-
         if (docs.length === 0) {
           listEl.style.display = "none";
           emptyState.style.display = "block";
           if (countBadge) countBadge.innerText = "0 Resources Found";
           return;
         }
-
         emptyState.style.display = "none";
         listEl.style.display = "grid";
         if (countBadge) countBadge.innerText = `${docs.length} Eligible ${docs.length === 1 ? 'Resource' : 'Resources'}`;
-
         listEl.innerHTML = "";
         for (const docItem of docs) {
           let isTrained = false;
@@ -2679,7 +2389,6 @@
             const kSnap = await getDoc(doc(db, "resource_knowledge", docItem.id));
             if (kSnap.exists()) isTrained = true;
           } catch(kErr) {}
-
           const card = document.createElement("div");
           card.className = "res-select-card";
           const title = docItem.title || "Academic Resource";
@@ -2687,7 +2396,6 @@
           const disc = docItem.discipline || "General";
           const date = docItem.createdAt ? new Date(docItem.createdAt.seconds ? docItem.createdAt.seconds * 1000 : docItem.createdAt).toLocaleDateString() : "Recent";
           const pages = docItem.totalPages || docItem.pageCount || "PDF";
-
           card.innerHTML = `
             <div>
               <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; gap:8px;">
@@ -2723,38 +2431,27 @@
         listEl.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#ef4444;"><p>Error fetching resources: ${err.message}</p></div>`;
       }
     }
-
-    // ====================================================
-    // LOAD SINGLE RESOURCE TRAINER WORKBENCH (WITH PARAM)
-    // ====================================================
     async function loadSingleResourceTrainer(docId, user) {
       const activeUid = user ? user.uid : "";
       const userEmail = user ? user.email : "";
       const isAdmin = userEmail === 'its.akshatnetworkhub23@gmail.com';
-
       try {
         let snap = await getDoc(doc(db, "documents", docId));
         if (!snap.exists()) snap = await getDoc(doc(db, "pending_approvals", docId));
-
         if (!snap.exists()) {
           if (window.customAlert) await window.customAlert("Resource document not found.", { title: "Error", isDanger: true });
           else alert("Resource document not found.");
           window.location.href = "train_model.html";
           return;
         }
-
         const data = snap.data();
         const ownerId = data.userId || data.uploaderId || data.uploader;
         const ownerEmail = data.uploaderEmail ? data.uploaderEmail.toLowerCase() : "";
-
-        // STRICT OWNERSHIP & SECURITY CHECK
         const isOwner = (ownerId && ownerId === activeUid) || (ownerEmail && ownerEmail === userEmail.toLowerCase()) || isAdmin;
-
         if (!isOwner) {
           document.getElementById("accessDeniedBanner").style.display = "block";
           document.getElementById("trainCard").style.display = "none";
           document.getElementById("authorizedResourcesSection").style.display = "none";
-          
           const caseId = `CASE-AAV-${docId.slice(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
           addDoc(collection(db, "authorized_access_violations"), {
             caseId,
@@ -2768,7 +2465,6 @@
             country: "Recorded",
             timestamp: serverTimestamp()
           }).catch(console.error);
-
           if (window.customAlert) {
             await window.customAlert("Security Alert: You do not have authorization to train AI models for resources uploaded by other contributors. This incident has been logged in Security Violations.", { title: "Access Denied", isDanger: true });
           } else {
@@ -2776,7 +2472,6 @@
           }
           return;
         }
-
         document.getElementById("resTitle").textContent = data.title || "Untitled Document";
         document.getElementById("resCatBadge").textContent = data.category || "Resource";
         document.getElementById("resDisc").textContent = data.discipline || "N/A";
@@ -2785,30 +2480,23 @@
         document.getElementById("authorizedResourcesSection").style.display = "none";
         document.getElementById("accessDeniedBanner").style.display = "none";
         window.loadExistingNotes();
-
-        // PDF Length Detection
         window.docData = data;
         if (data.pageCount) {
           updateDocPageLimit(parseInt(data.pageCount, 10));
         } else if (data.totalPages) {
           updateDocPageLimit(parseInt(data.totalPages, 10));
         }
-
         if (data.pdfUrl) {
           detectPdfLength(data.pdfUrl);
         }
-
       } catch (err) {
         console.error("Train model load error:", err);
       }
     }
-
     window.handleTrainSubmit = async function(e) {
       e.preventDefault();
-
       const linkInputs = document.querySelectorAll(".crawler-url");
       const urls = Array.from(linkInputs).map(i => i.value.trim()).filter(Boolean);
-
       const faqItems = document.querySelectorAll(".faq-item");
       const faqs = [];
       faqItems.forEach(item => {
@@ -2821,19 +2509,15 @@
           });
         }
       });
-
       if (faqs.length === 0 && urls.length === 0) {
         if (window.customAlert) await window.customAlert("Please provide at least one Web Link or FAQ pair.", { title: "Input Required" });
         else alert("Please provide at least one Web Link or FAQ pair.");
         return;
       }
-
       const btn = document.getElementById("submitTrainBtn");
       btn.disabled = true;
       btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Processing AI Knowledge Extraction & Generation...`;
-
       try {
-        // Send request to backend
         const res = await fetch((window.API_BASE_URL || '') + '/api/ai/train-model', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2844,11 +2528,8 @@
             userId: activeUid
           })
         });
-
         let resData = {};
         try { resData = await res.json(); } catch(jsonErr) {}
-
-        // Save runtime knowledge.md to Firestore resource_knowledge collection
         let knowledgeMd = `# Runtime Knowledge Model for Resource: ${targetId}\n\n`;
         knowledgeMd += `## FAQ Knowledge Base\n`;
         faqs.forEach((f, idx) => {
@@ -2860,7 +2541,6 @@
             knowledgeMd += `- ${u}\n`;
           });
         }
-
         await setDoc(doc(db, "resource_knowledge", targetId), {
           resourceId: targetId,
           knowledgeMd,
@@ -2868,13 +2548,11 @@
           urls,
           updatedAt: serverTimestamp()
         });
-
         if (window.customAlert) {
           await window.customAlert("AI Knowledge Model trained and published successfully for this resource!", { title: "Training Complete" });
         } else {
           alert("AI Knowledge Model trained and published successfully for this resource!");
         }
-
         window.location.href = "dashboard.html";
       } catch (err) {
         console.error("AI Train Model error:", err);
@@ -2888,10 +2566,6 @@
         btn.innerHTML = `<i class="ri-cpu-line"></i> Process & Generate Runtime Knowledge Model`;
       }
     };
-
-    // ====================================================
-    // AUTH STATE LISTENER & WORKBENCH ORCHESTRATOR
-    // ====================================================
     onAuthStateChanged(auth, async (user) => {
       const authOverlay = document.getElementById("trainAuthOverlay");
       const userArea = document.getElementById("headerUserArea");
@@ -2899,7 +2573,6 @@
       const userAvatarEl = document.getElementById("headerUserAvatar");
       const logoutBtn = document.getElementById("headerLogoutBtn");
       const navAllResourcesLink = document.getElementById("navAllResourcesLink");
-
       if (!user) {
         currentAuthUser = null;
         if (authOverlay) authOverlay.style.display = "flex";
@@ -2910,11 +2583,9 @@
         document.getElementById("authorizedResourcesSection").style.display = "none";
         return;
       }
-
       currentAuthUser = user;
       localStorage.setItem("dpgActiveUserUid", user.uid);
       localStorage.setItem("dpgUserEmail", user.email || "");
-
       if (authOverlay) authOverlay.style.display = "none";
       if (userArea) userArea.style.display = "flex";
       if (logoutBtn) logoutBtn.style.display = "block";
@@ -2923,22 +2594,17 @@
         if (user.photoURL) userAvatarEl.innerHTML = `<img src="${user.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
         else userAvatarEl.innerText = (user.displayName || user.email || 'U')[0].toUpperCase();
       }
-
       if (!targetId) {
-        // Opened without param: Show all resources uploaded by this user
         if (navAllResourcesLink) navAllResourcesLink.style.display = "none";
         document.getElementById("trainCard").style.display = "none";
         await loadAuthorizedResources(user);
       } else {
-        // Opened with param: Verify ownership & load workbench
         if (navAllResourcesLink) navAllResourcesLink.style.display = "inline-flex";
         document.getElementById("authorizedResourcesSection").style.display = "none";
         await loadSingleResourceTrainer(targetId, user);
       }
     });
   </script>
-
-  <!-- AI Verification & Polish Modal (Submit-Time Internet Knowledge Check) -->
   <div id="aiVerifyModal" class="ai-modal-overlay" style="display:none;">
     <div class="ai-modal-content">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.8rem;">

@@ -1,40 +1,9 @@
-/**
- * DPGNotes Universal URL Parameter, Attribution, Telemetry & Media Responsiveness Engine
- * =========================================================================================
- * Features:
- *  1. Smart Share Link resolution & instant redirection (?share=TOKEN)
- *  2. Standard UTM & Referrer parameter extraction and multi-tier persistence
- *  3. Inbound Traffic Source Classification:
- *     - AI Tools: ChatGPT, Gemini, Claude, Copilot, Perplexity, Poe, DeepSeek, Mistral
- *     - Search Engines: Google, Edge/Bing, Internet Explorer/MSN, Yahoo, DuckDuckGo, Baidu, Yandex, Ecosia
- *     - Social Networks: X/Twitter, LinkedIn, Facebook, Instagram, Reddit, YouTube, WhatsApp, Telegram
- *     - Campaign / UTM / Direct Referrals
- *  4. Incognito / Private Browsing heuristic detection
- *  5. Guest Mode vs Authenticated Contributor detection
- *  6. Location & IP Telemetry: IP Address, Country, City, GMT Offset, Timezone
- *  7. Device & Viewport Metrics: Desktop, Tablet, Mobile breakdown
- *  8. Custom Media Responsiveness Rating Star Modal:
- *     - STRICTLY Tablet & Mobile only (never on desktop)
- *     - 1-5 Star interactive rating
- *     - For ratings <= 3 stars, provides optional feedback input with Active Page URL
- *     - Persists feedback and telemetry into Firestore
- *  9. Sign-In trigger with destination redirection (?isSignIn=true)
- * 10. Search Crawler Transparency (crawlers never blocked)
- * =========================================================================================
- */
+/** DPGNotes Universal URL Parameter, Attribution, Telemetry & Media Responsiveness Engine */
 (function() {
   'use strict';
-
-  // 1. Crawler / Bot Detection
   const isCrawler = /bot|googlebot|crawler|spider|robot|crawling|google-inspectiontool|lighthouse/i.test(navigator.userAgent);
-
-  // Parse search parameters
   const searchStr = window.location.search;
   const params = new URLSearchParams(searchStr);
-
-  // ==========================================================================
-  // 2. UTM & REFERRER ATTRIBUTION CAPTURE
-  // ==========================================================================
   const source = params.get('utm_source') || params.get('utm-source') || params.get('source') || '';
   const medium = params.get('utm_medium') || params.get('utm-medium') || params.get('medium') || '';
   const campaign = params.get('utm_campaign') || params.get('utm-campaign') || params.get('campaign') || '';
@@ -42,8 +11,6 @@
   const content = params.get('utm_content') || params.get('utm-content') || params.get('content') || '';
   const gclid = params.get('gclid') || '';
   const fbclid = params.get('fbclid') || '';
-
-  // External Referrer detection
   let referrer = params.get('utm_referrer') || params.get('utm-referrer') || params.get('ref') || params.get('referrer') || '';
   if (!referrer && document.referrer) {
     try {
@@ -57,9 +24,7 @@
       }
     }
   }
-
   const hasAttribution = Boolean(source || medium || campaign || term || content || referrer || gclid || fbclid);
-
   let activeAttribution = null;
   if (hasAttribution) {
     activeAttribution = {
@@ -74,20 +39,12 @@
       landing_page: window.location.pathname + window.location.search,
       captured_at: new Date().toISOString()
     };
-
     try {
-      // Session storage (current browsing session)
       sessionStorage.setItem('dpg_attribution', JSON.stringify(activeAttribution));
-
-      // First-Touch attribution (only set once per browser lifetime)
       if (!localStorage.getItem('dpg_attribution_first')) {
         localStorage.setItem('dpg_attribution_first', JSON.stringify(activeAttribution));
       }
-
-      // Last-Touch attribution (updated on each landing with new params)
       localStorage.setItem('dpg_attribution_last', JSON.stringify(activeAttribution));
-
-      // Flat compatibility keys
       if (source) {
         sessionStorage.setItem('utm_source', source);
         sessionStorage.setItem('utm-source', source);
@@ -114,9 +71,7 @@
       console.warn('[dpg-params] Failed to persist attribution storage:', e);
     }
   }
-
   setupAttributionHelper(activeAttribution);
-
   function setupAttributionHelper(currentAttr) {
     window.dpgAttribution = {
       current: currentAttr,
@@ -154,14 +109,9 @@
       }
     };
   }
-
-  // ==========================================================================
-  // 3. INBOUND TRAFFIC CLASSIFICATION ALGORITHM (AI, Search, Social, Direct)
-  // ==========================================================================
   function classifyInboundTraffic(refUrlStr, searchParams) {
     const utmSource = (searchParams.get('utm_source') || searchParams.get('utm-source') || searchParams.get('source') || '').toLowerCase();
     const utmMedium = (searchParams.get('utm_medium') || searchParams.get('utm-medium') || searchParams.get('medium') || '').toLowerCase();
-
     let refHost = '';
     if (refUrlStr) {
       try {
@@ -171,8 +121,6 @@
         refHost = refUrlStr.toLowerCase();
       }
     }
-
-    // A. AI Tools Detection (ChatGPT, Gemini, Claude, Copilot, Perplexity, Poe, etc.)
     if (
       utmSource.includes('chatgpt') ||
       utmSource.includes('openai') ||
@@ -229,8 +177,6 @@
     ) {
       return { category: 'AI Tool', name: 'Mistral AI', channel: 'AI Referral' };
     }
-
-    // B. Search Engines (Google, Internet Explorer / Edge, Bing, Yahoo, DuckDuckGo, etc.)
     if (
       (refHost.includes('google.') && !refHost.includes('gemini.google.com') && !refHost.includes('bard.google.com')) ||
       utmSource === 'google'
@@ -279,8 +225,6 @@
     ) {
       return { category: 'Search Engine', name: 'Internet Explorer / MSN', channel: 'Organic Search' };
     }
-
-    // C. Social Platforms
     if (refHost.includes('t.co') || refHost.includes('twitter.com') || refHost.includes('x.com') || utmSource === 'twitter' || utmSource === 'x') {
       return { category: 'Social', name: 'X / Twitter', channel: 'Social Referral' };
     }
@@ -305,39 +249,25 @@
     if (refHost.includes('t.me') || refHost.includes('telegram.org') || utmSource === 'telegram') {
       return { category: 'Social', name: 'Telegram', channel: 'Social Referral' };
     }
-
-    // D. Campaign / UTM Traffic
     if (utmSource) {
       return { category: 'Campaign', name: utmSource.toUpperCase(), channel: utmMedium || 'Campaign' };
     }
-
-    // E. External Reference
     if (refHost && !refHost.includes(window.location.hostname)) {
       return { category: 'Other Referral', name: refHost.replace('www.', ''), channel: 'External Referral' };
     }
-
-    // F. Direct / Bookmark
     return { category: 'Direct', name: 'Direct Traffic', channel: 'Direct / Bookmark' };
   }
-
-  // ==========================================================================
-  // 4. INCOGNITO / PRIVATE BROWSING DETECTION HEURISTIC
-  // ==========================================================================
   async function detectIncognito() {
     try {
-      // Chromium (Chrome, Edge, Opera, Brave, Vivaldi)
       if ('storage' in navigator && 'estimate' in navigator.storage) {
         const { quota } = await navigator.storage.estimate();
-        // Quota is heavily capped in incognito (typically < 120MB, whereas normal is multi-GB)
         if (quota && quota < 125 * 1024 * 1024) {
           return true;
         }
       }
-      // Safari / WebKit
       if (/Safari/i.test(navigator.userAgent) && !/Chrome|Chromium|Edg/i.test(navigator.userAgent)) {
         try {
           if (window.openDatabase === undefined) {
-            // standard in modern Safari
           } else {
             window.openDatabase(null, null, null, null);
           }
@@ -345,7 +275,6 @@
           return true;
         }
       }
-      // Firefox
       if ('MozAppearance' in document.documentElement.style) {
         if (navigator.serviceWorker === undefined) {
           return true;
@@ -354,15 +283,10 @@
     } catch (e) {}
     return false;
   }
-
-  // ==========================================================================
-  // 5. DEVICE & VIEWPORT CLASSIFICATION
-  // ==========================================================================
   function detectDeviceType() {
     const ua = navigator.userAgent;
     const width = window.innerWidth;
     const isTouch = navigator.maxTouchPoints > 0;
-
     if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua) || (width >= 768 && width <= 1024 && isTouch)) {
       return 'Tablet';
     }
@@ -371,7 +295,6 @@
     }
     return 'Desktop';
   }
-
   function getGmtOffsetString() {
     const offsetMinutes = -new Date().getTimezoneOffset();
     const sign = offsetMinutes >= 0 ? '+' : '-';
@@ -380,22 +303,16 @@
     const mins = String(absMinutes % 60).padStart(2, '0');
     return `GMT${sign}${hours}:${mins}`;
   }
-
-  // ==========================================================================
-  // 6. LOCATION & IP TELEMETRY
-  // ==========================================================================
   async function resolveGeoLocation() {
     try {
       const cached = sessionStorage.getItem('dpg_visitor_geo');
       if (cached) return JSON.parse(cached);
     } catch(e) {}
-
     let geo = {
       ip: 'Unknown',
       country: 'Unknown',
       city: 'N/A'
     };
-
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
@@ -412,7 +329,6 @@
         return geo;
       }
     } catch(err) {
-      // Fallback IP lookup
       try {
         const resIp = await fetch('https://api.ipify.org?format=json');
         if (resIp.ok) {
@@ -421,47 +337,34 @@
         }
       } catch(_) {}
     }
-
     try {
       sessionStorage.setItem('dpg_visitor_geo', JSON.stringify(geo));
     } catch(e) {}
     return geo;
   }
-
-  // ==========================================================================
-  // 7. FIREBASE TELEMETRY PERSISTENCE (visitor_metrics)
-  // ==========================================================================
   async function logTelemetryVisit() {
     if (isCrawler) return;
-
-    // Deduplicate within the same browsing session per active page
     const pageKey = 'dpg_metric_logged_' + window.location.pathname;
     try {
       if (sessionStorage.getItem(pageKey)) return;
       sessionStorage.setItem(pageKey, 'true');
     } catch(e) {}
-
     try {
       const [isIncognito, geo] = await Promise.all([
         detectIncognito(),
         resolveGeoLocation()
       ]);
-
       const detectedTraffic = classifyInboundTraffic(referrer, params);
       const deviceType = detectDeviceType();
       const timezone = (Intl && Intl.DateTimeFormat) ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC';
       const gmtOffset = getGmtOffsetString();
-
       let userUid = '';
       try {
         userUid = localStorage.getItem('dpgActiveUserUid') || (window.dpgAuth && window.dpgAuth.currentUser ? window.dpgAuth.currentUser.uid : '');
       } catch(e) {}
       const userMode = userUid ? 'Contributor' : 'Guest';
-
-      // Dynamically load Firebase Firestore
       const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
       const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
-
       const firebaseConfig = {
         apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
         authDomain: "dpgnotes.firebaseapp.com",
@@ -470,10 +373,8 @@
         messagingSenderId: "910494426039",
         appId: "1:910494426039:web:adeae5315caaf846c43e32"
       };
-
       const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(firebaseConfig, "dpgnotes") : getApps()[0]);
       const db = getFirestore(app);
-
       const metricPayload = {
         activePageUrl: window.location.href,
         pathname: window.location.pathname,
@@ -500,24 +401,16 @@
         userAgent: navigator.userAgent,
         timestamp: serverTimestamp()
       };
-
       await addDoc(collection(db, "visitor_metrics"), metricPayload);
     } catch(telemetryErr) {
       console.warn('[dpg-params] Telemetry log notice:', telemetryErr.message || telemetryErr);
     }
   }
-
-  // Trigger telemetry logging after page interactive
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(logTelemetryVisit, 1200));
   } else {
     setTimeout(logTelemetryVisit, 1200);
   }
-
-  // ==========================================================================
-  // 8. CUSTOM MEDIA RESPONSIVENESS RATING MODAL (TABLET & MOBILE ONLY)
-  // ==========================================================================
-  // Helper: Persistent Client Device ID for multi-layer tracking across refreshes/clears
   function getClientDeviceId() {
     let devId = null;
     try {
@@ -527,7 +420,6 @@
         if (match) devId = match[2];
       }
     } catch(e) {}
-
     if (!devId) {
       const rawSeed = (navigator.userAgent || '') + (navigator.hardwareConcurrency || '') + (screen.width + 'x' + screen.height) + (Intl.DateTimeFormat().resolvedOptions().timeZone || '') + Date.now() + Math.random();
       let hash = 0;
@@ -543,33 +435,22 @@
     }
     return devId;
   }
-
   const FORTNIGHT_MS = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
-
-  // ==========================================================================
-  // 8. CUSTOM MEDIA RESPONSIVENESS RATING MODAL (FORTNIGHTLY / 14 DAYS)
-  // ==========================================================================
   async function initResponsivenessRatingModal() {
     if (isCrawler) return;
-
     const deviceType = detectDeviceType();
     const isTabletOrMobile = deviceType === 'Mobile' || deviceType === 'Tablet' || window.innerWidth <= 1024;
     if (!isTabletOrMobile) return;
-
     const clientDeviceId = getClientDeviceId();
     let userUid = '';
     try {
       userUid = localStorage.getItem('dpgActiveUserUid') || '';
     } catch(e) {}
-
-    // Check fast local cache
     try {
       const lastRated = parseInt(localStorage.getItem('dpg_responsiveness_rated_time') || '0', 10);
       if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return;
       if (sessionStorage.getItem('dpg_responsiveness_dismissed')) return;
     } catch(e) {}
-
-    // Firestore Verification: Fortnightly check based on previous feedback timestamp
     try {
       const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
       const { getFirestore, collection, query, where, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
@@ -583,7 +464,6 @@
       };
       const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
       const db = getFirestore(app);
-
       let q;
       if (userUid) {
         q = query(collection(db, "responsiveness_feedback"), where("userId", "==", userUid), orderBy("timestamp", "desc"), limit(1));
@@ -600,15 +480,10 @@
         }
       }
     } catch(err) {
-      // Non-blocking firestore check fallback
     }
-
-    // Show modal smoothly after 7 seconds
     setTimeout(renderResponsivenessModal, 7000);
-
     function renderResponsivenessModal() {
       if (document.getElementById('dpgResponsivenessModal')) return;
-
       const modalContainer = document.createElement('div');
       modalContainer.id = 'dpgResponsivenessModal';
       modalContainer.className = 'dpg-rating-modal';
@@ -633,7 +508,6 @@
         transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         box-sizing: border-box;
       `;
-
       modalContainer.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
           <div style="display:flex; align-items:center; gap:8px;">
@@ -680,14 +554,11 @@
           </button>
         </div>
       `;
-
       document.body.appendChild(modalContainer);
-
       requestAnimationFrame(() => {
         modalContainer.style.opacity = '1';
         modalContainer.style.transform = 'translateX(-50%) translateY(0)';
       });
-
       let currentRating = 0;
       const starBtns = modalContainer.querySelectorAll('.dpg-star-btn');
       const ratingLabel = modalContainer.querySelector('#dpgRatingLabel');
@@ -696,7 +567,6 @@
       const closeBtn = modalContainer.querySelector('#dpgCloseRespModal');
       const dismissBtn = modalContainer.querySelector('#dpgDismissRespBtn');
       const feedbackInput = modalContainer.querySelector('#dpgRespFeedbackText');
-
       const ratingDescriptions = {
         1: '★ Very Poor Layout',
         2: '★★ Needs Improvement',
@@ -704,7 +574,6 @@
         4: '★★★★ Good Experience',
         5: '★★★★★ Flawless Responsiveness'
       };
-
       starBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           currentRating = parseInt(btn.dataset.rating, 10);
@@ -712,7 +581,6 @@
           submitBtn.disabled = false;
           submitBtn.style.opacity = '1';
           submitBtn.style.boxShadow = '0 4px 14px rgba(99,102,241,0.4)';
-
           if (currentRating <= 3) {
             poorSection.style.display = 'block';
             if (feedbackInput) feedbackInput.focus();
@@ -721,7 +589,6 @@
           }
         });
       });
-
       function updateStarDisplay(score) {
         starBtns.forEach(b => {
           const val = parseInt(b.dataset.rating, 10);
@@ -735,7 +602,6 @@
         });
         ratingLabel.textContent = ratingDescriptions[score] || 'Select your rating';
       }
-
       function dismissModal() {
         try {
           sessionStorage.setItem('dpg_responsiveness_dismissed', 'true');
@@ -744,27 +610,20 @@
         modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
         setTimeout(() => modalContainer.remove(), 400);
       }
-
       closeBtn.addEventListener('click', dismissModal);
       dismissBtn.addEventListener('click', dismissModal);
-
       submitBtn.addEventListener('click', async () => {
         if (!currentRating) return;
-
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Submitting...';
-
         try {
           const [isIncognito, geo] = await Promise.all([
             detectIncognito(),
             resolveGeoLocation()
           ]);
-
           const userMode = userUid ? 'Contributor' : 'Guest';
-
           const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
           const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
-
           const cfg = {
             apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
             authDomain: "dpgnotes.firebaseapp.com",
@@ -775,7 +634,6 @@
           };
           const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
           const db = getFirestore(app);
-
           const feedbackData = {
             rating: currentRating,
             feedback: (feedbackInput && feedbackInput.value) ? feedbackInput.value.trim() : '',
@@ -797,16 +655,13 @@
             userAgent: navigator.userAgent,
             timestamp: serverTimestamp()
           };
-
           await addDoc(collection(db, "responsiveness_feedback"), feedbackData);
-
           try {
             localStorage.setItem('dpg_responsiveness_rated_time', Date.now().toString());
             localStorage.setItem('dpg_responsiveness_rating_val', currentRating.toString());
             window.dispatchEvent(new CustomEvent('dpg-feedback-submitted', { detail: { type: 'responsiveness', rating: currentRating } }));
             if (typeof updateRuntimeRatingSchema === 'function') updateRuntimeRatingSchema();
           } catch(e) {}
-
           modalContainer.innerHTML = `
             <div style="text-align:center; padding:0.5rem 0;">
               <div style="font-size:2.2rem; color:#10b981; margin-bottom:0.4rem;">✓</div>
@@ -814,13 +669,11 @@
               <p style="margin:0; font-size:0.82rem; color:#94a3b8;">Your feedback helps us make DPGNotes mobile and tablet responsive for everyone.</p>
             </div>
           `;
-
           setTimeout(() => {
             modalContainer.style.opacity = '0';
             modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
             setTimeout(() => modalContainer.remove(), 400);
           }, 2500);
-
         } catch(err) {
           console.error('[dpg-params] Error saving responsiveness feedback:', err);
           modalContainer.remove();
@@ -828,27 +681,18 @@
       });
     }
   }
-
-  // ==========================================================================
-  // 8B. DPGNOTES SERVICE RATING MODAL (TRIGGERED AFTER 2 MINUTES / FORTNIGHTLY)
-  // ==========================================================================
   async function initPlatformRatingModal() {
     if (isCrawler) return;
-
     const clientDeviceId = getClientDeviceId();
     let userUid = '';
     try {
       userUid = localStorage.getItem('dpgActiveUserUid') || '';
     } catch(e) {}
-
-    // Check fast local cache
     try {
       const lastRated = parseInt(localStorage.getItem('dpg_platform_rated_time') || '0', 10);
       if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return;
       if (sessionStorage.getItem('dpg_platform_rating_dismissed')) return;
     } catch(e) {}
-
-    // Firestore Verification: Fortnightly check based on previous feedback timestamp
     try {
       const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
       const { getFirestore, collection, query, where, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
@@ -862,7 +706,6 @@
       };
       const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
       const db = getFirestore(app);
-
       let q;
       if (userUid) {
         q = query(collection(db, "dpgnotes_ratings"), where("userId", "==", userUid), orderBy("timestamp", "desc"), limit(1));
@@ -879,14 +722,10 @@
         }
       }
     } catch(err) {
-      // Non-blocking firestore check fallback
     }
-
     renderPlatformRatingModal();
-
     function renderPlatformRatingModal() {
       if (document.getElementById('dpgPlatformRatingModal') || document.getElementById('dpgResponsivenessModal')) return;
-
       const modalContainer = document.createElement('div');
       modalContainer.id = 'dpgPlatformRatingModal';
       modalContainer.className = 'dpg-rating-modal';
@@ -911,7 +750,6 @@
         transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         box-sizing: border-box;
       `;
-
       modalContainer.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
           <div style="display:flex; align-items:center; gap:8px;">
@@ -957,14 +795,11 @@
           </button>
         </div>
       `;
-
       document.body.appendChild(modalContainer);
-
       requestAnimationFrame(() => {
         modalContainer.style.opacity = '1';
         modalContainer.style.transform = 'translateX(-50%) translateY(0)';
       });
-
       let currentRating = 0;
       const starBtns = modalContainer.querySelectorAll('.dpg-star-btn');
       const ratingLabel = modalContainer.querySelector('#dpgPlatformRatingLabel');
@@ -973,7 +808,6 @@
       const closeBtn = modalContainer.querySelector('#dpgCloseRatingModal');
       const dismissBtn = modalContainer.querySelector('#dpgDismissRatingBtn');
       const feedbackInput = modalContainer.querySelector('#dpgRatingFeedbackText');
-
       const ratingDescriptions = {
         1: '★ Needs Urgent Improvement',
         2: '★★ Below Expectations',
@@ -981,7 +815,6 @@
         4: '★★★★ Very Helpful Platform',
         5: '★★★★★ Outstanding Academic Platform'
       };
-
       starBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           currentRating = parseInt(btn.dataset.rating, 10);
@@ -989,7 +822,6 @@
           submitBtn.disabled = false;
           submitBtn.style.opacity = '1';
           submitBtn.style.boxShadow = '0 4px 14px rgba(56,189,248,0.4)';
-
           if (currentRating <= 3) {
             poorSection.style.display = 'block';
             if (feedbackInput) feedbackInput.focus();
@@ -998,7 +830,6 @@
           }
         });
       });
-
       function updateStarDisplay(score) {
         starBtns.forEach(b => {
           const val = parseInt(b.dataset.rating, 10);
@@ -1012,7 +843,6 @@
         });
         ratingLabel.textContent = ratingDescriptions[score] || 'Select your rating';
       }
-
       function dismissModal() {
         try {
           sessionStorage.setItem('dpg_platform_rating_dismissed', 'true');
@@ -1021,27 +851,20 @@
         modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
         setTimeout(() => modalContainer.remove(), 400);
       }
-
       closeBtn.addEventListener('click', dismissModal);
       dismissBtn.addEventListener('click', dismissModal);
-
       submitBtn.addEventListener('click', async () => {
         if (!currentRating) return;
-
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Submitting...';
-
         try {
           const [isIncognito, geo] = await Promise.all([
             detectIncognito(),
             resolveGeoLocation()
           ]);
-
           const userMode = userUid ? 'Contributor' : 'Guest';
-
           const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
           const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
-
           const cfg = {
             apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
             authDomain: "dpgnotes.firebaseapp.com",
@@ -1052,7 +875,6 @@
           };
           const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
           const db = getFirestore(app);
-
           const ratingData = {
             rating: currentRating,
             opinion: (feedbackInput && feedbackInput.value) ? feedbackInput.value.trim() : '',
@@ -1070,16 +892,13 @@
             timezone: (Intl && Intl.DateTimeFormat) ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
             timestamp: serverTimestamp()
           };
-
           await addDoc(collection(db, "dpgnotes_ratings"), ratingData);
-
           try {
             localStorage.setItem('dpg_platform_rated_time', Date.now().toString());
             localStorage.setItem('dpg_platform_rating_val', currentRating.toString());
             window.dispatchEvent(new CustomEvent('dpg-feedback-submitted', { detail: { type: 'platform', rating: currentRating } }));
             if (typeof updateRuntimeRatingSchema === 'function') updateRuntimeRatingSchema();
           } catch(e) {}
-
           modalContainer.innerHTML = `
             <div style="text-align:center; padding:0.5rem 0;">
               <div style="font-size:2.2rem; color:#10b981; margin-bottom:0.4rem;">✓</div>
@@ -1087,13 +906,11 @@
               <p style="margin:0; font-size:0.82rem; color:#94a3b8;">Your feedback helps us continuously improve DPGNotes for students and educators worldwide.</p>
             </div>
           `;
-
           setTimeout(() => {
             modalContainer.style.opacity = '0';
             modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
             setTimeout(() => modalContainer.remove(), 400);
           }, 2500);
-
         } catch(err) {
           console.error('[dpg-params] Error saving DPGNotes platform rating:', err);
           modalContainer.remove();
@@ -1101,17 +918,11 @@
       });
     }
   }
-
-  // ==========================================================================
-  // 8D. RUNTIME HEAD RATING SCHEMA (REAL-TIME FIRESTORE DATA CALCULATION)
-  // ==========================================================================
   let isRatingListenerAttached = false;
-
   function renderRuntimeRatingSchemaTag(score, ratingCount, reviewCount) {
     try {
       const constrainedScore = Math.max(1, Math.min(5, score));
       const formattedRating = constrainedScore.toFixed(1);
-
       let schemaTag = document.getElementById('dpg-runtime-rating-schema');
       if (!schemaTag) {
         schemaTag = document.createElement('script');
@@ -1119,12 +930,10 @@
         schemaTag.id = 'dpg-runtime-rating-schema';
         document.head.appendChild(schemaTag);
       }
-
       const pageTitle = document.title || "DPGNotes - Academic & Examination Hub";
       const pageDesc = (document.querySelector('meta[name="description"]')?.getAttribute("content")) || 
         "DPGNotes is a modern educational platform providing university notes, solutions, and academic resources.";
       const canonicalUrl = (document.querySelector('link[rel="canonical"]')?.getAttribute("href")) || window.location.href;
-
       const runtimeSchema = {
         "@context": "https://schema.org",
         "@graph": [
@@ -1170,30 +979,23 @@
           }
         ]
       };
-
       schemaTag.textContent = JSON.stringify(runtimeSchema, null, 2);
     } catch (e) {
       console.warn('[dpg-params] Error rendering runtime rating schema:', e);
     }
   }
-
   async function initRealtimeFirestoreRating() {
     let respState = { count: 0, sum: 0, reviews: 0, satisfactory: 0 };
     let expState = { count: 0, sum: 0, reviews: 0 };
-
     function calculateAndPublish() {
       const totalRatings = respState.count + expState.count;
       const totalSum = respState.sum + expState.sum;
       const totalReviews = respState.reviews + expState.reviews;
-
-      // Authentic average computed truthfully across all verified user feedbacks
       let computedAvg = 3.28;
       if (totalRatings > 0) {
         computedAvg = totalSum / totalRatings;
       }
-
       const mobileScore = respState.count > 0 ? Math.round((respState.satisfactory / respState.count) * 100) : 64;
-
       if (totalRatings > 0) {
         try {
           localStorage.setItem('dpg_live_firestore_rating_val', computedAvg.toFixed(2));
@@ -1201,20 +1003,15 @@
           localStorage.setItem('dpg_live_firestore_review_count', (totalReviews || totalRatings).toString());
           localStorage.setItem('dpg_live_firestore_resp_score', mobileScore.toString());
         } catch(e) {}
-
         renderRuntimeRatingSchemaTag(computedAvg, totalRatings, totalReviews || totalRatings);
-
-        // Notify history monitoring engine to synchronize EducationalOrganization runtime schema
         if (window.__dpgHistoryMonitoring && typeof window.__dpgHistoryMonitoring.injectRuntimeJsonLd === 'function') {
           window.__dpgHistoryMonitoring.injectRuntimeJsonLd();
         }
       }
     }
-
     try {
       const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
       const { getFirestore, collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js');
-
       const cfg = {
         apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
         authDomain: "dpgnotes.firebaseapp.com",
@@ -1225,8 +1022,6 @@
       };
       const app = getApps().find(a => a.name === "dpgnotes") || (!getApps().length ? initializeApp(cfg, "dpgnotes") : getApps()[0]);
       const db = getFirestore(app);
-
-      // Realtime listener 1: Media Responsiveness Feedback
       onSnapshot(collection(db, "responsiveness_feedback"), (snapshot) => {
         let sum = 0, count = 0, reviews = 0, satisfactory = 0;
         snapshot.forEach(doc => {
@@ -1247,8 +1042,6 @@
         console.warn('[dpg-params] Realtime responsiveness snapshot warning, attempting REST:', err);
         fallbackRestFirestoreRatings(calculateAndPublish, (r, e) => { respState = r; expState = e; });
       });
-
-      // Realtime listener 2: DPGNotes Service & Platform Ratings
       onSnapshot(collection(db, "dpgnotes_ratings"), (snapshot) => {
         let sum = 0, count = 0, reviews = 0;
         snapshot.forEach(doc => {
@@ -1267,13 +1060,11 @@
       }, (err) => {
         console.warn('[dpg-params] Realtime platform ratings snapshot warning:', err);
       });
-
     } catch(err) {
       console.warn('[dpg-params] Realtime Firestore import failed, using REST API:', err);
       fallbackRestFirestoreRatings(calculateAndPublish, (r, e) => { respState = r; expState = e; });
     }
   }
-
   async function fallbackRestFirestoreRatings(calculateAndPublish, setState) {
     try {
       const [resResp, resPlat] = await Promise.all([
@@ -1282,7 +1073,6 @@
       ]);
       const dataResp = await resResp.json();
       const dataPlat = await resPlat.json();
-
       let respSum = 0, respCount = 0, respReviews = 0, respSatisfactory = 0;
       if (dataResp && dataResp.documents) {
         dataResp.documents.forEach(d => {
@@ -1295,7 +1085,6 @@
           if (d.fields && d.fields.feedback && d.fields.feedback.stringValue && d.fields.feedback.stringValue.trim()) respReviews++;
         });
       }
-
       let platSum = 0, platCount = 0, platReviews = 0;
       if (dataPlat && dataPlat.documents) {
         dataPlat.documents.forEach(d => {
@@ -1304,7 +1093,6 @@
           if (d.fields && d.fields.opinion && d.fields.opinion.stringValue && d.fields.opinion.stringValue.trim()) platReviews++;
         });
       }
-
       if (typeof setState === 'function') {
         setState({ count: respCount, sum: respSum, reviews: respReviews, satisfactory: respSatisfactory }, { count: platCount, sum: platSum, reviews: platReviews });
       }
@@ -1315,14 +1103,11 @@
       console.warn('[dpg-params] REST fallback fetch error:', e);
     }
   }
-
   function updateRuntimeRatingSchema() {
     try {
-      // Step 1: Render immediately from localStorage cache (if available) so search crawlers have zero latency
       let initialAvg = 3.28; // Current authentic computed Firestore average (82 sum / 25 ratings)
       let initialCount = 25;
       let initialReviews = 9;
-
       try {
         const cachedAvg = parseFloat(localStorage.getItem('dpg_live_firestore_rating_val'));
         const cachedCount = parseInt(localStorage.getItem('dpg_live_firestore_rating_count'), 10);
@@ -1333,10 +1118,7 @@
           if (cachedRev > 0) initialReviews = cachedRev;
         }
       } catch(e) {}
-
       renderRuntimeRatingSchemaTag(initialAvg, initialCount, initialReviews);
-
-      // Step 2: Establish real-time Firestore synchronization
       if (!isRatingListenerAttached) {
         isRatingListenerAttached = true;
         initRealtimeFirestoreRating();
@@ -1345,27 +1127,20 @@
       console.warn('[dpg-params] updateRuntimeRatingSchema error:', e);
     }
   }
-
   window.updateRuntimeRatingSchema = updateRuntimeRatingSchema;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', updateRuntimeRatingSchema);
   } else {
     updateRuntimeRatingSchema();
   }
-
-  // ==========================================================================
-  // 8C. UNIVERSAL DYNAMIC METADATA & ABSOLUTE IN-PAGE LINK RESOLUTION
-  // ==========================================================================
   function initDynamicPageMetadata() {
     try {
       const p = window.location.pathname;
       const s = window.location.search;
       const h = window.location.hash;
       const urlParams = new URLSearchParams(s);
-
       let targetTitle = document.title;
       let targetDesc = "DPGNotes Academic Portal - Verified academic notes, practical manuals, exam solutions and university question papers.";
-
       if (p.includes('AssignmentSolution')) {
         const id = urlParams.get('id');
         const q = urlParams.get('q');
@@ -1424,10 +1199,7 @@
         }
         targetDesc = "Official legal policies, privacy commitments, DRASA regulations, terms of service and compliance standards for the DPGNotes Academic Portal.";
       }
-
-      // Apply title and meta description
       document.title = targetTitle;
-
       let metaDesc = document.querySelector('meta[name="description"]');
       if (!metaDesc) {
         metaDesc = document.createElement('meta');
@@ -1435,7 +1207,6 @@
         document.head.appendChild(metaDesc);
       }
       metaDesc.content = targetDesc;
-
       let ogTitle = document.querySelector('meta[property="og:title"]');
       if (!ogTitle) {
         ogTitle = document.createElement('meta');
@@ -1443,7 +1214,6 @@
         document.head.appendChild(ogTitle);
       }
       ogTitle.content = targetTitle;
-
       let ogDesc = document.querySelector('meta[property="og:description"]');
       if (!ogDesc) {
         ogDesc = document.createElement('meta');
@@ -1451,8 +1221,6 @@
         document.head.appendChild(ogDesc);
       }
       ogDesc.content = targetDesc;
-
-      // Ensure in-page navigation links with '#' contain the complete canonical URL
       const fullOriginPath = 'https://dpgnotes.web.app' + window.location.pathname;
       document.querySelectorAll('a[href^="#"]').forEach(a => {
         const hashTarget = a.getAttribute('href');
@@ -1460,13 +1228,10 @@
           a.href = fullOriginPath + hashTarget;
         }
       });
-
     } catch(metaErr) {
       console.warn('[dpg-params] Dynamic metadata generation warning:', metaErr);
     }
   }
-
-  // Trigger Rating Modals and Metadata Engine
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       initResponsivenessRatingModal();
@@ -1478,22 +1243,16 @@
     initDynamicPageMetadata();
     setTimeout(initPlatformRatingModal, 120000); // 2 minutes trigger
   }
-
-  // ==========================================================================
-  // 9. SIGN-IN TRIGGER & REDIRECT-TO FLOW
-  // ==========================================================================
   const isSignInRequested = params.get('isSignIn') === 'true' ||
                             params.get('is-sign-in') === 'true' ||
                             params.get('signIn') === 'true' ||
                             params.get('sign-in') === 'true' ||
                             params.get('login') === 'true';
-
   const rawRedirectTo = params.get('redirect-to') ||
                         params.get('redirect_to') ||
                         params.get('redirectTo') ||
                         params.get('returnUrl') ||
                         params.get('next');
-
   function sanitizeRedirectUrl(urlStr) {
     if (!urlStr) return null;
     const trimmed = urlStr.trim();
@@ -1516,7 +1275,6 @@
     } catch(e) {}
     return null;
   }
-
   const sanitizedRedirect = sanitizeRedirectUrl(rawRedirectTo);
   if (sanitizedRedirect) {
     try {
@@ -1524,13 +1282,11 @@
       localStorage.setItem('dpg_auth_redirect', sanitizedRedirect);
     } catch(e) {}
   }
-
   if (isSignInRequested && !isCrawler) {
     const isAlreadyAuthenticated = Boolean(
       localStorage.getItem('dpgActiveUserUid') ||
       (window.dpgAuth && window.dpgAuth.currentUser)
     );
-
     if (isAlreadyAuthenticated) {
       if (sanitizedRedirect) {
         window.location.href = sanitizedRedirect;
@@ -1546,7 +1302,6 @@
           window.addEventListener('dpg-auth-component-ready', function() {
             if (typeof window.openSignInModal === 'function') window.openSignInModal();
           }, { once: true });
-
           let attempts = 0;
           const retryTimer = setInterval(function() {
             attempts++;
@@ -1559,7 +1314,6 @@
           }, 100);
         }
       };
-
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', triggerAuthModal);
       } else {
@@ -1567,7 +1321,6 @@
       }
     }
   }
-
   window.addEventListener('dpg-auth-success', function() {
     try {
       const destination = sessionStorage.getItem('dpg_auth_redirect') || localStorage.getItem('dpg_auth_redirect');
@@ -1578,31 +1331,23 @@
       }
     } catch(e) {}
   });
-
-  // ==========================================================================
-  // 10. SMART SHARE LINK RESOLUTION & REDIRECTION (?share=TOKEN or ?token=TOKEN or ?share_token=TOKEN)
-  // ==========================================================================
   const rawShareParam = params.get('share') || 
                         params.get('share_token') || 
                         params.get('shareToken') || 
                         params.get('code') || 
                         (!window.location.pathname.includes('dpgnotes-video.html') ? params.get('token') : null);
   const shareToken = rawShareParam ? rawShareParam.trim() : null;
-
   if (shareToken) {
-    // Fast path: If the token is unambiguously a video share token (VSH_ or VSH_AD_)
     if (shareToken.startsWith('VSH_') || shareToken.startsWith('VSH_AD_')) {
       if (!window.location.pathname.includes('dpgnotes-video.html')) {
         window.location.replace(`https://dpgnotes.web.app/dpgnotes-video.html?token=${encodeURIComponent(shareToken)}`);
         return;
       }
     }
-
     const isAlreadyViewingPdf = window.location.pathname.includes('dpgnotes-pdf-viewer.html') && (params.get('pdf') || params.get('resourceID'));
     const isAlreadyViewingVideo = window.location.pathname.includes('dpgnotes-video.html');
     const isAlreadyViewingQuiz = window.location.pathname.includes('/Quizes/');
     const isAlreadyViewingSolution = window.location.pathname.includes('/AssignmentSolution/') || window.location.pathname.includes('/PracticalSolution/');
-
     if (!isAlreadyViewingPdf && !isAlreadyViewingVideo && !isAlreadyViewingQuiz && !isAlreadyViewingSolution && !isCrawler) {
       let overlay = document.getElementById('dpgShareRedirectOverlay');
       if (!overlay) {
@@ -1623,20 +1368,15 @@
           document.addEventListener('DOMContentLoaded', () => document.body.appendChild(overlay));
         }
       }
-
       (async function resolveShareLink() {
         const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL)
           ? window.API_BASE_URL.replace(/\/+$/, '')
           : 'https://dpgnotes.onrender.com';
-
         let visitorUid = 'Guest';
         try {
           visitorUid = localStorage.getItem('dpgActiveUserUid') || localStorage.getItem('dpg_guest_id') || 'Guest';
         } catch(e) {}
-
         let docData = null;
-
-        // Step A: Attempt server API call first
         try {
           const endpoint = `${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorUid)}`;
           const res = await fetch(endpoint, { signal: AbortSignal.timeout(4000) });
@@ -1647,8 +1387,6 @@
         } catch(e) {
           console.warn('[dpg-params] Server share resolution attempt warning:', e);
         }
-
-        // Step B: Resilient Fallback to direct Firestore REST API
         if (!docData) {
           try {
             const fsUrl = `https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/share_links/${encodeURIComponent(shareToken)}`;
@@ -1663,7 +1401,6 @@
                              (v.booleanValue !== undefined ? v.booleanValue : 
                              (v.arrayValue?.values ? v.arrayValue.values.map(x => x.stringValue) : null)));
               }
-              // Fire-and-forget background analytics click ping
               try {
                 fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorUid)}`).catch(() => {});
               } catch(_) {}
@@ -1672,17 +1409,12 @@
             console.warn('[dpg-params] Direct Firestore REST fallback warning:', fsErr);
           }
         }
-
         if (docData) {
           const d = docData;
-
-          // 1. Legal Document
           if (d.docId && d.docId.startsWith('legal_')) {
             window.location.replace(`/legal/index.html#${encodeURIComponent(d.docId.replace('legal_', ''))}`);
             return;
           }
-
-          // 2. Educational Video or Sponsored Video Ad
           if (d.type === 'video' || d.type === 'ad_video' || (d.token && (d.token.startsWith('VSH_') || d.token.startsWith('VSH_AD_'))) || d.videoId) {
             const videoTargetUrl = new URL('/dpgnotes-video.html', window.location.origin);
             videoTargetUrl.searchParams.set('token', d.token || shareToken);
@@ -1694,8 +1426,6 @@
             window.location.replace(videoTargetUrl.toString());
             return;
           }
-
-          // 3. Quiz Examination Portal
           if (d.type === 'quiz' || d.subType === 'quiz' || d.isQuiz || (d.docId && d.docId.startsWith('quiz_')) || (d.token && d.token.startsWith('qz_')) || d.category === 'Examination Quiz') {
             const quizTargetUrl = new URL('/Quizes/index.html', window.location.origin);
             quizTargetUrl.searchParams.set('quizId', d.docId || d.quizId || d.targetId || '');
@@ -1703,8 +1433,6 @@
             window.location.replace(quizTargetUrl.toString());
             return;
           }
-
-          // 4. Practical Solution
           if (d.type === 'practical_solution' || d.subType === 'practical' || (d.docId && d.docId.startsWith('prac_'))) {
             const solTargetUrl = new URL('/PracticalSolution/index.html', window.location.origin);
             solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
@@ -1712,8 +1440,6 @@
             window.location.replace(solTargetUrl.toString());
             return;
           }
-
-          // 5. Assignment Solution
           if (d.type === 'assignment_solution' || d.type === 'solution' || (d.docId && (d.docId.startsWith('assign_') || d.docId.startsWith('sol_')))) {
             const solTargetUrl = new URL('/AssignmentSolution/index.html', window.location.origin);
             solTargetUrl.searchParams.set('id', d.docId || d.solutionId || d.targetId || '');
@@ -1721,8 +1447,6 @@
             window.location.replace(solTargetUrl.toString());
             return;
           }
-
-          // 6. Standard PDF Document
           const viewerUrl = new URL('/dpgnotes-pdf-viewer.html', window.location.origin);
           if (d.pdfUrl) viewerUrl.searchParams.set('pdf', d.pdfUrl);
           if (d.title) viewerUrl.searchParams.set('title', d.title);
@@ -1734,7 +1458,6 @@
           const tagsStr = Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || '');
           if (tagsStr) viewerUrl.searchParams.set('tags', tagsStr);
           viewerUrl.searchParams.set('share', shareToken);
-
           window.location.replace(viewerUrl.toString());
           return;
         } else {
@@ -1750,7 +1473,6 @@
       })();
     }
   }
-
   function cleanUrlParam(paramKeys) {
     try {
       const currentUrl = new URL(window.location.href);
@@ -1766,5 +1488,4 @@
       }
     } catch(e) {}
   }
-
 })();

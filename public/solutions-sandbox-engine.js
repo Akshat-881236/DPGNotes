@@ -1,12 +1,6 @@
-/**
- * DPGNotes Academic Solutions Suite - Advanced Sandbox & Code Engine
- * Provides live per-question preview, HTML/CSS/JS container linking,
- * syntax container rendering, and interactive sandbox execution with console logs.
- */
-
+/** DPGNotes Academic Solutions Suite - Advanced Sandbox & Code Engine */
 (function() {
   'use strict';
-
   let currentActiveSandboxData = {
     html: '',
     css: '',
@@ -14,14 +8,10 @@
     groupId: '',
     title: ''
   };
-
   let isMobileDeviceView = false;
   let consoleLogCount = 0;
-
-  // Initialize modal in DOM
   function ensureSandboxModalInDom() {
     if (typeof document === 'undefined' || !document.body || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function' || document.getElementById('advancedSandboxModal')) return;
-
     const modalHtml = `
       <div id="advancedSandboxModal" class="sol-modal-overlay sol-sandbox-modal-overlay" style="display:none; z-index:99999;">
         <div class="sol-sandbox-modal-card">
@@ -75,52 +65,39 @@
         </div>
       </div>
     `;
-
     document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // Listen for postMessage from sandbox iframe
     window.addEventListener('message', function(evt) {
       if (!evt.data || evt.data.type !== 'DPG_SANDBOX_CONSOLE') return;
       handleSandboxConsoleMessage(evt.data);
     });
   }
-
   function handleSandboxConsoleMessage(data) {
     const container = document.getElementById('consoleLogsContainer');
     const badge = document.getElementById('consoleBadge');
     if (!container) return;
-
     consoleLogCount++;
     if (badge) {
       badge.textContent = consoleLogCount;
       badge.style.display = 'inline-block';
     }
-
     const item = document.createElement('div');
     const levelClass = data.level === 'error' ? 'log-error' : (data.level === 'warn' ? 'log-warn' : 'log-info');
     item.className = 'sol-console-item ' + levelClass;
-
     const icon = data.level === 'error' ? '<i class="ri-close-circle-fill" style="color:#ef4444;"></i>' : (data.level === 'warn' ? '<i class="ri-alert-fill" style="color:#f59e0b;"></i>' : '<i class="ri-information-fill" style="color:#38bdf8;"></i>');
-
     item.innerHTML = `
       <span class="timestamp">[${data.time || new Date().toLocaleTimeString()}]</span>
       <span>${icon}</span>
       <span style="word-break:break-all;">${escapeHtml(data.message || '')}</span>
     `;
-
     container.appendChild(item);
     container.scrollTop = container.scrollHeight;
   }
-
-  // Switch tabs between Browser View and Console Output
   window.switchSandboxTab = function(tab) {
     const tabPreview = document.getElementById('tabBtnPreview');
     const tabConsole = document.getElementById('tabBtnConsole');
     const iframeWrapper = document.getElementById('sandboxIframeWrapper');
     const consolePane = document.getElementById('advancedSandboxConsole');
-
     if (!tabPreview || !tabConsole || !iframeWrapper || !consolePane) return;
-
     if (tab === 'console') {
       tabPreview.classList.remove('active');
       tabConsole.classList.add('active');
@@ -133,15 +110,12 @@
       iframeWrapper.style.display = 'flex';
     }
   };
-
-  // Toggle responsive smartphone viewport (375px) vs 100% desktop
   window.toggleSandboxDeviceView = function() {
     const wrapper = document.getElementById('sandboxIframeWrapper');
     const iframe = document.getElementById('advancedSandboxIframe');
     const textEl = document.getElementById('deviceViewText');
     const iconEl = document.getElementById('deviceViewIcon');
     if (!wrapper || !iframe) return;
-
     isMobileDeviceView = !isMobileDeviceView;
     if (isMobileDeviceView) {
       iframe.style.width = (window.innerWidth <= 480) ? '100%' : '375px';
@@ -165,7 +139,6 @@
       if (iconEl) iconEl.className = 'ri-smartphone-line';
     }
   };
-
   window.clearSandboxConsole = function() {
     const container = document.getElementById('consoleLogsContainer');
     const badge = document.getElementById('consoleBadge');
@@ -176,7 +149,6 @@
       badge.style.display = 'none';
     }
   };
-
   window.closeAdvancedSandboxModal = function() {
     const modal = document.getElementById('advancedSandboxModal');
     if (modal) modal.style.display = 'none';
@@ -186,30 +158,22 @@
       iframe.srcdoc = '';
     }
   };
-
   window.rerunCurrentSandbox = function() {
     if (!currentActiveSandboxData) return;
     executeSandbox(currentActiveSandboxData.html, currentActiveSandboxData.css, currentActiveSandboxData.js, currentActiveSandboxData.title, currentActiveSandboxData.groupId);
   };
-
-  // Execute Sandbox Runner
   function executeSandbox(htmlCode, cssCode, jsCode, title, groupId) {
     ensureSandboxModalInDom();
     currentActiveSandboxData = { html: htmlCode, css: cssCode, js: jsCode, title: title, groupId: groupId };
-
     window.clearSandboxConsole();
     window.switchSandboxTab('preview');
-
     const modal = document.getElementById('advancedSandboxModal');
     const titleEl = document.getElementById('sandboxModalTitle');
     const groupEl = document.getElementById('sandboxActiveGroupId');
     const iframe = document.getElementById('advancedSandboxIframe');
-
     if (titleEl) titleEl.textContent = title || 'Interactive Code Sandbox';
     if (groupEl) groupEl.textContent = 'group: ' + (groupId || 'default');
     if (modal) modal.style.display = 'flex';
-
-    // Build the compiled, isolated document
     const assembledDoc = `<!DOCTYPE html>
 <html>
 <head>
@@ -292,32 +256,23 @@
   <\/script>
 </body>
 </html>`;
-
     if (iframe) {
       iframe.removeAttribute('src');
       iframe.srcdoc = assembledDoc + '\n<!-- dpg-run-' + Date.now() + ' -->';
     }
   }
   window.executeSandbox = executeSandbox;
-
-  // Multi-stage Sandbox Code Extractor: guarantees locating executable code even across prefixed or scoped IDs
   function extractSandboxCodeForGroup(groupId) {
     let htmlCode = '';
     let cssCode = '';
     let jsCode = '';
-
     if (!groupId) return { html: '', css: '', js: '' };
-
-    // 1. Search for explicit ID elements first
     const htmlEl = document.getElementById('code-html-' + groupId);
     const cssEl = document.getElementById('code-css-' + groupId);
     const jsEl = document.getElementById('code-js-' + groupId);
-
     if (htmlEl) htmlCode = extractCodeFromElement(htmlEl);
     if (cssEl) cssCode = extractCodeFromElement(cssEl);
     if (jsEl) jsCode = extractCodeFromElement(jsEl);
-
-    // 2. Exact match on data-sandbox-group or data-code-group
     const exactGroupContainers = document.querySelectorAll(`[data-sandbox-group="${groupId}"], [data-code-group="${groupId}"]`);
     exactGroupContainers.forEach(container => {
       const lang = (container.getAttribute('data-lang') || '').toLowerCase();
@@ -326,8 +281,6 @@
       else if (!cssCode && (lang === 'css' || lang === 'scss')) cssCode = code;
       else if (!jsCode && (lang === 'js' || lang === 'javascript')) jsCode = code;
     });
-
-    // 3. Prefix match if groupId was indexed (e.g. prac_1 matching prac_1_1, prac_1_2)
     if (!htmlCode || !cssCode || !jsCode) {
       const prefixContainers = document.querySelectorAll(`[data-sandbox-group^="${groupId}"], [data-code-group^="${groupId}"]`);
       prefixContainers.forEach(container => {
@@ -338,8 +291,6 @@
         else if (!jsCode && (lang === 'js' || lang === 'javascript')) jsCode = code;
       });
     }
-
-    // 4. Card / Article scope search (e.g., experiment_1, question_1, prac_1)
     if (!htmlCode && !cssCode && !jsCode) {
       let scopeEl = document.getElementById(groupId);
       if (!scopeEl) {
@@ -352,14 +303,12 @@
                     document.getElementById('exp_' + num);
         }
       }
-
       if (scopeEl) {
         const codeNodes = scopeEl.querySelectorAll('.sol-code-block-container, .code-container, pre');
         codeNodes.forEach(node => {
           const lang = (node.getAttribute('data-lang') || '').toLowerCase();
           const code = extractCodeFromElement(node);
           if (!code) return;
-
           if (!htmlCode && (lang === 'html' || lang === 'markup' || /<(!DOCTYPE|html|head|body|div|button|p|form|span)/i.test(code))) {
             htmlCode = code;
           } else if (!cssCode && (lang === 'css' || lang === 'scss' || (/\{[\s\S]*:[^;]+;/i.test(code) && !code.includes('function')))) {
@@ -370,8 +319,6 @@
         });
       }
     }
-
-    // 5. Global fallback if only 1 code block exists in active document
     if (!htmlCode && !cssCode && !jsCode) {
       const allContainers = document.querySelectorAll('.sol-code-block-container, .code-container');
       if (allContainers.length === 1) {
@@ -383,18 +330,14 @@
         else jsCode = code;
       }
     }
-
     return { html: htmlCode, css: cssCode, js: jsCode };
   }
   window.extractSandboxCodeForGroup = extractSandboxCodeForGroup;
-
-  // Run Sandbox from Linked Group ID
   window.runSandboxFromGroup = function(groupId, optionalTitle) {
     const extracted = extractSandboxCodeForGroup(groupId);
     const htmlCode = extracted.html;
     const cssCode = extracted.css;
     const jsCode = extracted.js;
-
     if (!htmlCode && !cssCode && !jsCode) {
       if (typeof window.customAlert === 'function') {
         window.customAlert("No executable HTML, CSS, or JavaScript code was found for group '" + groupId + "'.", { title: "Sandbox Notice" });
@@ -403,11 +346,8 @@
       }
       return;
     }
-
     executeSandbox(htmlCode, cssCode, jsCode, optionalTitle || `Group: ${groupId}`, groupId);
   };
-
-  // Helper to extract clean code text from pre/code or textarea or div
   function extractCodeFromElement(el) {
     if (!el) return '';
     const codeTag = el.querySelector('code');
@@ -417,8 +357,6 @@
     return el.value !== undefined ? el.value.trim() : el.textContent.trim();
   }
   window.extractCodeFromElement = extractCodeFromElement;
-
-  // Copy Code to Clipboard with feedback
   window.copyCodeFromContainer = function(elementId) {
     const el = document.getElementById(elementId);
     if (!el) return;
@@ -431,8 +369,6 @@
       }
     });
   };
-
-  // Language Metadata Registry with Official Logos & Colors
   function getLanguageMeta(lang) {
     const raw = (lang || '').toLowerCase().trim();
     let l = raw;
@@ -452,7 +388,6 @@
     else if (l === 'cplusplus') l = 'cpp';
     else if (l === 'c-lang') l = 'c';
     else if (l === 'java-lang') l = 'java';
-
     const registry = {
       html: {
         canonical: 'html',
@@ -581,7 +516,6 @@
         svgIcon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;"><rect width="24" height="24" rx="4" fill="#2B303A"/><path d="M5 7L10 12L5 17" stroke="#4EAA25" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="17" x2="19" y2="17" stroke="#4EAA25" stroke-width="2" stroke-linecap="round"/></svg>`
       }
     };
-
     if (registry[l]) return registry[l];
     return {
       canonical: l || 'code',
@@ -592,8 +526,6 @@
     };
   }
   window.getLanguageMeta = getLanguageMeta;
-
-  // Language Syntax Tokenizer Configuration
   const LANG_KEYWORD_CONFIGS = {
     cpp: {
       keywords: new Set(['public', 'private', 'protected', 'class', 'struct', 'enum', 'static', 'const', 'constexpr', 'return', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'default', 'try', 'catch', 'throw', 'new', 'delete', 'namespace', 'using', 'auto', 'template', 'typename', 'virtual', 'override', 'nullptr', 'friend', 'inline']),
@@ -656,9 +588,6 @@
       types: new Set([])
     }
   };
-
-
-  // Intelligent Multi-Language Code Syntax Auto-Detector
   function detectCodeLanguage(code) {
     if (!code || typeof code !== 'string') return 'code';
     const c = code.trim();
@@ -673,19 +602,13 @@
     return 'code';
   }
   window.detectCodeLanguage = detectCodeLanguage;
-
-  // Semantic Token Span Generator with Theme-Compliant CSS Variables
   function tokSpan(cls, varName, fallbackColor, text, extra = '') {
     return `<span class="${cls}" style="color:var(--${varName}, ${fallbackColor});${extra}">${text}</span>`;
   }
-
-  // Syntax Highlighter for Clean Code Auto-Formatting across All Major Languages
   function highlightCodeSyntax(code, lang) {
     if (!code) return '';
     let meta = getLanguageMeta(lang);
     let l = meta.canonical;
-
-    // Intelligent auto-detection if language is missing or generic
     if (!lang || l === 'code' || l === 'text') {
       const detected = detectCodeLanguage(code);
       if (detected && detected !== 'code') {
@@ -693,10 +616,6 @@
         l = meta.canonical;
       }
     }
-
-    // -------------------------------------------------------------
-    // A. HTML / XML formatting
-    // -------------------------------------------------------------
     if (l === 'html' || l === 'xml') {
       let esc = escapeHtml(code);
       esc = esc.replace(/(&lt;!--[\s\S]*?--&gt;)/g, tokSpan('tok-com', 'tok-com', '#94a3b8', '$1', ' font-style:italic;'));
@@ -704,14 +623,9 @@
       esc = esc.replace(/(&lt;\/?)([a-zA-Z0-9_-]+)/g, '$1' + tokSpan('tok-tag', 'tok-tag', '#f43f5e', '$2', ' font-weight:600;'));
       return esc;
     }
-
-    // -------------------------------------------------------------
-    // B. CSS / SCSS formatting
-    // -------------------------------------------------------------
     if (l === 'css') {
       let esc = '';
       const re = /(\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|@[a-zA-Z-]+|#[a-fA-F0-9]{3,8}\b|-?[0-9]+(?:\.[0-9]+)?(?:px|rem|em|vh|vw|%|deg|s|ms|fr|pt|vmin|vmax)\b|-?[0-9]+(?:\.[0-9]+)?|var\(--[a-zA-Z0-9_-]+\)|rgba?\([^)]*\)|hsla?\([^)]*\)|url\([^)]*\)|!important|::?[a-zA-Z0-9_-]+|\.[a-zA-Z0-9_-]+|#[a-zA-Z0-9_-]+|[a-zA-Z_-][a-zA-Z0-9_-]*|[{}();,:]|\s+|[^\s{}();,:]+)/g;
-      
       let state = 'selector';
       const stateStack = [];
       let m;
@@ -778,7 +692,6 @@
           esc += tokSpan('tok-css-val', 'tok-css-val', '#fb923c', escapeHtml(t), ' font-weight:600;');
           continue;
         }
-
         if (state === 'selector') {
           if (t.startsWith('.') || t.startsWith('#') || t.startsWith(':')) {
             esc += tokSpan('tok-css-sel', 'tok-css-sel', '#f472b6', escapeHtml(t), ' font-weight:600;');
@@ -800,10 +713,6 @@
       }
       return esc;
     }
-
-    // -------------------------------------------------------------
-    // C. JavaScript / TypeScript / Node.js
-    // -------------------------------------------------------------
     if (l === 'javascript' || l === 'node') {
       const JS_KEYWORDS = new Set([
         'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default', 'delete',
@@ -817,7 +726,6 @@
         'Promise', 'Array', 'Object', 'String', 'Number', 'Boolean', 'Function', 'Symbol', 'BigInt', 'Error',
         'Map', 'Set', 'WeakMap', 'WeakSet', 'Date', 'RegExp', 'Math', 'JSON', 'console', 'window', 'document', 'process', 'Buffer'
       ]);
-
       let esc = '';
       const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^`\\])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\/(?![/*])(?:\\.|[^/\\])+\/[gimsuy]*|\b0x[0-9a-fA-F]+\b|\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b|\b[A-Za-z_$][\w$]*\b|=>|===|!==|==|!=|<=|>=|\+\+|--|&&|\|\||\?\?|\?\.|\.\.\.|[+\-*/%&|^~!=<>?:;.,{}()[\]]|\s+)/g;
       
@@ -873,10 +781,6 @@
       }
       return esc;
     }
-
-    // -------------------------------------------------------------
-    // D. Java
-    // -------------------------------------------------------------
     if (l === 'java') {
       const JAVA_KEYWORDS = new Set([
         'abstract', 'assert', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default',
@@ -892,10 +796,8 @@
         'HashSet', 'Collections', 'Arrays', 'Exception', 'Throwable', 'Thread', 'Runnable',
         'StringBuilder', 'StringBuffer', 'PrintStream', 'true', 'false', 'null'
       ]);
-
       let esc = '';
       const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|@[A-Za-z_]\w*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b0x[0-9a-fA-F]+[lL]?\b|\b\d+(?:\.\d+)?[fFdDlL]?\b|\b[A-Za-z_]\w*\b|[=><!+\-*/%&|^~?:]+|[;.,{}()[\]]|\s+)/g;
-      
       let m;
       while ((m = re.exec(code)) !== null) {
         const t = m[0];
@@ -944,10 +846,6 @@
       }
       return esc;
     }
-
-    // -------------------------------------------------------------
-    // E. C & C++
-    // -------------------------------------------------------------
     if (l === 'c' || l === 'cpp') {
       const isCpp = (l === 'cpp');
       const C_KEYWORDS = new Set([
@@ -979,13 +877,10 @@
         'strlen', 'strcpy', 'strcmp', 'strncpy', 'strncmp', 'strcat', 'fopen', 'fclose', 'fgets',
         'fputs', 'fprintf', 'fscanf', 'getchar', 'putchar', 'puts', 'gets', 'sqrt', 'pow', 'abs'
       ]);
-
       const kwSet = isCpp ? CPP_KEYWORDS : C_KEYWORDS;
       const typSet = isCpp ? CPP_TYPES : C_TYPES;
-      
       let esc = '';
       const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#(?:include\s*<[^>]+>|include\s*"[^"]+"|define\b[^\n]*|ifdef\b[^\n]*|ifndef\b[^\n]*|endif\b[^\n]*|if\b[^\n]*|elif\b[^\n]*|else\b[^\n]*|pragma\b[^\n]*|undef\b[^\n]*|[a-zA-Z_]\w*)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b0x[0-9a-fA-F]+[uUlL]*\b|\b\d+(?:\.\d+)?[fFlLuU]*\b|\b[A-Za-z_]\w*\b|::|->|<<|>>|<=|>=|==|!=|\+\+|--|&&|\|\||[=><!+\-*/%&|^~?:]+|[;.,{}()[\]]|\s+)/g;
-      
       let m;
       while ((m = re.exec(code)) !== null) {
         const t = m[0];
@@ -1038,10 +933,6 @@
       }
       return esc;
     }
-
-    // -------------------------------------------------------------
-    // F. Python
-    // -------------------------------------------------------------
     if (l === 'python') {
       const PY_KEYWORDS = new Set([
         'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
@@ -1056,10 +947,8 @@
         'map', 'filter', 'sorted', 'min', 'max', 'sum', 'abs', 'round', 'any', 'all', 'id',
         'super', 'property', 'staticmethod', 'classmethod', 'dir', 'hasattr', 'getattr', 'setattr'
       ]);
-
       let esc = '';
       const re = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|[frbFRB]?"(?:\\.|[^"\\])*"|[frbFRB]?'(?:\\.|[^'\\])*'|@[A-Za-z_][\w.]*|\b0x[0-9a-fA-F]+\b|\b0b[01]+\b|\b0o[0-7]+\b|\b\d+(?:\.\d+)?[jJ]?\b|\b[A-Za-z_]\w*\b|->|==|!=|<=|>=|\+=|-=|\*=|(?:\/{1,2}=)|%|\*{1,2}|\/{1,2}|[=><+\-*&|^~:]+|[;.,{}()[\]]|\s+)/g;
-      
       let m;
       while ((m = re.exec(code)) !== null) {
         const t = m[0];
@@ -1116,16 +1005,10 @@
       }
       return esc;
     }
-
-    // -------------------------------------------------------------
-    // G. Universal Fallback (SQL, Go, Rust, PHP, C#, Dart, Ruby, Swift, Bash, etc.)
-    // -------------------------------------------------------------
     const conf = LANG_KEYWORD_CONFIGS[l] || LANG_KEYWORD_CONFIGS[l === 'javascript' ? 'node' : 'cpp'] || LANG_KEYWORD_CONFIGS['cpp'];
     const keywords = conf.keywords || new Set();
     const types = conf.types || new Set();
-
     const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#[^\n]*|--[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`[\s\S]*?`|\b0x[0-9a-fA-F]+\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b|[^\s\w]+|\s+)/g;
-
     let out = '';
     let m;
     while ((m = re.exec(code)) !== null) {
@@ -1574,7 +1457,6 @@
               </button>
             </div>
           </div>
-
           <div style="display:grid; grid-template-columns: 1fr 1fr; flex:1; min-height:0; overflow:hidden; background:#0f172a;" id="tryitWorkspaceGrid">
             <!-- Left: Code Editor Pane -->
             <div style="display:flex; flex-direction:column; border-right:1px solid rgba(255,255,255,0.08); min-height:0;">
@@ -1598,7 +1480,6 @@
                 <textarea id="tryitEditorJs" spellcheck="false" style="position:absolute; inset:0; width:100%; height:100%; background:#090d16; color:#f8fafc; font-family:'Fira Code', monospace; font-size:0.83rem; padding:12px; border:none; resize:none; outline:none; line-height:1.5; box-sizing:border-box; display:none;" placeholder="// JavaScript code here"></textarea>
               </div>
             </div>
-
             <!-- Right: Live Preview & Console Pane -->
             <div style="display:flex; flex-direction:column; min-height:0; background:#f8fafc; position:relative;">
               <div style="display:flex; align-items:center; justify-content:space-between; background:#111827; padding:6px 12px; border-bottom:1px solid rgba(255,255,255,0.08);">
@@ -1614,7 +1495,6 @@
                   <span style="width:7px; height:7px; border-radius:50%; background:#10b981; display:inline-block;"></span> Sandbox Ready
                 </span>
               </div>
-
               <div style="flex:1; position:relative; min-height:0;">
                 <iframe id="tryitSandboxIframe" class="sol-sandbox-iframe-pane" sandbox="allow-scripts allow-modals allow-forms" style="position:absolute; inset:0; width:100%; height:100%; border:none; background:#ffffff;"></iframe>
                 <div id="tryitConsoleLogsPane" class="sol-sandbox-console-pane" style="position:absolute; inset:0; display:none; background:#0b1120; z-index:5;">
@@ -1629,7 +1509,6 @@
               </div>
             </div>
           </div>
-
           <!-- Bottom: Contributor Save Test Case Card -->
           <div style="background:#111827; border-top:1px solid rgba(255,255,255,0.08); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:260px;">
@@ -1863,7 +1742,6 @@
         var raw = document.getElementById('dpg-tryit-script').textContent;
         if (raw && raw.trim()) {
           var code = decodeURIComponent(raw);
-          // Auto-provide inert fallback target for boilerplate button/result elements if omitted in HTML
           var origGetElementById = document.getElementById.bind(document);
           document.getElementById = function(id) {
             var el = origGetElementById(id);
@@ -2056,7 +1934,6 @@
           <p style="color:#94a3b8; font-size:0.86rem; line-height:1.55; margin-bottom:1.2rem;">
             <strong>Try It</strong> is an interactive developer playground. Sign in with your contributor account to run live experiments, customize code, test edge cases, and save community drafts in real-time.
           </p>
-
           <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 14px; text-align:left; margin-bottom:1.2rem; font-size:0.8rem; color:#cbd5e1; display:flex; flex-direction:column; gap:8px;">
             <div style="display:flex; align-items:center; gap:8px;">
               <i class="ri-flashlight-line" style="color:#facc15;"></i>
@@ -2071,7 +1948,6 @@
               <span><strong>Zero-Knowledge Encryption:</strong> Secure private mode test suites.</span>
             </div>
           </div>
-
           <!-- OAUTH SOCIAL BUTTONS (GOOGLE & GITHUB) -->
           <div class="sol-auth-oauth-row">
             <button type="button" class="sol-auth-btn-oauth" id="btnGoogleSignInTryIt" onclick="window.triggerGoogleSignInForTryIt()">
@@ -2081,18 +1957,15 @@
               <i class="ri-github-fill" style="font-size:1.15rem;"></i> GitHub
             </button>
           </div>
-
           <!-- STUDENT ID / CONTRIBUTOR EMAIL PRIMARY SIGN IN -->
           <button type="button" class="sol-auth-btn-primary" id="btnEmailSignInTryIt" onclick="window.triggerPasswordSignInForTryIt()">
             <i class="ri-id-card-line" style="font-size:1.1rem; color:#ffffff;"></i> Sign In with Student ID / Contributor Email
           </button>
-
           <!-- SIGN UP & FORGOT PASSWORD LINKS -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.95rem; font-size:0.82rem; padding:0 4px;">
             <span style="color:#94a3b8;">Don't have an account? <a class="sol-auth-link" onclick="window.triggerSignUpForTryIt()">Create Free Account</a></span>
             <a class="sol-auth-link" onclick="window.triggerForgotPasswordForTryIt()" style="color:#94a3b8;">Forgot Password?</a>
           </div>
-
           <!-- CONTINUE AS GUEST SECONDARY OPTION -->
           <button type="button" class="sol-btn sol-btn-secondary sol-btn-sm" style="margin-top:1.1rem; width:100%; justify-content:center;" onclick="window.closeTryItAuthPromptModal()">
             Continue as Guest (Read Only)
@@ -2602,3 +2475,4 @@
   }
 
 })();
+

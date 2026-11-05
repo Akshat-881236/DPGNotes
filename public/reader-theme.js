@@ -1,15 +1,9 @@
-/**
- * DPGNotes Reader Theme & Contrast Accessibility Engine
- * Manages Light / Dark / Default DPG Midnight Blue themes and dynamic font scaling.
- */
+/** DPGNotes Reader Theme & Contrast Accessibility Engine */
 (function() {
   const THEME_KEY = "dpgReaderTheme";
   const FONT_SIZE_KEY = "dpgReaderFontSize";
-
-  // Available themes: 'default' (DPG Blue), 'light' (Paper), 'dark' (OLED)
   let currentTheme = localStorage.getItem(THEME_KEY) || "default";
   let currentFontSize = localStorage.getItem(FONT_SIZE_KEY) || "md";
-
   function applyTheme(theme) {
     currentTheme = theme;
     document.documentElement.setAttribute("data-theme", theme);
@@ -20,7 +14,6 @@
     updateControlsUI();
     window.dispatchEvent(new CustomEvent("dpg-theme-changed", { detail: { theme } }));
   }
-
   function applyFontSize(size) {
     currentFontSize = size;
     document.documentElement.setAttribute("data-font-size", size);
@@ -31,10 +24,8 @@
     updateControlsUI();
     window.dispatchEvent(new CustomEvent("dpg-fontsize-changed", { detail: { size } }));
   }
-
   window.setReaderTheme = applyTheme;
   window.setReaderFontSize = applyFontSize;
-
   window.cycleFontSize = function(delta) {
     const sizes = ["sm", "md", "lg", "xl"];
     let idx = sizes.indexOf(currentFontSize);
@@ -42,7 +33,6 @@
     let nextIdx = Math.max(0, Math.min(sizes.length - 1, idx + delta));
     applyFontSize(sizes[nextIdx]);
   };
-
   function updateControlsUI() {
     document.querySelectorAll(".dpg-rc-theme-btn").forEach(btn => {
       const target = btn.getAttribute("data-target-theme");
@@ -53,13 +43,11 @@
       btn.classList.toggle("active", target === currentFontSize);
     });
   }
-
   function createControlsDOM() {
     const wrapper = document.createElement("div");
     wrapper.className = "dpg-reader-controls";
     wrapper.setAttribute("role", "toolbar");
     wrapper.setAttribute("aria-label", "Accessibility and Reading Theme Controls");
-
     wrapper.innerHTML = `
       <!-- Theme Switchers (Icon-based with adaptive labels) -->
       <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'default' ? 'active' : ''}" data-target-theme="default" onclick="window.setReaderTheme('default')" title="Default DPGNotes Midnight Blue Theme" aria-label="Default DPG Blue Theme">
@@ -85,45 +73,31 @@
         <i class="ri-font-size-2" style="font-size:0.95rem;"></i><span style="font-size:0.75rem; font-weight:700;">+</span>
       </button>
     `;
-
     return wrapper;
   }
-
   function mountControls() {
-    // If already mounted, skip
     if (document.querySelector(".dpg-reader-controls")) return;
-
-    // Check preferred mounting slots in headers:
-    // 1. PDF viewer topbar
     const topbar = document.querySelector(".topbar");
     if (topbar) {
       const controls = createControlsDOM();
-      // Insert before mobile toggle or at end
       const mobToggle = topbar.querySelector(".mob-toggle");
       if (mobToggle) topbar.insertBefore(controls, mobToggle);
       else topbar.appendChild(controls);
       return;
     }
-
-    // 2. Solution viewers & Quiz portals navbar actions
     const navActions = document.querySelector(".sol-navbar-actions, .portal-nav-actions, .qz-nav-actions, .analytics-nav-actions, .dpg-theme-slot");
     if (navActions) {
       const controls = createControlsDOM();
       navActions.insertBefore(controls, navActions.firstChild);
       return;
     }
-
-    // 3. Fallback: Floating widget in bottom right
     const floatingWrapper = document.createElement("div");
     floatingWrapper.className = "dpg-reader-controls-floating";
     floatingWrapper.appendChild(createControlsDOM());
     document.body.appendChild(floatingWrapper);
   }
-
-  // Ensure initial theme & font size apply immediately to eliminate flicker
   applyTheme(currentTheme);
   applyFontSize(currentFontSize);
-
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", mountControls);
   } else {

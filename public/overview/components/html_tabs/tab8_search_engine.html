@@ -1,4 +1,3 @@
-<!-- Component: tab8_search_engine.html - High-Performance Search & SERP Ranking Algorithms -->
 <article class="overview-blog-article" data-tab="8">
   <header class="blog-header">
     <div class="blog-tag-badge">
@@ -25,15 +24,12 @@
       <span class="tech-pill">HTML5 &lt;mark&gt; Highlighting</span>
     </div>
   </header>
-
   <div class="blog-body">
-    <!-- SECTION 1: ARCHITECTURAL SCOPE & SRS -->
     <h2 id="sec-1-8">1. Architectural Scope &amp; Software Requirements Specification (SRS)</h2>
     <p><strong>Subsystem Directive:</strong> Sub-50ms Client Search Engine, Multi-Field Weighted Ranking &amp; Enterprise SEO Infrastructure.</p>
     <p>
       The Software Requirements Specification (SRS Section 8.0) mandates instantaneous document discovery across thousands of course notes and past papers. Students must be able to search via course codes (e.g., "BCA-201"), subject names, or faculty tags with live keyboard shortcuts (<code>Ctrl+K</code>), instantaneous visual term highlighting, and zero network lag. Externally, all academic landing pages must maintain perfect Lighthouse SEO scores (100/100) to ensure high visibility on Google Search.
     </p>
-
     <div class="callout-box callout-srs">
       <div class="callout-title">
         <i class="ri-shield-check-line"></i>
@@ -41,8 +37,6 @@
       </div>
       Search response times on local indexes must never exceed 50ms at the 99th percentile. All dynamic document pages must automatically inject valid <code>schema.org/LearningResource</code> and <code>schema.org/Course</code> JSON-LD entities prior to search engine indexing, ensuring rich snippets appear on search engine result pages.
     </div>
-
-    <!-- SECTION 2: COMPONENT BREAKDOWN & ALGORITHM WORKFLOW -->
     <h2 id="sec-2-8">2. Component Hierarchy &amp; Multi-Field Weighted Ranking Algorithm</h2>
     <p>The search ecosystem unites five specialized data structures and indexing routines:</p>
     <ul>
@@ -52,7 +46,6 @@
       <li><strong>4. Legal Center Search Modal Engine:</strong> Provides a desktop <code>Ctrl+K</code> shortcut dialog, active arrow-key navigation (<code>ArrowUp</code>, <code>ArrowDown</code>, <code>Enter</code>), and regex-driven <code>&lt;mark&gt;</code> keyword highlighting.</li>
       <li><strong>5. Dynamic SEO &amp; Meta-Tag Injector:</strong> Synthesizes Open Graph (<code>og:title</code>, <code>og:image</code>, <code>og:description</code>), Twitter Cards, canonical links, and JSON-LD schemas directly into the HTML <code>&lt;head&gt;</code>.</li>
     </ul>
-
     <div class="arch-flow-diagram">
 +---------------------+        Keystroke (Input Event)        +-------------------------+
 | USER SEARCH BOX     | ------------------------------------&gt; |  DEBOUNCE CONTROLLER    |
@@ -71,8 +64,6 @@
 | (Keyboard Navigable)|                                       | (Firestore View Boost)  |
 +---------------------+                                       +-------------------------+
     </div>
-
-    <!-- SECTION 3: STEP-BY-STEP IMPLEMENTATION -->
     <h2 id="sec-3-8">3. Step-by-Step Production Implementation Guide</h2>
     <p>Follow the practical engineering roadmap to build and deploy the DPGNotes search and SEO subsystem:</p>
     <ol class="tutorial-steps-list">
@@ -82,8 +73,6 @@
       <li><strong>Render Real-Time Term Highlights:</strong> Match search tokens in title and description snippets using regex replacement wrapping matches in <code>&lt;mark class="highlight"&gt;$1&lt;/mark&gt;</code>.</li>
       <li><strong>Inject Structured Data (JSON-LD):</strong> Create an automated script appending a <code>&lt;script type="application/ld+json"&gt;</code> block to the document head detailing the learning resource type, author, educational level, and license.</li>
     </ol>
-
-    <!-- SECTION 4: PRODUCTION SOURCE CODE BLUEPRINT -->
     <h2 id="sec-4-8">4. Production Source Code Blueprint &amp; Implementation</h2>
     <p>Examine the authentic production-grade implementation code operational within the DPGNotes tech stack:</p>
     <div class="code-block-wrap">
@@ -104,7 +93,6 @@ class DPGSearchEngine {
       description: 1.0
     };
   }
-
   tokenize(text) {
     if (!text) return [];
     return text
@@ -113,55 +101,44 @@ class DPGSearchEngine {
       .split(/\s+/)
       .filter(t => t.length &gt; 1);
   }
-
   search(query, maxResults = 10) {
     const tokens = this.tokenize(query);
     if (tokens.length === 0) return [];
-
     const scoredDocs = [];
-
     for (const doc of this.documents) {
       let score = 0;
       const titleTokens = this.tokenize(doc.title);
       const tagTokens = this.tokenize((doc.tags || []).join(' '));
       const descTokens = this.tokenize(doc.description || '');
-
       for (const token of tokens) {
         if (titleTokens.includes(token)) score += this.fieldWeights.title;
         if (tagTokens.includes(token)) score += this.fieldWeights.tags;
         if (descTokens.includes(token)) score += this.fieldWeights.description;
       }
-
       if (score &gt; 0) {
         // Apply logarithmic CTR popularity multiplier
         const views = doc.views || 0;
         const popularityMultiplier = Math.log10(views + 10);
         const finalScore = score * popularityMultiplier;
-
         scoredDocs.push({ doc, score: finalScore });
       }
     }
-
     scoredDocs.sort((a, b) => b.score - a.score);
     return scoredDocs.slice(0, maxResults).map(item => item.doc);
   }
-
   static highlightMatches(text, query) {
     if (!query || !text) return text;
     const tokens = query.trim().split(/\s+/).filter(Boolean);
     if (!tokens.length) return text;
-
     const regex = new RegExp(`(${tokens.map(t =&gt; t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;')).join('|')})`, 'gi');
     return text.replace(regex, '&lt;mark&gt;$1&lt;/mark&gt;');
   }
-
   /**
    * Dynamically injects Google SERP Rich Snippet (Schema.org JSON-LD)
    */
   static injectLearningResourceSchema(doc) {
     const existing = document.getElementById('dpg-jsonld-schema');
     if (existing) existing.remove();
-
     const script = document.createElement('script');
     script.id = 'dpg-jsonld-schema';
     script.type = 'application/ld+json';
@@ -182,14 +159,9 @@ class DPGSearchEngine {
     document.head.appendChild(script);
   }
 }
-
 window.DPGSearchEngine = DPGSearchEngine;</code></pre>
     </div>
-
-    <!-- NATIVE ADS INJECTION POINT (USER SPECIFIED BLOCK) -->
     <div class="native-ads" id="native-ads-content" style="margin-bottom:1.5rem;"></div>
-
-    <!-- SECTION 5: ARCHITECTURAL INVARIANTS -->
     <h2 id="sec-5-8">5. Architectural Invariants &amp; Production Verification</h2>
     <p>Under continuous cloud telemetry monitoring, this module enforces the following non-negotiable architectural invariants:</p>
     <ul>
@@ -198,8 +170,6 @@ window.DPGSearchEngine = DPGSearchEngine;</code></pre>
       <li><strong>Verified Invariant:</strong> All canonical URLs and Schema.org structured data must pass Google Rich Results testing validation with zero errors.</li>
       <li><strong>Verified Invariant:</strong> Debounce window is fixed at 250ms to achieve optimal battery efficiency on low-power mobile devices.</li>
     </ul>
-
-    <!-- SECTION 6: TECHNICAL SPECIFICATION LEDGER -->
     <h2 id="sec-6-8">6. Technical Specification Ledger &amp; Benchmarks</h2>
     <details class="tech-spec-accordion">
       <summary class="tech-spec-summary">

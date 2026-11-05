@@ -1,9 +1,4 @@
-/**
- * DPGNotes Service Worker
- * Version: 1.0.0
- * Architecture: Stale-While-Revalidate for visited assets, Network-First for API routes, Cache-First for static icons/images.
- */
-
+/** DPGNotes Service Worker */
 const CACHE_NAME = "dpgnotes-core-v1.0.0";
 const PRECACHE_ASSETS = [
   "/",
@@ -15,8 +10,6 @@ const PRECACHE_ASSETS = [
   "/manifest.json",
   "/custom-dialogs.js"
 ];
-
-// Install: Pre-cache core shell
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -26,8 +19,6 @@ self.addEventListener("install", (event) => {
     }).then(() => self.skipWaiting())
   );
 });
-
-// Activate: Purge obsolete cache stores
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -41,16 +32,10 @@ self.addEventListener("activate", (event) => {
     }).then(() => self.clients.claim())
   );
 });
-
-// Fetch: Strategy dispatcher
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
-
-  // Skip non-GET requests, Chrome extension schemes, or Firebase API / Google Analytics / AdSense
   if (req.method !== "GET" || !url.protocol.startsWith("http")) return;
-
-  // Never cache backend API routes, Firestore endpoints, Google Auth, or AdSense
   if (
     url.pathname.startsWith("/api/") ||
     url.hostname.includes("firestore.googleapis.com") ||
@@ -61,8 +46,6 @@ self.addEventListener("fetch", (event) => {
   ) {
     return; // Pass through to network
   }
-
-  // Cache-First for local images and static fonts
   if (
     req.destination === "image" ||
     req.destination === "font" ||
@@ -86,8 +69,6 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
-
-  // Stale-While-Revalidate for HTML, JS, CSS, and visited PDFs
   event.respondWith(
     caches.match(req).then((cached) => {
       const fetchPromise = fetch(req).then((res) => {
@@ -98,20 +79,16 @@ self.addEventListener("fetch", (event) => {
         return res;
       }).catch(async (err) => {
         if (cached) return cached;
-        // Offline Fallback for HTML documents
         if (req.mode === "navigate" || req.destination === "document") {
           const fallback = await caches.match("/index.html");
           if (fallback) return fallback;
         }
         return new Response(null, { status: 504, statusText: "Offline or Gateway Timeout" });
       });
-
       return cached || fetchPromise;
     })
   );
 });
-
-// Message Listener for cache invalidation & high-speed refresh
 self.addEventListener("message", (event) => {
   if (!event.data) return;
   if (event.data.action === "SKIP_WAITING") {
@@ -119,7 +96,6 @@ self.addEventListener("message", (event) => {
   } else if (event.data.action === "CLEAR_STALE_CACHE") {
     caches.open(CACHE_NAME).then((cache) => {
       cache.keys().then((requests) => {
-        // Keep pre-cached assets, delete older dynamic entries
         requests.forEach((req) => {
           const u = new URL(req.url);
           if (!PRECACHE_ASSETS.includes(u.pathname)) {

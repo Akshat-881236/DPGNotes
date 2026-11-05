@@ -1,4 +1,4 @@
-/* Responsive Breakpoints */
+/** Responsive Breakpoints */
 @media (max-width: 1200px) {
   .legal-content,
   .legal-content.has-toc,
@@ -11,7 +11,6 @@
     display: none !important;
   }
 }
-
 @media (max-width: 991px) {
   :root {
     --sidebar-width: 250px;
@@ -26,30 +25,24 @@
     padding: 2rem 1.5rem;
   }
 }
-
 @media (max-width: 768px) {
   .header-container {
     padding: 0 1rem;
   }
-  
   .header-actions {
     gap: 0.4rem;
   }
-  
   .header-actions .nav-link {
     padding: 0.4rem 0.5rem !important;
     font-size: 0.85rem;
   }
-  
   .header-actions .nav-link span {
     display: none;
   }
-  
   .mobile-menu-btn {
     display: flex !important;
     z-index: 101;
   }
-  
   .search-trigger {
     width: 40px;
     height: 40px;
@@ -57,11 +50,9 @@
     justify-content: center;
     border-radius: 50%;
   }
-  
   .search-placeholder, .search-shortcut {
     display: none;
   }
-  
   .legal-sidebar {
     position: fixed;
     top: var(--header-height);
@@ -72,19 +63,16 @@
     box-shadow: none;
     transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  
   .legal-sidebar.active {
     left: 0 !important;
     box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7);
   }
-  
   .legal-layout-container {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: hidden;
   }
-  
   .legal-content,
   .legal-content.has-toc,
   .legal-layout:has(.legal-toc) .legal-content,
@@ -97,7 +85,6 @@
     box-sizing: border-box;
     overflow-x: hidden;
   }
-
   .legal-container,
   .content-wrapper,
   .legal-content-area,
@@ -108,11 +95,9 @@
     max-width: 100% !important;
     box-sizing: border-box;
   }
-  
   .legal-breadcrumbs ol {
     flex-wrap: wrap !important;
   }
-  
   .sidebar-backdrop {
     display: none;
     position: fixed;
@@ -124,23 +109,19 @@
     backdrop-filter: blur(4px);
     z-index: 990;
   }
-  
   .sidebar-backdrop.active {
     display: block;
   }
-  
   .viewer-actions {
     flex-direction: column;
     align-items: stretch !important;
     gap: 0.75rem;
     padding: 1rem;
   }
-  
   .current-policy-title {
     font-size: 1rem !important;
     word-break: break-word;
   }
-
   .btn-group {
     width: 100% !important;
     display: flex !important;
@@ -148,7 +129,6 @@
     gap: 0.5rem !important;
     justify-content: flex-start;
   }
-  
   .action-btn {
     flex: 1 1 auto !important;
     min-width: 85px;
@@ -157,51 +137,40 @@
     padding: 0.45rem 0.75rem !important;
     font-size: 0.82rem !important;
   }
-  
   .policy-article-container {
     padding: 1.5rem 1rem;
   }
-  
   .policy-section h1, .document-title {
     font-size: 1.6rem !important;
     line-height: 1.25 !important;
   }
-
   .legal-article h2 {
     font-size: 1.25rem !important;
     margin-top: 1.8rem !important;
   }
-
   .legal-article h3 {
     font-size: 1.08rem !important;
     margin-top: 1.4rem !important;
   }
-  
   .policy-grid,
   .compliance-grid {
     grid-template-columns: 1fr !important;
     gap: 0.9rem !important;
   }
-
   .related-policies-grid {
     grid-template-columns: 1fr !important;
     gap: 0.75rem !important;
   }
-
   .table-responsive {
     margin: 1.2rem 0 !important;
     border-radius: 8px !important;
   }
-
   .legal-adsense-container {
     margin: 1.2rem 0 !important;
   }
-  
   .pdf-viewer-container {
     padding: 1rem;
   }
-
-  /* Detailed Policy Callout & Action Button Mobile Responsiveness */
   .detailed-policy-callout {
     padding: 1.1rem 1rem !important;
     flex-direction: column !important;
@@ -248,7 +217,6 @@
     box-sizing: border-box !important;
   }
 }
-
 @media print {
   .legal-header, .legal-sidebar, .legal-toc, .viewer-actions, .pdf-viewer-container, .legal-breadcrumbs {
     display: none !important;

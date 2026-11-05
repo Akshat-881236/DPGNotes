@@ -7,8 +7,6 @@
   <meta name="description" content="Platform-wide examination telemetry, contributor integrity audits, and candidate scorecard inspection." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="/ANH.png" type="image/png" />
-
-  <!-- Instant Enterprise Admin Session Guard -->
   <script>
     (function() {
       const adminToken = localStorage.getItem("adminToken");
@@ -17,8 +15,6 @@
       }
     })();
   </script>
-
-  <!-- Google Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -27,7 +23,6 @@
   <link rel="stylesheet" href="/reader-theme.css">
   <script src="/reader-theme.js"></script>
   <script src="/custom-dialogs.js"></script>
-
   <style>
     :root {
       --adm-bg: #0b0e17;
@@ -43,7 +38,6 @@
       --adm-text: #f8fafc;
       --adm-muted: #94a3b8;
     }
-
     * { box-sizing: border-box; }
     body {
       background: var(--adm-bg);
@@ -53,7 +47,6 @@
       margin: 0;
       padding-bottom: 4rem;
     }
-
     .adm-navbar {
       padding: 1rem 2rem;
       background: rgba(11, 14, 23, 0.9);
@@ -76,14 +69,11 @@
       font-size: 1.25rem;
     }
     .brand-link img { width: 32px; height: 32px; border-radius: 8px; }
-
     .adm-container {
       max-width: 1300px;
       margin: 2rem auto;
       padding: 0 1.25rem;
     }
-
-    /* KPIs */
     .kpi-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -110,8 +100,6 @@
       font-weight: 800;
       color: #fff;
     }
-
-    /* Table Container */
     .table-box {
       background: var(--adm-surface);
       border: 1px solid var(--adm-border);
@@ -144,7 +132,6 @@
     .custom-table tr:hover td {
       background: rgba(255, 255, 255, 0.02);
     }
-
     .filter-input {
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -161,8 +148,6 @@
   </style>
 </head>
 <body>
-
-  <!-- Admin Navbar -->
   <header class="adm-navbar">
     <a href="/admin.html" class="brand-link">
       <img src="/ANH.png" alt="DPGNotes">
@@ -177,9 +162,7 @@
       </button>
     </div>
   </header>
-
   <main class="adm-container">
-
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:2rem;">
       <div>
         <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; background:rgba(59, 130, 246, 0.15); border:1px solid rgba(59, 130, 246, 0.3); color:#93c5fd; font-size:0.8rem; font-weight:700; margin-bottom:0.5rem;">
@@ -194,8 +177,6 @@
         <i class="ri-download-2-line"></i> Export Platform Telemetry CSV
       </button>
     </div>
-
-    <!-- Platform Wide KPIs -->
     <div class="kpi-row">
       <div class="kpi-box">
         <div class="kpi-title">Total Quizzes Platform</div>
@@ -214,8 +195,6 @@
         <div class="kpi-number" id="admKpiAvgScore" style="color:var(--adm-success);">--%</div>
       </div>
     </div>
-
-    <!-- Filters & Quiz Inventory -->
     <div class="table-box">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
         <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0;">
@@ -230,7 +209,6 @@
           </select>
         </div>
       </div>
-
       <div class="table-responsive">
         <table class="custom-table">
           <thead>
@@ -256,10 +234,7 @@
         </table>
       </div>
     </div>
-
   </main>
-
-  <!-- Firebase Script & Admin Audit Logic -->
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -272,7 +247,6 @@
       deleteDoc,
       writeBatch
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -281,56 +255,42 @@
       messagingSenderId: "910494426039",
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
-
     const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
     const auth = getAuth(app);
     const db = getFirestore(app);
-
     let allPlatformQuizzes = [];
-
-    // Session validation
     const token = localStorage.getItem("adminToken");
     if (!token) {
       window.location.replace('/admin-login.html?go-to=' + encodeURIComponent(window.location.href));
     }
-
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // If Firebase Auth session is expired but adminToken exists, check or redirect
         console.warn("Admin session unauthenticated");
       }
       loadPlatformQuizAudit();
     });
-
     window.adminLogout = async function() {
       localStorage.removeItem("adminToken");
       await signOut(auth);
       window.location.replace('/admin-login.html');
     };
-
     async function loadPlatformQuizAudit() {
       try {
-        // Query quizAnalytics collection to get platform overview
         const analyticsSnap = await getDocs(collection(db, "quizAnalytics"));
         allPlatformQuizzes = [];
         let totalAttempts = 0;
         let totalUmc = 0;
-
         analyticsSnap.forEach(d => {
           const q = d.data();
           allPlatformQuizzes.push(q);
           totalAttempts += (q.totalSubmissions || 0);
           totalUmc += (q.flaggedUmcCount || 0);
         });
-
-        // Also query quizDirectory for public quizzes
         const dirSnap = await getDocs(collection(db, "quizDirectory"));
         const dirMap = {};
         dirSnap.forEach(d => {
           dirMap[d.id] = d.data();
         });
-
-        // Merge directory details
         allPlatformQuizzes.forEach(q => {
           if (dirMap[q.quizId]) {
             q.isPublic = true;
@@ -339,14 +299,11 @@
             q.timeMinutes = dirMap[q.quizId].timeMinutes || 20;
           }
         });
-
         document.getElementById('admKpiQuizzes').textContent = allPlatformQuizzes.length;
         document.getElementById('admKpiAttempts').textContent = totalAttempts;
         document.getElementById('admKpiUmc').textContent = totalUmc;
         document.getElementById('admKpiAvgScore').textContent = allPlatformQuizzes.length > 0 ? "72.4%" : "--";
-
         renderAdminTable(allPlatformQuizzes);
-
       } catch (err) {
         console.error("Platform audit error:", err);
         document.getElementById('admQuizzesTableBody').innerHTML = `
@@ -354,16 +311,13 @@
         `;
       }
     }
-
     function renderAdminTable(list) {
       const tbody = document.getElementById('admQuizzesTableBody');
       tbody.innerHTML = '';
-
       if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--adm-muted);">No matching examination records found.</td></tr>';
         return;
       }
-
       list.forEach(q => {
         const tr = document.createElement('tr');
         const isPub = q.isPublic !== false;
@@ -406,28 +360,22 @@
         tbody.appendChild(tr);
       });
     }
-
     window.filterAdminQuizzes = function(queryStr) {
       const qLower = (queryStr || "").toLowerCase().trim();
       const visFilter = document.getElementById('admVisFilter').value;
-
       const filtered = allPlatformQuizzes.filter(q => {
         const matchText = (q.title || "").toLowerCase().includes(qLower) ||
           (q.subjectName || "").toLowerCase().includes(qLower) ||
           (q.subjectCode || "").toLowerCase().includes(qLower) ||
           (q.ownerName || "").toLowerCase().includes(qLower);
-
         const isPub = q.isPublic !== false;
         let matchVis = true;
         if (visFilter === 'public') matchVis = isPub;
         if (visFilter === 'private') matchVis = !isPub;
-
         return matchText && matchVis;
       });
-
       renderAdminTable(filtered);
     };
-
     window.exportAdminCsv = async function() {
       if (!allPlatformQuizzes || allPlatformQuizzes.length === 0) {
         await customAlert("No platform records to export.", { title: "Export Notice" });
@@ -437,7 +385,6 @@
       allPlatformQuizzes.forEach(q => {
         csv += `"${q.quizId}","${q.subjectCode || ''}","${q.subjectName || ''}","${q.title || ''}","${q.ownerUid || ''}","${q.ownerName || ''}","${q.isPublic ? 'PUBLIC' : 'PRIVATE'}",${q.totalSubmissions || 0},${q.flaggedUmcCount || 0}\n`;
       });
-
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -447,35 +394,27 @@
       link.click();
       document.body.removeChild(link);
     };
-
     window.adminDeleteQuiz = async function(quizId, ownerUid) {
       const confirmed = await customConfirm(
         `ADMIN ACTION: Permanently delete examination "${quizId}" for institutional policy/content violation?\n\nThis will purge all question payloads, answer keys, and candidate scorecards from Firebase.`,
         { title: "Delete Quiz for Violation", confirmText: "Yes, Delete Violation", isDanger: true }
       );
       if (!confirmed) return;
-
       try {
         if (ownerUid) {
-          // 1. Delete questions
           const pageSnap = await getDocs(collection(db, "contributors", ownerUid, "quizzes", quizId, "questionPages"));
           const b1 = writeBatch(db);
           pageSnap.forEach(d => b1.delete(d.ref));
           await b1.commit();
-
-          // 2. Delete attempts
           const attSnap = await getDocs(collection(db, "contributors", ownerUid, "quizzes", quizId, "attempts"));
           const b2 = writeBatch(db);
           attSnap.forEach(d => b2.delete(d.ref));
           await b2.commit();
-
           try { await deleteDoc(doc(db, "contributors", ownerUid, "quizzes", quizId, "privateAnswerKey", "main")); } catch(e) {}
           try { await deleteDoc(doc(db, "contributors", ownerUid, "quizzes", quizId)); } catch(e) {}
         }
-
         try { await deleteDoc(doc(db, "quizDirectory", quizId)); } catch(e) {}
         try { await deleteDoc(doc(db, "quizAnalytics", quizId)); } catch(e) {}
-
         await customAlert(`Examination "${quizId}" expunged permanently for policy violation.`, { title: "Quiz Deleted" });
         loadPlatformQuizAudit();
       } catch (err) {
@@ -483,7 +422,6 @@
         await customAlert("Deletion error: " + err.message, { title: "Error", isDanger: true });
       }
     };
-
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

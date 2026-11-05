@@ -1,0 +1,127 @@
+/** DPGNotes NOVA - Print Stylesheet */
+@media print {
+  header.top-header,
+  footer,
+  .nova-studio-header .nova-controls,
+  .nova-chips-container,
+  .nova-input-area,
+  .nova-privacy-note,
+  .nova-btn-copy,
+  .nova-btn-icon,
+  .ad-banner-section,
+  .native-ads,
+  #native-ads-hub,
+  .btn-back {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+  .nova-wrapper {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .nova-hero {
+    margin-bottom: 1.5rem !important;
+    text-align: left !important;
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 1rem !important;
+  }
+  .nova-hero h1 {
+    font-size: 20pt !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    background: none !important;
+  }
+  .nova-hero .nova-tagline {
+    color: #333333 !important;
+    font-size: 11pt !important;
+  }
+  .nova-studio {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .nova-studio-header {
+    border-bottom: 1px solid #cccccc !important;
+    padding: 0 0 0.5rem 0 !important;
+    background: transparent !important;
+  }
+  .nova-avatar {
+    border: 1px solid #333333 !important;
+    color: #000000 !important;
+    background: transparent !important;
+  }
+  .nova-thread {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 1rem 0 !important;
+    gap: 1.5rem !important;
+  }
+  .nova-msg-row {
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .nova-bubble {
+    background: #f8fafc !important;
+    border: 1px solid #d1d5db !important;
+    color: #000000 !important;
+    padding: 1rem !important;
+    border-radius: 8px !important;
+    font-size: 10.5pt !important;
+  }
+  .nova-bubble h1,
+  .nova-bubble h2,
+  .nova-bubble h3 {
+    color: #000000 !important;
+    page-break-after: avoid !important;
+  }
+  .nova-bubble pre {
+    background: #f1f5f9 !important;
+    color: #000000 !important;
+    border: 1px solid #cccccc !important;
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    page-break-inside: avoid !important;
+  }
+  .nova-bubble code {
+    color: #000000 !important;
+    background: #e5e7eb !important;
+  }
+  .nova-bubble table {
+    border-collapse: collapse !important;
+    page-break-inside: avoid !important;
+  }
+  .nova-bubble th,
+  .nova-bubble td {
+    border: 1px solid #999999 !important;
+    color: #000000 !important;
+    padding: 6px 10px !important;
+  }
+  .nova-action-card {
+    border: 1px solid #333333 !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+  }
+  .nova-action-btn {
+    display: inline-block !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .nova-bubble a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #555555;
+  }
+}

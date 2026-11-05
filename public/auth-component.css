@@ -1,8 +1,4 @@
-/* ==========================================================================
-   DPGNotes Unified Shared Authentication & Quota Component Stylesheet
-   Zero-dependency, accessible, WCAG AA/AAA compliant scoped styles
-   ========================================================================== */
-
+/** ========================================================================== */
 :root {
   --dpg-auth-font: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --dpg-auth-bg: #0b0f19;
@@ -16,8 +12,6 @@
   --dpg-auth-danger: #ef4444;
   --dpg-auth-success: #10b981;
 }
-
-/* Base Container & Backdrop */
 .dpg-auth-overlay {
   position: fixed;
   inset: 0;
@@ -36,22 +30,17 @@
   -webkit-overflow-scrolling: touch;
   animation: dpgAuthFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .dpg-auth-overlay.active {
   display: flex !important;
 }
-
 @keyframes dpgAuthFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
 @keyframes dpgAuthSlideUp {
   from { opacity: 0; transform: translateY(18px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
-
-/* Modal Dialog Box */
 .dpg-auth-dialog {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
   border: 1px solid var(--dpg-auth-border);
@@ -67,12 +56,9 @@
   margin: auto;
   animation: dpgAuthSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .dpg-auth-dialog.modal-wide {
   max-width: 680px;
 }
-
-/* Close Button */
 .dpg-auth-close-btn {
   position: absolute;
   top: 1.25rem;
@@ -91,14 +77,11 @@
   transition: all 0.2s ease;
   z-index: 10;
 }
-
 .dpg-auth-close-btn:hover {
   background: rgba(239, 68, 68, 0.2);
   color: #fca5a5;
   border-color: rgba(239, 68, 68, 0.4);
 }
-
-/* Header & Typography */
 .dpg-auth-badge {
   display: inline-flex;
   align-items: center;
@@ -111,19 +94,16 @@
   text-transform: uppercase;
   margin-bottom: 0.85rem;
 }
-
 .dpg-auth-badge-blue {
   background: rgba(99, 102, 241, 0.15);
   border: 1px solid rgba(99, 102, 241, 0.35);
   color: #a5b4fc;
 }
-
 .dpg-auth-badge-amber {
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.35);
   color: #fcd34d;
 }
-
 .dpg-auth-title {
   font-size: 1.65rem;
   font-weight: 800;
@@ -131,28 +111,23 @@
   margin: 0 0 0.5rem 0;
   line-height: 1.25;
 }
-
 .dpg-auth-subtitle {
   font-size: 0.92rem;
   line-height: 1.6;
   color: var(--dpg-auth-muted);
   margin: 0 0 1.4rem 0;
 }
-
-/* OAuth Buttons Grid */
 .dpg-auth-oauth-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 1.2rem;
 }
-
 @media (max-width: 480px) {
   .dpg-auth-oauth-row {
     grid-template-columns: 1fr;
   }
 }
-
 .dpg-auth-btn-oauth {
   background: rgba(255, 255, 255, 0.05);
   border: 1.5px solid rgba(255, 255, 255, 0.12);
@@ -170,15 +145,12 @@
   transition: all 0.2s ease;
   width: 100%;
 }
-
 .dpg-auth-btn-oauth:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(99, 102, 241, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
-
-/* Divider */
 .dpg-auth-divider {
   display: flex;
   align-items: center;
@@ -189,24 +161,19 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
-
 .dpg-auth-divider::before,
 .dpg-auth-divider::after {
   content: '';
   flex: 1;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-
 .dpg-auth-divider span {
   padding: 0 12px;
 }
-
-/* Forms & Inputs */
 .dpg-auth-form-group {
   margin-bottom: 1.1rem;
   text-align: left;
 }
-
 .dpg-auth-label {
   display: block;
   font-size: 0.85rem;
@@ -214,7 +181,6 @@
   color: #cbd5e1;
   margin-bottom: 0.45rem;
 }
-
 .dpg-auth-input {
   width: 100%;
   background: rgba(11, 15, 25, 0.85);
@@ -228,31 +194,24 @@
   box-sizing: border-box;
   transition: all 0.2s ease;
 }
-
 .dpg-auth-input:focus {
   border-color: var(--dpg-auth-primary);
   background: rgba(11, 15, 25, 0.95);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
-
 .dpg-auth-input::placeholder {
   color: #64748b;
 }
-
-/* Grid for wide forms */
 .dpg-auth-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-
 @media (max-width: 580px) {
   .dpg-auth-grid-2 {
     grid-template-columns: 1fr;
   }
 }
-
-/* Submit & Primary Buttons */
 .dpg-auth-btn-primary {
   width: 100%;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -272,20 +231,16 @@
   transition: all 0.2s ease;
   margin-top: 0.4rem;
 }
-
 .dpg-auth-btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(99, 102, 241, 0.6);
   opacity: 0.95;
 }
-
 .dpg-auth-btn-primary:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
 }
-
-/* Secondary Button */
 .dpg-auth-btn-secondary {
   width: 100%;
   background: rgba(255, 255, 255, 0.06);
@@ -303,21 +258,17 @@
   gap: 8px;
   transition: all 0.2s ease;
 }
-
 .dpg-auth-btn-secondary:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
-
-/* Links and Footers */
 .dpg-auth-footer {
   margin-top: 1.4rem;
   text-align: center;
   font-size: 0.86rem;
   color: var(--dpg-auth-muted);
 }
-
 .dpg-auth-link {
   color: #818cf8;
   font-weight: 600;
@@ -325,13 +276,10 @@
   cursor: pointer;
   transition: color 0.2s;
 }
-
 .dpg-auth-link:hover {
   color: #c7d2fe;
   text-decoration: underline;
 }
-
-/* Reset Timer Box */
 .dpg-auth-timer-box {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -340,7 +288,6 @@
   margin-bottom: 1.4rem;
   text-align: center;
 }
-
 .dpg-auth-timer-num {
   font-family: monospace;
   font-size: 1.9rem;
@@ -349,25 +296,19 @@
   letter-spacing: 2.5px;
   margin: 3px 0;
 }
-
 .dpg-auth-timer-sub {
   font-size: 0.72rem;
   color: #94a3b8;
   letter-spacing: 0.5px;
 }
-
-/* Spinner Icon */
 .dpg-auth-spin {
   display: inline-block;
   animation: dpgAuthRotate 1s linear infinite;
 }
-
 @keyframes dpgAuthRotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-
-/* Inline Error Alert Box */
 .dpg-auth-alert-error {
   display: flex;
   align-items: flex-start;
@@ -382,32 +323,25 @@
   line-height: 1.45;
   animation: dpgAuthShake 0.35s ease-in-out;
 }
-
 .dpg-auth-alert-error i {
   font-size: 1.15rem;
   color: #ef4444;
   flex-shrink: 0;
   margin-top: 1px;
 }
-
 .dpg-auth-alert-error.dpg-alert-hidden {
   display: none !important;
 }
-
 @keyframes dpgAuthShake {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-4px); }
   40%, 80% { transform: translateX(4px); }
 }
-
-/* Input Error State */
 .dpg-auth-input.dpg-input-error {
   border-color: #ef4444 !important;
   background: rgba(239, 68, 68, 0.06) !important;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
-
-/* Neutralize Browser Autofill Styles */
 .dpg-auth-input:-webkit-autofill,
 .dpg-auth-input:-webkit-autofill:hover, 
 .dpg-auth-input:-webkit-autofill:focus {
@@ -415,7 +349,6 @@
   -webkit-box-shadow: 0 0 0px 1000px #0b1120 inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
-
 /* ==========================================================================
    IMMUTABLE GUEST QUOTA LOCKDOWN & ANTI-DEVTOOLS SHIELD
    Strictly prevents inspection-mode bypasses, element deletions, or tampering
@@ -433,7 +366,6 @@ body.dpg-quota-locked-state {
   touch-action: none !important;
   background: #020617 !important;
 }
-
 /* Hard Concealment: Even if #dpgAuthOverlay is deleted in DevTools,
    all sibling content is completely invisible, blurred, and unclickable! */
 body.dpg-quota-locked-state > *:not(#dpgAuthOverlay):not(#dpgLockdownShield) {
@@ -447,8 +379,6 @@ body.dpg-quota-locked-state > *:not(#dpgAuthOverlay):not(#dpgLockdownShield) {
   overflow: hidden !important;
   max-height: 100vh !important;
 }
-
-/* Enforce strict lockdown on overlay when active */
 .dpg-auth-overlay.active {
   display: flex !important;
   visibility: visible !important;
@@ -456,8 +386,6 @@ body.dpg-quota-locked-state > *:not(#dpgAuthOverlay):not(#dpgLockdownShield) {
   pointer-events: auto !important;
   z-index: 2147483647 !important;
 }
-
-/* Emergency fallback lockdown shield (instant self-healing backup) */
 #dpgLockdownShield {
   position: fixed !important;
   inset: 0 !important;
@@ -470,8 +398,6 @@ body.dpg-quota-locked-state > *:not(#dpgAuthOverlay):not(#dpgLockdownShield) {
   justify-content: center !important;
   overflow: hidden !important;
 }
-
-/* Light Theme Adaptations for Auth Component Dialogs */
 html[data-theme="light"] {
   --dpg-auth-bg: #f8fafc;
   --dpg-auth-card: #ffffff;
@@ -480,39 +406,32 @@ html[data-theme="light"] {
   --dpg-auth-text: #0f172a;
   --dpg-auth-muted: #64748b;
 }
-
 html[data-theme="light"] .dpg-auth-dialog {
   background: #ffffff !important;
   color: #0f172a !important;
   border-color: rgba(15, 23, 42, 0.15) !important;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15), 0 0 35px rgba(99, 102, 241, 0.08) !important;
 }
-
 html[data-theme="light"] .dpg-auth-title,
 html[data-theme="light"] .dpg-auth-dialog h2,
 html[data-theme="light"] .dpg-auth-dialog h3,
 html[data-theme="light"] .dpg-auth-dialog h4 {
   color: #0f172a !important;
 }
-
 html[data-theme="light"] .dpg-auth-subtitle,
 html[data-theme="light"] .dpg-auth-dialog p {
   color: #475569 !important;
 }
-
 html[data-theme="light"] .dpg-auth-label {
   color: #334155 !important;
 }
-
 html[data-theme="light"] .dpg-auth-input {
   background: #f8fafc !important;
   border-color: rgba(15, 23, 42, 0.18) !important;
   color: #0f172a !important;
 }
-
 html[data-theme="light"] .dpg-auth-input:focus {
   background: #ffffff !important;
   border-color: #4f46e5 !important;
   color: #0f172a !important;
 }
-

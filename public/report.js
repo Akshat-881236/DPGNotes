@@ -1,12 +1,9 @@
 const API_URL = window.API_BASE_URL + "/api";
-
 async function initReport() {
   const overlay = document.getElementById("authCheckOverlay");
   const container = document.getElementById("reportContainer");
   const statusTxt = document.getElementById("authStatusText");
   const subTxt = document.getElementById("authSubText");
-  
-  // 1. Check Admin Session
   const token = localStorage.getItem("adminToken");
   if (!token) {
     statusTxt.innerText = "Access Denied";
@@ -15,11 +12,8 @@ async function initReport() {
     setTimeout(() => { window.location.href = "admin-login.html"; }, 2500);
     return;
   }
-  
-  // 2. Check Param Logic
   const urlParams = new URLSearchParams(window.location.search);
   const shareCode = urlParams.get('code') || urlParams.get('token') || urlParams.get('share') || urlParams.get('shareToken');
-  
   if (!shareCode) {
     statusTxt.innerText = "Invalid Request";
     statusTxt.style.color = "var(--report-danger)";
@@ -27,8 +21,6 @@ async function initReport() {
     setTimeout(() => { window.location.href = "admin.html"; }, 2500);
     return;
   }
-  
-  // 3. Content Access from Server (Secure Fetch with Direct Firestore Fallback)
   try {
     let data = null;
     try {
@@ -37,7 +29,6 @@ async function initReport() {
           "Authorization": `Bearer ${token}`
         }
       });
-      
       if (res.ok) {
         data = await res.json();
       } else if (res.status === 401 || res.status === 403) {
@@ -51,9 +42,7 @@ async function initReport() {
     } catch(fetchErr) {
       console.warn("API report fetch warning:", fetchErr);
     }
-
     if (!data) {
-      // Fallback: Direct Firestore REST query to load share link info
       try {
         const fsUrl = `https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/share_links/${encodeURIComponent(shareCode)}`;
         const fsRes = await fetch(fsUrl);
@@ -75,16 +64,12 @@ async function initReport() {
         console.warn("Direct Firestore fallback error:", fsErr);
       }
     }
-
     if (!data) {
       throw new Error("Unable to locate share link records.");
     }
-    
     overlay.style.display = "none";
     container.style.display = "block";
     renderReport(data);
-    
-    // Auto-trigger AI Chat via url param ?q=
     const q = urlParams.get('q');
     if (q) {
       const input = document.getElementById("reportChatInput");
@@ -93,7 +78,6 @@ async function initReport() {
         sendReportChatQuery();
       }
     }
-    
   } catch (err) {
     console.error(err);
     statusTxt.innerText = "Data Retrieval Failed";
@@ -101,7 +85,6 @@ async function initReport() {
     subTxt.innerText = "Unable to securely fetch report data from server.";
   }
 }
-
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
@@ -111,15 +94,12 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
-
 function parseUserAgent(ua) {
   if (!ua || typeof ua !== 'string') {
     return { label: 'Unknown Device', icon: 'ri-question-line', os: 'Unknown', browser: 'Unknown' };
   }
-  
   let os = 'Unknown OS';
   let icon = 'ri-device-line';
-  
   if (/android/i.test(ua)) {
     os = 'Android';
     icon = 'ri-android-fill';
@@ -139,7 +119,6 @@ function parseUserAgent(ua) {
     os = 'ChromeOS';
     icon = 'ri-chrome-fill';
   }
-
   let browser = 'Browser';
   if (/edg\//i.test(ua)) {
     browser = 'Edge';
@@ -155,7 +134,6 @@ function parseUserAgent(ua) {
     browser = 'Bot / Crawler';
     icon = 'ri-robot-line';
   }
-
   return {
     label: `${os} • ${browser}`,
     icon: icon,
@@ -163,42 +141,32 @@ function parseUserAgent(ua) {
     browser: browser
   };
 }
-
 function renderReport(data) {
   const { shareInfo, engagements = [] } = data;
-  
   const titleEl = document.getElementById("resourceTitle");
   if (titleEl) titleEl.innerText = shareInfo?.title || "Unknown Document";
-
   const opensEl = document.getElementById("totalOpens");
   if (opensEl) opensEl.innerText = shareInfo?.clicks || 0;
-  
   const uniqueIps = new Set(engagements.map(e => e.ipAddress)).size;
   const uniqueEl = document.getElementById("uniqueVisitors");
   if (uniqueEl) uniqueEl.innerText = uniqueIps;
-  
   const unusualCount = engagements.filter(e => e.status === "Unusual").length;
   const unusualEl = document.getElementById("unusualActivity");
   if (unusualEl) unusualEl.innerText = unusualCount;
-
   const countBadge = document.getElementById("logCountBadge");
   if (countBadge) {
     countBadge.innerText = `${engagements.length} ${engagements.length === 1 ? 'event' : 'events'}`;
   }
-  
   const tbody = document.getElementById("engagementsBody");
   const mobileList = document.getElementById("mobileEngagementsList");
-
   if (engagements.length === 0) {
     if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--report-muted);">No engagement data logged yet.</td></tr>`;
     if (mobileList) mobileList.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--report-muted);">No engagement data logged yet.</div>`;
     window._cachedReportData = data;
     return;
   }
-  
   if (tbody) tbody.innerHTML = "";
   if (mobileList) mobileList.innerHTML = "";
-
   engagements.forEach(e => {
     let timeStr = "Unknown";
     if (e.timestamp) {
@@ -210,14 +178,11 @@ function renderReport(data) {
         timeStr = e.timestamp.toDate().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
       }
     }
-    
     const badgeClass = e.status === "Unusual" ? "badge-unusual" : "badge-usual";
     const statusText = escapeHtml(e.status || "Usual");
     const ip = escapeHtml(e.ipAddress || "Unknown");
     const rawUa = escapeHtml(e.userAgent || "Unknown");
     const devInfo = parseUserAgent(e.userAgent);
-    
-    // Desktop Table Row
     if (tbody) {
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -233,8 +198,6 @@ function renderReport(data) {
       `;
       tbody.appendChild(tr);
     }
-
-    // Mobile Card Item
     if (mobileList) {
       const card = document.createElement("div");
       card.className = "log-card";
@@ -261,26 +224,16 @@ function renderReport(data) {
       mobileList.appendChild(card);
     }
   });
-
-  // Cache report data for AI analysis
   window._cachedReportData = data;
 }
-
-// Conversational Chat AI logic for report.html
 let reportChatHistory = [];
-
 function appendReportChatMessage(role, text) {
   const chatArea = document.getElementById("reportChatArea");
   if (!chatArea) return;
-
-  // Remove placeholder if present
   const ph = chatArea.querySelector(".ph");
   if (ph) ph.remove();
-
   const msgDiv = document.createElement("div");
   msgDiv.className = `chat-msg ${role}`;
-  
-  // Custom styles for user/ai messages
   if (role === 'user') {
     msgDiv.style.alignSelf = 'flex-end';
     msgDiv.style.background = 'linear-gradient(135deg, #8b5cf6, #6366f1)';
@@ -305,22 +258,16 @@ function appendReportChatMessage(role, text) {
     msgDiv.style.maxWidth = '85%';
     msgDiv.style.wordBreak = 'break-word';
   }
-
   msgDiv.innerHTML = role === 'ai' && typeof renderMarkdown === 'function' 
     ? renderMarkdown(text) 
     : text.replace(/\n/g, '<br>');
-
   chatArea.appendChild(msgDiv);
   chatArea.scrollTop = chatArea.scrollHeight;
-  
-  // Update state array
   reportChatHistory.push({ role, text });
 }
-
 window.runAiAnalysis = async function() {
   const btn = document.getElementById("runAiAnalysisBtn");
   const token = localStorage.getItem("adminToken");
-  
   if (!token) {
     if (window.customAlert) window.customAlert("Admin session required.", "Authentication Error");
     else alert("Admin session required.");
@@ -331,11 +278,9 @@ window.runAiAnalysis = async function() {
     else alert("Report data not loaded yet.");
     return;
   }
-
   btn.disabled = true;
   btn.innerHTML = '<i class="ri-loader-4-line"></i> Generating...';
   appendReportChatMessage('ai', '🤖 *DPGNotes Intelligence is compiling your compliance brief...*');
-
   try {
     const res = await fetch(window.API_BASE_URL + "/api/ai/screen", {
       method: "POST",
@@ -365,25 +310,18 @@ window.runAiAnalysis = async function() {
   } catch(err) {
     appendReportChatMessage('ai', '❌ Failed to analyze: ' + err.message);
   }
-
   btn.disabled = false;
   btn.innerHTML = '<i class="ri-sparkling-line"></i> Compile compliance brief';
 };
-
 window.sendReportChatQuery = async function() {
   const input = document.getElementById("reportChatInput");
   const btn = document.getElementById("reportChatSendBtn");
   if (!input || !btn) return;
-  
   const question = input.value.trim();
   if (!question) return;
-
   input.value = "";
   btn.disabled = true;
-  
   appendReportChatMessage('user', question);
-  
-  // Show thinking animation
   const chatArea = document.getElementById("reportChatArea");
   const thinkingDiv = document.createElement("div");
   thinkingDiv.id = "reportThinking";
@@ -393,7 +331,6 @@ window.sendReportChatQuery = async function() {
   thinkingDiv.innerHTML = '🤖 <em>Thinking...</em>';
   chatArea.appendChild(thinkingDiv);
   chatArea.scrollTop = chatArea.scrollHeight;
-
   try {
     const res = await fetch(window.API_BASE_URL + "/api/ai/chat", {
       method: "POST",
@@ -412,11 +349,8 @@ window.sendReportChatQuery = async function() {
         }
       })
     });
-    
-    // Remove thinking indicator
     const thinking = document.getElementById("reportThinking");
     if (thinking) thinking.remove();
-
     const data = await res.json();
     if (data.answer) {
       appendReportChatMessage('ai', data.answer);
@@ -430,5 +364,4 @@ window.sendReportChatQuery = async function() {
   }
   btn.disabled = false;
 };
-
 document.addEventListener("DOMContentLoaded", initReport);
