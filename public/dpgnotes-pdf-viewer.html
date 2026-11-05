@@ -195,12 +195,12 @@
           overflow-y: auto !important;
           height: 100%;
           position: relative;
-          scroll-behavior: smooth !important;
-          -webkit-overflow-scrolling: touch !important;
-          overscroll-behavior-y: contain;
           display: flex;
           flex-direction: column;
           align-items: center;
+          /* Add this to improve mobile scrolling reliability */
+          touch-action: pan-y; 
+          -webkit-overflow-scrolling: touch !important;
       }
       .layout {
           display: flex;
@@ -218,7 +218,6 @@
       height: auto !important;
       margin: 0 auto 1.15rem !important;
       border-radius: 9px;
-      overflow: hidden;
       box-shadow: 0 4px 24px rgba(0,0,0,.6);
       flex-shrink: 0;
       box-sizing: border-box;
@@ -230,6 +229,7 @@
       height: auto;
       background: white;
       border-radius: 9px;
+      overflow: visible;
     }
     .adslot {
       display: none !important;
@@ -458,6 +458,16 @@
         border-radius: 9px !important;
       }
     }
+    @media (max-width: 380px) {
+  .pdfmain {
+    padding: 0.5rem 0.15rem !important;
+    scroll-behavior: smooth !important;
+    /* FIX: Force height and scrolling */
+    height: calc(100vh - 48px) !important; /* Viewport minus topbar height */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
     @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
       .pdfmain {
         padding: 1rem 0.75rem !important;
@@ -553,17 +563,6 @@
     html[data-theme="light"] .dpg-doc-locked-title, body[data-theme="light"] .dpg-doc-locked-title, body.theme-light .dpg-doc-locked-title { color:#0f172a !important; }
     html[data-theme="light"] .dpg-doc-locked-desc, body[data-theme="light"] .dpg-doc-locked-desc, body.theme-light .dpg-doc-locked-desc { color:#334155 !important; }
     html[data-theme="light"] .dpg-doc-locked-btn, body[data-theme="light"] .dpg-doc-locked-btn, body.theme-light .dpg-doc-locked-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
-    /* Enable scrolling for the canvas container */
-canvas {
-    display: block;
-    max-width: 100%;
-    height: auto !important;
-}
-/* Ensure the parent allows scrolling */
-.pdf-container-selector { 
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-}
   </style>
   <script src="/history-monitoring.js" defer></script>
 </head>
