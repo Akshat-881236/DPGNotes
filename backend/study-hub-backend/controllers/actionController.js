@@ -3,6 +3,7 @@ const { validateActionRequest } = require('../../study-hub-allowlist/actionRegis
 const { resolveUserContext } = require('../../study-hub-allowlist/permissions');
 const { buildSafePlatformUrl } = require('../../study-hub-allowlist/navigationAllowlist');
 const { buildValidatedQuizUrl } = require('../../study-hub-allowlist/quizAllowlist');
+const { generateDeterministicAcademicQuestions } = require('./quizController');
 const { getParsedLegalDoc } = require('./legalController');
 const { sanitizeDocData, isCollectionReadable } = require('../../study-hub-allowlist/firestoreAllowlist');
 /**
@@ -29,17 +30,41 @@ async function executeAction(actionName, args, userContext, firestoreDb = null) 
         message: `Found academic search query for '${query}'. Navigation destination prepared.`
       };
     }
+    case 'generate_quiz':
     case 'generate_quiz_url': {
-      const quizRes = buildValidatedQuizUrl(args);
+      let quizPayload = { ...args };
+      if (!quizPayload.subName && quizPayload.subject) {
+        quizPayload.subName = quizPayload.subject;
+      }
+      if (!quizPayload.quizTitle) {
+        const sub = quizPayload.subName || 'Academic Course';
+        const u = quizPayload.unit ? ` - ${quizPayload.unit}` : '';
+        quizPayload.quizTitle = `${sub}${u} Examination`;
+      }
+      if (!Array.isArray(quizPayload.questions) || quizPayload.questions.length === 0) {
+        quizPayload.questions = generateDeterministicAcademicQuestions({
+          subject: quizPayload.subName,
+          unit: quizPayload.unit,
+          topic: quizPayload.topic,
+          questionCount: quizPayload.questionCount || quizPayload.totalQuestionCount || 10,
+          questionType: quizPayload.questionType,
+          difficulty: quizPayload.difficulty
+        });
+      }
+      const quizRes = buildValidatedQuizUrl(quizPayload);
       if (!quizRes.valid) {
         throw new Error(quizRes.error || 'Quiz parameter validation failed.');
       }
       return {
         success: true,
-        action: 'generate_quiz_url',
+        action: actionName,
         url: quizRes.url,
+        relativeUrl: quizRes.relativeUrl,
+        urlLength: quizRes.urlLength,
+        isLongUrl: quizRes.isLongUrl,
+        advisory: quizRes.advisory,
         summary: quizRes.summary,
-        message: `Quiz URL prepared for '${quizRes.summary.quizTitle}'. Ready for Quiz Studio.`
+        message: `Quiz URL prepared for '${quizRes.summary.quizTitle}' (${quizRes.summary.totalQuestionCount} Questions). Ready for Quiz Studio.`
       };
     }
     case 'get_legal_section': {

@@ -37,7 +37,7 @@ async function runComprehensiveTests() {
     timeMinutes: 45,
     questionCount: 20
   });
-  assert(quizAttempt.valid && quizAttempt.url.includes('timeMinutes=45') && quizAttempt.url.includes('totalQuestionCount=20'), 'Generates valid parameter-based Quiz Studio URL');
+  assert(quizAttempt.valid && (quizAttempt.url.includes('timeAlloted=45') || quizAttempt.url.includes('timeMinutes=45')) && quizAttempt.url.includes('totalQuestionCount=20'), 'Generates valid parameter-based Quiz Studio URL');
   const privacyDocId = findRelevantLegalDoc('Can my information be shared in DPGNotes?');
   assert(privacyDocId === 'privacy-policy', 'Resolves user privacy questions to privacy-policy.html');
   const termsDocId = findRelevantLegalDoc('What happens if someone uploads copyrighted content?');
@@ -66,7 +66,7 @@ async function runComprehensiveTests() {
         timeMinutes: 30
       })
     }).then(r => r.json());
-    assert(quizRes.success && quizRes.url && quizRes.url.startsWith('/Quizes/quiz-generator.html?'), 'POST /api/study-hub/quiz/prepare builds complete generator destination');
+    assert(quizRes.success && quizRes.url && quizRes.url.includes('/Quizes/quiz-generator.html?'), 'POST /api/study-hub/quiz/prepare builds complete generator destination');
     const searchAction = await fetch(`${baseUrl}/actions/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

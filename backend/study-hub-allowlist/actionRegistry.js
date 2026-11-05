@@ -20,6 +20,23 @@ const ACTION_REGISTRY = {
       tag: { type: 'string', description: 'Optional exam filter: SE, SP, UE, etc.' }
     }
   },
+  generate_quiz: {
+    name: 'generate_quiz',
+    description: 'Generate academically rigorous examination questions (MCQ/MSQ) with specific difficulty distribution and construct the complete prefilled DPGNotes Quiz Studio URL.',
+    permission: 'public',
+    requiresConfirmation: false,
+    schemaName: 'generate_quiz',
+    parameters: {
+      subject: { type: 'string', description: 'Academic subject name (e.g. Software Engineering).' },
+      subCode: { type: 'string', description: 'Subject Code (e.g. SE001, BCA-301).' },
+      unit: { type: 'string', description: 'Syllabus unit or chapter (e.g. Unit 1).' },
+      topic: { type: 'string', description: 'Specific educational topic or syllabus scope.' },
+      questionCount: { type: 'integer', description: 'Total questions to generate (10-120).' },
+      questionType: { type: 'string', enum: ['MCQ', 'MSQ', 'both'], description: 'MCQ (single correct) or MSQ (multiple correct).' },
+      difficulty: { type: 'object', description: 'Difficulty distribution mapping (e.g. { easy: 7, moderate: 5, hard: 3 }).' },
+      timeMinutes: { type: 'integer', description: 'Duration in minutes (15, 20, 30, 45, 60, 90, 120, 150, 180).' }
+    }
+  },
   generate_quiz_url: {
     name: 'generate_quiz_url',
     description: 'Prepare a complete prefilled quiz configuration URL for the DPGNotes Quiz Studio.',

@@ -21,14 +21,34 @@ const SCHEMAS = {
       topicTags: { type: 'string', maxLength: 150 },
       quizTitle: { type: 'string', minLength: 3, maxLength: 150 },
       desc: { type: 'string', maxLength: 500 },
+      timeAlloted: { type: 'integer' },
       timeMinutes: { type: 'integer', enum: [15, 20, 30, 45, 60, 90, 120, 150, 180] },
-      questionCount: { type: 'integer', minimum: 1, maximum: 100 },
-      visibility: { type: 'string', enum: ['public', 'private'] },
+      questionCount: { type: 'integer', minimum: 10, maximum: 120 },
+      totalQuestionCount: { type: 'integer', minimum: 10, maximum: 120 },
+      quizVisibilty: { type: 'string' },
+      visibility: { type: 'string', enum: ['public', 'private', 'Public', 'Private'] },
       correctScore: { type: 'number', minimum: 0.5, maximum: 10 },
       wrongScore: { type: 'number', minimum: 0, maximum: 5 },
       unattemptScore: { type: 'number', minimum: 0, maximum: 2 },
       strictMode: { type: 'boolean' },
-      questions: { type: 'array', maxLength: 50 }
+      questions: { type: 'array', maxLength: 120 }
+    }
+  },
+  generate_quiz: {
+    type: 'object',
+    required: ['subject'],
+    properties: {
+      subject: { type: 'string', minLength: 2, maxLength: 100 },
+      subCode: { type: 'string', maxLength: 30 },
+      unit: { type: 'string', maxLength: 50 },
+      topic: { type: 'string', maxLength: 150 },
+      questionCount: { type: 'integer', minimum: 10, maximum: 120 },
+      questionType: { type: 'string', enum: ['MCQ', 'MSQ', 'both'] },
+      difficulty: { type: 'object' },
+      timeMinutes: { type: 'integer', enum: [15, 20, 30, 45, 60, 90, 120, 150, 180] },
+      timeAlloted: { type: 'integer' },
+      visibility: { type: 'string', enum: ['public', 'private', 'Public', 'Private'] },
+      groundingContext: { type: 'string', maxLength: 5000 }
     }
   },
   get_legal_section: {

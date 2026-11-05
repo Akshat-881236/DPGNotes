@@ -34,10 +34,12 @@
             </div>
           `;
         }
+        case 'generate_quiz':
         case 'generate_quiz_url': {
           const title = res.summary?.quizTitle || actionObj.arguments?.quizTitle || 'Quiz Assessment';
-          const count = res.summary?.questionCount || actionObj.arguments?.questionCount || 10;
-          const mins = res.summary?.timeMinutes || actionObj.arguments?.timeMinutes || 30;
+          const count = res.summary?.totalQuestionCount || res.summary?.questionCount || actionObj.arguments?.questionCount || 10;
+          const mins = res.summary?.timeAlloted || res.summary?.timeMinutes || actionObj.arguments?.timeMinutes || 30;
+          const sub = res.summary?.subName || actionObj.arguments?.subject || '';
           const safeUrl = url || '/Quizes/quiz-generator.html';
           return `
             <div class="nova-action-card">
@@ -45,10 +47,17 @@
                 <span class="nova-action-title">
                   <i class="ri-magic-line"></i> DPGNotes Quiz Studio
                 </span>
-                <span class="nova-status-pill">Configured</span>
+                <span class="nova-status-pill">Prefilled &amp; Ready</span>
               </div>
               <div class="nova-action-body">
-                Prepared examination: <strong>${StudyHubActions.escapeHtml(title)}</strong> (${count} Questions, ${mins} Mins)
+                <div><strong>${StudyHubActions.escapeHtml(title)}</strong></div>
+                <div style="font-size:0.8rem; color:#94a3b8; margin-top:3px;">
+                  ${sub ? `<span>Subject: ${StudyHubActions.escapeHtml(sub)} • </span>` : ''}
+                  <span>${count} Questions</span> • <span>${mins} Minutes</span>
+                </div>
+                <div style="font-size:0.75rem; color:#64748b; margin-top:5px;">
+                  <em>Review question keys, marking scheme, and manually publish when ready.</em>
+                </div>
               </div>
               <a href="${StudyHubActions.escapeHtml(safeUrl)}" class="nova-action-btn" target="_blank" rel="noopener">
                 <i class="ri-play-circle-line"></i> Open in Quiz Studio

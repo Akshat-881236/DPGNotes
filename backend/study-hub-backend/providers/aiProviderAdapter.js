@@ -295,19 +295,38 @@ function localEducationalFallback({ messages }) {
       finishReason: 'tool_calls'
     };
   }
-  if (lastMsg.includes('quiz') || lastMsg.includes('mcq')) {
+  if (lastMsg.includes('quiz') || lastMsg.includes('mcq') || lastMsg.includes('msq')) {
+    let qCount = 15;
+    const countMatch = lastMsg.match(/(\d+)\s*(?:mcq|msq|question|questions)/);
+    if (countMatch) {
+      const parsed = parseInt(countMatch[1], 10);
+      if (!isNaN(parsed) && parsed >= 10 && parsed <= 120) qCount = parsed;
+    }
+    let sub = 'Software Engineering';
+    if (lastMsg.includes('java')) sub = 'Java Programming';
+    else if (lastMsg.includes('dbms') || lastMsg.includes('database')) sub = 'Database Management Systems';
+    else if (lastMsg.includes('cloud')) sub = 'Cloud Computing';
+    else if (lastMsg.includes('python')) sub = 'Python Programming';
+    else if (lastMsg.includes('web')) sub = 'Web Development';
+
+    let unit = 'Unit 1';
+    const unitMatch = lastMsg.match(/unit\s*(\d+)/i);
+    if (unitMatch) unit = `Unit ${unitMatch[1]}`;
+
     return {
       provider: 'local_engine',
-      text: 'I can prepare a complete interactive examination in the DPGNotes Quiz Studio. I have configured the examination parameters for you.',
+      text: `I have generated a curriculum-aligned examination for ${sub} (${unit}) with ${qCount} questions. All questions, options, and designated answer keys are prefilled into the DPGNotes Quiz Studio.`,
       toolCalls: [
         {
           id: `local_${Date.now()}`,
-          name: 'generate_quiz_url',
+          name: 'generate_quiz',
           arguments: {
-            subName: 'Software Engineering',
-            quizTitle: 'Software Engineering Assessment',
-            questionCount: 15,
-            timeMinutes: 30
+            subject: sub,
+            subCode: sub.slice(0, 3).toUpperCase() + '101',
+            unit: unit,
+            questionCount: qCount,
+            questionType: lastMsg.includes('msq') ? 'MSQ' : 'MCQ',
+            timeMinutes: qCount >= 30 ? 45 : 30
           }
         }
       ],
