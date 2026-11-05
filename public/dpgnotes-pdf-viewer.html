@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/dpg-loader.js"></script>
+  <script src="dpg-loader.js"></script>
   <script src="https://dpgnotes.web.app/redirect.js" defer></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504"
@@ -38,18 +38,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
   <script src="config.js"></script>
-  <script src="/dpg-params.js"></script>
+  <script src="dpg-params.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-  <script src="/custom-dialogs.js"></script>
+  <script src="custom-dialogs.js"></script>
   <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
   <script src="notes-handler.js"></script>
-  <link rel="stylesheet" href="/auth-component.css">
-  <link rel="stylesheet" href="/reader-theme.css">
-  <script src="/dpg-feed.js"></script>
-  <script type="module" src="/auth-component.js"></script>
-  <script src="/reader-theme.js"></script>
+  <link rel="stylesheet" href="auth-component.css">
+  <link rel="stylesheet" href="reader-theme.css">
+  <script src="dpg-feed.js"></script>
+  <script type="module" src="auth-component.js"></script>
+  <script src="reader-theme.js"></script>
   <script>
     if (typeof marked !== 'undefined') marked.setOptions({ breaks: true, gfm: true });
     function renderMarkdown(md) {
@@ -70,17 +70,19 @@
     :root{--bg:#0c0e1a;--sb:#111427;--surface:#161929;--bdr:rgba(255,255,255,0.08);--pri:#6366f1;--pli:#818cf8;--txt:#e2e8f0;--mut:#64748b;--acc:#8b5cf6}
     html, body{scroll-behavior:smooth !important}
     body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
-    .topbar{height:56px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex !important;flex-direction:row !important;align-items:center !important;justify-content:flex-start !important;padding:0 1rem !important;gap:.75rem !important;position:sticky;top:0;z-index:200;white-space:nowrap !important;flex-wrap:nowrap !important;overflow-x:auto !important;overflow-y:hidden !important;scroll-behavior:smooth !important;-webkit-overflow-scrolling:touch !important;scrollbar-width:none !important;-ms-overflow-style:none !important;box-sizing:border-box !important}
+    .topbar{height:56px;background:var(--sb);border-bottom:1px solid var(--bdr);display:flex !important;flex-direction:row !important;align-items:center !important;justify-content:flex-start !important;padding:0 1rem !important;gap:.65rem !important;position:sticky;top:0;z-index:200;white-space:nowrap !important;flex-wrap:nowrap !important;overflow-x:auto !important;overflow-y:hidden !important;scroll-behavior:smooth !important;-webkit-overflow-scrolling:touch !important;scrollbar-width:none !important;-ms-overflow-style:none !important;box-sizing:border-box !important}
     .topbar::-webkit-scrollbar{display:none !important;width:0 !important;height:0 !important}
     .topbar > *{flex-shrink:0 !important;white-space:nowrap !important}
     .topbar .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;color:white;text-decoration:none;flex-shrink:0 !important;white-space:nowrap !important}
     .topbar .logo .dot{color:var(--pri)}
-    .topbar .doctitle{max-width:240px;font-size:0.88rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
+    .topbar .doctitle{max-width:280px;font-size:0.88rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;margin-left:auto}
     .topbar .dpg-reader-controls{display:inline-flex !important;flex-direction:row !important;flex-wrap:nowrap !important;white-space:nowrap !important;flex-shrink:0 !important;align-items:center !important}
     .topbar .dpg-reader-controls *{flex-shrink:0 !important;white-space:nowrap !important}
     .topbar div{flex-shrink:0 !important;white-space:nowrap !important}
     .nbtn{background:rgba(255,255,255,0.06);border:1px solid var(--bdr);color:var(--txt);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;display:inline-flex;align-items:center;gap:6px;transition:background .2s;text-decoration:none;flex-shrink:0 !important;white-space:nowrap !important}
     .nbtn:hover{background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4)}
+    .nbtn.icon-btn{width:36px !important;height:36px !important;min-width:36px !important;padding:0 !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;border-radius:8px !important;font-size:1.05rem !important;box-sizing:border-box !important}
+    .sidebar.collapsed{display:none !important}
     html.is-embedded,
     html.is-embedded body,
     body.is-embedded {
@@ -564,17 +566,16 @@
     html[data-theme="light"] .dpg-doc-locked-desc, body[data-theme="light"] .dpg-doc-locked-desc, body.theme-light .dpg-doc-locked-desc { color:#334155 !important; }
     html[data-theme="light"] .dpg-doc-locked-btn, body[data-theme="light"] .dpg-doc-locked-btn, body.theme-light .dpg-doc-locked-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
   </style>
-  <script src="/history-monitoring.js" defer></script>
+  <script src="history-monitoring.js" defer></script>
 </head>
 <body>
 <div class="topbar">
   <a href="index.html" class="logo"><i class="ri-graduation-cap-fill" style="color:#6366f1;font-size:1.25rem;"></i>DPG<span class="dot">Notes</span></a>
-  <button class="nbtn mob-toggle" onclick="document.getElementById('sb').classList.toggle('open')"><i class="ri-layout-left-line"></i></button>
+  <div id="dpgReaderControlsSlot"></div>
+  <button class="nbtn icon-btn" id="sidebarToggleBtn" onclick="window.toggleSidebar()" title="Toggle Sidebar" aria-label="Toggle Sidebar"><i class="ri-layout-left-line"></i></button>
+  <button class="nbtn icon-btn" onclick="sharePdf()" title="Share" aria-label="Share PDF"><i class="ri-share-line"></i></button>
+  <a href="index.html" class="nbtn icon-btn" title="Back to Resources" aria-label="Back"><i class="ri-arrow-left-line"></i></a>
   <div class="doctitle" id="navTitle">Loading...</div>
-  <div style="display:flex;gap:.35rem;flex-shrink:0;">
-    <button class="nbtn" onclick="sharePdf()" title="Share"><i class="ri-share-line"></i> <span class="btn-label">Share</span></button>
-    <a href="index.html" class="nbtn" title="Back to Resources"><i class="ri-arrow-left-line"></i> <span class="btn-label">Back</span></a>
-  </div>
 </div>
 <div id="embPagePill" class="embedded-page-pill" style="display:none; position:fixed; bottom:16px; right:20px; z-index:999; background:rgba(15,23,42,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.2); border-radius:30px; padding:4px 10px; font-size:0.82rem; color:#f8fafc; box-shadow:0 8px 24px rgba(0,0,0,0.6); align-items:center; gap:6px; user-select:none;">
   <button type="button" class="emb-pill-btn" onclick="window.embeddedPrevPage()" title="Previous Page (Scroll Up)" aria-label="Previous Page">
@@ -1978,6 +1979,15 @@ async function resolveAndRender() {
   };
   window.initLiveTelemetryLogger();
 }
+window.toggleSidebar = function() {
+  const sb = document.getElementById('sb');
+  if (!sb) return;
+  if (window.innerWidth <= 768) {
+    sb.classList.toggle('open');
+  } else {
+    sb.classList.toggle('collapsed');
+  }
+};
 resolveAndRender();
 const urlParams = new URLSearchParams(window.location.search);
 const q = urlParams.get('q');

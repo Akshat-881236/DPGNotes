@@ -2862,7 +2862,7 @@ function generateAdTrackIdLocal(seedStr) {
   const positiveHash = Math.abs(hash);
   return (positiveHash % 90000000 + 10000000).toString();
 }
-async function loadContributorPayableAds() {
+async function loadContributorPayableAds(targetMonth) {
   const card = document.getElementById("contributorMonetizationCard");
   if (!card) return;
   const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
@@ -2871,13 +2871,71 @@ async function loadContributorPayableAds() {
   if (!uid) return;
   try {
     const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL !== "undefined") ? window.API_BASE_URL : "";
-    const res = await fetch(`${baseUrl}/api/contributor/payable-ads?contributorId=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`);
+    const monthQuery = targetMonth ? `&month=${encodeURIComponent(targetMonth)}` : "";
+    const res = await fetch(`${baseUrl}/api/contributor/payable-ads?contributorId=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}${monthQuery}`);
     const data = await res.json();
     if (!data || !data.success) return;
     const active = data.activeMonetization || {};
+    window.currentSelectedMonetizationData = { ...active, currentMonth: data.currentMonth, selectedMonth: data.selectedMonth, isFinalized: data.isFinalized, contributorName: activeUser.displayName || activeUser.name || "Contributor", contributorEmail: email, contributorUid: uid };
     const tier = active.tierInfo || {};
+
+    // 1. Populate and sync Month Switcher dropdown
+    const monthSelect = document.getElementById("contribMonthSelect");
+    if (monthSelect && Array.isArray(data.availableMonths) && data.availableMonths.length > 0) {
+      const currentSelectedVal = data.selectedMonth || targetMonth || data.currentMonth;
+      monthSelect.innerHTML = "";
+      data.availableMonths.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        const isCur = m === data.currentMonth;
+        opt.textContent = isCur ? `${m} (Current Active)` : `${m} (Finalized Statement)`;
+        if (m === currentSelectedVal) opt.selected = true;
+        monthSelect.appendChild(opt);
+      });
+      monthSelect.value = currentSelectedVal;
+    }
+
+    // 2. Billing cycle title and Finalized Report Banner
+    const isPastOrFinalized = data.isFinalized || (data.selectedMonth && data.selectedMonth !== data.currentMonth) || active.billingCycleFinalized || active.isLocked;
     const monthCycleText = document.getElementById("contribBillingCycleText");
-    if (monthCycleText) monthCycleText.textContent = `Active Billing Cycle: ${active.month || data.currentMonth || "Current Month"}`;
+    if (monthCycleText) {
+      if (isPastOrFinalized) {
+        monthCycleText.textContent = `Finalized Cycle: ${data.selectedMonth || active.month} (Concluded on 5th)`;
+      } else {
+        monthCycleText.textContent = `Active Billing Cycle: ${active.month || data.currentMonth || "Current Month"}`;
+      }
+    }
+
+    const finalBanner = document.getElementById("contribFinalizedReportBanner");
+    if (finalBanner) {
+      finalBanner.style.display = isPastOrFinalized ? "flex" : "none";
+    }
+
+    // 3. 60-Day Data Retention Policy Notice
+    const retNotice = document.getElementById("contribRetentionNotice");
+    const retText = document.getElementById("contribRetentionNoticeText");
+    const isSettled = active.isClearedOrWaived || active.status === "Paid" || active.status === "Waived";
+    if (retNotice && retText) {
+      if (isSettled) {
+        retNotice.style.display = "flex";
+        let autoPurgeStr = "";
+        let daysLeftStr = "";
+        if (active.deleteAfterDate) {
+          const pDate = new Date(active.deleteAfterDate);
+          autoPurgeStr = pDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          const diffDays = Math.max(0, Math.ceil((pDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+          daysLeftStr = `(~${diffDays} days remaining)`;
+        } else {
+          const fallbackPurge = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+          autoPurgeStr = fallbackPurge.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          daysLeftStr = `(~60 days remaining)`;
+        }
+        retText.innerHTML = `<strong>60-Day Data Retention Policy:</strong> Marked as <strong>${active.status}</strong>. Per privacy compliance, all billing data & telemetry for cycle <strong>${data.selectedMonth || active.month}</strong> will be permanently auto-purged from Firestore on <strong>${autoPurgeStr}</strong> ${daysLeftStr}.`;
+      } else {
+        retNotice.style.display = "none";
+      }
+    }
+
     const tierBadge = document.getElementById("contribTierBadge");
     if (tierBadge) {
       tierBadge.textContent = `${tier.discountPct || 0}% Discount (${tier.tierName || "Standard"})`;
@@ -2977,6 +3035,142 @@ async function loadContributorPayableAds() {
   }
 }
 window.loadContributorPayableAds = loadContributorPayableAds;
+window.switchContributorBillingMonth = function(month) {
+  loadContributorPayableAds(month);
+};
+
+window.openFinalizedBillStatementModal = function() {
+  const modal = document.getElementById("finalizedBillStatementModal");
+  if (!modal) return;
+  const data = window.currentSelectedMonetizationData || {};
+  const tier = data.tierInfo || {};
+  const monthStr = data.month || data.selectedMonth || "Past Cycle";
+  const statusStr = data.status || "Pending";
+
+  const cycleSub = document.getElementById("modalStatementCycleSub");
+  if (cycleSub) cycleSub.textContent = `Billing Cycle: ${monthStr} • Statement Dispatched on 5th via Email`;
+
+  const badge = document.getElementById("modalStatementStatusBadge");
+  if (badge) {
+    badge.textContent = statusStr === "Paid" ? "✅ Paid / Settled" : (statusStr === "Waived" ? "🎁 Waived" : "⏳ Pending");
+    if (statusStr === "Paid") {
+      badge.style.background = "rgba(16,185,129,0.2)";
+      badge.style.borderColor = "rgba(16,185,129,0.4)";
+      badge.style.color = "#34d399";
+    } else if (statusStr === "Waived") {
+      badge.style.background = "rgba(139,92,246,0.2)";
+      badge.style.borderColor = "rgba(139,92,246,0.4)";
+      badge.style.color = "#c4b5fd";
+    } else {
+      badge.style.background = "rgba(245,158,11,0.2)";
+      badge.style.borderColor = "rgba(245,158,11,0.4)";
+      badge.style.color = "#fbbf24";
+    }
+  }
+
+  if (document.getElementById("modalStatementRecipient")) {
+    document.getElementById("modalStatementRecipient").textContent = data.contributorName || "Contributor";
+  }
+  if (document.getElementById("modalStatementEmail")) {
+    document.getElementById("modalStatementEmail").textContent = data.contributorEmail || "-";
+  }
+  if (document.getElementById("modalStatementUid")) {
+    document.getElementById("modalStatementUid").textContent = data.contributorUid || "-";
+  }
+  if (document.getElementById("modalStatementTier")) {
+    document.getElementById("modalStatementTier").textContent = `${tier.tierName || "Standard"} (${tier.discountPct || 0}% Discount)`;
+  }
+  if (document.getElementById("modalStatementGross")) {
+    document.getElementById("modalStatementGross").textContent = `₹${(data.totalGrossCharges || 0).toLocaleString()}`;
+  }
+  if (document.getElementById("modalStatementDiscount")) {
+    const disc = data.totalDiscountSaved != null ? data.totalDiscountSaved : (data.totalHoverDiscount || 0);
+    document.getElementById("modalStatementDiscount").textContent = `-₹${disc.toLocaleString()}`;
+  }
+  if (document.getElementById("modalStatementSubsidy")) {
+    const sub = data.totalSubsidySaved != null ? data.totalSubsidySaved : 0;
+    document.getElementById("modalStatementSubsidy").textContent = `-₹${sub.toLocaleString()}`;
+  }
+  if (document.getElementById("modalStatementNet")) {
+    document.getElementById("modalStatementNet").textContent = `₹${(data.totalNetPayable || 0).toLocaleString()}`;
+  }
+
+  // Populate Itemized Ad Breakdown
+  const tableBody = document.getElementById("modalStatementTableBody");
+  if (tableBody) {
+    tableBody.innerHTML = "";
+    const list = data.adBreakdown || data.adsBreakdown || [];
+    if (list.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="7" style="padding:12px; text-align:center; color:#94a3b8;">No campaign charges in this billing cycle.</td></tr>`;
+    } else {
+      list.forEach(ad => {
+        const itemGross = ad.grossCharges != null ? ad.grossCharges : ((ad.grossHoverCharges || 0) + (ad.grossVisitCharges || 0));
+        const itemDiscount = ad.discountSaved != null ? ad.discountSaved : (ad.hoverDiscountAmount || 0);
+        const itemSubsidy = ad.subsidySaved != null ? ad.subsidySaved : (ad.subsidyAmount || 0);
+        const itemNet = ad.netPayable != null ? ad.netPayable : 0;
+        const totHov = ad.totalHovers != null ? ad.totalHovers : 0;
+        const totVis = ad.totalVisits != null ? ad.totalVisits : 0;
+        const cHov = ad.contributorHovers != null ? ad.contributorHovers : 0;
+        const gHov = ad.guestHovers != null ? ad.guestHovers : 0;
+        const cVis = ad.contributorVisits != null ? ad.contributorVisits : 0;
+        const gVis = ad.guestVisits != null ? ad.guestVisits : 0;
+        const row = document.createElement("tr");
+        row.style.borderBottom = "1px solid rgba(255,255,255,0.06)";
+        row.innerHTML = `
+          <td style="padding:6px 10px; font-weight:600; color:#ffffff;">${ad.adTitle || ad.title || ad.adId || "Campaign"}</td>
+          <td style="padding:6px 10px; color:#f59e0b;">${totHov} <span style="font-size:0.68rem; color:#94a3b8;">(${cHov}C/${gHov}G)</span></td>
+          <td style="padding:6px 10px; color:#38bdf8;">${totVis} <span style="font-size:0.68rem; color:#94a3b8;">(${cVis}C/${gVis}G)</span></td>
+          <td style="padding:6px 10px; color:#e2e8f0;">₹${itemGross.toLocaleString()}</td>
+          <td style="padding:6px 10px; color:#10b981;">-₹${itemDiscount.toLocaleString()}</td>
+          <td style="padding:6px 10px; color:#38bdf8;">-₹${itemSubsidy.toLocaleString()}</td>
+          <td style="padding:6px 10px; font-weight:700; color:#a5b4fc;">₹${itemNet.toLocaleString()}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+  }
+
+  // Admin Note
+  const noteBox = document.getElementById("modalStatementNoteBox");
+  const noteText = document.getElementById("modalStatementNoteText");
+  if (noteBox && noteText) {
+    if (data.note) {
+      noteBox.style.display = "block";
+      noteText.textContent = data.note;
+    } else {
+      noteBox.style.display = "none";
+    }
+  }
+
+  // 60-Day Retention Notice
+  const retBox = document.getElementById("modalStatementRetentionBox");
+  const retText = document.getElementById("modalStatementRetentionText");
+  if (retBox && retText) {
+    if (statusStr === "Paid" || statusStr === "Waived" || data.isClearedOrWaived) {
+      retBox.style.display = "flex";
+      let autoPurgeStr = "";
+      if (data.deleteAfterDate) {
+        autoPurgeStr = new Date(data.deleteAfterDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      } else {
+        autoPurgeStr = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      }
+      retText.innerHTML = `<strong>60-Day Data Retention Policy:</strong> Marked as <strong>${statusStr}</strong>. In compliance with data protection policies, all records for this cycle will be automatically purged from Firestore on <strong>${autoPurgeStr}</strong> (60 days from settlement).`;
+    } else {
+      retBox.style.display = "none";
+    }
+  }
+
+  modal.style.display = "flex";
+};
+
+window.closeFinalizedBillStatementModal = function() {
+  const modal = document.getElementById("finalizedBillStatementModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.printFinalizedStatement = function() {
+  window.print();
+};
 function showNativeAdsMonetizationModal() {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');

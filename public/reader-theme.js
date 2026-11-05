@@ -76,25 +76,37 @@
     return wrapper;
   }
   function mountControls() {
-    if (document.querySelector(".dpg-reader-controls")) return;
+    if (document.querySelector(".dpg-reader-controls")) {
+      updateControlsUI();
+      return;
+    }
+    const slot = document.getElementById("dpgReaderControlsSlot");
+    if (slot) {
+      slot.appendChild(createControlsDOM());
+      updateControlsUI();
+      return;
+    }
     const topbar = document.querySelector(".topbar");
     if (topbar) {
       const controls = createControlsDOM();
-      const mobToggle = topbar.querySelector(".mob-toggle");
+      const mobToggle = topbar.querySelector("#sidebarToggleBtn, .mob-toggle");
       if (mobToggle) topbar.insertBefore(controls, mobToggle);
       else topbar.appendChild(controls);
+      updateControlsUI();
       return;
     }
     const navActions = document.querySelector(".sol-navbar-actions, .portal-nav-actions, .qz-nav-actions, .analytics-nav-actions, .dpg-theme-slot");
     if (navActions) {
       const controls = createControlsDOM();
       navActions.insertBefore(controls, navActions.firstChild);
+      updateControlsUI();
       return;
     }
     const floatingWrapper = document.createElement("div");
     floatingWrapper.className = "dpg-reader-controls-floating";
     floatingWrapper.appendChild(createControlsDOM());
     document.body.appendChild(floatingWrapper);
+    updateControlsUI();
   }
   applyTheme(currentTheme);
   applyFontSize(currentFontSize);

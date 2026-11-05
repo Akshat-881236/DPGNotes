@@ -508,6 +508,15 @@ html[data-theme="dark"] .dpg-reader-controls {
   transition: all 0.15s ease;
   line-height: 1;
 }
+.topbar .dpg-rc-theme-text,
+#dpgReaderControlsSlot .dpg-rc-theme-text {
+  display: none !important;
+}
+.topbar .dpg-rc-btn,
+#dpgReaderControlsSlot .dpg-rc-btn {
+  padding: 4px 7px !important;
+  font-size: 0.85rem !important;
+}
 .dpg-rc-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
