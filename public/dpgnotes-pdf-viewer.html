@@ -553,6 +553,17 @@
     html[data-theme="light"] .dpg-doc-locked-title, body[data-theme="light"] .dpg-doc-locked-title, body.theme-light .dpg-doc-locked-title { color:#0f172a !important; }
     html[data-theme="light"] .dpg-doc-locked-desc, body[data-theme="light"] .dpg-doc-locked-desc, body.theme-light .dpg-doc-locked-desc { color:#334155 !important; }
     html[data-theme="light"] .dpg-doc-locked-btn, body[data-theme="light"] .dpg-doc-locked-btn, body.theme-light .dpg-doc-locked-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
+    /* Enable scrolling for the canvas container */
+canvas {
+    display: block;
+    max-width: 100%;
+    height: auto !important;
+}
+/* Ensure the parent allows scrolling */
+.pdf-container-selector { 
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
   </style>
   <script src="/history-monitoring.js" defer></script>
 </head>
