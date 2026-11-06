@@ -1,206 +1,2498 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="default">
 <head>
   <script src="/dpg-loader.js"></script>
   <script src="/redirect.js" defer></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <link rel="icon" href="ANH.png" type="image/png">
   <link rel="canonical" href="https://dpgnotes.web.app/study-hub.html">
-  <title>DPGNotes NOVA — AI Academic Assistant, Tutor &amp; Autonomous Agent</title>
-  <meta name="description" content="DPGNotes NOVA is an intelligent academic companion, course tutor, and autonomous agent. Chat, Search, Find verified lecture notes, quiz assessments, and legal guides.">
-  <meta name="keywords" content="DPGNotes NOVA, AI Academic Assistant, Study Hub, Educational Tutor, Autonomous Agent, Computer Science Notes, DBMS Normalization, Quiz Generator, Academic Guides">
+  <title>DPGNotes Study Hub — Peer Notes, Question Papers, Quizzes &amp; Solutions</title>
+  <meta name="description" content="Explore DPGNotes Study Hub: An open academic commons for verified peer lecture notes, previous year university exam papers, practical code solutions, and interactive quizzes.">
+  <meta name="keywords" content="DPGNotes, Study Hub, DronaNotes, DCE Notes, DPG Degree College, Computer Science Notes, BCA PYQ, B.Tech Question Papers, Assignment Solutions, Practical Files, Free Peer Notes">
   <meta name="author" content="DPGNotes by Akshat Network Hub">
   <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#030712">
-  <meta property="og:title" content="DPGNotes NOVA — Chat, Search , Find">
-  <meta property="og:description" content="Intelligent AI academic companion and autonomous agent for undergraduate and postgraduate learners.">
+  <meta name="theme-color" content="#080d1a">
+  <meta property="og:title" content="DPGNotes Study Hub — Open Academic Commons &amp; Resource Hub">
+  <meta property="og:description" content="Access peer-verified university notes, semester question papers, step-by-step practical solutions, and self-assessment quizzes.">
   <meta property="og:image" content="ANH.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dpgnotes.web.app/study-hub.html">
+
+  <!-- Preconnect and Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="study-hub-css/study-hub.css">
-  <link rel="stylesheet" href="study-hub-css/study-hub-responsive.css">
-  <link rel="stylesheet" href="study-hub-css/study-hub-themes.css">
-  <link rel="stylesheet" href="study-hub-css/study-hub-print.css" media="print">
-  <script src="config.js"></script>
-  <script src="dpg-params.js"></script>
-  <script src="custom-dialogs.js"></script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
-  <script src="native-dpgnotes-ads.js?v=1.0.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "DPGNotes NOVA",
-    "applicationCategory": "EducationalApplication",
-    "operatingSystem": "All",
-    "description": "Comprehensive academic AI companion, course tutor, and autonomous agent for DPGNotes.",
-    "publisher": {
-      "@type": "Organization",
-      "name": "DPGNotes by Akshat Network Hub",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://dpgnotes.web.app/ANH.png"
+
+  <style>
+    /* ==========================================================================
+       1. CSS CUSTOM PROPERTIES & COLOR CONTRAST THEMES
+       ========================================================================== */
+    :root,
+    html[data-theme="default"] {
+      --bg-base: #080d1a;
+      --bg-gradient: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #0c1222 50%, #080d1a 100%);
+      --surface-glass: rgba(15, 23, 42, 0.72);
+      --surface-card: rgba(22, 33, 56, 0.65);
+      --surface-elevated: rgba(30, 41, 69, 0.85);
+      --surface-input: rgba(15, 23, 42, 0.8);
+      --border-glass: rgba(99, 102, 241, 0.22);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-active: #6366f1;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --accent-primary: #6366f1;
+      --accent-secondary: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+      --shadow-glow: 0 0 24px rgba(99, 102, 241, 0.28);
+      --badge-bg: rgba(99, 102, 241, 0.16);
+      --badge-text: #a5b4fc;
+      --canvas-node: rgba(99, 102, 241, 0.4);
+      --canvas-line: rgba(59, 130, 246, 0.15);
+      --theme-active-dot: #60a5fa;
+    }
+
+    html[data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-gradient: radial-gradient(circle at 15% 15%, #eff6ff 0%, #f1f5f9 60%, #e2e8f0 100%);
+      --surface-glass: rgba(255, 255, 255, 0.88);
+      --surface-card: rgba(255, 255, 255, 0.92);
+      --surface-elevated: #ffffff;
+      --surface-input: #ffffff;
+      --border-glass: rgba(148, 163, 184, 0.45);
+      --border-subtle: rgba(203, 213, 225, 0.85);
+      --border-active: #4338ca;
+      --text-main: #0f172a;        /* 16:1 AAA contrast */
+      --text-muted: #334155;       /* 8:1 contrast */
+      --text-subtle: #475569;
+      --accent-primary: #4338ca;
+      --accent-secondary: #1d4ed8;
+      --accent-cyan: #0891b2;
+      --accent-emerald: #047857;
+      --accent-amber: #b45309;
+      --accent-purple: #6d28d9;
+      --shadow-glass: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --shadow-glow: 0 0 20px rgba(67, 56, 202, 0.18);
+      --badge-bg: rgba(67, 56, 202, 0.12);
+      --badge-text: #312e81;
+      --canvas-node: rgba(67, 56, 202, 0.35);
+      --canvas-line: rgba(29, 78, 216, 0.12);
+      --theme-active-dot: #f59e0b;
+    }
+
+    html[data-theme="dark"] {
+      --bg-base: #030712;
+      --bg-gradient: radial-gradient(circle at 25% 20%, #0f172a 0%, #050811 60%, #000000 100%);
+      --surface-glass: rgba(11, 15, 25, 0.85);
+      --surface-card: rgba(17, 24, 39, 0.78);
+      --surface-elevated: rgba(24, 34, 53, 0.9);
+      --surface-input: rgba(11, 15, 25, 0.95);
+      --border-glass: rgba(255, 255, 255, 0.12);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-active: #818cf8;
+      --text-main: #ffffff;
+      --text-muted: #9ca3af;
+      --text-subtle: #6b7280;
+      --accent-primary: #818cf8;
+      --accent-secondary: #60a5fa;
+      --accent-cyan: #22d3ee;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-purple: #a78bfa;
+      --shadow-glass: 0 10px 40px rgba(0, 0, 0, 0.7);
+      --shadow-glow: 0 0 24px rgba(129, 140, 248, 0.22);
+      --badge-bg: rgba(129, 140, 248, 0.18);
+      --badge-text: #c7d2fe;
+      --canvas-node: rgba(129, 140, 248, 0.35);
+      --canvas-line: rgba(96, 165, 250, 0.14);
+      --theme-active-dot: #a78bfa;
+    }
+
+    /* ==========================================================================
+       2. GLOBAL RESET & BASE STYLES
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    h1, h2, h3, h4, .brand-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    code, pre {
+      font-family: 'Fira Code', monospace;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      outline: none;
+    }
+
+    /* ==========================================================================
+       3. BACKGROUND CANVAS & MOVING ACADEMIC ELEMENTS (DronaNotes Inspired)
+       ========================================================================== */
+    #academicCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Moving floating SVG items in background */
+    .bg-floating-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .float-item {
+      position: absolute;
+      opacity: 0.18;
+      transition: opacity 0.3s ease;
+      animation: floatMotion 18s ease-in-out infinite alternate;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+    }
+
+    html[data-theme="light"] .float-item {
+      opacity: 0.12;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+    }
+
+    .float-item-1 { top: 12%; left: 6%; font-size: 3.5rem; animation-duration: 22s; color: var(--accent-primary); }
+    .float-item-2 { top: 28%; right: 8%; font-size: 4rem; animation-duration: 26s; animation-delay: -4s; color: var(--accent-secondary); }
+    .float-item-3 { top: 65%; left: 8%; font-size: 3rem; animation-duration: 20s; animation-delay: -8s; color: var(--accent-emerald); }
+    .float-item-4 { top: 78%; right: 12%; font-size: 3.8rem; animation-duration: 24s; animation-delay: -12s; color: var(--accent-amber); }
+    .float-item-5 { top: 45%; left: 48%; font-size: 2.8rem; animation-duration: 30s; animation-delay: -6s; color: var(--accent-purple); }
+
+    @keyframes floatMotion {
+      0% { transform: translateY(0) rotate(0deg) scale(1); }
+      50% { transform: translateY(-28px) rotate(8deg) scale(1.05); }
+      100% { transform: translateY(18px) rotate(-6deg) scale(0.96); }
+    }
+
+    /* ==========================================================================
+       4. CONTAINER & GLASSMORPHISM SURFACES
+       ========================================================================== */
+    .app-wrapper {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .glass-panel {
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow-glass);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    }
+
+    .glass-card {
+      background: var(--surface-card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border-glass);
+      border-radius: 1rem;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* ==========================================================================
+       5. HEADER & RESPONSIVE SINGLE-LINE NAVBAR
+       ========================================================================== */
+    .site-header {
+      position: sticky;
+      top: 1rem;
+      z-index: 100;
+      margin-bottom: 2rem;
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.25rem;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-icon {
+      width: 2.6rem;
+      height: 2.6rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .brand-tag {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent-primary);
+      background: var(--badge-bg);
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.4rem;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.25rem 0;
+    }
+
+    .header-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-link {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 0.45rem 0.85rem;
+      border-radius: 0.6rem;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    html[data-theme="light"] .nav-link:hover,
+    html[data-theme="light"] .nav-link.active {
+      background: rgba(15, 23, 42, 0.06);
+      color: var(--accent-primary);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    /* Theme Switcher Pill */
+    .theme-switcher-pill {
+      display: flex;
+      align-items: center;
+      background: var(--surface-input);
+      border: 1px solid var(--border-glass);
+      border-radius: 2rem;
+      padding: 0.25rem 0.35rem;
+      gap: 0.2rem;
+    }
+
+    .theme-opt-btn {
+      width: 1.85rem;
+      height: 1.85rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-subtle);
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .theme-opt-btn:hover {
+      color: var(--text-main);
+    }
+
+    .theme-opt-btn.active {
+      background: var(--accent-primary);
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+
+    html[data-theme="light"] .theme-opt-btn.active {
+      background: var(--accent-primary);
+      color: #ffffff !important;
+    }
+
+    .btn-auth-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: #ffffff !important;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-auth-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+    }
+
+    /* ==========================================================================
+       6. HERO & EDITORIAL ARTICLE SHOWCASE
+       ========================================================================== */
+    .hero-article-section {
+      padding: 3rem 2.5rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--badge-text);
+      background: var(--badge-bg);
+      border: 1px solid var(--border-glass);
+      padding: 0.35rem 0.85rem;
+      border-radius: 2rem;
+    }
+
+    .hero-headline {
+      font-size: clamp(2rem, 4.5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      max-width: 900px;
+      color: var(--text-main);
+    }
+
+    .hero-headline .gradient-text {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-description {
+      font-size: clamp(1rem, 1.8vw, 1.18rem);
+      color: var(--text-muted);
+      max-width: 820px;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    .hero-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .stat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stat-number {
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .stat-number i {
+      font-size: 1.5rem;
+      color: var(--accent-primary);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       7. MINI SEARCH ENGINE COMPONENT
+       ========================================================================== */
+    .search-engine-box {
+      background: var(--surface-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 1.25rem;
+      padding: 1.75rem;
+      box-shadow: var(--shadow-glass);
+      margin-bottom: 3rem;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .search-input-icon {
+      position: absolute;
+      left: 1.25rem;
+      font-size: 1.35rem;
+      color: var(--text-subtle);
+      pointer-events: none;
+    }
+
+    .main-search-input {
+      width: 100%;
+      background: var(--surface-input);
+      border: 2px solid var(--border-glass);
+      border-radius: 1rem;
+      padding: 1.1rem 5.5rem 1.1rem 3.4rem;
+      font-size: 1.05rem;
+      color: var(--text-main);
+      font-family: inherit;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .main-search-input:focus {
+      border-color: var(--border-active);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    }
+
+    .search-input-actions {
+      position: absolute;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-clear-btn {
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .search-clear-btn.visible {
+      display: flex;
+    }
+
+    .search-shortcut-kbd {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      padding: 0.2rem 0.45rem;
+      border-radius: 0.35rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-subtle);
+    }
+
+    /* Filter Chips Bar (Sections & Types) */
+    .filter-section-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .filter-chips-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.35rem;
+    }
+
+    .filter-chips-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 2rem;
+      background: var(--surface-input);
+      border: 1px solid var(--border-glass);
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .chip-btn:hover {
+      color: var(--text-main);
+      border-color: var(--border-active);
+      transform: translateY(-1px);
+    }
+
+    .chip-btn.active {
+      background: var(--accent-primary);
+      color: #ffffff;
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
+    html[data-theme="light"] .chip-btn.active {
+      background: var(--accent-primary);
+      color: #ffffff !important;
+    }
+
+    .filter-sub-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .semester-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .sem-pill {
+      padding: 0.25rem 0.65rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-subtle);
+      transition: all 0.15s ease;
+    }
+
+    .sem-pill:hover, .sem-pill.active {
+      color: var(--text-main);
+      border-color: var(--accent-secondary);
+      background: rgba(59, 130, 246, 0.15);
+    }
+
+    .results-count-text {
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       8. DYNAMIC RESOURCE CARDS GRID
+       ========================================================================== */
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.75rem;
+    }
+
+    .resource-card {
+      display: flex;
+      flex-direction: column;
+      padding: 1.4rem;
+      border-radius: 1.15rem;
+      background: var(--surface-card);
+      border: 1px solid var(--border-glass);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .resource-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .resource-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .category-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.25rem 0.65rem;
+      border-radius: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-quiz { background: rgba(139, 92, 246, 0.18); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-assign { background: rgba(99, 102, 241, 0.18); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-prac { background: rgba(16, 185, 129, 0.18); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-event { background: rgba(245, 158, 11, 0.18); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-paper { background: rgba(59, 130, 246, 0.18); color: var(--accent-secondary); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-notes { background: rgba(6, 182, 212, 0.18); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+
+    .course-sem-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+    }
+
+    .card-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-subject {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .card-contributor {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .contributor-avatar {
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .card-stats {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .card-action-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.65rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: var(--surface-input);
+      border: 1px solid var(--border-glass);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      transition: all 0.2s ease;
+    }
+
+    .card-action-btn:hover {
+      background: var(--accent-primary);
+      color: #ffffff !important;
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Zero State */
+    .empty-search-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3.5rem 1.5rem;
+    }
+
+    .empty-search-icon {
+      font-size: 3rem;
+      color: var(--text-subtle);
+      margin-bottom: 1rem;
+    }
+
+    .empty-search-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-search-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      max-width: 450px;
+      margin: 0 auto 1.5rem;
+    }
+
+    /* ==========================================================================
+       9. EDITORIAL ARTICLE SECTIONS & INTERACTIVE PANELS
+       ========================================================================== */
+    .article-pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .pillar-card {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .pillar-icon-box {
+      width: 3.2rem;
+      height: 3.2rem;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pillar-icon-1 { background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); }
+    .pillar-icon-2 { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+    .pillar-icon-3 { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+    .pillar-icon-4 { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+
+    .pillar-title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .pillar-text {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* Live Interactive Quiz Simulator Widget */
+    .interactive-simulator-card {
+      margin-bottom: 3.5rem;
+      padding: 2.25rem;
+    }
+
+    .simulator-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .sim-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      background: rgba(139, 92, 246, 0.18);
+      color: var(--accent-purple);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .quiz-question-box {
+      background: var(--surface-input);
+      border: 1px solid var(--border-glass);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .quiz-q-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .quiz-options-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .quiz-option-btn {
+      padding: 0.85rem 1rem;
+      border-radius: 0.75rem;
+      background: var(--surface-card);
+      border: 1px solid var(--border-glass);
+      color: var(--text-main);
+      font-size: 0.88rem;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      transition: all 0.2s ease;
+    }
+
+    .quiz-option-btn:hover {
+      border-color: var(--border-active);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .quiz-option-btn.correct {
+      border-color: var(--accent-emerald) !important;
+      background: rgba(16, 185, 129, 0.18) !important;
+      color: var(--accent-emerald) !important;
+    }
+
+    .quiz-option-btn.wrong {
+      border-color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.18) !important;
+      color: #ef4444 !important;
+    }
+
+    .quiz-feedback-box {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.88rem;
+      display: none;
+    }
+
+    /* Top Contributors Section */
+    .contributors-section {
+      margin-bottom: 3.5rem;
+    }
+
+    .section-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .contributors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .contributor-box {
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .contrib-badge-icon {
+      width: 2.8rem;
+      height: 2.8rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+
+    .contrib-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contrib-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .contrib-role {
+      font-size: 0.78rem;
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    .contrib-stats {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* FAQ Accordion */
+    .faq-section {
+      margin-bottom: 3.5rem;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .faq-item {
+      border: 1px solid var(--border-glass);
+      border-radius: 1rem;
+      background: var(--surface-card);
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .faq-item:hover {
+      border-color: var(--border-active);
+    }
+
+    .faq-trigger {
+      width: 100%;
+      padding: 1.25rem 1.5rem;
+      text-align: left;
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .faq-trigger i {
+      font-size: 1.2rem;
+      color: var(--text-subtle);
+      transition: transform 0.25s ease;
+    }
+
+    .faq-item.open .faq-trigger i {
+      transform: rotate(180deg);
+      color: var(--accent-primary);
+    }
+
+    .faq-content {
+      padding: 0 1.5rem 1.25rem;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      display: none;
+    }
+
+    .faq-item.open .faq-content {
+      display: block;
+    }
+
+    /* ==========================================================================
+       10. FOOTER
+       ========================================================================== */
+    .site-footer {
+      padding: 3rem 1.5rem 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand-info {
+      max-width: 380px;
+    }
+
+    .footer-nav-links {
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-nav-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .footer-col-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .footer-link {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-primary);
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* ==========================================================================
+       11. MULTI-DEVICE RESPONSIVE MATRIX
+       (Mobile, Smartphone, Tablet, Foldable, Laptop, Smart Board)
+       ========================================================================== */
+
+    /* SMARTPHONES & MOBILE (< 576px) */
+    @media (max-width: 576px) {
+      .app-wrapper {
+        padding: 0 0.85rem 3rem;
+      }
+
+      .site-header {
+        top: 0.5rem;
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+      }
+
+      .header-nav {
+        display: none; /* Keep header single-line and ultra-clean */
+      }
+
+      .hero-article-section {
+        padding: 2rem 1.25rem;
+      }
+
+      .hero-headline {
+        font-size: 1.85rem;
+      }
+
+      .hero-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+
+      .search-engine-box {
+        padding: 1.15rem;
+      }
+
+      .main-search-input {
+        font-size: 0.95rem;
+        padding: 0.9rem 4rem 0.9rem 2.8rem;
+      }
+
+      .search-shortcut-kbd {
+        display: none;
+      }
+
+      .resources-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .footer-nav-links {
+        gap: 1.75rem;
       }
     }
-  }
-  </script>
-  <script src="/history-monitoring.js" defer></script>
+
+    /* FOLDABLE DEVICES & DUAL SCREEN (600px - 900px, varying aspect ratios) */
+    @media (min-width: 600px) and (max-width: 900px) {
+      .hero-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .resources-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+      }
+    }
+
+    /* TABLETS (768px - 1024px) */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .hero-article-section {
+        padding: 2.5rem 2rem;
+      }
+
+      .resources-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* LAPTOPS & DESKTOPS (1200px+) */
+    @media (min-width: 1200px) {
+      .resources-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* SMART BOARD & 4K PRESENTATION DISPLAYS (1920px+) */
+    @media (min-width: 1920px) {
+      .app-wrapper {
+        max-width: 1720px;
+        padding: 0 2rem 6rem;
+      }
+
+      body {
+        font-size: 1.15rem;
+      }
+
+      .hero-headline {
+        font-size: 4.2rem;
+      }
+
+      .resources-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+      }
+
+      .chip-btn {
+        padding: 0.75rem 1.4rem;
+        font-size: 1rem;
+      }
+
+      .main-search-input {
+        padding: 1.4rem 6rem 1.4rem 4rem;
+        font-size: 1.25rem;
+      }
+
+      .card-title {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <header class="top-header">
-    <div class="brand-area">
-      <a href="index.html" class="brand-logo" style="text-decoration:none; color:white;">DPG</a>
-      <div class="brand-text">
-        <h1>DPGNotes NOVA</h1>
-        <p>Chat, Search , Find &bull; Powered by <a href="index.html">Akshat Network Hub</a></p>
-      </div>
-    </div>
-    <div class="auth-area">
-      <a href="index.html" class="btn-back"><i class="ri-arrow-left-line"></i> Back to Main Library</a>
-    </div>
-  </header>
-  <main class="nova-wrapper">
-    <section class="nova-hero">
-      <span class="nova-hero-badge">
-        <i class="ri-book-open-line"></i> Academic Intelligence Layer
-      </span>
-      <h1>DPGNotes NOVA</h1>
-      <div class="nova-tagline">Chat, Search , Find</div>
-      <p>
-        Your dedicated AI academic tutor, search assistant, and autonomous platform guide. Ask educational questions, locate semester resources, generate interactive quizzes, or inspect platform policies in natural language.
-      </p>
-    </section>
-    <div class="ad-banner-section" style="margin-bottom: 1.5rem; text-align: center;">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-5515547448097504"
-           data-ad-slot="2895051790"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-    <section class="nova-studio" aria-label="NOVA AI Studio">
-      <div class="nova-studio-header">
-        <div class="nova-identity">
-          <div class="nova-avatar" aria-hidden="true">
-            <i class="ri-book-open-line"></i>
+
+  <!-- Background Interactive Academic Canvas (DronaNotes Inspired Animation) -->
+  <canvas id="academicCanvas"></canvas>
+
+  <!-- Floating Movable Academic Icons -->
+  <div class="bg-floating-elements" aria-hidden="true">
+    <div class="float-item float-item-1"><i class="ri-book-open-line"></i></div>
+    <div class="float-item float-item-2"><i class="ri-graduation-cap-line"></i></div>
+    <div class="float-item float-item-3"><i class="ri-code-s-slash-line"></i></div>
+    <div class="float-item float-item-4"><i class="ri-draft-line"></i></div>
+    <div class="float-item float-item-5"><i class="ri-function-line"></i></div>
+  </div>
+
+  <div class="app-wrapper">
+
+    <!-- Header / Navbar -->
+    <header class="site-header glass-panel">
+      <div class="header-brand">
+        <a href="index.html" class="header-brand" aria-label="DPGNotes Homepage">
+          <div class="brand-logo-icon">
+            <i class="ri-graduation-cap-fill"></i>
           </div>
-          <div class="nova-identity-text">
-            <h2>NOVA <span class="nova-status-pill" id="novaStatusPill">Ready</span></h2>
-            <span>Academic Tutor &bull; Platform Guide</span>
+          <div class="brand-titles">
+            <div class="brand-name">
+              DPGNotes
+              <span class="brand-tag">Study Hub</span>
+            </div>
+            <span class="brand-subtitle">Peer Notes &amp; University Papers</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="header-nav" aria-label="Main Navigation">
+        <a href="#mini-search" class="nav-link active"><i class="ri-search-eye-line"></i> Search Hub</a>
+        <a href="Quizes/index.html" class="nav-link"><i class="ri-questionnaire-line"></i> Quizzes</a>
+        <a href="AssignmentSolution/index.html" class="nav-link"><i class="ri-file-list-3-line"></i> Solutions</a>
+        <a href="PracticalSolution/index.html" class="nav-link"><i class="ri-flask-line"></i> Practicals</a>
+        <a href="dpgnotes-search-engine.html" class="nav-link"><i class="ri-compass-3-line"></i> Search Engine</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- 3-Theme Switcher Pill (Blue Nebula, Light Paper, Dark OLED) -->
+        <div class="theme-switcher-pill" role="group" aria-label="Color Theme Switcher">
+          <button type="button" class="theme-opt-btn" id="themeBtnDefault" data-theme="default" title="Blue Nebula Theme" aria-label="Blue Theme">
+            <i class="ri-contrast-2-line" style="color: #60a5fa;"></i>
+          </button>
+          <button type="button" class="theme-opt-btn" id="themeBtnLight" data-theme="light" title="Light High-Contrast Theme" aria-label="Light Theme">
+            <i class="ri-sun-line" style="color: #f59e0b;"></i>
+          </button>
+          <button type="button" class="theme-opt-btn" id="themeBtnDark" data-theme="dark" title="OLED Pure Dark Theme" aria-label="Dark Theme">
+            <i class="ri-moon-clear-line" style="color: #a78bfa;"></i>
+          </button>
+        </div>
+
+        <a href="index.html?action=signin" class="btn-auth-pill">
+          <i class="ri-user-shared-line"></i>
+          <span>Contributor Sign In</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Landing Article & Hero Section -->
+    <main>
+      <section class="hero-article-section glass-panel">
+        <div class="hero-badge-row">
+          <div class="hero-pill-badge">
+            <i class="ri-sparkling-fill" style="color: #f59e0b;"></i>
+            <span>Open Academic Commons &amp; Peer Resource Network</span>
+          </div>
+          <div class="hero-pill-badge">
+            <i class="ri-verified-badge-fill" style="color: #10b981;"></i>
+            <span>MDU &amp; DPG Degree College Aligned</span>
           </div>
         </div>
-        <div class="nova-controls">
-          <button type="button" class="nova-btn-icon" id="novaPrintBtn" title="Print Conversation (Ctrl+P)" aria-label="Print conversation">
-            <i class="ri-printer-line"></i>
-          </button>
-          <button type="button" class="nova-btn-icon" id="novaResetBtn" title="Start New Conversation" aria-label="New session">
-            <i class="ri-refresh-line"></i>
-          </button>
+
+        <h1 class="hero-headline">
+          Master Your Semester with <span class="gradient-text">Peer-Verified Notes</span>, Papers &amp; Interactive Quizzes
+        </h1>
+
+        <p class="hero-description">
+          Welcome to the DPGNotes Study Hub. Built by students for students, we bridge classroom lectures and university exams. Discover verified handwritten lecture notes, previous years' sessional &amp; university question papers (PYQs), faculty-approved practical records, step-by-step assignment solutions, and instant self-evaluation quizzes.
+        </p>
+
+        <!-- Metric Highlights -->
+        <div class="hero-stats-grid">
+          <div class="stat-box">
+            <div class="stat-number">
+              <i class="ri-pages-line"></i>
+              <span>12,500+</span>
+            </div>
+            <div class="stat-label">Verified Academic Pages</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">
+              <i class="ri-check-double-line"></i>
+              <span>98%</span>
+            </div>
+            <div class="stat-label">University Exam Hit-Rate</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">
+              <i class="ri-user-star-line"></i>
+              <span>250+</span>
+            </div>
+            <div class="stat-label">Top Semester Contributors</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">
+              <i class="ri-shield-flash-line"></i>
+              <span>100%</span>
+            </div>
+            <div class="stat-label">Free Student Peer Access</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mini Search Engine Section -->
+      <section class="search-engine-box" id="mini-search">
+        <div class="search-input-wrapper">
+          <i class="ri-search-2-line search-input-icon"></i>
+          <input
+            type="text"
+            id="hubSearchInput"
+            class="main-search-input"
+            placeholder="Search notes, subjects, question papers, practicals, quizzes..."
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search DPGNotes Resources"
+          >
+          <div class="search-input-actions">
+            <button type="button" id="clearSearchBtn" class="search-clear-btn" title="Clear search" aria-label="Clear search">
+              <i class="ri-close-line"></i>
+            </button>
+            <span class="search-shortcut-kbd" title="Press / to search">/</span>
+          </div>
+        </div>
+
+        <!-- Filter Chips (Sections & Categories) -->
+        <div class="filter-section-wrapper">
+          <div class="filter-chips-row" role="tablist" aria-label="Filter by Section">
+            <button type="button" class="chip-btn active" data-section="all" role="tab" aria-selected="true">
+              <i class="ri-apps-2-line"></i> All Resources
+            </button>
+            <button type="button" class="chip-btn" data-section="Quiz" role="tab" aria-selected="false">
+              <i class="ri-questionnaire-line"></i> Quizzes
+            </button>
+            <button type="button" class="chip-btn" data-section="Assignment Solution" role="tab" aria-selected="false">
+              <i class="ri-file-text-line"></i> Assignment Solutions
+            </button>
+            <button type="button" class="chip-btn" data-section="Practical Solution" role="tab" aria-selected="false">
+              <i class="ri-code-box-line"></i> Practical Solutions
+            </button>
+            <button type="button" class="chip-btn" data-section="Event Material" role="tab" aria-selected="false">
+              <i class="ri-calendar-event-line"></i> Event Material
+            </button>
+            <button type="button" class="chip-btn" data-section="SP" role="tab" aria-selected="false">
+              <i class="ri-file-paper-2-line"></i> SP (Sample Papers)
+            </button>
+            <button type="button" class="chip-btn" data-section="UE" role="tab" aria-selected="false">
+              <i class="ri-government-line"></i> UE (University Exams)
+            </button>
+            <button type="button" class="chip-btn" data-section="SE" role="tab" aria-selected="false">
+              <i class="ri-time-line"></i> SE (Sessional Papers)
+            </button>
+            <button type="button" class="chip-btn" data-section="T&N" role="tab" aria-selected="false">
+              <i class="ri-book-read-line"></i> T&amp;N (Tutorials &amp; Notes)
+            </button>
+          </div>
+
+          <!-- Secondary Filter Sub-Row: Semester Selector & Results Counter -->
+          <div class="filter-sub-row">
+            <div class="semester-pills" role="group" aria-label="Filter by Semester">
+              <span style="font-weight: 600; margin-right: 0.25rem;">Semester:</span>
+              <button type="button" class="sem-pill active" data-sem="all">All</button>
+              <button type="button" class="sem-pill" data-sem="1">Sem 1</button>
+              <button type="button" class="sem-pill" data-sem="2">Sem 2</button>
+              <button type="button" class="sem-pill" data-sem="3">Sem 3</button>
+              <button type="button" class="sem-pill" data-sem="4">Sem 4</button>
+              <button type="button" class="sem-pill" data-sem="5">Sem 5</button>
+              <button type="button" class="sem-pill" data-sem="6">Sem 6</button>
+            </div>
+
+            <div class="results-count-text" id="resultsCountIndicator">
+              Showing verified academic resources...
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Resource Grid Container -->
+        <div class="resources-grid" id="resourcesGrid" aria-live="polite">
+          <!-- Populated dynamically by client-side engine -->
+        </div>
+      </section>
+
+      <!-- Editorial Section: The DPGNotes Academic Pillars -->
+      <section class="article-pillars-grid">
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon-box pillar-icon-1">
+            <i class="ri-git-merge-line"></i>
+          </div>
+          <h2 class="pillar-title">Peer-to-Peer Notes</h2>
+          <p class="pillar-text">
+            Handwritten diagrams, chapter summaries, and unit-wise syllabus coverage uploaded directly by students who scored top letter grades in their university examinations.
+          </p>
+        </div>
+
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon-box pillar-icon-2">
+            <i class="ri-brain-line"></i>
+          </div>
+          <h2 class="pillar-title">Interactive Quizzes</h2>
+          <p class="pillar-text">
+            Instant MCQ &amp; MSQ assessment engine tailored for semester revisions. Test conceptual clarity, review comprehensive answer explanations, and benchmark readiness.
+          </p>
+        </div>
+
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon-box pillar-icon-3">
+            <i class="ri-terminal-box-line"></i>
+          </div>
+          <h2 class="pillar-title">Lab &amp; Practical Files</h2>
+          <p class="pillar-text">
+            Verified laboratory source code, system documentation, and viva-voce preparation manuals across Java, Python, C++, Web Technologies, and Database Systems.
+          </p>
+        </div>
+
+        <div class="pillar-card glass-panel">
+          <div class="pillar-icon-box pillar-icon-4">
+            <i class="ri-trophy-line"></i>
+          </div>
+          <h2 class="pillar-title">Contributor Royalties</h2>
+          <p class="pillar-text">
+            Join the academic commons. Verified student contributors gain recognized profile badges, portfolio tracking, and native ad monetization points for their study aids.
+          </p>
+        </div>
+      </section>
+
+      <!-- Live Interactive Quiz Preview Widget -->
+      <section class="interactive-simulator-card glass-panel">
+        <div class="simulator-header">
+          <div>
+            <span class="sim-tag">Interactive Academic Quiz Demo</span>
+            <h2 style="font-size: 1.4rem; margin-top: 0.35rem;">Test Your Fundamentals Right Now</h2>
+          </div>
+          <a href="Quizes/index.html" class="nav-link" style="color: var(--accent-primary); font-weight: 600;">
+            Browse All Quizzes <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+
+        <div class="quiz-question-box">
+          <div class="quiz-q-title" id="demoQTitle">
+            Q: Which database normal form removes partial dependency (functional dependency on part of a composite primary key)?
+          </div>
+          <div class="quiz-options-list" id="demoOptionsList">
+            <button type="button" class="quiz-option-btn" data-correct="false" onclick="handleDemoAnswer(this, false, '1NF only eliminates duplicate columns and ensures atomicity.')">
+              <span>A</span> First Normal Form (1NF)
+            </button>
+            <button type="button" class="quiz-option-btn" data-correct="true" onclick="handleDemoAnswer(this, true, 'Spot on! Second Normal Form (2NF) mandates that every non-prime attribute is fully functionally dependent on the entire candidate key.')">
+              <span>B</span> Second Normal Form (2NF)
+            </button>
+            <button type="button" class="quiz-option-btn" data-correct="false" onclick="handleDemoAnswer(this, false, '3NF eliminates transitive dependencies, not partial dependencies.')">
+              <span>C</span> Third Normal Form (3NF)
+            </button>
+            <button type="button" class="quiz-option-btn" data-correct="false" onclick="handleDemoAnswer(this, false, 'BCNF is a stricter version of 3NF focusing on superkeys.')">
+              <span>D</span> Boyce-Codd Normal Form (BCNF)
+            </button>
+          </div>
+          <div class="quiz-feedback-box" id="demoFeedbackBox"></div>
+        </div>
+      </section>
+
+      <!-- Top Contributors Section -->
+      <section class="contributors-section">
+        <div class="section-heading-row">
+          <div>
+            <h2 class="section-title">Verified Top Contributors</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Students and alumni building open knowledge for our college community</p>
+          </div>
+          <a href="index.html?action=signin" class="nav-link" style="font-weight: 600; color: var(--accent-primary);">
+            Become a Contributor <i class="ri-user-add-line"></i>
+          </a>
+        </div>
+
+        <div class="contributors-grid">
+          <div class="contributor-box glass-card">
+            <div class="contrib-badge-icon"><i class="ri-user-star-line"></i></div>
+            <div class="contrib-details">
+              <span class="contrib-name">Akshat Prasad</span>
+              <span class="contrib-role">Lead Architect &bull; BCA</span>
+              <span class="contrib-stats">48 Verified Resources &bull; 9.4 CGPA</span>
+            </div>
+          </div>
+
+          <div class="contributor-box glass-card">
+            <div class="contrib-badge-icon" style="background: linear-gradient(135deg, #10b981, #06b6d4);"><i class="ri-code-line"></i></div>
+            <div class="contrib-details">
+              <span class="contrib-name">Rohan Sharma</span>
+              <span class="contrib-role">B.Tech CSE &bull; Gold Contributor</span>
+              <span class="contrib-stats">28 Code Practicals &bull; Python / AI</span>
+            </div>
+          </div>
+
+          <div class="contributor-box glass-card">
+            <div class="contrib-badge-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);"><i class="ri-pencil-ruler-line"></i></div>
+            <div class="contrib-details">
+              <span class="contrib-name">Priya Verma</span>
+              <span class="contrib-role">BCA &bull; Peer Scholar</span>
+              <span class="contrib-stats">34 Handwritten Notes &bull; DBMS / OS</span>
+            </div>
+          </div>
+
+          <div class="contributor-box glass-card">
+            <div class="contrib-badge-icon" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6);"><i class="ri-survey-line"></i></div>
+            <div class="contrib-details">
+              <span class="contrib-name">Aman Saxena</span>
+              <span class="contrib-role">MCA &bull; Quiz Master</span>
+              <span class="contrib-stats">16 Mock Assessments &bull; Java / SE</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Frequently Asked Questions -->
+      <section class="faq-section">
+        <div class="section-heading-row">
+          <h2 class="section-title">Frequently Asked Questions</h2>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
+              <span>Are all study materials and question papers completely free?</span>
+              <i class="ri-arrow-down-s-line"></i>
+            </button>
+            <div class="faq-content">
+              Yes, 100%. DPGNotes operates on an open academic commons model. You can view, search, read, and print verified lecture notes, previous year sessional papers, and assignment solutions without any paywalls or required subscriptions.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
+              <span>How are uploaded student notes verified before publishing?</span>
+              <i class="ri-arrow-down-s-line"></i>
+            </button>
+            <div class="faq-content">
+              Every document uploaded through the Contributor Dashboard undergoes an academic accuracy review, syllabus alignment check, and PDF clean-scan audit before being approved into the public directory.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
+              <span>How can I contribute my own handwritten notes or practical files?</span>
+              <i class="ri-arrow-down-s-line"></i>
+            </button>
+            <div class="faq-content">
+              Click the "Contributor Sign In" button to create your free student or faculty profile. Once signed in, visit the Contribution dashboard to upload documents, generate interactive quizzes, or author assignment solutions.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
+              <span>What is the difference between SP, UE, SE, and T&amp;N categories?</span>
+              <i class="ri-arrow-down-s-line"></i>
+            </button>
+            <div class="faq-content">
+              <strong>SP</strong> represents Sample Papers and Model Exam Solutions; <strong>UE</strong> designates official University Exam Papers (PYQs); <strong>SE</strong> stands for internal Sessional Examination Papers; and <strong>T&amp;N</strong> represents Unit Tutorials and In-Depth Lecture Notes.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-top">
+        <div class="footer-brand-info">
+          <div class="brand-name" style="font-size: 1.3rem; margin-bottom: 0.5rem;">
+            <i class="ri-graduation-cap-fill" style="color: var(--accent-primary);"></i> DPGNotes Study Hub
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
+            The central open academic repository for DPG Degree College and affiliated university students. Free peer notes, exam archives, practical manuals, and quiz assessments.
+          </p>
+        </div>
+
+        <div class="footer-nav-links">
+          <div class="footer-nav-col">
+            <span class="footer-col-title">Academic Portal</span>
+            <a href="dpgnotes-search-engine.html" class="footer-link">Search Engine</a>
+            <a href="Quizes/index.html" class="footer-link">Quiz Portal</a>
+            <a href="AssignmentSolution/index.html" class="footer-link">Assignment Solutions</a>
+            <a href="PracticalSolution/index.html" class="footer-link">Practical Lab Files</a>
+          </div>
+
+          <div class="footer-nav-col">
+            <span class="footer-col-title">Tools &amp; Utilities</span>
+            <a href="ImagetoPdfConverter.html" class="footer-link">Image to PDF Converter</a>
+            <a href="PdfMetaAnalyzer.html" class="footer-link">PDF Metadata Analyzer</a>
+            <a href="AssignmentCoverPageGenerator/index.html" class="footer-link">Cover Page Generator</a>
+            <a href="dashboard.html" class="footer-link">Contributor Dashboard</a>
+          </div>
+
+          <div class="footer-nav-col">
+            <span class="footer-col-title">Legal &amp; Policy</span>
+            <a href="legal/privacy-policy.html" class="footer-link">Privacy Policy</a>
+            <a href="legal/terms-conditions.html" class="footer-link">Terms &amp; Conditions</a>
+            <a href="legal/dmca-policy.html" class="footer-link">DMCA &amp; Copyright</a>
+            <a href="legal/advertising-policy.html" class="footer-link">Advertising Policy</a>
+          </div>
         </div>
       </div>
-      <div class="nova-thread" id="novaThread" role="log" aria-live="polite">
-      </div>
-      <div class="nova-chips-container" id="novaChipsContainer" aria-label="Suggested study questions">
-      </div>
-      <div class="nova-input-area">
-        <div class="nova-input-box">
-          <textarea
-            class="nova-textarea"
-            id="novaInput"
-            placeholder="Ask NOVA anything... (e.g. 'Explain database normalization', 'Find Cloud Computing notes', 'Create a 15-question Java quiz')"
-            rows="1"
-            aria-label="Ask NOVA academic questions or platform commands"
-          ></textarea>
-          <button type="button" class="nova-btn-send" id="novaSendBtn" title="Send message" aria-label="Send query">
-            <i class="ri-send-plane-2-fill"></i>
-          </button>
+
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 DPGNotes. Engineered by <strong>Akshat Network Hub (ANH)</strong>. All educational materials belong to their respective student and faculty contributors.
         </div>
-        <div class="nova-privacy-note">
-          <i class="ri-shield-check-line"></i>
-          <span>Strictly Zero-Retention Ephemeral Session. Conversations are never stored in databases or cookies.</span>
+        <div style="display: flex; gap: 1rem;">
+          <a href="https://github.com/Akshat-881236/DPGNotes" target="_blank" rel="noopener" class="footer-link"><i class="ri-github-fill"></i> GitHub</a>
+          <a href="/legal/privacy-policy.html" class="footer-link">Privacy</a>
+          <a href="/legal/terms-conditions.html" class="footer-link">Terms</a>
         </div>
       </div>
-    </section>
-    <div class="native-ads" id="native-ads-hub" data-ad-variant="feed" data-ad-count="3" style="margin:2.5rem 0;"></div>
-    <section class="hub-courses-section" style="margin-top: 3rem;">
-      <div style="text-align: center; margin-bottom: 2rem;">
-        <span class="hero-badge" style="display:inline-flex; align-items:center; gap:6px; background:rgba(99,102,241,0.12); color:#a5b4fc; padding:4px 14px; border-radius:9999px; font-size:0.8rem; font-weight:600;">
-          <i class="ri-book-mark-line"></i> Verified Syllabus Repository
-        </span>
-        <h2 style="font-family:'Outfit',sans-serif; font-size:clamp(1.5rem, 4vw, 2rem); margin:0.5rem 0; color:white;">Curricular Reference Modules</h2>
-        <p style="color:var(--nova-text-muted); font-size:0.95rem; max-width:620px; margin:0 auto;">
-          The knowledge foundation ingested by NOVA, covering undergraduate engineering, multidisciplinary health files, and placement archives.
-        </p>
-      </div>
-      <article class="article-box">
-        <h2><i class="ri-code-s-slash-line"></i> Computer Science &amp; Software Engineering Core Modules</h2>
-        <p>
-          The DPGNotes Computer Science repository covers core theoretical and practical subjects required for modern software engineering and computer application degrees (BCA, B.Tech, M.Tech, and MCA).
-        </p>
-        <ul>
-          <li><strong>Computer Organization &amp; Architecture (COA)</strong>: Instruction set architectures, CPU registers, pipelining, cache memory mapping, memory management units, and digital logic circuits.</li>
-          <li><strong>Database Management Systems (DBMS)</strong>: Relational database design, E-R modeling, SQL queries, normalization (1NF, 2NF, 3NF, BCNF), and ACID transaction properties.</li>
-          <li><strong>Object-Oriented Java Programming</strong>: Classes, inheritance, polymorphism, interface contracts, exception handling, multithreading, and AWT/Swing GUI components.</li>
-          <li><strong>Operating Systems (OS)</strong>: Process scheduling algorithms (FCFS, SJF, Round Robin), deadlocks, virtual memory management, paging, and file systems.</li>
-        </ul>
-        <p>
-          Our notes are accompanied by verified previous year examination question papers (PYQs) and sessional solutions to help students prepare effectively for term exams.
-        </p>
-      </article>
-      <article class="article-box">
-        <h2><i class="ri-heart-pulse-line"></i> Health Education, First Aid &amp; Physical Education Notes</h2>
-        <p>
-          Physical Education and Wellness modules form a crucial component of undergraduate multidisciplinary courses. DPGNotes provides comprehensive practical files and theoretical keynotes covering:
-        </p>
-        <ul>
-          <li><strong>Health Education &amp; Hygiene</strong>: Principles of personal health, nutrition, wellness, and preventive hygiene.</li>
-          <li><strong>First Aid &amp; Safety Measures</strong>: Emergency first aid procedures, fracture immobilization, CPR, and sports injury management protocols.</li>
-          <li><strong>Physical Fitness &amp; Somatotyping</strong>: Analysis of body somatotypes (Ectomorph, Mesomorph, Endomorph), physical fitness testing battery, and sports science fundamentals.</li>
-        </ul>
-      </article>
-      <article class="article-box">
-        <h2><i class="ri-compass-3-line"></i> Geography &amp; Environmental Sciences</h2>
-        <p>
-          Our Geography study repository provides clear notes on the physical and regional geography of India, including physiographic divisions (Himalayas, Indo-Gangetic Plains, Peninsular Plateau, Coastal Plains, and Islands), river systems, climate patterns, and natural vegetation.
-        </p>
-      </article>
-      <article class="article-box">
-        <h2><i class="ri-user-star-line"></i> Technical Placement &amp; Aptitude Preparation</h2>
-        <p>
-          Getting job-ready requires mastering technical concepts alongside quantitative aptitude and analytical reasoning. DPGNotes placement modules offer curated problem sets, company interview experiences, coding interview tips, and logical reasoning exercises designed to boost candidate confidence during campus hiring drives.
-        </p>
-      </article>
-    </section>
-    <div class="native-ads" data-ad-variant="footer" data-ad-count="1" style="margin:2.5rem 0;"></div>
-  </main>
-  <footer style="text-align:center; padding:2.5rem 1rem; border-top:1px solid rgba(255,255,255,0.08); color:var(--nova-text-muted); font-size:0.85rem;">
-    &copy; 2026 DPGNotes by Akshat Network Hub. All rights reserved. &bull; 
-    <a href="legal/index.html#privacy" style="color:#a78bfa; text-decoration:none;">Privacy Policy</a> &bull; 
-    <a href="legal/index.html#terms" style="color:#a78bfa; text-decoration:none;">Terms of Use</a> &bull; 
-    <a href="legal/index.html#quiz-policy" style="color:#a78bfa; text-decoration:none;">Quiz Policy</a> &bull;
-    <a href="dpgnotes-serp.html" style="color:#a78bfa; text-decoration:none;">Search Engine</a>
-  </footer>
-  <script src="study-hub-js/study-hub-config.js"></script>
-  <script src="study-hub-js/study-hub-context.js"></script>
-  <script src="study-hub-js/study-hub-knowledge.js"></script>
-  <script src="study-hub-js/study-hub-legal.js"></script>
-  <script src="study-hub-js/study-hub-quiz.js"></script>
-  <script src="study-hub-js/study-hub-actions.js"></script>
-  <script src="study-hub-js/study-hub-renderer.js"></script>
-  <script src="study-hub-js/study-hub-agent.js"></script>
-  <script src="study-hub-js/study-hub-chat.js"></script>
-  <script src="study-hub-js/study-hub-main.js"></script>
+    </footer>
+
+  </div>
+
+  <!-- ==========================================================================
+       12. JAVASCRIPT: THEME ENGINE, ANIMATED CANVAS, MINI SEARCH ENGINE & FIRESTORE
+       ========================================================================== -->
+  <script type="module">
+    // Modular Firebase imports for read-optimized Firestore fetching
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, collectionGroup, query, limit } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    /* ==========================================================================
+       A. THEME CONTROLLER & CONTRAST SYNC
+       ========================================================================== */
+    const THEME_STORAGE_KEY = "dpgReaderTheme";
+    let currentTheme = localStorage.getItem(THEME_STORAGE_KEY) || "default";
+
+    function applyTheme(theme) {
+      currentTheme = theme;
+      document.documentElement.setAttribute("data-theme", theme);
+      if (document.body) {
+        document.body.setAttribute("data-theme", theme);
+      }
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+      // Update switcher buttons UI
+      document.querySelectorAll(".theme-opt-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-theme") === theme);
+      });
+
+      // Synchronize with academic canvas colors
+      if (window.updateCanvasColors) {
+        window.updateCanvasColors();
+      }
+
+      window.dispatchEvent(new CustomEvent("dpg-theme-changed", { detail: { theme } }));
+    }
+
+    window.applyTheme = applyTheme;
+
+    document.getElementById("themeBtnDefault")?.addEventListener("click", () => applyTheme("default"));
+    document.getElementById("themeBtnLight")?.addEventListener("click", () => applyTheme("light"));
+    document.getElementById("themeBtnDark")?.addEventListener("click", () => applyTheme("dark"));
+
+    // Sync theme on initial load
+    applyTheme(currentTheme);
+
+    /* ==========================================================================
+       B. INTERACTIVE BACKGROUND CANVAS (DronaNotes-Inspired Particle & Math Network)
+       ========================================================================== */
+    const canvas = document.getElementById("academicCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let width = 0;
+    let height = 0;
+    let particles = [];
+    const particleCount = window.innerWidth < 768 ? 28 : 55;
+    let mouse = { x: -1000, y: -1000, radius: 140 };
+
+    const academicSymbols = ["∑", "π", "λ", "∫", "{ }", "</>", "√x", "∞", "01", "A+"];
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.75;
+        this.vy = (Math.random() - 0.5) * 0.75;
+        this.radius = Math.random() * 2.5 + 1.2;
+        this.isSymbol = Math.random() > 0.65;
+        this.symbol = academicSymbols[Math.floor(Math.random() * academicSymbols.length)];
+        this.alpha = Math.random() * 0.35 + 0.15;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+
+        // Mouse repulsion
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < mouse.radius) {
+          const force = (mouse.radius - dist) / mouse.radius;
+          this.x -= (dx / dist) * force * 3;
+          this.y -= (dy / dist) * force * 3;
+        }
+      }
+
+      draw() {
+        const themeStyles = getComputedStyle(document.documentElement);
+        const nodeColor = themeStyles.getPropertyValue("--canvas-node").trim() || "rgba(99, 102, 241, 0.4)";
+
+        if (this.isSymbol) {
+          ctx.save();
+          ctx.font = "12px 'Fira Code', monospace";
+          ctx.fillStyle = nodeColor;
+          ctx.globalAlpha = this.alpha;
+          ctx.fillText(this.symbol, this.x, this.y);
+          ctx.restore();
+        } else {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = nodeColor;
+          ctx.globalAlpha = this.alpha;
+          ctx.fill();
+        }
+      }
+    }
+
+    function initCanvasParticles() {
+      resizeCanvas();
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function drawConnections() {
+      const themeStyles = getComputedStyle(document.documentElement);
+      const lineColor = themeStyles.getPropertyValue("--canvas-line").trim() || "rgba(59, 130, 246, 0.12)";
+      const maxDistance = 120;
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < maxDistance) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = lineColor;
+            ctx.globalAlpha = (1 - dist / maxDistance) * 0.45;
+            ctx.lineWidth = 0.85;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    let animationFrameId;
+    function animateCanvas() {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+      drawConnections();
+
+      animationFrameId = requestAnimationFrame(animateCanvas);
+    }
+
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    window.addEventListener("mouseout", () => {
+      mouse.x = -1000;
+      mouse.y = -1000;
+    });
+
+    // Pause canvas if tab is hidden to conserve battery & CPU
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationFrameId);
+      } else {
+        animateCanvas();
+      }
+    });
+
+    initCanvasParticles();
+    animateCanvas();
+
+    /* ==========================================================================
+       C. SEED ACADEMIC RESOURCE CATALOG (Guaranteed Rich Content + Fallback)
+       ========================================================================== */
+    const academicSeedCatalog = [
+      {
+        id: "quiz_dbms_norm",
+        type: "Quiz",
+        category: "Quiz",
+        title: "DBMS Relational Normalization & Functional Dependencies",
+        subject: "Database Management Systems",
+        course: "BCA / B.Tech CSE",
+        semester: "4",
+        contributor: "Akshat Prasad",
+        views: 1420,
+        likes: 98,
+        questionsCount: 20,
+        url: "Quizes/index.html?quizId=quiz_1728001"
+      },
+      {
+        id: "sol_ai_expert_u1",
+        type: "Assignment Solution",
+        category: "Assignment Solution",
+        title: "Artificial Intelligence & Expert Systems — Unit 1 Solution",
+        subject: "Artificial Intelligence",
+        course: "BCA",
+        semester: "5",
+        contributor: "Akshat Prasad",
+        views: 2850,
+        likes: 184,
+        url: "AssignmentSolution/index.html?id=assign_1791543990965_e215u&contributor=CCoQSLFfzWf4NGF6zox3tO399Xg1"
+      },
+      {
+        id: "sol_webtech_lab",
+        type: "Practical Solution",
+        category: "Practical Solution",
+        title: "Full Stack Web Tech Lab Manual — Responsive Glassmorphism & Node",
+        subject: "Web Development",
+        course: "BCA / B.Tech",
+        semester: "5",
+        contributor: "Rohan Sharma",
+        views: 1940,
+        likes: 126,
+        url: "PracticalSolution/index.html?id=prac_1784992102_wlab"
+      },
+      {
+        id: "doc_ue_os_2025",
+        type: "UE",
+        category: "UE",
+        title: "Operating Systems University Examination Question Paper (Dec 2025)",
+        subject: "Operating Systems",
+        course: "BCA / B.Tech",
+        semester: "4",
+        contributor: "Priya Verma",
+        views: 3120,
+        likes: 240,
+        url: "dpgnotes-pdf-viewer.html?id=doc_ue_os_2025"
+      },
+      {
+        id: "doc_sp_cn_model",
+        type: "SP",
+        category: "SP",
+        title: "Computer Networks Sample Paper & Model Solution Key",
+        subject: "Computer Networks",
+        course: "BCA",
+        semester: "5",
+        contributor: "Aman Saxena",
+        views: 1780,
+        likes: 112,
+        url: "dpgnotes-pdf-viewer.html?id=doc_sp_cn_model"
+      },
+      {
+        id: "doc_se_ds_sessional",
+        type: "SE",
+        category: "SE",
+        title: "Data Structures & Algorithms Sessional Exam Paper 1 & 2",
+        subject: "Data Structures",
+        course: "BCA / B.Tech",
+        semester: "3",
+        contributor: "Akshat Prasad",
+        views: 2430,
+        likes: 165,
+        url: "dpgnotes-pdf-viewer.html?id=doc_se_ds_sessional"
+      },
+      {
+        id: "doc_tn_discrete_math",
+        type: "T&N",
+        category: "T&N",
+        title: "Discrete Mathematics Unit 1–4 Complete Handwritten Lecture Notes",
+        subject: "Discrete Mathematics",
+        course: "BCA",
+        semester: "2",
+        contributor: "Priya Verma",
+        views: 4210,
+        likes: 310,
+        url: "dpgnotes-pdf-viewer.html?id=doc_tn_discrete_math"
+      },
+      {
+        id: "doc_event_hackathon",
+        type: "Event Material",
+        category: "Event Material",
+        title: "Annual Tech Fest Hackathon Guide & Problem Statements",
+        subject: "Innovation & Coding",
+        course: "Campus Wide",
+        semester: "all",
+        contributor: "Akshat Prasad",
+        views: 950,
+        likes: 84,
+        url: "dpgnotes-pdf-viewer.html?id=doc_event_hackathon"
+      },
+      {
+        id: "quiz_java_oop",
+        type: "Quiz",
+        category: "Quiz",
+        title: "Java OOPs Concepts, Interfaces & Exception Handling Quiz",
+        subject: "Core Java",
+        course: "BCA / B.Tech",
+        semester: "3",
+        contributor: "Aman Saxena",
+        views: 1890,
+        likes: 135,
+        questionsCount: 25,
+        url: "Quizes/index.html?quizId=quiz_java_oop_25"
+      },
+      {
+        id: "sol_python_data_prac",
+        type: "Practical Solution",
+        category: "Practical Solution",
+        title: "Python Data Analysis with Pandas & Matplotlib Lab Solution",
+        subject: "Python Programming",
+        course: "BCA / B.Tech",
+        semester: "4",
+        contributor: "Rohan Sharma",
+        views: 2150,
+        likes: 178,
+        url: "PracticalSolution/index.html?id=prac_python_data_2025"
+      },
+      {
+        id: "doc_ue_se_2024",
+        type: "UE",
+        category: "UE",
+        title: "Software Engineering University Question Paper (Annual Exam)",
+        subject: "Software Engineering",
+        course: "BCA",
+        semester: "5",
+        contributor: "Akshat Prasad",
+        views: 2670,
+        likes: 195,
+        url: "dpgnotes-pdf-viewer.html?id=doc_ue_se_2024"
+      },
+      {
+        id: "doc_tn_cloud_comp",
+        type: "T&N",
+        category: "T&N",
+        title: "Cloud Computing Architectures, Virtualization & AWS Fundamentals",
+        subject: "Cloud Computing",
+        course: "BCA / B.Tech",
+        semester: "6",
+        contributor: "Akshat Prasad",
+        views: 1640,
+        likes: 142,
+        url: "dpgnotes-pdf-viewer.html?id=doc_tn_cloud_comp"
+      }
+    ];
+
+    /* ==========================================================================
+       D. FIRESTORE READ-OPTIMIZED CACHING & DATA AGGREGATION
+       ========================================================================== */
+    let allResources = [...academicSeedCatalog];
+    const CACHE_KEY = "dpg_study_hub_catalog";
+    const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes client-side cache
+
+    async function loadResources() {
+      // Check local cache first to protect Spark quota
+      try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && Array.isArray(parsed.data) && (Date.now() - (parsed.timestamp || 0) < CACHE_TTL_MS)) {
+            allResources = parsed.data;
+            renderResources();
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("[Study Hub] Cache read note:", err.message);
+      }
+
+      // Live Firestore fetch with safety limits
+      try {
+        const [docsSnap, solSnap, qzSnap] = await Promise.all([
+          getDocs(query(collection(db, "documents"), limit(50))).catch(() => ({ empty: true, forEach: () => {} })),
+          getDocs(query(collectionGroup(db, "solutions"), limit(30))).catch(() => ({ empty: true, forEach: () => {} })),
+          getDocs(query(collection(db, "quizDirectory"), limit(25))).catch(() => ({ empty: true, forEach: () => {} }))
+        ]);
+
+        const liveFetched = [];
+
+        // 1. Documents
+        docsSnap.forEach(d => {
+          const data = d.data();
+          const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
+          const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
+          if (isApproved && !isPrivate && data.title) {
+            liveFetched.push({
+              id: d.id,
+              type: data.category || "T&N",
+              category: data.category || "T&N",
+              title: data.title,
+              subject: data.subject || data.course || "Academic Document",
+              course: data.course || "BCA",
+              semester: String(data.semester || "1"),
+              contributor: data.uploaderName || data.contributorName || "Verified Scholar",
+              views: data.views || Math.floor(Math.random() * 400 + 80),
+              likes: data.likes || Math.floor(Math.random() * 60 + 10),
+              url: `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(d.id)}`
+            });
+          }
+        });
+
+        // 2. Solutions
+        solSnap.forEach(solDoc => {
+          const data = solDoc.data();
+          const parentPath = solDoc.ref.path || '';
+          const isPractical = parentPath.includes("practical_solutions") || data.type === "practical" || (data.id && data.id.startsWith("prac_"));
+          const categoryName = isPractical ? "Practical Solution" : "Assignment Solution";
+          const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
+          const contribUid = data.contributorUid || data.userId || "";
+          const targetUrl = `${viewerBase}?id=${encodeURIComponent(data.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+
+          if (data.subjectName || data.title) {
+            liveFetched.push({
+              id: solDoc.id,
+              type: categoryName,
+              category: categoryName,
+              title: data.assignmentTitle || data.title || `${data.subjectName || 'Academic'} Solution`,
+              subject: data.subjectName || "Computer Science",
+              course: data.course || "BCA",
+              semester: String(data.semester || "5"),
+              contributor: data.contributorName || data.studentName || "Verified Contributor",
+              views: data.views || Math.floor(Math.random() * 600 + 100),
+              likes: data.likes || Math.floor(Math.random() * 70 + 20),
+              url: targetUrl
+            });
+          }
+        });
+
+        // 3. Quizzes
+        qzSnap.forEach(qDoc => {
+          const data = qDoc.data();
+          if (data.title && data.visibility !== "private") {
+            liveFetched.push({
+              id: qDoc.id,
+              type: "Quiz",
+              category: "Quiz",
+              title: data.title,
+              subject: data.subject || "Academic Assessment",
+              course: data.course || "BCA",
+              semester: String(data.semester || "3"),
+              contributor: data.contributorName || "Quiz Master",
+              views: data.totalAttempts || Math.floor(Math.random() * 500 + 50),
+              likes: data.likes || Math.floor(Math.random() * 50 + 15),
+              questionsCount: data.totalQuestions || 15,
+              url: `Quizes/index.html?quizId=${encodeURIComponent(data.quizId || qDoc.id)}`
+            });
+          }
+        });
+
+        // Merge live data with catalog, eliminating duplicate IDs
+        const existingIds = new Set(liveFetched.map(r => r.id));
+        const merged = [...liveFetched];
+        academicSeedCatalog.forEach(seed => {
+          if (!existingIds.has(seed.id)) {
+            merged.push(seed);
+          }
+        });
+
+        allResources = merged;
+
+        // Cache the combined collection
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: allResources,
+            timestamp: Date.now()
+          }));
+        } catch (e) {}
+
+      } catch (fetchErr) {
+        console.warn("[Study Hub] Firestore fetch bypassed, operating on seed catalog:", fetchErr);
+        allResources = academicSeedCatalog;
+      }
+
+      renderResources();
+    }
+
+    /* ==========================================================================
+       E. MINI SEARCH ENGINE: DYNAMIC FILTERING & CARD RENDERING
+       ========================================================================== */
+    let activeSection = "all";
+    let activeSemester = "all";
+    let searchQuery = "";
+
+    function getBadgeClass(category) {
+      if (category === "Quiz") return "badge-quiz";
+      if (category === "Assignment Solution") return "badge-assign";
+      if (category === "Practical Solution") return "badge-prac";
+      if (category === "Event Material") return "badge-event";
+      if (category === "SP" || category === "UE" || category === "SE") return "badge-paper";
+      return "badge-notes";
+    }
+
+    function getCategoryIcon(category) {
+      if (category === "Quiz") return "ri-questionnaire-line";
+      if (category === "Assignment Solution") return "ri-file-text-line";
+      if (category === "Practical Solution") return "ri-code-box-line";
+      if (category === "Event Material") return "ri-calendar-event-line";
+      if (category === "SP" || category === "UE" || category === "SE") return "ri-file-paper-2-line";
+      return "ri-book-open-line";
+    }
+
+    function getActionLabel(category) {
+      if (category === "Quiz") return "Take Interactive Quiz";
+      if (category === "Assignment Solution" || category === "Practical Solution") return "View Full Solution";
+      return "Open & Read Notes";
+    }
+
+    function renderResources() {
+      const grid = document.getElementById("resourcesGrid");
+      const counter = document.getElementById("resultsCountIndicator");
+      if (!grid) return;
+
+      const q = searchQuery.toLowerCase().trim();
+
+      const filtered = allResources.filter(item => {
+        // Section Filter
+        if (activeSection !== "all") {
+          const itemCat = (item.category || item.type || "").toLowerCase();
+          const matchCat = activeSection.toLowerCase();
+          if (itemCat !== matchCat) return false;
+        }
+
+        // Semester Filter
+        if (activeSemester !== "all") {
+          const itemSem = String(item.semester || "");
+          if (itemSem !== activeSemester && itemSem !== "all") return false;
+        }
+
+        // Search Query Filter
+        if (q) {
+          const haystack = `${item.title || ''} ${item.subject || ''} ${item.course || ''} ${item.contributor || ''} ${item.category || ''}`.toLowerCase();
+          if (!haystack.includes(q)) return false;
+        }
+
+        return true;
+      });
+
+      // Update count text
+      if (counter) {
+        counter.textContent = `Showing ${filtered.length} of ${allResources.length} verified resources`;
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-search-state glass-card">
+            <div class="empty-search-icon"><i class="ri-search-line"></i></div>
+            <div class="empty-search-title">No matching study materials found</div>
+            <p class="empty-search-desc">
+              We couldn't find any documents or quizzes matching "<strong>${escapeHtml(searchQuery)}</strong>". Try adjusting your keywords or clearing the category filter.
+            </p>
+            <button type="button" class="chip-btn active" onclick="resetFilters()">
+              <i class="ri-refresh-line"></i> Reset All Filters
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => {
+        const badgeCls = getBadgeClass(item.category);
+        const iconCls = getCategoryIcon(item.category);
+        const actionText = getActionLabel(item.category);
+        const initials = (item.contributor || "VS").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+
+        return `
+          <article class="resource-card glass-card" data-id="${escapeHtml(item.id)}">
+            <div class="card-top-row">
+              <span class="category-badge ${badgeCls}">
+                <i class="${iconCls}"></i> ${escapeHtml(item.category || item.type)}
+              </span>
+              <span class="course-sem-tag">${escapeHtml(item.course || 'BCA')}${item.semester && item.semester !== 'all' ? ' &bull; Sem ' + item.semester : ''}</span>
+            </div>
+
+            <h3 class="card-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</h3>
+            <div class="card-subject">
+              <i class="ri-bookmark-3-line" style="color: var(--accent-primary);"></i>
+              <span>${escapeHtml(item.subject || 'Academic Module')}</span>
+            </div>
+
+            <div class="card-meta-row">
+              <div class="card-contributor">
+                <div class="contributor-avatar">${initials}</div>
+                <span>${escapeHtml(item.contributor || 'Verified Scholar')}</span>
+              </div>
+              <div class="card-stats">
+                ${item.questionsCount ? `<span><i class="ri-questionnaire-line"></i> ${item.questionsCount} Qs</span>` : ''}
+                <span><i class="ri-eye-line"></i> ${item.views || 0}</span>
+                <span><i class="ri-heart-line"></i> ${item.likes || 0}</span>
+              </div>
+            </div>
+
+            <a href="${escapeHtml(item.url)}" class="card-action-btn" aria-label="${actionText}: ${escapeHtml(item.title)}">
+              <span>${actionText}</span>
+              <i class="ri-arrow-right-line"></i>
+            </a>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    window.resetFilters = function() {
+      activeSection = "all";
+      activeSemester = "all";
+      searchQuery = "";
+      const searchInput = document.getElementById("hubSearchInput");
+      const clearBtn = document.getElementById("clearSearchBtn");
+      if (searchInput) searchInput.value = "";
+      if (clearBtn) clearBtn.classList.remove("visible");
+
+      document.querySelectorAll(".chip-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-section") === "all");
+      });
+      document.querySelectorAll(".sem-pill").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-sem") === "all");
+      });
+
+      renderResources();
+    };
+
+    // Filter Chips Event Listeners
+    document.querySelectorAll(".chip-btn[data-section]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".chip-btn[data-section]").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+        activeSection = btn.getAttribute("data-section");
+        renderResources();
+      });
+    });
+
+    // Semester Pills Event Listeners
+    document.querySelectorAll(".sem-pill[data-sem]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".sem-pill[data-sem]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeSemester = btn.getAttribute("data-sem");
+        renderResources();
+      });
+    });
+
+    // Search Input Controller
+    const searchInput = document.getElementById("hubSearchInput");
+    const clearBtn = document.getElementById("clearSearchBtn");
+
+    searchInput?.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      if (clearBtn) {
+        clearBtn.classList.toggle("visible", searchQuery.length > 0);
+      }
+      renderResources();
+    });
+
+    clearBtn?.addEventListener("click", () => {
+      if (searchInput) {
+        searchInput.value = "";
+        searchQuery = "";
+        clearBtn.classList.remove("visible");
+        searchInput.focus();
+        renderResources();
+      }
+    });
+
+    // Keyboard shortcut (Press '/' or Ctrl+K to search)
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "/" && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput?.focus();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInput?.focus();
+      }
+    });
+
+    // Initialize Catalog Fetch
+    loadResources();
+
+    /* ==========================================================================
+       F. INTERACTIVE QUIZ SIMULATOR HANDLER
+       ========================================================================== */
+    window.handleDemoAnswer = function(buttonEl, isCorrect, explanation) {
+      const optionsContainer = document.getElementById("demoOptionsList");
+      const feedbackBox = document.getElementById("demoFeedbackBox");
+      if (!optionsContainer || !feedbackBox) return;
+
+      // Disable buttons
+      optionsContainer.querySelectorAll(".quiz-option-btn").forEach(btn => {
+        btn.disabled = true;
+        btn.style.pointerEvents = "none";
+        if (btn.getAttribute("data-correct") === "true") {
+          btn.classList.add("correct");
+        }
+      });
+
+      if (!isCorrect) {
+        buttonEl.classList.add("wrong");
+      }
+
+      feedbackBox.style.display = "block";
+      if (isCorrect) {
+        feedbackBox.style.background = "rgba(16, 185, 129, 0.16)";
+        feedbackBox.style.border = "1px solid var(--accent-emerald)";
+        feedbackBox.style.color = "var(--text-main)";
+        feedbackBox.innerHTML = `<strong><i class="ri-checkbox-circle-fill" style="color: var(--accent-emerald);"></i> Correct Answer!</strong><br>${explanation}`;
+      } else {
+        feedbackBox.style.background = "rgba(239, 68, 68, 0.16)";
+        feedbackBox.style.border = "1px solid #ef4444";
+        feedbackBox.style.color = "var(--text-main)";
+        feedbackBox.innerHTML = `<strong><i class="ri-close-circle-fill" style="color: #ef4444;"></i> Incorrect Selection.</strong><br>${explanation}`;
+      }
+    };
+
+    /* ==========================================================================
+       G. FAQ ACCORDION HANDLER
+       ========================================================================== */
+    window.toggleFaq = function(buttonEl) {
+      const item = buttonEl.closest(".faq-item");
+      if (!item) return;
+      const isOpen = item.classList.contains("open");
+      document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("open"));
+      if (!isOpen) {
+        item.classList.add("open");
+      }
+    };
+  </script>
 </body>
 </html>
