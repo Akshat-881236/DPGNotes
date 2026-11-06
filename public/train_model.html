@@ -1683,7 +1683,9 @@
         try {
           if (status) status.innerHTML = `<i class="ri-loader-4-line spin-icon" style="color:#a855f7;"></i> AI Analyzing &amp; Fixing Tags...`;
           if (bar) bar.style.display = 'flex';
-          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+          ? window.API_BASE_URL.replace(/\/+$/, '')
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
           const res = await fetch(`${apiBase}/api/ai/suggest-tags`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1752,7 +1754,9 @@
       }
       contentDebounceTimer = setTimeout(async () => {
         try {
-          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+          const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+          ? window.API_BASE_URL.replace(/\/+$/, '')
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
           const res = await fetch(`${apiBase}/api/ai/autocomplete-content`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1877,7 +1881,9 @@
       const badge = document.getElementById('notesCountBadge');
       try {
         let notes = [];
-        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+          ? window.API_BASE_URL.replace(/\/+$/, '')
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
         try {
           const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`);
           if (res.ok) {
@@ -2116,7 +2122,9 @@
         btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> AI Verification &amp; Fact-Checking...`;
       }
       try {
-        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+          ? window.API_BASE_URL.replace(/\/+$/, '')
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
         let verifyData = null;
         try {
           const vRes = await fetch(`${apiBase}/api/ai/verify-note-content`, {
@@ -2191,7 +2199,9 @@
       }
       try {
         const currentUid = getActiveUserId() || activeUid || "contributor";
-        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+          ? window.API_BASE_URL.replace(/\/+$/, '')
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
         const url = isEditing
           ? `${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}/${encodeURIComponent(targetNoteId)}`
           : `${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}`;
@@ -2246,7 +2256,9 @@
       }
       if (!ok) return;
       try {
-        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+          ? window.API_BASE_URL.replace(/\/+$/, '')
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
         const res = await fetch(`${apiBase}/api/resource-notes/${encodeURIComponent(targetId)}/${encodeURIComponent(nid)}`, {
           method: 'DELETE'
         });

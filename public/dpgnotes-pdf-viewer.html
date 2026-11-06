@@ -76,7 +76,7 @@
     .topbar .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;color:white;text-decoration:none;flex-shrink:0 !important;white-space:nowrap !important}
     .topbar .logo .dot{color:var(--pri)}
     .topbar .doctitle{max-width:280px;font-size:0.88rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;margin-left:auto}
-    .topbar .dpg-reader-controls{display:inline-flex !important;flex-direction:row !important;flex-wrap:nowrap !important;white-space:nowrap !important;flex-shrink:0 !important;align-items:center !important}
+    .topbar .dpg-reader-controls{display:inline-flex !important;flex-direction:column !important;justify-content:center !important;align-items:center !important;flex-wrap:nowrap !important;white-space:nowrap !important;flex-shrink:0 !important;box-sizing:border-box !important}
     .topbar .dpg-reader-controls *{flex-shrink:0 !important;white-space:nowrap !important}
     .topbar div{flex-shrink:0 !important;white-space:nowrap !important}
     .nbtn{background:rgba(255,255,255,0.06);border:1px solid var(--bdr);color:var(--txt);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;display:inline-flex;align-items:center;gap:6px;transition:background .2s;text-decoration:none;flex-shrink:0 !important;white-space:nowrap !important}
@@ -338,7 +338,9 @@
       }
       .topbar .dpg-reader-controls{
         display: inline-flex !important;
-        flex-direction: row !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
         flex-wrap: nowrap !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;

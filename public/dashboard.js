@@ -365,6 +365,16 @@ onAuthStateChanged(auth, async (user) => {
     localStorage.setItem("dpgActiveUserEmail", user.email || "");
     localStorage.setItem("dpgActiveUserName", user.displayName || "");
     localStorage.setItem("dpgActiveUserPhoto", user.photoURL || "");
+    localStorage.setItem("dpgActiveUser", JSON.stringify({
+      uid: user.uid,
+      email: user.email || "",
+      name: user.displayName || "",
+      displayName: user.displayName || "",
+      photoURL: user.photoURL || ""
+    }));
+    if (typeof loadContributorPayableAds === "function") {
+      loadContributorPayableAds();
+    }
     const overlay = document.getElementById("authCheckOverlay");
     if (overlay) overlay.style.display = "none";
     if (sidebar) sidebar.style.display = "";
@@ -2681,6 +2691,9 @@ onAuthStateChanged(auth, user => {
     loadContributorManageResources();
     loadPasswordVaultData();
     populateAdResourceSuggestions();
+    if (typeof loadContributorPayableAds === "function") {
+      loadContributorPayableAds();
+    }
   }
 });
 window.updateAdFormFields = function() {
@@ -2865,18 +2878,41 @@ function generateAdTrackIdLocal(seedStr) {
 async function loadContributorPayableAds(targetMonth) {
   const card = document.getElementById("contributorMonetizationCard");
   if (!card) return;
-  const activeUser = JSON.parse(localStorage.getItem("dpgActiveUser") || "{}");
-  const uid = activeUser.uid || "";
-  const email = (activeUser.email || localStorage.getItem("dpgActiveUserEmail") || "").toLowerCase();
-  if (!uid) return;
+  const activeUserRaw = localStorage.getItem("dpgActiveUser");
+  const activeUser = activeUserRaw ? JSON.parse(activeUserRaw) : {};
+  const user = (typeof currentUser !== "undefined" && currentUser) || (typeof auth !== "undefined" && auth.currentUser) || window.currentUser;
+  const uid = (user && user.uid)
+    || activeUser.uid
+    || localStorage.getItem("dpgActiveUserUid")
+    || localStorage.getItem("dpgUserId")
+    || localStorage.getItem("dpg_contributor_uid")
+    || "";
+  const email = ((user && user.email)
+    || activeUser.email
+    || localStorage.getItem("dpgActiveUserEmail")
+    || localStorage.getItem("dpgUserEmail")
+    || localStorage.getItem("dpg_contributor_email")
+    || "").toLowerCase();
+  const displayName = (user && user.displayName)
+    || activeUser.displayName
+    || activeUser.name
+    || localStorage.getItem("dpgActiveUserName")
+    || (email ? email.split("@")[0] : "Contributor");
+
+  if (!uid) {
+    console.warn("loadContributorPayableAds: Authenticated contributor UID not yet available.");
+    return;
+  }
   try {
-    const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL !== "undefined") ? window.API_BASE_URL : "";
+    const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL && window.API_BASE_URL !== "undefined")
+      ? window.API_BASE_URL.replace(/\/+$/, "")
+      : (window.RENDER_BACKEND_URL || "https://dpgnotes.onrender.com").replace(/\/+$/, "");
     const monthQuery = targetMonth ? `&month=${encodeURIComponent(targetMonth)}` : "";
     const res = await fetch(`${baseUrl}/api/contributor/payable-ads?contributorId=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}${monthQuery}`);
     const data = await res.json();
     if (!data || !data.success) return;
     const active = data.activeMonetization || {};
-    window.currentSelectedMonetizationData = { ...active, currentMonth: data.currentMonth, selectedMonth: data.selectedMonth, isFinalized: data.isFinalized, contributorName: activeUser.displayName || activeUser.name || "Contributor", contributorEmail: email, contributorUid: uid };
+    window.currentSelectedMonetizationData = { ...active, currentMonth: data.currentMonth, selectedMonth: data.selectedMonth, isFinalized: data.isFinalized, contributorName: displayName, contributorEmail: email, contributorUid: uid };
     const tier = active.tierInfo || {};
 
     // 1. Populate and sync Month Switcher dropdown
@@ -3315,7 +3351,9 @@ window.submitPaymentDetailsRequest = async function(e) {
     submitBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Sending Request...`;
   }
   try {
-    const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL !== "undefined") ? window.API_BASE_URL : "";
+    const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL && window.API_BASE_URL !== "undefined")
+      ? window.API_BASE_URL.replace(/\/+$/, "")
+      : (window.RENDER_BACKEND_URL || "https://dpgnotes.onrender.com").replace(/\/+$/, "");
     const res = await fetch(`${baseUrl}/api/ads/request-payment-details`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
