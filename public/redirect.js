@@ -896,19 +896,28 @@
         }
       }
       syncAdTrackSession(0);
+      let lastRecordedSec = 0;
       setInterval(() => {
         const elapsedSec = Math.round((Date.now() - startTime) / 1000);
-        syncAdTrackSession(elapsedSec);
-      }, 5000);
+        if (elapsedSec - lastRecordedSec >= 45) {
+          lastRecordedSec = elapsedSec;
+          syncAdTrackSession(elapsedSec);
+        }
+      }, 60000);
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           const elapsedSec = Math.round((Date.now() - startTime) / 1000);
-          syncAdTrackSession(elapsedSec);
+          if (elapsedSec > lastRecordedSec) {
+            lastRecordedSec = elapsedSec;
+            syncAdTrackSession(elapsedSec);
+          }
         }
       });
       window.addEventListener('beforeunload', () => {
         const elapsedSec = Math.round((Date.now() - startTime) / 1000);
-        syncAdTrackSession(elapsedSec);
+        if (elapsedSec > lastRecordedSec) {
+          syncAdTrackSession(elapsedSec);
+        }
       });
     })();
   });

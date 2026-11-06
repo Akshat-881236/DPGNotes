@@ -907,7 +907,7 @@
   <script src="config.js"></script>
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, collectionGroup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, collectionGroup, query, limit } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -963,8 +963,19 @@
     };
     let cachedDocs = [];
     async function loadDocumentsCache() {
+      const cacheKey = "dpg_search_suggest_cache_v2";
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed && Array.isArray(parsed.docs) && (Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000)) {
+            cachedDocs = parsed.docs;
+            return;
+          }
+        } catch(e) {}
+      }
       try {
-        const snap = await getDocs(collection(db, "documents"));
+        const snap = await getDocs(query(collection(db, "documents"), limit(150)));
         cachedDocs = [];
         snap.forEach(d => {
           const data = d.data();
@@ -975,7 +986,7 @@
           }
         });
         try {
-          const solSnap = await getDocs(collectionGroup(db, "solutions"));
+          const solSnap = await getDocs(query(collectionGroup(db, "solutions"), limit(100)));
           solSnap.forEach(solDoc => {
             const solData = solDoc.data();
             const parentPath = solDoc.ref.path || '';
@@ -1000,7 +1011,7 @@
           console.warn("Solutions suggestion preload warning:", solErr);
         }
         try {
-          const qzSnap = await getDocs(collection(db, "quizDirectory"));
+          const qzSnap = await getDocs(query(collection(db, "quizDirectory"), limit(50)));
           qzSnap.forEach(qzDoc => {
             const qzData = qzDoc.data();
             if (qzData.status === "published" || qzData.isPublic !== false) {
@@ -1021,6 +1032,9 @@
         } catch(qzErr) {
           console.warn("Quiz suggestion preload warning:", qzErr);
         }
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ docs: cachedDocs, timestamp: Date.now() }));
+        } catch(e) {}
       } catch (err) {
         console.warn("Failed caching documents for suggestions:", err.message);
       }

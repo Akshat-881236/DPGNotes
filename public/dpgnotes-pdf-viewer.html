@@ -1933,41 +1933,49 @@ async function resolveAndRender() {
               timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date(),
               updatedAt: window.serverTimestamp ? window.serverTimestamp() : new Date()
             }, { merge: true }).catch(err => console.warn("Direct resource_tracking write error:", err));
-            window.addDoc(window.collection(window.dpgDb, "resource_analytics"), {
-              resourceId: payload.resourceId,
-              trackId: payload.trackId,
-              title: payload.title,
-              category: payload.category,
-              discipline: payload.discipline,
-              visitorUid: payload.visitorUid,
-              visitorEmail: payload.visitorEmail,
-              userType: payload.userType,
-              action: payload.action,
-              screentimeSeconds: payload.screentimeSeconds,
-              timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
-            }).catch(err => console.warn("Direct resource_analytics write error:", err));
+            if (payload.action === 'view') {
+              window.addDoc(window.collection(window.dpgDb, "resource_analytics"), {
+                resourceId: payload.resourceId,
+                trackId: payload.trackId,
+                title: payload.title,
+                category: payload.category,
+                discipline: payload.discipline,
+                visitorUid: payload.visitorUid,
+                visitorEmail: payload.visitorEmail,
+                userType: payload.userType,
+                action: payload.action,
+                screentimeSeconds: payload.screentimeSeconds,
+                timestamp: window.serverTimestamp ? window.serverTimestamp() : new Date()
+              }).catch(err => console.warn("Direct resource_analytics write error:", err));
+            }
           }
         } catch(fErr) {
           console.warn("Direct Firestore telemetry log error:", fErr);
         }
       };
       writeDirectFirestoreTelemetry(telemetryPayload);
-      fetch('/api/resource/track-view', {
+      const backendBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL.replace(/\/+$/, '') : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
+      fetch(`${backendBase}/api/resource/track-view`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(telemetryPayload)
       }).catch(e => console.warn("PDF Viewer view ping error:", e));
+
+      let totalScreenSec = 0;
       setInterval(() => {
+        totalScreenSec += 60;
         telemetryPayload.action = 'screentime';
-        telemetryPayload.screentimeSeconds = 15;
+        telemetryPayload.screentimeSeconds = totalScreenSec;
         writeDirectFirestoreTelemetry(telemetryPayload);
-        fetch('/api/resource/track-view', {
+        fetch(`${backendBase}/api/resource/track-view`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(telemetryPayload)
         }).catch(() => {});
-      }, 15000);
+      }, 60000);
     };
+    if (window.__dpgViewerTelemetryActive) return;
+    window.__dpgViewerTelemetryActive = true;
     if (window.dpgCurrentUser || auth.currentUser) {
       performPing(window.dpgCurrentUser || auth.currentUser);
     } else {
@@ -1976,7 +1984,12 @@ async function resolveAndRender() {
         performPing(u);
         if (typeof unsubscribe === 'function') unsubscribe();
       });
-      setTimeout(() => performPing(window.dpgCurrentUser || auth.currentUser), 800);
+      setTimeout(() => {
+        if (!window.__dpgViewerPingExecuted) {
+          window.__dpgViewerPingExecuted = true;
+          performPing(window.dpgCurrentUser || auth.currentUser);
+        }
+      }, 1000);
     }
   };
   window.initLiveTelemetryLogger();

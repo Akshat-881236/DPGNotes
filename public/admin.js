@@ -1,4 +1,4 @@
-import { getFirestore, collection, collectionGroup, getDocs, doc, deleteDoc, updateDoc, setDoc, query, where, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, getDocs, getCountFromServer, doc, deleteDoc, updateDoc, setDoc, query, where, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 const firebaseConfig = {
@@ -493,20 +493,45 @@ async function loadUsers() {
 }
 async function loadTopDashboardMetrics() {
   try {
-    getDocs(collection(db, "share_links")).then(snap => {
-      const count = snap.size || 0;
+    const cachedMetrics = sessionStorage.getItem("dpg_admin_top_metrics_cache");
+    if (cachedMetrics) {
+      try {
+        const m = JSON.parse(cachedMetrics);
+        if (m && (Date.now() - (m.timestamp || 0) < 15 * 60 * 1000)) {
+          const el = document.getElementById("statShares");
+          if (el) el.innerText = m.sharesCount || 0;
+          const totalSharesEl = document.getElementById("statTotalSharesCount");
+          if (totalSharesEl) totalSharesEl.innerText = m.sharesCount || 0;
+          const elCover = document.getElementById("statCoverPages");
+          if (elCover) elCover.innerText = m.coverPagesCount || 0;
+          return;
+        }
+      } catch(e) {}
+    }
+    getCountFromServer(collection(db, "share_links")).then(snap => {
+      const count = (snap && snap.data) ? snap.data().count : 0;
       const el = document.getElementById("statShares");
       if (el) el.innerText = count;
       const totalSharesEl = document.getElementById("statTotalSharesCount");
       if (totalSharesEl) totalSharesEl.innerText = count;
+      try {
+        const cur = JSON.parse(sessionStorage.getItem("dpg_admin_top_metrics_cache") || "{}");
+        sessionStorage.setItem("dpg_admin_top_metrics_cache", JSON.stringify({ ...cur, sharesCount: count, timestamp: Date.now() }));
+      } catch(e) {}
     }).catch(e => console.warn("Pre-fetch shares count notice:", e));
     Promise.all([
-      getDocs(collection(db, "assignment_cover_pages")).catch(() => ({ size: 0 })),
-      getDocs(collection(db, "practical_cover_pages")).catch(() => ({ size: 0 }))
+      getCountFromServer(collection(db, "assignment_cover_pages")).catch(() => ({ data: () => ({ count: 0 }) })),
+      getCountFromServer(collection(db, "practical_cover_pages")).catch(() => ({ data: () => ({ count: 0 }) }))
     ]).then(([assignSnap, practSnap]) => {
-      const totalCover = (assignSnap.size || 0) + (practSnap.size || 0);
+      const aCount = (assignSnap && assignSnap.data) ? assignSnap.data().count : 0;
+      const pCount = (practSnap && practSnap.data) ? practSnap.data().count : 0;
+      const totalCover = aCount + pCount;
       const el = document.getElementById("statCoverPages");
       if (el) el.innerText = totalCover;
+      try {
+        const cur = JSON.parse(sessionStorage.getItem("dpg_admin_top_metrics_cache") || "{}");
+        sessionStorage.setItem("dpg_admin_top_metrics_cache", JSON.stringify({ ...cur, coverPagesCount: totalCover, timestamp: Date.now() }));
+      } catch(e) {}
     }).catch(e => console.warn("Pre-fetch cover pages count notice:", e));
   } catch (err) {
     console.warn("Failed to pre-hydrate top dashboard stats:", err);
@@ -1524,8 +1549,8 @@ let dpgMetricsCache = null;
 async function loadDpgMetricsAdmin(forceRefresh = false) {
   const totalVisitsEl = document.getElementById("metricsTotalVisits");
   if (!totalVisitsEl) return;
-  if (!forceRefresh && dpgMetricsCache && (Date.now() - dpgMetricsCache.loadedAt < 60000)) {
-    renderDpgMetricsUI(dpgMetricsCache.data, dpgMetricsCache.feedbacks);
+  if (!forceRefresh && dpgMetricsCache && (Date.now() - dpgMetricsCache.loadedAt < 10 * 60 * 1000)) {
+    renderDpgMetricsUI(dpgMetricsCache.data, dpgMetricsCache.feedbacks, dpgMetricsCache.platformRatings || []);
     return;
   }
   totalVisitsEl.innerText = "...";
@@ -1545,9 +1570,9 @@ async function loadDpgMetricsAdmin(forceRefresh = false) {
   }
   try {
     const [visitorSnap, feedbackSnap, platformSnap] = await Promise.all([
-      getDocs(query(collection(db, "visitor_metrics"), orderBy("timestamp", "desc"), limit(500))),
-      getDocs(query(collection(db, "responsiveness_feedback"), orderBy("timestamp", "desc"), limit(200))),
-      getDocs(query(collection(db, "dpgnotes_ratings"), orderBy("timestamp", "desc"), limit(200))).catch(() => ({ forEach: () => {} }))
+      getDocs(query(collection(db, "visitor_metrics"), orderBy("timestamp", "desc"), limit(100))),
+      getDocs(query(collection(db, "responsiveness_feedback"), orderBy("timestamp", "desc"), limit(40))),
+      getDocs(query(collection(db, "dpgnotes_ratings"), orderBy("timestamp", "desc"), limit(40))).catch(() => ({ forEach: () => {} }))
     ]);
     const visitorList = [];
     visitorSnap.forEach(d => visitorList.push({ id: d.id, ...d.data() }));

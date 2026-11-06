@@ -1226,15 +1226,15 @@ async function loadAcademicResources() {
   if (statusEl) statusEl.innerText = "Fetching academic resources...";
   try {
     const [snap, solutionsSnap, usersSnap, quizzesSnap] = await Promise.all([
-      getDocs(query(collection(db, "documents"), limit(150))),
-      getDocs(query(collectionGroup(db, "solutions"), limit(100))).catch(err => {
+      getDocs(query(collection(db, "documents"), limit(120))),
+      getDocs(query(collectionGroup(db, "solutions"), limit(80))).catch(err => {
         console.warn("Solutions fetch warning:", err);
         return { forEach: () => {} };
       }),
-      getDocs(collection(db, "users")).catch(err => {
+      getDocs(query(collection(db, "users"), limit(40))).catch(err => {
         return { forEach: () => {} };
       }),
-      getDocs(collection(db, "quizDirectory")).catch(err => {
+      getDocs(query(collection(db, "quizDirectory"), limit(30))).catch(err => {
         console.warn("Quiz directory fetch warning:", err);
         return { forEach: () => {} };
       })
@@ -1579,17 +1579,26 @@ async function loadLiveStats() {
     if (resourceEl) resourceEl.textContent = resourceLabel;
     let activeStreams = 0;
     try {
-      const docsSnap = await getDocs(query(collection(db, "documents"), limit(500)));
-      const catCounts = {};
-      ACADEMIC_CATEGORIES.forEach(c => { catCounts[c.key] = 0; });
-      docsSnap.forEach(d => {
-        const key = matchCategory(d.data().category);
-        if (key && catCounts[key] !== undefined) catCounts[key]++;
-      });
-      activeStreams = Object.values(catCounts).filter(count => count >= 3).length;
-      if (activeStreams === 0 && totalDocs > 0) activeStreams = 1;
+      const cachedStreams = sessionStorage.getItem("dpg_active_streams_count");
+      if (cachedStreams) {
+        activeStreams = parseInt(cachedStreams, 10) || 8;
+      } else {
+        const catCounts = {};
+        ACADEMIC_CATEGORIES.forEach(c => { catCounts[c.key] = 0; });
+        const sourceDocs = (Array.isArray(window._allDocsCache) && window._allDocsCache.length > 0)
+          ? window._allDocsCache
+          : (await getDocs(query(collection(db, "documents"), limit(80)))).docs.map(d => d.data());
+        sourceDocs.forEach(d => {
+          const cat = d.category || (d.data && d.data().category);
+          const key = matchCategory(cat);
+          if (key && catCounts[key] !== undefined) catCounts[key]++;
+        });
+        activeStreams = Object.values(catCounts).filter(count => count >= 2).length;
+        if (activeStreams === 0 && totalDocs > 0) activeStreams = ACADEMIC_CATEGORIES.length;
+        try { sessionStorage.setItem("dpg_active_streams_count", activeStreams.toString()); } catch(e) {}
+      }
     } catch {
-      activeStreams = ACADEMIC_CATEGORIES.length; // fallback: all defined categories
+      activeStreams = ACADEMIC_CATEGORIES.length;
     }
     if (streamEl) streamEl.textContent = activeStreams + " Stream" + (activeStreams !== 1 ? "s" : "");
   } catch (err) {

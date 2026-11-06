@@ -1906,9 +1906,25 @@
       if (list) list.style.display = 'flex';
     }
     async function loadDocuments() {
+      const cacheKey = "dpg_serp_docs_cache_v2";
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed && Array.isArray(parsed.docs) && (Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000)) {
+            allDocs = parsed.docs;
+            if (Array.isArray(parsed.contributors)) allContributors = parsed.contributors;
+            populateDynamicFilters();
+            applyFilters();
+            if (window.activeSerpTab) window.switchSerpTab(window.activeSerpTab);
+            hideLoadingStage();
+            return;
+          }
+        } catch(e) {}
+      }
       showLoadingStage();
       try {
-        const snap = await getDocs(collection(db, "documents"));
+        const snap = await getDocs(query(collection(db, "documents"), limit(200)));
         allDocs = [];
         snap.forEach(d => {
           const data = d.data();
@@ -1919,7 +1935,7 @@
           }
         });
         try {
-          const solSnap = await getDocs(collectionGroup(db, "solutions"));
+          const solSnap = await getDocs(query(collectionGroup(db, "solutions"), limit(120)));
           solSnap.forEach(solDoc => {
             const solData = solDoc.data();
             const parentPath = solDoc.ref.path || '';
@@ -2004,10 +2020,10 @@
               rawDoc: qzData
             });
           };
-          const qzSnap = await getDocs(collection(db, "quizDirectory"));
+          const qzSnap = await getDocs(query(collection(db, "quizDirectory"), limit(60)));
           qzSnap.forEach(qzDoc => ingestQuizDoc(qzDoc.id, qzDoc.data()));
           try {
-            const groupSnap = await getDocs(collectionGroup(db, "quizzes"));
+            const groupSnap = await getDocs(query(collectionGroup(db, "quizzes"), limit(40)));
             groupSnap.forEach(gDoc => ingestQuizDoc(gDoc.id, gDoc.data()));
           } catch(cgErr) {
             console.warn("Quiz collectionGroup fetch fallback notice:", cgErr);
@@ -2016,7 +2032,7 @@
           console.warn("Quiz directory load warning:", qzErr);
         }
         try {
-          const userSnap = await getDocs(collection(db, "users"));
+          const userSnap = await getDocs(query(collection(db, "users"), limit(50)));
           const usersMap = new Map();
           userSnap.forEach(uDoc => {
             const uData = uDoc.data();
@@ -2059,6 +2075,9 @@
             }
           });
           allContributors = Array.from(usersMap.values()).filter(c => c.docsCount > 0 || c.uid).sort((a, b) => b.docsCount - a.docsCount);
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify({ docs: allDocs, contributors: allContributors, timestamp: Date.now() }));
+          } catch(e) {}
         } catch(uErr) {
           console.warn("Users collection load warning:", uErr);
         }

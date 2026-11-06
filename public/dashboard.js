@@ -1,5 +1,5 @@
 import { getAuth, onAuthStateChanged, signOut, updatePassword, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getFirestore, collection, collectionGroup, addDoc, getDocs, query, orderBy, where, limit, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, addDoc, getDocs, getCountFromServer, query, orderBy, where, limit, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 if (window._dpgDashboardScriptLoaded) {
   console.warn("dashboard.js already loaded, preventing duplicate bindings.");
@@ -684,7 +684,7 @@ async function loadProfile() {
       }
     }
   } catch(e) { console.error("Error loading user profile", e); }
-  const q = query(collection(db, "documents"));
+  const q = query(collection(db, "documents"), where("userId", "==", currentUser.uid));
   const snap = await getDocs(q);
   let count = 0;
   let totalLikes = 0;
@@ -694,21 +694,20 @@ async function loadProfile() {
   if (delSelect) {
     delSelect.innerHTML = '<option value="">-- Choose Document --</option>';
   }
-  window.myDocsCache = []; // Cache to lookup doc titles later
+  window.myDocsCache = [];
   snap.forEach(doc => {
     const data = doc.data();
-    if (data.userId === currentUser.uid) {
-      count++;
-      if (data.likes) totalLikes += data.likes.length;
-      if (data.shareCount) totalShares += data.shareCount;
-      if (data.ctrCount) totalCtr += data.ctrCount;
-      window.myDocsCache.push({ id: doc.id, ...data });
-      if (delSelect) {
-        const opt = document.createElement("option");
-        opt.value = doc.id;
-        opt.innerText = data.title;
-        delSelect.appendChild(opt);
-      }
+    count++;
+    if (data.likes && Array.isArray(data.likes)) totalLikes += data.likes.length;
+    else if (typeof data.likes === 'number') totalLikes += data.likes;
+    if (data.shareCount) totalShares += data.shareCount;
+    if (data.ctrCount) totalCtr += data.ctrCount;
+    window.myDocsCache.push({ id: doc.id, ...data });
+    if (delSelect) {
+      const opt = document.createElement("option");
+      opt.value = doc.id;
+      opt.innerText = data.title;
+      delSelect.appendChild(opt);
     }
   });
   document.getElementById("statContributions").innerText = count;
@@ -722,9 +721,19 @@ let isLeaderboardLoading = false;
 async function loadLeaderboard() {
   const leaderboardList = document.getElementById("leaderboardList");
   if (!leaderboardList || isLeaderboardLoading) return;
+  const cached = sessionStorage.getItem("dpg_leaderboard_cache");
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+      if (parsed && parsed.html && (Date.now() - (parsed.timestamp || 0) < 30 * 60 * 1000)) {
+        leaderboardList.innerHTML = parsed.html;
+        return;
+      }
+    } catch(e) {}
+  }
   isLeaderboardLoading = true;
   try {
-    const q = query(collection(db, "documents"));
+    const q = query(collection(db, "documents"), limit(80));
     const snap = await getDocs(q);
     const userStats = {};
     snap.forEach(d => {
@@ -770,6 +779,9 @@ async function loadLeaderboard() {
       `;
     }
     leaderboardList.innerHTML = htmlContent;
+    try {
+      sessionStorage.setItem("dpg_leaderboard_cache", JSON.stringify({ html: htmlContent, timestamp: Date.now() }));
+    } catch(e) {}
   } catch (err) {
     console.error("Leaderboard Error:", err);
     leaderboardList.innerHTML = `<li style="color:#ef4444;">Failed to load leaderboard</li>`;
@@ -803,10 +815,20 @@ function matchDashboardDocCategory(cat) {
 async function loadExplore() {
   const hubContainer = document.getElementById("exploreHubContainer") || document.getElementById("exploreGrid");
   if (!hubContainer) return;
+  const cachedExplore = sessionStorage.getItem("dpg_dashboard_explore_cache");
+  if (cachedExplore) {
+    try {
+      const parsed = JSON.parse(cachedExplore);
+      if (parsed && parsed.html && (Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000)) {
+        hubContainer.innerHTML = parsed.html;
+        return;
+      }
+    } catch(e) {}
+  }
   hubContainer.innerHTML = "<p style='color:var(--text-muted); text-align:center; padding:2rem;'><i class='ri-loader-4-line spin-icon'></i> Loading curated academic collections...</p>";
   let usersCache = window.__dpgUserCache || {};
   try {
-    const uSnap = await getDocs(collection(db, "users"));
+    const uSnap = await getDocs(query(collection(db, "users"), limit(40)));
     uSnap.forEach(uDoc => { 
       const uData = uDoc.data();
       usersCache[uDoc.id] = { uid: uDoc.id, ...uData };
@@ -818,12 +840,12 @@ async function loadExplore() {
   let quizzesSnap = { forEach: () => {} };
   try {
     const results = await Promise.all([
-      getDocs(query(collection(db, "documents"))),
-      getDocs(query(collectionGroup(db, "solutions"), limit(120))).catch(err => {
+      getDocs(query(collection(db, "documents"), limit(60))),
+      getDocs(query(collectionGroup(db, "solutions"), limit(60))).catch(err => {
         console.warn("Dashboard solutions fetch notice:", err);
         return { forEach: () => {} };
       }),
-      getDocs(collection(db, "quizDirectory")).catch(err => {
+      getDocs(query(collection(db, "quizDirectory"), limit(40))).catch(err => {
         console.warn("Dashboard quizzes fetch notice:", err);
         return { forEach: () => {} };
       })
@@ -1099,6 +1121,9 @@ async function loadExplore() {
     }
   }
   attachEngagementListeners();
+  try {
+    sessionStorage.setItem("dpg_dashboard_explore_cache", JSON.stringify({ html: hubContainer.innerHTML, timestamp: Date.now() }));
+  } catch(e) {}
 }
 window.scrollAdsTable = function(delta) {
   const scroller = document.getElementById("contribAdsTableScroller");
@@ -1342,17 +1367,15 @@ if(uploadForm) {
         });
       } catch(e) {}
       try {
-        const qDocs = query(collection(db, "documents"));
+        const qDocs = query(collection(db, "documents"), where("userId", "==", currentUser.uid));
         const snapDocs = await getDocs(qDocs);
         const followerSet = new Set();
         let userDocCount = 0;
         snapDocs.forEach(d => {
           const data = d.data();
-          if (data.userId === currentUser.uid) {
-            userDocCount++;
-            if (data.likes && Array.isArray(data.likes)) {
-              data.likes.forEach(uid => followerSet.add(uid));
-            }
+          userDocCount++;
+          if (data.likes && Array.isArray(data.likes)) {
+            data.likes.forEach(uid => followerSet.add(uid));
           }
         });
         followerSet.delete(currentUser.uid);
