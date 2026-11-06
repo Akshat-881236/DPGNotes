@@ -963,19 +963,33 @@
     };
     let cachedDocs = [];
     async function loadDocumentsCache() {
-      const cacheKey = "dpg_search_suggest_cache_v2";
+      const cacheKey = "dpg_search_suggest_cache_v3";
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (parsed && Array.isArray(parsed.docs) && (Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000)) {
+          if (parsed && Array.isArray(parsed.docs) && parsed.docs.length > 0 && (Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000)) {
             cachedDocs = parsed.docs;
             return;
           }
         } catch(e) {}
       }
       try {
-        const snap = await getDocs(query(collection(db, "documents"), limit(150)));
+        const [snap, solSnap, qzSnap] = await Promise.all([
+          getDocs(query(collection(db, "documents"), limit(150))).catch(err => {
+            console.warn("Docs suggestion preload warning:", err);
+            return { empty: true, forEach: () => {} };
+          }),
+          getDocs(query(collectionGroup(db, "solutions"), limit(100))).catch(err => {
+            console.warn("Solutions suggestion preload warning:", err);
+            return { empty: true, forEach: () => {} };
+          }),
+          getDocs(query(collection(db, "quizDirectory"), limit(60))).catch(err => {
+            console.warn("Quiz suggestion preload warning:", err);
+            return { empty: true, forEach: () => {} };
+          })
+        ]);
+
         cachedDocs = [];
         snap.forEach(d => {
           const data = d.data();
@@ -985,53 +999,48 @@
             cachedDocs.push({ id: d.id, ...data });
           }
         });
-        try {
-          const solSnap = await getDocs(query(collectionGroup(db, "solutions"), limit(100)));
-          solSnap.forEach(solDoc => {
-            const solData = solDoc.data();
-            const parentPath = solDoc.ref.path || '';
-            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
-            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
-            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
-            const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
-            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
-            const subName = solData.subjectName || 'Academic Solution';
-            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
+
+        solSnap.forEach(solDoc => {
+          const solData = solDoc.data();
+          const parentPath = solDoc.ref.path || '';
+          const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
+          const solType = isPractical ? "Practical Solution" : "Assignment Solution";
+          const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
+          const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
+          const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+          const subName = solData.subjectName || 'Academic Solution';
+          const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
+          cachedDocs.push({
+            id: solDoc.id,
+            isSolution: true,
+            solutionUrl: solUrl,
+            title: `${subName}${subCode}`,
+            category: solType,
+            discipline: solData.course || solData.courseSec || "Academic",
+            tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", solData.course || ""].filter(Boolean)
+          });
+        });
+
+        qzSnap.forEach(qzDoc => {
+          const qzData = qzDoc.data();
+          if (qzData.status === "published" || qzData.isPublic !== false) {
             cachedDocs.push({
-              id: solDoc.id,
-              isSolution: true,
-              solutionUrl: solUrl,
-              title: `${subName}${subCode}`,
-              category: solType,
-              discipline: solData.course || solData.courseSec || "Academic",
-              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", solData.course || ""].filter(Boolean)
+              id: qzDoc.id,
+              isQuiz: true,
+              quizUrl: `/Quizes/index.html?quizId=${encodeURIComponent(qzDoc.id)}`,
+              title: qzData.title || `${qzData.subjectName} Quiz`,
+              subjectCode: qzData.subjectCode || '',
+              subjectName: qzData.subjectName || '',
+              description: qzData.description || '',
+              userName: qzData.ownerName || qzData.authorName || '',
+              questionKeywords: qzData.questionKeywords || '',
+              category: "Quiz",
+              discipline: qzData.subjectName || "Academic",
+              tags: ["quiz", "exam", "test", qzData.subjectCode || "", qzData.subjectName || "", ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean)
             });
-          });
-        } catch(solErr) {
-          console.warn("Solutions suggestion preload warning:", solErr);
-        }
-        try {
-          const qzSnap = await getDocs(query(collection(db, "quizDirectory"), limit(50)));
-          qzSnap.forEach(qzDoc => {
-            const qzData = qzDoc.data();
-            if (qzData.status === "published" || qzData.isPublic !== false) {
-              cachedDocs.push({
-                id: qzDoc.id,
-                isQuiz: true,
-                quizUrl: `/Quizes/index.html?quizId=${encodeURIComponent(qzDoc.id)}`,
-                title: qzData.title || `${qzData.subjectName} Quiz`,
-                subjectCode: qzData.subjectCode || '',
-                subjectName: qzData.subjectName || '',
-                questionKeywords: qzData.questionKeywords || '',
-                category: "Quiz",
-                discipline: qzData.subjectName || "Academic",
-                tags: ["quiz", "exam", "test", qzData.subjectCode || "", qzData.subjectName || "", ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean)
-              });
-            }
-          });
-        } catch(qzErr) {
-          console.warn("Quiz suggestion preload warning:", qzErr);
-        }
+          }
+        });
+
         try {
           sessionStorage.setItem(cacheKey, JSON.stringify({ docs: cachedDocs, timestamp: Date.now() }));
         } catch(e) {}
@@ -1071,9 +1080,11 @@
         (d.category && d.category.toLowerCase().includes(q)) ||
         (d.subjectCode && d.subjectCode.toLowerCase().includes(q)) ||
         (d.subjectName && d.subjectName.toLowerCase().includes(q)) ||
+        (d.description && d.description.toLowerCase().includes(q)) ||
+        (d.userName && d.userName.toLowerCase().includes(q)) ||
         (d.questionKeywords && d.questionKeywords.toLowerCase().includes(q)) ||
         (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q)))
-      ).slice(0, 6);
+      ).slice(0, 7);
       dropdown.innerHTML = "";
       if (matches.length > 0) {
         matches.forEach(d => {

@@ -2946,6 +2946,8 @@ async function loadContributorPayableAds(targetMonth) {
       data.availableMonths.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m;
+        opt.style.backgroundColor = "#0f172a";
+        opt.style.color = "#f8fafc";
         const isCur = m === data.currentMonth;
         opt.textContent = isCur ? `${m} (Current Active)` : `${m} (Finalized Statement)`;
         if (m === currentSelectedVal) opt.selected = true;

@@ -1906,12 +1906,12 @@
       if (list) list.style.display = 'flex';
     }
     async function loadDocuments() {
-      const cacheKey = "dpg_serp_docs_cache_v2";
+      const cacheKey = "dpg_serp_docs_cache_v3";
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (parsed && Array.isArray(parsed.docs) && (Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000)) {
+          if (parsed && Array.isArray(parsed.docs) && parsed.docs.length > 0 && (Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000)) {
             allDocs = parsed.docs;
             if (Array.isArray(parsed.contributors)) allContributors = parsed.contributors;
             populateDynamicFilters();
@@ -1924,163 +1924,176 @@
       }
       showLoadingStage();
       try {
-        const snap = await getDocs(query(collection(db, "documents"), limit(200)));
+        const [snap, solSnap, qzSnap, userSnap] = await Promise.all([
+          getDocs(query(collection(db, "documents"), limit(200))).catch(err => {
+            console.warn("Documents load warning:", err);
+            return { empty: true, forEach: () => {} };
+          }),
+          getDocs(query(collectionGroup(db, "solutions"), limit(120))).catch(err => {
+            console.warn("Solutions collectionGroup fetch error:", err);
+            return { empty: true, forEach: () => {} };
+          }),
+          getDocs(query(collection(db, "quizDirectory"), limit(80))).catch(err => {
+            console.warn("Quiz directory load warning:", err);
+            return { empty: true, forEach: () => {} };
+          }),
+          getDocs(query(collection(db, "users"), limit(60))).catch(err => {
+            console.warn("Users collection load warning:", err);
+            return { empty: true, forEach: () => {} };
+          })
+        ]);
+
+        const usersMap = new Map();
+        userSnap.forEach(uDoc => {
+          const uData = uDoc.data();
+          const displayName = uData.displayName || uData.name || (uData.email ? uData.email.split('@')[0] : 'Contributor');
+          usersMap.set(uDoc.id, {
+            uid: uDoc.id,
+            name: displayName,
+            photoURL: uData.photoURL || uData.profilePic || '',
+            role: uData.role || 'Contributor',
+            discipline: uData.discipline || 'Academic',
+            docsCount: 0,
+            likesCount: 0
+          });
+        });
+
         allDocs = [];
         snap.forEach(d => {
           const data = d.data();
           const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
           const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
           if (isApproved && !isPrivate) {
-            allDocs.push({ id: d.id, ...data });
+            const authorUid = data.userId || data.contributorUid || data.uid || '';
+            const uInfo = usersMap.get(authorUid);
+            allDocs.push({
+              id: d.id,
+              photoURL: data.photoURL || data.userPhoto || (uInfo ? uInfo.photoURL : ''),
+              ...data
+            });
           }
         });
-        try {
-          const solSnap = await getDocs(query(collectionGroup(db, "solutions"), limit(120)));
-          solSnap.forEach(solDoc => {
-            const solData = solDoc.data();
-            const parentPath = solDoc.ref.path || '';
-            const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
-            const solType = isPractical ? "Practical Solution" : "Assignment Solution";
-            const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
-            const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
-            const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
-            const subName = solData.subjectName || 'Academic Solution';
-            const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
-            const course = solData.course || solData.courseSec || "Academic";
-            const author = solData.studentName || solData.contributorName || "Verified Contributor";
-            const isEnc = Boolean(solData.isEncrypted);
-            const likesCount = typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : (Array.isArray(solData.likes) ? solData.likes.length : 0));
-            const sharesCount = typeof solData.shares === 'number' ? solData.shares : (Array.isArray(solData.shares) ? solData.shares.length : (typeof solData.shareCount === 'number' ? solData.shareCount : (solData.views || 0)));
-            allDocs.push({
-              id: solDoc.id,
-              isSolution: true,
-              solutionType: isPractical ? "practical" : "assignment",
-              solutionUrl: solUrl,
-              title: `${subName}${subCode}`,
-              subjectName: solData.subjectName || '',
-              subjectCode: solData.subjectCode || '',
-              category: solType,
-              discipline: course,
-              description: `${solType} for ${subName}${subCode}. Course: ${course}. Contributor: ${author}. ${isEnc ? '🔐 Password Protected' : '🔓 Public Solution'}.`,
-              userName: author,
-              uploader: author,
-              contributorUid: contribUid,
-              uid: contribUid,
-              userId: contribUid,
-              photoURL: solData.photoURL || solData.profilePic || solData.userPhoto || solData.authorPhoto || solData.avatar || "",
-              likes: likesCount,
-              shares: sharesCount,
-              views: solData.views || 0,
-              screentime: solData.totalScreentimeSec || 60,
-              isEncrypted: isEnc,
-              isVerified: true,
-              tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", course, isEnc ? "protected" : "public"].filter(Boolean),
-              createdAt: solData.createdAt ? (typeof solData.createdAt === 'string' ? { seconds: Math.floor(new Date(solData.createdAt).getTime() / 1000) } : solData.createdAt) : { seconds: Math.floor(Date.now() / 1000) },
-              rawDoc: solData
-            });
+
+        solSnap.forEach(solDoc => {
+          const solData = solDoc.data();
+          const parentPath = solDoc.ref.path || '';
+          const isPractical = parentPath.includes("practical_solutions") || solData.type === "practical" || (solData.id && solData.id.startsWith("prac_"));
+          const solType = isPractical ? "Practical Solution" : "Assignment Solution";
+          const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
+          const contribUid = solData.contributorUid || solData.userId || solData.uid || "";
+          const uInfo = usersMap.get(contribUid);
+          const solUrl = `${viewerBase}?id=${encodeURIComponent(solData.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+          const subName = solData.subjectName || 'Academic Solution';
+          const subCode = solData.subjectCode ? ` (${solData.subjectCode})` : '';
+          const course = solData.course || solData.courseSec || "Academic";
+          const author = solData.studentName || solData.contributorName || (uInfo ? uInfo.name : "Verified Contributor");
+          const isEnc = Boolean(solData.isEncrypted);
+          const likesCount = typeof solData.likes === 'number' ? solData.likes : (Array.isArray(solData.likedBy) ? solData.likedBy.length : (Array.isArray(solData.likes) ? solData.likes.length : 0));
+          const sharesCount = typeof solData.shares === 'number' ? solData.shares : (Array.isArray(solData.shares) ? solData.shares.length : (typeof solData.shareCount === 'number' ? solData.shareCount : (solData.views || 0)));
+          allDocs.push({
+            id: solDoc.id,
+            isSolution: true,
+            solutionType: isPractical ? "practical" : "assignment",
+            solutionUrl: solUrl,
+            title: `${subName}${subCode}`,
+            subjectName: solData.subjectName || '',
+            subjectCode: solData.subjectCode || '',
+            category: solType,
+            discipline: course,
+            description: `${solType} for ${subName}${subCode}. Course: ${course}. Contributor: ${author}. ${isEnc ? '🔐 Password Protected' : '🔓 Public Solution'}.`,
+            userName: author,
+            uploader: author,
+            contributorUid: contribUid,
+            uid: contribUid,
+            userId: contribUid,
+            photoURL: solData.photoURL || solData.profilePic || (uInfo ? uInfo.photoURL : '') || "",
+            likes: likesCount,
+            shares: sharesCount,
+            views: solData.views || 0,
+            screentime: solData.totalScreentimeSec || 60,
+            isEncrypted: isEnc,
+            isVerified: true,
+            tags: [isPractical ? "practical" : "assignment", "solution", solData.subjectCode || "", course, isEnc ? "protected" : "public"].filter(Boolean),
+            createdAt: solData.createdAt ? (typeof solData.createdAt === 'string' ? { seconds: Math.floor(new Date(solData.createdAt).getTime() / 1000) } : solData.createdAt) : { seconds: Math.floor(Date.now() / 1000) },
+            rawDoc: solData
           });
-        } catch (solErr) {
-          console.warn("Solutions collectionGroup fetch error:", solErr);
-        }
-        try {
-          const processedQuizIds = new Set();
-          const ingestQuizDoc = (qzId, qzData) => {
-            if (!qzData || processedQuizIds.has(qzId)) return;
-            if (qzData.isPublic === false || qzData.status === 'archived') return;
-            processedQuizIds.add(qzId);
-            const quizUrl = `/Quizes/index.html?quizId=${encodeURIComponent(qzId)}`;
-            const subName = qzData.subjectName || qzData.subject || 'Academic Assessment';
-            const subCode = qzData.subjectCode ? ` (${qzData.subjectCode})` : '';
-            const author = qzData.ownerName || qzData.authorName || 'Verified Contributor';
-            const qCount = qzData.totalQuestions || (Array.isArray(qzData.questions) ? qzData.questions.length : 15);
-            const timeMin = qzData.timeMinutes || 20;
-            allDocs.push({
-              id: qzId,
-              isQuiz: true,
-              quizId: qzId,
-              quizUrl: quizUrl,
-              title: qzData.title || `${subName} Mock Examination`,
-              subjectName: subName,
-              subjectCode: qzData.subjectCode || '',
-              category: "Quiz",
-              discipline: qzData.discipline || subName || "Computer Science",
-              description: qzData.description || `Online academic quiz covering ${subName}${subCode}. Total questions: ${qCount}, Duration: ${timeMin} minutes. Author: ${author}.`,
-              userName: author,
-              uploader: author,
-              contributorUid: qzData.ownerUid || qzData.contributorUid || '',
-              uid: qzData.ownerUid || qzData.contributorUid || '',
-              userId: qzData.ownerUid || qzData.contributorUid || '',
-              totalQuestions: qCount,
-              timeMinutes: timeMin,
-              questionKeywords: qzData.questionKeywords || '',
-              likes: qzData.likes || 12,
-              views: qzData.views || 45,
-              tags: ["quiz", "exam", "mock test", "assessment", qzData.subjectCode || "", subName, ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean),
-              createdAt: qzData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
-              rawDoc: qzData
-            });
-          };
-          const qzSnap = await getDocs(query(collection(db, "quizDirectory"), limit(60)));
-          qzSnap.forEach(qzDoc => ingestQuizDoc(qzDoc.id, qzDoc.data()));
-          try {
-            const groupSnap = await getDocs(query(collectionGroup(db, "quizzes"), limit(40)));
-            groupSnap.forEach(gDoc => ingestQuizDoc(gDoc.id, gDoc.data()));
-          } catch(cgErr) {
-            console.warn("Quiz collectionGroup fetch fallback notice:", cgErr);
-          }
-        } catch (qzErr) {
-          console.warn("Quiz directory load warning:", qzErr);
-        }
-        try {
-          const userSnap = await getDocs(query(collection(db, "users"), limit(50)));
-          const usersMap = new Map();
-          userSnap.forEach(uDoc => {
-            const uData = uDoc.data();
-            const displayName = uData.displayName || uData.name || (uData.email ? uData.email.split('@')[0] : 'Contributor');
-            usersMap.set(uDoc.id, {
-              uid: uDoc.id,
-              name: displayName,
-              photoURL: uData.photoURL || uData.profilePic || '',
-              role: uData.role || 'Contributor',
-              discipline: uData.discipline || 'Academic',
-              docsCount: 0,
-              likesCount: 0
-            });
+        });
+
+        const processedQuizIds = new Set();
+        const ingestQuizDoc = (qzId, qzData) => {
+          if (!qzData || processedQuizIds.has(qzId)) return;
+          if (qzData.isPublic === false || qzData.status === 'archived') return;
+          processedQuizIds.add(qzId);
+          const quizUrl = `/Quizes/index.html?quizId=${encodeURIComponent(qzId)}`;
+          const subName = qzData.subjectName || qzData.subject || 'Academic Assessment';
+          const subCode = qzData.subjectCode ? ` (${qzData.subjectCode})` : '';
+          const authorUid = qzData.ownerUid || qzData.contributorUid || '';
+          const uInfo = usersMap.get(authorUid);
+          const author = qzData.ownerName || qzData.authorName || (uInfo ? uInfo.name : 'Verified Contributor');
+          const qCount = qzData.totalQuestions || (Array.isArray(qzData.questions) ? qzData.questions.length : 15);
+          const timeMin = qzData.timeMinutes || 20;
+          allDocs.push({
+            id: qzId,
+            isQuiz: true,
+            quizId: qzId,
+            quizUrl: quizUrl,
+            title: qzData.title || `${subName} Mock Examination`,
+            subjectName: subName,
+            subjectCode: qzData.subjectCode || '',
+            category: "Quiz",
+            discipline: qzData.discipline || subName || "Computer Science",
+            description: qzData.description || `Online academic quiz covering ${subName}${subCode}. Total questions: ${qCount}, Duration: ${timeMin} minutes. Author: ${author}.`,
+            userName: author,
+            uploader: author,
+            contributorUid: authorUid,
+            uid: authorUid,
+            userId: authorUid,
+            photoURL: qzData.photoURL || qzData.avatar || (uInfo ? uInfo.photoURL : '') || '',
+            totalQuestions: qCount,
+            timeMinutes: timeMin,
+            questionKeywords: qzData.questionKeywords || '',
+            likes: qzData.likes || 12,
+            views: qzData.views || 45,
+            tags: ["quiz", "exam", "mock test", "assessment", qzData.subjectCode || "", subName, ...(Array.isArray(qzData.tags) ? qzData.tags : [])].filter(Boolean),
+            createdAt: qzData.createdAt || { seconds: Math.floor(Date.now() / 1000) },
+            rawDoc: qzData
           });
-          allDocs.forEach(d => {
-            const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId;
-            const author = d.userName || d.uploader || d.studentName || d.contributorName;
-            const docLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
-            if (authorUid && usersMap.has(authorUid)) {
-              const u = usersMap.get(authorUid);
-              u.docsCount++;
-              u.likesCount += docLikes;
-            } else if (author && author !== 'Guest') {
-              let existing = Array.from(usersMap.values()).find(x => x.name.toLowerCase() === author.toLowerCase());
-              if (existing) {
-                existing.docsCount++;
-                existing.likesCount += docLikes;
-                if (!existing.uid && authorUid) existing.uid = authorUid;
-              } else {
-                usersMap.set(authorUid || author, {
-                  uid: authorUid || '',
-                  name: author,
-                  photoURL: '',
-                  role: 'Verified Contributor',
-                  discipline: d.discipline || 'Academic',
-                  docsCount: 1,
-                  likesCount: docLikes
-                });
-              }
+        };
+        qzSnap.forEach(qzDoc => ingestQuizDoc(qzDoc.id, qzDoc.data()));
+
+        allDocs.forEach(d => {
+          const authorUid = d.contributorUid || d.userId || d.uid || d.uploaderId;
+          const author = d.userName || d.uploader || d.studentName || d.contributorName;
+          const docLikes = Array.isArray(d.likes) ? d.likes.length : (typeof d.likes === 'number' ? d.likes : (Array.isArray(d.likedBy) ? d.likedBy.length : 0));
+          if (authorUid && usersMap.has(authorUid)) {
+            const u = usersMap.get(authorUid);
+            u.docsCount++;
+            u.likesCount += docLikes;
+            if (!d.photoURL && u.photoURL) d.photoURL = u.photoURL;
+          } else if (author && author !== 'Guest') {
+            let existing = Array.from(usersMap.values()).find(x => x.name.toLowerCase() === author.toLowerCase());
+            if (existing) {
+              existing.docsCount++;
+              existing.likesCount += docLikes;
+              if (!existing.uid && authorUid) existing.uid = authorUid;
+              if (!d.photoURL && existing.photoURL) d.photoURL = existing.photoURL;
+            } else {
+              usersMap.set(authorUid || author, {
+                uid: authorUid || '',
+                name: author,
+                photoURL: d.photoURL || '',
+                role: 'Verified Contributor',
+                discipline: d.discipline || 'Academic',
+                docsCount: 1,
+                likesCount: docLikes
+              });
             }
-          });
-          allContributors = Array.from(usersMap.values()).filter(c => c.docsCount > 0 || c.uid).sort((a, b) => b.docsCount - a.docsCount);
-          try {
-            sessionStorage.setItem(cacheKey, JSON.stringify({ docs: allDocs, contributors: allContributors, timestamp: Date.now() }));
-          } catch(e) {}
-        } catch(uErr) {
-          console.warn("Users collection load warning:", uErr);
-        }
+          }
+        });
+        allContributors = Array.from(usersMap.values()).filter(c => c.docsCount > 0 || c.uid).sort((a, b) => b.docsCount - a.docsCount);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ docs: allDocs, contributors: allContributors, timestamp: Date.now() }));
+        } catch(e) {}
         populateDynamicFilters();
         applyFilters();
         if (window.activeSerpTab) {
@@ -2458,7 +2471,21 @@
     }
     function renderQuizzesTab(results, q) {
       const list = document.getElementById("resultsList");
-      const quizResults = (results || []).filter(d => Boolean(d.isQuiz));
+      let quizResults = (results || []).filter(d => Boolean(d.isQuiz));
+      if (quizResults.length === 0 && (!q || !q.trim())) {
+        quizResults = allDocs.filter(d => Boolean(d.isQuiz));
+      } else if (quizResults.length === 0 && q) {
+        const qLower = q.trim().toLowerCase();
+        quizResults = allDocs.filter(d => Boolean(d.isQuiz) && (
+          (d.title && d.title.toLowerCase().includes(qLower)) ||
+          (d.subjectName && d.subjectName.toLowerCase().includes(qLower)) ||
+          (d.subjectCode && d.subjectCode.toLowerCase().includes(qLower)) ||
+          (d.description && d.description.toLowerCase().includes(qLower)) ||
+          (d.questionKeywords && d.questionKeywords.toLowerCase().includes(qLower)) ||
+          (d.userName && d.userName.toLowerCase().includes(qLower)) ||
+          (Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(qLower)))
+        ));
+      }
       const countLabel = document.getElementById("resultsCount");
       if (countLabel) countLabel.innerText = quizResults.length;
       if (quizResults.length === 0) {
@@ -2466,7 +2493,7 @@
           <div style="padding:3.5rem 1rem; text-align:center; color:#5f6368;">
             <i class="ri-questionnaire-line" style="font-size:3rem; color:#f59e0b;"></i>
             <h3 style="margin:12px 0 6px 0; color:#202124;">No examination quizzes found for "${escapeHtml(q) || 'your query'}"</h3>
-            <p style="font-size:0.9rem;">Try searching by subject name (e.g. Data Structures, DBMS), subject code (e.g. BCA-301), or <a href="/Quizes/index.html" style="color:var(--primary); font-weight:600;">browse all quizzes in the Quiz Directory</a>.</p>
+            <p style="font-size:0.9rem;">Try searching by subject name (e.g. Java, React, DBMS), subject code (e.g. PLA/JSX/001), or <a href="/Quizes/index.html" style="color:var(--primary); font-weight:600;">browse all quizzes in the Quiz Directory</a>.</p>
           </div>
         `;
         return;
@@ -3014,10 +3041,10 @@
         const authorPhoto = s.photoURL || s.profilePic || s.userPhoto || s.authorPhoto || s.avatar || '';
         const authorProfileUrl = authorUid ? `https://dpgnotes.web.app/profile.html?uid=${encodeURIComponent(authorUid)}` : 'https://dpgnotes.web.app/profile.html';
         const authorImgHtml = authorPhoto
-          ? `<img src="${authorPhoto}" alt="${escapeHtml(authorName)}" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px; border:1px solid #38bdf8;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`
-          : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px;">`;
+          ? `<img src="${authorPhoto}" alt="${escapeHtml(authorName)}" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(authorUid)}" data-contrib-name="${escapeHtml(authorName)}" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px; border:1px solid #38bdf8; cursor:pointer;" onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">`
+          : `<img src="https://dpgnotes.web.app/ANH.png" alt="DPG" class="contributor-photo-trigger author-avatar-mini" data-contrib-uid="${escapeHtml(authorUid)}" data-contrib-name="${escapeHtml(authorName)}" style="width:18px; height:18px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:4px; cursor:pointer;">`;
         const authorHtml = authorUid 
-          ? `<a href="${authorProfileUrl}" target="_blank" class="result-author-link" style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(authorName)}</a>` 
+          ? `<a href="${authorProfileUrl}" target="_blank" class="result-author-link contributor-name-link" data-contrib-uid="${escapeHtml(authorUid)}" data-contrib-name="${escapeHtml(authorName)}" style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(authorName)}</a>` 
           : `<span style="display:inline-flex; align-items:center;">${authorImgHtml}${escapeHtml(authorName)}</span>`;
         solHtml += `
           <div class="result-card">
@@ -3071,17 +3098,17 @@
       contributors.forEach(c => {
         const initial = (c.name || 'C').charAt(0).toUpperCase();
         const avatarContent = c.photoURL 
-          ? `<img src="${c.photoURL}" alt="${escapeHtml(c.name)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">` 
-          : initial;
+          ? `<img src="${c.photoURL}" alt="${escapeHtml(c.name)}" class="contributor-photo-trigger" data-contrib-uid="${escapeHtml(c.uid)}" data-contrib-name="${escapeHtml(c.name)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; cursor:pointer;" onerror="this.onerror=null; this.parentNode.innerText='${initial}';">` 
+          : `<span class="contributor-photo-trigger" data-contrib-uid="${escapeHtml(c.uid)}" data-contrib-name="${escapeHtml(c.name)}" style="cursor:pointer;">${initial}</span>`;
         const profileLink = c.uid ? `profile.html?uid=${encodeURIComponent(c.uid)}` : 'profile.html';
         html += `
           <div class="result-card" style="display:flex; align-items:center; gap:14px; padding:1.1rem;">
-            <div style="width:48px; height:48px; border-radius:50%; background:#1a73e8; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.2rem; flex-shrink:0; overflow:hidden;">
+            <div class="contributor-photo-trigger" data-contrib-uid="${escapeHtml(c.uid)}" data-contrib-name="${escapeHtml(c.name)}" style="width:48px; height:48px; border-radius:50%; background:#1a73e8; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.2rem; flex-shrink:0; overflow:hidden; cursor:pointer;">
               ${avatarContent}
             </div>
             <div style="flex:1; min-width:0;">
               <h4 style="margin:0 0 3px 0; font-size:1rem; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                <a href="${profileLink}" style="color:#1e293b; text-decoration:none;">${escapeHtml(c.name)}</a>
+                <a href="${profileLink}" class="contributor-name-link" data-contrib-uid="${escapeHtml(c.uid)}" data-contrib-name="${escapeHtml(c.name)}" style="color:#1e293b; text-decoration:none;">${escapeHtml(c.name)}</a>
               </h4>
               <div style="font-size:0.78rem; color:#5f6368; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                 ${escapeHtml(c.role || 'Contributor')} &bull; ${escapeHtml(c.discipline || 'General')}

@@ -374,16 +374,37 @@
       flex-direction: column;
     }
     .portal-nav {
-      padding: 1rem 2rem;
-      background: rgba(10, 14, 23, 0.85);
+      padding: 0.65rem 1.25rem !important;
+      background: rgba(10, 14, 23, 0.88);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--qz-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
       position: sticky;
       top: 0;
       z-index: 1000;
+      white-space: nowrap !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      scroll-behavior: smooth !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+      box-sizing: border-box !important;
+    }
+    .portal-nav::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    .portal-nav > * {
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
     }
     .brand-link {
       display: flex;
@@ -393,12 +414,23 @@
       color: #fff;
       font-weight: 700;
       font-size: 1.25rem;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
     }
-    .brand-link img { width: 34px; height: 34px; border-radius: 8px; }
+    .brand-link img { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; }
     .portal-nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-left: auto !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+      flex-wrap: nowrap !important;
+    }
+    .portal-nav-actions > * {
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
     }
     .nav-action-btn {
       display: inline-flex;
@@ -408,6 +440,7 @@
       white-space: nowrap;
       border-radius: 8px;
       transition: all 0.2s ease;
+      flex-shrink: 0 !important;
     }
     .nav-btn-dash {
       background: rgba(255, 255, 255, 0.06);
@@ -420,22 +453,41 @@
     }
     @media (max-width: 576px) {
       .portal-nav {
-        padding: 0.65rem 0.85rem;
+        padding: 0.5rem 0.75rem !important;
+        gap: 0.5rem !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none !important;
+        justify-content: flex-start !important;
+      }
+      .portal-nav::-webkit-scrollbar {
+        display: none !important;
       }
       .brand-link {
         font-size: 1.05rem;
         gap: 8px;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
       }
       .brand-link img {
         width: 28px;
         height: 28px;
       }
+      .portal-nav-actions {
+        gap: 5px !important;
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
+      }
       .nav-btn-text {
         display: none !important;
       }
       .nav-action-btn {
-        padding: 7px 11px;
-        font-size: 1.15rem;
+        padding: 6px 9px !important;
+        font-size: 1rem !important;
+        flex-shrink: 0 !important;
       }
       .nav-action-btn i {
         margin: 0;
@@ -443,14 +495,33 @@
     }
     @media (min-width: 577px) and (max-width: 768px) {
       .portal-nav {
-        padding: 0.75rem 1.25rem;
+        padding: 0.6rem 1rem !important;
+        gap: 0.6rem !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none !important;
+        justify-content: flex-start !important;
+      }
+      .portal-nav::-webkit-scrollbar {
+        display: none !important;
       }
       .brand-link {
         font-size: 1.15rem;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+      }
+      .portal-nav-actions {
+        gap: 6px !important;
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
       }
       .nav-action-btn {
         padding: 5px 12px;
         font-size: 0.82rem;
+        flex-shrink: 0 !important;
       }
       .nav-btn-text {
         display: inline;

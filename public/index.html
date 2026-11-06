@@ -928,13 +928,37 @@
     html[data-theme="light"] .modal-divider::before {
       background: rgba(15, 23, 42, 0.1) !important;
     }
-    html[data-theme="light"] .btn-oauth {
-      background: #f8fafc !important;
-      border-color: rgba(15, 23, 42, 0.15) !important;
+    html[data-theme="light"] .btn-oauth,
+    body[data-theme="light"] .btn-oauth,
+    body.theme-light .btn-oauth {
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    }
+    html[data-theme="light"] .btn-oauth:hover,
+    body[data-theme="light"] .btn-oauth:hover,
+    body.theme-light .btn-oauth:hover {
+      background: #f1f5f9 !important;
+      border-color: #6366f1 !important;
       color: #0f172a !important;
     }
-    html[data-theme="light"] .btn-oauth:hover {
-      background: #f1f5f9 !important;
+    html[data-theme="light"] .btn-oauth-google,
+    body[data-theme="light"] .btn-oauth-google,
+    body.theme-light .btn-oauth-google {
+      background: #ffffff !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .btn-oauth-github,
+    body[data-theme="light"] .btn-oauth-github,
+    body.theme-light .btn-oauth-github {
+      background: #ffffff !important;
+      color: #0f172a !important;
+    }
+    html[data-theme="light"] .btn-oauth-github i,
+    body[data-theme="light"] .btn-oauth-github i,
+    body.theme-light .btn-oauth-github i {
+      color: #0f172a !important;
     }
     html[data-theme="emerald"] {
       --bg-dark: #021a13;
@@ -1328,6 +1352,31 @@
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border-subtle);
       padding: 0.75rem 1.25rem;
+      white-space: nowrap !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      scroll-behavior: smooth !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+      box-sizing: border-box !important;
+    }
+    .edu-navbar::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    .edu-navbar .container-fluid {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 0.5rem !important;
+    }
+    .edu-navbar .container-fluid > * {
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
     }
     .brand-container {
       display: inline-flex;

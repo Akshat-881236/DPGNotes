@@ -435,3 +435,59 @@ html[data-theme="light"] .dpg-auth-input:focus {
   border-color: #4f46e5 !important;
   color: #0f172a !important;
 }
+html[data-theme="light"] .dpg-auth-btn-oauth,
+body[data-theme="light"] .dpg-auth-btn-oauth,
+body.theme-light .dpg-auth-btn-oauth {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+}
+html[data-theme="light"] .dpg-auth-btn-oauth:hover,
+body[data-theme="light"] .dpg-auth-btn-oauth:hover,
+body.theme-light .dpg-auth-btn-oauth:hover {
+  background: #f1f5f9 !important;
+  border-color: #6366f1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
+}
+html[data-theme="light"] .dpg-auth-btn-github,
+body[data-theme="light"] .dpg-auth-btn-github,
+body.theme-light .dpg-auth-btn-github {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-auth-btn-github i,
+body[data-theme="light"] .dpg-auth-btn-github i,
+body.theme-light .dpg-auth-btn-github i {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-auth-btn-google,
+body[data-theme="light"] .dpg-auth-btn-google,
+body.theme-light .dpg-auth-btn-google {
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-auth-divider,
+body[data-theme="light"] .dpg-auth-divider {
+  color: #64748b !important;
+}
+html[data-theme="light"] .dpg-auth-divider::before,
+html[data-theme="light"] .dpg-auth-divider::after,
+body[data-theme="light"] .dpg-auth-divider::before,
+body[data-theme="light"] .dpg-auth-divider::after {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.15) !important;
+}
+html[data-theme="light"] .dpg-auth-btn-secondary,
+body[data-theme="light"] .dpg-auth-btn-secondary {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .dpg-auth-close-btn,
+body[data-theme="light"] .dpg-auth-close-btn {
+  color: #64748b !important;
+}
+html[data-theme="light"] .dpg-auth-close-btn:hover,
+body[data-theme="light"] .dpg-auth-close-btn:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}

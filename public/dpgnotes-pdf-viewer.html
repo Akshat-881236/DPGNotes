@@ -567,6 +567,23 @@
     html[data-theme="light"] .dpg-doc-locked-title, body[data-theme="light"] .dpg-doc-locked-title, body.theme-light .dpg-doc-locked-title { color:#0f172a !important; }
     html[data-theme="light"] .dpg-doc-locked-desc, body[data-theme="light"] .dpg-doc-locked-desc, body.theme-light .dpg-doc-locked-desc { color:#334155 !important; }
     html[data-theme="light"] .dpg-doc-locked-btn, body[data-theme="light"] .dpg-doc-locked-btn, body.theme-light .dpg-doc-locked-btn { background:linear-gradient(135deg,#4338ca,#6366f1) !important; color:#ffffff !important; box-shadow:0 4px 14px rgba(67,56,202,0.35) !important; }
+    .dpg-review-modal-card { background:rgba(15,23,42,0.96); border:1px solid rgba(245,158,11,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.5); box-sizing:border-box; }
+    .dpg-review-modal-card .review-icon-wrap { width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#fbbf24; }
+    .dpg-review-modal-card h2 { font-family:'Outfit',sans-serif; color:#ffffff; font-size:1.4rem; margin-bottom:0.6rem; }
+    .dpg-review-modal-card p { color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem; }
+    html[data-theme="light"] .dpg-review-modal-card, body[data-theme="light"] .dpg-review-modal-card { background:#ffffff !important; border:1.5px solid #fde68a !important; box-shadow:0 15px 35px rgba(0,0,0,0.08) !important; }
+    html[data-theme="light"] .dpg-review-modal-card .review-icon-wrap, body[data-theme="light"] .dpg-review-modal-card .review-icon-wrap { background:#fef3c7 !important; border-color:#f59e0b !important; color:#d97706 !important; }
+    html[data-theme="light"] .dpg-review-modal-card h2, body[data-theme="light"] .dpg-review-modal-card h2 { color:#0f172a !important; }
+    html[data-theme="light"] .dpg-review-modal-card p, body[data-theme="light"] .dpg-review-modal-card p { color:#334155 !important; }
+    .dpg-admin-req-card { background:rgba(15,23,42,0.96); border:1px solid rgba(239,68,68,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.5); box-sizing:border-box; }
+    .dpg-admin-req-card .req-icon-wrap { width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#f87171; }
+    .dpg-admin-req-card h2 { font-family:'Outfit',sans-serif; color:#ffffff; font-size:1.4rem; margin-bottom:0.6rem; }
+    .dpg-admin-req-card p { color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem; }
+    html[data-theme="light"] .dpg-admin-req-card, body[data-theme="light"] .dpg-admin-req-card { background:#ffffff !important; border:1.5px solid #fecaca !important; box-shadow:0 15px 35px rgba(0,0,0,0.08) !important; }
+    html[data-theme="light"] .dpg-admin-req-card .req-icon-wrap, body[data-theme="light"] .dpg-admin-req-card .req-icon-wrap { background:#fee2e2 !important; border-color:#ef4444 !important; color:#dc2626 !important; }
+    html[data-theme="light"] .dpg-admin-req-card h2, body[data-theme="light"] .dpg-admin-req-card h2 { color:#0f172a !important; }
+    html[data-theme="light"] .dpg-admin-req-card p, body[data-theme="light"] .dpg-admin-req-card p { color:#334155 !important; }
+    html[data-theme="light"] .dpg-admin-req-card .btn-home-return, body[data-theme="light"] .dpg-admin-req-card .btn-home-return { background:#f1f5f9 !important; color:#0f172a !important; border:1px solid #cbd5e1 !important; }
   </style>
   <script src="history-monitoring.js" defer></script>
 </head>
@@ -1725,19 +1742,19 @@ async function resolveAndRender() {
     const spinner = document.getElementById('loadSpinner');
     if (spinner) {
       spinner.innerHTML = `
-        <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(239,68,68,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-          <div style="width:64px; height:64px; border-radius:50%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#f87171;">
+        <div class="dpg-admin-req-card">
+          <div class="req-icon-wrap">
             <i class="ri-shield-keyhole-line"></i>
           </div>
-          <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Administrator Session Required</h2>
-          <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+          <h2>Administrator Session Required</h2>
+          <p>
             The administrative preview parameter requires an active verified Administrator session. Anonymous visitors and general users cannot preview unapproved resources.
           </p>
           <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
             <a href="/admin.html" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">
               <i class="ri-admin-line"></i> Admin Login
             </a>
-            <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:10px 18px; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.88rem;">
+            <a href="/" class="btn-home-return" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:10px 18px; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.88rem;">
               Return Home
             </a>
           </div>
@@ -1837,12 +1854,12 @@ async function resolveAndRender() {
       const spinner = document.getElementById('loadSpinner');
       if (spinner) {
         spinner.innerHTML = `
-          <div style="background:rgba(15,23,42,0.95); border:1px solid rgba(245,158,11,0.4); border-radius:18px; padding:2.5rem; text-align:center; max-width:540px; margin:2rem auto; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-            <div style="width:64px; height:64px; border-radius:50%; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:2rem; color:#fbbf24;">
+          <div class="dpg-review-modal-card">
+            <div class="review-icon-wrap">
               <i class="ri-time-line"></i>
             </div>
-            <h2 style="font-family:'Outfit',sans-serif; color:white; font-size:1.4rem; margin-bottom:0.6rem;">Resource Under Review</h2>
-            <p style="color:#94a3b8; font-size:0.92rem; line-height:1.6; margin-bottom:1.5rem;">
+            <h2>Resource Under Review</h2>
+            <p>
               "${escapeDocHtml(d.title || docTitle)}" has been submitted by the contributor and is currently pending Administrator review. Once approved, it will be published for public reading.
             </p>
             <a href="/" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:10px 22px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.88rem;">

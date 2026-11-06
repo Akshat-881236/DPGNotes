@@ -1878,6 +1878,31 @@
           border-color: rgba(99, 102, 241, 0.5);
           transform: translateY(-1px);
         }
+        html[data-theme="light"] .sol-auth-btn-oauth,
+        body[data-theme="light"] .sol-auth-btn-oauth {
+          background: #ffffff !important;
+          border: 1.5px solid #cbd5e1 !important;
+          color: #0f172a !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        }
+        html[data-theme="light"] .sol-auth-btn-oauth:hover,
+        body[data-theme="light"] .sol-auth-btn-oauth:hover {
+          background: #f1f5f9 !important;
+          border-color: #6366f1 !important;
+          color: #0f172a !important;
+        }
+        html[data-theme="light"] .sol-auth-card,
+        body[data-theme="light"] .sol-auth-card {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          border-color: #e2e8f0 !important;
+        }
+        html[data-theme="light"] .sol-auth-card h3 {
+          color: #0f172a !important;
+        }
+        html[data-theme="light"] .sol-auth-card p {
+          color: #475569 !important;
+        }
         .sol-auth-btn-primary {
           background: linear-gradient(135deg, #6366f1, #4f46e5);
           border: 1px solid rgba(99, 102, 241, 0.6);
