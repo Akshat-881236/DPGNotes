@@ -26,6 +26,10 @@
         overflow: hidden;
         overflow-wrap: anywhere;
         word-break: break-word;
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+        height: auto !important;
+        min-height: fit-content !important;
         animation: fadeInNote 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       }
       @keyframes fadeInNote {
@@ -54,16 +58,17 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 1.2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
         width: 100%;
       }
       .added-notes-title-wrap {
-        flex: 1 1 auto;
+        flex: 1 1 200px;
         min-width: 0;
       }
       .added-notes-title {
         font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+        font-size: clamp(1.2rem, 2.5vw, 1.7rem);
         font-weight: 750;
         line-height: 1.32;
         letter-spacing: -0.02em;
@@ -71,7 +76,9 @@
         margin: 0;
         padding: 0;
         border: none;
-        word-break: break-word;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
       }
       .added-notes-tags-row {
@@ -300,15 +307,23 @@
           max-width: 96% !important;
           margin: 1rem auto !important;
           padding: 1.35rem 1.25rem !important;
+          flex-shrink: 0 !important;
+          flex-grow: 0 !important;
+          height: auto !important;
+          min-height: fit-content !important;
         }
       }
       @media (max-width: 768px) {
         .added-notes {
-          width: 100% !important;
-          max-width: 100% !important;
+          width: calc(100% - 16px) !important;
+          max-width: calc(100% - 16px) !important;
           margin: 0.85rem auto !important;
           padding: 1.1rem 0.85rem !important;
           border-radius: 12px !important;
+          flex-shrink: 0 !important;
+          flex-grow: 0 !important;
+          height: auto !important;
+          min-height: fit-content !important;
         }
         .added-notes-header {
           gap: 0.75rem !important;
@@ -318,7 +333,7 @@
         .added-notes-header-top {
           flex-direction: column !important;
           align-items: stretch !important;
-          gap: 0.75rem !important;
+          gap: 0.65rem !important;
         }
         .added-notes-actions {
           justify-content: flex-start !important;
@@ -328,12 +343,17 @@
         .added-notes-title {
           font-size: 1.22rem !important;
           line-height: 1.35 !important;
+          white-space: normal !important;
+          overflow-wrap: break-word !important;
+          word-break: break-word !important;
         }
         .added-notes-body {
           font-size: 0.92rem !important;
           line-height: 1.68 !important;
           max-width: 100% !important;
           overflow-x: auto !important;
+          overflow-wrap: break-word !important;
+          word-break: break-word !important;
         }
         .added-notes-body img,
         .added-notes-body table,
@@ -346,6 +366,84 @@
         }
         .added-notes-body h3 {
           font-size: 0.98rem !important;
+        }
+      }
+      @media (max-width: 480px) {
+        .added-notes {
+          width: calc(100% - 12px) !important;
+          max-width: calc(100% - 12px) !important;
+          margin: 0.75rem auto 1rem !important;
+          padding: 0.95rem 0.75rem !important;
+          border-radius: 10px !important;
+          flex-shrink: 0 !important;
+          flex-grow: 0 !important;
+          height: auto !important;
+          min-height: fit-content !important;
+        }
+        .added-notes-title {
+          font-size: 1.16rem !important;
+          line-height: 1.32 !important;
+        }
+        .added-notes-actions {
+          gap: 6px !important;
+        }
+        .note-like-btn, .note-share-btn {
+          padding: 4px 10px !important;
+          font-size: 0.76rem !important;
+          min-height: 30px !important;
+        }
+        .added-notes-body {
+          font-size: 0.9rem !important;
+          line-height: 1.62 !important;
+        }
+        .added-notes-body h2 {
+          font-size: 1.08rem !important;
+          margin: 0.85rem 0 0.4rem 0 !important;
+        }
+        .added-notes-body h3 {
+          font-size: 0.95rem !important;
+          margin: 0.75rem 0 0.35rem 0 !important;
+        }
+      }
+      @media (max-width: 380px) {
+        .added-notes {
+          width: calc(100% - 10px) !important;
+          max-width: calc(100% - 10px) !important;
+          margin: 0.65rem auto 0.95rem !important;
+          padding: 0.85rem 0.65rem !important;
+          border-radius: 10px !important;
+          flex-shrink: 0 !important;
+          flex-grow: 0 !important;
+          height: auto !important;
+          min-height: fit-content !important;
+        }
+        .added-notes-title {
+          font-size: 1.12rem !important;
+          line-height: 1.3 !important;
+        }
+        .added-notes-header {
+          gap: 0.6rem !important;
+          padding-bottom: 0.65rem !important;
+          margin-bottom: 0.85rem !important;
+        }
+        .added-notes-header-top {
+          gap: 0.5rem !important;
+        }
+        .added-notes-tag {
+          font-size: 0.7rem !important;
+          padding: 2px 7px !important;
+        }
+        .added-notes-body {
+          font-size: 0.88rem !important;
+          line-height: 1.6 !important;
+        }
+        .added-notes-body h2 {
+          font-size: 1.02rem !important;
+          margin: 0.75rem 0 0.35rem 0 !important;
+        }
+        .added-notes-body p, .added-notes-body li {
+          font-size: 0.86rem !important;
+          line-height: 1.58 !important;
         }
       }
       /* Theme overrides for In-Document Notes */
