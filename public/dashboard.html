@@ -1219,7 +1219,7 @@
               <span><strong>Your Portfolio:</strong> <span id="contribPortfolioStats">0 Public Docs · 0 Assignment Sols · 0 Practical Sols</span></span>
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <button type="button" onclick="window.openRequestPaymentModal()" style="background:linear-gradient(135deg, #f59e0b, #d97706); border:none; color:white; font-weight:700; font-size:0.75rem; padding:6px 12px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 8px rgba(245,158,11,0.3);">
-                  <i class="ri-wallet-3-line"></i> Request Payment QR / Concession
+                  <i class="ri-wallet-3-line"></i> Settle Bill (DPGCoins / UPI) / Concession
                 </button>
                 <a href="legal/native-ads-monetization-policy.html" target="_blank" style="color:#a5b4fc; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
                   View Policy <i class="ri-arrow-right-s-line"></i>
@@ -1449,8 +1449,36 @@
               </div>
               <div>
                 <h3 style="margin:0; color:white; font-size:1.25rem;">Native Ads Payment &amp; Concession Desk</h3>
-                <span style="font-size:0.78rem; color:#94a3b8;">Manual UPI Settlement &bull; 3-Step Verification Guide</span>
+                <span style="font-size:0.78rem; color:#94a3b8;">DPGCoins 1-Click Settlement &bull; Manual UPI &bull; 3-Step Verification Guide</span>
               </div>
+            </div>
+            <!-- DPG Coins Instant 1-Click Settlement Card -->
+            <div style="background:linear-gradient(135deg, rgba(245,158,11,0.12), rgba(217,119,6,0.08)); border:1.5px solid rgba(245,158,11,0.35); border-radius:14px; padding:14px 16px; margin-bottom:1.2rem;">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <i class="ri-copper-coin-line" style="font-size:1.4rem; color:#f59e0b;"></i>
+                  <div>
+                    <h4 style="margin:0; font-size:0.98rem; color:#fde68a;">Instant Settlement with DPG Coins</h4>
+                    <span style="font-size:0.75rem; color:#fcd34d;">Conversion Rate: 1 INR = 800 DPGCoins</span>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:0.75rem; color:#cbd5e1;">Your Wallet Balance:</div>
+                  <strong id="contribCoinsWalletBadge" style="font-size:0.95rem; color:#fbbf24;">0 DPGCoins</strong>
+                </div>
+              </div>
+              <div style="font-size:0.82rem; color:#cbd5e1; line-height:1.5; margin-bottom:10px;">
+                Pay your monthly native ads dues instantly using your earned DPG Coins. Deducted coins are securely credited to the platform administrative treasury (<code style="color:#fbbf24;">its.akshatnetworkhub23@gmail.com</code>).
+              </div>
+              <div id="coinPayActionContainer" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 12px;">
+                <span id="coinPayReqSummary" style="font-size:0.82rem; color:#f8fafc;">
+                  Payable: <strong id="coinPayInrAmt">₹0</strong> &bull; Required: <strong id="coinPayCoinsAmt" style="color:#fbbf24;">0 DPGCoins</strong>
+                </span>
+                <button type="button" id="payWithCoinsBtn" onclick="window.payAdsBillWithCoins()" style="background:linear-gradient(135deg, #f59e0b, #d97706); border:none; color:white; font-weight:700; font-size:0.8rem; padding:7px 14px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(245,158,11,0.35);">
+                  <i class="ri-flashlight-line"></i> Pay &amp; Settle Instantly
+                </button>
+              </div>
+              <div id="coinPayFeedback" style="display:none; margin-top:8px; padding:8px 12px; border-radius:6px; font-size:0.8rem;"></div>
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:1.2rem; font-size:0.83rem; line-height:1.55; color:#cbd5e1;">
               <div style="margin-bottom:8px;">

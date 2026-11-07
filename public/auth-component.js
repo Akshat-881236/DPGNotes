@@ -253,7 +253,7 @@ function injectAuthDOM() {
         </div>
         <h3 class="dpg-auth-title" style="font-size:1.4rem;">Two-Factor Verification</h3>
         <p class="dpg-auth-subtitle">
-          We sent a 6-digit security verification code to <strong id="dpg2faEmailTarget" style="color:#ffffff;"></strong>. Enter it below to complete authentication:
+          We sent a 6-digit security verification code to <strong id="dpg2faEmailTarget" class="dpg-auth-highlight-text"></strong>. Enter it below to complete authentication:
         </p>
 
         <form onsubmit="window.dpgVerify2FA(event)">
@@ -425,7 +425,7 @@ function injectAuthDOM() {
         </div>
         <h3 class="dpg-auth-title" style="font-size:1.4rem;">Enter Verification Code</h3>
         <p class="dpg-auth-subtitle">
-          We sent a 6-digit recovery code to <strong id="dpgRecoveryEmailTarget" style="color:#ffffff;"></strong>. Enter the code and choose your new password below:
+          We sent a 6-digit recovery code to <strong id="dpgRecoveryEmailTarget" class="dpg-auth-highlight-text"></strong>. Enter the code and choose your new password below:
         </p>
 
         <!-- INLINE ERROR ALERT FOR STEP 2 -->

@@ -1282,6 +1282,69 @@ async function loadAcademicResources() {
       window.dpgFeed.dailySyncToFirestore(db, currentUser, setDoc, doc, serverTimestamp);
     }
     let totalRendered = 0;
+    // Take Quiz and Assess Yourself (Rendered above Solutions)
+    const qzContainer = document.getElementById("gridContainer_QZ");
+    const qzCardsWrapper = document.getElementById("cardsWrapper_QZ");
+    const qzCountBadge = document.getElementById("countBadge_QZ");
+    if (window._allQuizzesCache && window._allQuizzesCache.length > 0) {
+      totalRendered++;
+      if (qzContainer) qzContainer.style.display = "block";
+      if (qzCountBadge) qzCountBadge.innerText = `${window._allQuizzesCache.length} Quizzes`;
+      const isTabletMode = window.innerWidth >= 641 && window.innerWidth <= 1024;
+      const qzLimit = isTabletMode ? Math.min(window._allQuizzesCache.length, 4) : 3;
+      const displayQuizzes = window._allQuizzesCache.slice(0, qzLimit);
+      if (qzCardsWrapper) {
+        qzCardsWrapper.innerHTML = "";
+        displayQuizzes.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "col-12 col-md-6 col-lg-4";
+          const title = item.title || `${item.subjectName || item.subject || 'Academic'} Quiz`;
+          const discipline = item.discipline || item.course || (item.subjectCode ? `Code: ${item.subjectCode}` : "Assessment");
+          const uploader = item.ownerName || item.authorName || item.contributorName || "Quiz Master";
+          const authorUid = item.ownerUid || item.contributorUid || "";
+          const userObj = usersMap[authorUid] || (window.__dpgUserCache && window.__dpgUserCache[authorUid]) || null;
+          const authorPhoto = (userObj && (userObj.profilePic || userObj.photoURL || userObj.avatarUrl)) || item.contributorPhoto || "https://dpgnotes.web.app/ANH.png";
+          const profileUrl = authorUid ? `profile.html?uid=${encodeURIComponent(authorUid)}` : `profile.html`;
+          const viewerUrl = `https://dpgnotes.web.app/Quizes/index.html?quizId=${encodeURIComponent(item.id)}`;
+          const qCount = item.totalQuestions || 15;
+          const timeMin = item.timeMinutes || 20;
+          card.innerHTML = `
+            <div class="academic-res-card">
+              <div class="res-card-top">
+                <span class="res-badge-cat" style="color:#8b5cf6; border-color:#8b5cf640; background:#8b5cf615;">
+                  <i class="ri-questionnaire-line"></i> Quiz (${qCount} Qs)
+                </span>
+                <span class="res-badge-disc">${discipline}</span>
+              </div>
+              <h4 class="res-card-title">${escapeHtml(title)}</h4>
+              <div class="res-card-meta">
+                <span style="display:inline-flex; align-items:center; gap:6px;">
+                  <a href="${profileUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
+                    <img src="${authorPhoto}" 
+                         class="contributor-photo-trigger author-avatar-mini" 
+                         data-contrib-uid="${escapeHtml(authorUid)}" 
+                         data-contrib-name="${escapeHtml(uploader)}" 
+                         alt="${escapeHtml(uploader)}" 
+                         style="width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid #8b5cf6; vertical-align:middle; cursor:pointer;" 
+                         onerror="this.onerror=null; this.src='https://dpgnotes.web.app/ANH.png';">
+                  </a>
+                  <a href="${profileUrl}" class="contributor-name-link" style="color:inherit; font-size:0.78rem; font-weight:600; text-decoration:none;">
+                    ${escapeHtml(uploader)}
+                  </a>
+                </span>
+                <span><i class="ri-time-line"></i> ${timeMin}m</span>
+              </div>
+              <div class="res-card-actions">
+                <a href="${viewerUrl}" class="btn-res-read" style="background:#8b5cf6; border-color:#8b5cf6; color:white;">
+                  <i class="ri-pencil-line"></i> Attempt Quiz
+                </a>
+              </div>
+            </div>
+          `;
+          qzCardsWrapper.appendChild(card);
+        });
+      }
+    }
     const solContainer = document.getElementById("gridContainer_SOL");
     const solCardsWrapper = document.getElementById("cardsWrapper_SOL");
     const solCountBadge = document.getElementById("countBadge_SOL");

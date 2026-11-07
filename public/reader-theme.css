@@ -471,19 +471,20 @@ html[data-font-size="xl"] { font-size: 21px !important; } /* Low-vision accessib
 .topbar .dpg-reader-controls,
 #dpgReaderControlsSlot .dpg-reader-controls {
   display: inline-flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
   justify-content: center !important;
   align-items: center !important;
   background: rgba(15, 23, 42, 0.85) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
   border-radius: 999px !important;
-  padding: 3px 10px !important;
-  gap: 2px !important;
+  padding: 3px 8px !important;
+  gap: 5px !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
   backdrop-filter: blur(10px) !important;
   user-select: none !important;
   flex-shrink: 0 !important;
   white-space: nowrap !important;
+  flex-wrap: nowrap !important;
   line-height: 1 !important;
   box-sizing: border-box !important;
 }
@@ -1507,7 +1508,8 @@ body.theme-auto {
 }
 .portal-nav-actions .dpg-reader-controls,
 .qz-nav-actions .dpg-reader-controls,
-.analytics-nav-actions .dpg-reader-controls {
+.analytics-nav-actions .dpg-reader-controls,
+.sol-navbar-actions .dpg-reader-controls {
   display: inline-flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;

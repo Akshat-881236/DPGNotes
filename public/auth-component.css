@@ -491,3 +491,27 @@ body[data-theme="light"] .dpg-auth-close-btn:hover {
   background: #f1f5f9 !important;
   color: #0f172a !important;
 }
+
+
+/* Verification & Recovery Email Target Contrast Support */
+.dpg-auth-highlight-text,
+#dpg2faEmailTarget,
+#dpgRecoveryEmailTarget {
+  color: #818cf8 !important;
+  font-weight: 700 !important;
+}
+html[data-theme="light"] .dpg-auth-highlight-text,
+html[data-theme="light"] #dpg2faEmailTarget,
+html[data-theme="light"] #dpgRecoveryEmailTarget,
+body[data-theme="light"] .dpg-auth-highlight-text,
+body[data-theme="light"] #dpg2faEmailTarget,
+body[data-theme="light"] #dpgRecoveryEmailTarget {
+  color: #4338ca !important;
+  font-weight: 700 !important;
+}
+html[data-theme="dark"] .dpg-auth-highlight-text,
+html[data-theme="dark"] #dpg2faEmailTarget,
+html[data-theme="dark"] #dpgRecoveryEmailTarget {
+  color: #a5b4fc !important;
+  font-weight: 700 !important;
+}

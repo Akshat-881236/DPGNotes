@@ -76,7 +76,7 @@
     .topbar .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;color:white;text-decoration:none;flex-shrink:0 !important;white-space:nowrap !important}
     .topbar .logo .dot{color:var(--pri)}
     .topbar .doctitle{max-width:280px;font-size:0.88rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;margin-left:auto}
-    .topbar .dpg-reader-controls{display:inline-flex !important;flex-direction:column !important;justify-content:center !important;align-items:center !important;flex-wrap:nowrap !important;white-space:nowrap !important;flex-shrink:0 !important;box-sizing:border-box !important}
+    .topbar .dpg-reader-controls{display:inline-flex !important;flex-direction:row !important;justify-content:center !important;align-items:center !important;flex-wrap:nowrap !important;white-space:nowrap !important;flex-shrink:0 !important;box-sizing:border-box !important;gap:5px !important;padding:3px 8px !important;border-radius:999px !important}
     .topbar .dpg-reader-controls *{flex-shrink:0 !important;white-space:nowrap !important}
     .topbar div{flex-shrink:0 !important;white-space:nowrap !important}
     .nbtn{background:rgba(255,255,255,0.06);border:1px solid var(--bdr);color:var(--txt);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;display:inline-flex;align-items:center;gap:6px;transition:background .2s;text-decoration:none;flex-shrink:0 !important;white-space:nowrap !important}
@@ -224,6 +224,14 @@
       flex-shrink: 0;
       box-sizing: border-box;
     }
+    .added-notes {
+      width: 100% !important;
+      max-width: 830px !important;
+      margin: 0 auto 1.15rem !important;
+      box-sizing: border-box !important;
+      overflow-wrap: anywhere !important;
+      word-break: break-word !important;
+    }
     canvas {
       display: block;
       width: 100%;
@@ -338,12 +346,15 @@
       }
       .topbar .dpg-reader-controls{
         display: inline-flex !important;
-        flex-direction: column !important;
+        flex-direction: row !important;
         justify-content: center !important;
         align-items: center !important;
         flex-wrap: nowrap !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
+        gap: 3px !important;
+        padding: 2px 6px !important;
+        border-radius: 999px !important;
       }
       .topbar div{
         flex-shrink: 0 !important;
@@ -373,6 +384,12 @@
         box-shadow: 0 4px 24px rgba(0,0,0,.6) !important;
         box-sizing: border-box !important;
         flex-shrink: 0 !important;
+      }
+      .added-notes{
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto 1.15rem !important;
+        box-sizing: border-box !important;
       }
       .pdfpage canvas{
         width: 100% !important;

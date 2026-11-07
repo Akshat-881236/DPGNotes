@@ -3328,6 +3328,166 @@ window.openRequestPaymentModal = function() {
     const savedPhone = localStorage.getItem("dpg_user_phone") || "";
     if (savedPhone) phoneInput.value = savedPhone;
   }
+
+  // Populate DPG Coins Settlement Card
+  const coinFb = document.getElementById("coinPayFeedback");
+  if (coinFb) { coinFb.style.display = "none"; coinFb.textContent = ""; }
+
+  const storedCoins = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
+  const walletBadge = document.getElementById("contribCoinsWalletBadge");
+  if (walletBadge) walletBadge.textContent = `${storedCoins.toLocaleString()} DPGCoins`;
+
+  const monData = window.currentSelectedMonetizationData || {};
+  const active = monData.activeMonetization || monData;
+  const netPayable = active.totalNetPayable || 0;
+  const isSettled = active.isClearedOrWaived || active.status === "Paid" || active.status === "Waived";
+  const requiredCoins = Math.round(netPayable * 800);
+
+  const inrSpan = document.getElementById("coinPayInrAmt");
+  if (inrSpan) inrSpan.textContent = `₹${netPayable.toLocaleString()}`;
+  const coinsSpan = document.getElementById("coinPayCoinsAmt");
+  if (coinsSpan) coinsSpan.textContent = `${requiredCoins.toLocaleString()} DPGCoins`;
+
+  const payBtn = document.getElementById("payWithCoinsBtn");
+  if (payBtn) {
+    if (isSettled || netPayable <= 0) {
+      payBtn.disabled = true;
+      payBtn.style.opacity = "0.5";
+      payBtn.style.cursor = "not-allowed";
+      payBtn.innerHTML = `<i class="ri-checkbox-circle-line"></i> Already Settled`;
+    } else if (storedCoins < requiredCoins) {
+      payBtn.disabled = true;
+      payBtn.style.opacity = "0.6";
+      payBtn.style.cursor = "not-allowed";
+      payBtn.innerHTML = `<i class="ri-error-warning-line"></i> Insufficient Coins (${(requiredCoins - storedCoins).toLocaleString()} needed)`;
+    } else {
+      payBtn.disabled = false;
+      payBtn.style.opacity = "1";
+      payBtn.style.cursor = "pointer";
+      payBtn.innerHTML = `<i class="ri-flashlight-line"></i> Pay & Settle Instantly`;
+    }
+  }
+};
+
+window.payAdsBillWithCoins = async function() {
+  const payBtn = document.getElementById("payWithCoinsBtn");
+  const coinFb = document.getElementById("coinPayFeedback");
+  const monData = window.currentSelectedMonetizationData || {};
+  const active = monData.activeMonetization || monData;
+  const netPayable = active.totalNetPayable || 0;
+  const month = active.month || monData.selectedMonth || document.getElementById("contribMonthSelect")?.value || new Date().toISOString().substring(0, 7);
+  const storedCoins = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
+  const requiredCoins = Math.round(netPayable * 800);
+
+  if (netPayable <= 0) {
+    if (coinFb) {
+      coinFb.style.display = "block";
+      coinFb.style.background = "rgba(16,185,129,0.15)";
+      coinFb.style.color = "#34d399";
+      coinFb.textContent = "Net payable is ₹0. No payment required.";
+    }
+    return;
+  }
+  if (storedCoins < requiredCoins) {
+    if (coinFb) {
+      coinFb.style.display = "block";
+      coinFb.style.background = "rgba(239,68,68,0.15)";
+      coinFb.style.color = "#f87171";
+      coinFb.textContent = `Insufficient DPG Coins. You need ${requiredCoins.toLocaleString()} coins, but have ${storedCoins.toLocaleString()} coins. Earn coins by answering quizzes in Study Hub!`;
+    }
+    return;
+  }
+
+  const activeUserRaw = localStorage.getItem("dpgActiveUser");
+  const activeUserObj = activeUserRaw ? JSON.parse(activeUserRaw) : {};
+  const user = (typeof currentUser !== 'undefined' && currentUser) || (typeof auth !== 'undefined' && auth.currentUser) || window.currentUser;
+  const uid = (user && user.uid) || localStorage.getItem("dpgActiveUserUid") || activeUserObj.uid || localStorage.getItem("dpg_contributor_uid") || "";
+  const email = (user && user.email) || localStorage.getItem("dpgActiveUserEmail") || activeUserObj.email || localStorage.getItem("dpg_contributor_email") || "";
+  const name = (user && user.displayName) || localStorage.getItem("dpgActiveUserName") || activeUserObj.name || (email ? email.split("@")[0] : "Contributor");
+
+  if (!uid) {
+    if (coinFb) {
+      coinFb.style.display = "block";
+      coinFb.style.background = "rgba(239,68,68,0.15)";
+      coinFb.style.color = "#f87171";
+      coinFb.textContent = "Please sign in to your Contributor account to pay with DPG Coins.";
+    }
+    return;
+  }
+
+  if (payBtn) {
+    payBtn.disabled = true;
+    payBtn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Processing Settlement...`;
+  }
+
+  try {
+    const baseUrl = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL && window.API_BASE_URL !== "undefined")
+      ? window.API_BASE_URL.replace(/\/+$/, "")
+      : (window.RENDER_BACKEND_URL || "https://dpgnotes.onrender.com").replace(/\/+$/, "");
+    const res = await fetch(`${baseUrl}/api/ads/pay-with-coins`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contributorId: uid,
+        contributorEmail: email,
+        contributorName: name,
+        month,
+        userCoinsBalance: storedCoins
+      })
+    });
+    const data = await res.json();
+    if (data && data.success) {
+      const newBal = (data.newCoinsBalance != null) ? data.newCoinsBalance : Math.max(0, storedCoins - requiredCoins);
+      localStorage.setItem("dpg_user_coins_balance", String(newBal));
+      const walletBadge = document.getElementById("contribCoinsWalletBadge");
+      if (walletBadge) walletBadge.textContent = `${newBal.toLocaleString()} DPGCoins`;
+
+      if (coinFb) {
+        coinFb.style.display = "block";
+        coinFb.style.background = "rgba(16,185,129,0.18)";
+        coinFb.style.border = "1px solid rgba(16,185,129,0.4)";
+        coinFb.style.color = "#34d399";
+        coinFb.innerHTML = `✓ <strong>Bill Settled!</strong> Cycle ${month} (₹${netPayable}) paid with ${requiredCoins.toLocaleString()} DPGCoins. Transferred to <code>its.akshatnetworkhub23@gmail.com</code>.`;
+      }
+      if (payBtn) {
+        payBtn.innerHTML = `✓ Settled with Coins`;
+        payBtn.style.background = "#10b981";
+      }
+
+      if (typeof window.loadContributorPayableAds === "function") {
+        setTimeout(() => {
+          window.loadContributorPayableAds(month);
+        }, 1200);
+      }
+      setTimeout(() => {
+        window.closeRequestPaymentModal();
+      }, 4000);
+    } else {
+      if (coinFb) {
+        coinFb.style.display = "block";
+        coinFb.style.background = "rgba(239,68,68,0.15)";
+        coinFb.style.border = "1px solid rgba(239,68,68,0.4)";
+        coinFb.style.color = "#f87171";
+        coinFb.textContent = data.error || "Payment failed. Please try again or use UPI.";
+      }
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.innerHTML = `<i class="ri-flashlight-line"></i> Pay & Settle Instantly`;
+      }
+    }
+  } catch (err) {
+    console.error("Coin payment error:", err);
+    if (coinFb) {
+      coinFb.style.display = "block";
+      coinFb.style.background = "rgba(239,68,68,0.15)";
+      coinFb.style.color = "#f87171";
+      coinFb.textContent = "Network error. Please try again or use UPI.";
+    }
+    if (payBtn) {
+      payBtn.disabled = false;
+      payBtn.innerHTML = `<i class="ri-flashlight-line"></i> Pay & Settle Instantly`;
+    }
+  }
 };
 window.closeRequestPaymentModal = function() {
   const modal = document.getElementById("requestPaymentModal");

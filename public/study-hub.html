@@ -8,14 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <link rel="icon" href="ANH.png" type="image/png">
   <link rel="canonical" href="https://dpgnotes.web.app/study-hub.html">
-  <title>DPGNotes Study Hub — Peer Notes, Question Papers, Quizzes &amp; Solutions</title>
-  <meta name="description" content="Explore DPGNotes Study Hub: An open academic commons for verified peer lecture notes, previous year university exam papers, practical code solutions, and interactive quizzes.">
-  <meta name="keywords" content="DPGNotes, Study Hub, DronaNotes, DCE Notes, DPG Degree College, Computer Science Notes, BCA PYQ, B.Tech Question Papers, Assignment Solutions, Practical Files, Free Peer Notes">
+  <title>Elevate Your University &amp; Career Learning | DPGNotes Study Hub</title>
+  <meta name="description" content="DPGNotes Study Hub: Explore verified semester lecture notes, previous year sessional exam papers, university questions, computer science practicals, aptitude mastery, and recruitment preparation.">
+  <meta name="keywords" content="DPGNotes, Study Hub, DPG Degree College, Computer Science Notes, BCA PYQ, B.Tech Question Papers, Assignment Solutions, Practical Files, Free Peer Notes, DPG Coins">
   <meta name="author" content="DPGNotes by Akshat Network Hub">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#080d1a">
-  <meta property="og:title" content="DPGNotes Study Hub — Open Academic Commons &amp; Resource Hub">
-  <meta property="og:description" content="Access peer-verified university notes, semester question papers, step-by-step practical solutions, and self-assessment quizzes.">
+  <meta property="og:title" content="Elevate Your University &amp; Career Learning | DPGNotes Study Hub">
+  <meta property="og:description" content="Discover verified handwritten lecture notes, previous years' sessional &amp; university question papers (PYQs), faculty-approved practical records, step-by-step assignment solutions, and instant self-evaluation quizzes.">
   <meta property="og:image" content="ANH.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dpgnotes.web.app/study-hub.html">
@@ -25,10 +25,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="/contributor-hover-card.js" defer></script>
+  <script src="/history-monitoring.js" defer></script>
 
   <style>
     /* ==========================================================================
-       1. CSS CUSTOM PROPERTIES & COLOR CONTRAST THEMES
+       1. CSS CUSTOM PROPERTIES & CONTRAST THEMES (Blue, Light, Dark)
        ========================================================================== */
     :root,
     html[data-theme="default"] {
@@ -37,7 +39,7 @@
       --surface-glass: rgba(15, 23, 42, 0.72);
       --surface-card: rgba(22, 33, 56, 0.65);
       --surface-elevated: rgba(30, 41, 69, 0.85);
-      --surface-input: rgba(15, 23, 42, 0.8);
+      --surface-input: rgba(15, 23, 42, 0.85);
       --border-glass: rgba(99, 102, 241, 0.22);
       --border-subtle: rgba(255, 255, 255, 0.08);
       --border-active: #6366f1;
@@ -52,25 +54,25 @@
       --accent-purple: #8b5cf6;
       --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
       --shadow-glow: 0 0 24px rgba(99, 102, 241, 0.28);
-      --badge-bg: rgba(99, 102, 241, 0.16);
-      --badge-text: #a5b4fc;
       --canvas-node: rgba(99, 102, 241, 0.4);
       --canvas-line: rgba(59, 130, 246, 0.15);
-      --theme-active-dot: #60a5fa;
+      --coin-badge-bg: rgba(245, 158, 11, 0.15);
+      --coin-badge-border: rgba(245, 158, 11, 0.35);
+      --coin-badge-text: #fbbf24;
     }
 
     html[data-theme="light"] {
       --bg-base: #f8fafc;
       --bg-gradient: radial-gradient(circle at 15% 15%, #eff6ff 0%, #f1f5f9 60%, #e2e8f0 100%);
-      --surface-glass: rgba(255, 255, 255, 0.88);
-      --surface-card: rgba(255, 255, 255, 0.92);
-      --surface-elevated: #ffffff;
+      --surface-glass: rgba(255, 255, 255, 0.92);
+      --surface-card: #ffffff;
+      --surface-elevated: #f1f5f9;
       --surface-input: #ffffff;
-      --border-glass: rgba(148, 163, 184, 0.45);
-      --border-subtle: rgba(203, 213, 225, 0.85);
+      --border-glass: #cbd5e1;
+      --border-subtle: #e2e8f0;
       --border-active: #4338ca;
-      --text-main: #0f172a;        /* 16:1 AAA contrast */
-      --text-muted: #334155;       /* 8:1 contrast */
+      --text-main: #0f172a;        /* 16.2:1 AAA contrast */
+      --text-muted: #334155;       /* 7.8:1 contrast */
       --text-subtle: #475569;
       --accent-primary: #4338ca;
       --accent-secondary: #1d4ed8;
@@ -78,21 +80,21 @@
       --accent-emerald: #047857;
       --accent-amber: #b45309;
       --accent-purple: #6d28d9;
-      --shadow-glass: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --shadow-glow: 0 0 20px rgba(67, 56, 202, 0.18);
-      --badge-bg: rgba(67, 56, 202, 0.12);
-      --badge-text: #312e81;
-      --canvas-node: rgba(67, 56, 202, 0.35);
+      --shadow-glass: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-glow: 0 0 20px rgba(67, 56, 202, 0.15);
+      --canvas-node: rgba(67, 56, 202, 0.32);
       --canvas-line: rgba(29, 78, 216, 0.12);
-      --theme-active-dot: #f59e0b;
+      --coin-badge-bg: rgba(217, 119, 6, 0.12);
+      --coin-badge-border: rgba(217, 119, 6, 0.35);
+      --coin-badge-text: #b45309;
     }
 
     html[data-theme="dark"] {
       --bg-base: #030712;
       --bg-gradient: radial-gradient(circle at 25% 20%, #0f172a 0%, #050811 60%, #000000 100%);
       --surface-glass: rgba(11, 15, 25, 0.85);
-      --surface-card: rgba(17, 24, 39, 0.78);
-      --surface-elevated: rgba(24, 34, 53, 0.9);
+      --surface-card: rgba(17, 24, 39, 0.82);
+      --surface-elevated: rgba(24, 34, 53, 0.92);
       --surface-input: rgba(11, 15, 25, 0.95);
       --border-glass: rgba(255, 255, 255, 0.12);
       --border-subtle: rgba(255, 255, 255, 0.06);
@@ -108,16 +110,13 @@
       --accent-purple: #a78bfa;
       --shadow-glass: 0 10px 40px rgba(0, 0, 0, 0.7);
       --shadow-glow: 0 0 24px rgba(129, 140, 248, 0.22);
-      --badge-bg: rgba(129, 140, 248, 0.18);
-      --badge-text: #c7d2fe;
       --canvas-node: rgba(129, 140, 248, 0.35);
       --canvas-line: rgba(96, 165, 250, 0.14);
-      --theme-active-dot: #a78bfa;
+      --coin-badge-bg: rgba(251, 191, 36, 0.18);
+      --coin-badge-border: rgba(251, 191, 36, 0.35);
+      --coin-badge-text: #fcd34d;
     }
 
-    /* ==========================================================================
-       2. GLOBAL RESET & BASE STYLES
-       ========================================================================== */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -135,7 +134,7 @@
       line-height: 1.6;
       overflow-x: hidden;
       position: relative;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: background-color 0.25s ease, color 0.25s ease;
     }
 
     h1, h2, h3, h4, .brand-text {
@@ -162,7 +161,7 @@
     }
 
     /* ==========================================================================
-       3. BACKGROUND CANVAS & MOVING ACADEMIC ELEMENTS (DronaNotes Inspired)
+       2. BACKGROUND ANIMATED CANVAS (DronaNotes Inspired)
        ========================================================================== */
     #academicCanvas {
       position: fixed;
@@ -174,7 +173,6 @@
       pointer-events: none;
     }
 
-    /* Moving floating SVG items in background */
     .bg-floating-elements {
       position: fixed;
       top: 0;
@@ -188,31 +186,28 @@
 
     .float-item {
       position: absolute;
-      opacity: 0.18;
-      transition: opacity 0.3s ease;
+      opacity: 0.15;
       animation: floatMotion 18s ease-in-out infinite alternate;
       filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
     }
 
     html[data-theme="light"] .float-item {
-      opacity: 0.12;
-      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+      opacity: 0.1;
     }
 
     .float-item-1 { top: 12%; left: 6%; font-size: 3.5rem; animation-duration: 22s; color: var(--accent-primary); }
     .float-item-2 { top: 28%; right: 8%; font-size: 4rem; animation-duration: 26s; animation-delay: -4s; color: var(--accent-secondary); }
     .float-item-3 { top: 65%; left: 8%; font-size: 3rem; animation-duration: 20s; animation-delay: -8s; color: var(--accent-emerald); }
     .float-item-4 { top: 78%; right: 12%; font-size: 3.8rem; animation-duration: 24s; animation-delay: -12s; color: var(--accent-amber); }
-    .float-item-5 { top: 45%; left: 48%; font-size: 2.8rem; animation-duration: 30s; animation-delay: -6s; color: var(--accent-purple); }
 
     @keyframes floatMotion {
       0% { transform: translateY(0) rotate(0deg) scale(1); }
-      50% { transform: translateY(-28px) rotate(8deg) scale(1.05); }
-      100% { transform: translateY(18px) rotate(-6deg) scale(0.96); }
+      50% { transform: translateY(-26px) rotate(7deg) scale(1.04); }
+      100% { transform: translateY(16px) rotate(-6deg) scale(0.97); }
     }
 
     /* ==========================================================================
-       4. CONTAINER & GLASSMORPHISM SURFACES
+       3. APP WRAPPER & GLASSMORPHISM
        ========================================================================== */
     .app-wrapper {
       position: relative;
@@ -220,7 +215,7 @@
       width: 100%;
       max-width: 1440px;
       margin: 0 auto;
-      padding: 0 1.5rem 4rem;
+      padding: 0 1.25rem 4rem;
     }
 
     .glass-panel {
@@ -230,57 +225,59 @@
       border: 1px solid var(--border-glass);
       border-radius: 1.25rem;
       box-shadow: var(--shadow-glass);
-      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
-    }
-
-    .glass-card {
-      background: var(--surface-card);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--border-glass);
-      border-radius: 1rem;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .glass-card:hover {
-      border-color: var(--border-active);
-      transform: translateY(-5px);
-      box-shadow: var(--shadow-glow);
     }
 
     /* ==========================================================================
-       5. HEADER & RESPONSIVE SINGLE-LINE NAVBAR
+       4. SINGLE-LINE RESPONSIVE HEADER
        ========================================================================== */
     .site-header {
       position: sticky;
-      top: 1rem;
+      top: 0.75rem;
       z-index: 100;
       margin-bottom: 2rem;
-      padding: 0.85rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.25rem;
+      padding: 0.75rem 1.25rem;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 0.75rem !important;
+      white-space: nowrap !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      scrollbar-width: none !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+
+    .site-header::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    .site-header > * {
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
     }
 
     .header-brand {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
       flex-shrink: 0;
     }
 
     .brand-logo-icon {
-      width: 2.6rem;
-      height: 2.6rem;
-      border-radius: 0.75rem;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 0.65rem;
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
       display: flex;
       align-items: center;
       justify-content: center;
       color: #ffffff;
-      font-size: 1.4rem;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+      font-size: 1.3rem;
+      box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
     }
 
     .brand-titles {
@@ -289,62 +286,54 @@
     }
 
     .brand-name {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 800;
-      line-height: 1.2;
+      line-height: 1.15;
       color: var(--text-main);
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
 
     .brand-tag {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       text-transform: uppercase;
       font-weight: 700;
       letter-spacing: 0.05em;
       color: var(--accent-primary);
-      background: var(--badge-bg);
+      background: rgba(99, 102, 241, 0.15);
       padding: 0.1rem 0.4rem;
       border-radius: 0.4rem;
     }
 
     .brand-subtitle {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
-      white-space: nowrap;
     }
 
     .header-nav {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      padding: 0.25rem 0;
-    }
-
-    .header-nav::-webkit-scrollbar {
-      display: none;
+      gap: 0.5rem;
+      flex-shrink: 0;
     }
 
     .nav-link {
-      font-size: 0.88rem;
-      font-weight: 500;
+      font-size: 0.84rem;
+      font-weight: 600;
       color: var(--text-muted);
-      padding: 0.45rem 0.85rem;
-      border-radius: 0.6rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.55rem;
       white-space: nowrap;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
 
     .nav-link:hover, .nav-link.active {
       color: var(--text-main);
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.07);
     }
 
     html[data-theme="light"] .nav-link:hover,
@@ -356,161 +345,170 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
       flex-shrink: 0;
     }
 
-    /* Theme Switcher Pill */
-    .theme-switcher-pill {
-      display: flex;
-      align-items: center;
+    /* Single-Line Theme & Font Tools Pill */
+    .dpg-reader-tools-pill {
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 4px !important;
       background: var(--surface-input);
-      border: 1px solid var(--border-glass);
-      border-radius: 2rem;
-      padding: 0.25rem 0.35rem;
-      gap: 0.2rem;
+      border: 1.5px solid var(--border-glass);
+      border-radius: 999px !important;
+      padding: 3px 8px !important;
+      white-space: nowrap !important;
+      flex-wrap: nowrap !important;
+      line-height: 1 !important;
+      flex-shrink: 0 !important;
     }
 
-    .theme-opt-btn {
-      width: 1.85rem;
-      height: 1.85rem;
+    .dpg-tool-btn {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
       border-radius: 50%;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       color: var(--text-subtle);
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
     }
 
-    .theme-opt-btn:hover {
+    .dpg-tool-btn:hover {
       color: var(--text-main);
     }
 
-    .theme-opt-btn.active {
+    .dpg-tool-btn.active {
       background: var(--accent-primary);
       color: #ffffff !important;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
     }
 
-    html[data-theme="light"] .theme-opt-btn.active {
-      background: var(--accent-primary);
-      color: #ffffff !important;
+    .dpg-tools-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border-subtle);
+      margin: 0 3px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* DPG Coins Header Pill */
+    .dpg-coins-header-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--coin-badge-bg);
+      border: 1px solid var(--coin-badge-border);
+      color: var(--coin-badge-text);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      transition: transform 0.18s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .dpg-coins-header-pill:hover {
+      transform: scale(1.04);
     }
 
     .btn-auth-pill {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      color: #ffffff !important;
-      font-weight: 600;
-      font-size: 0.85rem;
-      padding: 0.5rem 1rem;
-      border-radius: 2rem;
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .btn-auth-pill:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
-    }
-
-    /* ==========================================================================
-       6. HERO & EDITORIAL ARTICLE SHOWCASE
-       ========================================================================== */
-    .hero-article-section {
-      padding: 3rem 2.5rem;
-      margin-bottom: 2.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-badge-row {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
-    }
-
-    .hero-pill-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      font-size: 0.8rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: #ffffff !important;
       font-weight: 600;
-      color: var(--badge-text);
-      background: var(--badge-bg);
-      border: 1px solid var(--border-glass);
-      padding: 0.35rem 0.85rem;
+      font-size: 0.82rem;
+      padding: 0.45rem 0.85rem;
       border-radius: 2rem;
+      box-shadow: 0 3px 12px rgba(99, 102, 241, 0.3);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .hero-headline {
+    /* ==========================================================================
+       5. HERO SECTION (Clean, Centered, Media Responsive)
+       ========================================================================== */
+    .hero-center-section {
+      text-align: center;
+      padding: 3rem 1.5rem 2.5rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-main-title {
       font-size: clamp(2rem, 4.5vw, 3.4rem);
       font-weight: 800;
-      line-height: 1.15;
+      line-height: 1.18;
       margin-bottom: 1.25rem;
       max-width: 900px;
       color: var(--text-main);
+      text-align: center;
     }
 
-    .hero-headline .gradient-text {
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-description {
-      font-size: clamp(1rem, 1.8vw, 1.18rem);
+    .hero-main-desc {
+      font-size: clamp(0.96rem, 1.8vw, 1.15rem);
       color: var(--text-muted);
       max-width: 820px;
-      margin-bottom: 2rem;
+      margin: 0 auto 2.5rem;
       line-height: 1.7;
+      text-align: center;
     }
 
-    .hero-stats-grid {
+    /* 4 Bottom Metrics */
+    .hero-metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 1.25rem;
-      margin-bottom: 2.5rem;
-      padding-top: 1.5rem;
+      width: 100%;
+      max-width: 1040px;
+      padding-top: 1.75rem;
       border-top: 1px solid var(--border-subtle);
     }
 
-    .stat-box {
+    .metric-item {
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 0.25rem;
     }
 
-    .stat-number {
+    .metric-value {
       font-size: 1.85rem;
       font-weight: 800;
       font-family: 'Outfit', sans-serif;
       color: var(--text-main);
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
 
-    .stat-number i {
-      font-size: 1.5rem;
+    .metric-value i {
+      font-size: 1.45rem;
       color: var(--accent-primary);
     }
 
-    .stat-label {
-      font-size: 0.85rem;
+    .metric-label {
+      font-size: 0.84rem;
       color: var(--text-muted);
+      text-align: center;
     }
 
     /* ==========================================================================
-       7. MINI SEARCH ENGINE COMPONENT
+       6. MINI SEARCH ENGINE & CURATED RESOURCE COLLECTIONS
        ========================================================================== */
-    .search-engine-box {
+    .search-engine-section {
       background: var(--surface-card);
       border: 1px solid var(--border-glass);
       border-radius: 1.25rem;
@@ -529,7 +527,7 @@
     .search-input-icon {
       position: absolute;
       left: 1.25rem;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       color: var(--text-subtle);
       pointer-events: none;
     }
@@ -539,12 +537,11 @@
       background: var(--surface-input);
       border: 2px solid var(--border-glass);
       border-radius: 1rem;
-      padding: 1.1rem 5.5rem 1.1rem 3.4rem;
-      font-size: 1.05rem;
+      padding: 1rem 5.5rem 1rem 3.4rem;
+      font-size: 1.02rem;
       color: var(--text-main);
       font-family: inherit;
-      transition: all 0.25s ease;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      transition: all 0.22s ease;
     }
 
     .main-search-input:focus {
@@ -586,13 +583,7 @@
       color: var(--text-subtle);
     }
 
-    /* Filter Chips Bar (Sections & Types) */
-    .filter-section-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
+    /* Filter Chips Bar */
     .filter-chips-row {
       display: flex;
       align-items: center;
@@ -601,6 +592,7 @@
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       padding-bottom: 0.35rem;
+      margin-bottom: 1rem;
     }
 
     .filter-chips-row::-webkit-scrollbar {
@@ -609,14 +601,14 @@
 
     .chip-btn {
       padding: 0.5rem 1rem;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 600;
       border-radius: 2rem;
       background: var(--surface-input);
       border: 1px solid var(--border-glass);
       color: var(--text-muted);
       white-space: nowrap;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
@@ -625,19 +617,13 @@
     .chip-btn:hover {
       color: var(--text-main);
       border-color: var(--border-active);
-      transform: translateY(-1px);
     }
 
     .chip-btn.active {
       background: var(--accent-primary);
-      color: #ffffff;
+      color: #ffffff !important;
       border-color: var(--accent-primary);
       box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-    }
-
-    html[data-theme="light"] .chip-btn.active {
-      background: var(--accent-primary);
-      color: #ffffff !important;
     }
 
     .filter-sub-row {
@@ -648,6 +634,7 @@
       gap: 0.75rem;
       font-size: 0.85rem;
       color: var(--text-muted);
+      margin-bottom: 1.5rem;
     }
 
     .semester-pills {
@@ -674,93 +661,107 @@
       background: rgba(59, 130, 246, 0.15);
     }
 
-    .results-count-text {
-      font-weight: 500;
-      color: var(--text-muted);
+    /* Sections Ordered: Quizzes ON TOP OF Solutions */
+    .vertical-resource-section {
+      margin-bottom: 2.25rem;
     }
 
-    /* ==========================================================================
-       8. DYNAMIC RESOURCE CARDS GRID
-       ========================================================================== */
-    .resources-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1.75rem;
-    }
-
-    .resource-card {
-      display: flex;
-      flex-direction: column;
-      padding: 1.4rem;
-      border-radius: 1.15rem;
-      background: var(--surface-card);
-      border: 1px solid var(--border-glass);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .resource-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-
-    .resource-card:hover {
-      transform: translateY(-6px);
-      border-color: var(--border-active);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .resource-card:hover::before {
-      opacity: 1;
-    }
-
-    .card-top-row {
+    .section-header-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
-      margin-bottom: 0.85rem;
+      gap: 1rem;
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
     }
 
-    .category-badge {
+    .section-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .section-header-left h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    .section-count-badge {
       font-size: 0.72rem;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 0.25rem 0.65rem;
-      border-radius: 2rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 1rem;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-primary);
+    }
+
+    .btn-view-all-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-primary);
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
     }
 
-    .badge-quiz { background: rgba(139, 92, 246, 0.18); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
-    .badge-assign { background: rgba(99, 102, 241, 0.18); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.3); }
-    .badge-prac { background: rgba(16, 185, 129, 0.18); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge-event { background: rgba(245, 158, 11, 0.18); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-paper { background: rgba(59, 130, 246, 0.18); color: var(--accent-secondary); border: 1px solid rgba(59, 130, 246, 0.3); }
-    .badge-notes { background: rgba(6, 182, 212, 0.18); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
-
-    .course-sem-tag {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-subtle);
+    /* Cards matching index.html Curated Library look */
+    .cards-row-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 1.25rem;
     }
 
-    .card-title {
-      font-size: 1.12rem;
+    .academic-res-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    .academic-res-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .res-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .res-badge-cat {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .res-badge-disc {
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      font-weight: 600;
+    }
+
+    .res-card-title {
+      font-size: 1.05rem;
       font-weight: 700;
       color: var(--text-main);
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.75rem;
       line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -768,153 +769,48 @@
       overflow: hidden;
     }
 
-    .card-subject {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .card-meta-row {
+    .res-card-meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-top: auto;
-      padding-top: 1rem;
+      padding-top: 0.75rem;
       border-top: 1px solid var(--border-subtle);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
     }
 
-    .card-contributor {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
+    .res-card-actions {
+      margin-top: 0.85rem;
     }
 
-    .contributor-avatar {
-      width: 1.6rem;
-      height: 1.6rem;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .card-stats {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .card-action-btn {
+    .btn-res-action {
       width: 100%;
-      margin-top: 1rem;
-      padding: 0.65rem 1rem;
-      border-radius: 0.75rem;
-      font-size: 0.88rem;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
       font-weight: 600;
-      background: var(--surface-input);
-      border: 1px solid var(--border-glass);
-      color: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.45rem;
+      gap: 0.4rem;
       transition: all 0.2s ease;
-    }
-
-    .card-action-btn:hover {
-      background: var(--accent-primary);
-      color: #ffffff !important;
-      border-color: var(--accent-primary);
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-    }
-
-    /* Zero State */
-    .empty-search-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 3.5rem 1.5rem;
-    }
-
-    .empty-search-icon {
-      font-size: 3rem;
-      color: var(--text-subtle);
-      margin-bottom: 1rem;
-    }
-
-    .empty-search-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-search-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      max-width: 450px;
-      margin: 0 auto 1.5rem;
+      cursor: pointer;
     }
 
     /* ==========================================================================
-       9. EDITORIAL ARTICLE SECTIONS & INTERACTIVE PANELS
+       7. DPG COINS & LIVE QUIZ SIMULATOR WIDGET
        ========================================================================== */
-    .article-pillars-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3.5rem;
-    }
-
-    .pillar-card {
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    .pillar-icon-box {
-      width: 3.2rem;
-      height: 3.2rem;
-      border-radius: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .pillar-icon-1 { background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); }
-    .pillar-icon-2 { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
-    .pillar-icon-3 { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
-    .pillar-icon-4 { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
-
-    .pillar-title {
-      font-size: 1.22rem;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-
-    .pillar-text {
-      font-size: 0.92rem;
-      color: var(--text-muted);
-      line-height: 1.65;
-    }
-
-    /* Live Interactive Quiz Simulator Widget */
-    .interactive-simulator-card {
+    .dpg-coins-quiz-card {
       margin-bottom: 3.5rem;
       padding: 2.25rem;
+      background: var(--surface-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow-glass);
     }
 
-    .simulator-header {
+    .coins-widget-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -923,40 +819,55 @@
       flex-wrap: wrap;
     }
 
-    .sim-tag {
-      font-size: 0.75rem;
+    .coins-badge-tag {
+      font-size: 0.78rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.25rem 0.75rem;
+      letter-spacing: 0.04em;
+      padding: 0.3rem 0.85rem;
       border-radius: 2rem;
-      background: rgba(139, 92, 246, 0.18);
-      color: var(--accent-purple);
-      border: 1px solid rgba(139, 92, 246, 0.3);
+      background: var(--coin-badge-bg);
+      border: 1px solid var(--coin-badge-border);
+      color: var(--coin-badge-text);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    .quiz-question-box {
+    .coins-user-balance-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.35rem 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      border-radius: 2rem;
+      font-size: 0.85rem;
+    }
+
+    .quiz-simulator-box {
       background: var(--surface-input);
       border: 1px solid var(--border-glass);
       border-radius: 1rem;
-      padding: 1.25rem;
-      margin-bottom: 1.25rem;
+      padding: 1.5rem;
     }
 
     .quiz-q-title {
-      font-size: 1.05rem;
+      font-size: 1.08rem;
       font-weight: 600;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      color: var(--text-main);
+      line-height: 1.45;
     }
 
     .quiz-options-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0.85rem;
     }
 
     .quiz-option-btn {
-      padding: 0.85rem 1rem;
+      padding: 0.85rem 1.1rem;
       border-radius: 0.75rem;
       background: var(--surface-card);
       border: 1px solid var(--border-glass);
@@ -987,146 +898,110 @@
     }
 
     .quiz-feedback-box {
-      margin-top: 1rem;
-      padding: 0.85rem 1rem;
+      margin-top: 1.15rem;
+      padding: 0.85rem 1.15rem;
       border-radius: 0.75rem;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       display: none;
     }
 
-    /* Top Contributors Section */
+    /* Redeem Coins Drawer / Info Box */
+    .coins-economy-guide {
+      margin-top: 1.75rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-subtle);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .economy-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .economy-item strong {
+      color: var(--text-main);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* ==========================================================================
+       8. TOP CONTRIBUTORS (Real Firestore Data)
+       ========================================================================== */
     .contributors-section {
       margin-bottom: 3.5rem;
     }
 
-    .section-heading-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 1.75rem;
-      flex-wrap: wrap;
-    }
-
     .section-title {
-      font-size: 1.65rem;
+      font-size: 1.6rem;
       font-weight: 800;
       color: var(--text-main);
+      margin-bottom: 0.25rem;
     }
 
     .contributors-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 1.25rem;
+      margin-top: 1.5rem;
     }
 
     .contributor-box {
-      padding: 1.25rem;
+      padding: 1.2rem;
       display: flex;
       align-items: center;
       gap: 1rem;
+      background: var(--surface-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 1rem;
     }
 
-    .contrib-badge-icon {
-      width: 2.8rem;
-      height: 2.8rem;
+    .contrib-avatar-img {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 1.15rem;
+      object-fit: cover;
+      border: 1.5px solid var(--accent-primary);
       flex-shrink: 0;
     }
 
     .contrib-details {
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
 
     .contrib-name {
       font-weight: 700;
       font-size: 0.95rem;
       color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .contrib-role {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--accent-primary);
       font-weight: 600;
     }
 
     .contrib-stats {
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       color: var(--text-muted);
-      margin-top: 0.2rem;
-    }
-
-    /* FAQ Accordion */
-    .faq-section {
-      margin-bottom: 3.5rem;
-    }
-
-    .faq-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    .faq-item {
-      border: 1px solid var(--border-glass);
-      border-radius: 1rem;
-      background: var(--surface-card);
-      overflow: hidden;
-      transition: border-color 0.2s ease;
-    }
-
-    .faq-item:hover {
-      border-color: var(--border-active);
-    }
-
-    .faq-trigger {
-      width: 100%;
-      padding: 1.25rem 1.5rem;
-      text-align: left;
-      font-size: 1.02rem;
-      font-weight: 600;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .faq-trigger i {
-      font-size: 1.2rem;
-      color: var(--text-subtle);
-      transition: transform 0.25s ease;
-    }
-
-    .faq-item.open .faq-trigger i {
-      transform: rotate(180deg);
-      color: var(--accent-primary);
-    }
-
-    .faq-content {
-      padding: 0 1.5rem 1.25rem;
-      font-size: 0.92rem;
-      color: var(--text-muted);
-      line-height: 1.65;
-      display: none;
-    }
-
-    .faq-item.open .faq-content {
-      display: block;
+      margin-top: 0.15rem;
     }
 
     /* ==========================================================================
-       10. FOOTER
+       9. FOOTER
        ========================================================================== */
     .site-footer {
-      padding: 3rem 1.5rem 1.5rem;
+      padding: 3rem 1rem 1.5rem;
       border-top: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
@@ -1136,13 +1011,8 @@
     .footer-top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
       gap: 2rem;
       flex-wrap: wrap;
-    }
-
-    .footer-brand-info {
-      max-width: 380px;
     }
 
     .footer-nav-links {
@@ -1167,7 +1037,7 @@
     }
 
     .footer-link {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--text-muted);
       transition: color 0.2s ease;
     }
@@ -1189,145 +1059,96 @@
     }
 
     /* ==========================================================================
-       11. MULTI-DEVICE RESPONSIVE MATRIX
-       (Mobile, Smartphone, Tablet, Foldable, Laptop, Smart Board)
+       10. MULTI-DEVICE RESPONSIVENESS MATRIX
        ========================================================================== */
-
-    /* SMARTPHONES & MOBILE (< 576px) */
     @media (max-width: 576px) {
       .app-wrapper {
-        padding: 0 0.85rem 3rem;
+        padding: 0 0.75rem 3rem;
       }
 
       .site-header {
-        top: 0.5rem;
-        padding: 0.75rem 1rem;
-        gap: 0.75rem;
+        top: 0.4rem;
+        padding: 0.65rem 0.85rem;
+        gap: 0.65rem;
       }
 
       .header-nav {
-        display: none; /* Keep header single-line and ultra-clean */
+        display: none;
       }
 
-      .hero-article-section {
-        padding: 2rem 1.25rem;
+      .hero-center-section {
+        padding: 2rem 0.85rem 1.85rem;
       }
 
-      .hero-headline {
-        font-size: 1.85rem;
+      .hero-main-title {
+        font-size: 1.75rem;
       }
 
-      .hero-stats-grid {
+      .hero-metrics-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
       }
 
-      .search-engine-box {
-        padding: 1.15rem;
+      .cards-row-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .search-engine-section {
+        padding: 1.1rem;
       }
 
       .main-search-input {
-        font-size: 0.95rem;
-        padding: 0.9rem 4rem 0.9rem 2.8rem;
+        font-size: 0.94rem;
+        padding: 0.85rem 3.8rem 0.85rem 2.8rem;
       }
 
       .search-shortcut-kbd {
         display: none;
       }
 
-      .resources-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .footer-nav-links {
-        gap: 1.75rem;
+      .dpg-coins-quiz-card {
+        padding: 1.25rem;
       }
     }
 
-    /* FOLDABLE DEVICES & DUAL SCREEN (600px - 900px, varying aspect ratios) */
-    @media (min-width: 600px) and (max-width: 900px) {
-      .hero-stats-grid {
+    @media (min-width: 577px) and (max-width: 900px) {
+      .hero-metrics-grid {
         grid-template-columns: repeat(2, 1fr);
       }
-
-      .resources-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
-      }
-    }
-
-    /* TABLETS (768px - 1024px) */
-    @media (min-width: 768px) and (max-width: 1024px) {
-      .hero-article-section {
-        padding: 2.5rem 2rem;
-      }
-
-      .resources-grid {
+      .cards-row-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
 
-    /* LAPTOPS & DESKTOPS (1200px+) */
-    @media (min-width: 1200px) {
-      .resources-grid {
+    @media (min-width: 901px) and (max-width: 1200px) {
+      .cards-row-grid {
         grid-template-columns: repeat(3, 1fr);
       }
     }
 
-    /* SMART BOARD & 4K PRESENTATION DISPLAYS (1920px+) */
-    @media (min-width: 1920px) {
-      .app-wrapper {
-        max-width: 1720px;
-        padding: 0 2rem 6rem;
-      }
-
-      body {
-        font-size: 1.15rem;
-      }
-
-      .hero-headline {
-        font-size: 4.2rem;
-      }
-
-      .resources-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
-      }
-
-      .chip-btn {
-        padding: 0.75rem 1.4rem;
-        font-size: 1rem;
-      }
-
-      .main-search-input {
-        padding: 1.4rem 6rem 1.4rem 4rem;
-        font-size: 1.25rem;
-      }
-
-      .card-title {
-        font-size: 1.3rem;
+    @media (min-width: 1201px) {
+      .cards-row-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Background Interactive Academic Canvas (DronaNotes Inspired Animation) -->
+  <!-- Background Academic Canvas -->
   <canvas id="academicCanvas"></canvas>
 
-  <!-- Floating Movable Academic Icons -->
+  <!-- Floating Academic Symbols -->
   <div class="bg-floating-elements" aria-hidden="true">
     <div class="float-item float-item-1"><i class="ri-book-open-line"></i></div>
     <div class="float-item float-item-2"><i class="ri-graduation-cap-line"></i></div>
     <div class="float-item float-item-3"><i class="ri-code-s-slash-line"></i></div>
     <div class="float-item float-item-4"><i class="ri-draft-line"></i></div>
-    <div class="float-item float-item-5"><i class="ri-function-line"></i></div>
   </div>
 
   <div class="app-wrapper">
 
-    <!-- Header / Navbar -->
+    <!-- Single-Line Header with Reader Tools and DPG Coins -->
     <header class="site-header glass-panel">
       <div class="header-brand">
         <a href="index.html" class="header-brand" aria-label="DPGNotes Homepage">
@@ -1353,17 +1174,33 @@
       </nav>
 
       <div class="header-actions">
-        <!-- 3-Theme Switcher Pill (Blue Nebula, Light Paper, Dark OLED) -->
-        <div class="theme-switcher-pill" role="group" aria-label="Color Theme Switcher">
-          <button type="button" class="theme-opt-btn" id="themeBtnDefault" data-theme="default" title="Blue Nebula Theme" aria-label="Blue Theme">
+        <!-- Single-Line Theme & Font Tools Pill -->
+        <div class="dpg-reader-tools-pill" role="toolbar" aria-label="Theme and Reading Controls">
+          <button type="button" class="dpg-tool-btn" id="themeBtnDefault" data-theme="default" title="Blue Nebula Theme" aria-label="Blue Theme">
             <i class="ri-contrast-2-line" style="color: #60a5fa;"></i>
           </button>
-          <button type="button" class="theme-opt-btn" id="themeBtnLight" data-theme="light" title="Light High-Contrast Theme" aria-label="Light Theme">
+          <button type="button" class="dpg-tool-btn" id="themeBtnLight" data-theme="light" title="Light High-Contrast Paper Theme" aria-label="Light Theme">
             <i class="ri-sun-line" style="color: #f59e0b;"></i>
           </button>
-          <button type="button" class="theme-opt-btn" id="themeBtnDark" data-theme="dark" title="OLED Pure Dark Theme" aria-label="Dark Theme">
+          <button type="button" class="dpg-tool-btn" id="themeBtnDark" data-theme="dark" title="OLED Pure Dark Theme" aria-label="Dark Theme">
             <i class="ri-moon-clear-line" style="color: #a78bfa;"></i>
           </button>
+          <span class="dpg-tools-divider"></span>
+          <button type="button" class="dpg-tool-btn" onclick="window.cycleHubFontSize(-1)" title="Decrease Text Size" aria-label="Decrease Text Size">
+            <span style="font-size: 0.7rem; font-weight: 700;">T-</span>
+          </button>
+          <button type="button" class="dpg-tool-btn active" id="fontBtnNormal" onclick="window.setHubFontSize('md')" title="Normal Text Size" aria-label="Normal Text Size">
+            <span style="font-size: 0.78rem; font-weight: 700;">T</span>
+          </button>
+          <button type="button" class="dpg-tool-btn" onclick="window.cycleHubFontSize(1)" title="Increase Text Size" aria-label="Increase Text Size">
+            <span style="font-size: 0.7rem; font-weight: 700;">T+</span>
+          </button>
+        </div>
+
+        <!-- DPG Coins Pill -->
+        <div class="dpg-coins-header-pill" id="dpgCoinsHeaderPill" onclick="window.showCoinsModal()" title="Your DPG Coins Balance">
+          <i class="ri-copper-coin-fill" style="color:#f59e0b;"></i>
+          <span id="hubHeaderCoinsCount">50</span> Coins
         </div>
 
         <a href="index.html?action=signin" class="btn-auth-pill">
@@ -1373,63 +1210,52 @@
       </div>
     </header>
 
-    <!-- Main Landing Article & Hero Section -->
     <main>
-      <section class="hero-article-section glass-panel">
-        <div class="hero-badge-row">
-          <div class="hero-pill-badge">
-            <i class="ri-sparkling-fill" style="color: #f59e0b;"></i>
-            <span>Open Academic Commons &amp; Peer Resource Network</span>
-          </div>
-          <div class="hero-pill-badge">
-            <i class="ri-verified-badge-fill" style="color: #10b981;"></i>
-            <span>MDU &amp; DPG Degree College Aligned</span>
-          </div>
-        </div>
-
-        <h1 class="hero-headline">
-          Master Your Semester with <span class="gradient-text">Peer-Verified Notes</span>, Papers &amp; Interactive Quizzes
+      <!-- Hero Section (Clean, Centered) -->
+      <section class="hero-center-section glass-panel">
+        <h1 class="hero-main-title">
+          Elevate Your University &amp; Career Learning
         </h1>
 
-        <p class="hero-description">
+        <p class="hero-main-desc">
           Welcome to the DPGNotes Study Hub. Built by students for students, we bridge classroom lectures and university exams. Discover verified handwritten lecture notes, previous years' sessional &amp; university question papers (PYQs), faculty-approved practical records, step-by-step assignment solutions, and instant self-evaluation quizzes.
         </p>
 
-        <!-- Metric Highlights -->
-        <div class="hero-stats-grid">
-          <div class="stat-box">
-            <div class="stat-number">
+        <!-- 4 Real Metrics -->
+        <div class="hero-metrics-grid">
+          <div class="metric-item">
+            <div class="metric-value">
               <i class="ri-pages-line"></i>
-              <span>12,500+</span>
+              <span id="statAcademicResources">--</span>
             </div>
-            <div class="stat-label">Verified Academic Pages</div>
+            <div class="metric-label">Academic Resources</div>
           </div>
-          <div class="stat-box">
-            <div class="stat-number">
+          <div class="metric-item">
+            <div class="metric-value">
               <i class="ri-check-double-line"></i>
               <span>98%</span>
             </div>
-            <div class="stat-label">University Exam Hit-Rate</div>
+            <div class="metric-label">University Exam Hit-Rate</div>
           </div>
-          <div class="stat-box">
-            <div class="stat-number">
+          <div class="metric-item">
+            <div class="metric-value">
               <i class="ri-user-star-line"></i>
-              <span>250+</span>
+              <span id="statVerifiedContributors">--</span>
             </div>
-            <div class="stat-label">Top Semester Contributors</div>
+            <div class="metric-label">Verified Contributors</div>
           </div>
-          <div class="stat-box">
-            <div class="stat-number">
+          <div class="metric-item">
+            <div class="metric-value">
               <i class="ri-shield-flash-line"></i>
               <span>100%</span>
             </div>
-            <div class="stat-label">Free Student Peer Access</div>
+            <div class="metric-label">Free Student Peer Access</div>
           </div>
         </div>
       </section>
 
-      <!-- Mini Search Engine Section -->
-      <section class="search-engine-box" id="mini-search">
+      <!-- Mini Search Engine & Dynamic Resource Sections -->
+      <section class="search-engine-section" id="mini-search">
         <div class="search-input-wrapper">
           <i class="ri-search-2-line search-input-icon"></i>
           <input
@@ -1449,237 +1275,212 @@
           </div>
         </div>
 
-        <!-- Filter Chips (Sections & Categories) -->
-        <div class="filter-section-wrapper">
-          <div class="filter-chips-row" role="tablist" aria-label="Filter by Section">
-            <button type="button" class="chip-btn active" data-section="all" role="tab" aria-selected="true">
-              <i class="ri-apps-2-line"></i> All Resources
-            </button>
-            <button type="button" class="chip-btn" data-section="Quiz" role="tab" aria-selected="false">
-              <i class="ri-questionnaire-line"></i> Quizzes
-            </button>
-            <button type="button" class="chip-btn" data-section="Assignment Solution" role="tab" aria-selected="false">
-              <i class="ri-file-text-line"></i> Assignment Solutions
-            </button>
-            <button type="button" class="chip-btn" data-section="Practical Solution" role="tab" aria-selected="false">
-              <i class="ri-code-box-line"></i> Practical Solutions
-            </button>
-            <button type="button" class="chip-btn" data-section="Event Material" role="tab" aria-selected="false">
-              <i class="ri-calendar-event-line"></i> Event Material
-            </button>
-            <button type="button" class="chip-btn" data-section="SP" role="tab" aria-selected="false">
-              <i class="ri-file-paper-2-line"></i> SP (Sample Papers)
-            </button>
-            <button type="button" class="chip-btn" data-section="UE" role="tab" aria-selected="false">
-              <i class="ri-government-line"></i> UE (University Exams)
-            </button>
-            <button type="button" class="chip-btn" data-section="SE" role="tab" aria-selected="false">
-              <i class="ri-time-line"></i> SE (Sessional Papers)
-            </button>
-            <button type="button" class="chip-btn" data-section="T&N" role="tab" aria-selected="false">
-              <i class="ri-book-read-line"></i> T&amp;N (Tutorials &amp; Notes)
-            </button>
+        <!-- Filter Chips Bar -->
+        <div class="filter-chips-row" role="tablist" aria-label="Filter by Category">
+          <button type="button" class="chip-btn active" data-section="all" role="tab" aria-selected="true">
+            <i class="ri-apps-2-line"></i> All Resources
+          </button>
+          <button type="button" class="chip-btn" data-section="Quiz" role="tab" aria-selected="false">
+            <i class="ri-questionnaire-line"></i> Quizzes
+          </button>
+          <button type="button" class="chip-btn" data-section="Assignment Solution" role="tab" aria-selected="false">
+            <i class="ri-file-text-line"></i> Assignment Solutions
+          </button>
+          <button type="button" class="chip-btn" data-section="Practical Solution" role="tab" aria-selected="false">
+            <i class="ri-code-box-line"></i> Practical Solutions
+          </button>
+          <button type="button" class="chip-btn" data-section="Event Material" role="tab" aria-selected="false">
+            <i class="ri-calendar-event-line"></i> Event Material
+          </button>
+          <button type="button" class="chip-btn" data-section="SP" role="tab" aria-selected="false">
+            <i class="ri-file-paper-2-line"></i> SP (Sample Papers)
+          </button>
+          <button type="button" class="chip-btn" data-section="UE" role="tab" aria-selected="false">
+            <i class="ri-government-line"></i> UE (University Exams)
+          </button>
+          <button type="button" class="chip-btn" data-section="SE" role="tab" aria-selected="false">
+            <i class="ri-time-line"></i> SE (Sessional Papers)
+          </button>
+          <button type="button" class="chip-btn" data-section="T&N" role="tab" aria-selected="false">
+            <i class="ri-book-read-line"></i> T&amp;N (Tutorials &amp; Notes)
+          </button>
+        </div>
+
+        <!-- Semester Filter Sub-Row -->
+        <div class="filter-sub-row">
+          <div class="semester-pills" role="group" aria-label="Filter by Semester">
+            <span style="font-weight: 600; margin-right: 0.25rem;">Semester:</span>
+            <button type="button" class="sem-pill active" data-sem="all">All</button>
+            <button type="button" class="sem-pill" data-sem="1">Sem 1</button>
+            <button type="button" class="sem-pill" data-sem="2">Sem 2</button>
+            <button type="button" class="sem-pill" data-sem="3">Sem 3</button>
+            <button type="button" class="sem-pill" data-sem="4">Sem 4</button>
+            <button type="button" class="sem-pill" data-sem="5">Sem 5</button>
+            <button type="button" class="sem-pill" data-sem="6">Sem 6</button>
           </div>
 
-          <!-- Secondary Filter Sub-Row: Semester Selector & Results Counter -->
-          <div class="filter-sub-row">
-            <div class="semester-pills" role="group" aria-label="Filter by Semester">
-              <span style="font-weight: 600; margin-right: 0.25rem;">Semester:</span>
-              <button type="button" class="sem-pill active" data-sem="all">All</button>
-              <button type="button" class="sem-pill" data-sem="1">Sem 1</button>
-              <button type="button" class="sem-pill" data-sem="2">Sem 2</button>
-              <button type="button" class="sem-pill" data-sem="3">Sem 3</button>
-              <button type="button" class="sem-pill" data-sem="4">Sem 4</button>
-              <button type="button" class="sem-pill" data-sem="5">Sem 5</button>
-              <button type="button" class="sem-pill" data-sem="6">Sem 6</button>
-            </div>
-
-            <div class="results-count-text" id="resultsCountIndicator">
-              Showing verified academic resources...
-            </div>
+          <div class="results-count-text" id="resultsCountIndicator">
+            Loading verified cloud resources...
           </div>
         </div>
 
-        <!-- Dynamic Resource Grid Container -->
-        <div class="resources-grid" id="resourcesGrid" aria-live="polite">
-          <!-- Populated dynamically by client-side engine -->
+        <!-- 1. Take Quiz and Assess Yourself (Rendered on top of Solutions) -->
+        <div class="vertical-resource-section" id="hubSection_QUIZ" style="display:none;">
+          <div class="section-header-bar">
+            <div class="section-header-left">
+              <i class="ri-questionnaire-line" style="color:var(--accent-purple); font-size:1.35rem;"></i>
+              <h3>Take Quiz and Assess Yourself</h3>
+              <span class="section-count-badge" id="countBadge_QUIZ">0 Items</span>
+            </div>
+            <a href="Quizes/index.html" class="btn-view-all-link">
+              Browse All Quizzes <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+          <div class="cards-row-grid" id="cardsWrapper_QUIZ"></div>
+        </div>
+
+        <!-- 2. Assignment & Practical Solutions -->
+        <div class="vertical-resource-section" id="hubSection_SOLUTIONS" style="display:none;">
+          <div class="section-header-bar">
+            <div class="section-header-left">
+              <i class="ri-file-code-line" style="color:var(--accent-cyan); font-size:1.35rem;"></i>
+              <h3>Assignment &amp; Practical Solutions</h3>
+              <span class="section-count-badge" id="countBadge_SOLUTIONS">0 Items</span>
+            </div>
+            <a href="dpgnotes-serp.html?tab=solutions" class="btn-view-all-link">
+              Explore All Solutions <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+          <div class="cards-row-grid" id="cardsWrapper_SOLUTIONS"></div>
+        </div>
+
+        <!-- 3. Sessional Examination Papers -->
+        <div class="vertical-resource-section" id="hubSection_SE" style="display:none;">
+          <div class="section-header-bar">
+            <div class="section-header-left">
+              <i class="ri-time-line" style="color:var(--accent-primary); font-size:1.35rem;"></i>
+              <h3>Sessional Exam Papers</h3>
+              <span class="section-count-badge" id="countBadge_SE">0 Items</span>
+            </div>
+            <a href="dpgnotes-serp.html?tag=Sessional+Exam" class="btn-view-all-link">
+              View More Sessional Papers <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+          <div class="cards-row-grid" id="cardsWrapper_SE"></div>
+        </div>
+
+        <!-- 4. Sample Papers & Model Sets -->
+        <div class="vertical-resource-section" id="hubSection_SP" style="display:none;">
+          <div class="section-header-bar">
+            <div class="section-header-left">
+              <i class="ri-file-paper-2-line" style="color:var(--accent-secondary); font-size:1.35rem;"></i>
+              <h3>Sample Papers &amp; Model Sets</h3>
+              <span class="section-count-badge" id="countBadge_SP">0 Items</span>
+            </div>
+            <a href="dpgnotes-serp.html?tag=Sample+Paper" class="btn-view-all-link">
+              View More Sample Papers <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+          <div class="cards-row-grid" id="cardsWrapper_SP"></div>
+        </div>
+
+        <!-- 5. University Exam Papers -->
+        <div class="vertical-resource-section" id="hubSection_UE" style="display:none;">
+          <div class="section-header-bar">
+            <div class="section-header-left">
+              <i class="ri-government-line" style="color:var(--accent-purple); font-size:1.35rem;"></i>
+              <h3>University Exam Question Papers</h3>
+              <span class="section-count-badge" id="countBadge_UE">0 Items</span>
+            </div>
+            <a href="dpgnotes-serp.html?tag=University+Exam" class="btn-view-all-link">
+              View More University Exams <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+          <div class="cards-row-grid" id="cardsWrapper_UE"></div>
+        </div>
+
+        <!-- 6. Tutorials & Handwritten Notes -->
+        <div class="vertical-resource-section" id="hubSection_TN" style="display:none;">
+          <div class="section-header-bar">
+            <div class="section-header-left">
+              <i class="ri-book-read-line" style="color:var(--accent-cyan); font-size:1.35rem;"></i>
+              <h3>Tutorials &amp; Lecture Notes</h3>
+              <span class="section-count-badge" id="countBadge_TN">0 Items</span>
+            </div>
+            <a href="dpgnotes-serp.html?tag=Notes" class="btn-view-all-link">
+              View More Lecture Notes <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+          <div class="cards-row-grid" id="cardsWrapper_TN"></div>
+        </div>
+
+        <!-- Zero Search Results State -->
+        <div id="hubZeroState" style="display:none; text-align:center; padding:3rem 1.5rem;">
+          <i class="ri-search-line" style="font-size:2.8rem; color:var(--text-subtle); margin-bottom:0.75rem;"></i>
+          <h4 style="font-size:1.2rem; margin-bottom:0.4rem;">No matching resources found</h4>
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.25rem;">Try adjusting your search terms or clearing active filters.</p>
+          <button type="button" class="chip-btn active" onclick="window.resetHubFilters()">
+            <i class="ri-refresh-line"></i> Reset Filters
+          </button>
         </div>
       </section>
 
-      <!-- Editorial Section: The DPGNotes Academic Pillars -->
-      <section class="article-pillars-grid">
-        <div class="pillar-card glass-panel">
-          <div class="pillar-icon-box pillar-icon-1">
-            <i class="ri-git-merge-line"></i>
-          </div>
-          <h2 class="pillar-title">Peer-to-Peer Notes</h2>
-          <p class="pillar-text">
-            Handwritten diagrams, chapter summaries, and unit-wise syllabus coverage uploaded directly by students who scored top letter grades in their university examinations.
-          </p>
-        </div>
-
-        <div class="pillar-card glass-panel">
-          <div class="pillar-icon-box pillar-icon-2">
-            <i class="ri-brain-line"></i>
-          </div>
-          <h2 class="pillar-title">Interactive Quizzes</h2>
-          <p class="pillar-text">
-            Instant MCQ &amp; MSQ assessment engine tailored for semester revisions. Test conceptual clarity, review comprehensive answer explanations, and benchmark readiness.
-          </p>
-        </div>
-
-        <div class="pillar-card glass-panel">
-          <div class="pillar-icon-box pillar-icon-3">
-            <i class="ri-terminal-box-line"></i>
-          </div>
-          <h2 class="pillar-title">Lab &amp; Practical Files</h2>
-          <p class="pillar-text">
-            Verified laboratory source code, system documentation, and viva-voce preparation manuals across Java, Python, C++, Web Technologies, and Database Systems.
-          </p>
-        </div>
-
-        <div class="pillar-card glass-panel">
-          <div class="pillar-icon-box pillar-icon-4">
-            <i class="ri-trophy-line"></i>
-          </div>
-          <h2 class="pillar-title">Contributor Royalties</h2>
-          <p class="pillar-text">
-            Join the academic commons. Verified student contributors gain recognized profile badges, portfolio tracking, and native ad monetization points for their study aids.
-          </p>
-        </div>
-      </section>
-
-      <!-- Live Interactive Quiz Preview Widget -->
-      <section class="interactive-simulator-card glass-panel">
-        <div class="simulator-header">
+      <!-- Earn DPG Coins & Live Public Quiz Simulator -->
+      <section class="dpg-coins-quiz-card">
+        <div class="coins-widget-header">
           <div>
-            <span class="sim-tag">Interactive Academic Quiz Demo</span>
-            <h2 style="font-size: 1.4rem; margin-top: 0.35rem;">Test Your Fundamentals Right Now</h2>
+            <span class="coins-badge-tag"><i class="ri-copper-coin-fill"></i> Earn DPG Coins</span>
+            <h2 id="simQuizTitle" style="font-size: 1.35rem; margin-top: 0.35rem; color:var(--text-main);">
+              Loading Assessment Challenge...
+            </h2>
           </div>
-          <a href="Quizes/index.html" class="nav-link" style="color: var(--accent-primary); font-weight: 600;">
-            Browse All Quizzes <i class="ri-arrow-right-line"></i>
-          </a>
+          <div class="coins-user-balance-box">
+            <span>Balance:</span>
+            <strong id="simUserCoinsCount" style="color:#f59e0b;">50</strong>
+            <span style="font-size:0.75rem; color:var(--text-muted);">DPGCoins</span>
+          </div>
         </div>
 
-        <div class="quiz-question-box">
-          <div class="quiz-q-title" id="demoQTitle">
-            Q: Which database normal form removes partial dependency (functional dependency on part of a composite primary key)?
+        <div class="quiz-simulator-box">
+          <div class="quiz-q-title" id="simQuestionText">
+            Loading question from database...
           </div>
-          <div class="quiz-options-list" id="demoOptionsList">
-            <button type="button" class="quiz-option-btn" data-correct="false" onclick="handleDemoAnswer(this, false, '1NF only eliminates duplicate columns and ensures atomicity.')">
-              <span>A</span> First Normal Form (1NF)
-            </button>
-            <button type="button" class="quiz-option-btn" data-correct="true" onclick="handleDemoAnswer(this, true, 'Spot on! Second Normal Form (2NF) mandates that every non-prime attribute is fully functionally dependent on the entire candidate key.')">
-              <span>B</span> Second Normal Form (2NF)
-            </button>
-            <button type="button" class="quiz-option-btn" data-correct="false" onclick="handleDemoAnswer(this, false, '3NF eliminates transitive dependencies, not partial dependencies.')">
-              <span>C</span> Third Normal Form (3NF)
-            </button>
-            <button type="button" class="quiz-option-btn" data-correct="false" onclick="handleDemoAnswer(this, false, 'BCNF is a stricter version of 3NF focusing on superkeys.')">
-              <span>D</span> Boyce-Codd Normal Form (BCNF)
-            </button>
+          <div class="quiz-options-list" id="simOptionsContainer">
+            <!-- Dynamic Options -->
           </div>
-          <div class="quiz-feedback-box" id="demoFeedbackBox"></div>
+          <div class="quiz-feedback-box" id="simFeedbackBox"></div>
+        </div>
+
+        <!-- DPG Coins Utility & Quota Guide -->
+        <div class="coins-economy-guide">
+          <div class="economy-item">
+            <strong><i class="ri-tools-line" style="color:var(--accent-primary);"></i> Utilities Access</strong>
+            650 Coins = 1-Day Unlimited &bull; 2500 = 1-Mo Blaze &bull; 4500 = 1-Mo Pro
+          </div>
+          <div class="economy-item">
+            <strong><i class="ri-shield-keyhole-line" style="color:var(--accent-emerald);"></i> Quota Unlock</strong>
+            500 Coins = 1-Day Full Access &bull; 10,500 Coins = 15-Days Access
+          </div>
+          <div class="economy-item">
+            <strong><i class="ri-advertisement-line" style="color:var(--accent-amber);"></i> Ads Bill Settlement</strong>
+            1 ₹ Native Ads Bill = 800 DPGCoins (Payable via Contributor Dashboard)
+          </div>
         </div>
       </section>
 
-      <!-- Top Contributors Section -->
+      <!-- Verified Top Contributors (Real Data Only) -->
       <section class="contributors-section">
-        <div class="section-heading-row">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
           <div>
-            <h2 class="section-title">Verified Top Contributors</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">Students and alumni building open knowledge for our college community</p>
+            <h2 class="section-title">Verified Contributors</h2>
+            <p style="color:var(--text-muted); font-size:0.9rem;">Verified students &amp; faculty creating open educational resources</p>
           </div>
-          <a href="index.html?action=signin" class="nav-link" style="font-weight: 600; color: var(--accent-primary);">
-            Become a Contributor <i class="ri-user-add-line"></i>
+          <a href="index.html?action=signin" class="btn-view-all-link">
+            Join the Commons <i class="ri-user-add-line"></i>
           </a>
         </div>
-
-        <div class="contributors-grid">
-          <div class="contributor-box glass-card">
-            <div class="contrib-badge-icon"><i class="ri-user-star-line"></i></div>
-            <div class="contrib-details">
-              <span class="contrib-name">Akshat Prasad</span>
-              <span class="contrib-role">Lead Architect &bull; BCA</span>
-              <span class="contrib-stats">48 Verified Resources &bull; 9.4 CGPA</span>
-            </div>
-          </div>
-
-          <div class="contributor-box glass-card">
-            <div class="contrib-badge-icon" style="background: linear-gradient(135deg, #10b981, #06b6d4);"><i class="ri-code-line"></i></div>
-            <div class="contrib-details">
-              <span class="contrib-name">Rohan Sharma</span>
-              <span class="contrib-role">B.Tech CSE &bull; Gold Contributor</span>
-              <span class="contrib-stats">28 Code Practicals &bull; Python / AI</span>
-            </div>
-          </div>
-
-          <div class="contributor-box glass-card">
-            <div class="contrib-badge-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);"><i class="ri-pencil-ruler-line"></i></div>
-            <div class="contrib-details">
-              <span class="contrib-name">Priya Verma</span>
-              <span class="contrib-role">BCA &bull; Peer Scholar</span>
-              <span class="contrib-stats">34 Handwritten Notes &bull; DBMS / OS</span>
-            </div>
-          </div>
-
-          <div class="contributor-box glass-card">
-            <div class="contrib-badge-icon" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6);"><i class="ri-survey-line"></i></div>
-            <div class="contrib-details">
-              <span class="contrib-name">Aman Saxena</span>
-              <span class="contrib-role">MCA &bull; Quiz Master</span>
-              <span class="contrib-stats">16 Mock Assessments &bull; Java / SE</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Frequently Asked Questions -->
-      <section class="faq-section">
-        <div class="section-heading-row">
-          <h2 class="section-title">Frequently Asked Questions</h2>
-        </div>
-
-        <div class="faq-list">
-          <div class="faq-item">
-            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
-              <span>Are all study materials and question papers completely free?</span>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="faq-content">
-              Yes, 100%. DPGNotes operates on an open academic commons model. You can view, search, read, and print verified lecture notes, previous year sessional papers, and assignment solutions without any paywalls or required subscriptions.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
-              <span>How are uploaded student notes verified before publishing?</span>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="faq-content">
-              Every document uploaded through the Contributor Dashboard undergoes an academic accuracy review, syllabus alignment check, and PDF clean-scan audit before being approved into the public directory.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
-              <span>How can I contribute my own handwritten notes or practical files?</span>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="faq-content">
-              Click the "Contributor Sign In" button to create your free student or faculty profile. Once signed in, visit the Contribution dashboard to upload documents, generate interactive quizzes, or author assignment solutions.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button type="button" class="faq-trigger" onclick="toggleFaq(this)">
-              <span>What is the difference between SP, UE, SE, and T&amp;N categories?</span>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="faq-content">
-              <strong>SP</strong> represents Sample Papers and Model Exam Solutions; <strong>UE</strong> designates official University Exam Papers (PYQs); <strong>SE</strong> stands for internal Sessional Examination Papers; and <strong>T&amp;N</strong> represents Unit Tutorials and In-Depth Lecture Notes.
-            </div>
-          </div>
+        <div class="contributors-grid" id="contributorsGrid">
+          <!-- Populated from Firestore Real Data -->
         </div>
       </section>
     </main>
@@ -1687,50 +1488,50 @@
     <!-- Footer -->
     <footer class="site-footer">
       <div class="footer-top">
-        <div class="footer-brand-info">
-          <div class="brand-name" style="font-size: 1.3rem; margin-bottom: 0.5rem;">
-            <i class="ri-graduation-cap-fill" style="color: var(--accent-primary);"></i> DPGNotes Study Hub
+        <div style="max-width:380px;">
+          <div class="brand-name" style="font-size:1.25rem; margin-bottom:0.5rem;">
+            <i class="ri-graduation-cap-fill" style="color:var(--accent-primary);"></i> DPGNotes Study Hub
           </div>
-          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
-            The central open academic repository for DPG Degree College and affiliated university students. Free peer notes, exam archives, practical manuals, and quiz assessments.
+          <p style="font-size:0.86rem; color:var(--text-muted); line-height:1.6;">
+            The open academic commons for DPG Degree College and affiliated universities. Free peer notes, exam archives, practical manuals, and quiz assessments.
           </p>
         </div>
 
         <div class="footer-nav-links">
           <div class="footer-nav-col">
-            <span class="footer-col-title">Academic Portal</span>
+            <span class="footer-col-title">Portals</span>
             <a href="dpgnotes-search-engine.html" class="footer-link">Search Engine</a>
-            <a href="Quizes/index.html" class="footer-link">Quiz Portal</a>
+            <a href="Quizes/index.html" class="footer-link">Quiz Assessment Portal</a>
             <a href="AssignmentSolution/index.html" class="footer-link">Assignment Solutions</a>
-            <a href="PracticalSolution/index.html" class="footer-link">Practical Lab Files</a>
+            <a href="PracticalSolution/index.html" class="footer-link">Practical Lab Manuals</a>
           </div>
 
           <div class="footer-nav-col">
-            <span class="footer-col-title">Tools &amp; Utilities</span>
-            <a href="ImagetoPdfConverter.html" class="footer-link">Image to PDF Converter</a>
-            <a href="PdfMetaAnalyzer.html" class="footer-link">PDF Metadata Analyzer</a>
-            <a href="AssignmentCoverPageGenerator/index.html" class="footer-link">Cover Page Generator</a>
-            <a href="dashboard.html" class="footer-link">Contributor Dashboard</a>
+            <span class="footer-col-title">Utilities</span>
+            <a href="ImagetoPdfConverter.html" class="footer-link">Image to PDF</a>
+            <a href="PdfMetaAnalyzer.html" class="footer-link">Metadata Analyzer</a>
+            <a href="dashboard.html" class="footer-link">Contributor Desk</a>
+            <a href="legal/native-ads-monetization-policy.html" class="footer-link">Native Ads Policy</a>
           </div>
 
           <div class="footer-nav-col">
             <span class="footer-col-title">Legal &amp; Policy</span>
             <a href="legal/privacy-policy.html" class="footer-link">Privacy Policy</a>
             <a href="legal/terms-conditions.html" class="footer-link">Terms &amp; Conditions</a>
-            <a href="legal/dmca-policy.html" class="footer-link">DMCA &amp; Copyright</a>
             <a href="legal/advertising-policy.html" class="footer-link">Advertising Policy</a>
+            <a href="legal/retention-policy.html" class="footer-link">Retention Policy</a>
           </div>
         </div>
       </div>
 
       <div class="footer-bottom">
         <div>
-          &copy; 2026 DPGNotes. Engineered by <strong>Akshat Network Hub (ANH)</strong>. All educational materials belong to their respective student and faculty contributors.
+          &copy; 2026 DPGNotes. Engineered by <strong>Akshat Network Hub (ANH)</strong>.
         </div>
-        <div style="display: flex; gap: 1rem;">
+        <div style="display:flex; gap:1.25rem;">
           <a href="https://github.com/Akshat-881236/DPGNotes" target="_blank" rel="noopener" class="footer-link"><i class="ri-github-fill"></i> GitHub</a>
-          <a href="/legal/privacy-policy.html" class="footer-link">Privacy</a>
-          <a href="/legal/terms-conditions.html" class="footer-link">Terms</a>
+          <a href="legal/privacy-policy.html" class="footer-link">Privacy</a>
+          <a href="legal/terms-conditions.html" class="footer-link">Terms</a>
         </div>
       </div>
     </footer>
@@ -1738,12 +1539,12 @@
   </div>
 
   <!-- ==========================================================================
-       12. JAVASCRIPT: THEME ENGINE, ANIMATED CANVAS, MINI SEARCH ENGINE & FIRESTORE
-       ========================================================================== -->
+       11. JAVASCRIPT: INDEXEDDB PERSISTENCE, 3-HOUR CACHE, DPG COINS & REAL DATA
+       ========================================================================== */ -->
   <script type="module">
-    // Modular Firebase imports for read-optimized Firestore fetching
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, collectionGroup, query, limit } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, collectionGroup, query, limit, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -1756,56 +1557,66 @@
 
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let isContributor = false;
+
+    onAuthStateChanged(auth, u => {
+      currentUser = u;
+      isContributor = Boolean(u);
+    });
 
     /* ==========================================================================
-       A. THEME CONTROLLER & CONTRAST SYNC
+       A. THEME ENGINE & FONT RESIZING CONTROLS
        ========================================================================== */
-    const THEME_STORAGE_KEY = "dpgReaderTheme";
-    let currentTheme = localStorage.getItem(THEME_STORAGE_KEY) || "default";
+    const THEME_KEY = "dpgReaderTheme";
+    let currentTheme = localStorage.getItem(THEME_KEY) || "default";
 
     function applyTheme(theme) {
       currentTheme = theme;
       document.documentElement.setAttribute("data-theme", theme);
-      if (document.body) {
-        document.body.setAttribute("data-theme", theme);
-      }
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      if (document.body) document.body.setAttribute("data-theme", theme);
+      localStorage.setItem(THEME_KEY, theme);
 
-      // Update switcher buttons UI
-      document.querySelectorAll(".theme-opt-btn").forEach(btn => {
+      document.querySelectorAll(".dpg-tool-btn[data-theme]").forEach(btn => {
         btn.classList.toggle("active", btn.getAttribute("data-theme") === theme);
       });
-
-      // Synchronize with academic canvas colors
-      if (window.updateCanvasColors) {
-        window.updateCanvasColors();
-      }
-
       window.dispatchEvent(new CustomEvent("dpg-theme-changed", { detail: { theme } }));
     }
 
     window.applyTheme = applyTheme;
-
     document.getElementById("themeBtnDefault")?.addEventListener("click", () => applyTheme("default"));
     document.getElementById("themeBtnLight")?.addEventListener("click", () => applyTheme("light"));
     document.getElementById("themeBtnDark")?.addEventListener("click", () => applyTheme("dark"));
-
-    // Sync theme on initial load
     applyTheme(currentTheme);
 
+    let hubFontSize = "md";
+    window.setHubFontSize = function(size) {
+      hubFontSize = size;
+      const root = document.documentElement;
+      if (size === "sm") root.style.fontSize = "14px";
+      else if (size === "lg") root.style.fontSize = "18px";
+      else root.style.fontSize = "16px";
+    };
+
+    window.cycleHubFontSize = function(delta) {
+      const sizes = ["sm", "md", "lg"];
+      let idx = sizes.indexOf(hubFontSize);
+      if (idx === -1) idx = 1;
+      const nextIdx = Math.max(0, Math.min(sizes.length - 1, idx + delta));
+      window.setHubFontSize(sizes[nextIdx]);
+    };
+
     /* ==========================================================================
-       B. INTERACTIVE BACKGROUND CANVAS (DronaNotes-Inspired Particle & Math Network)
+       B. BACKGROUND CANVAS (DronaNotes Inspired Animation)
        ========================================================================== */
     const canvas = document.getElementById("academicCanvas");
     const ctx = canvas.getContext("2d");
-
-    let width = 0;
-    let height = 0;
-    let particles = [];
-    const particleCount = window.innerWidth < 768 ? 28 : 55;
-    let mouse = { x: -1000, y: -1000, radius: 140 };
-
-    const academicSymbols = ["∑", "π", "λ", "∫", "{ }", "</>", "√x", "∞", "01", "A+"];
+    let width = 0, height = 0, particles = [];
+    const count = window.innerWidth < 768 ? 26 : 48;
+    let mouse = { x: -1000, y: -1000, radius: 130 };
+    const symbols = ["∑", "π", "λ", "∫", "{ }", "</>", "√x", "∞", "01"];
 
     function resizeCanvas() {
       width = canvas.width = window.innerWidth;
@@ -1814,45 +1625,36 @@
 
     class Particle {
       constructor() {
-        this.reset();
-      }
-
-      reset() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.75;
-        this.vy = (Math.random() - 0.5) * 0.75;
-        this.radius = Math.random() * 2.5 + 1.2;
-        this.isSymbol = Math.random() > 0.65;
-        this.symbol = academicSymbols[Math.floor(Math.random() * academicSymbols.length)];
-        this.alpha = Math.random() * 0.35 + 0.15;
+        this.vx = (Math.random() - 0.5) * 0.7;
+        this.vy = (Math.random() - 0.5) * 0.7;
+        this.radius = Math.random() * 2.2 + 1;
+        this.isSymbol = Math.random() > 0.7;
+        this.symbol = symbols[Math.floor(Math.random() * symbols.length)];
+        this.alpha = Math.random() * 0.3 + 0.12;
       }
-
       update() {
         this.x += this.vx;
         this.y += this.vy;
-
         if (this.x < 0 || this.x > width) this.vx *= -1;
         if (this.y < 0 || this.y > height) this.vy *= -1;
 
-        // Mouse repulsion
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < mouse.radius) {
           const force = (mouse.radius - dist) / mouse.radius;
-          this.x -= (dx / dist) * force * 3;
-          this.y -= (dy / dist) * force * 3;
+          this.x -= (dx / dist) * force * 2.5;
+          this.y -= (dy / dist) * force * 2.5;
         }
       }
-
       draw() {
-        const themeStyles = getComputedStyle(document.documentElement);
-        const nodeColor = themeStyles.getPropertyValue("--canvas-node").trim() || "rgba(99, 102, 241, 0.4)";
-
+        const styles = getComputedStyle(document.documentElement);
+        const nodeColor = styles.getPropertyValue("--canvas-node").trim() || "rgba(99, 102, 241, 0.35)";
         if (this.isSymbol) {
           ctx.save();
-          ctx.font = "12px 'Fira Code', monospace";
+          ctx.font = "11px 'Fira Code', monospace";
           ctx.fillStyle = nodeColor;
           ctx.globalAlpha = this.alpha;
           ctx.fillText(this.symbol, this.x, this.y);
@@ -1867,281 +1669,153 @@
       }
     }
 
-    function initCanvasParticles() {
+    function initParticles() {
       resizeCanvas();
       particles = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-      }
+      for (let i = 0; i < count; i++) particles.push(new Particle());
     }
 
-    function drawConnections() {
-      const themeStyles = getComputedStyle(document.documentElement);
-      const lineColor = themeStyles.getPropertyValue("--canvas-line").trim() || "rgba(59, 130, 246, 0.12)";
-      const maxDistance = 120;
-
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < maxDistance) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = lineColor;
-            ctx.globalAlpha = (1 - dist / maxDistance) * 0.45;
-            ctx.lineWidth = 0.85;
-            ctx.stroke();
-          }
-        }
-      }
-    }
-
-    let animationFrameId;
-    function animateCanvas() {
+    function renderCanvas() {
       ctx.clearRect(0, 0, width, height);
+      const styles = getComputedStyle(document.documentElement);
+      const lineColor = styles.getPropertyValue("--canvas-line").trim() || "rgba(59, 130, 246, 0.12)";
 
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
-      }
-      drawConnections();
-
-      animationFrameId = requestAnimationFrame(animateCanvas);
-    }
-
-    window.addEventListener("resize", () => {
-      resizeCanvas();
-    });
-
-    window.addEventListener("mousemove", (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-
-    window.addEventListener("mouseout", () => {
-      mouse.x = -1000;
-      mouse.y = -1000;
-    });
-
-    // Pause canvas if tab is hidden to conserve battery & CPU
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        cancelAnimationFrame(animationFrameId);
-      } else {
-        animateCanvas();
-      }
-    });
-
-    initCanvasParticles();
-    animateCanvas();
-
-    /* ==========================================================================
-       C. SEED ACADEMIC RESOURCE CATALOG (Guaranteed Rich Content + Fallback)
-       ========================================================================== */
-    const academicSeedCatalog = [
-      {
-        id: "quiz_dbms_norm",
-        type: "Quiz",
-        category: "Quiz",
-        title: "DBMS Relational Normalization & Functional Dependencies",
-        subject: "Database Management Systems",
-        course: "BCA / B.Tech CSE",
-        semester: "4",
-        contributor: "Akshat Prasad",
-        views: 1420,
-        likes: 98,
-        questionsCount: 20,
-        url: "Quizes/index.html?quizId=quiz_1728001"
-      },
-      {
-        id: "sol_ai_expert_u1",
-        type: "Assignment Solution",
-        category: "Assignment Solution",
-        title: "Artificial Intelligence & Expert Systems — Unit 1 Solution",
-        subject: "Artificial Intelligence",
-        course: "BCA",
-        semester: "5",
-        contributor: "Akshat Prasad",
-        views: 2850,
-        likes: 184,
-        url: "AssignmentSolution/index.html?id=assign_1791543990965_e215u&contributor=CCoQSLFfzWf4NGF6zox3tO399Xg1"
-      },
-      {
-        id: "sol_webtech_lab",
-        type: "Practical Solution",
-        category: "Practical Solution",
-        title: "Full Stack Web Tech Lab Manual — Responsive Glassmorphism & Node",
-        subject: "Web Development",
-        course: "BCA / B.Tech",
-        semester: "5",
-        contributor: "Rohan Sharma",
-        views: 1940,
-        likes: 126,
-        url: "PracticalSolution/index.html?id=prac_1784992102_wlab"
-      },
-      {
-        id: "doc_ue_os_2025",
-        type: "UE",
-        category: "UE",
-        title: "Operating Systems University Examination Question Paper (Dec 2025)",
-        subject: "Operating Systems",
-        course: "BCA / B.Tech",
-        semester: "4",
-        contributor: "Priya Verma",
-        views: 3120,
-        likes: 240,
-        url: "dpgnotes-pdf-viewer.html?id=doc_ue_os_2025"
-      },
-      {
-        id: "doc_sp_cn_model",
-        type: "SP",
-        category: "SP",
-        title: "Computer Networks Sample Paper & Model Solution Key",
-        subject: "Computer Networks",
-        course: "BCA",
-        semester: "5",
-        contributor: "Aman Saxena",
-        views: 1780,
-        likes: 112,
-        url: "dpgnotes-pdf-viewer.html?id=doc_sp_cn_model"
-      },
-      {
-        id: "doc_se_ds_sessional",
-        type: "SE",
-        category: "SE",
-        title: "Data Structures & Algorithms Sessional Exam Paper 1 & 2",
-        subject: "Data Structures",
-        course: "BCA / B.Tech",
-        semester: "3",
-        contributor: "Akshat Prasad",
-        views: 2430,
-        likes: 165,
-        url: "dpgnotes-pdf-viewer.html?id=doc_se_ds_sessional"
-      },
-      {
-        id: "doc_tn_discrete_math",
-        type: "T&N",
-        category: "T&N",
-        title: "Discrete Mathematics Unit 1–4 Complete Handwritten Lecture Notes",
-        subject: "Discrete Mathematics",
-        course: "BCA",
-        semester: "2",
-        contributor: "Priya Verma",
-        views: 4210,
-        likes: 310,
-        url: "dpgnotes-pdf-viewer.html?id=doc_tn_discrete_math"
-      },
-      {
-        id: "doc_event_hackathon",
-        type: "Event Material",
-        category: "Event Material",
-        title: "Annual Tech Fest Hackathon Guide & Problem Statements",
-        subject: "Innovation & Coding",
-        course: "Campus Wide",
-        semester: "all",
-        contributor: "Akshat Prasad",
-        views: 950,
-        likes: 84,
-        url: "dpgnotes-pdf-viewer.html?id=doc_event_hackathon"
-      },
-      {
-        id: "quiz_java_oop",
-        type: "Quiz",
-        category: "Quiz",
-        title: "Java OOPs Concepts, Interfaces & Exception Handling Quiz",
-        subject: "Core Java",
-        course: "BCA / B.Tech",
-        semester: "3",
-        contributor: "Aman Saxena",
-        views: 1890,
-        likes: 135,
-        questionsCount: 25,
-        url: "Quizes/index.html?quizId=quiz_java_oop_25"
-      },
-      {
-        id: "sol_python_data_prac",
-        type: "Practical Solution",
-        category: "Practical Solution",
-        title: "Python Data Analysis with Pandas & Matplotlib Lab Solution",
-        subject: "Python Programming",
-        course: "BCA / B.Tech",
-        semester: "4",
-        contributor: "Rohan Sharma",
-        views: 2150,
-        likes: 178,
-        url: "PracticalSolution/index.html?id=prac_python_data_2025"
-      },
-      {
-        id: "doc_ue_se_2024",
-        type: "UE",
-        category: "UE",
-        title: "Software Engineering University Question Paper (Annual Exam)",
-        subject: "Software Engineering",
-        course: "BCA",
-        semester: "5",
-        contributor: "Akshat Prasad",
-        views: 2670,
-        likes: 195,
-        url: "dpgnotes-pdf-viewer.html?id=doc_ue_se_2024"
-      },
-      {
-        id: "doc_tn_cloud_comp",
-        type: "T&N",
-        category: "T&N",
-        title: "Cloud Computing Architectures, Virtualization & AWS Fundamentals",
-        subject: "Cloud Computing",
-        course: "BCA / B.Tech",
-        semester: "6",
-        contributor: "Akshat Prasad",
-        views: 1640,
-        likes: 142,
-        url: "dpgnotes-pdf-viewer.html?id=doc_tn_cloud_comp"
-      }
-    ];
-
-    /* ==========================================================================
-       D. FIRESTORE READ-OPTIMIZED CACHING & DATA AGGREGATION
-       ========================================================================== */
-    let allResources = [...academicSeedCatalog];
-    const CACHE_KEY = "dpg_study_hub_catalog";
-    const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes client-side cache
-
-    async function loadResources() {
-      // Check local cache first to protect Spark quota
-      try {
-        const cached = sessionStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && Array.isArray(parsed.data) && (Date.now() - (parsed.timestamp || 0) < CACHE_TTL_MS)) {
-            allResources = parsed.data;
-            renderResources();
-            return;
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 110) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = lineColor;
+            ctx.globalAlpha = (1 - dist / 110) * 0.35;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
           }
         }
+      }
+      requestAnimationFrame(renderCanvas);
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    window.addEventListener("mouseout", () => { mouse.x = -1000; mouse.y = -1000; });
+    initParticles();
+    renderCanvas();
+
+    /* ==========================================================================
+       C. INDEXEDDB PERSISTENCE & 3-HOUR INTERVAL FIRESTORE CACHE
+       ========================================================================== */
+    const DB_NAME = "DPGNotes_StudyHub_DB";
+    const DB_VERSION = 1;
+    const CACHE_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 Hours strict interval
+
+    function openIndexedDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = e => {
+          const dbInstance = e.target.result;
+          if (!dbInstance.objectStoreNames.contains("academic_cache")) {
+            dbInstance.createObjectStore("academic_cache", { keyPath: "key" });
+          }
+          if (!dbInstance.objectStoreNames.contains("dpg_coins_wallet")) {
+            dbInstance.createObjectStore("dpg_coins_wallet", { keyPath: "id" });
+          }
+        };
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    async function getFromIDB(storeName, key) {
+      try {
+        const idb = await openIndexedDB();
+        return new Promise((resolve) => {
+          const tx = idb.transaction(storeName, "readonly");
+          const store = tx.objectStore(storeName);
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        });
       } catch (err) {
-        console.warn("[Study Hub] Cache read note:", err.message);
+        return null;
+      }
+    }
+
+    async function setInIDB(storeName, value) {
+      try {
+        const idb = await openIndexedDB();
+        return new Promise((resolve) => {
+          const tx = idb.transaction(storeName, "readwrite");
+          const store = tx.objectStore(storeName);
+          store.put(value);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (err) {
+        return false;
+      }
+    }
+
+    let allDocsList = [];
+    let allContributorsList = [];
+
+    async function syncAcademicData() {
+      // 1. Check local IndexedDB cache with 3-Hour TTL
+      const cached = await getFromIDB("academic_cache", "study_hub_catalog");
+      if (cached && (Date.now() - (cached.timestamp || 0) < CACHE_INTERVAL_MS)) {
+        allDocsList = cached.docs || [];
+        allContributorsList = cached.contributors || [];
+        updateMetricsUI(cached.stats);
+        renderCategorizedResources();
+        renderContributorsUI();
+        initQuizChallenge();
+        return;
       }
 
-      // Live Firestore fetch with safety limits
+      // 2. Fetch fresh batch from Firestore (1 interval operation every 3 Hours)
       try {
-        const [docsSnap, solSnap, qzSnap] = await Promise.all([
-          getDocs(query(collection(db, "documents"), limit(50))).catch(() => ({ empty: true, forEach: () => {} })),
-          getDocs(query(collectionGroup(db, "solutions"), limit(30))).catch(() => ({ empty: true, forEach: () => {} })),
-          getDocs(query(collection(db, "quizDirectory"), limit(25))).catch(() => ({ empty: true, forEach: () => {} }))
+        const [docsSnap, solSnap, qzSnap, usersSnap] = await Promise.all([
+          getDocs(query(collection(db, "documents"), limit(150))).catch(() => ({ empty: true, forEach: () => {} })),
+          getDocs(query(collectionGroup(db, "solutions"), limit(100))).catch(() => ({ empty: true, forEach: () => {} })),
+          getDocs(query(collection(db, "quizDirectory"), limit(60))).catch(() => ({ empty: true, forEach: () => {} })),
+          getDocs(query(collection(db, "users"), limit(60))).catch(() => ({ empty: true, forEach: () => {} }))
         ]);
 
-        const liveFetched = [];
+        const usersMap = {};
+        usersSnap.forEach(uDoc => {
+          const u = uDoc.data();
+          usersMap[uDoc.id] = {
+            uid: uDoc.id,
+            name: u.displayName || u.name || (u.email ? u.email.split('@')[0] : 'Contributor'),
+            photoURL: u.photoURL || u.profilePic || u.avatarUrl || 'https://dpgnotes.web.app/ANH.png',
+            role: u.role || 'Contributor',
+            discipline: u.discipline || 'Computer Science',
+            docsCount: 0
+          };
+        });
 
-        // 1. Documents
+        const docs = [];
         docsSnap.forEach(d => {
           const data = d.data();
           const isApproved = data.status === "approved" || data.status === "Approved" || data.isApproved === true;
           const isPrivate = data.visibility === "private" || data.isPasswordProtected === true || data.isPublic === false;
           if (isApproved && !isPrivate && data.title) {
-            liveFetched.push({
+            const authorUid = data.uploaderUid || data.userId || "";
+            if (authorUid && usersMap[authorUid]) usersMap[authorUid].docsCount++;
+
+            // Like Count extraction: integer only
+            let likeCount = 0;
+            if (typeof data.likes === 'number') likeCount = data.likes;
+            else if (Array.isArray(data.likedBy)) likeCount = data.likedBy.length;
+            else if (Array.isArray(data.likes)) likeCount = data.likes.length;
+            else if (typeof data.likes === 'string' && data.likes) likeCount = data.likes.split(',').filter(Boolean).length;
+
+            docs.push({
               id: d.id,
               type: data.category || "T&N",
               category: data.category || "T&N",
@@ -2149,211 +1823,278 @@
               subject: data.subject || data.course || "Academic Document",
               course: data.course || "BCA",
               semester: String(data.semester || "1"),
-              contributor: data.uploaderName || data.contributorName || "Verified Scholar",
-              views: data.views || Math.floor(Math.random() * 400 + 80),
-              likes: data.likes || Math.floor(Math.random() * 60 + 10),
+              uploader: data.uploaderName || data.contributorName || (usersMap[authorUid] ? usersMap[authorUid].name : "Verified Scholar"),
+              uploaderUid: authorUid,
+              uploaderPhoto: (usersMap[authorUid] && usersMap[authorUid].photoURL) || "https://dpgnotes.web.app/ANH.png",
+              views: data.views || 0,
+              likes: likeCount,
+              date: data.createdAt ? new Date(data.createdAt.seconds ? data.createdAt.seconds * 1000 : data.createdAt).toLocaleDateString() : "Recent",
               url: `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(d.id)}`
             });
           }
         });
 
-        // 2. Solutions
-        solSnap.forEach(solDoc => {
-          const data = solDoc.data();
-          const parentPath = solDoc.ref.path || '';
-          const isPractical = parentPath.includes("practical_solutions") || data.type === "practical" || (data.id && data.id.startsWith("prac_"));
-          const categoryName = isPractical ? "Practical Solution" : "Assignment Solution";
+        // Solutions
+        solSnap.forEach(sDoc => {
+          const s = sDoc.data();
+          const parentPath = sDoc.ref.path || '';
+          const isPractical = parentPath.includes("practical_solutions") || s.type === "practical" || (s.id && s.id.startsWith("prac_"));
+          const solType = isPractical ? "Practical Solution" : "Assignment Solution";
           const viewerBase = isPractical ? "PracticalSolution/index.html" : "AssignmentSolution/index.html";
-          const contribUid = data.contributorUid || data.userId || "";
-          const targetUrl = `${viewerBase}?id=${encodeURIComponent(data.id || solDoc.id)}${contribUid ? '&contributor=' + encodeURIComponent(contribUid) : ''}`;
+          const authorUid = s.contributorUid || s.userId || "";
+          if (authorUid && usersMap[authorUid]) usersMap[authorUid].docsCount++;
 
-          if (data.subjectName || data.title) {
-            liveFetched.push({
-              id: solDoc.id,
-              type: categoryName,
-              category: categoryName,
-              title: data.assignmentTitle || data.title || `${data.subjectName || 'Academic'} Solution`,
-              subject: data.subjectName || "Computer Science",
-              course: data.course || "BCA",
-              semester: String(data.semester || "5"),
-              contributor: data.contributorName || data.studentName || "Verified Contributor",
-              views: data.views || Math.floor(Math.random() * 600 + 100),
-              likes: data.likes || Math.floor(Math.random() * 70 + 20),
-              url: targetUrl
-            });
-          }
+          let likeCount = 0;
+          if (typeof s.likes === 'number') likeCount = s.likes;
+          else if (Array.isArray(s.likedBy)) likeCount = s.likedBy.length;
+          else if (Array.isArray(s.likes)) likeCount = s.likes.length;
+
+          docs.push({
+            id: s.id || sDoc.id,
+            type: solType,
+            category: solType,
+            title: s.assignmentTitle || s.title || `${s.subjectName || 'Course'} Solution`,
+            subject: s.subjectName || "Computer Science",
+            course: s.course || "BCA",
+            semester: String(s.semester || "5"),
+            uploader: s.contributorName || s.studentName || (usersMap[authorUid] ? usersMap[authorUid].name : "Verified Contributor"),
+            uploaderUid: authorUid,
+            uploaderPhoto: (usersMap[authorUid] && usersMap[authorUid].photoURL) || "https://dpgnotes.web.app/ANH.png",
+            views: s.views || 0,
+            likes: likeCount,
+            date: s.createdAt ? new Date(s.createdAt.seconds ? s.createdAt.seconds * 1000 : s.createdAt).toLocaleDateString() : "Recent",
+            url: `${viewerBase}?id=${encodeURIComponent(s.id || sDoc.id)}${authorUid ? '&contributor=' + encodeURIComponent(authorUid) : ''}`
+          });
         });
 
-        // 3. Quizzes
+        // Quizzes
         qzSnap.forEach(qDoc => {
-          const data = qDoc.data();
-          if (data.title && data.visibility !== "private") {
-            liveFetched.push({
+          const q = qDoc.data();
+          if (q.title && q.visibility !== "private") {
+            const authorUid = q.ownerUid || q.contributorUid || "";
+            if (authorUid && usersMap[authorUid]) usersMap[authorUid].docsCount++;
+
+            let likeCount = 0;
+            if (typeof q.likes === 'number') likeCount = q.likes;
+            else if (Array.isArray(q.likedBy)) likeCount = q.likedBy.length;
+            else if (Array.isArray(q.likes)) likeCount = q.likes.length;
+
+            docs.push({
               id: qDoc.id,
               type: "Quiz",
               category: "Quiz",
-              title: data.title,
-              subject: data.subject || "Academic Assessment",
-              course: data.course || "BCA",
-              semester: String(data.semester || "3"),
-              contributor: data.contributorName || "Quiz Master",
-              views: data.totalAttempts || Math.floor(Math.random() * 500 + 50),
-              likes: data.likes || Math.floor(Math.random() * 50 + 15),
-              questionsCount: data.totalQuestions || 15,
-              url: `Quizes/index.html?quizId=${encodeURIComponent(data.quizId || qDoc.id)}`
+              title: q.title,
+              subject: q.subjectName || q.subject || "Academic Assessment",
+              course: q.course || "BCA",
+              semester: String(q.semester || "3"),
+              uploader: q.ownerName || q.authorName || q.contributorName || "Quiz Master",
+              uploaderUid: authorUid,
+              uploaderPhoto: (usersMap[authorUid] && usersMap[authorUid].photoURL) || "https://dpgnotes.web.app/ANH.png",
+              views: q.totalAttempts || q.views || 0,
+              likes: likeCount,
+              totalQuestions: q.totalQuestions || 15,
+              timeMinutes: q.timeMinutes || 20,
+              rawQuestions: q.questions || [],
+              date: q.createdAt ? new Date(q.createdAt.seconds ? q.createdAt.seconds * 1000 : q.createdAt).toLocaleDateString() : "Recent",
+              url: `Quizes/index.html?quizId=${encodeURIComponent(q.quizId || qDoc.id)}`
             });
           }
         });
 
-        // Merge live data with catalog, eliminating duplicate IDs
-        const existingIds = new Set(liveFetched.map(r => r.id));
-        const merged = [...liveFetched];
-        academicSeedCatalog.forEach(seed => {
-          if (!existingIds.has(seed.id)) {
-            merged.push(seed);
-          }
+        const contributors = Object.values(usersMap).filter(u => u.docsCount > 0 || u.uid).sort((a, b) => b.docsCount - a.docsCount);
+
+        const stats = {
+          totalResources: docs.length,
+          totalContributors: Math.max(contributors.length, 12)
+        };
+
+        allDocsList = docs;
+        allContributorsList = contributors;
+
+        // Save into IndexedDB with current timestamp
+        await setInIDB("academic_cache", {
+          key: "study_hub_catalog",
+          docs,
+          contributors,
+          stats,
+          timestamp: Date.now()
         });
 
-        allResources = merged;
-
-        // Cache the combined collection
-        try {
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-            data: allResources,
-            timestamp: Date.now()
-          }));
-        } catch (e) {}
-
-      } catch (fetchErr) {
-        console.warn("[Study Hub] Firestore fetch bypassed, operating on seed catalog:", fetchErr);
-        allResources = academicSeedCatalog;
+        updateMetricsUI(stats);
+        renderCategorizedResources();
+        renderContributorsUI();
+        initQuizChallenge();
+      } catch (err) {
+        console.warn("[Study Hub] Sync fallback notice:", err.message);
       }
+    }
 
-      renderResources();
+    function updateMetricsUI(stats) {
+      if (!stats) return;
+      const resEl = document.getElementById("statAcademicResources");
+      const contribEl = document.getElementById("statVerifiedContributors");
+      if (resEl) resEl.textContent = stats.totalResources > 0 ? stats.totalResources : "75+";
+      if (contribEl) contribEl.textContent = stats.totalContributors > 0 ? stats.totalContributors : "28+";
     }
 
     /* ==========================================================================
-       E. MINI SEARCH ENGINE: DYNAMIC FILTERING & CARD RENDERING
+       D. CARD RENDERING (Matching index.html Curated Library Style)
        ========================================================================== */
-    let activeSection = "all";
+    let activeCategory = "all";
     let activeSemester = "all";
     let searchQuery = "";
 
-    function getBadgeClass(category) {
-      if (category === "Quiz") return "badge-quiz";
-      if (category === "Assignment Solution") return "badge-assign";
-      if (category === "Practical Solution") return "badge-prac";
-      if (category === "Event Material") return "badge-event";
-      if (category === "SP" || category === "UE" || category === "SE") return "badge-paper";
-      return "badge-notes";
+    function renderCardHTML(item) {
+      const isQuiz = item.category === "Quiz";
+      const isSol = item.category === "Assignment Solution" || item.category === "Practical Solution";
+      let badgeColor = "#6366f1";
+      let badgeIcon = "ri-book-open-line";
+
+      if (isQuiz) {
+        badgeColor = "#8b5cf6";
+        badgeIcon = "ri-questionnaire-line";
+      } else if (item.category === "Practical Solution") {
+        badgeColor = "#10b981";
+        badgeIcon = "ri-flask-line";
+      } else if (item.category === "Assignment Solution") {
+        badgeColor = "#06b6d4";
+        badgeIcon = "ri-file-code-line";
+      } else if (item.category === "SP" || item.category === "UE" || item.category === "SE") {
+        badgeColor = "#3b82f6";
+        badgeIcon = "ri-file-paper-2-line";
+      }
+
+      const badgeLabel = isQuiz ? `Quiz (${item.totalQuestions || 15} Qs)` : (item.category || "Note");
+      const profileUrl = item.uploaderUid ? `profile.html?uid=${encodeURIComponent(item.uploaderUid)}` : `profile.html`;
+      const actionText = isQuiz ? "Attempt Quiz" : (isSol ? "View Solution" : "Open & Read Notes");
+      const actionIcon = isQuiz ? "ri-pencil-line" : "ri-arrow-right-line";
+
+      return `
+        <div class="academic-res-card">
+          <div class="res-card-top">
+            <span class="res-badge-cat" style="color:${badgeColor}; border-color:${badgeColor}40; background:${badgeColor}15;">
+              <i class="${badgeIcon}"></i> ${escapeHtml(badgeLabel)}
+            </span>
+            <span class="res-badge-disc">${escapeHtml(item.course || 'BCA')}${item.semester && item.semester !== 'all' ? ' &bull; Sem ' + item.semester : ''}</span>
+          </div>
+
+          <h4 class="res-card-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</h4>
+
+          <div class="res-card-meta">
+            <span style="display:inline-flex; align-items:center; gap:6px;">
+              <a href="${profileUrl}" style="display:inline-flex; align-items:center; text-decoration:none;">
+                <img src="${escapeHtml(item.uploaderPhoto || 'ANH.png')}"
+                     class="contributor-photo-trigger"
+                     data-contrib-uid="${escapeHtml(item.uploaderUid || '')}"
+                     data-contrib-name="${escapeHtml(item.uploader || 'Verified Contributor')}"
+                     alt="${escapeHtml(item.uploader || 'Contributor')}"
+                     style="width:22px; height:22px; border-radius:50%; object-fit:cover; border:1px solid ${badgeColor}; vertical-align:middle; cursor:pointer;"
+                     onerror="this.onerror=null; this.src='ANH.png';">
+              </a>
+              <a href="${profileUrl}" class="contributor-name-link" data-contrib-uid="${escapeHtml(item.uploaderUid || '')}" data-contrib-name="${escapeHtml(item.uploader || 'Contributor')}" style="color:inherit; font-size:0.78rem; font-weight:600; text-decoration:none;">
+                ${escapeHtml(item.uploader || 'Contributor')}
+              </a>
+            </span>
+            <span style="display:inline-flex; align-items:center; gap:4px;">
+              <i class="ri-heart-line" style="color:#f43f5e;"></i> ${item.likes || 0}
+            </span>
+          </div>
+
+          <div class="res-card-actions">
+            <a href="${escapeHtml(item.url)}" class="btn-res-action" style="background:${badgeColor}; color:#ffffff;">
+              <i class="${actionIcon}"></i> ${actionText}
+            </a>
+          </div>
+        </div>
+      `;
     }
 
-    function getCategoryIcon(category) {
-      if (category === "Quiz") return "ri-questionnaire-line";
-      if (category === "Assignment Solution") return "ri-file-text-line";
-      if (category === "Practical Solution") return "ri-code-box-line";
-      if (category === "Event Material") return "ri-calendar-event-line";
-      if (category === "SP" || category === "UE" || category === "SE") return "ri-file-paper-2-line";
-      return "ri-book-open-line";
-    }
-
-    function getActionLabel(category) {
-      if (category === "Quiz") return "Take Interactive Quiz";
-      if (category === "Assignment Solution" || category === "Practical Solution") return "View Full Solution";
-      return "Open & Read Notes";
-    }
-
-    function renderResources() {
-      const grid = document.getElementById("resourcesGrid");
-      const counter = document.getElementById("resultsCountIndicator");
-      if (!grid) return;
-
+    function renderCategorizedResources() {
       const q = searchQuery.toLowerCase().trim();
 
-      const filtered = allResources.filter(item => {
-        // Section Filter
-        if (activeSection !== "all") {
+      const filterItems = (list) => list.filter(item => {
+        if (activeCategory !== "all") {
           const itemCat = (item.category || item.type || "").toLowerCase();
-          const matchCat = activeSection.toLowerCase();
-          if (itemCat !== matchCat) return false;
+          if (itemCat !== activeCategory.toLowerCase()) return false;
         }
-
-        // Semester Filter
         if (activeSemester !== "all") {
           const itemSem = String(item.semester || "");
           if (itemSem !== activeSemester && itemSem !== "all") return false;
         }
-
-        // Search Query Filter
         if (q) {
-          const haystack = `${item.title || ''} ${item.subject || ''} ${item.course || ''} ${item.contributor || ''} ${item.category || ''}`.toLowerCase();
-          if (!haystack.includes(q)) return false;
+          const text = `${item.title || ''} ${item.subject || ''} ${item.course || ''} ${item.uploader || ''} ${item.category || ''}`.toLowerCase();
+          if (!text.includes(q)) return false;
         }
-
         return true;
       });
 
-      // Update count text
-      if (counter) {
-        counter.textContent = `Showing ${filtered.length} of ${allResources.length} verified resources`;
+      const filteredAll = filterItems(allDocsList);
+
+      const countInd = document.getElementById("resultsCountIndicator");
+      if (countInd) {
+        countInd.textContent = `Showing ${filteredAll.length} verified academic resources`;
       }
 
-      if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div class="empty-search-state glass-card">
-            <div class="empty-search-icon"><i class="ri-search-line"></i></div>
-            <div class="empty-search-title">No matching study materials found</div>
-            <p class="empty-search-desc">
-              We couldn't find any documents or quizzes matching "<strong>${escapeHtml(searchQuery)}</strong>". Try adjusting your keywords or clearing the category filter.
-            </p>
-            <button type="button" class="chip-btn active" onclick="resetFilters()">
-              <i class="ri-refresh-line"></i> Reset All Filters
-            </button>
-          </div>
-        `;
-        return;
+      // 1. Quizzes (Rendered on top of Solutions)
+      const quizzes = filteredAll.filter(d => d.category === "Quiz");
+      const quizSection = document.getElementById("hubSection_QUIZ");
+      const quizWrapper = document.getElementById("cardsWrapper_QUIZ");
+      const quizCount = document.getElementById("countBadge_QUIZ");
+      if (quizzes.length > 0) {
+        if (quizSection) quizSection.style.display = "block";
+        if (quizCount) quizCount.textContent = `${quizzes.length} Items`;
+        if (quizWrapper) quizWrapper.innerHTML = quizzes.slice(0, 6).map(renderCardHTML).join("");
+      } else {
+        if (quizSection) quizSection.style.display = "none";
       }
 
-      grid.innerHTML = filtered.map(item => {
-        const badgeCls = getBadgeClass(item.category);
-        const iconCls = getCategoryIcon(item.category);
-        const actionText = getActionLabel(item.category);
-        const initials = (item.contributor || "VS").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+      // 2. Solutions
+      const solutions = filteredAll.filter(d => d.category === "Assignment Solution" || d.category === "Practical Solution");
+      const solSection = document.getElementById("hubSection_SOLUTIONS");
+      const solWrapper = document.getElementById("cardsWrapper_SOLUTIONS");
+      const solCount = document.getElementById("countBadge_SOLUTIONS");
+      if (solutions.length > 0) {
+        if (solSection) solSection.style.display = "block";
+        if (solCount) solCount.textContent = `${solutions.length} Items`;
+        if (solWrapper) solWrapper.innerHTML = solutions.slice(0, 6).map(renderCardHTML).join("");
+      } else {
+        if (solSection) solSection.style.display = "none";
+      }
 
-        return `
-          <article class="resource-card glass-card" data-id="${escapeHtml(item.id)}">
-            <div class="card-top-row">
-              <span class="category-badge ${badgeCls}">
-                <i class="${iconCls}"></i> ${escapeHtml(item.category || item.type)}
-              </span>
-              <span class="course-sem-tag">${escapeHtml(item.course || 'BCA')}${item.semester && item.semester !== 'all' ? ' &bull; Sem ' + item.semester : ''}</span>
-            </div>
+      // 3. Sessional Exam Papers (SE)
+      const seList = filteredAll.filter(d => d.category === "SE");
+      renderSubSection("SE", seList);
 
-            <h3 class="card-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</h3>
-            <div class="card-subject">
-              <i class="ri-bookmark-3-line" style="color: var(--accent-primary);"></i>
-              <span>${escapeHtml(item.subject || 'Academic Module')}</span>
-            </div>
+      // 4. Sample Papers (SP)
+      const spList = filteredAll.filter(d => d.category === "SP");
+      renderSubSection("SP", spList);
 
-            <div class="card-meta-row">
-              <div class="card-contributor">
-                <div class="contributor-avatar">${initials}</div>
-                <span>${escapeHtml(item.contributor || 'Verified Scholar')}</span>
-              </div>
-              <div class="card-stats">
-                ${item.questionsCount ? `<span><i class="ri-questionnaire-line"></i> ${item.questionsCount} Qs</span>` : ''}
-                <span><i class="ri-eye-line"></i> ${item.views || 0}</span>
-                <span><i class="ri-heart-line"></i> ${item.likes || 0}</span>
-              </div>
-            </div>
+      // 5. University Exams (UE)
+      const ueList = filteredAll.filter(d => d.category === "UE");
+      renderSubSection("UE", ueList);
 
-            <a href="${escapeHtml(item.url)}" class="card-action-btn" aria-label="${actionText}: ${escapeHtml(item.title)}">
-              <span>${actionText}</span>
-              <i class="ri-arrow-right-line"></i>
-            </a>
-          </article>
-        `;
-      }).join("");
+      // 6. Tutorials & Notes (T&N)
+      const tnList = filteredAll.filter(d => d.category === "T&N");
+      renderSubSection("TN", tnList);
+
+      // Zero State
+      const zeroEl = document.getElementById("hubZeroState");
+      if (zeroEl) {
+        zeroEl.style.display = filteredAll.length === 0 ? "block" : "none";
+      }
+    }
+
+    function renderSubSection(secId, items) {
+      const section = document.getElementById(`hubSection_${secId}`);
+      const wrapper = document.getElementById(`cardsWrapper_${secId}`);
+      const count = document.getElementById(`countBadge_${secId}`);
+      if (items.length > 0) {
+        if (section) section.style.display = "block";
+        if (count) count.textContent = `${items.length} Items`;
+        if (wrapper) wrapper.innerHTML = items.slice(0, 6).map(renderCardHTML).join("");
+      } else {
+        if (section) section.style.display = "none";
+      }
     }
 
     function escapeHtml(str) {
@@ -2366,8 +2107,8 @@
         .replace(/'/g, "&#039;");
     }
 
-    window.resetFilters = function() {
-      activeSection = "all";
+    window.resetHubFilters = function() {
+      activeCategory = "all";
       activeSemester = "all";
       searchQuery = "";
       const searchInput = document.getElementById("hubSearchInput");
@@ -2382,30 +2123,26 @@
         btn.classList.toggle("active", btn.getAttribute("data-sem") === "all");
       });
 
-      renderResources();
+      renderCategorizedResources();
     };
 
-    // Filter Chips Event Listeners
+    // Filter Chips Listeners
     document.querySelectorAll(".chip-btn[data-section]").forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".chip-btn[data-section]").forEach(b => {
-          b.classList.remove("active");
-          b.setAttribute("aria-selected", "false");
-        });
+        document.querySelectorAll(".chip-btn[data-section]").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        btn.setAttribute("aria-selected", "true");
-        activeSection = btn.getAttribute("data-section");
-        renderResources();
+        activeCategory = btn.getAttribute("data-section");
+        renderCategorizedResources();
       });
     });
 
-    // Semester Pills Event Listeners
+    // Semester Pills Listeners
     document.querySelectorAll(".sem-pill[data-sem]").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".sem-pill[data-sem]").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         activeSemester = btn.getAttribute("data-sem");
-        renderResources();
+        renderCategorizedResources();
       });
     });
 
@@ -2415,10 +2152,8 @@
 
     searchInput?.addEventListener("input", (e) => {
       searchQuery = e.target.value;
-      if (clearBtn) {
-        clearBtn.classList.toggle("visible", searchQuery.length > 0);
-      }
-      renderResources();
+      if (clearBtn) clearBtn.classList.toggle("visible", searchQuery.length > 0);
+      renderCategorizedResources();
     });
 
     clearBtn?.addEventListener("click", () => {
@@ -2427,44 +2162,131 @@
         searchQuery = "";
         clearBtn.classList.remove("visible");
         searchInput.focus();
-        renderResources();
+        renderCategorizedResources();
       }
     });
 
-    // Keyboard shortcut (Press '/' or Ctrl+K to search)
     window.addEventListener("keydown", (e) => {
       if (e.key === "/" && document.activeElement !== searchInput) {
         e.preventDefault();
         searchInput?.focus();
       }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        searchInput?.focus();
-      }
     });
 
-    // Initialize Catalog Fetch
-    loadResources();
-
     /* ==========================================================================
-       F. INTERACTIVE QUIZ SIMULATOR HANDLER
+       E. DPG COINS ECONOMY & LIVE PUBLIC QUIZ ENGINE
        ========================================================================== */
-    window.handleDemoAnswer = function(buttonEl, isCorrect, explanation) {
-      const optionsContainer = document.getElementById("demoOptionsList");
-      const feedbackBox = document.getElementById("demoFeedbackBox");
-      if (!optionsContainer || !feedbackBox) return;
+    const COINS_LOCAL_KEY = "dpg_user_coins_balance";
+    let userCoins = parseInt(localStorage.getItem(COINS_LOCAL_KEY) || "50", 10);
 
-      // Disable buttons
-      optionsContainer.querySelectorAll(".quiz-option-btn").forEach(btn => {
-        btn.disabled = true;
-        btn.style.pointerEvents = "none";
-        if (btn.getAttribute("data-correct") === "true") {
-          btn.classList.add("correct");
-        }
+    function updateCoinsDisplay() {
+      document.querySelectorAll("#hubHeaderCoinsCount, #simUserCoinsCount").forEach(el => {
+        el.textContent = userCoins;
+      });
+      localStorage.setItem(COINS_LOCAL_KEY, String(userCoins));
+    }
+
+    updateCoinsDisplay();
+
+    // 15 Standard Arithmetic Fallback Questions
+    const arithmeticQuestions = [
+      { q: "Calculate: 144 ÷ 12 + 25 × 2", opts: ["62", "58", "64", "52"], a: 0, exp: "144 ÷ 12 = 12; 25 × 2 = 50; 12 + 50 = 62." },
+      { q: "What is 15% of 480?", opts: ["72", "68", "76", "64"], a: 0, exp: "10% is 48; 5% is 24; 48 + 24 = 72." },
+      { q: "Solve: (7 × 8) - (36 ÷ 4)", opts: ["47", "49", "51", "45"], a: 0, exp: "56 - 9 = 47." },
+      { q: "What is the square of 24?", opts: ["576", "526", "586", "566"], a: 0, exp: "24 × 24 = 576." },
+      { q: "If x + 18 = 45, what is x?", opts: ["27", "29", "25", "31"], a: 0, exp: "45 - 18 = 27." },
+      { q: "Calculate: 2^6 - 14", opts: ["50", "48", "52", "46"], a: 0, exp: "64 - 14 = 50." },
+      { q: "What is 3/5 of 250?", opts: ["150", "125", "175", "140"], a: 0, exp: "250 ÷ 5 = 50; 50 × 3 = 150." },
+      { q: "Simplify: 18 × 4 + 16", opts: ["88", "84", "92", "86"], a: 0, exp: "72 + 16 = 88." },
+      { q: "What is the prime number between 24 and 30?", opts: ["29", "25", "27", "26"], a: 0, exp: "29 has no divisors other than 1 and itself." },
+      { q: "Calculate: (120 - 45) ÷ 5", opts: ["15", "14", "16", "18"], a: 0, exp: "75 ÷ 5 = 15." },
+      { q: "Evaluate: 9 × 11 + 33 ÷ 3", opts: ["110", "108", "112", "115"], a: 0, exp: "99 + 11 = 110." },
+      { q: "What is the cube of 6?", opts: ["216", "196", "226", "206"], a: 0, exp: "6 × 6 × 6 = 216." },
+      { q: "Find the average of 12, 18, and 30:", opts: ["20", "18", "22", "24"], a: 0, exp: "(12 + 18 + 30) ÷ 3 = 60 ÷ 3 = 20." },
+      { q: "Calculate: 450 ÷ 15 - 8", opts: ["22", "24", "20", "26"], a: 0, exp: "30 - 8 = 22." },
+      { q: "If 4y = 68, what is y?", opts: ["17", "16", "18", "19"], a: 0, exp: "68 ÷ 4 = 17." }
+    ];
+
+    let currentSimQuestion = null;
+
+    function initQuizChallenge() {
+      const titleEl = document.getElementById("simQuizTitle");
+      const qTextEl = document.getElementById("simQuestionText");
+      const optsEl = document.getElementById("simOptionsContainer");
+      if (!titleEl || !qTextEl || !optsEl) return;
+
+      // Check if real public quiz exists in allDocsList
+      const publicQuizzes = allDocsList.filter(d => d.category === "Quiz" && Array.isArray(d.rawQuestions) && d.rawQuestions.length > 0);
+
+      if (publicQuizzes.length > 0) {
+        const pickedQuiz = publicQuizzes[Math.floor(Math.random() * publicQuizzes.length)];
+        titleEl.textContent = pickedQuiz.title || "Academic Assessment Challenge";
+        const qItem = pickedQuiz.rawQuestions[Math.floor(Math.random() * pickedQuiz.rawQuestions.length)];
+
+        currentSimQuestion = {
+          q: qItem.question || qItem.q || "Review the academic statement and select the verified option:",
+          opts: qItem.options || qItem.opts || ["Option A", "Option B", "Option C", "Option D"],
+          correctIndex: typeof qItem.correctAnswer === 'number' ? qItem.correctAnswer : (typeof qItem.answer === 'number' ? qItem.answer : 0),
+          exp: qItem.explanation || "Verified response confirmed from curriculum documentation."
+        };
+      } else {
+        // Fallback: Arithmetic Speed Quiz
+        titleEl.textContent = "Test Your Arithmetic Speed";
+        const pick = arithmeticQuestions[Math.floor(Math.random() * arithmeticQuestions.length)];
+        currentSimQuestion = {
+          q: pick.q,
+          opts: pick.opts,
+          correctIndex: pick.a,
+          exp: pick.exp
+        };
+      }
+
+      renderSimulatorQuestion();
+    }
+
+    function renderSimulatorQuestion() {
+      const qTextEl = document.getElementById("simQuestionText");
+      const optsEl = document.getElementById("simOptionsContainer");
+      const feedbackBox = document.getElementById("simFeedbackBox");
+      if (!qTextEl || !optsEl) return;
+
+      if (feedbackBox) feedbackBox.style.display = "none";
+      qTextEl.textContent = currentSimQuestion.q;
+
+      const letters = ["A", "B", "C", "D"];
+      optsEl.innerHTML = currentSimQuestion.opts.map((opt, idx) => `
+        <button type="button" class="quiz-option-btn" onclick="window.submitSimAnswer(${idx}, this)">
+          <span style="font-weight:700; color:var(--accent-primary);">${letters[idx] || (idx + 1)}.</span>
+          <span>${escapeHtml(opt)}</span>
+        </button>
+      `).join("");
+    }
+
+    window.submitSimAnswer = async function(selectedIndex, btnEl) {
+      const optsEl = document.getElementById("simOptionsContainer");
+      const feedbackBox = document.getElementById("simFeedbackBox");
+      if (!optsEl || !feedbackBox) return;
+
+      optsEl.querySelectorAll(".quiz-option-btn").forEach(b => {
+        b.disabled = true;
+        b.style.pointerEvents = "none";
       });
 
+      const isCorrect = selectedIndex === currentSimQuestion.correctIndex;
+      const coinDelta = isCorrect
+        ? (isContributor ? 12 : 8)
+        : (isContributor ? -5 : -3);
+
+      userCoins = Math.max(0, userCoins + coinDelta);
+      updateCoinsDisplay();
+
+      // Highlight options
+      const buttons = optsEl.querySelectorAll(".quiz-option-btn");
+      if (buttons[currentSimQuestion.correctIndex]) {
+        buttons[currentSimQuestion.correctIndex].classList.add("correct");
+      }
       if (!isCorrect) {
-        buttonEl.classList.add("wrong");
+        btnEl.classList.add("wrong");
       }
 
       feedbackBox.style.display = "block";
@@ -2472,27 +2294,83 @@
         feedbackBox.style.background = "rgba(16, 185, 129, 0.16)";
         feedbackBox.style.border = "1px solid var(--accent-emerald)";
         feedbackBox.style.color = "var(--text-main)";
-        feedbackBox.innerHTML = `<strong><i class="ri-checkbox-circle-fill" style="color: var(--accent-emerald);"></i> Correct Answer!</strong><br>${explanation}`;
+        feedbackBox.innerHTML = `
+          <strong><i class="ri-checkbox-circle-fill" style="color:var(--accent-emerald);"></i> Correct Answer! (+${coinDelta} DPGCoins)</strong><br>
+          ${escapeHtml(currentSimQuestion.exp)}
+        `;
       } else {
         feedbackBox.style.background = "rgba(239, 68, 68, 0.16)";
         feedbackBox.style.border = "1px solid #ef4444";
         feedbackBox.style.color = "var(--text-main)";
-        feedbackBox.innerHTML = `<strong><i class="ri-close-circle-fill" style="color: #ef4444;"></i> Incorrect Selection.</strong><br>${explanation}`;
+        feedbackBox.innerHTML = `
+          <strong><i class="ri-close-circle-fill" style="color:#ef4444;"></i> Incorrect Selection (${coinDelta} DPGCoins)</strong><br>
+          ${escapeHtml(currentSimQuestion.exp)}
+        `;
+      }
+
+      // Record transaction in IndexedDB
+      await setInIDB("dpg_coins_wallet", {
+        id: "tx_" + Date.now(),
+        delta: coinDelta,
+        balance: userCoins,
+        timestamp: Date.now(),
+        isContributor,
+        targetAccount: "its.akshatnetworkhub23@gmail.com"
+      });
+
+      // Periodically sync contributor coins to Firestore (4-hour interval)
+      if (currentUser && isContributor) {
+        const lastSync = parseInt(localStorage.getItem("dpg_coins_last_sync") || "0", 10);
+        if (Date.now() - lastSync > 4 * 60 * 60 * 1000) {
+          try {
+            await setDoc(doc(db, "users", currentUser.uid), {
+              dpgCoins: userCoins,
+              coinsLastUpdated: serverTimestamp()
+            }, { merge: true });
+            localStorage.setItem("dpg_coins_last_sync", String(Date.now()));
+          } catch(e) {}
+        }
       }
     };
 
-    /* ==========================================================================
-       G. FAQ ACCORDION HANDLER
-       ========================================================================== */
-    window.toggleFaq = function(buttonEl) {
-      const item = buttonEl.closest(".faq-item");
-      if (!item) return;
-      const isOpen = item.classList.contains("open");
-      document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("open"));
-      if (!isOpen) {
-        item.classList.add("open");
-      }
+    window.showCoinsModal = function() {
+      alert(`Your DPG Coins Balance: ${userCoins} DPGCoins\n\nEarn more by answering public quizzes (+8 Guest / +12 Contributor).\nRedeem coins for Utilities Unlimited Tokens, Full Resource Access, or settle Native Ads Bills!`);
     };
+
+    /* ==========================================================================
+       F. TOP CONTRIBUTORS SECTION (Real Data Only)
+       ========================================================================== */
+    function renderContributorsUI() {
+      const grid = document.getElementById("contributorsGrid");
+      if (!grid) return;
+
+      const validList = allContributorsList.slice(0, 8);
+      if (validList.length === 0) {
+        grid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem;">Verified contributor directory loading...</div>';
+        return;
+      }
+
+      grid.innerHTML = validList.map(c => `
+        <div class="contributor-box">
+          <img src="${escapeHtml(c.photoURL || 'ANH.png')}"
+               class="contrib-avatar-img contributor-photo-trigger"
+               data-contrib-uid="${escapeHtml(c.uid)}"
+               data-contrib-name="${escapeHtml(c.name)}"
+               alt="${escapeHtml(c.name)}"
+               onerror="this.onerror=null; this.src='ANH.png';">
+          <div class="contrib-details">
+            <a href="profile.html?uid=${encodeURIComponent(c.uid)}" class="contrib-name contributor-name-link" data-contrib-uid="${escapeHtml(c.uid)}" data-contrib-name="${escapeHtml(c.name)}">
+              ${escapeHtml(c.name)}
+            </a>
+            <span class="contrib-role">${escapeHtml(c.role || 'Contributor')} &bull; ${escapeHtml(c.discipline || 'Computer Science')}</span>
+            <span class="contrib-stats">${c.docsCount || 0} Verified Materials</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // Initialize Data Sync
+    syncAcademicData();
   </script>
 </body>
 </html>

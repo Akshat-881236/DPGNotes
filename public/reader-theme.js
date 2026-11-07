@@ -61,8 +61,8 @@
         <button type="button" class="dpg-rc-btn dpg-rc-theme-btn ${currentTheme === 'dark' ? 'active' : ''}" data-target-theme="dark" onclick="window.setReaderTheme('dark')" title="OLED Pure Dark Contrast Theme" aria-label="OLED Pure Dark Contrast Theme">
           <i class="ri-moon-clear-line" style="color:#a78bfa;"></i>
         </button>
-        <span class="dpg-rc-divider"></span>
       </div>
+      <span class="dpg-rc-divider"></span>
       <div class="dpg-rc-row dpg-rc-font-row">
         <button type="button" class="dpg-rc-btn dpg-rc-font-btn" onclick="window.cycleFontSize(-1)" title="Decrease Text Size" aria-label="Decrease Text Size">
           <span class="dpg-font-tt-label">T<span class="dpg-font-sub">T</span> -</span>

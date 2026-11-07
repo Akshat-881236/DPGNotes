@@ -10,8 +10,8 @@
     style.textContent = `
       .added-notes {
         width: 100%;
-        max-width: 860px;
-        margin: 2rem auto;
+        max-width: 830px;
+        margin: 1.15rem auto;
         padding: 1.75rem 2rem;
         background: linear-gradient(145deg, #0b0f19 0%, #131728 50%, #1e1b4b 100%);
         border: 1px solid rgba(139, 92, 246, 0.35);
@@ -24,6 +24,8 @@
         box-sizing: border-box;
         position: relative;
         overflow: hidden;
+        overflow-wrap: anywhere;
+        word-break: break-word;
         animation: fadeInNote 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       }
       @keyframes fadeInNote {
@@ -292,39 +294,58 @@
         align-items: center;
         gap: 8px;
       }
-      @media (max-width: 640px) {
+      @media (max-width: 1024px) {
         .added-notes {
-          padding: 1.2rem 1rem;
-          margin: 1.2rem auto;
-          border-radius: 12px;
+          width: 100% !important;
+          max-width: 96% !important;
+          margin: 1rem auto !important;
+          padding: 1.35rem 1.25rem !important;
+        }
+      }
+      @media (max-width: 768px) {
+        .added-notes {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0.85rem auto !important;
+          padding: 1.1rem 0.85rem !important;
+          border-radius: 12px !important;
         }
         .added-notes-header {
-          gap: 0.75rem;
-          padding-bottom: 0.9rem;
-          margin-bottom: 1.1rem;
+          gap: 0.75rem !important;
+          padding-bottom: 0.85rem !important;
+          margin-bottom: 1rem !important;
         }
         .added-notes-header-top {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 0.75rem;
+          flex-direction: column !important;
+          align-items: stretch !important;
+          gap: 0.75rem !important;
         }
         .added-notes-actions {
-          justify-content: flex-end;
-          width: 100%;
+          justify-content: flex-start !important;
+          width: 100% !important;
+          flex-wrap: wrap !important;
         }
         .added-notes-title {
-          font-size: 1.22rem;
-          line-height: 1.35;
+          font-size: 1.22rem !important;
+          line-height: 1.35 !important;
         }
         .added-notes-body {
-          font-size: 0.92rem;
-          line-height: 1.68;
+          font-size: 0.92rem !important;
+          line-height: 1.68 !important;
+          max-width: 100% !important;
+          overflow-x: auto !important;
+        }
+        .added-notes-body img,
+        .added-notes-body table,
+        .added-notes-body pre {
+          max-width: 100% !important;
+          height: auto !important;
         }
         .added-notes-body h2 {
-          font-size: 1.12rem;
+          font-size: 1.12rem !important;
         }
         .added-notes-body h3 {
-          font-size: 0.98rem;
+          font-size: 0.98rem !important;
         }
       }
       /* Theme overrides for In-Document Notes */
