@@ -318,7 +318,7 @@
           width: calc(100% - 16px) !important;
           max-width: calc(100% - 16px) !important;
           margin: 0.85rem auto !important;
-          padding: 1.1rem 0.85rem !important;
+          padding: 1.15rem 1rem !important;
           border-radius: 12px !important;
           flex-shrink: 0 !important;
           flex-grow: 0 !important;
@@ -331,17 +331,28 @@
           margin-bottom: 1rem !important;
         }
         .added-notes-header-top {
-          flex-direction: column !important;
-          align-items: stretch !important;
-          gap: 0.65rem !important;
+          display: flex !important;
+          flex-direction: row !important;
+          justify-content: space-between !important;
+          align-items: flex-start !important;
+          flex-wrap: wrap !important;
+          gap: 0.75rem !important;
+          width: 100% !important;
+        }
+        .added-notes-title-wrap {
+          flex: 1 1 200px !important;
+          min-width: 0 !important;
         }
         .added-notes-actions {
-          justify-content: flex-start !important;
-          width: 100% !important;
-          flex-wrap: wrap !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+          gap: 8px !important;
+          flex-shrink: 0 !important;
+          margin-left: auto !important;
         }
         .added-notes-title {
-          font-size: 1.22rem !important;
+          font-size: 1.25rem !important;
           line-height: 1.35 !important;
           white-space: normal !important;
           overflow-wrap: break-word !important;
@@ -392,6 +403,14 @@
           font-size: 0.76rem !important;
           min-height: 30px !important;
         }
+        .added-notes-tags {
+          gap: 5px !important;
+        }
+        .added-notes-tag {
+          font-size: 0.72rem !important;
+          padding: 2px 8px !important;
+          border-radius: 6px !important;
+        }
         .added-notes-body {
           font-size: 0.9rem !important;
           line-height: 1.62 !important;
@@ -403,6 +422,17 @@
         .added-notes-body h3 {
           font-size: 0.95rem !important;
           margin: 0.75rem 0 0.35rem 0 !important;
+        }
+      }
+      @media (max-width: 440px) {
+        .added-notes-header-top {
+          gap: 0.6rem !important;
+        }
+        .added-notes-actions {
+          width: 100% !important;
+          justify-content: flex-start !important;
+          margin-left: 0 !important;
+          gap: 8px !important;
         }
       }
       @media (max-width: 380px) {
@@ -429,9 +459,13 @@
         .added-notes-header-top {
           gap: 0.5rem !important;
         }
+        .added-notes-tags {
+          gap: 4px !important;
+        }
         .added-notes-tag {
-          font-size: 0.7rem !important;
-          padding: 2px 7px !important;
+          font-size: 0.68rem !important;
+          padding: 2px 6px !important;
+          border-radius: 5px !important;
         }
         .added-notes-body {
           font-size: 0.88rem !important;

@@ -379,9 +379,9 @@
         -webkit-overflow-scrolling: touch !important;
       }
       .pdfpage{
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 auto 1.15rem !important;
+        width: calc(100% - 16px) !important;
+        max-width: calc(100% - 16px) !important;
+        margin: 0.85rem auto 1.15rem !important;
         min-height: auto !important;
         height: auto !important;
         border-radius: 9px !important;
@@ -406,6 +406,22 @@
         display: block !important;
         border-radius: 9px !important;
         box-sizing: border-box !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .pdfpage, .added-notes {
+        width: calc(100% - 12px) !important;
+        max-width: calc(100% - 12px) !important;
+        margin: 0.75rem auto 1rem !important;
+        border-radius: 10px !important;
+        box-sizing: border-box !important;
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+        height: auto !important;
+        min-height: fit-content !important;
+      }
+      .added-notes {
+        padding: 0.95rem 0.75rem !important;
       }
     }
     /* ========================================================
@@ -439,24 +455,27 @@
         flex-shrink: 0 !important;
         white-space: nowrap !important;
       }
+      .topbar .nbtn.icon-btn {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        font-size: 0.95rem !important;
+      }
       .sidebar {
         width: min(260px, 86vw) !important;
       }
       .pdfmain {
         padding: 0.5rem 0.15rem !important;
         scroll-behavior: smooth !important;
+        height: calc(100vh - 48px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
       }
-      .pdfpage {
-        margin: 0 auto 1.15rem !important;
-        min-height: auto !important;
-        height: auto !important;
-        border-radius: 9px !important;
-      }
-      .added-notes {
-        width: calc(100% - 12px) !important;
-        max-width: calc(100% - 12px) !important;
-        margin: 0.75rem auto 1rem !important;
-        padding: 0.95rem 0.75rem !important;
+      .pdfpage, .added-notes {
+        width: calc(100% - 10px) !important;
+        max-width: calc(100% - 10px) !important;
+        margin: 0.65rem auto 0.95rem !important;
+        padding: 0.85rem 0.65rem !important;
         border-radius: 10px !important;
         box-sizing: border-box !important;
         flex-shrink: 0 !important;
@@ -492,13 +511,7 @@
       .sidebar {
         width: 88vw !important;
       }
-      .pdfpage {
-        margin: 0 auto 1.15rem !important;
-        min-height: auto !important;
-        height: auto !important;
-        border-radius: 9px !important;
-      }
-      .added-notes {
+      .pdfpage, .added-notes {
         width: calc(100% - 8px) !important;
         max-width: calc(100% - 8px) !important;
         margin: 0.5rem auto 0.85rem !important;
@@ -511,28 +524,6 @@
         min-height: fit-content !important;
       }
     }
-    @media (max-width: 380px) {
-  .pdfmain {
-    padding: 0.5rem 0.15rem !important;
-    scroll-behavior: smooth !important;
-    /* FIX: Force height and scrolling */
-    height: calc(100vh - 48px) !important; /* Viewport minus topbar height */
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  .added-notes {
-    width: calc(100% - 10px) !important;
-    max-width: calc(100% - 10px) !important;
-    margin: 0.65rem auto 0.95rem !important;
-    padding: 0.85rem 0.65rem !important;
-    border-radius: 10px !important;
-    box-sizing: border-box !important;
-    flex-shrink: 0 !important;
-    flex-grow: 0 !important;
-    height: auto !important;
-    min-height: fit-content !important;
-  }
-}
     @media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 3/4) and (max-aspect-ratio: 4/3) {
       .pdfmain {
         padding: 1rem 0.75rem !important;

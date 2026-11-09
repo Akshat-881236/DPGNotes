@@ -1774,6 +1774,7 @@
         renderCategorizedResources();
         renderContributorsUI();
         initQuizChallenge();
+        loadContributorQuizQuestions(docs.filter(d => d.category === "Quiz"));
         return;
       }
 
@@ -1924,6 +1925,7 @@
         renderCategorizedResources();
         renderContributorsUI();
         initQuizChallenge();
+        loadContributorQuizQuestions(docs.filter(d => d.category === "Quiz"));
       } catch (err) {
         console.warn("[Study Hub] Sync fallback notice:", err.message);
       }
@@ -2188,51 +2190,320 @@
 
     updateCoinsDisplay();
 
-    // 15 Standard Arithmetic Fallback Questions
-    const arithmeticQuestions = [
-      { q: "Calculate: 144 ÷ 12 + 25 × 2", opts: ["62", "58", "64", "52"], a: 0, exp: "144 ÷ 12 = 12; 25 × 2 = 50; 12 + 50 = 62." },
-      { q: "What is 15% of 480?", opts: ["72", "68", "76", "64"], a: 0, exp: "10% is 48; 5% is 24; 48 + 24 = 72." },
-      { q: "Solve: (7 × 8) - (36 ÷ 4)", opts: ["47", "49", "51", "45"], a: 0, exp: "56 - 9 = 47." },
-      { q: "What is the square of 24?", opts: ["576", "526", "586", "566"], a: 0, exp: "24 × 24 = 576." },
-      { q: "If x + 18 = 45, what is x?", opts: ["27", "29", "25", "31"], a: 0, exp: "45 - 18 = 27." },
-      { q: "Calculate: 2^6 - 14", opts: ["50", "48", "52", "46"], a: 0, exp: "64 - 14 = 50." },
-      { q: "What is 3/5 of 250?", opts: ["150", "125", "175", "140"], a: 0, exp: "250 ÷ 5 = 50; 50 × 3 = 150." },
-      { q: "Simplify: 18 × 4 + 16", opts: ["88", "84", "92", "86"], a: 0, exp: "72 + 16 = 88." },
-      { q: "What is the prime number between 24 and 30?", opts: ["29", "25", "27", "26"], a: 0, exp: "29 has no divisors other than 1 and itself." },
-      { q: "Calculate: (120 - 45) ÷ 5", opts: ["15", "14", "16", "18"], a: 0, exp: "75 ÷ 5 = 15." },
-      { q: "Evaluate: 9 × 11 + 33 ÷ 3", opts: ["110", "108", "112", "115"], a: 0, exp: "99 + 11 = 110." },
-      { q: "What is the cube of 6?", opts: ["216", "196", "226", "206"], a: 0, exp: "6 × 6 × 6 = 216." },
-      { q: "Find the average of 12, 18, and 30:", opts: ["20", "18", "22", "24"], a: 0, exp: "(12 + 18 + 30) ÷ 3 = 60 ÷ 3 = 20." },
-      { q: "Calculate: 450 ÷ 15 - 8", opts: ["22", "24", "20", "26"], a: 0, exp: "30 - 8 = 22." },
-      { q: "If 4y = 68, what is y?", opts: ["17", "16", "18", "19"], a: 0, exp: "68 ÷ 4 = 17." }
+    /* ==========================================================================
+       E. LIVE PUBLIC QUIZ & ARITHMETIC SPEED SIMULATOR WITH INTEGRITY DEFENSE
+       ========================================================================== */
+
+    // 1. Curated University-Level Non-Code Conceptual MCQs (4 Options Only)
+    const academicNonCodeMcqBank = [
+      {
+        quizTitle: "Software Engineering Assessment - Quick Check",
+        q: "In Software Engineering, which design metric measures the degree of functional interdependence between two separate software modules?",
+        opts: ["Cohesion", "Coupling", "Polymorphism", "Inheritance"],
+        a: 1,
+        exp: "Coupling measures the degree of interdependence between modules (low coupling is desired), whereas cohesion measures internal module strength."
+      },
+      {
+        quizTitle: "Software Engineering Assessment - Quick Check",
+        q: "Which SDLC model is recognized for its iterative, risk-driven approach dividing development into four repeated quadrants?",
+        opts: ["Waterfall Model", "Spiral Model", "Radical Prototyping", "Big Bang Model"],
+        a: 1,
+        exp: "The Spiral Model combines iterative prototyping with systematic risk assessment in four distinct phases per cycle."
+      },
+      {
+        quizTitle: "Computer Networks Assessment - Quick Check",
+        q: "Which layer of the standard ISO-OSI reference model is responsible for logical host-to-host addressing and optimal path routing?",
+        opts: ["Data Link Layer", "Network Layer", "Transport Layer", "Session Layer"],
+        a: 1,
+        exp: "The Network Layer manages IP addressing, packet routing, and subnet management across heterogeneous networks."
+      },
+      {
+        quizTitle: "Computer Networks Assessment - Quick Check",
+        q: "In transport layer communications, which protocol provides connection-oriented, reliable byte-stream transmission with congestion control?",
+        opts: ["UDP (User Datagram Protocol)", "TCP (Transmission Control Protocol)", "ICMP", "ARP"],
+        a: 1,
+        exp: "TCP is a connection-oriented protocol that guarantees packet sequencing, error recovery, and flow control."
+      },
+      {
+        quizTitle: "Operating Systems Assessment - Quick Check",
+        q: "Which condition is NOT one of Coffman's four necessary conditions for a resource deadlock to occur in an operating system?",
+        opts: ["Mutual Exclusion", "Hold and Wait", "Preemptive Resource Scheduling", "Circular Wait"],
+        a: 2,
+        exp: "The Coffman conditions are Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait. Preemptive scheduling prevents deadlock."
+      },
+      {
+        quizTitle: "Operating Systems Assessment - Quick Check",
+        q: "What is the primary phenomenon where frequent page faults cause an operating system to spend more time swapping pages than executing user processes?",
+        opts: ["Segmentation", "Thrashing", "Starvation", "Aging"],
+        a: 1,
+        exp: "Thrashing occurs when memory is over-committed, causing constant page-in and page-out operations that stall CPU throughput."
+      },
+      {
+        quizTitle: "Database Management Systems - Quick Check",
+        q: "In relational database theory, which normal form requires eliminating partial functional dependencies of non-prime attributes on a candidate key?",
+        opts: ["First Normal Form (1NF)", "Second Normal Form (2NF)", "Third Normal Form (3NF)", "Boyce-Codd Normal Form (BCNF)"],
+        a: 1,
+        exp: "Second Normal Form (2NF) enforces 1NF and guarantees that no non-prime attribute depends on a proper subset of any candidate key."
+      },
+      {
+        quizTitle: "Database Management Systems - Quick Check",
+        q: "Which ACID property guarantees that all database transactions will survive unexpected system crashes or power failures once committed?",
+        opts: ["Atomicity", "Consistency", "Isolation", "Durability"],
+        a: 3,
+        exp: "Durability ensures that once a transaction commits, its modifications are permanently recorded in non-volatile write-ahead logs."
+      },
+      {
+        quizTitle: "Computer Architecture - Quick Check",
+        q: "In superscalar computer architecture, which hazard arises when an instruction depends on the result of an earlier uncompleted instruction?",
+        opts: ["Structural Hazard", "Data Hazard", "Control Hazard", "Branch Hazard"],
+        a: 1,
+        exp: "Data hazards (RAW, WAR, WAW) occur when instructions exhibit read/write dependencies on registers or memory in a pipeline."
+      },
+      {
+        quizTitle: "Principles of Management - Quick Check",
+        q: "According to Henry Fayol's administrative theory, which management principle states that each employee should receive orders from only one superior?",
+        opts: ["Unity of Command", "Unity of Direction", "Scalar Chain", "Division of Work"],
+        a: 0,
+        exp: "Unity of Command dictates that an employee should be accountable to and receive orders from only one supervisor to avoid conflict."
+      },
+      {
+        quizTitle: "Environmental Studies - Quick Check",
+        q: "Which atmospheric layer contains the highest concentration of the protective ozone layer that shields the Earth from ultraviolet (UV) radiation?",
+        opts: ["Troposphere", "Stratosphere", "Mesosphere", "Thermosphere"],
+        a: 1,
+        exp: "The ozone layer is primarily concentrated in the lower stratosphere, between approximately 15 and 35 kilometers above Earth."
+      },
+      {
+        quizTitle: "Software Quality Assurance - Quick Check",
+        q: "In software testing methodology, what type of testing evaluates internal code structures, branch coverage, and path conditions?",
+        opts: ["Black-Box Testing", "White-Box Testing", "Acceptance Testing", "Usability Testing"],
+        a: 1,
+        exp: "White-Box (glass-box/structural) testing validates internal algorithm paths, condition decisions, and execution flows."
+      }
     ];
 
-    let currentSimQuestion = null;
+    // 2. 15 Standard Arithmetic Speed Questions
+    const arithmeticQuestions = [
+      { q: "Calculate: 144 ÷ 12 + 25 × 2", opts: ["62", "58", "64", "52"], a: 0, exp: "144 ÷ 12 = 12; 25 × 2 = 50; 12 + 50 = 62.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "What is 15% of 480?", opts: ["72", "68", "76", "64"], a: 0, exp: "10% is 48; 5% is 24; 48 + 24 = 72.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "Solve: (7 × 8) - (36 ÷ 4)", opts: ["47", "49", "51", "45"], a: 0, exp: "56 - 9 = 47.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "What is the square of 24?", opts: ["576", "526", "586", "566"], a: 0, exp: "24 × 24 = 576.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "If x + 18 = 45, what is x?", opts: ["27", "29", "25", "31"], a: 0, exp: "45 - 18 = 27.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "Calculate: 2^6 - 14", opts: ["50", "48", "52", "46"], a: 0, exp: "64 - 14 = 50.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "What is 3/5 of 250?", opts: ["150", "125", "175", "140"], a: 0, exp: "250 ÷ 5 = 50; 50 × 3 = 150.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "Simplify: 18 × 4 + 16", opts: ["88", "84", "92", "86"], a: 0, exp: "72 + 16 = 88.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "What is the prime number between 24 and 30?", opts: ["29", "25", "27", "26"], a: 0, exp: "29 has no divisors other than 1 and itself.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "Calculate: (120 - 45) ÷ 5", opts: ["15", "14", "16", "18"], a: 0, exp: "75 ÷ 5 = 15.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "Evaluate: 9 × 11 + 33 ÷ 3", opts: ["110", "108", "112", "115"], a: 0, exp: "99 + 11 = 110.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "What is the cube of 6?", opts: ["216", "196", "226", "206"], a: 0, exp: "6 × 6 × 6 = 216.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "Find the average of 12, 18, and 30:", opts: ["20", "18", "22", "24"], a: 0, exp: "(12 + 18 + 30) ÷ 3 = 60 ÷ 3 = 20.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "Calculate: 450 ÷ 15 - 8", opts: ["22", "24", "20", "26"], a: 0, exp: "30 - 8 = 22.", quizTitle: "Test Your Arithmetic Speed" },
+      { q: "If 4y = 68, what is y?", opts: ["17", "16", "18", "19"], a: 0, exp: "68 ÷ 4 = 17.", quizTitle: "Test Your Arithmetic Speed" }
+    ];
 
-    function initQuizChallenge() {
+    // Dynamic pool populated from verified contributor public quizzes
+    const contributorMcqPool = [];
+    let currentSimQuestion = null;
+    let simCountdownInterval = null;
+
+    // Helper: Validate that a question is pure conceptual theory (NO code containers / programs) with 4 options
+    function isNonCodeMCQ(q) {
+      if (!q) return false;
+      if (q.type && String(q.type).toLowerCase() !== 'mcq') return false;
+
+      const prompt = String(q.questionText || q.question || q.q || '').trim();
+      if (!prompt || prompt.length < 5) return false;
+
+      // Disallow any programming syntax, code blocks, or function declarations
+      const codeRegex = /(```|<\s*pre\b|<\s*code\b|\b(def|class|public\s+static|#include|import\s+java|printf|scanf|cout\s*<<|cin\s*>>|console\.log|function\s*\(|for\s*\(.*?;.*?;.*?\)|while\s*\(.*?\))\b|[{};]{3,})/i;
+      if (codeRegex.test(prompt)) return false;
+
+      let opts = [];
+      if (Array.isArray(q.options)) {
+        opts = q.options.map(o => String(o || '').trim()).filter(Boolean);
+      } else if (q.options && typeof q.options === 'object') {
+        const letters = ['A', 'B', 'C', 'D'];
+        if (letters.every(k => q.options[k] !== undefined && String(q.options[k]).trim() !== '')) {
+          opts = letters.map(k => String(q.options[k]).trim());
+        } else {
+          opts = Object.values(q.options).map(o => String(o || '').trim()).filter(Boolean);
+        }
+      }
+
+      if (opts.length !== 4) return false;
+
+      // Verify options are plain text (no code containers)
+      for (const opt of opts) {
+        if (codeRegex.test(opt)) return false;
+      }
+
+      return true;
+    }
+
+    // Helper: Normalize answer key into 0..3 index
+    function getCorrectAnswerIndex(q, answerKeyMap) {
+      if (answerKeyMap) {
+        const keyVal = answerKeyMap[String(q.qIndex)] || answerKeyMap[String(q.index)] || answerKeyMap[String(q.id)];
+        if (keyVal) {
+          const cleanKey = String(keyVal).trim().toUpperCase();
+          const map = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+          if (map[cleanKey] !== undefined) return map[cleanKey];
+          const parsed = parseInt(cleanKey, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed <= 3) return parsed;
+        }
+      }
+      if (typeof q.correctAnswer === 'number' && q.correctAnswer >= 0 && q.correctAnswer <= 3) return q.correctAnswer;
+      if (typeof q.correctAnswer === 'string') {
+        const clean = q.correctAnswer.trim().toUpperCase();
+        const map = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+        if (map[clean] !== undefined) return map[clean];
+      }
+      if (typeof q.correctOption === 'string') {
+        const clean = q.correctOption.trim().toUpperCase();
+        const map = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+        if (map[clean] !== undefined) return map[clean];
+      }
+      if (typeof q.answer === 'number' && q.answer >= 0 && q.answer <= 3) return q.answer;
+      if (typeof q.answer === 'string') {
+        const clean = q.answer.trim().toUpperCase();
+        const map = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+        if (map[clean] !== undefined) return map[clean];
+      }
+      return -1;
+    }
+
+    // Asynchronously fetch question pages from published contributor public quizzes
+    async function loadContributorQuizQuestions(quizzes) {
+      if (!Array.isArray(quizzes) || quizzes.length === 0) return;
+      const targetQuizzes = quizzes.filter(q => q.uploaderUid && q.id).slice(0, 6);
+      for (const q of targetQuizzes) {
+        try {
+          const [pageSnap, keySnap] = await Promise.all([
+            getDoc(doc(db, "contributors", q.uploaderUid, "quizzes", q.id, "questionPages", "page_1")),
+            getDoc(doc(db, "contributors", q.uploaderUid, "quizzes", q.id, "privateAnswerKey", "main")).catch(() => null)
+          ]);
+
+          if (pageSnap.exists()) {
+            const rawQuestions = pageSnap.data().questions || [];
+            let answerKey = null;
+            if (keySnap && keySnap.exists() && keySnap.data().isReleased) {
+              answerKey = keySnap.data().answers || null;
+            }
+
+            rawQuestions.forEach((item) => {
+              if (isNonCodeMCQ(item)) {
+                const correctIdx = getCorrectAnswerIndex(item, answerKey);
+                if (correctIdx >= 0 && correctIdx <= 3) {
+                  let opts = [];
+                  if (Array.isArray(item.options)) {
+                    opts = item.options.map(o => String(o || '').trim());
+                  } else if (item.options && typeof item.options === 'object') {
+                    const letters = ['A', 'B', 'C', 'D'];
+                    opts = letters.map(k => String(item.options[k] || '').trim());
+                  }
+                  if (opts.length === 4) {
+                    contributorMcqPool.push({
+                      quizTitle: q.title || "Academic Assessment Challenge",
+                      q: String(item.questionText || item.question || item.q || '').trim(),
+                      opts: opts,
+                      a: correctIdx,
+                      exp: item.explanation || `Verified response confirmed from curriculum documentation for ${q.title || 'university syllabus'}.`
+                    });
+                  }
+                }
+              }
+            });
+          }
+        } catch (e) {
+          // Graceful fallback to verified in-memory bank
+        }
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       ACADEMIC INTEGRITY: DISABLE DEVTOOLS & DETECT "ASK GEMINI" / INSPECTION
+       -------------------------------------------------------------------------- */
+    // 1. Disable Right-Click Context Menu
+    document.addEventListener("contextmenu", function(e) {
+      e.preventDefault();
+      return false;
+    }, { capture: true, passive: false });
+
+    // 2. Disable DevTools & Source Inspector Keyboard Shortcuts
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "F12" || e.keyCode === 123) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    }, { capture: true, passive: false });
+
+    // 3. Real-Time Detection for "Ask Gemini" Side Panel, Copilot, & DevTools
+    function isAskGeminiOrInspectionActive() {
+      // Docked Side Panel / DevTools in Chrome & Edge (Ask Gemini docks on the right, reducing window.innerWidth)
+      const widthDelta = window.outerWidth - window.innerWidth;
+      const heightDelta = window.outerHeight - window.innerHeight;
+      if (widthDelta > 160 || heightDelta > 160) {
+        return true;
+      }
+
+      // Check whether user lost window focus (e.g. interacting with Ask Gemini tab or inspector)
+      if (!document.hasFocus()) {
+        return true;
+      }
+
+      // DevTools console probe detection
+      let isInspectorOpen = false;
+      const probe = new Image();
+      Object.defineProperty(probe, 'id', {
+        get: function() {
+          isInspectorOpen = true;
+          return '';
+        }
+      });
+      console.log('%c', probe);
+      if (isInspectorOpen) {
+        return true;
+      }
+
+      return false;
+    }
+
+    // 4. Initialize & Randomly Pick Challenge Question
+    function initQuizChallenge(isAutoNext = false) {
       const titleEl = document.getElementById("simQuizTitle");
       const qTextEl = document.getElementById("simQuestionText");
       const optsEl = document.getElementById("simOptionsContainer");
       if (!titleEl || !qTextEl || !optsEl) return;
 
-      // Check if real public quiz exists in allDocsList
-      const publicQuizzes = allDocsList.filter(d => d.category === "Quiz" && Array.isArray(d.rawQuestions) && d.rawQuestions.length > 0);
+      // Pool of non-code MCQs includes contributor questions plus verified university bank
+      const nonCodeMcqPool = [...academicNonCodeMcqBank, ...contributorMcqPool];
 
-      if (publicQuizzes.length > 0) {
-        const pickedQuiz = publicQuizzes[Math.floor(Math.random() * publicQuizzes.length)];
-        titleEl.textContent = pickedQuiz.title || "Academic Assessment Challenge";
-        const qItem = pickedQuiz.rawQuestions[Math.floor(Math.random() * pickedQuiz.rawQuestions.length)];
+      // Randomly select between Arithmetic speed quiz and Academic Theory MCQ
+      const chooseArithmetic = Math.random() < 0.45 || nonCodeMcqPool.length === 0;
 
+      if (!chooseArithmetic && nonCodeMcqPool.length > 0) {
+        const pick = nonCodeMcqPool[Math.floor(Math.random() * nonCodeMcqPool.length)];
+        titleEl.textContent = pick.quizTitle || "Academic Assessment Challenge";
         currentSimQuestion = {
-          q: qItem.question || qItem.q || "Review the academic statement and select the verified option:",
-          opts: qItem.options || qItem.opts || ["Option A", "Option B", "Option C", "Option D"],
-          correctIndex: typeof qItem.correctAnswer === 'number' ? qItem.correctAnswer : (typeof qItem.answer === 'number' ? qItem.answer : 0),
-          exp: qItem.explanation || "Verified response confirmed from curriculum documentation."
+          q: pick.q,
+          opts: pick.opts,
+          correctIndex: pick.a,
+          exp: pick.exp
         };
       } else {
-        // Fallback: Arithmetic Speed Quiz
-        titleEl.textContent = "Test Your Arithmetic Speed";
         const pick = arithmeticQuestions[Math.floor(Math.random() * arithmeticQuestions.length)];
+        titleEl.textContent = pick.quizTitle || "Test Your Arithmetic Speed";
         currentSimQuestion = {
           q: pick.q,
           opts: pick.opts,
@@ -2241,18 +2512,26 @@
         };
       }
 
-      renderSimulatorQuestion();
+      renderSimulatorQuestion(isAutoNext);
     }
 
-    function renderSimulatorQuestion() {
+    function renderSimulatorQuestion(animate = false) {
       const qTextEl = document.getElementById("simQuestionText");
       const optsEl = document.getElementById("simOptionsContainer");
       const feedbackBox = document.getElementById("simFeedbackBox");
       if (!qTextEl || !optsEl) return;
 
-      if (feedbackBox) feedbackBox.style.display = "none";
-      qTextEl.textContent = currentSimQuestion.q;
+      if (feedbackBox) {
+        feedbackBox.style.display = "none";
+        feedbackBox.innerHTML = "";
+      }
 
+      if (animate) {
+        optsEl.style.opacity = "0.2";
+        qTextEl.style.opacity = "0.2";
+      }
+
+      qTextEl.textContent = currentSimQuestion.q;
       const letters = ["A", "B", "C", "D"];
       optsEl.innerHTML = currentSimQuestion.opts.map((opt, idx) => `
         <button type="button" class="quiz-option-btn" onclick="window.submitSimAnswer(${idx}, this)">
@@ -2260,27 +2539,37 @@
           <span>${escapeHtml(opt)}</span>
         </button>
       `).join("");
+
+      if (animate) {
+        setTimeout(() => {
+          optsEl.style.transition = "opacity 0.25s ease";
+          qTextEl.style.transition = "opacity 0.25s ease";
+          optsEl.style.opacity = "1";
+          qTextEl.style.opacity = "1";
+        }, 40);
+      }
     }
 
     window.submitSimAnswer = async function(selectedIndex, btnEl) {
       const optsEl = document.getElementById("simOptionsContainer");
       const feedbackBox = document.getElementById("simFeedbackBox");
-      if (!optsEl || !feedbackBox) return;
+      if (!optsEl || !feedbackBox || !currentSimQuestion) return;
 
+      // Lock buttons immediately
       optsEl.querySelectorAll(".quiz-option-btn").forEach(b => {
         b.disabled = true;
         b.style.pointerEvents = "none";
       });
 
+      if (simCountdownInterval) {
+        clearInterval(simCountdownInterval);
+        simCountdownInterval = null;
+      }
+
+      const letters = ["A", "B", "C", "D"];
       const isCorrect = selectedIndex === currentSimQuestion.correctIndex;
-      const coinDelta = isCorrect
-        ? (isContributor ? 12 : 8)
-        : (isContributor ? -5 : -3);
 
-      userCoins = Math.max(0, userCoins + coinDelta);
-      updateCoinsDisplay();
-
-      // Highlight options
+      // Highlight selections
       const buttons = optsEl.querySelectorAll(".quiz-option-btn");
       if (buttons[currentSimQuestion.correctIndex]) {
         buttons[currentSimQuestion.correctIndex].classList.add("correct");
@@ -2289,6 +2578,43 @@
         btnEl.classList.add("wrong");
       }
 
+      // INTEGRITY CHECK: Only credit DPG Coins if NO "Ask Gemini" tab and inspection is active
+      const integrityBreach = isAskGeminiOrInspectionActive();
+
+      if (integrityBreach) {
+        // DPG Coins are blocked/disabled
+        feedbackBox.style.display = "block";
+        feedbackBox.style.background = "rgba(239, 68, 68, 0.16)";
+        feedbackBox.style.border = "1px solid #ef4444";
+        feedbackBox.style.color = "var(--text-main)";
+        feedbackBox.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#ef4444; margin-bottom:4px;">
+            <i class="ri-shield-cross-fill" style="font-size:1.25rem;"></i> DPG Coins Locked (0 Credited)
+          </div>
+          <p style="font-size:0.86rem; color:var(--text-muted); margin:0 0 6px 0; line-height:1.5;">
+            Developer tools inspection or external AI side panel ("Ask Gemini") was detected. Academic integrity protection prevented coin awards for this question.
+          </p>
+          <div style="font-size:0.84rem; opacity:0.9;">
+            Verified Option: <strong style="color:var(--accent-emerald);">Option ${letters[currentSimQuestion.correctIndex] || (currentSimQuestion.correctIndex + 1)}</strong> &mdash; ${escapeHtml(currentSimQuestion.exp)}
+          </div>
+          <div class="sim-auto-next-bar" style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid rgba(239,68,68,0.3); font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between;">
+            <span><i class="ri-loader-4-line ri-spin" style="color:var(--accent-primary);"></i> Next question in <strong id="simCountdownSec">2</strong>s...</span>
+            <button type="button" onclick="window.triggerNextSimQuestion()" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); padding:3px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem;">Next &rarr;</button>
+          </div>
+        `;
+
+        startAutoAdvanceCountdown(2);
+        return;
+      }
+
+      // No inspection -> Credit / Deduct DPG Coins
+      const coinDelta = isCorrect
+        ? (isContributor ? 12 : 8)
+        : (isContributor ? -5 : -3);
+
+      userCoins = Math.max(0, userCoins + coinDelta);
+      updateCoinsDisplay();
+
       feedbackBox.style.display = "block";
       if (isCorrect) {
         feedbackBox.style.background = "rgba(16, 185, 129, 0.16)";
@@ -2296,7 +2622,11 @@
         feedbackBox.style.color = "var(--text-main)";
         feedbackBox.innerHTML = `
           <strong><i class="ri-checkbox-circle-fill" style="color:var(--accent-emerald);"></i> Correct Answer! (+${coinDelta} DPGCoins)</strong><br>
-          ${escapeHtml(currentSimQuestion.exp)}
+          <span style="font-size:0.86rem; display:inline-block; margin-top:3px;">${escapeHtml(currentSimQuestion.exp)}</span>
+          <div class="sim-auto-next-bar" style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid rgba(16,185,129,0.3); font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between;">
+            <span><i class="ri-loader-4-line ri-spin" style="color:var(--accent-primary);"></i> Next question in <strong id="simCountdownSec">2</strong>s...</span>
+            <button type="button" onclick="window.triggerNextSimQuestion()" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); padding:3px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem;">Next &rarr;</button>
+          </div>
         `;
       } else {
         feedbackBox.style.background = "rgba(239, 68, 68, 0.16)";
@@ -2304,7 +2634,11 @@
         feedbackBox.style.color = "var(--text-main)";
         feedbackBox.innerHTML = `
           <strong><i class="ri-close-circle-fill" style="color:#ef4444;"></i> Incorrect Selection (${coinDelta} DPGCoins)</strong><br>
-          ${escapeHtml(currentSimQuestion.exp)}
+          <span style="font-size:0.86rem; display:inline-block; margin-top:3px;">Verified Option: <strong style="color:var(--accent-emerald);">Option ${letters[currentSimQuestion.correctIndex] || (currentSimQuestion.correctIndex + 1)}</strong> &mdash; ${escapeHtml(currentSimQuestion.exp)}</span>
+          <div class="sim-auto-next-bar" style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid rgba(239,68,68,0.3); font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between;">
+            <span><i class="ri-loader-4-line ri-spin" style="color:var(--accent-primary);"></i> Next question in <strong id="simCountdownSec">2</strong>s...</span>
+            <button type="button" onclick="window.triggerNextSimQuestion()" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); padding:3px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem;">Next &rarr;</button>
+          </div>
         `;
       }
 
@@ -2331,6 +2665,32 @@
           } catch(e) {}
         }
       }
+
+      // Auto-advance to next question
+      startAutoAdvanceCountdown(2);
+    };
+
+    function startAutoAdvanceCountdown(seconds) {
+      if (simCountdownInterval) clearInterval(simCountdownInterval);
+      let remaining = seconds;
+      simCountdownInterval = setInterval(() => {
+        remaining--;
+        const secEl = document.getElementById("simCountdownSec");
+        if (secEl) secEl.textContent = remaining;
+        if (remaining <= 0) {
+          clearInterval(simCountdownInterval);
+          simCountdownInterval = null;
+          window.triggerNextSimQuestion();
+        }
+      }, 1000);
+    }
+
+    window.triggerNextSimQuestion = function() {
+      if (simCountdownInterval) {
+        clearInterval(simCountdownInterval);
+        simCountdownInterval = null;
+      }
+      initQuizChallenge(true);
     };
 
     window.showCoinsModal = function() {
