@@ -135,53 +135,101 @@
     updateBadgeUI();
     return currentQuotaTokens;
   }
+  function getActiveUnlimitedPass() {
+    return window.DPGCoinsPasses && typeof window.DPGCoinsPasses.hasUnlimitedUtilitiesPass === "function"
+      ? window.DPGCoinsPasses.hasUnlimitedUtilitiesPass()
+      : null;
+  }
+  function getCoinsCount() {
+    return window.DPGCoinsPasses && typeof window.DPGCoinsPasses.getCoinsBalance === "function"
+      ? window.DPGCoinsPasses.getCoinsBalance()
+      : parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10) || 0;
+  }
+  async function ensureCoinsPassesScript() {
+    if (window.DPGCoinsPasses) return window.DPGCoinsPasses;
+    return new Promise((resolve) => {
+      const existing = document.querySelector('script[src*="dpg-coins-passes.js"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve(window.DPGCoinsPasses || null));
+        setTimeout(() => resolve(window.DPGCoinsPasses || null), 1200);
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = "/dpg-coins-passes.js";
+      s.onload = () => resolve(window.DPGCoinsPasses || null);
+      s.onerror = () => resolve(null);
+      document.head.appendChild(s);
+    });
+  }
   function updateBadgeUI() {
     const isContrib = isContributor();
-    const badgeText = `${currentQuotaTokens} / ${currentMaxQuota}`;
-    const badgeColor = currentQuotaTokens > 0 ? "#10b981" : "#ef4444";
-    const badgeBg = currentQuotaTokens > 0 ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.15)";
-    const badgeBorder = currentQuotaTokens > 0 ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.35)";
-    const badgeHtml = `
-      <div id="dpgUtilityQuotaBadge" style="display:inline-flex; align-items:center; gap:6px; background:${badgeBg}; border:1px solid ${badgeBorder}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; color:${badgeColor}; font-family:inherit; cursor:pointer;" title="Click to view Quota details">
-        <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
-        <span>Daily Quota: ${badgeText}</span>
-        ${isContrib ? '<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Contributor (2x)</span>' : '<span style="background:rgba(255,255,255,0.08); color:#94a3b8; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Guest</span>'}
-      </div>
+    const activePass = getActiveUnlimitedPass();
+    const coins = getCoinsCount();
+
+    const coinsPillHtml = `
+      <button type="button" id="dpgUtilityCoinsPill" onclick="window.DpgUtilityQuota.openCoinsUpgradeModal()" style="display:inline-flex; align-items:center; gap:5px; background:rgba(245,158,11,0.14); border:1px solid rgba(245,158,11,0.38); color:#fbbf24; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; flex-shrink:0;" title="Upgrade Utilities with DPG Coins">
+        <i class="ri-copper-coin-fill"></i>
+        <span>${coins.toLocaleString()} Coins</span>
+      </button>
     `;
-    const targets = ["userHeaderPillAdder", "userHeaderPillAnalyzer", "userHeaderPillConverter"];
-    let injected = false;
-    for (const tId of targets) {
-      const el = document.getElementById(tId);
-      if (el) {
-        el.innerHTML = badgeHtml;
-        injected = true;
-        break;
-      }
+
+    let badgeHtml = "";
+    if (activePass) {
+      badgeHtml = `
+        <div id="dpgUtilityQuotaBadge" style="display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; color:#34d399; font-family:inherit; cursor:pointer; white-space:nowrap; flex-shrink:0;" title="Unlimited Utilities Pass Active">
+          <i class="ri-vip-crown-2-fill" style="color:#f59e0b;"></i>
+          <span>${activePass.shortName || activePass.name} (Unlimited)</span>
+        </div>
+      `;
+    } else {
+      const badgeText = `${currentQuotaTokens} / ${currentMaxQuota}`;
+      const badgeColor = currentQuotaTokens > 0 ? "#10b981" : "#ef4444";
+      const badgeBg = currentQuotaTokens > 0 ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.15)";
+      const badgeBorder = currentQuotaTokens > 0 ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.35)";
+      badgeHtml = `
+        <div id="dpgUtilityQuotaBadge" style="display:inline-flex; align-items:center; gap:6px; background:${badgeBg}; border:1px solid ${badgeBorder}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; color:${badgeColor}; font-family:inherit; cursor:pointer; white-space:nowrap; flex-shrink:0;" title="Click to view Quota or Upgrade with DPG Coins">
+          <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
+          <span>Daily Quota: ${badgeText}</span>
+          ${isContrib ? '<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Contributor (2x)</span>' : '<span style="background:rgba(255,255,255,0.08); color:#94a3b8; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Guest</span>'}
+        </div>
+      `;
     }
-    if (!injected) {
-      const headerStatus = document.querySelector(".header-status");
-      if (headerStatus) {
-        let existing = document.getElementById("dpgUtilityQuotaBadge");
-        if (existing) existing.remove();
-        headerStatus.insertAdjacentHTML("afterbegin", badgeHtml);
-      }
+
+    const headerStatus = document.querySelector(".header-status");
+    if (headerStatus) {
+      const oldCoins = document.getElementById("dpgUtilityCoinsPill");
+      if (oldCoins) oldCoins.remove();
+      const oldBadge = document.getElementById("dpgUtilityQuotaBadge");
+      if (oldBadge) oldBadge.remove();
+      headerStatus.style.flexWrap = "wrap";
+      headerStatus.insertAdjacentHTML("afterbegin", coinsPillHtml + badgeHtml);
     }
+
     const b = document.getElementById("dpgUtilityQuotaBadge");
     if (b) {
       b.onclick = () => {
-        if (currentQuotaTokens <= 0) {
+        if (getActiveUnlimitedPass()) {
+          openCoinsUpgradeModal();
+        } else if (currentQuotaTokens <= 0) {
           showQuotaLockdown();
-        } else if (typeof window.customAlert === "function") {
-          window.customAlert(`You currently have ${currentQuotaTokens} of ${currentMaxQuota} daily token(s) available for utility operations. Tokens automatically reset at midnight.`, { title: "Daily Utility Quota" });
         } else {
-          alert(`You have ${currentQuotaTokens} of ${currentMaxQuota} daily token(s) remaining.`);
+          openCoinsUpgradeModal();
         }
       };
     }
   }
   async function requestTokenOrLockdown(toolName = "Utility Tool") {
     activeToolName = toolName;
+    await ensureCoinsPassesScript();
+    if (getActiveUnlimitedPass()) {
+      updateBadgeUI();
+      return true;
+    }
     await syncQuotaFromFirestore();
+    if (getActiveUnlimitedPass()) {
+      updateBadgeUI();
+      return true;
+    }
     if (currentQuotaTokens <= 0) {
       showQuotaLockdown();
       return false;
@@ -226,6 +274,34 @@
 
           <!-- Choices Section -->
           <div id="dpgUtilChoiceSec" style="display:flex; flex-direction:column; gap:12px; margin-bottom:1.5rem;">
+            <!-- Direct 1-Click DPG Coins Upgrade -->
+            <div id="dpgUtilCoinsCard" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.35); border-radius:14px; padding:1rem; text-align:left;">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:0.65rem;">
+                <span style="font-weight:800; font-size:0.94rem; color:#fbbf24; display:inline-flex; align-items:center; gap:6px;">
+                  <i class="ri-copper-coin-fill"></i> Unlock Instantly with DPG Coins
+                </span>
+                <span id="dpgUtilModalCoinsBal" style="font-size:0.78rem; font-weight:700; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; padding:3px 9px; border-radius:999px;">
+                  0 Coins
+                </span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(145px, 1fr)); gap:8px;">
+                <button type="button" onclick="window.DpgUtilityQuota.upgradeWithCoins('utilities_1d', this)" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; border:none; padding:9px 10px; border-radius:10px; font-weight:700; font-size:0.78rem; cursor:pointer; text-align:center;">
+                  ⚡ 1-Day Unlimited<br><span style="font-size:0.72rem; opacity:0.92;">650 Coins</span>
+                </button>
+                <button type="button" onclick="window.DpgUtilityQuota.upgradeWithCoins('utilities_blaze', this)" style="background:rgba(251,113,133,0.18); border:1px solid rgba(251,113,133,0.4); color:#fda4af; padding:9px 10px; border-radius:10px; font-weight:700; font-size:0.78rem; cursor:pointer; text-align:center;">
+                  🔥 1-Mo Blaze<br><span style="font-size:0.72rem; opacity:0.92;">2,500 Coins</span>
+                </button>
+                <button type="button" onclick="window.DpgUtilityQuota.upgradeWithCoins('utilities_pro', this)" style="background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.45); color:#e9d5ff; padding:9px 10px; border-radius:10px; font-weight:700; font-size:0.78rem; cursor:pointer; text-align:center;">
+                  💎 1-Mo Pro<br><span style="font-size:0.72rem; opacity:0.92;">4,500 Coins</span>
+                </button>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:0.75rem; color:#94a3b8;">
+                <span>Instant 1-click upgrade across all 5 utility tools</span>
+                <a href="/study-hub.html" style="color:#818cf8; font-weight:700; text-decoration:none;">Earn Coins &rarr;</a>
+              </div>
+              <div id="dpgUtilCoinsErr" style="display:none; margin-top:8px; padding:7px 10px; border-radius:8px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-size:0.78rem;"></div>
+            </div>
+
             <button type="button" id="dpgUtilBtnWatchAd" onclick="window.DpgUtilityQuota.startAdFlow()" style="display:flex; align-items:center; justify-content:center; gap:10px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; padding:12px 16px; border-radius:12px; font-weight:700; font-size:0.92rem; cursor:pointer; box-shadow:0 4px 15px rgba(99,102,241,0.35); transition:transform 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'">
               <i class="ri-play-circle-line" style="font-size:1.2rem;"></i> Watch Sponsored Ad (Restore 1 Token)
             </button>
@@ -277,22 +353,67 @@
     const midSec = document.getElementById("dpgUtilMidnightSec");
     const googleBtn = document.getElementById("dpgUtilBtnGoogleSign");
     const subtitle = document.getElementById("dpgUtilModalSubtitle");
+    const coinsBalEl = document.getElementById("dpgUtilModalCoinsBal");
+    const errEl = document.getElementById("dpgUtilCoinsErr");
     if (choiceSec) choiceSec.style.display = "flex";
     if (adSec) adSec.style.display = "none";
     if (midSec) midSec.style.display = "none";
+    if (errEl) errEl.style.display = "none";
+    if (coinsBalEl) coinsBalEl.textContent = `${getCoinsCount().toLocaleString()} Coins`;
     const isContrib = isContributor();
     if (googleBtn) {
       googleBtn.style.display = isContrib ? "none" : "flex";
     }
     if (subtitle) {
       if (isContrib) {
-        subtitle.innerHTML = `You have used your Contributor daily quota tokens for <strong>${activeToolName}</strong>. Watch verified learning sponsor ads below to immediately restore your token, or wait for midnight automatic reset.`;
+        subtitle.innerHTML = `You have used your Contributor daily quota tokens for <strong>${activeToolName}</strong>. Upgrade with DPG Coins for unlimited access or watch verified sponsor ads below.`;
       } else {
-        subtitle.innerHTML = `You have exhausted your daily free token for <strong>${activeToolName}</strong>. Choose how you would like to proceed:`;
+        subtitle.innerHTML = `You have exhausted your daily free token for <strong>${activeToolName}</strong>. Upgrade instantly with DPG Coins or choose another option below:`;
       }
     }
     if (overlay) {
       overlay.style.display = "flex";
+    }
+  }
+  async function openCoinsUpgradeModal() {
+    const passesMod = await ensureCoinsPassesScript();
+    if (passesMod && typeof passesMod.openUpgradeModal === "function") {
+      passesMod.openUpgradeModal("utilities", () => {
+        updateBadgeUI();
+        exitLockdown();
+      });
+    } else {
+      showQuotaLockdown();
+    }
+  }
+  async function upgradeWithCoins(passId, btnEl) {
+    const errEl = document.getElementById("dpgUtilCoinsErr");
+    if (errEl) errEl.style.display = "none";
+    const origHtml = btnEl ? btnEl.innerHTML : "";
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Upgrading...';
+    }
+    try {
+      const passesMod = await ensureCoinsPassesScript();
+      if (!passesMod) throw new Error("Unable to load DPG Coins pass engine.");
+      const res = await passesMod.redeemPass(passId);
+      updateBadgeUI();
+      exitLockdown();
+      const msg = `🎉 ${res.pass.name} activated! You now have unlimited access across all utilities tools.`;
+      if (typeof window.customAlert === "function") {
+        await window.customAlert(msg, { title: "Utilities Pass Activated" });
+      }
+    } catch (err) {
+      if (errEl) {
+        errEl.style.display = "block";
+        errEl.textContent = err.message || "Upgrade failed.";
+      }
+    } finally {
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = origHtml;
+      }
     }
   }
   function exitLockdown() {
@@ -549,16 +670,23 @@
       }
     }
   }
+  window.addEventListener("dpg-coins-pass-updated", () => {
+    updateBadgeUI();
+  });
   window.DpgUtilityQuota = {
     init: async function(toolName) {
       activeToolName = toolName || "Utility Tool";
+      await ensureCoinsPassesScript();
       await getDeviceFingerprint();
       await syncQuotaFromFirestore();
+      updateBadgeUI();
     },
     requestTokenOrLockdown,
     showLockdown: showQuotaLockdown,
     exitLockdown,
     restoreQuotaToken,
+    openCoinsUpgradeModal,
+    upgradeWithCoins,
     startAdFlow,
     signInWithGoogle,
     getTokensRemaining: () => currentQuotaTokens,

@@ -724,6 +724,21 @@
       if (isCrawler) return;
       const activeUid = localStorage.getItem("dpgActiveUserUid");
       if (activeUid) return;
+      try {
+        const rawPasses = localStorage.getItem("dpg_active_passes");
+        if (rawPasses) {
+          const parsedPasses = JSON.parse(rawPasses) || {};
+          const nowTs = Date.now();
+          const hasAccess = (parsedPasses.access && Number(parsedPasses.access.expiresAt) > nowTs) ||
+            (parsedPasses.utilities && parsedPasses.utilities.passId === "utilities_pro" && Number(parsedPasses.utilities.expiresAt) > nowTs);
+          if (hasAccess) {
+            localStorage.removeItem("dpg_quota_locked");
+            sessionStorage.removeItem("dpg_quota_locked");
+            document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            return;
+          }
+        }
+      } catch (passErr) {}
       const p = window.location.pathname.toLowerCase();
       if (p === '' || p === '/' || p.includes('index.html') || 
           p.includes('dpgnotes-serp.html') || 

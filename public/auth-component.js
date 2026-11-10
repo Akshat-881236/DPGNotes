@@ -168,6 +168,26 @@ function injectAuthDOM() {
           <div class="dpg-auth-timer-sub">(HH : MM : SS until midnight UTC)</div>
         </div>
 
+        <!-- DIRECT 1-CLICK DPG COINS UNLOCK -->
+        <div id="dpgAuthCoinsUpgradeBox" style="background:rgba(245,158,11,0.09); border:1px solid rgba(245,158,11,0.35); border-radius:14px; padding:0.9rem; margin-bottom:1rem; text-align:left;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-bottom:0.55rem;">
+            <span style="font-weight:800; font-size:0.86rem; color:#fbbf24; display:inline-flex; align-items:center; gap:5px;">
+              <i class="ri-copper-coin-fill"></i> Unlock Instantly with DPG Coins
+            </span>
+            <span id="dpgAuthCoinsBal" style="font-size:0.74rem; font-weight:700; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; padding:2px 8px; border-radius:999px;">0 Coins</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:6px;">
+            <button type="button" onclick="window.dpgUpgradeGuestQuotaWithCoins('access_1d', this)" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border:none; padding:8px 6px; border-radius:9px; font-weight:700; font-size:0.76rem; cursor:pointer; text-align:center;">⚡ 1-Day Full<br><span style="font-size:0.68rem; opacity:0.95;">500 Coins</span></button>
+            <button type="button" onclick="window.dpgUpgradeGuestQuotaWithCoins('utilities_pro', this)" style="background:rgba(168,85,247,0.22); border:1px solid rgba(168,85,247,0.45); color:#e9d5ff; padding:8px 6px; border-radius:9px; font-weight:700; font-size:0.76rem; cursor:pointer; text-align:center;">💎 1-Mo Pro<br><span style="font-size:0.68rem; opacity:0.95;">4,500 Coins</span></button>
+            <button type="button" onclick="window.dpgUpgradeGuestQuotaWithCoins('access_15d', this)" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.4); color:#bae6fd; padding:8px 6px; border-radius:9px; font-weight:700; font-size:0.76rem; cursor:pointer; text-align:center;">🛡️ 15-Days<br><span style="font-size:0.68rem; opacity:0.95;">10,500 Coins</span></button>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-top:6px; font-size:0.72rem; color:#94a3b8;">
+            <span>One-click instant unlock</span>
+            <a href="/study-hub.html" style="color:#818cf8; font-weight:700; text-decoration:none;">Earn Coins &rarr;</a>
+          </div>
+          <div id="dpgAuthCoinsFeedback" style="display:none; margin-top:6px; padding:6px 8px; border-radius:8px; font-size:0.75rem;"></div>
+        </div>
+
         <!-- OAUTH BUTTONS -->
         <div class="dpg-auth-oauth-row">
           <button type="button" class="dpg-auth-btn-oauth dpg-auth-btn-google" onclick="window.dpgLoginGoogle()">
@@ -809,7 +829,75 @@ window.openForgotPasswordModal = function() {
   showModal("dpgForgotPasswordModal");
   window.dpgBackToRecoveryStep1();
 };
+function hasActiveDpgCoinsAccessPass() {
+  try {
+    const raw = localStorage.getItem("dpg_active_passes");
+    if (!raw) return false;
+    const p = JSON.parse(raw) || {};
+    const now = Date.now();
+    return Boolean((p.access && Number(p.access.expiresAt) > now) || (p.utilities && p.utilities.passId === "utilities_pro" && Number(p.utilities.expiresAt) > now));
+  } catch (e) {
+    return false;
+  }
+}
+window.dpgUpgradeGuestQuotaWithCoins = async function(passId, btnEl) {
+  const fb = document.getElementById("dpgAuthCoinsFeedback");
+  if (fb) fb.style.display = "none";
+  const origHtml = btnEl ? btnEl.innerHTML : "";
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<i class="ri-loader-4-line dpg-auth-spin"></i> Unlocking...';
+  }
+  try {
+    if (!window.DPGCoinsPasses) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "/dpg-coins-passes.js";
+        s.onload = resolve;
+        s.onerror = () => reject(new Error("Could not load DPG Coins pass manager."));
+        document.head.appendChild(s);
+      });
+    }
+    const res = await window.DPGCoinsPasses.redeemPass(passId);
+    const balEl = document.getElementById("dpgAuthCoinsBal");
+    if (balEl) balEl.textContent = `${res.newBalance.toLocaleString()} Coins`;
+    if (fb) {
+      fb.style.display = "block";
+      fb.style.background = "rgba(16,185,129,0.16)";
+      fb.style.border = "1px solid rgba(16,185,129,0.4)";
+      fb.style.color = "#34d399";
+      fb.innerHTML = `🎉 <strong>${res.pass.name} Activated!</strong> Unlocking access...`;
+    }
+    setTimeout(() => {
+      if (typeof window.enforceLockdownShield === "function") window.enforceLockdownShield(false);
+      if (typeof window.closeAuthModals === "function") window.closeAuthModals(true);
+      if (window.location.pathname.includes("quota-lockdown.html") && typeof window.clearQuotaLocksAndRedirect === "function") {
+        window.clearQuotaLocksAndRedirect();
+      } else {
+        window.location.reload();
+      }
+    }, 650);
+  } catch (err) {
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = origHtml;
+    }
+    if (fb) {
+      fb.style.display = "block";
+      fb.style.background = "rgba(239,68,68,0.15)";
+      fb.style.border = "1px solid rgba(239,68,68,0.35)";
+      fb.style.color = "#fca5a5";
+      fb.textContent = err.message || "Upgrade failed.";
+    }
+  }
+};
 window.showQuotaReachedModal = function() {
+  if (hasActiveDpgCoinsAccessPass()) {
+    localStorage.removeItem("dpg_quota_locked");
+    sessionStorage.removeItem("dpg_quota_locked");
+    document.cookie = "dpg_quota_locked=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    return;
+  }
   localStorage.setItem("dpg_quota_locked", "true");
   sessionStorage.setItem("dpg_quota_locked", "true");
   document.cookie = "dpg_quota_locked=true;path=/;max-age=86400;SameSite=Lax";
@@ -818,6 +906,11 @@ window.showQuotaReachedModal = function() {
     return;
   }
   showModal("dpgQuotaReachModal");
+  const balEl = document.getElementById("dpgAuthCoinsBal");
+  if (balEl) {
+    const bal = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10) || 0;
+    balEl.textContent = `${bal.toLocaleString()} Coins`;
+  }
   enforceLockdownShield(true);
 };
 window.dpgBackToSignInStep1 = function() {

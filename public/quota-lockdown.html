@@ -12,6 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="/auth-component.css">
+  <script src="/config.js"></script>
+  <script src="/custom-dialogs.js"></script>
+  <script src="/dpg-coins-passes.js"></script>
   <script src="https://dpgnotes.web.app/native-dpgnotes-ads.js?v=1.0.0"></script>
   <script type="module" src="/auth-component.js"></script>
   <style>
@@ -256,6 +259,34 @@
         <div id="quotaCountdownTimer" class="quota-countdown-digits">00:00:00</div>
         <span style="font-size:0.7rem; color:#94a3b8;">(HH : MM : SS until midnight UTC)</span>
       </div>
+
+      <!-- Direct 1-Click DPG Coins Quota Unlock Interface -->
+      <div id="quotaCoinsUnlockBox" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.34); border-radius:16px; padding:1.05rem; margin-bottom:1.35rem; text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:0.65rem;">
+          <span style="font-weight:800; font-size:0.94rem; color:#fbbf24; display:inline-flex; align-items:center; gap:6px;">
+            <i class="ri-copper-coin-fill" style="font-size:1.1rem;"></i> Instant Unlock with DPG Coins
+          </span>
+          <span id="quotaCoinsBalBadge" style="font-size:0.76rem; font-weight:700; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; padding:3px 10px; border-radius:999px;">
+            0 DPGCoins
+          </span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:8px;">
+          <button type="button" onclick="window.unlockWithDpgCoins('access_1d', this)" style="background:linear-gradient(135deg,#10b981,#059669); color:#fff; border:none; padding:10px 8px; border-radius:11px; font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; text-align:center; box-shadow:0 4px 12px rgba(16,185,129,0.28);">
+            ⚡ 1-Day Full Access<br><span style="font-size:0.72rem; opacity:0.95;">500 Coins</span>
+          </button>
+          <button type="button" onclick="window.unlockWithDpgCoins('utilities_pro', this)" style="background:rgba(168,85,247,0.22); border:1px solid rgba(168,85,247,0.45); color:#e9d5ff; padding:10px 8px; border-radius:11px; font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; text-align:center;">
+            💎 1-Mo Pro Tier<br><span style="font-size:0.72rem; opacity:0.95;">4,500 Coins</span>
+          </button>
+          <button type="button" onclick="window.unlockWithDpgCoins('access_15d', this)" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.4); color:#bae6fd; padding:10px 8px; border-radius:11px; font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; text-align:center;">
+            🛡️ 15-Days Access<br><span style="font-size:0.72rem; opacity:0.95;">10,500 Coins</span>
+          </button>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:0.76rem; color:#94a3b8;">
+          <span>1-Click Upgrade &amp; Resume Reading</span>
+          <a href="/study-hub.html" style="color:#818cf8; font-weight:700; text-decoration:none;">Earn More Coins &rarr;</a>
+        </div>
+        <div id="quotaCoinsFeedback" style="display:none; margin-top:8px; padding:8px 10px; border-radius:8px; font-size:0.8rem;"></div>
+      </div>
       <div class="quota-oauth-grid">
         <button type="button" id="lockedGoogleSignInBtn" class="quota-btn-oauth" onclick="signInWithGoogleQuota()">
           <i class="ri-google-fill" style="color:#ea4335; font-size:1.15rem;"></i> Google
@@ -401,6 +432,51 @@
       localStorage.removeItem("dpg_auth_redirect");
       window.location.href = targetUrl || getReturnUrl();
     }
+    function refreshQuotaCoinsBadge() {
+      const el = document.getElementById("quotaCoinsBalBadge");
+      if (!el) return;
+      const bal = window.DPGCoinsPasses ? window.DPGCoinsPasses.getCoinsBalance() : (parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10) || 0);
+      el.textContent = `${bal.toLocaleString()} DPGCoins`;
+    }
+    refreshQuotaCoinsBadge();
+    if (window.DPGCoinsPasses && window.DPGCoinsPasses.hasUnlimitedAccessPass()) {
+      clearQuotaLocksAndRedirect();
+    }
+    window.addEventListener("dpg-coins-pass-updated", refreshQuotaCoinsBadge);
+    window.unlockWithDpgCoins = async function(passId, btnEl) {
+      const fb = document.getElementById("quotaCoinsFeedback");
+      if (fb) fb.style.display = "none";
+      const origHtml = btnEl ? btnEl.innerHTML : "";
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '<i class="ri-loader-4-line dpg-auth-spin"></i> Unlocking...';
+      }
+      try {
+        if (!window.DPGCoinsPasses) throw new Error("Coins module still loading. Please retry.");
+        const res = await window.DPGCoinsPasses.redeemPass(passId);
+        refreshQuotaCoinsBadge();
+        if (fb) {
+          fb.style.display = "block";
+          fb.style.background = "rgba(16,185,129,0.16)";
+          fb.style.border = "1px solid rgba(16,185,129,0.4)";
+          fb.style.color = "#34d399";
+          fb.innerHTML = `🎉 <strong>${res.pass.name} Activated!</strong> Redirecting you to your resource...`;
+        }
+        setTimeout(() => clearQuotaLocksAndRedirect(), 750);
+      } catch (err) {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = origHtml;
+        }
+        if (fb) {
+          fb.style.display = "block";
+          fb.style.background = "rgba(239,68,68,0.15)";
+          fb.style.border = "1px solid rgba(239,68,68,0.35)";
+          fb.style.color = "#fca5a5";
+          fb.textContent = err.message || "Could not unlock with coins.";
+        }
+      }
+    };
     window.addEventListener('dpg-auth-success', function(e) {
       clearQuotaLocksAndRedirect();
     });

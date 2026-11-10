@@ -13,6 +13,7 @@
   <script src="../config.js"></script>
   <script src="/dpg-params.js"></script>
   <script src="../custom-dialogs.js"></script>
+  <script src="/dpg-coins-passes.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
   <script src="../native-dpgnotes-ads.js?v=2.6.0"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Tinos:wght@700&family=Merriweather:wght@700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -471,7 +472,11 @@
       <span>DPGNotes <span style="color:#a855f7;">Practical File</span></span>
     </a>
     <div class="nav-actions">
-      <div class="token-badge" id="tokenDisplay" title="Daily Generation Tokens remaining (Strict Firestore Quota Policy)">
+      <button type="button" class="token-badge" id="coverCoinsBadge" onclick="openCoverCoinsUpgradeModal()" style="cursor:pointer; border-color:rgba(245,158,11,0.4); background:rgba(245,158,11,0.12); color:#fbbf24;" title="Upgrade Utilities with DPG Coins">
+        <i class="ri-copper-coin-fill"></i>
+        <span id="coverCoinsCountText">0 Coins</span>
+      </button>
+      <div class="token-badge" id="tokenDisplay" onclick="openCoverCoinsUpgradeModal()" style="cursor:pointer;" title="Daily Generation Tokens or Unlimited Pass">
         <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
         <span id="tokenCountText">Tokens: 1 / 1</span>
       </div>
@@ -716,6 +721,27 @@
         You have reached your daily quota limit for practical cover page generation. Choose how you would like to proceed:
       </p>
       <div id="quotaChoiceSection" style="display:flex; flex-direction:column; gap:1rem; max-width:540px; margin:0 auto 1.5rem auto;">
+        <div id="coverCoinsUpgradeCard" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.35); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+            <span style="display:flex; align-items:center; gap:8px; color:#fbbf24; font-weight:700; font-size:1rem;">
+              <i class="ri-copper-coin-fill" style="font-size:1.3rem;"></i> Unlock Instantly with DPG Coins
+            </span>
+            <span id="coverQuotaModalCoinsBal" style="font-size:0.78rem; font-weight:700; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; padding:3px 10px; border-radius:999px;">0 Coins</span>
+          </div>
+          <p style="color:#cbd5e1; font-size:0.84rem; line-height:1.5; margin:0;">
+            Redeem DPG Coins for 1-click unlimited practical cover generation &amp; utility access without ads:
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(145px, 1fr)); gap:8px; margin-top:4px;">
+            <button type="button" onclick="redeemCoverPassWithCoins('utilities_1d', this)" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; border:none; padding:9px 10px; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">⚡ 1-Day Unlimited<br><span style="font-size:0.72rem; opacity:0.92;">650 Coins</span></button>
+            <button type="button" onclick="redeemCoverPassWithCoins('utilities_blaze', this)" style="background:rgba(251,113,133,0.18); border:1px solid rgba(251,113,133,0.4); color:#fda4af; padding:9px 10px; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">🔥 1-Mo Blaze<br><span style="font-size:0.72rem; opacity:0.92;">2,500 Coins</span></button>
+            <button type="button" onclick="redeemCoverPassWithCoins('utilities_pro', this)" style="background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.45); color:#e9d5ff; padding:9px 10px; border-radius:10px; font-weight:700; font-size:0.8rem; cursor:pointer;">💎 1-Mo Pro<br><span style="font-size:0.72rem; opacity:0.92;">4,500 Coins</span></button>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-top:4px; font-size:0.78rem;">
+            <span style="color:#94a3b8;">Unlocks all 5 DPGNotes utility tools</span>
+            <a href="/study-hub.html" style="color:#818cf8; font-weight:700; text-decoration:none;">Earn Coins in Study Hub &rarr;</a>
+          </div>
+          <div id="coverQuotaCoinsErr" style="display:none; margin-top:6px; padding:7px 10px; border-radius:8px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#fca5a5; font-size:0.78rem;"></div>
+        </div>
         <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(236,72,153,0.25); border-radius:14px; padding:1.2rem; text-align:left; display:flex; flex-direction:column; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; color:#f472b6; font-weight:700; font-size:1rem;">
             <i class="ri-play-circle-line" style="font-size:1.3rem;"></i> Option 1: Watch Learning Sponsor Ads
@@ -928,7 +954,12 @@
       } catch (err) {
         console.warn("Firestore quota sync error:", err);
       }
+      const hasActiveUnlimitedPass = () => Boolean(window.DPGCoinsPasses && window.DPGCoinsPasses.hasUnlimitedUtilitiesPass());
       updateTokenBadgeUI();
+      if (hasActiveUnlimitedPass()) {
+        exitQuotaLockdown();
+        return 999;
+      }
       if (currentQuotaTokens <= 0) {
         enterQuotaLockdown();
       } else {
@@ -937,12 +968,73 @@
       return currentQuotaTokens;
     }
     function updateTokenBadgeUI() {
+      const activePass = window.DPGCoinsPasses ? window.DPGCoinsPasses.hasUnlimitedUtilitiesPass() : null;
       const badge = document.getElementById('tokenCountText');
       if (badge) {
-        badge.textContent = `Tokens: ${currentQuotaTokens} / ${currentMaxQuota}`;
+        if (activePass) {
+          badge.textContent = `⚡ ${activePass.shortName || activePass.name} (Unlimited)`;
+        } else {
+          badge.textContent = `Tokens: ${currentQuotaTokens} / ${currentMaxQuota}`;
+        }
+      }
+      const coinsEl = document.getElementById('coverCoinsCountText');
+      if (coinsEl) {
+        const bal = window.DPGCoinsPasses ? window.DPGCoinsPasses.getCoinsBalance() : (parseInt(localStorage.getItem('dpg_user_coins_balance') || '0', 10) || 0);
+        coinsEl.textContent = `${bal.toLocaleString()} Coins`;
+      }
+      const modalBalEl = document.getElementById('coverQuotaModalCoinsBal');
+      if (modalBalEl) {
+        const bal = window.DPGCoinsPasses ? window.DPGCoinsPasses.getCoinsBalance() : (parseInt(localStorage.getItem('dpg_user_coins_balance') || '0', 10) || 0);
+        modalBalEl.textContent = `${bal.toLocaleString()} Coins`;
       }
     }
+    window.openCoverCoinsUpgradeModal = function() {
+      if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.openUpgradeModal === 'function') {
+        window.DPGCoinsPasses.openUpgradeModal('utilities', () => {
+          updateTokenBadgeUI();
+          exitQuotaLockdown();
+        });
+      }
+    };
+    window.redeemCoverPassWithCoins = async function(passId, btnEl) {
+      const errEl = document.getElementById('coverQuotaCoinsErr');
+      if (errEl) errEl.style.display = 'none';
+      const origHtml = btnEl ? btnEl.innerHTML : '';
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Upgrading...';
+      }
+      try {
+        if (!window.DPGCoinsPasses) throw new Error('DPG Coins module not loaded.');
+        const res = await window.DPGCoinsPasses.redeemPass(passId);
+        updateTokenBadgeUI();
+        exitQuotaLockdown();
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert(`🎉 ${res.pass.name} activated! You now have unlimited practical cover page generation across all DPGNotes utilities.`, { title: 'Unlimited Pass Active' });
+        }
+      } catch (err) {
+        if (errEl) {
+          errEl.style.display = 'block';
+          errEl.textContent = err.message || 'Upgrade failed.';
+        }
+      } finally {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = origHtml;
+        }
+      }
+    };
+    window.addEventListener('dpg-coins-pass-updated', () => {
+      updateTokenBadgeUI();
+      if (window.DPGCoinsPasses && window.DPGCoinsPasses.hasUnlimitedUtilitiesPass()) {
+        exitQuotaLockdown();
+      }
+    });
     async function consumeOneToken() {
+      if (window.DPGCoinsPasses && window.DPGCoinsPasses.hasUnlimitedUtilitiesPass()) {
+        updateTokenBadgeUI();
+        return;
+      }
       const quotaId = await getQuotaDocId();
       currentQuotaTokens = Math.max(0, currentQuotaTokens - 1);
       updateTokenBadgeUI();
@@ -962,6 +1054,13 @@
       }
     }
     function enterQuotaLockdown() {
+      if (window.DPGCoinsPasses && window.DPGCoinsPasses.hasUnlimitedUtilitiesPass()) {
+        exitQuotaLockdown();
+        return;
+      }
+      updateTokenBadgeUI();
+      const coinsErrEl = document.getElementById('coverQuotaCoinsErr');
+      if (coinsErrEl) coinsErrEl.style.display = 'none';
       const genContainer = document.querySelector('.generator-container');
       const logsSec = document.querySelector('.saved-logs-section') || document.querySelector('.logs-section');
       if (genContainer) genContainer.style.setProperty('display', 'none', 'important');
@@ -1624,7 +1723,8 @@
         document.getElementById('inpCourseSec')?.focus();
         return;
       }
-      if (currentQuotaTokens <= 0) {
+      const hasUnlimited = Boolean(window.DPGCoinsPasses && window.DPGCoinsPasses.hasUnlimitedUtilitiesPass());
+      if (!hasUnlimited && currentQuotaTokens <= 0) {
         enterQuotaLockdown();
         return;
       }

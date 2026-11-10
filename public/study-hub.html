@@ -29,6 +29,7 @@
   <script src="/contributor-hover-card.js" defer></script>
   <script src="/history-monitoring.js" defer></script>
   <script src="/custom-dialogs.js"></script>
+  <script src="/dpg-coins-passes.js"></script>
 
   <style>
     /* ==========================================================================
@@ -3568,6 +3569,32 @@
       }
     };
 
+    window.redeemHubWalletPass = async function(passId, btnEl) {
+      if (!window.DPGCoinsPasses) return;
+      const origText = btnEl ? btnEl.textContent : "";
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.textContent = "Activating...";
+      }
+      try {
+        const res = await window.DPGCoinsPasses.redeemPass(passId);
+        userCoins = res.newBalance;
+        updateCoinsDisplay();
+        window.closeWalletModal();
+        if (typeof window.customAlert === "function") {
+          await window.customAlert(`🎉 ${res.pass.name} is now active! Remaining balance: ${userCoins.toLocaleString()} DPGCoins.`, { title: "Pass Activated" });
+        }
+      } catch (err) {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.textContent = origText;
+        }
+        if (typeof window.customAlert === "function") {
+          await window.customAlert(err.message || "Could not activate pass right now.", { title: "Insufficient Balance", isDanger: true });
+        }
+      }
+    };
+
     // Professional DPG Coins Economy & Wallet Modal
     window.showCoinsModal = function() {
       const activeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid");
@@ -3619,24 +3646,50 @@
           </div>
 
           <div class="dpg-wallet-tiers-title">
-            <i class="ri-exchange-dollar-line"></i> Redemption Value
+            <i class="ri-exchange-dollar-line"></i> Redemption Value &amp; Instant Upgrade
           </div>
           <div class="dpg-wallet-tiers-grid">
-            <div class="dpg-wallet-tier-card">
-              <span class="dpg-wallet-tier-cost">650 Coins</span>
-              <span class="dpg-wallet-tier-desc">1-Day Utilities Unlimited Pass</span>
+            <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+              <div>
+                <span class="dpg-wallet-tier-cost">650 Coins</span>
+                <div class="dpg-wallet-tier-desc">1-Day Utilities Unlimited Pass</div>
+              </div>
+              <button type="button" onclick="window.redeemHubWalletPass('utilities_1d', this)" style="align-self:flex-start; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.38); color:#f59e0b; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
             </div>
-            <div class="dpg-wallet-tier-card">
-              <span class="dpg-wallet-tier-cost">2,500 Coins</span>
-              <span class="dpg-wallet-tier-desc">1-Month Blaze Access Tier</span>
+            <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+              <div>
+                <span class="dpg-wallet-tier-cost">2,500 Coins</span>
+                <div class="dpg-wallet-tier-desc">1-Month Blaze Access Tier</div>
+              </div>
+              <button type="button" onclick="window.redeemHubWalletPass('utilities_blaze', this)" style="align-self:flex-start; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.38); color:#f59e0b; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
             </div>
-            <div class="dpg-wallet-tier-card">
-              <span class="dpg-wallet-tier-cost">500 Coins</span>
-              <span class="dpg-wallet-tier-desc">1-Day Full Academic Access</span>
+            <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+              <div>
+                <span class="dpg-wallet-tier-cost">4,500 Coins</span>
+                <div class="dpg-wallet-tier-desc">1-Month Pro Tier (All-in-One)</div>
+              </div>
+              <button type="button" onclick="window.redeemHubWalletPass('utilities_pro', this)" style="align-self:flex-start; background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.38); color:#c084fc; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
             </div>
-            <div class="dpg-wallet-tier-card">
-              <span class="dpg-wallet-tier-cost">800 Coins</span>
-              <span class="dpg-wallet-tier-desc">₹1 Native Ads Bill Settlement</span>
+            <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+              <div>
+                <span class="dpg-wallet-tier-cost">500 Coins</span>
+                <div class="dpg-wallet-tier-desc">1-Day Full Academic Access</div>
+              </div>
+              <button type="button" onclick="window.redeemHubWalletPass('access_1d', this)" style="align-self:flex-start; background:rgba(16,185,129,0.16); border:1px solid rgba(16,185,129,0.38); color:#10b981; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+            </div>
+            <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+              <div>
+                <span class="dpg-wallet-tier-cost">10,500 Coins</span>
+                <div class="dpg-wallet-tier-desc">15-Days Full Academic Access</div>
+              </div>
+              <button type="button" onclick="window.redeemHubWalletPass('access_15d', this)" style="align-self:flex-start; background:rgba(56,189,248,0.16); border:1px solid rgba(56,189,248,0.38); color:#38bdf8; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+            </div>
+            <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+              <div>
+                <span class="dpg-wallet-tier-cost">800 Coins</span>
+                <div class="dpg-wallet-tier-desc">₹1 Native Ads Bill Settlement</div>
+              </div>
+              <a href="dashboard.html" style="align-self:flex-start; background:rgba(99,102,241,0.16); border:1px solid rgba(99,102,241,0.38); color:#818cf8; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; text-decoration:none;">Pay Bill</a>
             </div>
           </div>
 
