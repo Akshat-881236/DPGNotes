@@ -3830,8 +3830,12 @@ async function loadAdsMonetizationAdmin() {
         tierColor = "#d97706"; tierBg = "rgba(217,119,6,0.2)"; tierBorder = "rgba(217,119,6,0.4)";
       }
       const status = c.status || "Pending";
+      const isCoinPaid = status === "Paid" && (c.paymentMethod === "DPGCoins" || (c.coinsPaid && c.coinsPaid > 0));
+      const isSettledFinal = c.isSettledFinal === true || c.isClearedOrWaived === true || c.paymentMethod === "DPGCoins" || status !== "Pending";
       let statusBadge = `<span style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); color:#f87171; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">⏳ Pending</span>`;
-      if (status === "Paid") {
+      if (isCoinPaid) {
+        statusBadge = `<span style="background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fbbf24; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">🪙 Paid (DPG Coins)</span>`;
+      } else if (status === "Paid") {
         statusBadge = `<span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.35); color:#34d399; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">✅ Paid</span>`;
       } else if (status === "Waived") {
         statusBadge = `<span style="background:rgba(148,163,184,0.15); border:1px solid rgba(148,163,184,0.35); color:#cbd5e1; font-size:0.75rem; padding:3px 8px; border-radius:6px; font-weight:700;">🎁 Waived</span>`;
@@ -3879,12 +3883,18 @@ async function loadAdsMonetizationAdmin() {
         </td>
         <td style="padding:0.75rem;">
           ${statusBadge}
-          ${c.isLocked ? `<div style="font-size:0.68rem; color:#94a3b8; margin-top:2px;"><i class="ri-lock-line"></i> Locked Cycle</div>` : ''}
+          ${isSettledFinal ? `<div style="font-size:0.68rem; color:#34d399; margin-top:2px;"><i class="ri-lock-2-line"></i> Finalized · Locked</div>` : (c.isLocked ? `<div style="font-size:0.68rem; color:#94a3b8; margin-top:2px;"><i class="ri-lock-line"></i> Locked Cycle</div>` : '')}
         </td>
         <td style="padding:0.75rem;">
-          <button type="button" onclick="window.openUpdateMonetizationStatusModal('${c.contributorUid}', '${(c.contributorName || 'Contributor').replace(/'/g, "\\'")}', '${selectedMonth}', '${c.totalNetPayable}', '${status}', '${(c.note || '').replace(/'/g, "\\'")}')" class="btn-action primary" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
-            <i class="ri-edit-line"></i> Update
-          </button>
+          ${isSettledFinal ? `
+            <button type="button" disabled title="Status already finalized (${isCoinPaid ? 'Paid with DPG Coins' : status}) for ${selectedMonth}. Further updates are disabled for this contributor's monthly bill cycle." class="btn-action" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; background:rgba(148,163,184,0.12); border:1px solid rgba(148,163,184,0.25); color:#94a3b8; border-radius:8px; cursor:not-allowed; opacity:0.65;">
+              <i class="ri-lock-2-line"></i> Finalized
+            </button>
+          ` : `
+            <button type="button" onclick="window.openUpdateMonetizationStatusModal('${c.contributorUid}', '${(c.contributorName || 'Contributor').replace(/'/g, "\\'")}', '${selectedMonth}', '${c.totalNetPayable}', '${status}', '${(c.note || '').replace(/'/g, "\\'")}')" class="btn-action primary" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
+              <i class="ri-edit-line"></i> Update
+            </button>
+          `}
         </td>
       `;
       tbody.appendChild(tr);
@@ -3965,7 +3975,24 @@ window.toggleAdMonetizationBreakdown = function(subRowId) {
     el.style.display = (el.style.display === "none") ? "table-row" : "none";
   }
 };
+function isContributorCycleSettled(contributorUid, month) {
+  const rows = adsMonetizationDataCache && Array.isArray(adsMonetizationDataCache.contributors)
+    ? adsMonetizationDataCache.contributors
+    : [];
+  const match = rows.find(r => r.contributorUid === contributorUid && (!month || !r.month || r.month === month));
+  if (!match) return false;
+  const st = String(match.status || "Pending").trim().toLowerCase();
+  return match.isSettledFinal === true ||
+    match.isClearedOrWaived === true ||
+    match.paymentMethod === "DPGCoins" ||
+    st !== "pending";
+}
 window.openUpdateMonetizationStatusModal = function(contributorUid, contributorName, month, netPayable, currentStatus, currentNote) {
+  const normalizedStatus = String(currentStatus || "Pending").trim().toLowerCase();
+  if (normalizedStatus !== "pending" || isContributorCycleSettled(contributorUid, month)) {
+    alert(`Payment status for ${contributorName || 'this contributor'} (${month}) is already finalized and locked. Further updates are disabled for this billing cycle.`);
+    return;
+  }
   const modal = document.getElementById("monetizationStatusModal");
   if (!modal) return;
   const contribIdEl = document.getElementById("modalContribId");
@@ -3998,8 +4025,13 @@ window.submitUpdateMonetizationStatus = async function() {
     alert("Missing required status information.");
     return;
   }
+  if (isContributorCycleSettled(contributorId, month)) {
+    alert(`Billing statement for ${contributorName} (${month}) is already finalized. Further updates are disabled.`);
+    window.closeMonetizationStatusModal();
+    return;
+  }
   try {
-    const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+    const baseUrl = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : 'https://dpgnotes.onrender.com';
     const res = await fetch(`${baseUrl}/api/admin/update-monetization-status`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

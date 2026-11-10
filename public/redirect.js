@@ -810,7 +810,8 @@
         triggerQuotaReachedPhase();
         return;
       }
-      fetch((window.API_BASE_URL || '') + '/api/guest-quota', {
+      const _apiBaseFallback = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://dpgnotes.onrender.com';
+      fetch((window.API_BASE_URL || _apiBaseFallback) + '/api/guest-quota', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ guestId, action: currentAction })
@@ -836,7 +837,8 @@
         platform: navigator.platform,
         touchSupport: ('ontouchstart' in window)
       } : null;
-      fetch((window.API_BASE_URL || '') + '/api/device-log', {
+      const _apiBaseFallback = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://dpgnotes.onrender.com';
+      fetch((window.API_BASE_URL || _apiBaseFallback) + '/api/device-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -885,7 +887,8 @@
           if (window.dpgDb && window.doc && window.setDoc) {
             await window.setDoc(window.doc(window.dpgDb, "ad_trackings", `${trackId}_${visitorUid}`), trackingData, { merge: true }).catch(console.warn);
           } else {
-            fetch((window.API_BASE_URL || '') + '/api/ad-track-telemetry', {
+            const _apiBaseFallback = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : 'https://dpgnotes.onrender.com';
+            fetch((window.API_BASE_URL || _apiBaseFallback) + '/api/ad-track-telemetry', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(trackingData)

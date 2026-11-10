@@ -2,6 +2,7 @@
 <html lang="en" data-theme="default">
 <head>
   <script src="/dpg-loader.js"></script>
+  <script src="/config.js"></script>
   <script src="/redirect.js" defer></script>
   <meta name="google-adsense-account" content="ca-pub-5515547448097504">
   <meta charset="UTF-8">
@@ -1353,6 +1354,354 @@
         grid-template-columns: repeat(3, 1fr);
       }
     }
+
+    /* Quiz Title Hyperlink (for Contributor Public Quizzes) */
+    .sim-quiz-title-link {
+      color: var(--text-main);
+      text-decoration: none;
+      border-bottom: 1.5px dashed var(--accent-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .sim-quiz-title-link:hover {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-secondary);
+    }
+    .sim-quiz-title-link i {
+      font-size: 0.82em;
+      color: var(--accent-primary);
+      flex-shrink: 0;
+    }
+
+    /* Professional Glassy DPG Coins Wallet Modal */
+    .dpg-wallet-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100005;
+      background: rgba(8, 12, 24, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.24s ease;
+    }
+    .dpg-wallet-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+    .dpg-wallet-dialog {
+      position: relative;
+      width: 100%;
+      max-width: 470px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 22px;
+      padding: 1.65rem;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      color: #f8fafc;
+      transform: translateY(10px) scale(0.97);
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .dpg-wallet-overlay.active .dpg-wallet-dialog {
+      transform: translateY(0) scale(1);
+    }
+    .dpg-wallet-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dpg-wallet-close-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+    .dpg-wallet-header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .dpg-wallet-emblem {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto 0.75rem;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.75rem;
+      box-shadow: 0 8px 22px rgba(245, 158, 11, 0.38);
+    }
+    .dpg-wallet-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.32rem;
+      font-weight: 800;
+      margin: 0 0 0.2rem 0;
+      color: inherit;
+    }
+    .dpg-wallet-subtitle {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+    .dpg-wallet-balance-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(217, 119, 6, 0.06));
+      border: 1px solid rgba(245, 158, 11, 0.32);
+      border-radius: 14px;
+      padding: 1rem 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+    .dpg-wallet-bal-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 2px;
+    }
+    .dpg-wallet-bal-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #f59e0b;
+      line-height: 1.1;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .dpg-wallet-bal-unit {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+    .dpg-wallet-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.4rem 0.78rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .dpg-wallet-status-pill.verified {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+    .dpg-wallet-status-pill.guest {
+      background: rgba(148, 163, 184, 0.14);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #cbd5e1;
+    }
+    .dpg-wallet-earn-strip {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.24);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.81rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+      line-height: 1.45;
+    }
+    .dpg-wallet-earn-strip i {
+      color: #818cf8;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+    .dpg-wallet-tiers-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #94a3b8;
+      margin-bottom: 0.55rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dpg-wallet-tiers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.55rem;
+      margin-bottom: 1.25rem;
+    }
+    .dpg-wallet-tier-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .dpg-wallet-tier-cost {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #f59e0b;
+    }
+    .dpg-wallet-tier-desc {
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      line-height: 1.3;
+    }
+    .dpg-wallet-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dpg-wallet-btn-primary {
+      width: 100%;
+      padding: 0.82rem 1rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border: none;
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.94rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.3);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .dpg-wallet-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(245, 158, 11, 0.42);
+    }
+    .dpg-wallet-btn-signin {
+      width: 100%;
+      padding: 0.82rem 1rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.3);
+    }
+    .dpg-wallet-btn-close {
+      width: 100%;
+      padding: 0.72rem 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease;
+    }
+    .dpg-wallet-btn-close:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    /* Light Theme Support for Wallet Modal */
+    html[data-theme="light"] .dpg-wallet-dialog {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      color: #0f172a;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+    }
+    html[data-theme="light"] .dpg-wallet-close-btn {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #475569;
+    }
+    html[data-theme="light"] .dpg-wallet-subtitle,
+    html[data-theme="light"] .dpg-wallet-bal-unit,
+    html[data-theme="light"] .dpg-wallet-tiers-title {
+      color: #64748b;
+    }
+    html[data-theme="light"] .dpg-wallet-balance-card {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+    html[data-theme="light"] .dpg-wallet-status-pill.verified {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #059669;
+    }
+    html[data-theme="light"] .dpg-wallet-status-pill.guest {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #475569;
+    }
+    html[data-theme="light"] .dpg-wallet-earn-strip {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      color: #334155;
+    }
+    html[data-theme="light"] .dpg-wallet-earn-strip i {
+      color: #4f46e5;
+    }
+    html[data-theme="light"] .dpg-wallet-tier-card {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+    html[data-theme="light"] .dpg-wallet-tier-desc {
+      color: #334155;
+    }
+    html[data-theme="light"] .dpg-wallet-btn-close {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+    html[data-theme="light"] .dpg-wallet-btn-close:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    @media (max-width: 440px) {
+      .dpg-wallet-dialog {
+        padding: 1.25rem;
+      }
+      .dpg-wallet-tiers-grid {
+        grid-template-columns: 1fr;
+      }
+      .dpg-wallet-balance-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1692,7 +2041,7 @@
             <span>Balance:</span>
             <strong id="simUserCoinsCount" style="color:#f59e0b;">50</strong>
             <span style="font-size:0.75rem; color:var(--text-muted);">DPGCoins</span>
-            <button type="button" class="btn-sync-coins" id="btnSyncCoins" onclick="window.addDpgCoinsToAccount()" title="Sync local coins to Contributor Firestore Cloud Account">
+            <button type="button" class="btn-sync-coins" id="btnSyncCoins" onclick="window.addDpgCoinsToAccount()" title="Save local DPG Coins to your Contributor account">
               <i class="ri-cloud-upload-line"></i> <span>Add DPG Coins</span>
             </button>
           </div>
@@ -1799,9 +2148,9 @@
        11. JAVASCRIPT: INDEXEDDB PERSISTENCE, 3-HOUR CACHE, DPG COINS & REAL DATA
        ========================================================================== */ -->
   <script type="module">
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, getDoc, collectionGroup, query, limit, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, getDoc, collectionGroup, query, limit, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -1812,9 +2161,49 @@
       appId: "1:910494426039:web:adeae5315caaf846c43e32"
     };
 
-    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const app = getApps().find(a => a.name === "dpgnotes") || initializeApp(firebaseConfig, "dpgnotes");
     const db = getFirestore(app);
     const auth = getAuth(app);
+
+    function getCoinsApiBase() {
+      const fallback = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:5000'
+        : 'https://dpgnotes.onrender.com';
+      const configured = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+        ? window.API_BASE_URL
+        : fallback;
+      return configured.replace(/\/+$/, '');
+    }
+
+    async function syncCoinsToCloud(uid, coinsValue, mode = "max") {
+      if (!uid) return { success: false, dpgCoins: coinsValue };
+      const numericCoins = Math.max(0, Math.floor(Number(coinsValue) || 0));
+      const hasNativeAuth = Boolean(auth && auth.currentUser && auth.currentUser.uid === uid);
+
+      if (hasNativeAuth) {
+        try {
+          await setDoc(doc(db, "users", uid), {
+            dpgCoins: numericCoins,
+            coinsLastUpdated: serverTimestamp(),
+            lastPurgedAt: Date.now()
+          }, { merge: true });
+          return { success: true, dpgCoins: numericCoins, via: "firestore" };
+        } catch (fsErr) {
+          console.warn("[Study Hub] Direct Firestore write fallback to API:", fsErr.code || fsErr.message);
+        }
+      }
+
+      const res = await fetch(`${getCoinsApiBase()}/api/coins/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid, coins: numericCoins, mode })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Unable to save DPG Coins to server.");
+      }
+      return { success: true, dpgCoins: typeof data.dpgCoins === "number" ? data.dpgCoins : numericCoins, via: "api" };
+    }
 
     let currentUser = null;
     let isContributor = false;
@@ -1942,7 +2331,7 @@
       renderLoggedOutUserUI();
     };
 
-    // Sync cloud coins from Firestore for Contributor
+    // Sync cloud coins from Contributor account
     async function syncContributorCoinsFromCloud(uid) {
       if (!uid) return;
       try {
@@ -1950,13 +2339,17 @@
         if (uSnap.exists()) {
           const cloudData = uSnap.data();
           if (typeof cloudData.dpgCoins === 'number') {
-            userCoins = Math.max(userCoins, cloudData.dpgCoins);
+            const localUpdatedAt = parseInt(localStorage.getItem("dpg_coins_local_updated_at") || "0", 10);
+            const cloudDebitAt = typeof cloudData.coinsLastDebitAt === "number" ? cloudData.coinsLastDebitAt : 0;
+            userCoins = cloudDebitAt > localUpdatedAt
+              ? cloudData.dpgCoins
+              : Math.max(userCoins, cloudData.dpgCoins);
             localStorage.setItem(COINS_LOCAL_KEY, String(userCoins));
             updateCoinsDisplay();
           }
         }
       } catch (err) {
-        console.warn("[Study Hub] Contributor cloud coins check notice:", err.message);
+        console.warn("[Study Hub] Contributor coins check notice:", err.message);
       }
     }
 
@@ -2166,8 +2559,11 @@
         updateMetricsUI(cached.stats);
         renderCategorizedResources();
         renderContributorsUI();
+        await Promise.race([
+          loadContributorQuizQuestions(allDocsList.filter(d => d.category === "Quiz")),
+          new Promise(resolve => setTimeout(resolve, 1200))
+        ]);
         initQuizChallenge();
-        loadContributorQuizQuestions(docs.filter(d => d.category === "Quiz"));
         return;
       }
 
@@ -2275,6 +2671,7 @@
 
             docs.push({
               id: qDoc.id,
+              quizId: q.quizId || qDoc.id,
               type: "Quiz",
               category: "Quiz",
               title: q.title,
@@ -2317,8 +2714,11 @@
         updateMetricsUI(stats);
         renderCategorizedResources();
         renderContributorsUI();
+        await Promise.race([
+          loadContributorQuizQuestions(docs.filter(d => d.category === "Quiz")),
+          new Promise(resolve => setTimeout(resolve, 1200))
+        ]);
         initQuizChallenge();
-        loadContributorQuizQuestions(docs.filter(d => d.category === "Quiz"));
       } catch (err) {
         console.warn("[Study Hub] Sync fallback notice:", err.message);
       }
@@ -2562,6 +2962,7 @@
     });
 
     window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { window.closeWalletModal && window.closeWalletModal(); }
       if (e.key === "/" && document.activeElement !== searchInput) {
         e.preventDefault();
         searchInput?.focus();
@@ -2768,12 +3169,14 @@
     // Asynchronously fetch question pages from published contributor public quizzes
     async function loadContributorQuizQuestions(quizzes) {
       if (!Array.isArray(quizzes) || quizzes.length === 0) return;
-      const targetQuizzes = quizzes.filter(q => q.uploaderUid && q.id).slice(0, 6);
-      for (const q of targetQuizzes) {
+      const targetQuizzes = quizzes.filter(q => q.uploaderUid && (q.quizId || q.id)).slice(0, 12);
+      await Promise.all(targetQuizzes.map(async (q) => {
+        const targetQuizId = q.quizId || q.id;
+        const quizHref = q.url || `Quizes/index.html?quizId=${encodeURIComponent(targetQuizId)}`;
         try {
           const [pageSnap, keySnap] = await Promise.all([
-            getDoc(doc(db, "contributors", q.uploaderUid, "quizzes", q.id, "questionPages", "page_1")),
-            getDoc(doc(db, "contributors", q.uploaderUid, "quizzes", q.id, "privateAnswerKey", "main")).catch(() => null)
+            getDoc(doc(db, "contributors", q.uploaderUid, "quizzes", targetQuizId, "questionPages", "page_1")),
+            getDoc(doc(db, "contributors", q.uploaderUid, "quizzes", targetQuizId, "privateAnswerKey", "main")).catch(() => null)
           ]);
 
           if (pageSnap.exists()) {
@@ -2794,13 +3197,14 @@
                     const letters = ['A', 'B', 'C', 'D'];
                     opts = letters.map(k => String(item.options[k] || '').trim());
                   }
-                  if (opts.length === 4) {
+                  if (opts.length === 4 && opts.every(Boolean)) {
                     contributorMcqPool.push({
                       quizTitle: q.title || "Academic Assessment Challenge",
+                      quizUrl: quizHref,
                       q: String(item.questionText || item.question || item.q || '').trim(),
                       opts: opts,
                       a: correctIdx,
-                      exp: item.explanation || `Verified response confirmed from curriculum documentation for ${q.title || 'university syllabus'}.`
+                      exp: item.explanation || `Verified response from ${q.title || 'contributor assessment'}.`
                     });
                   }
                 }
@@ -2810,7 +3214,7 @@
         } catch (e) {
           // Graceful fallback to verified in-memory bank
         }
-      }
+      }));
     }
 
     /* --------------------------------------------------------------------------
@@ -2879,31 +3283,34 @@
       const optsEl = document.getElementById("simOptionsContainer");
       if (!titleEl || !qTextEl || !optsEl) return;
 
-      // Pool of non-code MCQs includes contributor questions plus verified university bank
-      const nonCodeMcqPool = [...academicNonCodeMcqBank, ...contributorMcqPool];
+      // Favor Contributor Uploaded Public Quizzes when available while rotating Academic Bank & Arithmetic
+      const hasContributorQuestions = contributorMcqPool.length > 0;
+      const roll = Math.random();
+      let pick = null;
 
-      // Randomly select between Arithmetic speed quiz and Academic Theory MCQ
-      const chooseArithmetic = Math.random() < 0.45 || nonCodeMcqPool.length === 0;
-
-      if (!chooseArithmetic && nonCodeMcqPool.length > 0) {
-        const pick = nonCodeMcqPool[Math.floor(Math.random() * nonCodeMcqPool.length)];
-        titleEl.textContent = pick.quizTitle || "Academic Assessment Challenge";
-        currentSimQuestion = {
-          q: pick.q,
-          opts: pick.opts,
-          correctIndex: pick.a,
-          exp: pick.exp
-        };
+      if (hasContributorQuestions && roll < 0.55) {
+        pick = contributorMcqPool[Math.floor(Math.random() * contributorMcqPool.length)];
+      } else if (roll < 0.8) {
+        const mergedAcademic = [...academicNonCodeMcqBank, ...contributorMcqPool];
+        pick = mergedAcademic[Math.floor(Math.random() * mergedAcademic.length)];
       } else {
-        const pick = arithmeticQuestions[Math.floor(Math.random() * arithmeticQuestions.length)];
-        titleEl.textContent = pick.quizTitle || "Test Your Arithmetic Speed";
-        currentSimQuestion = {
-          q: pick.q,
-          opts: pick.opts,
-          correctIndex: pick.a,
-          exp: pick.exp
-        };
+        pick = arithmeticQuestions[Math.floor(Math.random() * arithmeticQuestions.length)];
       }
+
+      if (pick.quizUrl) {
+        const safeUrl = escapeHtml(pick.quizUrl);
+        const safeTitle = escapeHtml(pick.quizTitle || "Contributor Public Quiz");
+        titleEl.innerHTML = `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="sim-quiz-title-link" title="Open Full Quiz: ${safeTitle}">${safeTitle} <i class="ri-external-link-line"></i></a>`;
+      } else {
+        titleEl.textContent = pick.quizTitle || "Academic Assessment Challenge";
+      }
+
+      currentSimQuestion = {
+        q: pick.q,
+        opts: pick.opts,
+        correctIndex: pick.a,
+        exp: pick.exp
+      };
 
       renderSimulatorQuestion(isAutoNext);
     }
@@ -3045,15 +3452,14 @@
         targetAccount: "its.akshatnetworkhub23@gmail.com"
       });
 
-      // Real-Time DPG Coins Purge to Firestore (Only for Contributor)
+      try {
+        localStorage.setItem("dpg_coins_local_updated_at", String(Date.now()));
+      } catch(e) {}
+
+      // Real-Time DPG Coins Purge to Cloud (Only for Contributor)
       const purgeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid");
-      if (isContributor && purgeUid) {
-        try {
-          setDoc(doc(db, "users", purgeUid), {
-            dpgCoins: userCoins,
-            coinsLastUpdated: serverTimestamp()
-          }, { merge: true }).catch(err => console.warn("[Study Hub] Real-time coin purge notice:", err));
-        } catch(e) {}
+      if (isContributor && purgeUid && coinDelta !== 0) {
+        syncCoinsToCloud(purgeUid, userCoins, "max").catch(err => console.warn("[Study Hub] Real-time coin sync notice:", err.message));
       }
 
       // Auto-advance to next question
@@ -3083,22 +3489,30 @@
       initQuizChallenge(true);
     };
 
-    // Manual Action: Add DPG Coins (Purge local coins to Firestore Cloud wrt Contributor UID)
+    window.closeWalletModal = function() {
+      const overlay = document.getElementById("dpgWalletModalOverlay");
+      if (!overlay) return;
+      overlay.classList.remove("active");
+      setTimeout(() => {
+        if (!overlay.classList.contains("active")) overlay.style.display = "none";
+      }, 240);
+    };
+
+    // Manual Action: Add DPG Coins to Contributor account
     window.addDpgCoinsToAccount = async function() {
-      // Cleanly dismiss any open coins modal overlay so modals do not stack
+      window.closeWalletModal();
       try {
         document.querySelectorAll('.dpg-modal-overlay').forEach(function(o) { o.remove(); });
       } catch(e) {}
+
       const activeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid");
 
       if (!activeUid) {
         if (typeof window.customAlert === 'function') {
           await window.customAlert(
-            "You are currently playing as a Guest. Guest coins are collected locally on this device.\n\nTo purge and sync your DPG Coins to Firestore across multiple devices, please Sign In as a Contributor.",
-            { title: "Contributor Account Required" }
+            "You are currently using a Guest session where coins stay stored locally on this device. Sign in as a Contributor to access your balance across all devices.",
+            { title: "Contributor Sign In Required" }
           );
-        } else {
-          alert("Please sign in as a Contributor to sync your DPG Coins across devices.");
         }
         return;
       }
@@ -3107,31 +3521,25 @@
       const origText = btn ? btn.innerHTML : "";
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Syncing...`;
+        btn.innerHTML = `<i class="ri-loader-4-line ri-spin"></i> Saving...`;
       }
 
       try {
         let cloudCoins = 0;
-        const userRef = doc(db, "users", activeUid);
-        const userSnap = await getDoc(userRef).catch(() => null);
+        const userSnap = await getDoc(doc(db, "users", activeUid)).catch(() => null);
         if (userSnap && userSnap.exists()) {
           cloudCoins = userSnap.data().dpgCoins || 0;
         }
 
-        // Merge: ensure local coins are preserved and pushed to cloud
-        const finalCoins = Math.max(userCoins, cloudCoins);
+        const mergedCoins = Math.max(userCoins, cloudCoins);
+        const result = await syncCoinsToCloud(activeUid, mergedCoins, "max");
+        const finalCoins = (result && typeof result.dpgCoins === "number") ? result.dpgCoins : mergedCoins;
+
         userCoins = finalCoins;
         localStorage.setItem(COINS_LOCAL_KEY, String(userCoins));
+        localStorage.setItem("dpg_coins_local_updated_at", String(Date.now()));
         updateCoinsDisplay();
 
-        // Write directly to Firestore
-        await setDoc(userRef, {
-          dpgCoins: finalCoins,
-          coinsLastUpdated: serverTimestamp(),
-          lastPurgedAt: Date.now()
-        }, { merge: true });
-
-        // Record sync transaction
         await setInIDB("dpg_coins_wallet", {
           id: "sync_" + Date.now(),
           delta: 0,
@@ -3142,19 +3550,15 @@
           uid: activeUid
         });
 
-        const successMsg = `Successfully purged and synced ${finalCoins} DPG Coins to your Contributor Cloud Account!\n\nYour balance is now permanently stored in Firestore under Contributor UID (${activeUid.slice(0, 8)}...) and accessible device-by-device.`;
+        const successMsg = `Your balance of ${finalCoins.toLocaleString()} DPG Coins has been saved to your Contributor account and is now accessible across all your devices.`;
         if (typeof window.customAlert === 'function') {
-          await window.customAlert(successMsg, { title: "DPG Coins Synced to Cloud" });
-        } else {
-          alert(successMsg);
+          await window.customAlert(successMsg, { title: "DPG Coins Added" });
         }
       } catch (err) {
-        console.error("[Study Hub] Coins cloud write failed:", err);
-        const errMsg = "Failed to sync DPG Coins to Firestore cloud. Please check network connection and try again.";
+        console.error("[Study Hub] Coins sync failed:", err);
+        const errMsg = "Could not save DPG Coins right now. Please verify your internet connection and try again.";
         if (typeof window.customAlert === 'function') {
-          await window.customAlert(errMsg, { title: "Cloud Write Failed", isDanger: true });
-        } else {
-          alert(errMsg);
+          await window.customAlert(errMsg, { title: "Sync Interrupted", isDanger: true });
         }
       } finally {
         if (btn) {
@@ -3164,61 +3568,97 @@
       }
     };
 
-    // Custom Glassy DPG Coins Economy & Wallet Modal (No native alert!)
+    // Professional DPG Coins Economy & Wallet Modal
     window.showCoinsModal = function() {
       const activeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid");
-      const accountType = activeUid ? "Verified Contributor Account" : "Guest (Local Device Wallet)";
 
-      const modalHtml = `
-        <div style="text-align:left; font-size:0.9rem; line-height:1.55; color:var(--text-main);">
-          <div style="background:rgba(245, 158, 11, 0.12); border:1px solid rgba(245, 158, 11, 0.3); border-radius:12px; padding:1rem; margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-            <div>
-              <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:#f59e0b; font-weight:700;">Active Balance</div>
-              <div style="font-size:1.8rem; font-weight:800; color:#f59e0b; line-height:1.1;">${userCoins} <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">DPGCoins</span></div>
+      let overlay = document.getElementById("dpgWalletModalOverlay");
+      if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "dpgWalletModalOverlay";
+        overlay.className = "dpg-wallet-overlay";
+        overlay.setAttribute("role", "dialog");
+        overlay.setAttribute("aria-modal", "true");
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) window.closeWalletModal();
+        });
+        document.body.appendChild(overlay);
+      }
+
+      overlay.innerHTML = `
+        <div class="dpg-wallet-dialog">
+          <button type="button" class="dpg-wallet-close-btn" onclick="window.closeWalletModal()" aria-label="Close">
+            <i class="ri-close-line"></i>
+          </button>
+
+          <div class="dpg-wallet-header">
+            <div class="dpg-wallet-emblem">
+              <i class="ri-copper-coin-fill"></i>
             </div>
-            <div style="text-align:right;">
-              <div style="font-size:0.75rem; color:var(--text-muted);">Account Status</div>
-              <div style="font-size:0.85rem; font-weight:700; color:${activeUid ? 'var(--accent-emerald)' : 'var(--text-subtle)'};">
-                <i class="${activeUid ? 'ri-verified-badge-fill' : 'ri-device-line'}"></i> ${accountType}
+            <h3 class="dpg-wallet-title">DPG Coins Economy &amp; Wallet</h3>
+            <p class="dpg-wallet-subtitle">Earn rewards &amp; unlock platform benefits</p>
+          </div>
+
+          <div class="dpg-wallet-balance-card">
+            <div>
+              <div class="dpg-wallet-bal-label">Active Balance</div>
+              <div class="dpg-wallet-bal-value">
+                <span>${userCoins.toLocaleString()}</span>
+                <span class="dpg-wallet-bal-unit">DPGCoins</span>
               </div>
             </div>
-          </div>
-
-          <div style="margin-bottom:1rem; font-size:0.85rem; color:var(--text-muted);">
-            <strong>How to earn:</strong> Answer public contributor quizzes (+8 Guest / +12 Contributor per correct answer).
-          </div>
-
-          <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-glass); border-radius:10px; padding:0.85rem; margin-bottom:1.25rem;">
-            <div style="font-weight:700; font-size:0.82rem; margin-bottom:0.4rem; color:var(--text-main);"><i class="ri-exchange-dollar-line"></i> Redemption Value:</div>
-            <ul style="margin:0; padding-left:1.2rem; font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
-              <li><strong>650 Coins:</strong> 1-Day Utilities Unlimited Token Pass</li>
-              <li><strong>2,500 Coins:</strong> 1-Month Blaze Access Tier</li>
-              <li><strong>500 Coins:</strong> 1-Day Full Academic Access Pass</li>
-              <li><strong>Native Ads Settlement:</strong> 100 Coins = ₹10 Bill Credit</li>
-            </ul>
-          </div>
-
-          ${activeUid ? `
-            <button type="button" onclick="window.addDpgCoinsToAccount()" style="width:100%; padding:0.75rem 1rem; border-radius:10px; background:linear-gradient(135deg, #f59e0b, #d97706); border:none; color:white; font-weight:700; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(245,158,11,0.3);">
-              <i class="ri-cloud-upload-line"></i> Add DPG Coins (Write to Firestore Cloud)
-            </button>
-          ` : `
-            <div style="background:rgba(99, 102, 241, 0.1); border:1px solid rgba(99, 102, 241, 0.25); border-radius:10px; padding:0.75rem; font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between; gap:8px;">
-              <span>Sign in as Contributor to sync coins across all devices.</span>
-              <a href="index.html?action=signin" style="color:var(--accent-primary); font-weight:700; text-decoration:none; white-space:nowrap;">Sign In &rarr;</a>
+            <div class="dpg-wallet-status-pill ${activeUid ? 'verified' : 'guest'}">
+              <i class="${activeUid ? 'ri-verified-badge-fill' : 'ri-smartphone-line'}"></i>
+              <span>${activeUid ? 'Verified Contributor' : 'Guest Local Wallet'}</span>
             </div>
-          `}
+          </div>
+
+          <div class="dpg-wallet-earn-strip">
+            <i class="ri-flashlight-fill"></i>
+            <span>Earn coins on every correct quiz answer: <strong>+8 Guest</strong> &bull; <strong>+12 Contributor</strong></span>
+          </div>
+
+          <div class="dpg-wallet-tiers-title">
+            <i class="ri-exchange-dollar-line"></i> Redemption Value
+          </div>
+          <div class="dpg-wallet-tiers-grid">
+            <div class="dpg-wallet-tier-card">
+              <span class="dpg-wallet-tier-cost">650 Coins</span>
+              <span class="dpg-wallet-tier-desc">1-Day Utilities Unlimited Pass</span>
+            </div>
+            <div class="dpg-wallet-tier-card">
+              <span class="dpg-wallet-tier-cost">2,500 Coins</span>
+              <span class="dpg-wallet-tier-desc">1-Month Blaze Access Tier</span>
+            </div>
+            <div class="dpg-wallet-tier-card">
+              <span class="dpg-wallet-tier-cost">500 Coins</span>
+              <span class="dpg-wallet-tier-desc">1-Day Full Academic Access</span>
+            </div>
+            <div class="dpg-wallet-tier-card">
+              <span class="dpg-wallet-tier-cost">800 Coins</span>
+              <span class="dpg-wallet-tier-desc">₹1 Native Ads Bill Settlement</span>
+            </div>
+          </div>
+
+          <div class="dpg-wallet-actions">
+            ${activeUid ? `
+              <button type="button" class="dpg-wallet-btn-primary" onclick="window.addDpgCoinsToAccount()">
+                <i class="ri-coin-fill"></i>
+                <span>Add DPG Coins</span>
+              </button>
+            ` : `
+              <a href="index.html?action=signin" class="dpg-wallet-btn-signin">
+                <i class="ri-user-shared-line"></i>
+                <span>Sign In to Sync Across Devices</span>
+              </a>
+            `}
+            <button type="button" class="dpg-wallet-btn-close" onclick="window.closeWalletModal()">Close</button>
+          </div>
         </div>
       `;
 
-      if (typeof window.customAlert === 'function') {
-        window.customAlert(modalHtml, { title: "DPG Coins Economy & Wallet" });
-      } else {
-        alert(`Your DPG Coins Balance: ${userCoins} DPGCoins
-
-Earn more by answering public quizzes (+8 Guest / +12 Contributor).
-Redeem coins for Utilities Unlimited Tokens, Full Resource Access, or settle Native Ads Bills!`);
-      }
+      overlay.style.display = "flex";
+      requestAnimationFrame(() => overlay.classList.add("active"));
     };
 
     /* ==========================================================================
