@@ -435,12 +435,63 @@
     }
     return devId;
   }
+  const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000; // Wait 3 full days before first feedback prompt
+  const TWO_MINUTES_MS = 120000; // 2 minutes in-page dwell before feedback modal
   const FORTNIGHT_MS = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
-  async function initResponsivenessRatingModal() {
-    if (isCrawler) return;
+
+  function getOrInitFirstVisitTimestamp() {
+    let ts = 0;
+    try {
+      const stored = parseInt(localStorage.getItem('dpg_first_visit_ts') || '0', 10);
+      if (stored > 0) ts = stored;
+    } catch(e) {}
+    if (!ts) {
+      try {
+        const match = document.cookie.match(/(^| )dpg_first_visit_ts=([^;]+)/);
+        if (match) {
+          const parsedCookie = parseInt(match[2], 10);
+          if (parsedCookie > 0) ts = parsedCookie;
+        }
+      } catch(e) {}
+    }
+    if (!ts) {
+      try {
+        const rTime = parseInt(localStorage.getItem('dpg_responsiveness_rated_time') || '0', 10);
+        const pTime = parseInt(localStorage.getItem('dpg_platform_rated_time') || '0', 10);
+        if (rTime > 0 && pTime > 0) ts = Math.min(rTime, pTime);
+        else if (rTime > 0) ts = rTime;
+        else if (pTime > 0) ts = pTime;
+      } catch(e) {}
+    }
+    if (!ts) {
+      ts = Date.now();
+    }
+    try {
+      localStorage.setItem('dpg_first_visit_ts', String(ts));
+      document.cookie = `dpg_first_visit_ts=${ts};path=/;max-age=31536000;SameSite=Lax`;
+    } catch(e) {}
+    return ts;
+  }
+
+  function hasCompletedFirstThreeDays() {
+    const firstVisitTs = getOrInitFirstVisitTimestamp();
+    return (Date.now() - firstVisitTs) >= THREE_DAYS_MS;
+  }
+
+  function markFeedbackCycleDismissed() {
+    try {
+      sessionStorage.setItem('dpg_responsiveness_dismissed', 'true');
+      sessionStorage.setItem('dpg_platform_rating_dismissed', 'true');
+      sessionStorage.setItem('dpg_feedback_cycle_dismissed', 'true');
+    } catch(e) {}
+  }
+
+  async function initResponsivenessRatingModal(options = {}) {
+    if (isCrawler) return 'crawler';
+    if (!hasCompletedFirstThreeDays()) return 'cooldown_3d';
     const deviceType = detectDeviceType();
     const isTabletOrMobile = deviceType === 'Mobile' || deviceType === 'Tablet' || window.innerWidth <= 1024;
-    if (!isTabletOrMobile) return;
+    if (!isTabletOrMobile) return 'not_applicable';
     const clientDeviceId = getClientDeviceId();
     let userUid = '';
     try {
@@ -448,10 +499,8 @@
     } catch(e) {}
     try {
       const lastRated = parseInt(localStorage.getItem('dpg_responsiveness_rated_time') || '0', 10);
-      if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return;
-      if (sessionStorage.getItem('dpg_responsiveness_dismissed')) return;
-      if (sessionStorage.getItem('dpg_resp_modal_checked')) return;
-      sessionStorage.setItem('dpg_resp_modal_checked', '1');
+      if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return 'already_rated';
+      if (sessionStorage.getItem('dpg_responsiveness_dismissed') || sessionStorage.getItem('dpg_feedback_cycle_dismissed')) return 'dismissed';
     } catch(e) {}
     try {
       const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
@@ -478,12 +527,14 @@
         const lastTs = lastDoc.timestamp ? (lastDoc.timestamp.toMillis ? lastDoc.timestamp.toMillis() : new Date(lastDoc.timestamp).getTime()) : 0;
         if (lastTs && (Date.now() - lastTs < FORTNIGHT_MS)) {
           localStorage.setItem('dpg_responsiveness_rated_time', lastTs.toString());
-          return;
+          return 'already_rated';
         }
       }
     } catch(err) {
     }
-    setTimeout(renderResponsivenessModal, 7000);
+    if (document.getElementById('dpgResponsivenessModal') || document.getElementById('dpgPlatformRatingModal')) return 'already_open';
+    renderResponsivenessModal();
+    return 'shown';
     function renderResponsivenessModal() {
       if (document.getElementById('dpgResponsivenessModal')) return;
       const modalContainer = document.createElement('div');
@@ -605,9 +656,10 @@
         ratingLabel.textContent = ratingDescriptions[score] || 'Select your rating';
       }
       function dismissModal() {
-        try {
-          sessionStorage.setItem('dpg_responsiveness_dismissed', 'true');
-        } catch(e) {}
+        markFeedbackCycleDismissed();
+        if (typeof options.onDismissed === 'function') {
+          try { options.onDismissed(); } catch(e) {}
+        }
         modalContainer.style.opacity = '0';
         modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
         setTimeout(() => modalContainer.remove(), 400);
@@ -674,8 +726,15 @@
           setTimeout(() => {
             modalContainer.style.opacity = '0';
             modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
-            setTimeout(() => modalContainer.remove(), 400);
-          }, 2500);
+            setTimeout(() => {
+              modalContainer.remove();
+              if (typeof options.onSubmitted === 'function') {
+                try { options.onSubmitted(currentRating); } catch(e) {}
+              } else {
+                initPlatformRatingModal({ fromChainedSubmit: true });
+              }
+            }, 400);
+          }, 1400);
         } catch(err) {
           console.error('[dpg-params] Error saving responsiveness feedback:', err);
           modalContainer.remove();
@@ -683,8 +742,9 @@
       });
     }
   }
-  async function initPlatformRatingModal() {
-    if (isCrawler) return;
+  async function initPlatformRatingModal(options = {}) {
+    if (isCrawler) return 'crawler';
+    if (!hasCompletedFirstThreeDays()) return 'cooldown_3d';
     const clientDeviceId = getClientDeviceId();
     let userUid = '';
     try {
@@ -692,10 +752,8 @@
     } catch(e) {}
     try {
       const lastRated = parseInt(localStorage.getItem('dpg_platform_rated_time') || '0', 10);
-      if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return;
-      if (sessionStorage.getItem('dpg_platform_rating_dismissed')) return;
-      if (sessionStorage.getItem('dpg_plat_modal_checked')) return;
-      sessionStorage.setItem('dpg_plat_modal_checked', '1');
+      if (lastRated && (Date.now() - lastRated < FORTNIGHT_MS)) return 'already_rated';
+      if (sessionStorage.getItem('dpg_platform_rating_dismissed') || sessionStorage.getItem('dpg_feedback_cycle_dismissed') || sessionStorage.getItem('dpg_responsiveness_dismissed')) return 'dismissed';
     } catch(e) {}
     try {
       const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js');
@@ -848,9 +906,7 @@
         ratingLabel.textContent = ratingDescriptions[score] || 'Select your rating';
       }
       function dismissModal() {
-        try {
-          sessionStorage.setItem('dpg_platform_rating_dismissed', 'true');
-        } catch(e) {}
+        markFeedbackCycleDismissed();
         modalContainer.style.opacity = '0';
         modalContainer.style.transform = 'translateX(-50%) translateY(30px)';
         setTimeout(() => modalContainer.remove(), 400);
@@ -1236,16 +1292,46 @@
       console.warn('[dpg-params] Dynamic metadata generation warning:', metaErr);
     }
   }
+  function scheduleFeedbackModals() {
+    getOrInitFirstVisitTimestamp();
+    if (isCrawler || !hasCompletedFirstThreeDays()) return;
+    try {
+      if (sessionStorage.getItem('dpg_feedback_cycle_dismissed') || sessionStorage.getItem('dpg_responsiveness_dismissed')) return;
+    } catch(e) {}
+
+    setTimeout(async () => {
+      if (!hasCompletedFirstThreeDays()) return;
+      try {
+        if (sessionStorage.getItem('dpg_feedback_cycle_dismissed') || sessionStorage.getItem('dpg_responsiveness_dismissed')) return;
+      } catch(e) {}
+
+      const respStatus = await initResponsivenessRatingModal({
+        onSubmitted: () => {
+          initPlatformRatingModal({ fromChainedSubmit: true });
+        },
+        onDismissed: () => {
+          markFeedbackCycleDismissed();
+        }
+      });
+
+      // Only if Responsiveness wasn't applicable (Desktop) or was already submitted in a prior visit,
+      // and the user has NOT dismissed the cycle, check Experience Rating at the 2-minute mark.
+      if (respStatus === 'not_applicable' || respStatus === 'already_rated') {
+        try {
+          if (sessionStorage.getItem('dpg_feedback_cycle_dismissed') || sessionStorage.getItem('dpg_responsiveness_dismissed')) return;
+        } catch(e) {}
+        await initPlatformRatingModal();
+      }
+    }, TWO_MINUTES_MS);
+  }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      initResponsivenessRatingModal();
+      scheduleFeedbackModals();
       initDynamicPageMetadata();
-      setTimeout(initPlatformRatingModal, 120000); // 2 minutes trigger
     });
   } else {
-    initResponsivenessRatingModal();
+    scheduleFeedbackModals();
     initDynamicPageMetadata();
-    setTimeout(initPlatformRatingModal, 120000); // 2 minutes trigger
   }
   const isSignInRequested = params.get('isSignIn') === 'true' ||
                             params.get('is-sign-in') === 'true' ||

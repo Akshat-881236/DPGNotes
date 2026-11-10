@@ -59,11 +59,11 @@
         justify-content: space-between;
         align-items: flex-start;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.75rem 1rem;
         width: 100%;
       }
       .added-notes-title-wrap {
-        flex: 1 1 200px;
+        flex: 1 1 auto;
         min-width: 0;
       }
       .added-notes-title {
@@ -335,27 +335,33 @@
           flex-direction: row !important;
           justify-content: space-between !important;
           align-items: flex-start !important;
-          flex-wrap: wrap !important;
-          gap: 0.75rem !important;
+          flex-wrap: nowrap !important;
+          gap: 0.55rem !important;
           width: 100% !important;
         }
         .added-notes-title-wrap {
-          flex: 1 1 200px !important;
+          flex: 1 1 auto !important;
           min-width: 0 !important;
+          width: auto !important;
+          margin: 0 !important;
+          padding: 0 !important;
         }
         .added-notes-actions {
           display: inline-flex !important;
           align-items: center !important;
           justify-content: flex-end !important;
-          gap: 8px !important;
+          gap: 6px !important;
           flex-shrink: 0 !important;
-          margin-left: auto !important;
+          width: auto !important;
+          margin: 0 !important;
         }
         .added-notes-title {
-          font-size: 1.25rem !important;
-          line-height: 1.35 !important;
+          font-size: 1.18rem !important;
+          line-height: 1.32 !important;
+          margin: 0 !important;
+          padding: 0 !important;
           white-space: normal !important;
-          overflow-wrap: break-word !important;
+          overflow-wrap: anywhere !important;
           word-break: break-word !important;
         }
         .added-notes-body {
@@ -426,13 +432,29 @@
       }
       @media (max-width: 440px) {
         .added-notes-header-top {
-          gap: 0.6rem !important;
+          gap: 0.45rem !important;
+        }
+        .added-notes-title {
+          font-size: 1.08rem !important;
+          line-height: 1.28 !important;
         }
         .added-notes-actions {
-          width: 100% !important;
-          justify-content: flex-start !important;
-          margin-left: 0 !important;
-          gap: 8px !important;
+          gap: 5px !important;
+          width: auto !important;
+          margin: 0 !important;
+          flex-shrink: 0 !important;
+        }
+        .note-like-btn, .note-share-btn {
+          padding: 3px 8px !important;
+          font-size: 0.72rem !important;
+          min-height: 28px !important;
+          gap: 4px !important;
+        }
+      }
+      @media (max-width: 310px) {
+        .added-notes-header-top {
+          flex-wrap: wrap !important;
+          gap: 0.4rem !important;
         }
       }
       @media (max-width: 380px) {
@@ -658,9 +680,12 @@
       const allH1 = temp.querySelectorAll('h1');
       let title = fallbackTitle || 'Study Note';
       if (allH1.length > 0) {
-        title = allH1[0].innerHTML.trim() || allH1[0].textContent.trim() || title;
+        const extracted = allH1[0].innerHTML.trim() || allH1[0].textContent.trim() || '';
+        const cleaned = extracted.replace(/^(?:<br\s*\/?>|&nbsp;|\s)+|(?:<br\s*\/?>|&nbsp;|\s)+$/gi, '').trim();
+        if (cleaned) title = cleaned;
         allH1.forEach(el => el.remove());
       }
+      title = String(title || '').replace(/^(?:<br\s*\/?>|&nbsp;|\s)+|(?:<br\s*\/?>|&nbsp;|\s)+$/gi, '').trim() || 'Study Note';
       return {
         title,
         body: temp.innerHTML
