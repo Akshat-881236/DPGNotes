@@ -1434,7 +1434,8 @@
         return;
       }
     }
-    const isAlreadyViewingPdf = window.location.pathname.includes('dpgnotes-pdf-viewer.html') && (params.get('pdf') || params.get('resourceID'));
+    const isAlreadyViewingPdf = window.location.pathname.includes('dpgnotes-pdf-viewer.html') &&
+      Boolean(params.get('pdf') || params.get('resourceID') || params.get('resourceId') || params.get('id') || params.get('docid'));
     const isAlreadyViewingVideo = window.location.pathname.includes('dpgnotes-video.html');
     const isAlreadyViewingQuiz = window.location.pathname.includes('/Quizes/');
     const isAlreadyViewingSolution = window.location.pathname.includes('/AssignmentSolution/') || window.location.pathname.includes('/PracticalSolution/');
@@ -1463,16 +1464,19 @@
           ? window.API_BASE_URL.replace(/\/+$/, '')
           : 'https://dpgnotes.onrender.com';
         let visitorUid = 'Guest';
+        let visitorName = '';
         try {
           visitorUid = localStorage.getItem('dpgActiveUserUid') || localStorage.getItem('dpg_guest_id') || 'Guest';
+          visitorName = localStorage.getItem('dpgActiveUserName') || localStorage.getItem('dpgActiveUserEmail') || '';
         } catch(e) {}
         let docData = null;
         try {
-          const endpoint = `${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorUid)}`;
-          const res = await fetch(endpoint, { signal: AbortSignal.timeout(4000) });
+          const endpoint = `${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorName || visitorUid)}&openedByUid=${encodeURIComponent(visitorUid)}`;
+          const res = await fetch(endpoint, { signal: AbortSignal.timeout(4500), keepalive: true });
           const data = await res.json();
           if (res.ok && data && data.documentData) {
             docData = data.documentData;
+            try { sessionStorage.setItem('dpg_share_tracked_' + shareToken, String(Date.now())); } catch(_) {}
           }
         } catch(e) {
           console.warn('[dpg-params] Server share resolution attempt warning:', e);
@@ -1492,7 +1496,8 @@
                              (v.arrayValue?.values ? v.arrayValue.values.map(x => x.stringValue) : null)));
               }
               try {
-                fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorUid)}`).catch(() => {});
+                fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareToken)}&openedBy=${encodeURIComponent(visitorName || visitorUid)}&openedByUid=${encodeURIComponent(visitorUid)}`, { keepalive: true }).catch(() => {});
+                sessionStorage.setItem('dpg_share_tracked_' + shareToken, String(Date.now()));
               } catch(_) {}
             }
           } catch(fsErr) {
@@ -1537,7 +1542,26 @@
             window.location.replace(solTargetUrl.toString());
             return;
           }
+          const isNoteShare = d.type === 'note' ||
+            (d.token && String(d.token).startsWith('NT-')) ||
+            shareToken.startsWith('NT-') ||
+            Boolean(d.elementId || d.noteId);
           const viewerUrl = new URL('/dpgnotes-pdf-viewer.html', window.location.origin);
+          if (isNoteShare) {
+            const resolvedDocId = d.docId || d.resourceId || params.get('id') || params.get('docid') || '';
+            if (resolvedDocId) viewerUrl.searchParams.set('id', resolvedDocId);
+            if (d.pdfUrl) viewerUrl.searchParams.set('pdf', d.pdfUrl);
+            const resolvedElemId = d.elementId || (d.noteId ? `${d.rendering === 'before' ? 'be' : 'af'}-${d.noteId}` : '') || params.get('note') || '';
+            if (resolvedElemId) viewerUrl.searchParams.set('note', resolvedElemId);
+            viewerUrl.searchParams.set('share', d.token || shareToken);
+            if (resolvedElemId) {
+              viewerUrl.hash = `note-${resolvedElemId}`;
+            } else if (window.location.hash) {
+              viewerUrl.hash = window.location.hash;
+            }
+            window.location.replace(viewerUrl.toString());
+            return;
+          }
           if (d.pdfUrl) viewerUrl.searchParams.set('pdf', d.pdfUrl);
           if (d.title) viewerUrl.searchParams.set('title', d.title);
           if (d.category) viewerUrl.searchParams.set('category', d.category);
@@ -1547,7 +1571,10 @@
           if (d.description) viewerUrl.searchParams.set('description', d.description);
           const tagsStr = Array.isArray(d.tags) ? d.tags.join(', ') : (d.tags || '');
           if (tagsStr) viewerUrl.searchParams.set('tags', tagsStr);
+          const preservedNote = params.get('note');
+          if (preservedNote) viewerUrl.searchParams.set('note', preservedNote);
           viewerUrl.searchParams.set('share', shareToken);
+          if (window.location.hash) viewerUrl.hash = window.location.hash;
           window.location.replace(viewerUrl.toString());
           return;
         } else {

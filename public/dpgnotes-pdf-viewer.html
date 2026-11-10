@@ -1021,7 +1021,7 @@ async function renderAllPages() {
       delete sbAdWrap.dataset.adInjected;
       sbAdWrap.innerHTML = "";
     }
-    const targetDocId = resourceId || docId || P.get('docid') || P.get('id') || '';
+    const targetDocId = window.firestoreDocId || resourceId || P.get('id') || P.get('resourceID') || P.get('resourceId') || (docId && docId !== '—' ? docId : '') || P.get('docid') || '';
     if (window.loadResourceNotes && targetDocId) {
       try {
         await window.loadResourceNotes(targetDocId);
@@ -1090,19 +1090,17 @@ async function renderAllPages() {
       endRecs.style.display = "block";
       loadEndPdfRecommendations();
     }
-    const targetNoteParam = P.get('note') || (location.hash ? location.hash.replace(/^#note-/, '').replace(/^#/, '') : '');
-    const shareTokenParam = P.get('share');
+    if (window.__shareClickPromise) {
+      try { await Promise.race([window.__shareClickPromise, new Promise(r => setTimeout(r, 800))]); } catch(_) {}
+    }
+    const targetNoteParam = (P.get('note') || (location.hash ? location.hash.replace(/^#note-/, '').replace(/^#/, '') : '') || window.__resolvedSharedNoteTarget || '').trim();
     if (targetNoteParam && window.scrollToNote) {
       setTimeout(() => {
         window.scrollToNote(targetNoteParam);
-      }, 500);
+      }, 350);
     }
-    if (shareTokenParam) {
-      try {
-        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
-        const guestName = (typeof auth !== 'undefined' && auth.currentUser) ? (auth.currentUser.displayName || auth.currentUser.email) : 'Guest';
-        fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareTokenParam)}&openedBy=${encodeURIComponent(guestName)}`).catch(() => {});
-      } catch (e) {}
+    if (typeof window.trackIncomingShareClick === 'function') {
+      window.trackIncomingShareClick();
     }
   } catch(err) {
     console.error(err);
@@ -1171,8 +1169,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   const startTime = Date.now();
   const trackId = "tr_" + Math.random().toString(36).substring(2, 10);
-  const targetResId = resourceID || docid || "doc_" + Math.random().toString(36).substring(2, 6);
-  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+  const targetResId = window.firestoreDocId || resourceId || P.get('resourceID') || P.get('resourceId') || (docId && docId !== '—' ? docId : '') || P.get('docid') || P.get('id') || ("doc_" + Math.random().toString(36).substring(2, 6));
+  const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL.replace(/\/+$/, '') : 'https://dpgnotes.onrender.com';
   function sendTelemetry(actionType) {
     const elapsedSecs = Math.max(1, Math.round((Date.now() - startTime) / 1000));
     fetch(apiBase + '/api/telemetry/track-resource-view', {
@@ -1863,6 +1861,37 @@ async function resolveAndRender() {
     await new Promise(r => setTimeout(r, 100));
     authWait++;
   }
+  window.trackIncomingShareClick = function() {
+    if (window.__dpgShareClickTracked) return window.__shareClickPromise || Promise.resolve(null);
+    const shareTokenParam = (P.get('share') || P.get('share_token') || P.get('shareToken') || P.get('code') || '').trim();
+    if (!shareTokenParam) return Promise.resolve(null);
+    window.__dpgShareClickTracked = true;
+    try {
+      const trackedAt = Number(sessionStorage.getItem('dpg_share_tracked_' + shareTokenParam) || 0);
+      if (trackedAt && (Date.now() - trackedAt) < 15000) {
+        sessionStorage.removeItem('dpg_share_tracked_' + shareTokenParam);
+        return Promise.resolve(null);
+      }
+    } catch (_) {}
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+      ? window.API_BASE_URL.replace(/\/+$/, '')
+      : 'https://dpgnotes.onrender.com';
+    const curUser = window.dpgCurrentUser || (window.dpgAuth ? window.dpgAuth.currentUser : null);
+    const visitorUid = curUser?.uid || localStorage.getItem('dpgActiveUserUid') || localStorage.getItem('dpg_guest_id') || '';
+    const visitorName = curUser?.displayName || curUser?.email || localStorage.getItem('dpgActiveUserName') || localStorage.getItem('dpgActiveUserEmail') || visitorUid || 'Guest';
+    window.__shareClickPromise = fetch(`${apiBase}/api/share/click?token=${encodeURIComponent(shareTokenParam)}&openedBy=${encodeURIComponent(visitorName)}&openedByUid=${encodeURIComponent(visitorUid)}`, { keepalive: true })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const docData = data && data.documentData;
+        if (docData && (docData.elementId || docData.noteId)) {
+          window.__resolvedSharedNoteTarget = docData.elementId || docData.noteId;
+        }
+        return docData || null;
+      })
+      .catch(() => null);
+    return window.__shareClickPromise;
+  };
+  window.trackIncomingShareClick();
   const d = window.currentLoadedDocData;
   if (d) {
     const isApproved = d.status === "approved" || d.status === "Approved" || d.isApproved === true;

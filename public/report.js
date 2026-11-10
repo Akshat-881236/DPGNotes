@@ -23,24 +23,30 @@ async function initReport() {
   }
   try {
     let data = null;
-    try {
-      const res = await fetch(`${API_URL}/admin/share-report/${encodeURIComponent(shareCode)}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
+    for (let attempt = 0; attempt < 2 && !data; attempt++) {
+      try {
+        const res = await fetch(`${API_URL}/admin/share-report/${encodeURIComponent(shareCode)}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined
+        });
+        if (res.ok) {
+          data = await res.json();
+          break;
+        } else if (res.status === 401 || res.status === 403) {
+          statusTxt.innerText = "Session Expired";
+          statusTxt.style.color = "var(--report-danger)";
+          subTxt.innerText = "Your admin session is invalid or expired. Redirecting...";
+          localStorage.removeItem("adminToken");
+          setTimeout(() => { window.location.href = "admin-login.html"; }, 2500);
+          return;
+        } else if (res.status === 404) {
+          break;
         }
-      });
-      if (res.ok) {
-        data = await res.json();
-      } else if (res.status === 401 || res.status === 403) {
-        statusTxt.innerText = "Session Expired";
-        statusTxt.style.color = "var(--report-danger)";
-        subTxt.innerText = "Your admin session is invalid or expired. Redirecting...";
-        localStorage.removeItem("adminToken");
-        setTimeout(() => { window.location.href = "admin-login.html"; }, 2500);
-        return;
+      } catch(fetchErr) {
+        console.warn("API report fetch warning (attempt " + (attempt + 1) + "):", fetchErr);
       }
-    } catch(fetchErr) {
-      console.warn("API report fetch warning:", fetchErr);
     }
     if (!data) {
       try {
@@ -53,7 +59,25 @@ async function initReport() {
           for (const [k, v] of Object.entries(fields)) {
             info[k] = v.stringValue !== undefined ? v.stringValue : 
                      (v.integerValue !== undefined ? Number(v.integerValue) : 
-                     (v.booleanValue !== undefined ? v.booleanValue : null));
+                     (v.booleanValue !== undefined ? v.booleanValue : 
+                     (v.timestampValue !== undefined ? v.timestampValue :
+                     (v.arrayValue?.values ? v.arrayValue.values.map(x => x.stringValue) : null))));
+          }
+          if ((info.type === 'note' || String(shareCode).startsWith('NT-')) && info.docId) {
+            if (!info.docTitle) {
+              try {
+                const pdRes = await fetch(`https://firestore.googleapis.com/v1/projects/dpgnotes/databases/(default)/documents/documents/${encodeURIComponent(info.docId)}`);
+                if (pdRes.ok) {
+                  const pdJson = await pdRes.json();
+                  const pf = pdJson.fields || {};
+                  if (pf.title?.stringValue) info.docTitle = pf.title.stringValue;
+                  if (pf.category?.stringValue) info.docCategory = pf.category.stringValue;
+                  if (pf.pdfUrl?.stringValue) info.pdfUrl = pf.pdfUrl.stringValue;
+                }
+              } catch(_) {}
+            }
+            const elem = info.elementId || (info.noteId ? `${(info.rendering || 'after') === 'before' ? 'be' : 'af'}-${info.noteId}` : '');
+            info.directViewerUrl = `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(info.docId)}${elem ? `&note=${encodeURIComponent(elem)}` : ''}&share=${encodeURIComponent(info.token || shareCode)}${elem ? `#note-${encodeURIComponent(elem)}` : ''}`;
           }
           data = {
             shareInfo: info,
@@ -143,10 +167,48 @@ function parseUserAgent(ua) {
 }
 function renderReport(data) {
   const { shareInfo, engagements = [] } = data;
+  const isNoteShare = shareInfo?.type === 'note' || (shareInfo?.token && String(shareInfo.token).startsWith('NT-'));
+  const displayTitle = (isNoteShare && shareInfo?.docTitle)
+    ? `${shareInfo.docTitle} — Note (Pg ${shareInfo.pageNumber || 1})`
+    : (shareInfo?.docTitle || shareInfo?.title || "Unknown Document");
   const titleEl = document.getElementById("resourceTitle");
-  if (titleEl) titleEl.innerText = shareInfo?.title || "Unknown Document";
+  if (titleEl) {
+    titleEl.innerText = displayTitle;
+    titleEl.title = displayTitle;
+  }
+  const banner = document.getElementById("shareContextBanner");
+  if (banner && shareInfo) {
+    const shareCodeLabel = escapeHtml(shareInfo.token || '');
+    const typeChip = isNoteShare
+      ? `<span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:3px 9px; border-radius:6px; font-size:0.75rem; font-weight:700;">📝 IN-DOCUMENT NOTE (Pg ${escapeHtml(String(shareInfo.pageNumber || 1))}${shareInfo.rendering ? ' • ' + escapeHtml(shareInfo.rendering) : ''})</span>`
+      : `<span style="background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); padding:3px 9px; border-radius:6px; font-size:0.75rem; font-weight:700;">🔗 ${escapeHtml((shareInfo.type || 'document').toUpperCase())} SHARE</span>`;
+    const elemId = shareInfo.elementId || (shareInfo.noteId ? `${(shareInfo.rendering || 'after') === 'before' ? 'be' : 'af'}-${shareInfo.noteId}` : '');
+    const openUrl = shareInfo.directViewerUrl || (isNoteShare && shareInfo.docId
+      ? `https://dpgnotes.web.app/dpgnotes-pdf-viewer.html?id=${encodeURIComponent(shareInfo.docId)}${elemId ? `&note=${encodeURIComponent(elemId)}` : ''}&share=${encodeURIComponent(shareInfo.token || '')}${elemId ? `#note-${encodeURIComponent(elemId)}` : ''}`
+      : '');
+    const creatorLabel = escapeHtml(shareInfo.uploader || shareInfo.noteUploaderName || shareInfo.generatedBy || 'Guest');
+    const previewSnippet = shareInfo.notePreview ? `<div style="margin-top:0.45rem; font-size:0.82rem; color:#cbd5e1; background:rgba(0,0,0,0.25); padding:0.45rem 0.7rem; border-radius:8px; border-left:3px solid #a855f7;">"${escapeHtml(shareInfo.notePreview)}${shareInfo.notePreview.length >= 160 ? '...' : ''}"</div>` : '';
+    const likesMeta = typeof shareInfo.noteLikesCount === 'number' ? `<span style="color:#f472b6; font-weight:600;">❤️ ${shareInfo.noteLikesCount} note likes</span>` : '';
+    banner.innerHTML = `
+      <div style="flex:1; min-width:240px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:0.35rem;">
+          ${typeChip}
+          ${shareCodeLabel ? `<span style="font-family:monospace; background:rgba(99,102,241,0.18); color:#a5b4fc; padding:2px 8px; border-radius:6px; font-size:0.78rem; font-weight:700;">Code: ${shareCodeLabel}</span>` : ''}
+          ${shareInfo.elementId ? `<span style="font-family:monospace; color:#94a3b8; font-size:0.75rem;">Anchor: #note-${escapeHtml(shareInfo.elementId)}</span>` : ''}
+        </div>
+        <div style="font-size:0.82rem; color:var(--report-muted); display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
+          <span><strong style="color:#e2e8f0;">Shared by:</strong> ${creatorLabel}</span>
+          ${shareInfo.docCategory ? `<span><strong style="color:#e2e8f0;">Category:</strong> ${escapeHtml(shareInfo.docCategory)}</span>` : ''}
+          ${likesMeta}
+        </div>
+        ${previewSnippet}
+      </div>
+      ${openUrl ? `<a href="${escapeHtml(openUrl)}" target="_blank" rel="noopener noreferrer" class="back-btn" style="background:linear-gradient(135deg,#8b5cf6,#6366f1); color:white; border:none; text-decoration:none; white-space:nowrap;"><i class="ri-external-link-line"></i> <span>${isNoteShare ? 'Open Shared Note' : 'Open Shared Link'}</span></a>` : ''}
+    `;
+    banner.style.display = "flex";
+  }
   const opensEl = document.getElementById("totalOpens");
-  if (opensEl) opensEl.innerText = shareInfo?.clicks || 0;
+  if (opensEl) opensEl.innerText = shareInfo?.clicks || engagements.length || 0;
   const uniqueIps = new Set(engagements.map(e => e.ipAddress)).size;
   const uniqueEl = document.getElementById("uniqueVisitors");
   if (uniqueEl) uniqueEl.innerText = uniqueIps;
@@ -181,13 +243,17 @@ function renderReport(data) {
     const badgeClass = e.status === "Unusual" ? "badge-unusual" : "badge-usual";
     const statusText = escapeHtml(e.status || "Usual");
     const ip = escapeHtml(e.ipAddress || "Unknown");
+    const visitorLabel = escapeHtml(e.openedBy || "Guest");
     const rawUa = escapeHtml(e.userAgent || "Unknown");
     const devInfo = parseUserAgent(e.userAgent);
     if (tbody) {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="color:var(--report-muted); white-space:nowrap;"><i class="ri-time-line" style="vertical-align:middle; margin-right:4px;"></i>${timeStr}</td>
-        <td><span class="ip-pill"><i class="ri-shield-keyhole-line"></i> ${ip}</span></td>
+        <td>
+          <span class="ip-pill"><i class="ri-shield-keyhole-line"></i> ${ip}</span>
+          <div style="font-size:0.72rem; color:var(--report-muted); margin-top:3px;"><i class="ri-user-line"></i> ${visitorLabel}</div>
+        </td>
         <td><span class="badge ${badgeClass}"><i class="${e.status === 'Unusual' ? 'ri-alert-line' : 'ri-checkbox-circle-line'}"></i> ${statusText}</span></td>
         <td>
           <div class="device-pill" title="${rawUa}">
@@ -207,6 +273,10 @@ function renderReport(data) {
           <span class="log-card-time"><i class="ri-time-line"></i> ${timeStr}</span>
         </div>
         <div class="log-card-rows">
+          <div class="log-row-item">
+            <span class="log-row-label"><i class="ri-user-line"></i> Visitor:</span>
+            <span style="color:#e2e8f0; font-size:0.82rem; font-weight:600;">${visitorLabel}</span>
+          </div>
           <div class="log-row-item">
             <span class="log-row-label"><i class="ri-shield-keyhole-line"></i> IP Address:</span>
             <span class="ip-pill">${ip}</span>
@@ -291,10 +361,14 @@ window.runAiAnalysis = async function() {
       body: JSON.stringify({
         type: "report",
         data: {
-          title: window._cachedReportData.shareInfo?.title || "Unknown",
+          title: window._cachedReportData.shareInfo?.docTitle || window._cachedReportData.shareInfo?.title || "Unknown",
+          shareType: window._cachedReportData.shareInfo?.type || "document",
+          pageNumber: window._cachedReportData.shareInfo?.pageNumber || null,
+          noteId: window._cachedReportData.shareInfo?.noteId || null,
           totalClicks: window._cachedReportData.shareInfo?.clicks || 0,
           engagements: (window._cachedReportData.engagements || []).slice(0, 30).map(e => ({
             ip: e.ipAddress,
+            openedBy: e.openedBy,
             status: e.status,
             agent: e.userAgent
           }))
@@ -339,10 +413,14 @@ window.sendReportChatQuery = async function() {
         history: reportChatHistory,
         question: question,
         context: {
-          reportTitle: window._cachedReportData?.shareInfo?.title || "Unknown",
+          reportTitle: window._cachedReportData?.shareInfo?.docTitle || window._cachedReportData?.shareInfo?.title || "Unknown",
+          shareType: window._cachedReportData?.shareInfo?.type || "document",
+          pageNumber: window._cachedReportData?.shareInfo?.pageNumber || null,
+          notePreview: window._cachedReportData?.shareInfo?.notePreview || "",
           totalClicks: window._cachedReportData?.shareInfo?.clicks || 0,
           recentEngagements: (window._cachedReportData?.engagements || []).slice(0, 15).map(e => ({
             ip: e.ipAddress,
+            openedBy: e.openedBy,
             status: e.status,
             agent: e.userAgent
           }))

@@ -713,7 +713,7 @@ async function loadShares() {
       const data = doc.data() || {};
       const item = { id: doc.id, ...data };
       adminSharesCache.push(item);
-      if (item.type === 'note') {
+      if (item.type === 'note' || (item.token && item.token.startsWith('NT-'))) {
         noteShares++;
       } else if (item.type === 'quiz' || item.isQuiz || (item.token && item.token.startsWith('qz_'))) {
         quizShares++;
@@ -763,9 +763,14 @@ function applySharesFilterAndRender() {
   const queryStr = (document.getElementById("shareSearch")?.value || "").toLowerCase().trim();
   let list = adminSharesCache;
   if (window.currentSharesFilter === 'document') {
-    list = list.filter(l => l.type !== 'note' && l.type !== 'solution' && l.type !== 'assignment_solution' && l.type !== 'practical_solution' && l.type !== 'video' && l.type !== 'ad_video' && !(l.token && l.token.startsWith('VSH_')));
+    list = list.filter(l =>
+      l.type !== 'note' && !(l.token && l.token.startsWith('NT-')) &&
+      l.type !== 'solution' && l.type !== 'assignment_solution' && l.type !== 'practical_solution' &&
+      l.type !== 'quiz' && !l.isQuiz && !(l.token && l.token.startsWith('qz_')) &&
+      l.type !== 'video' && l.type !== 'ad_video' && !(l.token && l.token.startsWith('VSH_'))
+    );
   } else if (window.currentSharesFilter === 'note') {
-    list = list.filter(l => l.type === 'note');
+    list = list.filter(l => l.type === 'note' || (l.token && l.token.startsWith('NT-')));
   } else if (window.currentSharesFilter === 'solution') {
     list = list.filter(l => l.type === 'solution' || l.type === 'assignment_solution' || l.type === 'practical_solution');
   } else if (window.currentSharesFilter === 'quiz') {
@@ -777,13 +782,24 @@ function applySharesFilterAndRender() {
     list = list.filter(link => 
       (link.token && link.token.toLowerCase().includes(queryStr)) ||
       (link.title && link.title.toLowerCase().includes(queryStr)) ||
+      (link.docTitle && link.docTitle.toLowerCase().includes(queryStr)) ||
       (link.uploader && link.uploader.toLowerCase().includes(queryStr)) ||
+      (link.generatedBy && link.generatedBy.toLowerCase().includes(queryStr)) ||
       (link.course && link.course.toLowerCase().includes(queryStr)) ||
       (link.elementId && link.elementId.toLowerCase().includes(queryStr))
     );
   }
   renderSharesTable(list);
 }
+window.copyShareDirectUrl = function(encodedUrl) {
+  const fullUrl = decodeURIComponent(encodedUrl || '');
+  if (!fullUrl) return;
+  navigator.clipboard.writeText(fullUrl).then(() => {
+    if (typeof window.customAlert === 'function') {
+      window.customAlert(`Share link copied to clipboard!\n${fullUrl}`, { title: 'Link Copied' });
+    }
+  }).catch(() => {});
+};
 function renderSharesTable(shares) {
   const tbody = document.getElementById("sharesTableBody");
   if (!tbody) return;
@@ -793,13 +809,15 @@ function renderSharesTable(shares) {
     return;
   }
   shares.forEach(link => {
-    const isNote = link.type === 'note';
+    const tokenVal = link.token || link.id || '';
+    const isNote = link.type === 'note' || tokenVal.startsWith('NT-');
     const isSolution = link.type === 'solution' || link.type === 'assignment_solution' || link.type === 'practical_solution';
-    const isQuiz = link.type === 'quiz' || link.isQuiz || (link.token && link.token.startsWith('qz_'));
-    const isVideo = link.type === 'video' || link.type === 'ad_video' || (link.token && (link.token.startsWith('VSH_') || link.token.startsWith('VSH_AD_')));
+    const isQuiz = link.type === 'quiz' || link.isQuiz || tokenVal.startsWith('qz_');
+    const isVideo = link.type === 'video' || link.type === 'ad_video' || tokenVal.startsWith('VSH_') || tokenVal.startsWith('VSH_AD_');
     let typeBadge = '';
     if (isNote) {
-      typeBadge = `<span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📝 NOTE (Pg ${link.pageNumber || 1})</span>`;
+      const posLabel = link.rendering ? ` • ${escapeAdminHtml(link.rendering)}` : '';
+      typeBadge = `<span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📝 NOTE (Pg ${link.pageNumber || 1}${posLabel})</span>`;
     } else if (isSolution) {
       const isPrac = link.subType === 'practical' || link.type === 'practical_solution';
       const label = isPrac ? '🔬 PRACTICAL' : '🎓 ASSIGNMENT';
@@ -808,34 +826,39 @@ function renderSharesTable(shares) {
     } else if (isQuiz) {
       typeBadge = `<span style="background:rgba(234,179,8,0.2); color:#eab308; border:1px solid rgba(234,179,8,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📝 QUIZ</span>`;
     } else if (isVideo) {
-      const isAd = link.type === 'ad_video' || (link.token && link.token.startsWith('VSH_AD_'));
+      const isAd = link.type === 'ad_video' || tokenVal.startsWith('VSH_AD_');
       typeBadge = `<span style="background:rgba(236,72,153,0.2); color:#f472b6; border:1px solid rgba(236,72,153,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📹 ${isAd ? 'VIDEO AD' : 'VIDEO'}</span>`;
     } else {
       typeBadge = `<span style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:6px; font-weight:700;">📄 DOC</span>`;
     }
-    const targetDocId = link.docId || link.id || '';
-    const noteParam = link.elementId ? `&note=${encodeURIComponent(link.elementId)}#note-${encodeURIComponent(link.elementId)}` : '';
+    const targetDocId = link.docId || link.resourceId || (isNote ? '' : (link.id || ''));
+    const noteElem = link.elementId || (link.noteId ? `${(link.rendering || 'after') === 'before' ? 'be' : 'af'}-${link.noteId}` : '');
+    const noteParam = noteElem ? `&note=${encodeURIComponent(noteElem)}#note-${encodeURIComponent(noteElem)}` : '';
     let directViewerLink = '';
     if (isNote) {
-      directViewerLink = `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetDocId)}&share=${encodeURIComponent(link.token)}${noteParam}`;
+      directViewerLink = targetDocId
+        ? `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(targetDocId)}&share=${encodeURIComponent(tokenVal)}${noteParam}`
+        : `index.html?share=${encodeURIComponent(tokenVal)}`;
     } else if (isSolution) {
       const folder = (link.subType === 'practical' || link.type === 'practical_solution') ? 'PracticalSolution' : 'AssignmentSolution';
       const contrib = link.contributorUid || link.uploaderUid || '';
-      directViewerLink = `${folder}/index.html?id=${encodeURIComponent(link.docId || link.solutionId || targetDocId)}&contributor=${encodeURIComponent(contrib)}&share_token=${encodeURIComponent(link.token)}`;
+      directViewerLink = `${folder}/index.html?id=${encodeURIComponent(link.docId || link.solutionId || targetDocId)}&contributor=${encodeURIComponent(contrib)}&share_token=${encodeURIComponent(tokenVal)}`;
     } else if (isQuiz) {
-      directViewerLink = `Quizes/index.html?quizId=${encodeURIComponent(link.docId || link.quizId || targetDocId)}&share_token=${encodeURIComponent(link.token)}`;
+      directViewerLink = `Quizes/index.html?quizId=${encodeURIComponent(link.docId || link.quizId || targetDocId)}&share_token=${encodeURIComponent(tokenVal)}`;
     } else if (isVideo) {
-      directViewerLink = `dpgnotes-video.html?token=${encodeURIComponent(link.token)}`;
+      directViewerLink = `dpgnotes-video.html?token=${encodeURIComponent(tokenVal)}`;
     } else {
-      directViewerLink = `dashboard.html?share=${encodeURIComponent(link.token)}`;
+      directViewerLink = `dashboard.html?share=${encodeURIComponent(tokenVal)}`;
     }
+    const fullShareUrl = `https://dpgnotes.web.app/${directViewerLink}`;
+    const displayTitle = link.docTitle || link.title || "Untitled";
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td style="font-family:monospace; font-weight:700; color:#a5b4fc;">${link.token}</td>
+      <td style="font-family:monospace; font-weight:700; color:#a5b4fc;">${escapeAdminHtml(tokenVal)}</td>
       <td>
         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           ${typeBadge}
-          <span style="font-weight:500; color:#f8fafc;">${escapeAdminHtml(link.title || "Untitled")}</span>
+          <span style="font-weight:500; color:#f8fafc;">${escapeAdminHtml(displayTitle)}</span>
         </div>
       </td>
       <td style="color:var(--admin-muted); font-size:0.82rem;">${escapeAdminHtml(link.uploader || link.generatedBy || "Unknown")}</td>
@@ -843,9 +866,9 @@ function renderSharesTable(shares) {
       <td>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <a href="${directViewerLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;" title="Open directly"><i class="ri-external-link-line"></i> Open</a>
-          <a href="report.html?code=${encodeURIComponent(link.token)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-file-chart-line"></i> Report</a>
-          <button type="button" onclick="navigator.clipboard.writeText('https://dpgnotes.web.app/${directViewerLink}'); if(typeof window.customAlert==='function'){window.customAlert('Share link copied to clipboard!\nhttps://dpgnotes.web.app/${directViewerLink}', {title:'Link Copied'});}else{alert('Share link copied to clipboard!');}" class="btn-action" style="padding:4px 8px; font-size:0.75rem;" title="Copy public share URL"><i class="ri-file-copy-line"></i> Copy</button>
-          <button type="button" onclick="window.deleteShareCode('${link.token}')" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" title="Delete share code"><i class="ri-delete-bin-line"></i></button>
+          <a href="report.html?code=${encodeURIComponent(tokenVal)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-file-chart-line"></i> Report</a>
+          <button type="button" onclick="window.copyShareDirectUrl('${encodeURIComponent(fullShareUrl)}')" class="btn-action" style="padding:4px 8px; font-size:0.75rem;" title="Copy public share URL"><i class="ri-file-copy-line"></i> Copy</button>
+          <button type="button" onclick="window.deleteShareCode('${escapeAdminHtml(tokenVal)}')" class="btn-action danger" style="padding:4px 8px; font-size:0.75rem;" title="Delete share code"><i class="ri-delete-bin-line"></i></button>
         </div>
       </td>
     `;
@@ -4072,6 +4095,8 @@ async function loadNotesAnalyticsAdmin() {
     if (elNotesTop) elNotesTop.textContent = data.topContributor || 'N/A';
     const elNotesShares = document.getElementById("statNotesShares");
     if (elNotesShares) elNotesShares.textContent = (data.totalNoteShares || 0).toLocaleString();
+    const elNotesShareClicks = document.getElementById("statNotesShareClicks");
+    if (elNotesShareClicks) elNotesShareClicks.textContent = (data.totalNoteShareClicks || 0).toLocaleString();
     const canvas = document.getElementById("notesAnalyticsChart");
     if (canvas && typeof Chart !== "undefined") {
       if (notesAnalyticsChartInstance) {
@@ -4175,11 +4200,48 @@ async function loadNotesAnalyticsAdmin() {
               </td>
               <td style="font-weight:600; color:#e2e8f0;">${c.totalNotes || 0}</td>
               <td style="font-weight:700; color:#f87171;"><i class="ri-heart-fill"></i> ${c.totalLikes || 0}</td>
-              <td style="font-weight:600; color:#38bdf8;"><i class="ri-share-forward-line"></i> ${c.totalShares || 0}</td>
+              <td style="font-weight:600; color:#38bdf8;"><i class="ri-share-forward-line"></i> ${c.totalShares || 0} <span style="font-size:0.72rem; color:#94a3b8;">(${c.totalShareClicks || 0} clicks)</span></td>
               <td style="font-weight:700; color:#10b981;">${c.engagementRate || '0.00'}</td>
               <td style="font-size:0.8rem; color:#c084fc;">${topNoteText}</td>
               <td>
                 ${profileLink !== '#' ? `<a href="${profileLink}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;"><i class="ri-user-line"></i> Profile</a>` : `<span style="color:#64748b; font-size:0.75rem;">Guest</span>`}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+    const shareLinksBody = document.getElementById("notesShareLinksTableBody");
+    if (shareLinksBody) {
+      const shareRows = Array.isArray(data.noteSharesList) ? data.noteSharesList : [];
+      if (shareRows.length === 0) {
+        shareLinksBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--admin-muted); padding:1.5rem;">No in-document note share links created yet.</td></tr>`;
+      } else {
+        shareLinksBody.innerHTML = shareRows.map(s => {
+          const elem = s.elementId || (s.noteId ? `${s.rendering === 'before' ? 'be' : 'af'}-${s.noteId}` : '');
+          const noteQ = elem ? `&note=${encodeURIComponent(elem)}#note-${encodeURIComponent(elem)}` : '';
+          const openHref = s.docId
+            ? `dpgnotes-pdf-viewer.html?id=${encodeURIComponent(s.docId)}&share=${encodeURIComponent(s.token)}${noteQ}`
+            : `index.html?share=${encodeURIComponent(s.token)}`;
+          const safeTitle = escapeAdminHtml(s.title || `In-Document Note (Page ${s.pageNumber || 1})`);
+          const safeSub = s.noteHeading ? `<div style="font-size:0.74rem; color:#94a3b8;">${escapeAdminHtml(s.noteHeading)}</div>` : '';
+          return `
+            <tr>
+              <td style="font-family:monospace; font-weight:700; color:#a5b4fc;">${escapeAdminHtml(s.token)}</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                  <span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:700;">Pg ${s.pageNumber || 1} (${escapeAdminHtml(s.rendering || 'after')})</span>
+                  <span style="font-weight:600; color:#f8fafc;">${safeTitle}</span>
+                </div>
+                ${safeSub}
+              </td>
+              <td style="color:var(--admin-muted); font-size:0.82rem;">${escapeAdminHtml(s.uploader || 'Guest')}</td>
+              <td><strong style="color:#10b981;">${s.clicks || 0}</strong> clicks</td>
+              <td>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <a href="${openHref}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-external-link-line"></i> Open</a>
+                  <a href="report.html?code=${encodeURIComponent(s.token)}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 8px; font-size:0.75rem;"><i class="ri-file-chart-line"></i> Report</a>
+                </div>
               </td>
             </tr>
           `;
@@ -4721,13 +4783,18 @@ window.showResourceSharesModal = function(resId) {
     let html = "";
     shares.forEach(s => {
       const pUrl = s.uploaderUid ? `profile.html?uid=${encodeURIComponent(s.uploaderUid)}` : 'profile.html';
+      const isNoteTok = s.type === 'note' || (s.token && String(s.token).startsWith('NT-'));
+      const typeTag = isNoteTok ? `<span style="background:rgba(168,85,247,0.2); color:#c084fc; padding:1px 6px; border-radius:4px; font-size:0.68rem; font-weight:700; margin-left:6px;">NOTE Pg ${s.pageNumber || 1}</span>` : '';
       html += `
-        <div style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
           <div>
-            <div style="color:white; font-weight:700;">${s.uploader || 'Contributor'}</div>
-            <div style="font-size:0.75rem; color:#38bdf8; font-family:monospace;">Token: ${s.token} | Clicks: ${s.clicks || 0}</div>
+            <div style="color:white; font-weight:700;">${escapeAdminHtml(s.uploader || 'Contributor')}${typeTag}</div>
+            <div style="font-size:0.75rem; color:#38bdf8; font-family:monospace;">Token: ${escapeAdminHtml(s.token)} | Clicks: ${s.clicks || 0}</div>
           </div>
-          <a href="${pUrl}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;"><i class="ri-user-search-line"></i> Profile</a>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <a href="report.html?code=${encodeURIComponent(s.token)}" target="_blank" class="btn-action primary" style="text-decoration:none; padding:4px 8px; font-size:0.74rem;"><i class="ri-file-chart-line"></i> Report</a>
+            <a href="${pUrl}" target="_blank" class="btn-action success" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;"><i class="ri-user-search-line"></i> Profile</a>
+          </div>
         </div>
       `;
     });

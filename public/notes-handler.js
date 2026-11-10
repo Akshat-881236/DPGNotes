@@ -872,7 +872,23 @@
       btnEl.disabled = true;
     }
     try {
-      const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
+      const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+        ? window.API_BASE_URL.replace(/\/+$/, '')
+        : 'https://dpgnotes.onrender.com';
+      const activeUser = window.dpgCurrentUser || (window.dpgAuth ? window.dpgAuth.currentUser : null);
+      const activeUid = activeUser?.uid || localStorage.getItem('dpgActiveUserUid') || window.activeUid || localStorage.getItem('dpgUserId') || 'guest';
+      const activeName = activeUser?.displayName || localStorage.getItem('dpgActiveUserName') || activeUser?.email || localStorage.getItem('dpgActiveUserEmail') || (activeUid !== 'guest' ? activeUid : 'Guest');
+      const docMeta = window.currentLoadedDocData || {};
+      const docTitleVal = docMeta.title || document.getElementById('mTitle')?.textContent || document.getElementById('navTitle')?.textContent || '';
+      const cleanDocTitle = (docTitleVal && docTitleVal !== '—' && docTitleVal !== 'Loading...' && docTitleVal !== 'Untitled Document') ? docTitleVal : '';
+      const noteEl = document.getElementById(elementId) || document.getElementById('note-' + elementId);
+      const headingEl = noteEl ? noteEl.querySelector('h1, h2, h3') : null;
+      const noteHeading = headingEl ? headingEl.textContent.trim().slice(0, 120) : '';
+      const rawBodyText = noteEl ? (noteEl.querySelector('.added-note-body')?.textContent || noteEl.textContent || '') : '';
+      const notePreview = rawBodyText.replace(/\s+/g, ' ').trim().slice(0, 160);
+      const shareTitlePayload = cleanDocTitle
+        ? `${cleanDocTitle} — Note (Pg ${pageNum})`
+        : (noteHeading ? `${noteHeading} (Pg ${pageNum})` : `In-Document Note (Page ${pageNum})`);
       const res = await fetch(`${apiBase}/api/share/generate-note`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -882,7 +898,16 @@
           elementId,
           pageNumber: pageNum,
           rendering: rend,
-          createdBy: window.activeUid || localStorage.getItem('dpgUserId') || 'guest'
+          title: shareTitlePayload,
+          docTitle: cleanDocTitle,
+          pdfUrl: docMeta.pdfUrl || '',
+          category: docMeta.category || '',
+          discipline: docMeta.discipline || '',
+          noteHeading,
+          notePreview,
+          uploader: activeName,
+          uploaderUid: activeUid !== 'guest' ? activeUid : '',
+          createdBy: activeUid
         })
       });
       const data = await res.json();
@@ -948,7 +973,11 @@
         }
       } catch(e) {
         if (e.name !== 'AbortError') {
-          prompt("Copy note share URL:", shareUrl);
+          if (typeof window.customAlert === 'function') {
+            window.customAlert(`Copy your note share link:\n${shareUrl}`, { title: 'Note Share Link' });
+          } else {
+            showNoteToast(`Note share link: ${shareUrl}`);
+          }
         }
       }
       if (btnEl) {
@@ -960,32 +989,36 @@
   window.scrollToNote = function (targetNoteId) {
     if (!targetNoteId) return;
     const cleanId = String(targetNoteId).replace(/^note-/, '').trim();
-    let el = document.getElementById(cleanId) ||
+    const findNoteEl = () => document.getElementById(cleanId) ||
              document.getElementById('note-' + cleanId) ||
              document.getElementById('be-' + cleanId) ||
              document.getElementById('af-' + cleanId) ||
+             document.querySelector(`[data-note-id="${cleanId}"]`) ||
              document.querySelector(`[id*="${cleanId}"]`) ||
              document.querySelector(`[page-id="${cleanId}"]`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const performScroll = (el) => {
+      if (!el) return;
+      el.style.scrollMarginTop = '18px';
+      const pdfAreaEl = document.getElementById('pdfArea');
+      const viewportH = pdfAreaEl && pdfAreaEl.clientHeight ? pdfAreaEl.clientHeight : window.innerHeight;
+      const blockMode = el.getBoundingClientRect().height > (viewportH * 0.65) ? 'start' : 'center';
+      el.scrollIntoView({ behavior: 'smooth', block: blockMode });
       el.classList.add('note-target-highlight');
-      setTimeout(() => el.classList.remove('note-target-highlight'), 3000);
+      setTimeout(() => el.classList.remove('note-target-highlight'), 3200);
       console.log("Successfully auto-scrolled to shared note:", cleanId);
+    };
+    let el = findNoteEl();
+    if (el) {
+      performScroll(el);
     } else {
       let attempts = 0;
       const retryInterval = setInterval(() => {
         attempts++;
-        el = document.getElementById(cleanId) ||
-             document.getElementById('be-' + cleanId) ||
-             document.getElementById('af-' + cleanId) ||
-             document.querySelector(`[id*="${cleanId}"]`) ||
-             document.querySelector(`[page-id="${cleanId}"]`);
+        el = findNoteEl();
         if (el) {
           clearInterval(retryInterval);
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('note-target-highlight');
-          setTimeout(() => el.classList.remove('note-target-highlight'), 3000);
-        } else if (attempts >= 10) {
+          performScroll(el);
+        } else if (attempts >= 12) {
           clearInterval(retryInterval);
         }
       }, 400);

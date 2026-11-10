@@ -2295,7 +2295,7 @@
             <div class="stat-icon" style="background:rgba(14,165,233,0.15); color:#38bdf8;"><i class="ri-share-forward-line"></i></div>
             <div class="stat-info">
               <h3 id="statNotesShares" style="color:#38bdf8;">0</h3>
-              <p>Total Note Shares Generated</p>
+              <p>Note Shares (<span id="statNotesShareClicks">0</span> clicks)</p>
             </div>
           </div>
         </div>
@@ -2333,6 +2333,25 @@
             </thead>
             <tbody id="notesContributorsTableBody">
               <tr><td colspan="8" style="text-align:center; color:var(--admin-muted);">Loading contributor metrics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="background:rgba(15,23,42,0.9); border:1px solid var(--admin-border); border-radius:16px; padding:1.2rem; overflow-x:auto;">
+          <h3 style="font-size:1.1rem; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+            <i class="ri-links-line" style="color:#38bdf8;"></i> In-Document Note Share Links & Click Performance
+          </h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Share Token</th>
+                <th>Document & Note Context</th>
+                <th>Shared By</th>
+                <th>Total Clicks</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="notesShareLinksTableBody">
+              <tr><td colspan="5" style="text-align:center; color:var(--admin-muted);">Loading note share analytics...</td></tr>
             </tbody>
           </table>
         </div>
