@@ -3335,7 +3335,10 @@ window.openRequestPaymentModal = function() {
 
   const storedCoins = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
   const walletBadge = document.getElementById("contribCoinsWalletBadge");
-  if (walletBadge) walletBadge.textContent = `${storedCoins.toLocaleString()} DPGCoins`;
+  if (walletBadge) {
+    walletBadge.textContent = `${storedCoins.toLocaleString()} DPGCoins`;
+    walletBadge.style.color = storedCoins < 0 ? "#f87171" : "";
+  }
 
   const monData = window.currentSelectedMonetizationData || {};
   const active = monData.activeMonetization || monData;
@@ -3437,10 +3440,13 @@ window.payAdsBillWithCoins = async function() {
     });
     const data = await res.json();
     if (data && data.success) {
-      const newBal = (data.newCoinsBalance != null) ? data.newCoinsBalance : Math.max(0, storedCoins - requiredCoins);
+      const newBal = (data.newCoinsBalance != null) ? data.newCoinsBalance : (storedCoins - requiredCoins);
       localStorage.setItem("dpg_user_coins_balance", String(newBal));
       const walletBadge = document.getElementById("contribCoinsWalletBadge");
-      if (walletBadge) walletBadge.textContent = `${newBal.toLocaleString()} DPGCoins`;
+      if (walletBadge) {
+        walletBadge.textContent = `${newBal.toLocaleString()} DPGCoins`;
+        walletBadge.style.color = newBal < 0 ? "#f87171" : "";
+      }
 
       if (coinFb) {
         coinFb.style.display = "block";

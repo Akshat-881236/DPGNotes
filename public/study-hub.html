@@ -29,6 +29,8 @@
   <script src="/contributor-hover-card.js" defer></script>
   <script src="/history-monitoring.js" defer></script>
   <script src="/custom-dialogs.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
   <script src="/dpg-coins-passes.js"></script>
 
   <style>
@@ -980,6 +982,55 @@
       align-items: center;
       gap: 0.65rem;
       transition: all 0.2s ease;
+    }
+
+    .quiz-option-content {
+      flex: 1 1 auto;
+      min-width: 0;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .quiz-q-title p,
+    .quiz-option-content p {
+      margin: 0 0 0.4rem 0;
+    }
+
+    .quiz-q-title p:last-child,
+    .quiz-option-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .quiz-q-title ul,
+    .quiz-q-title ol,
+    .quiz-option-content ul,
+    .quiz-option-content ol {
+      margin: 0.3rem 0 0.3rem 1.25rem;
+      padding-left: 0.25rem;
+    }
+
+    .quiz-q-title code,
+    .quiz-option-content code {
+      background: rgba(99, 102, 241, 0.14);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 0.08rem 0.36rem;
+      border-radius: 5px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.88em;
+    }
+
+    .sim-anticheat-banner {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      border-radius: 0.75rem;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.84rem;
+      color: var(--text-main);
+      line-height: 1.45;
     }
 
     .quiz-option-btn:hover {
@@ -2049,6 +2100,7 @@
         </div>
 
         <div class="quiz-simulator-box">
+          <div id="simAntiCheatBanner" class="sim-anticheat-banner" style="display:none;"></div>
           <div class="quiz-q-title" id="simQuestionText">
             Loading question from database...
           </div>
@@ -2178,10 +2230,14 @@
 
     async function syncCoinsToCloud(uid, coinsValue, mode = "max") {
       if (!uid) return { success: false, dpgCoins: coinsValue };
-      const numericCoins = Math.max(0, Math.floor(Number(coinsValue) || 0));
+      const parsedVal = Number(coinsValue);
+      const numericCoins = Number.isFinite(parsedVal) ? Math.max(-1000000, Math.floor(parsedVal)) : 0;
+      const effectiveMode = numericCoins < 0 ? "exact" : mode;
       const hasNativeAuth = Boolean(auth && auth.currentUser && auth.currentUser.uid === uid);
+      const localBlockedUntil = (window.DPGCoinsPasses && window.DPGCoinsPasses.getAntiCheatStatus().creditBlockedUntil) || 0;
+      const localDebitAt = parseInt(localStorage.getItem("dpg_coins_local_debit_at") || "0", 10) || 0;
 
-      if (hasNativeAuth) {
+      if (hasNativeAuth && effectiveMode === "max" && localBlockedUntil <= Date.now()) {
         try {
           await setDoc(doc(db, "users", uid), {
             dpgCoins: numericCoins,
@@ -2197,7 +2253,13 @@
       const res = await fetch(`${getCoinsApiBase()}/api/coins/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid, coins: numericCoins, mode })
+        body: JSON.stringify({
+          uid,
+          coins: numericCoins,
+          mode: effectiveMode,
+          antiCheatBlockedUntil: localBlockedUntil,
+          debitAt: localDebitAt
+        })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
@@ -2336,15 +2398,25 @@
     async function syncContributorCoinsFromCloud(uid) {
       if (!uid) return;
       try {
+        if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.syncFromCloud === "function") {
+          const synced = await window.DPGCoinsPasses.syncFromCloud(uid);
+          if (synced && typeof synced.balance === "number") {
+            userCoins = synced.balance;
+            updateCoinsDisplay();
+            if (typeof renderAntiCheatBanner === "function") renderAntiCheatBanner();
+            return;
+          }
+        }
         const uSnap = await getDoc(doc(db, "users", uid));
         if (uSnap.exists()) {
           const cloudData = uSnap.data();
           if (typeof cloudData.dpgCoins === 'number') {
             const localUpdatedAt = parseInt(localStorage.getItem("dpg_coins_local_updated_at") || "0", 10);
+            const localDebitAt = parseInt(localStorage.getItem("dpg_coins_local_debit_at") || "0", 10);
             const cloudDebitAt = typeof cloudData.coinsLastDebitAt === "number" ? cloudData.coinsLastDebitAt : 0;
             userCoins = cloudDebitAt > localUpdatedAt
               ? cloudData.dpgCoins
-              : Math.max(userCoins, cloudData.dpgCoins);
+              : (localDebitAt > cloudDebitAt ? userCoins : Math.max(userCoins, cloudData.dpgCoins));
             localStorage.setItem(COINS_LOCAL_KEY, String(userCoins));
             updateCoinsDisplay();
           }
@@ -2974,16 +3046,77 @@
        E. DPG COINS ECONOMY & LIVE PUBLIC QUIZ ENGINE
        ========================================================================== */
     const COINS_LOCAL_KEY = "dpg_user_coins_balance";
-    let userCoins = parseInt(localStorage.getItem(COINS_LOCAL_KEY) || "50", 10);
+    const rawStoredCoins = localStorage.getItem(COINS_LOCAL_KEY);
+    let userCoins = (rawStoredCoins !== null && rawStoredCoins !== "" && !isNaN(parseInt(rawStoredCoins, 10)))
+      ? parseInt(rawStoredCoins, 10)
+      : 50;
 
     function updateCoinsDisplay() {
       document.querySelectorAll("#hubHeaderCoinsCount, #simUserCoinsCount").forEach(el => {
         el.textContent = userCoins;
+        if (el.id === "simUserCoinsCount") {
+          el.style.color = userCoins < 0 ? "#ef4444" : "#f59e0b";
+        } else {
+          el.style.color = userCoins < 0 ? "#ef4444" : "";
+        }
       });
       localStorage.setItem(COINS_LOCAL_KEY, String(userCoins));
     }
 
     updateCoinsDisplay();
+
+    function formatLockoutRemaining(ms) {
+      const totalMins = Math.max(1, Math.ceil(ms / 60000));
+      const hrs = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    }
+
+    function renderAntiCheatBanner() {
+      const banner = document.getElementById("simAntiCheatBanner");
+      if (!banner) return;
+      const status = (window.DPGCoinsPasses && window.DPGCoinsPasses.getAntiCheatStatus)
+        ? window.DPGCoinsPasses.getAntiCheatStatus()
+        : { isBlocked: false, remainingMs: 0, reason: "" };
+      if (!status.isBlocked) {
+        banner.style.display = "none";
+        banner.innerHTML = "";
+        return;
+      }
+      banner.style.display = "flex";
+      banner.innerHTML = `
+        <i class="ri-shield-cross-fill" style="color:#ef4444; font-size:1.25rem; flex-shrink:0; margin-top:2px;"></i>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; color:#f87171; margin-bottom:2px;">
+            Anti-Cheat 3-Hour Credit Lockout Active (${formatLockoutRemaining(status.remainingMs)} remaining)
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">
+            ${escapeHtml(status.reason)}. Coin credits (+8/+12) are disabled for 3 hours and a <strong>-1,800 DPG Coins</strong> penalty was applied (negative balances allowed).
+          </div>
+        </div>
+      `;
+    }
+
+    window.addEventListener("dpg-anticheat-penalty", (e) => {
+      if (e && e.detail && typeof e.detail.balance === "number") {
+        userCoins = e.detail.balance;
+      } else if (window.DPGCoinsPasses) {
+        userCoins = window.DPGCoinsPasses.getCoinsBalance();
+      }
+      updateCoinsDisplay();
+      renderAntiCheatBanner();
+    });
+
+    window.addEventListener("dpg-coins-pass-updated", (e) => {
+      if (e && e.detail && typeof e.detail.balance === "number") {
+        userCoins = e.detail.balance;
+        updateCoinsDisplay();
+      }
+      renderAntiCheatBanner();
+    });
+
+    renderAntiCheatBanner();
+    setInterval(renderAntiCheatBanner, 30000);
 
     /* ==========================================================================
        E. LIVE PUBLIC QUIZ & ARITHMETIC SPEED SIMULATOR WITH INTEGRITY DEFENSE
@@ -3232,35 +3365,54 @@
       if (e.key === "F12" || e.keyCode === 123) {
         e.preventDefault();
         e.stopPropagation();
+        if (window.DPGCoinsPasses && window.DPGCoinsPasses.triggerAntiCheatPenalty) {
+          window.DPGCoinsPasses.triggerAntiCheatPenalty("F12 Developer Tools key pressed");
+        }
         return false;
       }
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
         e.preventDefault();
         e.stopPropagation();
+        if (window.DPGCoinsPasses && window.DPGCoinsPasses.triggerAntiCheatPenalty) {
+          window.DPGCoinsPasses.triggerAntiCheatPenalty("Inspection shortcut (Ctrl+Shift+" + String(e.key).toUpperCase() + ") attempted");
+        }
         return false;
       }
       if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
         e.preventDefault();
         e.stopPropagation();
+        if ((e.key === 'u' || e.key === 'U') && window.DPGCoinsPasses && window.DPGCoinsPasses.triggerAntiCheatPenalty) {
+          window.DPGCoinsPasses.triggerAntiCheatPenalty("View Source shortcut attempted");
+        }
         return false;
       }
     }, { capture: true, passive: false });
 
-    // 3. Real-Time Detection for "Ask Gemini" Side Panel, Copilot, & DevTools
-    function isAskGeminiOrInspectionActive() {
-      // Docked Side Panel / DevTools in Chrome & Edge (Ask Gemini docks on the right, reducing window.innerWidth)
-      const widthDelta = window.outerWidth - window.innerWidth;
-      const heightDelta = window.outerHeight - window.innerHeight;
-      if (widthDelta > 160 || heightDelta > 160) {
-        return true;
+    // 3. Real-Time Detection for "Ask Gemini" Side Panel, Copilot, DevTools, or Active 3-Hour Lockout
+    function getIntegrityBreachReason() {
+      if (window.DPGCoinsPasses && window.DPGCoinsPasses.detectInspectionOrGemini) {
+        const res = window.DPGCoinsPasses.detectInspectionOrGemini();
+        if (res && res.detected) return res.reason;
       }
 
-      // Check whether user lost window focus (e.g. interacting with Ask Gemini tab or inspector)
+      if (window.outerWidth > 0 && window.innerWidth > 0 && window.outerHeight > 0 && window.innerHeight > 0) {
+        const vv = window.visualViewport;
+        const scale = (vv && vv.scale && vv.scale > 0.25) ? vv.scale : 1;
+        const widthDelta = window.outerWidth - Math.round(window.innerWidth * scale);
+        const heightDelta = window.outerHeight - Math.round(window.innerHeight * scale);
+        const isDesktopLike = (window.screen && window.screen.width > 520) && !(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+        if (widthDelta > 175) {
+          return "External AI Side Panel (Ask Gemini) or Docked Inspection Mode detected";
+        }
+        if (isDesktopLike && heightDelta > 220) {
+          return "Developer Tools / Inspection panel detected";
+        }
+      }
+
       if (!document.hasFocus()) {
-        return true;
+        return "Window focus lost to external tab / Ask Gemini side panel during quiz";
       }
 
-      // DevTools console probe detection
       let isInspectorOpen = false;
       const probe = new Image();
       Object.defineProperty(probe, 'id', {
@@ -3271,9 +3423,17 @@
       });
       console.log('%c', probe);
       if (isInspectorOpen) {
-        return true;
+        return "Developer Tools Console / Inspection Mode detected";
       }
 
+      return "";
+    }
+
+    function isAskGeminiOrInspectionActive() {
+      if (getIntegrityBreachReason()) return true;
+      if (window.DPGCoinsPasses && window.DPGCoinsPasses.isAntiCheatCreditBlocked && window.DPGCoinsPasses.isAntiCheatCreditBlocked()) {
+        return true;
+      }
       return false;
     }
 
@@ -3316,11 +3476,31 @@
       renderSimulatorQuestion(isAutoNext);
     }
 
+    // Format quiz prompt / options identically to Quiz Generator & Quizes/index.html
+    function renderHubRichQuizHtml(rawStr, contextId) {
+      if (!rawStr) return "";
+      let html = String(rawStr);
+      if (typeof window.formatSolutionContent === "function") {
+        try {
+          html = window.formatSolutionContent(html, contextId);
+        } catch (e) {}
+      }
+      if (typeof DOMPurify !== "undefined") {
+        html = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+      } else {
+        html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                   .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+      }
+      return html;
+    }
+
     function renderSimulatorQuestion(animate = false) {
       const qTextEl = document.getElementById("simQuestionText");
       const optsEl = document.getElementById("simOptionsContainer");
       const feedbackBox = document.getElementById("simFeedbackBox");
       if (!qTextEl || !optsEl) return;
+
+      renderAntiCheatBanner();
 
       if (feedbackBox) {
         feedbackBox.style.display = "none";
@@ -3332,14 +3512,18 @@
         qTextEl.style.opacity = "0.2";
       }
 
-      qTextEl.textContent = currentSimQuestion.q;
+      const qCtx = "hub_q_" + Date.now().toString(36);
+      qTextEl.innerHTML = renderHubRichQuizHtml(currentSimQuestion.q, qCtx);
       const letters = ["A", "B", "C", "D"];
-      optsEl.innerHTML = currentSimQuestion.opts.map((opt, idx) => `
-        <button type="button" class="quiz-option-btn" onclick="window.submitSimAnswer(${idx}, this)">
-          <span style="font-weight:700; color:var(--accent-primary);">${letters[idx] || (idx + 1)}.</span>
-          <span>${escapeHtml(opt)}</span>
-        </button>
-      `).join("");
+      optsEl.innerHTML = currentSimQuestion.opts.map((opt, idx) => {
+        const optHtml = renderHubRichQuizHtml(opt, `${qCtx}_opt_${idx}`);
+        return `
+          <button type="button" class="quiz-option-btn" onclick="window.submitSimAnswer(${idx}, this)">
+            <span style="font-weight:700; color:var(--accent-primary);">${letters[idx] || (idx + 1)}.</span>
+            <span class="quiz-option-content">${optHtml}</span>
+          </button>
+        `;
+      }).join("");
 
       if (animate) {
         setTimeout(() => {
@@ -3369,6 +3553,7 @@
 
       const letters = ["A", "B", "C", "D"];
       const isCorrect = selectedIndex === currentSimQuestion.correctIndex;
+      const expHtml = renderHubRichQuizHtml(currentSimQuestion.exp, "hub_exp_" + Date.now().toString(36));
 
       // Highlight selections
       const buttons = optsEl.querySelectorAll(".quiz-option-btn");
@@ -3379,24 +3564,44 @@
         btnEl.classList.add("wrong");
       }
 
-      // INTEGRITY CHECK: Only credit DPG Coins if NO "Ask Gemini" tab and inspection is active
-      const integrityBreach = isAskGeminiOrInspectionActive();
+      // INTEGRITY CHECK: Check live Inspection/Ask Gemini OR any active 3-hour lockout from this/previous session
+      const liveBreachReason = getIntegrityBreachReason();
+      const priorLock = (window.DPGCoinsPasses && window.DPGCoinsPasses.getAntiCheatStatus)
+        ? window.DPGCoinsPasses.getAntiCheatStatus()
+        : { isBlocked: false, remainingMs: 0, reason: "" };
 
-      if (integrityBreach) {
-        // DPG Coins are blocked/disabled
+      if (liveBreachReason || priorLock.isBlocked) {
+        let penaltyResult = null;
+        if (window.DPGCoinsPasses && window.DPGCoinsPasses.triggerAntiCheatPenalty) {
+          penaltyResult = await window.DPGCoinsPasses.triggerAntiCheatPenalty(liveBreachReason || priorLock.reason);
+        }
+        const activeStatus = (window.DPGCoinsPasses && window.DPGCoinsPasses.getAntiCheatStatus)
+          ? window.DPGCoinsPasses.getAntiCheatStatus()
+          : { isBlocked: true, remainingMs: 3 * 60 * 60 * 1000, reason: liveBreachReason || priorLock.reason };
+        if (window.DPGCoinsPasses && window.DPGCoinsPasses.getCoinsBalance) {
+          userCoins = window.DPGCoinsPasses.getCoinsBalance();
+        }
+        updateCoinsDisplay();
+        renderAntiCheatBanner();
+
+        const remText = formatLockoutRemaining(activeStatus.remainingMs || 3 * 60 * 60 * 1000);
+        const penaltyLine = (penaltyResult && !penaltyResult.alreadyPenalized)
+          ? `<strong>-1,800 DPG Coins Penalty Applied!</strong> Current Balance: <strong style="color:${userCoins < 0 ? '#ef4444' : '#f59e0b'};">${userCoins.toLocaleString()} DPGCoins</strong>.<br>`
+          : `3-hour credit lockout active (<strong>${remText}</strong> remaining). Current Balance: <strong style="color:${userCoins < 0 ? '#ef4444' : '#f59e0b'};">${userCoins.toLocaleString()} DPGCoins</strong>.<br>`;
+
         feedbackBox.style.display = "block";
         feedbackBox.style.background = "rgba(239, 68, 68, 0.16)";
         feedbackBox.style.border = "1px solid #ef4444";
         feedbackBox.style.color = "var(--text-main)";
         feedbackBox.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#ef4444; margin-bottom:4px;">
-            <i class="ri-shield-cross-fill" style="font-size:1.25rem;"></i> DPG Coins Locked (0 Credited)
+            <i class="ri-shield-cross-fill" style="font-size:1.25rem;"></i> Credit Disabled &mdash; Anti-Cheat Penalty (0 Credited)
           </div>
           <p style="font-size:0.86rem; color:var(--text-muted); margin:0 0 6px 0; line-height:1.5;">
-            Developer tools inspection or external AI side panel ("Ask Gemini") was detected. Academic integrity protection prevented coin awards for this question.
+            ${penaltyLine}${escapeHtml(liveBreachReason || activeStatus.reason)}
           </p>
           <div style="font-size:0.84rem; opacity:0.9;">
-            Verified Option: <strong style="color:var(--accent-emerald);">Option ${letters[currentSimQuestion.correctIndex] || (currentSimQuestion.correctIndex + 1)}</strong> &mdash; ${escapeHtml(currentSimQuestion.exp)}
+            Verified Option: <strong style="color:var(--accent-emerald);">Option ${letters[currentSimQuestion.correctIndex] || (currentSimQuestion.correctIndex + 1)}</strong> &mdash; ${expHtml}
           </div>
           <div class="sim-auto-next-bar" style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid rgba(239,68,68,0.3); font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between;">
             <span><i class="ri-loader-4-line ri-spin" style="color:var(--accent-primary);"></i> Next question in <strong id="simCountdownSec">2</strong>s...</span>
@@ -3408,12 +3613,12 @@
         return;
       }
 
-      // No inspection -> Credit / Deduct DPG Coins
+      // No inspection / lockout -> Credit / Deduct DPG Coins (negative balance allowed below 0)
       const coinDelta = isCorrect
         ? (isContributor ? 12 : 8)
         : (isContributor ? -5 : -3);
 
-      userCoins = Math.max(0, userCoins + coinDelta);
+      userCoins = userCoins + coinDelta;
       updateCoinsDisplay();
 
       feedbackBox.style.display = "block";
@@ -3423,7 +3628,7 @@
         feedbackBox.style.color = "var(--text-main)";
         feedbackBox.innerHTML = `
           <strong><i class="ri-checkbox-circle-fill" style="color:var(--accent-emerald);"></i> Correct Answer! (+${coinDelta} DPGCoins)</strong><br>
-          <span style="font-size:0.86rem; display:inline-block; margin-top:3px;">${escapeHtml(currentSimQuestion.exp)}</span>
+          <span style="font-size:0.86rem; display:inline-block; margin-top:3px;">${expHtml}</span>
           <div class="sim-auto-next-bar" style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid rgba(16,185,129,0.3); font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between;">
             <span><i class="ri-loader-4-line ri-spin" style="color:var(--accent-primary);"></i> Next question in <strong id="simCountdownSec">2</strong>s...</span>
             <button type="button" onclick="window.triggerNextSimQuestion()" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); padding:3px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem;">Next &rarr;</button>
@@ -3435,7 +3640,7 @@
         feedbackBox.style.color = "var(--text-main)";
         feedbackBox.innerHTML = `
           <strong><i class="ri-close-circle-fill" style="color:#ef4444;"></i> Incorrect Selection (${coinDelta} DPGCoins)</strong><br>
-          <span style="font-size:0.86rem; display:inline-block; margin-top:3px;">Verified Option: <strong style="color:var(--accent-emerald);">Option ${letters[currentSimQuestion.correctIndex] || (currentSimQuestion.correctIndex + 1)}</strong> &mdash; ${escapeHtml(currentSimQuestion.exp)}</span>
+          <span style="font-size:0.86rem; display:inline-block; margin-top:3px;">Verified Option: <strong style="color:var(--accent-emerald);">Option ${letters[currentSimQuestion.correctIndex] || (currentSimQuestion.correctIndex + 1)}</strong> &mdash; ${expHtml}</span>
           <div class="sim-auto-next-bar" style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid rgba(239,68,68,0.3); font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between;">
             <span><i class="ri-loader-4-line ri-spin" style="color:var(--accent-primary);"></i> Next question in <strong id="simCountdownSec">2</strong>s...</span>
             <button type="button" onclick="window.triggerNextSimQuestion()" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); padding:3px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem;">Next &rarr;</button>
@@ -3454,13 +3659,16 @@
       });
 
       try {
-        localStorage.setItem("dpg_coins_local_updated_at", String(Date.now()));
+        const nowTs = String(Date.now());
+        localStorage.setItem("dpg_coins_local_updated_at", nowTs);
+        if (coinDelta < 0) localStorage.setItem("dpg_coins_local_debit_at", nowTs);
       } catch(e) {}
 
       // Real-Time DPG Coins Purge to Cloud (Only for Contributor)
       const purgeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid");
       if (isContributor && purgeUid && coinDelta !== 0) {
-        syncCoinsToCloud(purgeUid, userCoins, "max").catch(err => console.warn("[Study Hub] Real-time coin sync notice:", err.message));
+        const syncMode = (userCoins < 0 || coinDelta < 0) ? "exact" : "max";
+        syncCoinsToCloud(purgeUid, userCoins, syncMode).catch(err => console.warn("[Study Hub] Real-time coin sync notice:", err.message));
       }
 
       // Auto-advance to next question
@@ -3527,14 +3735,29 @@
 
       try {
         let cloudCoins = 0;
+        let cloudDebitAt = 0;
         const userSnap = await getDoc(doc(db, "users", activeUid)).catch(() => null);
         if (userSnap && userSnap.exists()) {
-          cloudCoins = userSnap.data().dpgCoins || 0;
+          const ud = userSnap.data() || {};
+          cloudCoins = typeof ud.dpgCoins === "number" ? ud.dpgCoins : 0;
+          cloudDebitAt = typeof ud.coinsLastDebitAt === "number" ? ud.coinsLastDebitAt : 0;
         }
 
-        const mergedCoins = Math.max(userCoins, cloudCoins);
-        const result = await syncCoinsToCloud(activeUid, mergedCoins, "max");
-        const finalCoins = (result && typeof result.dpgCoins === "number") ? result.dpgCoins : mergedCoins;
+        const localDebitAt = parseInt(localStorage.getItem("dpg_coins_local_debit_at") || "0", 10) || 0;
+        const localUpdatedAt = parseInt(localStorage.getItem("dpg_coins_local_updated_at") || "0", 10) || 0;
+        const isLockedOut = window.DPGCoinsPasses && window.DPGCoinsPasses.isAntiCheatCreditBlocked && window.DPGCoinsPasses.isAntiCheatCreditBlocked();
+        let targetCoins = Math.max(userCoins, cloudCoins);
+        let targetMode = "max";
+        if (cloudDebitAt > localUpdatedAt) {
+          targetCoins = cloudCoins;
+          targetMode = "exact";
+        } else if (localDebitAt > cloudDebitAt || isLockedOut || userCoins < 0) {
+          targetCoins = (isLockedOut || localDebitAt > 0) ? Math.min(userCoins, cloudCoins >= 0 && localDebitAt > cloudDebitAt ? userCoins : Math.min(userCoins, cloudCoins)) : userCoins;
+          if (localDebitAt > cloudDebitAt) targetCoins = userCoins;
+          targetMode = "exact";
+        }
+        const result = await syncCoinsToCloud(activeUid, targetCoins, targetMode);
+        const finalCoins = (result && typeof result.dpgCoins === "number") ? result.dpgCoins : targetCoins;
 
         userCoins = finalCoins;
         localStorage.setItem(COINS_LOCAL_KEY, String(userCoins));
@@ -3597,6 +3820,13 @@
 
     // Professional DPG Coins Economy & Wallet Modal
     window.showCoinsModal = function() {
+      if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.getCoinsBalance === "function") {
+        userCoins = window.DPGCoinsPasses.getCoinsBalance();
+        updateCoinsDisplay();
+      }
+      const antiCheatStatus = (window.DPGCoinsPasses && window.DPGCoinsPasses.getAntiCheatStatus)
+        ? window.DPGCoinsPasses.getAntiCheatStatus()
+        : { isBlocked: false, remainingMs: 0, reason: "" };
       const activeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid");
 
       let overlay = document.getElementById("dpgWalletModalOverlay");
@@ -3630,7 +3860,7 @@
             <div>
               <div class="dpg-wallet-bal-label">Active Balance</div>
               <div class="dpg-wallet-bal-value">
-                <span>${userCoins.toLocaleString()}</span>
+                <span style="${userCoins < 0 ? 'color:#ef4444;' : ''}">${userCoins.toLocaleString()}</span>
                 <span class="dpg-wallet-bal-unit">DPGCoins</span>
               </div>
             </div>
@@ -3640,9 +3870,9 @@
             </div>
           </div>
 
-          <div class="dpg-wallet-earn-strip">
-            <i class="ri-flashlight-fill"></i>
-            <span>Earn coins on every correct quiz answer: <strong>+8 Guest</strong> &bull; <strong>+12 Contributor</strong></span>
+          <div class="dpg-wallet-earn-strip" style="${antiCheatStatus.isBlocked ? 'background:rgba(239,68,68,0.14);border-color:rgba(239,68,68,0.4);color:#f87171;' : ''}">
+            <i class="${antiCheatStatus.isBlocked ? 'ri-shield-cross-fill' : 'ri-flashlight-fill'}"></i>
+            <span>${antiCheatStatus.isBlocked ? `Credit Locked (${formatLockoutRemaining(antiCheatStatus.remainingMs)} remaining) due to Anti-Cheat / Inspection (-1,800 penalty applied)` : 'Earn coins on every correct quiz answer: <strong>+8 Guest</strong> &bull; <strong>+12 Contributor</strong>'}</span>
           </div>
 
           <div class="dpg-wallet-tiers-title">

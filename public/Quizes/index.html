@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="/reader-theme.css">
   <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
   <script src="/custom-dialogs.js"></script>
+  <script src="/dpg-coins-passes.js"></script>
   <script src="/reader-theme.js"></script>
   <style>
     :root {
@@ -2490,6 +2491,9 @@
     function logUmcViolation(type, msg) {
       uvcViolations.push({ type, timestamp: Date.now() });
       showUmcToast(`Integrity Flag: ${type}`);
+      if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.triggerAntiCheatPenalty === 'function') {
+        window.DPGCoinsPasses.triggerAntiCheatPenalty(`Quiz Anti-Cheat Violation (${type}): ${msg}`);
+      }
       if (quizData.strictMode && (type === 'TAB_OR_APP_HIDDEN' || type === 'FULLSCREEN_EXIT' || type === 'ASK_GEMINI_OR_SIDE_PANEL')) {
         autoSubmitExamination('UMC_AUTO_SUBMIT');
       }
