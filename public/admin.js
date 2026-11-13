@@ -1,4 +1,4 @@
-import { getFirestore, collection, collectionGroup, getDocs, getCountFromServer, doc, deleteDoc, updateDoc, setDoc, query, where, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, getDocs, getCountFromServer, doc, deleteDoc, updateDoc, setDoc, query, where, orderBy, limit, addDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 const firebaseConfig = {
@@ -2781,12 +2781,33 @@ window.approveResourceAdmin = async function(docId) {
       }
       approvedOk = true;
     }
+    if (approvedOk) {
+      const uploaderUid = docItem?.userId || docItem?.uploaderId || docItem?.uploaderUid;
+      if (uploaderUid) {
+        try {
+          await updateDoc(doc(db, "users", uploaderUid), {
+            dpgCoins: increment(5000),
+            coinsLastUpdated: serverTimestamp()
+          });
+          await addDoc(collection(db, "users", uploaderUid, "coins_transactions"), {
+            type: "credit",
+            amount: 5000,
+            reason: `Admin Approved Resource: "${title}" (+5,000 DPGCoins)`,
+            source: "pdf_resource_approved",
+            docId: docId,
+            timestamp: serverTimestamp()
+          });
+        } catch (coinErr) {
+          console.warn("Client coin credit on approval notice:", coinErr);
+        }
+      }
+    }
     if (docItem && docItem.uploaderEmail) {
       addDoc(collection(db, "notifications"), {
         email: docItem.uploaderEmail,
         type: "success",
         title: "Resource Approved! 🎉",
-        message: `Your resource "${title}" has been approved by an Administrator and is now publicly live on DPGNotes.`,
+        message: `Your resource "${title}" has been approved by an Administrator and is now publicly live on DPGNotes. +5,000 DPGCoins credited to your vault!`,
         isRead: false,
         createdAt: serverTimestamp()
       }).catch(console.warn);
@@ -2836,12 +2857,34 @@ window.rejectResourceAdmin = async function(docId) {
       }
       deletedOk = true;
     }
+    if (deletedOk) {
+      const uploaderUid = docItem?.userId || docItem?.uploaderId || docItem?.uploaderUid;
+      if (uploaderUid) {
+        try {
+          await updateDoc(doc(db, "users", uploaderUid), {
+            dpgCoins: increment(-1500),
+            coinsLastDebitAt: Date.now(),
+            coinsLastUpdated: serverTimestamp()
+          });
+          await addDoc(collection(db, "users", uploaderUid, "coins_transactions"), {
+            type: "debit",
+            amount: 1500,
+            reason: `Admin Rejected Resource: "${title}" (-1,500 DPGCoins penalty)`,
+            source: "pdf_resource_rejected",
+            docId: docId,
+            timestamp: serverTimestamp()
+          });
+        } catch (coinErr) {
+          console.warn("Client coin deduction on rejection notice:", coinErr);
+        }
+      }
+    }
     if (docItem && docItem.uploaderEmail) {
       addDoc(collection(db, "notifications"), {
         email: docItem.uploaderEmail,
         type: "alert",
         title: "Resource Rejected & Removed",
-        message: `Your uploaded document "${title}" did not meet academic quality guidelines and was rejected by an Administrator.`,
+        message: `Your uploaded document "${title}" did not meet academic quality guidelines and was rejected by an Administrator. -1,500 DPGCoins penalty deducted.`,
         isRead: false,
         createdAt: serverTimestamp()
       }).catch(console.warn);
@@ -9286,8 +9329,23 @@ window.renderCurrencyInflow = function(transactions) {
 
   tbody.innerHTML = transactions.map(t => {
     const isAds = t.source === "ads_bill_payment";
-    const badgeColor = isAds ? "rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35);" : "rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35);";
-    const label = isAds ? "Ads Bill Payment" : (t.passName ? `Plan Upgrade (${t.passName})` : "Plan Upgrade");
+    const isAdminTransfer = t.source === "admin_transfer" || t.source === "admin_vault_transfer" || t.source === "admin_refund" || t.type === "debit" || (t.reason && t.reason.toLowerCase().includes("transfer"));
+
+    let badgeColor = "rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35);";
+    let label = t.passName ? `Plan Upgrade (${t.passName})` : "Plan Upgrade";
+    let isDebit = t.type === "debit";
+
+    if (isAds) {
+      badgeColor = "rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35);";
+      label = "Ads Bill Payment";
+    } else if (isAdminTransfer) {
+      badgeColor = "rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35);";
+      label = t.reason ? `Admin Transfer: ${t.reason}` : "Admin DPG Coins Transfer";
+    }
+
+    const amountColor = isDebit ? "#f87171" : "#34d399";
+    const amountPrefix = isDebit ? "-" : "+";
+    const detailsText = t.reason || t.passName || (isAds ? "Native Ads Settlement" : (isAdminTransfer ? "Admin Vault Transfer" : "-"));
 
     return `
       <tr>
@@ -9296,9 +9354,9 @@ window.renderCurrencyInflow = function(transactions) {
             ${escapeHtml(label)}
           </span>
         </td>
-        <td><strong style="color:#34d399;">+${Number(t.amount || 0).toLocaleString()} Coins</strong></td>
+        <td><strong style="color:${amountColor};">${amountPrefix}${Number(t.amount || 0).toLocaleString()} Coins</strong></td>
         <td><span>${escapeHtml(t.contributorName || t.contributorEmail || "-")}</span></td>
-        <td><span style="color:#94a3b8; font-size:0.8rem;">${escapeHtml(t.contributorEmail || "-")}</span></td>
+        <td><span style="color:#94a3b8; font-size:0.8rem;">${escapeHtml(detailsText)}</span></td>
         <td><span style="color:#94a3b8; font-size:0.75rem;">${new Date(t.timestamp).toLocaleString()}</span></td>
       </tr>
     `;

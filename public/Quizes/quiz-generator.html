@@ -1628,6 +1628,7 @@
         <i class="ri-checkbox-circle-fill" style="font-size:2.4rem; color:var(--qz-success);"></i>
       </div>
       <h2 style="font-size:1.6rem; font-weight:800; margin-bottom:0.4rem;" class="qz-modal-title">Quiz Successfully Published!</h2>
+      <div id="publishQuizCoinRewardBadge" style="display:none; margin-bottom:1rem; padding:8px 12px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:8px; color:#fbbf24; font-weight:700; font-size:0.9rem;"></div>
       <p class="qz-modal-subtitle" style="font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">
         Your quiz is live, paginated across secure question documents, and protected by AES-grade answer key separation.
       </p>
@@ -1672,7 +1673,8 @@
       collection,
       getDocs,
       writeBatch, 
-      serverTimestamp 
+      serverTimestamp,
+      increment 
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
     const firebaseConfig = {
       apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
@@ -2846,6 +2848,40 @@
           const banner = document.getElementById('draftStatusBanner');
           if (banner) banner.style.display = 'none';
         } catch(e) {}
+
+        let coinsAwarded = 0;
+        if (!isEditMode && targetOwnerUid) {
+          const qCount = questions ? questions.length : 0;
+          coinsAwarded = window.DPGCoinsPasses?.calculateContentPublishCoins
+            ? window.DPGCoinsPasses.calculateContentPublishCoins(qCount)
+            : 0;
+
+          if (coinsAwarded > 0) {
+            try {
+              const uRef = doc(db, "users", targetOwnerUid);
+              await updateDoc(uRef, {
+                dpgCoins: increment(coinsAwarded),
+                coinsLastUpdated: serverTimestamp()
+              });
+              await addDoc(collection(db, "users", targetOwnerUid, "coins_transactions"), {
+                type: "credit",
+                amount: coinsAwarded,
+                reason: `Published Academic Quiz: ${title} (${qCount} Questions)`,
+                source: "quiz_publish",
+                quizId: quizId,
+                timestamp: serverTimestamp()
+              });
+              if (window.DPGCoinsPasses) {
+                const b = window.DPGCoinsPasses.getCoinsBalance();
+                window.DPGCoinsPasses.setCoinsBalance(b + coinsAwarded);
+                window.DPGCoinsPasses.syncFromCloud(targetOwnerUid).catch(() => {});
+              }
+            } catch (coinErr) {
+              console.warn("Quiz publish coins reward error:", coinErr);
+            }
+          }
+        }
+
         let examUrl = `${window.location.origin}/Quizes/index.html?quizId=${quizId}`;
         if (visibility === 'private' && shareToken) {
           examUrl += `&share_token=${shareToken}`;
@@ -2853,6 +2889,15 @@
         const successTitle = document.querySelector('#publishSuccessModal h2');
         if (successTitle) {
           successTitle.textContent = isEditMode ? "Quiz Updated Successfully!" : "Quiz Successfully Published!";
+        }
+        const badgeEl = document.getElementById('publishQuizCoinRewardBadge');
+        if (badgeEl) {
+          if (coinsAwarded > 0) {
+            badgeEl.style.display = 'block';
+            badgeEl.innerHTML = `<i class="ri-copper-coin-fill" style="color:#f59e0b;"></i> 🪙 +${coinsAwarded.toLocaleString()} DPGCoins Credited to Your Vault!`;
+          } else {
+            badgeEl.style.display = 'none';
+          }
         }
         document.getElementById('liveQuizUrlInput').value = examUrl;
         document.getElementById('previewQuizBtn').href = examUrl;

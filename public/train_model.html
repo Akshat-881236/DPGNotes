@@ -1175,7 +1175,7 @@
   </div>
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, deleteDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, deleteDoc, serverTimestamp, query, where, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
     const cfg = {
       apiKey:"AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",authDomain:"dpgnotes.firebaseapp.com",
@@ -2574,10 +2574,33 @@
           urls,
           updatedAt: serverTimestamp()
         });
+        try {
+          if (currentUid && currentUid !== "contributor") {
+            await updateDoc(doc(db, "users", currentUid), {
+              dpgCoins: increment(4700),
+              coinsLastUpdated: serverTimestamp()
+            });
+            await addDoc(collection(db, "users", currentUid, "coins_transactions"), {
+              type: "credit",
+              amount: 4700,
+              reason: `AI Model Training Reward for Resource ${targetId}`,
+              source: "ai_model_training",
+              resourceId: targetId,
+              timestamp: serverTimestamp()
+            });
+          }
+          if (window.DPGCoinsPasses) {
+            const b = window.DPGCoinsPasses.getCoinsBalance();
+            window.DPGCoinsPasses.setCoinsBalance(b + 4700);
+            window.DPGCoinsPasses.syncFromCloud(currentUid).catch(() => {});
+          }
+        } catch (cErr) {
+          console.warn("Client coin balance sync notice:", cErr);
+        }
         if (window.customAlert) {
-          await window.customAlert("AI Knowledge Model trained and published successfully for this resource!", { title: "Training Complete" });
+          await window.customAlert("AI Knowledge Model trained and published successfully! 🪙 +4,700 DPGCoins have been credited to your vault.", { title: "Training Complete 🎉" });
         } else {
-          alert("AI Knowledge Model trained and published successfully for this resource!");
+          alert("AI Knowledge Model trained and published successfully! +4,700 DPGCoins have been credited to your vault.");
         }
         window.location.href = "dashboard.html";
       } catch (err) {

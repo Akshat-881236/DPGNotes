@@ -3844,6 +3844,15 @@
         document.body.appendChild(overlay);
       }
 
+      const renderTierBtn = (passId, bgStyle, colorStyle) => {
+        const status = window.DPGCoinsPasses ? window.DPGCoinsPasses.getPlanStatus(passId) : { disabled: false };
+        if (status && status.disabled) {
+          const expText = status.expiresAt && window.DPGCoinsPasses?.formatExpiry ? ` (${window.DPGCoinsPasses.formatExpiry(status.expiresAt)})` : '';
+          return `<button type="button" disabled style="align-self:flex-start; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#94a3b8; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:not-allowed; opacity:0.65;" title="${status.label}${expText}">${status.label}</button>`;
+        }
+        return `<button type="button" onclick="window.redeemHubWalletPass('${passId}', this)" style="align-self:flex-start; background:${bgStyle}; border:1px solid ${colorStyle}; color:${colorStyle}; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>`;
+      };
+
       overlay.innerHTML = `
         <div class="dpg-wallet-dialog">
           <button type="button" class="dpg-wallet-close-btn" onclick="window.closeWalletModal()" aria-label="Close">
@@ -3892,42 +3901,42 @@
                 <span class="dpg-wallet-tier-cost">650 Coins</span>
                 <div class="dpg-wallet-tier-desc">1-Day Utilities Unlimited Pass</div>
               </div>
-              <button type="button" onclick="window.redeemHubWalletPass('utilities_1d', this)" style="align-self:flex-start; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.38); color:#f59e0b; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+              ${renderTierBtn('utilities_1d', 'rgba(245,158,11,0.16)', '#f59e0b')}
             </div>
             <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
               <div>
                 <span class="dpg-wallet-tier-cost">2,500 Coins</span>
                 <div class="dpg-wallet-tier-desc">1-Month Blaze Access Tier</div>
               </div>
-              <button type="button" onclick="window.redeemHubWalletPass('utilities_blaze', this)" style="align-self:flex-start; background:rgba(245,158,11,0.16); border:1px solid rgba(245,158,11,0.38); color:#f59e0b; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+              ${renderTierBtn('utilities_blaze', 'rgba(245,158,11,0.16)', '#f59e0b')}
             </div>
             <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
               <div>
                 <span class="dpg-wallet-tier-cost">4,500 Coins</span>
                 <div class="dpg-wallet-tier-desc">1-Month Pro Tier (All-in-One)</div>
               </div>
-              <button type="button" onclick="window.redeemHubWalletPass('utilities_pro', this)" style="align-self:flex-start; background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.38); color:#c084fc; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+              ${renderTierBtn('utilities_pro', 'rgba(168,85,247,0.18)', '#c084fc')}
             </div>
             <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
               <div>
                 <span class="dpg-wallet-tier-cost">500 Coins</span>
                 <div class="dpg-wallet-tier-desc">1-Day Full Academic Access</div>
               </div>
-              <button type="button" onclick="window.redeemHubWalletPass('access_1d', this)" style="align-self:flex-start; background:rgba(16,185,129,0.16); border:1px solid rgba(16,185,129,0.38); color:#10b981; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+              ${renderTierBtn('access_1d', 'rgba(16,185,129,0.16)', '#10b981')}
             </div>
             <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
               <div>
                 <span class="dpg-wallet-tier-cost">10,500 Coins</span>
                 <div class="dpg-wallet-tier-desc">15-Days Full Academic Access</div>
               </div>
-              <button type="button" onclick="window.redeemHubWalletPass('access_15d', this)" style="align-self:flex-start; background:rgba(56,189,248,0.16); border:1px solid rgba(56,189,248,0.38); color:#38bdf8; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+              ${renderTierBtn('access_15d', 'rgba(56,189,248,0.16)', '#38bdf8')}
             </div>
             <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
               <div>
                 <span class="dpg-wallet-tier-cost">15,000 Coins</span>
                 <div class="dpg-wallet-tier-desc">1-Month Go Ads Free (Native Ads)</div>
               </div>
-              <button type="button" onclick="window.redeemHubWalletPass('ads_free_1mo', this)" style="align-self:flex-start; background:rgba(236,72,153,0.16); border:1px solid rgba(236,72,153,0.38); color:#f472b6; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+              ${renderTierBtn('ads_free_1mo', 'rgba(236,72,153,0.16)', '#f472b6')}
             </div>
             <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
               <div>

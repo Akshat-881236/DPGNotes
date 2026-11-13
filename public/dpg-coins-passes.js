@@ -449,6 +449,95 @@
     }
   }
 
+  function calculateContentPublishCoins(count) {
+    const n = parseInt(count, 10);
+    if (isNaN(n) || n < 2) return 0;
+    if (n < 4) return 2000;
+    if (n < 6) return 2700;
+    if (n < 8) return 4000;
+    if (n < 10) return 5200;
+    if (n < 12) return 6500;
+    if (n < 14) return 7800;
+    if (n < 16) return 9100;
+    if (n < 18) return 10400;
+    if (n < 20) return 11700;
+    return 13000 + Math.floor((n - 20) * 650);
+  }
+
+  function getPlanStatus(passId) {
+    const passes = getActivePasses();
+    const now = Date.now();
+
+    const uPass = passes.utilities && Number(passes.utilities.expiresAt) > now ? passes.utilities : null;
+    const aPass = passes.access && Number(passes.access.expiresAt) > now ? passes.access : null;
+    const afPass = passes.ads_free && Number(passes.ads_free.expiresAt) > now ? passes.ads_free : null;
+
+    const isProActive = Boolean(uPass && uPass.passId === "utilities_pro");
+    const isBlazeActive = Boolean(uPass && uPass.passId === "utilities_blaze");
+    const isUtil1dActive = Boolean(uPass && uPass.passId === "utilities_1d");
+
+    const isAccess15dActive = Boolean(aPass && aPass.passId === "access_15d");
+    const isAccess1dActive = Boolean(aPass && aPass.passId === "access_1d");
+
+    const isAdsFreeActive = Boolean(afPass && afPass.passId === "ads_free_1mo");
+
+    if (passId === "utilities_1d") {
+      if (isProActive) {
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+      }
+      if (isBlazeActive) {
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Blaze)", expiresAt: uPass.expiresAt };
+      }
+      if (isUtil1dActive) {
+        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: uPass.expiresAt };
+      }
+    }
+
+    if (passId === "utilities_blaze") {
+      if (isProActive) {
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+      }
+      if (isBlazeActive) {
+        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: uPass.expiresAt };
+      }
+    }
+
+    if (passId === "utilities_pro") {
+      if (isProActive) {
+        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: uPass.expiresAt };
+      }
+    }
+
+    if (passId === "access_1d") {
+      if (isProActive) {
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+      }
+      if (isAccess15dActive) {
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in 15-Days)", expiresAt: aPass.expiresAt };
+      }
+      if (isAccess1dActive) {
+        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: aPass.expiresAt };
+      }
+    }
+
+    if (passId === "access_15d") {
+      if (isProActive) {
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+      }
+      if (isAccess15dActive) {
+        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: aPass.expiresAt };
+      }
+    }
+
+    if (passId === "ads_free_1mo") {
+      if (isAdsFreeActive) {
+        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: afPass.expiresAt };
+      }
+    }
+
+    return { disabled: false, isActive: false, isCovered: false, label: "Activate", expiresAt: null };
+  }
+
   async function syncFromCloud(explicitUid) {
     const uid = explicitUid || getActiveUid();
     if (!uid) return null;
@@ -769,7 +858,7 @@
 
     const rowsHtml = passes.map((p) => {
       const canAfford = bal >= p.cost;
-      const isCurrentActive = activePass && activePass.passId === p.id;
+      const planStatus = getPlanStatus(p.id);
       return `
         <div class="dpg-cp-tier-row">
           <div style="flex:1 1 200px; min-width:0;">
@@ -779,10 +868,12 @@
             </div>
             <div style="font-size:0.77rem; color:#94a3b8; margin-top:2px;">${p.desc}</div>
           </div>
-          ${isCurrentActive ? `
-            <span class="dpg-cp-active-tag"><i class="ri-checkbox-circle-fill"></i> Active (${formatExpiry(activePass.expiresAt)})</span>
+          ${planStatus.disabled ? `
+            <button type="button" class="dpg-cp-upgrade-btn dpg-cp-disabled" disabled style="opacity:0.65; cursor:not-allowed; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#94a3b8;" title="${planStatus.label} until ${formatExpiry(planStatus.expiresAt)}">
+              <i class="ri-checkbox-circle-fill" style="color:#10b981;"></i> ${planStatus.label}
+            </button>
           ` : `
-            <button type="button" class="dpg-cp-upgrade-btn" data-dpg-redeem="${p.id}" ${!canAfford ? 'title="Insufficient coins — earn in Study Hub"' : ""}>
+            <button type="button" class="dpg-cp-upgrade-btn" data-dpg-redeem="${p.id}" ${!canAfford ? 'disabled title="Insufficient coins — earn in Study Hub" style="opacity:0.5; cursor:not-allowed;"' : ""}>
               <i class="ri-copper-coin-fill"></i> ${p.cost.toLocaleString()} Coins
             </button>
           `}
@@ -884,6 +975,8 @@
     hasUnlimitedUtilitiesPass,
     hasUnlimitedAccessPass,
     hasAdsFreePass,
+    getPlanStatus,
+    calculateContentPublishCoins,
     clearGuestQuotaLockFlags,
     formatExpiry,
     syncFromCloud,

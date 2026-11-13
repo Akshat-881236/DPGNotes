@@ -265,6 +265,7 @@
         <i class="ri-checkbox-circle-fill" style="font-size:2.2rem; color:var(--sol-success);"></i>
       </div>
       <h2 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.4rem;">Solution Published!</h2>
+      <div id="publishCoinRewardBadge" style="display:none; margin-bottom:1rem; padding:8px 12px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:8px; color:#fbbf24; font-weight:700; font-size:0.9rem;"></div>
       <p style="color:var(--sol-text-muted); font-size:0.88rem; line-height:1.5; margin-bottom:1.2rem;">
         Your assignment solution has been published and permanently stored in cloud records. Students can now access it using the secure share link below:
       </p>
@@ -332,7 +333,7 @@
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, addDoc, updateDoc, increment, getDoc, getDocs, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
     const cfg = {
       apiKey: (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
       authDomain: "dpgnotes.firebaseapp.com",
@@ -349,6 +350,8 @@
     window.solDoc = doc;
     window.solSetDoc = setDoc;
     window.solAddDoc = addDoc;
+    window.solUpdateDoc = updateDoc;
+    window.solIncrement = increment;
     window.solGetDoc = getDoc;
     window.solGetDocs = getDocs;
     window.solCollection = collection;
@@ -1414,12 +1417,56 @@
             timestamp: new Date().toISOString()
           });
         } catch (e) {}
+        let coinsAwarded = 0;
+        if (!isEditMode && contribUid) {
+          const qCount = questionsList ? questionsList.length : 0;
+          coinsAwarded = window.DPGCoinsPasses?.calculateContentPublishCoins
+            ? window.DPGCoinsPasses.calculateContentPublishCoins(qCount)
+            : 0;
+
+          if (coinsAwarded > 0) {
+            try {
+              if (window.solUpdateDoc && window.solIncrement) {
+                const uRef = window.solDoc(window.solDb, "users", contribUid);
+                await window.solUpdateDoc(uRef, {
+                  dpgCoins: window.solIncrement(coinsAwarded),
+                  coinsLastUpdated: window.solServerTimestamp ? window.solServerTimestamp() : new Date().toISOString()
+                });
+                const txRef = window.solDoc(window.solDb, "users", contribUid, "coins_transactions", `tx_${Date.now()}`);
+                await window.solSetDoc(txRef, {
+                  type: "credit",
+                  amount: coinsAwarded,
+                  reason: `Published Assignment Solution: ${subCode} - ${subName} (${qCount} Questions)`,
+                  source: "assignment_publish",
+                  solutionId: solutionId,
+                  timestamp: window.solServerTimestamp ? window.solServerTimestamp() : new Date().toISOString()
+                });
+              }
+              if (window.DPGCoinsPasses) {
+                const b = window.DPGCoinsPasses.getCoinsBalance();
+                window.DPGCoinsPasses.setCoinsBalance(b + coinsAwarded);
+                window.DPGCoinsPasses.syncFromCloud(contribUid).catch(() => {});
+              }
+            } catch (coinErr) {
+              console.warn("Assignment publish coins reward error:", coinErr);
+            }
+          }
+        }
         const shareUrl = `${window.location.origin}/AssignmentSolution/index.html?id=${solutionId}&contributor=${contribUid}`;
         document.getElementById('shareUrlInput').value = shareUrl;
         document.getElementById('btnViewPublished').href = shareUrl;
         const modalTitle = document.querySelector('#publishSuccessModal h2');
         if (modalTitle) {
           modalTitle.textContent = isEditMode ? "Solution Updated!" : "Solution Published!";
+        }
+        const badgeEl = document.getElementById('publishCoinRewardBadge');
+        if (badgeEl) {
+          if (coinsAwarded > 0) {
+            badgeEl.style.display = 'block';
+            badgeEl.innerHTML = `<i class="ri-copper-coin-fill" style="color:#f59e0b;"></i> 🪙 +${coinsAwarded.toLocaleString()} DPGCoins Credited to Your Vault!`;
+          } else {
+            badgeEl.style.display = 'none';
+          }
         }
         document.getElementById('publishSuccessModal').style.display = 'flex';
       } catch (err) {

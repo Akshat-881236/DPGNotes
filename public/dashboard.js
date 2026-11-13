@@ -1,5 +1,5 @@
 import { getAuth, onAuthStateChanged, signOut, updatePassword, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getFirestore, collection, collectionGroup, addDoc, getDocs, getCountFromServer, query, orderBy, where, limit, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, addDoc, getDocs, getCountFromServer, query, orderBy, where, limit, serverTimestamp, doc, updateDoc, getDoc, setDoc, runTransaction, onSnapshot, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 if (window._dpgDashboardScriptLoaded) {
   console.warn("dashboard.js already loaded, preventing duplicate bindings.");
@@ -1357,6 +1357,28 @@ if(uploadForm) {
         likes: []
       };
       await addDoc(collection(db, "documents"), docData);
+
+      // Reward +3,000 DPGCoins on Submission
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          dpgCoins: increment(3000),
+          coinsLastUpdated: serverTimestamp()
+        });
+        await addDoc(collection(db, "users", currentUser.uid, "coins_transactions"), {
+          type: "credit",
+          amount: 3000,
+          reason: `Contributed PDF Resource: "${title}" (+3,000 DPGCoins submission reward)`,
+          source: "pdf_resource_submission",
+          timestamp: serverTimestamp()
+        });
+        if (window.DPGCoinsPasses) {
+          const curBal = window.DPGCoinsPasses.getCoinsBalance();
+          window.DPGCoinsPasses.setCoinsBalance(curBal + 3000);
+          window.DPGCoinsPasses.syncFromCloud(currentUser.uid).catch(() => {});
+        }
+      } catch (coinErr) {
+        console.warn("Error crediting resource submission coins:", coinErr);
+      }
       try {
         await addDoc(collection(db, "activity_logs"), {
           userId: currentUser.uid,
@@ -1415,6 +1437,7 @@ if(uploadForm) {
         console.error("Follower notification notice:", e);
       }
       const uploadSuccessHtml = `Resource <strong>"${title}"</strong> submitted successfully! 🎓<br><br>
+      • Coins Reward: <strong style="color:#10b981;">🪙 +3,000 DPGCoins Credited!</strong> (+5,000 upon Admin approval)<br>
       • Status: <span style="color:#f59e0b;font-weight:700;">⏳ Pending Administrator Review</span><br>
       • Access Control: <strong>${isPrivate ? '🔒 Private (Password Protected)' : '🌐 Public'}</strong><br><br>
       To maintain academic quality, your document requires Administrator approval before it appears publicly in Explore, Home page, and Search Results.<br><br>
