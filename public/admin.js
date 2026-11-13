@@ -7583,6 +7583,11 @@ function escapeHtmlUtil(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+function escapeHtml(str) {
+  return escapeHtmlUtil(str);
+}
+window.escapeHtml = escapeHtml;
+window.escapeHtmlUtil = escapeHtmlUtil;
 window.switchVideosMgmtSubTab = function(tabName) {
   const pendingBtn = document.getElementById("subtabVideosPendingBtn");
   const approvedBtn = document.getElementById("subtabVideosApprovedBtn");
@@ -9115,6 +9120,19 @@ window.adminDeleteQuizDirect = async function(quizId, ownerUid) {
 // DPG COINS CURRENCY ANALYTICS & ADMIN VAULT MANAGEMENT
 // ============================================================================
 let currencyAnalyticsCache = null;
+
+if (typeof window.escapeHtml !== 'function') {
+  window.escapeHtml = function(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+}
+var escapeHtml = window.escapeHtml;
 
 window.loadCurrencyAnalyticsAdmin = async function() {
   const reportsTbody = document.getElementById("currencyReportsTableBody");
