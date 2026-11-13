@@ -662,10 +662,10 @@
           <i class="ri-flashlight-line"></i> Generate &amp; Save Practical Cover Page
         </button>
         <div class="btn-secondary-group">
-          <button type="button" class="btn-sub" onclick="downloadClientPdf()">
+          <button type="button" class="btn-sub" id="btnClientPdf" onclick="handlePrivacyPdfDownload('client')">
             <i class="ri-download-2-line"></i> Instant Fast PDF
           </button>
-          <button type="button" class="btn-sub" onclick="downloadServerPdf()">
+          <button type="button" class="btn-sub" id="btnServerPdf" onclick="handlePrivacyPdfDownload('server')">
             <i class="ri-file-pdf-2-line"></i> Official High-Precision PDF
           </button>
         </div>
@@ -1143,8 +1143,8 @@
             avatar: res.user.photoURL,
             role: 'contributor'
           }));
-          currentMaxQuota = 2;
-          currentQuotaTokens = 2;
+          currentMaxQuota = 3;
+          currentQuotaTokens = 3;
           updateTokenBadgeUI();
           const quotaId = await getQuotaDocId();
           if (window.dpgDb && window.doc && window.setDoc) {
@@ -1152,14 +1152,14 @@
             await window.setDoc(quotaRef, {
               userId: res.user.uid,
               userType: 'contributor',
-              tokensRemaining: 2,
-              maxTokens: 2,
+              tokensRemaining: 3,
+              maxTokens: 3,
               date: new Date().toISOString().split('T')[0]
             }, { merge: true });
           }
           exitQuotaLockdown();
           if (typeof window.loadUserPracticals === 'function') window.loadUserPracticals();
-          await window.customAlert("🎉 Welcome Contributor! Your daily cover page quota has been doubled (2 tokens) and permanent cloud storage enabled.", { title: "Signed In Successfully" });
+          await window.customAlert("🎉 Welcome Contributor! Your daily cover page quota has been tripled (3 tokens) and permanent cloud storage enabled.", { title: "Signed In Successfully" });
         }
       } catch (err) {
         console.error("Google sign in error:", err);
@@ -1756,7 +1756,7 @@
           } else {
             alert("Practical cover page generated and saved to your cloud records successfully!");
           }
-          downloadClientPdf();
+          performClientPdfDownload(d);
           await loadUserPracticals();
         } else {
           throw new Error(resData.error || "Failed to save practical record");
@@ -1769,7 +1769,7 @@
             const ref = window.doc(window.dpgDb, "Assignment", uid, "records", aid);
             await window.setDoc(ref, { id: aid, userId: uid, docType: 'practical', ...d, createdAt: new Date().toISOString() });
             await consumeOneToken();
-            downloadClientPdf();
+            performClientPdfDownload(d);
             await loadUserPracticals();
             if (typeof window.customAlert === 'function') {
               await window.customAlert("Saved successfully to your cloud records!", { title: "Success" });
@@ -1777,10 +1777,10 @@
               alert("Saved successfully to your cloud records!");
             }
           } else {
-            downloadClientPdf();
+            performClientPdfDownload(d);
           }
         } catch (e2) {
-          downloadClientPdf();
+          performClientPdfDownload(d);
         }
       } finally {
         if (submitBtn) {
@@ -1789,7 +1789,10 @@
         }
       }
     }
-    function downloadClientPdf() {
+    let isPdfActionInProgress = false;
+
+    function performClientPdfDownload(d) {
+      renderLiveCanvas();
       const canvas = document.getElementById('coverCanvas');
       if (!canvas) return;
       const { jsPDF } = window.jspdf;
@@ -1800,12 +1803,13 @@
       });
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-      const d = getFormData();
+      d = d || getFormData();
       const filename = `Practical_File_${d.assignmentNo || '1'}_${d.subjectCode || 'Cover'}.pdf`;
       pdf.save(filename);
     }
-    async function downloadServerPdf() {
-      const d = getFormData();
+
+    async function performServerPdfDownload(d) {
+      d = d || getFormData();
       const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : '';
       try {
         const res = await fetch(`${apiBase}/api/assignment/export-pdf`, {
@@ -1825,12 +1829,92 @@
           a.remove();
           setTimeout(() => window.URL.revokeObjectURL(url), 40000);
         } else {
-          downloadClientPdf();
+          performClientPdfDownload(d);
         }
       } catch (err) {
         console.warn("Server PDF download failed, falling back to client PDF:", err);
-        downloadClientPdf();
+        performClientPdfDownload(d);
       }
+    }
+
+    async function handlePrivacyPdfDownload(mode = 'client') {
+      if (isPdfActionInProgress) return;
+
+      // Validate Form Elements
+      const form = document.getElementById('coverForm');
+      if (form && typeof form.checkValidity === 'function' && !form.checkValidity()) {
+        if (typeof form.reportValidity === 'function') form.reportValidity();
+        return;
+      }
+
+      const d = getFormData();
+      if (!validateCourseSection(d.courseSection)) {
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Invalid Course & Section format! Please follow the rule: {Course}-{Section}, e.g. BCA-5A, BBA-3A, MCA-1B.", { title: "Format Rule", isDanger: true });
+        } else {
+          alert("Invalid Course & Section format! Please follow the rule: {Course}-{Section}, e.g. BCA-5A, BBA-3A, MCA-1B.");
+        }
+        document.getElementById('inpCourseSec')?.focus();
+        return;
+      }
+
+      const hasUnlimited = Boolean(window.DPGCoinsPasses && window.DPGCoinsPasses.hasUnlimitedUtilitiesPass());
+      if (!hasUnlimited && currentQuotaTokens <= 0) {
+        enterQuotaLockdown();
+        return;
+      }
+
+      isPdfActionInProgress = true;
+      const btnClient = document.getElementById('btnClientPdf');
+      const btnServer = document.getElementById('btnServerPdf');
+      const activeBtn = mode === 'server' ? btnServer : btnClient;
+      const origHtml = activeBtn ? activeBtn.innerHTML : '';
+      if (btnClient) btnClient.disabled = true;
+      if (btnServer) btnServer.disabled = true;
+      if (activeBtn) {
+        activeBtn.innerHTML = '<i class="ri-loader-4-line spin-icon"></i> Downloading...';
+      }
+
+      try {
+        renderLiveCanvas();
+        // Privacy Mode: Deduct daily quota token WITHOUT writing record to cloud Firestore
+        await consumeOneToken();
+
+        if (mode === 'server') {
+          await performServerPdfDownload(d);
+        } else {
+          performClientPdfDownload(d);
+        }
+
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("🔒 Privacy Mode: Practical cover page downloaded successfully without saving personal details to cloud records. 1 daily token used.", { title: "Cover Page Generated" });
+        }
+      } catch (err) {
+        console.error("Privacy PDF download error:", err);
+        if (typeof window.customAlert === 'function') {
+          await window.customAlert("Failed to generate PDF: " + (err.message || err), { title: "Error", isDanger: true });
+        }
+      } finally {
+        isPdfActionInProgress = false;
+        if (btnClient) btnClient.disabled = false;
+        if (btnServer) btnServer.disabled = false;
+        if (activeBtn) activeBtn.innerHTML = origHtml;
+      }
+    }
+
+    function downloadClientPdf(opts = {}) {
+      if (opts && (opts.skipQuota || opts.fromSave)) {
+        performClientPdfDownload(opts.data || getFormData());
+        return;
+      }
+      return handlePrivacyPdfDownload('client');
+    }
+
+    function downloadServerPdf(opts = {}) {
+      if (opts && (opts.skipQuota || opts.fromSave)) {
+        return performServerPdfDownload(opts.data || getFormData());
+      }
+      return handlePrivacyPdfDownload('server');
     }
     async function loadUserPracticals() {
       const container = document.getElementById('logsGrid');
@@ -1962,7 +2046,7 @@
     window.downloadSinglePractLogPdf = function(r) {
       editSavedPractical(r);
       setTimeout(() => {
-        downloadClientPdf();
+        performClientPdfDownload();
       }, 100);
     };
     window.deleteSavedPractical = async function(aid) {
@@ -2017,8 +2101,8 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
     window.addEventListener('dpg-auth-success', async (e) => {
-      currentMaxQuota = 2;
-      currentQuotaTokens = 2;
+      currentMaxQuota = 3;
+      currentQuotaTokens = 3;
       updateTokenBadgeUI();
       exitQuotaLockdown();
       try {
@@ -2029,8 +2113,8 @@
           await window.setDoc(quotaRef, {
             userId: uid,
             userType: 'contributor',
-            tokensRemaining: 2,
-            maxTokens: 2,
+            tokensRemaining: 3,
+            maxTokens: 3,
             date: new Date().toISOString().split('T')[0]
           }, { merge: true });
         }
