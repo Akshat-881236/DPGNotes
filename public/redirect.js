@@ -938,11 +938,5 @@
         }
       });
     })();
-    if (!window.DPGCoinsPasses && !window.location.pathname.includes('admin') && !document.querySelector('script[src*="dpg-coins-passes.js"]')) {
-      const acScript = document.createElement('script');
-      acScript.src = '/dpg-coins-passes.js';
-      acScript.defer = true;
-      document.head.appendChild(acScript);
-    }
   });
 })();

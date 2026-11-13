@@ -65,6 +65,17 @@
       durationMs: 15 * 24 * 60 * 60 * 1000,
       icon: "ri-vip-diamond-fill",
       accent: "#38bdf8"
+    },
+    ads_free_1mo: {
+      id: "ads_free_1mo",
+      category: "ads_free",
+      name: "1-Month Go Ads Free",
+      shortName: "Go Ads Free (1-Mo)",
+      desc: "30 Days uninterrupted ad-free browsing across all DPGNotes native ads",
+      cost: 15000,
+      durationMs: 30 * 24 * 60 * 60 * 1000,
+      icon: "ri-forbid-2-line",
+      accent: "#ec4899"
     }
   };
 
@@ -360,55 +371,6 @@
     };
   }
 
-  function runAntiCheatPassCheck() {
-    if (window.location.pathname.includes("admin")) return;
-    const detection = detectInspectionOrGemini();
-    if (detection.detected) {
-      triggerAntiCheatPenalty(detection.reason);
-    }
-  }
-
-  // Restore lock from IndexedDB mirror if localStorage was wiped to bypass lockout
-  readIntegrityLockIDB().then((idbLock) => {
-    if (idbLock && Number(idbLock.creditBlockedUntil) > Date.now()) {
-      const localLock = readAntiCheatLockLocal();
-      if (!localLock || Number(localLock.creditBlockedUntil || 0) < Number(idbLock.creditBlockedUntil)) {
-        try {
-          localStorage.setItem(ANTICHEAT_LOCK_KEY, JSON.stringify({
-            violatedAt: idbLock.violatedAt,
-            creditBlockedUntil: idbLock.creditBlockedUntil,
-            penaltyDeducted: Boolean(idbLock.penaltyDeducted),
-            penaltyAmount: idbLock.penaltyAmount || ANTICHEAT_PENALTY_COINS,
-            reason: idbLock.reason || "Previous session Anti-Cheat Lockout active",
-            page: idbLock.page || "/"
-          }));
-        } catch (_) {}
-        window.dispatchEvent(new CustomEvent("dpg-anticheat-penalty", {
-          detail: { balance: getCoinsBalance(), lock: idbLock, restored: true }
-        }));
-      }
-    }
-  });
-
-  if (typeof window !== "undefined" && !window.__dpgAntiCheatMonitorAttached && !window.location.pathname.includes("admin")) {
-    window.__dpgAntiCheatMonitorAttached = true;
-    window.addEventListener("keydown", function (e) {
-      const key = String(e.key || "").toUpperCase();
-      const isF12 = key === "F12" || e.keyCode === 123;
-      const isInspectorShortcut = (e.ctrlKey || e.metaKey) && e.shiftKey && (key === "I" || key === "J" || key === "C");
-      const isViewSource = (e.ctrlKey || e.metaKey) && key === "U";
-      if (isF12 || isInspectorShortcut || isViewSource) {
-        e.preventDefault();
-        triggerAntiCheatPenalty("Developer Tools / Inspection shortcut attempted (" + key + ")");
-      }
-    }, { capture: true, passive: false });
-    window.addEventListener("resize", function () {
-      setTimeout(runAntiCheatPassCheck, 120);
-    });
-    setTimeout(runAntiCheatPassCheck, 600);
-    setInterval(runAntiCheatPassCheck, 2000);
-  }
-
   function getActivePasses() {
     const now = Date.now();
     try {
@@ -421,6 +383,9 @@
       }
       if (parsed.access && Number(parsed.access.expiresAt) > now) {
         cleaned.access = parsed.access;
+      }
+      if (parsed.ads_free && Number(parsed.ads_free.expiresAt) > now) {
+        cleaned.ads_free = parsed.ads_free;
       }
       if (Object.keys(cleaned).length !== Object.keys(parsed).length) {
         localStorage.setItem(PASSES_STORAGE_KEY, JSON.stringify(cleaned));
@@ -451,6 +416,13 @@
     if (passes.utilities && passes.utilities.passId === "utilities_pro" && Number(passes.utilities.expiresAt) > now) {
       return passes.utilities;
     }
+    return null;
+  }
+
+  function hasAdsFreePass() {
+    const passes = getActivePasses();
+    const now = Date.now();
+    if (passes.ads_free && Number(passes.ads_free.expiresAt) > now) return passes.ads_free;
     return null;
   }
 
@@ -515,7 +487,7 @@
         const current = getActivePasses();
         const merged = { ...current };
         const now = Date.now();
-        ["utilities", "access"].forEach((slot) => {
+        ["utilities", "access", "ads_free"].forEach((slot) => {
           const cp = data.activePasses[slot];
           if (cp && Number(cp.expiresAt) > now) {
             if (!merged[slot] || Number(cp.expiresAt) > Number(merged[slot].expiresAt)) {
@@ -592,6 +564,9 @@
     }
     if (pass.category === "access" || pass.unlocksBoth) {
       currentPasses.access = passEntry;
+    }
+    if (pass.category === "ads_free") {
+      currentPasses.ads_free = passEntry;
     }
 
     const newBalance = setCoinsBalance(localCoins - pass.cost);
@@ -908,6 +883,7 @@
     getActivePasses,
     hasUnlimitedUtilitiesPass,
     hasUnlimitedAccessPass,
+    hasAdsFreePass,
     clearGuestQuotaLockFlags,
     formatExpiry,
     syncFromCloud,

@@ -104,7 +104,7 @@
   async function syncQuotaFromFirestore() {
     await initFirebaseModules();
     const isContrib = isContributor();
-    currentMaxQuota = isContrib ? 2 : 1;
+    currentMaxQuota = isContrib ? 3 : 1;
     const today = getTodayDateStr();
     const quotaId = await getQuotaDocId();
     try {
@@ -190,7 +190,7 @@
         <div id="dpgUtilityQuotaBadge" style="display:inline-flex; align-items:center; gap:6px; background:${badgeBg}; border:1px solid ${badgeBorder}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; color:${badgeColor}; font-family:inherit; cursor:pointer; white-space:nowrap; flex-shrink:0;" title="Click to view Quota or Upgrade with DPG Coins">
           <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
           <span>Daily Quota: ${badgeText}</span>
-          ${isContrib ? '<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Contributor (2x)</span>' : '<span style="background:rgba(255,255,255,0.08); color:#94a3b8; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Guest</span>'}
+          ${isContrib ? '<span style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Contributor (3x)</span>' : '<span style="background:rgba(255,255,255,0.08); color:#94a3b8; padding:2px 6px; border-radius:10px; font-size:0.65rem; margin-left:2px;">Guest</span>'}
         </div>
       `;
     }
@@ -639,8 +639,8 @@
           avatar: res.user.photoURL,
           role: "contributor"
         }));
-        currentMaxQuota = 2;
-        currentQuotaTokens = 2;
+        currentMaxQuota = 3;
+        currentQuotaTokens = 3;
         updateBadgeUI();
         const quotaId = await getQuotaDocId();
         if (dpgDb && fsDoc && fsSetDoc) {

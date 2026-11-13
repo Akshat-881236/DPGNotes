@@ -9110,3 +9110,297 @@ window.adminDeleteQuizDirect = async function(quizId, ownerUid) {
     alert("Deletion failed: " + err.message);
   }
 };
+
+// ============================================================================
+// DPG COINS CURRENCY ANALYTICS & ADMIN VAULT MANAGEMENT
+// ============================================================================
+let currencyAnalyticsCache = null;
+
+window.loadCurrencyAnalyticsAdmin = async function() {
+  const reportsTbody = document.getElementById("currencyReportsTableBody");
+  const contribTbody = document.getElementById("currencyContributorsTableBody");
+  const inflowTbody = document.getElementById("currencyInflowTableBody");
+
+  try {
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+      ? window.API_BASE_URL.replace(/\/+$/, '')
+      : 'https://dpgnotes.onrender.com';
+
+    const res = await fetch(`${apiBase}/api/admin/currency-analytics`);
+    const data = await res.json();
+    if (!data || !data.success) {
+      throw new Error(data?.error || "Failed to fetch currency analytics.");
+    }
+    currencyAnalyticsCache = data;
+
+    // 1. Update Stat Cards
+    const vaultBalEl = document.getElementById("vaultBalMain");
+    if (vaultBalEl) vaultBalEl.textContent = `${(data.adminVault?.balance || 0).toLocaleString()} DPGCoins`;
+
+    const totalCircEl = document.getElementById("totalCirculationMain");
+    if (totalCircEl) totalCircEl.textContent = `${(data.stats?.totalCirculation || 0).toLocaleString()} DPGCoins`;
+
+    const vaultInflowEl = document.getElementById("vaultInflowTotal");
+    const adsBillsInflow = data.adminVault?.adsBillsTotal || 0;
+    const upgradesInflow = data.adminVault?.upgradesTotal || 0;
+    if (vaultInflowEl) vaultInflowEl.textContent = `${(adsBillsInflow + upgradesInflow).toLocaleString()} Coins`;
+
+    const inflowAdsEl = document.getElementById("inflowAdsBills");
+    if (inflowAdsEl) inflowAdsEl.textContent = adsBillsInflow.toLocaleString();
+
+    const inflowUpgradesEl = document.getElementById("inflowUpgrades");
+    if (inflowUpgradesEl) inflowUpgradesEl.textContent = upgradesInflow.toLocaleString();
+
+    const pendingCountEl = document.getElementById("reportsPendingCount");
+    if (pendingCountEl) pendingCountEl.textContent = `${data.stats?.pendingReportsCount || 0} Pending`;
+
+    const totalReportsEl = document.getElementById("reportsTotalCount");
+    if (totalReportsEl) totalReportsEl.textContent = data.stats?.totalReportsCount || 0;
+
+    // 2. Render Reports Table
+    window.renderCurrencyReports(data.reports || []);
+
+    // 3. Render Contributors Table
+    window.renderCurrencyContributors(data.contributors || []);
+
+    // 4. Render Inflow Ledger Table
+    window.renderCurrencyInflow(data.recentTransactions || []);
+
+  } catch (err) {
+    console.error("Currency analytics loading error:", err);
+    if (reportsTbody) reportsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:#f87171;">Failed to load deduction reports: ${err.message}</td></tr>`;
+    if (contribTbody) contribTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#f87171;">Failed to load contributors: ${err.message}</td></tr>`;
+    if (inflowTbody) inflowTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:#f87171;">Failed to load inflow ledger: ${err.message}</td></tr>`;
+  }
+};
+
+window.renderCurrencyReports = function(reports) {
+  const tbody = document.getElementById("currencyReportsTableBody");
+  if (!tbody) return;
+
+  if (!reports || reports.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--admin-muted);">No unfair deduction reports submitted yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = reports.map(r => {
+    const isPending = r.status === "Pending";
+    const balColor = Number(r.coinsBalance) < 0 ? "#ef4444" : "#fbbf24";
+    const nameSafe = (r.contributorName || "Guest User").replace(/'/g, "\\'");
+    const emailSafe = (r.email || "").replace(/'/g, "\\'");
+    const reasonSafe = (r.penaltyReason || "").replace(/'/g, "\\'");
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(r.contributorName || "Guest User")}</strong></td>
+        <td><span style="color:#94a3b8; font-size:0.8rem;">${escapeHtml(r.email || "No email")}</span></td>
+        <td><strong style="color:${balColor};">${Number(r.coinsBalance || 0).toLocaleString()} DPGCoins</strong></td>
+        <td><span style="color:#fca5a5; font-size:0.75rem;">${escapeHtml(r.penaltyReason || "-")}</span></td>
+        <td><div style="max-width:280px; font-size:0.8rem; line-height:1.4; color:#e2e8f0; overflow-wrap:anywhere;">${escapeHtml(r.message || "-")}</div></td>
+        <td><span style="color:#94a3b8; font-size:0.75rem;">${escapeHtml(r.createdAtFormatted || "Recently")}</span></td>
+        <td>
+          <span style="padding:3px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; ${isPending ? 'background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.35);' : 'background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35);'}">
+            ${isPending ? 'Pending' : `Resolved (+${Number(r.refundAmount || 0).toLocaleString()})`}
+          </span>
+        </td>
+        <td style="text-align:center;">
+          ${isPending ? `
+            <button type="button" class="btn-action primary" style="padding:4px 10px; font-size:0.75rem;" onclick="window.openAdminVaultTransferModal('${r.id}', '${r.uid}', '${nameSafe}', '${emailSafe}', ${r.coinsBalance || 0}, '${reasonSafe}')">
+              <i class="ri-arrow-right-up-line"></i> Refund from Vault
+            </button>
+          ` : `
+            <span style="color:#94a3b8; font-size:0.75rem;">Completed</span>
+          `}
+        </td>
+      </tr>
+    `;
+  }).join("");
+};
+
+window.renderCurrencyContributors = function(contributors) {
+  const tbody = document.getElementById("currencyContributorsTableBody");
+  if (!tbody) return;
+
+  if (!contributors || contributors.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--admin-muted);">No contributors found in directory.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = contributors.map(c => {
+    const isNegative = Number(c.dpgCoins || 0) < 0;
+    const now = Date.now();
+    const isLocked = Number(c.antiCheatBlockedUntil || 0) > now;
+    const passes = c.activePasses || {};
+    const passNames = [];
+    if (passes.utilities && Number(passes.utilities.expiresAt) > now) passNames.push(passes.utilities.shortName || passes.utilities.name);
+    if (passes.access && Number(passes.access.expiresAt) > now) passNames.push(passes.access.shortName || passes.access.name);
+    if (passes.ads_free && Number(passes.ads_free.expiresAt) > now) passNames.push("Go Ads Free");
+
+    const nameSafe = (c.name || "Contributor").replace(/'/g, "\\'");
+    const emailSafe = (c.email || "").replace(/'/g, "\\'");
+
+    return `
+      <tr class="currency-contrib-row" data-search="${escapeHtml((c.name + ' ' + c.email + ' ' + c.uid).toLowerCase())}">
+        <td><strong>${escapeHtml(c.name || "Contributor")}</strong></td>
+        <td><span style="color:#94a3b8; font-size:0.8rem;">${escapeHtml(c.email || "-")}</span></td>
+        <td>
+          <span style="${isNegative ? 'color:#ef4444; font-weight:800; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); padding:2px 8px; border-radius:6px;' : 'color:#10b981; font-weight:700;'}">
+            ${Number(c.dpgCoins || 0).toLocaleString()} DPGCoins
+          </span>
+        </td>
+        <td>
+          ${passNames.length > 0 ? passNames.map(p => `<span style="background:rgba(99,102,241,0.18); color:#a5b4fc; border:1px solid rgba(99,102,241,0.35); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:4px;">${escapeHtml(p)}</span>`).join("") : '<span style="color:var(--admin-muted); font-size:0.75rem;">None</span>'}
+        </td>
+        <td>
+          ${isLocked ? `
+            <span style="background:rgba(239,68,68,0.18); color:#fca5a5; border:1px solid rgba(239,68,68,0.35); padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:700;">
+              <i class="ri-shield-cross-fill"></i> Active Lockout
+            </span>
+          ` : `
+            <span style="color:#34d399; font-size:0.75rem;"><i class="ri-checkbox-circle-fill"></i> Normal</span>
+          `}
+        </td>
+        <td style="text-align:center;">
+          <button type="button" class="btn-action" style="padding:4px 10px; font-size:0.75rem;" onclick="window.openAdminVaultTransferModal('', '${c.uid}', '${nameSafe}', '${emailSafe}', ${c.dpgCoins || 0}, '')">
+            <i class="ri-copper-coin-fill"></i> Send Coins
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+};
+
+window.renderCurrencyInflow = function(transactions) {
+  const tbody = document.getElementById("currencyInflowTableBody");
+  if (!tbody) return;
+
+  if (!transactions || transactions.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--admin-muted);">No recent inflow transactions recorded yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = transactions.map(t => {
+    const isAds = t.source === "ads_bill_payment";
+    const badgeColor = isAds ? "rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35);" : "rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35);";
+    const label = isAds ? "Ads Bill Payment" : (t.passName ? `Plan Upgrade (${t.passName})` : "Plan Upgrade");
+
+    return `
+      <tr>
+        <td>
+          <span style="padding:2px 8px; border-radius:6px; font-size:0.75rem; font-weight:700; background:${badgeColor}">
+            ${escapeHtml(label)}
+          </span>
+        </td>
+        <td><strong style="color:#34d399;">+${Number(t.amount || 0).toLocaleString()} Coins</strong></td>
+        <td><span>${escapeHtml(t.contributorName || t.contributorEmail || "-")}</span></td>
+        <td><span style="color:#94a3b8; font-size:0.8rem;">${escapeHtml(t.contributorEmail || "-")}</span></td>
+        <td><span style="color:#94a3b8; font-size:0.75rem;">${new Date(t.timestamp).toLocaleString()}</span></td>
+      </tr>
+    `;
+  }).join("");
+};
+
+window.filterCurrencyContributorsTable = function() {
+  const query = (document.getElementById("currencySearchContrib")?.value || "").toLowerCase().trim();
+  const rows = document.querySelectorAll(".currency-contrib-row");
+  rows.forEach(row => {
+    const searchData = row.getAttribute("data-search") || "";
+    row.style.display = (!query || searchData.includes(query)) ? "" : "none";
+  });
+};
+
+let activeTargetBalance = 0;
+window.openAdminVaultTransferModal = function(reportId, contributorUid, contributorName, contributorEmail, currentBal, reportedReason) {
+  const modal = document.getElementById("adminVaultTransferModal");
+  if (!modal) return;
+
+  activeTargetBalance = Number(currentBal || 0);
+  document.getElementById("modalTransferReportId").value = reportId || "";
+  document.getElementById("modalTransferTargetUid").value = contributorUid || "";
+  document.getElementById("modalTargetContribName").textContent = `${contributorName} (${contributorEmail || contributorUid})`;
+  document.getElementById("modalTargetContribBal").textContent = `${activeTargetBalance.toLocaleString()} DPGCoins`;
+  document.getElementById("modalTargetContribBal").style.color = activeTargetBalance < 0 ? "#ef4444" : "#fbbf24";
+
+  const vaultBal = currencyAnalyticsCache?.adminVault?.balance || 0;
+  document.getElementById("modalVaultAvailable").textContent = `${vaultBal.toLocaleString()} DPGCoins`;
+
+  // Default suggested amount: if negative, suggest Math.abs(currentBal); else suggest 1800 or 500
+  const suggestedAmt = activeTargetBalance < 0 ? Math.abs(activeTargetBalance) : 1800;
+  document.getElementById("modalTransferAmount").value = suggestedAmt;
+  document.getElementById("modalTransferReason").value = reportId ? `Unfair deduction dispute approved: ${reportedReason || 'False positive'}` : "Administrative Coin Grant / Adjustment";
+
+  modal.style.display = "flex";
+};
+
+window.closeAdminVaultTransferModal = function() {
+  const modal = document.getElementById("adminVaultTransferModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.fillExactNegativeRefund = function() {
+  if (activeTargetBalance < 0) {
+    document.getElementById("modalTransferAmount").value = Math.abs(activeTargetBalance);
+  } else {
+    document.getElementById("modalTransferAmount").value = 1800;
+  }
+};
+
+window.submitAdminVaultTransfer = async function(event) {
+  if (event) event.preventDefault();
+  const btn = document.getElementById("btnSubmitVaultTransfer");
+  const reportId = document.getElementById("modalTransferReportId").value;
+  const contributorUid = document.getElementById("modalTransferTargetUid").value;
+  const amount = parseInt(document.getElementById("modalTransferAmount").value, 10);
+  const reason = document.getElementById("modalTransferReason").value.trim();
+
+  if (!contributorUid || isNaN(amount) || amount <= 0) {
+    alert("Please enter a valid positive transfer amount.");
+    return;
+  }
+
+  const vaultBal = currencyAnalyticsCache?.adminVault?.balance || 0;
+  if (amount > vaultBal) {
+    alert(`Transfer exceeds Admin Vault balance. Available in Vault: ${vaultBal.toLocaleString()} DPGCoins.`);
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Processing Transfer...';
+  }
+
+  try {
+    const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+      ? window.API_BASE_URL.replace(/\/+$/, '')
+      : 'https://dpgnotes.onrender.com';
+
+    const res = await fetch(`${apiBase}/api/admin/coins/transfer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contributorUid,
+        amount,
+        reason,
+        reportId,
+        adminEmail: "its.akshatnetworkhub23@gmail.com"
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data?.error || "Transfer failed.");
+    }
+
+    window.closeAdminVaultTransferModal();
+    alert(`Success: ${data.message}`);
+    await window.loadCurrencyAnalyticsAdmin();
+  } catch (err) {
+    console.error("Admin transfer error:", err);
+    alert(`Error: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ri-check-line"></i> Confirm &amp; Transfer from Vault';
+    }
+  }
+};

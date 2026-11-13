@@ -849,8 +849,30 @@
       }
     }, 1500);
   }
+  function hasNativeAdsFreePass() {
+    try {
+      if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.hasAdsFreePass === "function") {
+        return window.DPGCoinsPasses.hasAdsFreePass();
+      }
+      const raw = localStorage.getItem("dpg_active_passes");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.ads_free && Number(parsed.ads_free.expiresAt) > Date.now()) {
+        return parsed.ads_free;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   async function renderAllNativeAds() {
     collapseUnfilledAdSenseSlots();
+    if (hasNativeAdsFreePass()) {
+      // User holds active Go Ads Free pass: suppress and collapse all native ad slots
+      document.querySelectorAll(".native-ads, #native-ads").forEach(el => {
+        el.style.display = "none";
+      });
+      return;
+    }
     const containers = document.querySelectorAll(".native-ads, #native-ads");
     if (containers.length === 0) return;
     const ads = await fetchApprovedAds();

@@ -870,6 +870,9 @@
         <a class="nav-link" onclick="switchTab('ads-monetization'); if(window.loadAdsMonetizationAdmin) window.loadAdsMonetizationAdmin();">
           <i class="ri-money-dollar-circle-line" style="color:#f59e0b;"></i> Ads Monetization
         </a>
+        <a class="nav-link" id="nav-link-currency-analytics" onclick="switchTab('currency-analytics'); if(window.loadCurrencyAnalyticsAdmin) window.loadCurrencyAnalyticsAdmin();">
+          <i class="ri-copper-coin-fill" style="color:#f59e0b;"></i> Currency Analytics
+        </a>
         <a class="nav-link" onclick="switchTab('videos-mgmt'); if(window.loadVideosMgmtAdmin) window.loadVideosMgmtAdmin();">
           <i class="ri-video-line" style="color:#ef4444;"></i> Videos MGMT
         </a>
@@ -3499,7 +3502,233 @@
           </div>
         </div>
       </section>
+
+      <!-- Currency Analytics & Admin Vault Section -->
+      <section id="view-currency-analytics" class="view-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1.5rem;">
+          <div>
+            <h2 style="font-size:1.5rem; color:white; font-weight:700; display:flex; align-items:center; gap:10px;">
+              <i class="ri-copper-coin-fill" style="color:#f59e0b;"></i> Currency Analytics &amp; Admin Vault Operations
+            </h2>
+            <p style="color:var(--admin-text-muted); font-size:0.85rem; margin-top:2px;">
+              Review circulating contributor coins, process unfair deduction dispute reports, inspect service exchange inflows (Ads bills &amp; plan upgrades), and transfer DPG Coins from the Admin Vault.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button onclick="window.loadCurrencyAnalyticsAdmin()" class="btn-action primary" style="padding:0.6rem 1rem; display:flex; align-items:center; gap:6px;">
+              <i class="ri-refresh-line"></i> Refresh Currency Data
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Stat Summary Cards -->
+        <div class="stat-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; margin-bottom:1.8rem;">
+          <div class="stat-card" style="border:1.5px solid rgba(245,158,11,0.35); background:linear-gradient(145deg, rgba(30,41,69,0.7), rgba(15,23,42,0.9));">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <span class="stat-label" style="color:#fbbf24; font-weight:700;">Admin Vault Balance</span>
+                <div class="stat-value" id="vaultBalMain" style="color:#f59e0b; margin-top:4px;">0 DPGCoins</div>
+              </div>
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(245,158,11,0.18); color:#f59e0b; display:grid; place-items:center; font-size:1.3rem;">
+                <i class="ri-vault-fill"></i>
+              </div>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.75rem; margin-top:8px;">its.akshatnetworkhub23@gmail.com</p>
+          </div>
+
+          <div class="stat-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <span class="stat-label">Total In Circulation</span>
+                <div class="stat-value" id="totalCirculationMain" style="color:#34d399; margin-top:4px;">0 DPGCoins</div>
+              </div>
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(16,185,129,0.18); color:#10b981; display:grid; place-items:center; font-size:1.3rem;">
+                <i class="ri-coins-line"></i>
+              </div>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.75rem; margin-top:8px;">Across all registered contributor wallets</p>
+          </div>
+
+          <div class="stat-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <span class="stat-label">Admin Inflow (Exchanges)</span>
+                <div class="stat-value" id="vaultInflowTotal" style="color:#818cf8; margin-top:4px;">0 Coins</div>
+              </div>
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(99,102,241,0.18); color:#818cf8; display:grid; place-items:center; font-size:1.3rem;">
+                <i class="ri-arrow-down-circle-line"></i>
+              </div>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.75rem; margin-top:8px;">
+              Ads: <strong id="inflowAdsBills" style="color:#fbbf24;">0</strong> &bull; Upgrades: <strong id="inflowUpgrades" style="color:#c084fc;">0</strong>
+            </p>
+          </div>
+
+          <div class="stat-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <span class="stat-label">Deduction Reports</span>
+                <div class="stat-value" id="reportsPendingCount" style="color:#f87171; margin-top:4px;">0 Pending</div>
+              </div>
+              <div style="width:40px; height:40px; border-radius:10px; background:rgba(239,68,68,0.18); color:#ef4444; display:grid; place-items:center; font-size:1.3rem;">
+                <i class="ri-flag-2-line"></i>
+              </div>
+            </div>
+            <p style="color:var(--admin-muted); font-size:0.75rem; margin-top:8px;">
+              Total filed: <span id="reportsTotalCount">0</span> disputes
+            </p>
+          </div>
+        </div>
+
+        <!-- Section 1: Deduction Dispute Reports -->
+        <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1.2rem; margin-bottom:1.8rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+            <div>
+              <h3 style="color:#fca5a5; font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+                <i class="ri-feedback-line"></i> Unfair DPG Coins Deduction Dispute Reports
+              </h3>
+              <p style="color:var(--admin-muted); font-size:0.8rem; margin-top:2px;">
+                Reports submitted by contributors from the Study Hub wallet modal. Admin can review claims and transfer coins from Admin Vault to refund unfair penalties.
+              </p>
+            </div>
+          </div>
+          <div class="table-responsive" style="max-height:360px; overflow-y:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Contributor</th>
+                  <th>Email</th>
+                  <th>Current Balance</th>
+                  <th>Penalty Reason</th>
+                  <th>Reported Message</th>
+                  <th>Submitted At</th>
+                  <th>Status</th>
+                  <th style="text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="currencyReportsTableBody">
+                <tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading deduction reports...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: Contributor Balances Directory -->
+        <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1.2rem; margin-bottom:1.8rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:1rem;">
+            <div>
+              <h3 style="color:white; font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+                <i class="ri-user-settings-line" style="color:#6366f1;"></i> Contributor DPG Coins Directory &amp; Balances
+              </h3>
+              <p style="color:var(--admin-muted); font-size:0.8rem; margin-top:2px;">
+                Real-time contributor coin holdings. Negative balances (anti-cheat penalties) are highlighted. Admin can transfer coins directly from Admin Vault.
+              </p>
+            </div>
+            <div>
+              <input type="text" id="currencySearchContrib" class="admin-input" style="width:260px; margin:0; padding:6px 12px; font-size:0.82rem;" placeholder="Search contributor..." oninput="window.filterCurrencyContributorsTable()">
+            </div>
+          </div>
+          <div class="table-responsive" style="max-height:420px; overflow-y:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Contributor</th>
+                  <th>Email</th>
+                  <th>Coins Balance</th>
+                  <th>Active Passes</th>
+                  <th>Anti-Cheat Status</th>
+                  <th style="text-align:center;">Admin Vault Action</th>
+                </tr>
+              </thead>
+              <tbody id="currencyContributorsTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading contributor directory...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 3: Admin Vault Inflow Ledger -->
+        <div style="background:rgba(15,23,42,0.8); border:1px solid var(--admin-border); border-radius:14px; padding:1.2rem;">
+          <div style="margin-bottom:1rem;">
+            <h3 style="color:#818cf8; font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+              <i class="ri-history-line"></i> Admin Vault Inflow Audit Ledger
+            </h3>
+            <p style="color:var(--admin-muted); font-size:0.8rem; margin-top:2px;">
+              Audit trail of DPG Coins deducted from contributors on Ads Bill Payments (800 coins/₹1) and Plan Upgrades (Utilities, Blaze, Pro, Access, Go Ads Free) and credited to Admin Vault.
+            </p>
+          </div>
+          <div class="table-responsive" style="max-height:300px; overflow-y:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Source / Exchange Type</th>
+                  <th>Coins Credited</th>
+                  <th>Contributor</th>
+                  <th>Details</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="currencyInflowTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--admin-muted);">Loading inflow ledger...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <!-- Admin Vault Transfer Modal -->
+    <div id="adminVaultTransferModal" class="modal-overlay" style="display:none; align-items:center; justify-content:center; z-index:2147483647;">
+      <div class="auth-card" style="max-width:480px; width:92%; background:rgba(15,23,42,0.98); border:1.5px solid rgba(245,158,11,0.4); border-radius:16px; padding:1.5rem; box-shadow:0 25px 60px rgba(0,0,0,0.8); backdrop-filter:blur(16px);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="color:#fbbf24; font-size:1.15rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+            <i class="ri-arrow-left-right-line"></i> Transfer Coins from Admin Vault
+          </h3>
+          <button type="button" onclick="window.closeAdminVaultTransferModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <div style="background:rgba(30,41,69,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:0.82rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:#94a3b8;">Admin Vault Balance:</span>
+            <strong id="modalVaultAvailable" style="color:#fbbf24;">0 DPGCoins</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:#94a3b8;">Target Contributor:</span>
+            <strong id="modalTargetContribName" style="color:#f8fafc;">-</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:#94a3b8;">Target Current Balance:</span>
+            <strong id="modalTargetContribBal" style="color:#f87171;">-</strong>
+          </div>
+        </div>
+
+        <form id="adminVaultTransferForm" onsubmit="window.submitAdminVaultTransfer(event)">
+          <input type="hidden" id="modalTransferTargetUid" />
+          <input type="hidden" id="modalTransferReportId" />
+
+          <div style="margin-bottom:12px;">
+            <label style="display:block; font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">Transfer Amount (DPGCoins) *</label>
+            <input type="number" id="modalTransferAmount" min="1" step="1" required class="admin-input" style="width:100%; box-sizing:border-box; margin:0;" />
+            <div style="display:flex; gap:6px; margin-top:6px;">
+              <button type="button" onclick="document.getElementById('modalTransferAmount').value=1800;" style="background:rgba(255,255,255,0.08); border:1px solid var(--admin-border); color:#cbd5e1; padding:2px 8px; border-radius:6px; font-size:0.72rem; cursor:pointer;">Refund 1,800 Penalty</button>
+              <button type="button" id="btnRefundExactNegative" onclick="window.fillExactNegativeRefund()" style="background:rgba(255,255,255,0.08); border:1px solid var(--admin-border); color:#cbd5e1; padding:2px 8px; border-radius:6px; font-size:0.72rem; cursor:pointer;">Clear Negative Balance</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block; font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">Reason / Resolution Audit Note</label>
+            <input type="text" id="modalTransferReason" placeholder="e.g. Unfair deduction report approved / false positive refund" class="admin-input" style="width:100%; box-sizing:border-box; margin:0;" />
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" onclick="window.closeAdminVaultTransferModal()" class="admin-btn" style="background:rgba(255,255,255,0.08); color:var(--admin-text); width:auto; padding:0.5rem 1.2rem; font-size:0.82rem;">Cancel</button>
+            <button type="submit" id="btnSubmitVaultTransfer" class="btn-action primary" style="padding:0.5rem 1.2rem; font-size:0.82rem; display:inline-flex; align-items:center; gap:6px;">
+              <i class="ri-check-line"></i> Confirm &amp; Transfer from Vault
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   <div class="modal-overlay" id="deleteModal">
     <div class="auth-card" style="max-width:450px;">
@@ -3754,6 +3983,8 @@
         window.loadFeedbackTabAdmin();
       } else if (tabId === 'confidential' && typeof window.loadConfidentialTabAdmin === 'function') {
         window.loadConfidentialTabAdmin();
+      } else if (tabId === 'currency-analytics' && typeof window.loadCurrencyAnalyticsAdmin === 'function') {
+        window.loadCurrencyAnalyticsAdmin();
       } else if (tabId === 'logs') {
         if (typeof window.loadActivityLogs === 'function') window.loadActivityLogs();
         if (typeof window.loadAdminNotifications === 'function') window.loadAdminNotifications();

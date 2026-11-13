@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+<meta charset="utf-8">
+<script src="/dpg-loader.js"></script>
+<script src="https://dpgnotes.web.app/redirect.js" defer></script>
+<script src="custom-dialogs.js"></script>
+<script src="/dpg-coins-passes.js"></script>
+<script src="/dpg-utility-quota.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="DPGNotes Multi-PDF Merger & Page Organizer — Merge multiple PDF files, reorder pages, rotate, duplicate, and organize pages offline directly in your browser. No server upload required.">
+<meta name="keywords" content="PDF merger, merge PDF, combine PDF, PDF page organizer, reorder PDF pages, offline PDF tools, DPGNotes, ANH">
+<meta name="author" content="Akshat Network Hub">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#101010">
+<meta property="og:title" content="DPGNotes Multi-PDF Merger & Page Organizer | Free & Offline">
+<meta property="og:description" content="Combine and organize PDF documents right inside your browser without uploading to any remote server. Fast, secure, and private.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dpgnotes.web.app/MultiPdf-Merger.html">
+<meta property="og:image" content="https://dpgnotes.web.app/ANH.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DPGNotes Multi-PDF Merger & Page Organizer">
+<meta name="twitter:description" content="Merge and organize PDF files completely offline in your browser.">
+<meta name="twitter:image" content="https://dpgnotes.web.app/ANH.png">
+<meta name="twitter:site" content="@AkshatNetworkHub">
+<link rel="canonical" href="https://dpgnotes.web.app/MultiPdf-Merger.html">
+<link rel="icon" href="https://dpgnotes.web.app/ANH.png" type="image/png">
+<link rel="manifest" href="/manifest.json">
+<script src="/pwa.js" defer></script>
+<script src="config.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5515547448097504" crossorigin="anonymous"></script>
+<script src="native-dpgnotes-ads.js?v=1.0.0"></script>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+<title>DPGNotes Multi-PDF Merger &amp; Page Organizer | Offline &amp; Secure</title>
+<script>
+  (() => {
+    try {
+      const theme = localStorage.getItem("pdf-organizer-theme") || "system";
+      document.documentElement.dataset.theme = theme;
+    } catch {}
+  })();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4f6fb; --surface: #fff; --surface-2: #eef1f7; --text: #172033;
+    --muted: #596579; --border: #d7ddea; --accent: #315ee8; --accent-contrast: #fff;
+    --success: #147a4b; --warning: #8b5700; --danger: #b42332; --focus: #e48a00;
+    --shadow: 0 8px 26px rgb(22 34 57 / 8%); --radius: 14px;
+    font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="system"] { color-scheme: dark; --bg:#11151d; --surface:#1a202b; --surface-2:#242c39; --text:#edf1f8; --muted:#b3bed0; --border:#394456; --accent:#91aaff; --accent-contrast:#111827; --success:#75d6a5; --warning:#ffd27a; --danger:#ff929a; --focus:#ffd27a; --shadow:0 8px 26px rgb(0 0 0 / 24%); }
+  }
+  :root[data-theme="dark"] { color-scheme:dark; --bg:#11151d; --surface:#1a202b; --surface-2:#242c39; --text:#edf1f8; --muted:#b3bed0; --border:#394456; --accent:#91aaff; --accent-contrast:#111827; --success:#75d6a5; --warning:#ffd27a; --danger:#ff929a; --focus:#ffd27a; --shadow:0 8px 26px rgb(0 0 0 / 24%); }
+  :root[data-theme="oled"] { color-scheme:dark; --bg:#000; --surface:#090909; --surface-2:#141414; --text:#f5f5f5; --muted:#c0c0c0; --border:#383838; --accent:#a9bcff; --accent-contrast:#080808; --success:#75d6a5; --warning:#ffd27a; --danger:#ff929a; --focus:#ffd27a; --shadow:none; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); }
+  button, input, select { font:inherit; }
+  button { color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.62rem .85rem; cursor:pointer; min-height:42px; }
+  button:hover:not(:disabled) { border-color:var(--accent); background:var(--surface-2); }
+  button:disabled { opacity:.55; cursor:not-allowed; }
+  button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+  .primary { color:var(--accent-contrast); background:var(--accent); border-color:var(--accent); font-weight:700; }
+  .danger { color:var(--danger); }
+  input, select { color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:.6rem .7rem; }
+  .app { max-width:1440px; margin:auto; padding:clamp(14px,3vw,34px); }
+  header { display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:22px; }
+  h1 { font-size:clamp(1.45rem,3vw,2rem); margin:0; letter-spacing:-.03em; }
+  h2 { font-size:1.2rem; margin:0; }
+  h3 { font-size:1rem; margin:.2rem 0; overflow-wrap:anywhere; }
+  p { margin:.3rem 0; }
+  button, input, select { font:inherit; }
+  .brand { display:flex; gap:12px; align-items:center; }
+  .logo { width:42px; height:42px; display:grid; place-items:center; background:var(--accent); color:var(--accent-contrast); border-radius:12px; font-size:1.35rem; font-weight:800; }
+  .subtle, .meta { color:var(--muted); font-size:.9rem; }
+  .header-actions, .row, .toolbar, .card-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .section { margin:18px 0; padding:clamp(14px,2.4vw,24px); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .section-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .dropzone { border:2px dashed var(--border); border-radius:14px; background:var(--surface-2); padding:clamp(22px,5vw,44px) 16px; text-align:center; transition:.15s ease; }
+  .dropzone.over, .drop-target { border-color:var(--accent)!important; box-shadow:inset 0 0 0 2px var(--accent); }
+  .dropzone strong { display:block; font-size:1.1rem; margin-bottom:5px; }
+  .dropzone input { display:none; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,235px),1fr)); gap:14px; }
+  .doc-card, .page-card { border:1px solid var(--border); background:var(--surface); border-radius:12px; padding:12px; min-width:0; }
+  .doc-card { cursor:grab; }
+  .doc-card:active, .page-card:active { cursor:grabbing; }
+  .doc-card.dragging, .page-card.dragging { opacity:.48; }
+  .thumb { width:100%; aspect-ratio:1.35; display:grid; place-items:center; overflow:hidden; background:var(--surface-2); border-radius:8px; color:var(--muted); }
+  .thumb img { display:block; max-width:100%; max-height:100%; object-fit:contain; }
+  .doc-title { margin-top:10px; min-height:2.8em; }
+  .card-actions { margin-top:10px; }
+  .card-actions button { padding:.45rem .6rem; min-height:38px; }
+  .page-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr)); gap:12px; }
+  .page-card { padding:9px; cursor:grab; position:relative; }
+  .page-card.selected { border:2px solid var(--accent); background:var(--surface-2); }
+  .page-card .thumb { aspect-ratio: .78; }
+  .page-card .thumb img { max-height:100%; }
+  .page-info { font-size:.85rem; margin-top:7px; overflow-wrap:anywhere; }
+  .page-select { position:absolute; z-index:1; top:12px; left:12px; width:24px; height:24px; accent-color:var(--accent); }
+  .toolbar { padding:10px; background:var(--surface-2); border-radius:10px; margin-bottom:12px; }
+  .toolbar label { display:flex; align-items:center; gap:6px; }
+  .status { min-height:1.5em; color:var(--muted); }
+  .status.error { color:var(--danger); }
+  .status.success { color:var(--success); }
+  .status.warning { color:var(--warning); }
+  .summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin:12px 0; }
+  .stat { border:1px solid var(--border); background:var(--surface-2); border-radius:10px; padding:12px; }
+  .stat b { display:block; font-size:1.3rem; }
+  .sequence { max-height:230px; overflow:auto; padding-left:1.5rem; }
+  .sequence li { padding:3px 0; overflow-wrap:anywhere; }
+  .export-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .export-row input { flex:1 1 220px; }
+  progress { width:100%; height:12px; accent-color:var(--accent); }
+  dialog { width:min(900px, calc(100% - 24px)); max-height:92dvh; padding:0; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); }
+  dialog::backdrop { background:rgb(0 0 0 / 68%); }
+  .modal-head, .modal-foot { padding:12px 16px; display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--border); }
+  .modal-foot { border-bottom:0; border-top:1px solid var(--border); }
+  .preview-body { min-height:240px; max-height:65dvh; overflow:auto; display:grid; place-items:start center; padding:16px; background:var(--surface-2); }
+  #previewCanvas { max-width:none; background:white; box-shadow:0 2px 12px #0005; }
+  .hidden { display:none!important; }
+  #toast { position:fixed; z-index:5; bottom:16px; left:50%; transform:translateX(-50%); max-width:min(90vw,600px); padding:12px 16px; border-radius:10px; background:var(--text); color:var(--bg); box-shadow:var(--shadow); }
+  @media (max-width:560px) { .app { padding:12px; } .section { margin:12px 0; } .page-grid { grid-template-columns:repeat(auto-fill,minmax(125px,1fr)); } }
+  @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="brand">
+      <a href="index.html" style="text-decoration:none; display:flex; align-items:center; gap:12px; color:inherit;">
+        <img src="ANH.png" alt="DPGNotes Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+        <div>
+          <h1 style="font-size:clamp(1.2rem,2.5vw,1.65rem);">Multi-PDF Merger &amp; Organizer</h1>
+          <div class="subtle">Client-side offline processing &bull; Zero server upload</div>
+        </div>
+      </a>
+    </div>
+    <div class="header-status" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <a href="study-hub.html" style="display:inline-flex; align-items:center; gap:5px; background:rgba(99,102,241,0.14); border:1px solid rgba(99,102,241,0.38); color:#818cf8; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; text-decoration:none;">
+        <i class="ri-book-read-line"></i> Study Hub
+      </a>
+    </div>
+    <div class="header-actions">
+      <label for="themeSelect" class="subtle">Theme</label>
+      <select id="themeSelect" aria-label="Color theme">
+        <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option><option value="oled">OLED black</option>
+      </select>
+      <button id="clearBtn" type="button">Clear workspace</button>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="uploadTitle">
+    <div class="section-heading"><h2 id="uploadTitle">Add PDFs</h2><span class="subtle">Choose files or drop them here</span></div>
+    <div id="dropzone" class="dropzone">
+      <strong>Drop PDF files to add them</strong>
+      <p class="subtle">Files are parsed locally in your browser. Avoid very large batches if memory is limited.</p>
+      <label class="primary" for="fileInput" style="display:inline-flex;align-items:center;padding:.65rem 1rem;border-radius:10px;cursor:pointer;margin-top:8px">Browse PDFs</label>
+      <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple>
+    </div>
+    <p id="uploadStatus" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="section" aria-labelledby="docsTitle">
+    <div class="section-heading"><h2 id="docsTitle">Documents <span id="docCount" class="subtle"></span></h2><span class="subtle">Drag to reorder; use arrows for keyboard-friendly movement.</span></div>
+    <div id="documents" class="cards"></div>
+  </section>
+
+  <section class="section" aria-labelledby="pagesTitle">
+    <div class="section-heading"><h2 id="pagesTitle">Page organizer <span id="pageCount" class="subtle"></span></h2><span class="subtle">Drag pages to set the final output sequence.</span></div>
+    <div class="toolbar" role="toolbar" aria-label="Selected page actions">
+      <button id="selectAllBtn" type="button">Select all</button>
+      <button id="clearSelectionBtn" type="button">Clear selection</button>
+      <button id="moveStartBtn" type="button">Move to beginning</button>
+      <button id="moveEndBtn" type="button">Move to end</button>
+      <button id="duplicateBtn" type="button">Duplicate</button>
+      <button id="rotateBtn" type="button">Rotate 90°</button>
+      <button id="deletePagesBtn" class="danger" type="button">Delete from output</button>
+      <button id="undoBtn" type="button" aria-label="Undo">↶ Undo</button>
+      <button id="redoBtn" type="button" aria-label="Redo">↷ Redo</button>
+      <label>Move to position <input id="positionInput" type="number" min="1" value="1" style="width:82px" aria-label="Target position"></label>
+      <button id="movePositionBtn" type="button">Move</button>
+    </div>
+    <div id="pages" class="page-grid"></div>
+    <p id="pageStatus" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="section" aria-labelledby="reviewTitle">
+    <div class="section-heading"><h2 id="reviewTitle">Merge review</h2><span id="validation" class="status">Add a PDF to begin.</span></div>
+    <div id="summary" class="summary"></div>
+    <details><summary>Final page sequence</summary><ol id="sequence" class="sequence"></ol></details>
+  </section>
+
+  <section class="section" aria-labelledby="exportTitle">
+    <div class="section-heading"><h2 id="exportTitle">Export</h2><span class="subtle">Original PDF pages are copied, not flattened to images.</span></div>
+    <div class="export-row">
+      <label for="filename">Output filename</label>
+      <input id="filename" value="merged-document.pdf" maxlength="160">
+      <button id="exportBtn" class="primary" type="button" disabled>Merge &amp; download</button>
+    </div>
+    <progress id="progress" class="hidden" max="100" value="0" aria-label="Export progress"></progress>
+    <p id="exportStatus" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <div class="native-ads" data-ad-variant="feed" data-ad-count="1" style="margin:24px 0;"></div>
+</main>
+
+<dialog id="renameDialog" aria-labelledby="renameDialogTitle" style="padding:18px 20px; border-radius:14px; max-width:440px; width:92%; background:var(--surface); border:1px solid var(--border); color:var(--text); box-shadow:var(--shadow);">
+  <h3 id="renameDialogTitle" style="margin-top:0;">Rename PDF Document</h3>
+  <p class="subtle" style="font-size:0.85rem; margin-bottom:12px;">Enter a display name for this document in your merge workspace:</p>
+  <input id="renameInput" type="text" style="width:100%; box-sizing:border-box; margin-bottom:16px;" maxlength="180" />
+  <div style="display:flex; justify-content:flex-end; gap:8px;">
+    <button type="button" onclick="document.getElementById('renameDialog').close()">Cancel</button>
+    <button type="button" id="renameConfirmBtn" class="primary">Save Name</button>
+  </div>
+</dialog>
+
+<dialog id="previewDialog" aria-labelledby="previewTitle">
+  <div class="modal-head">
+    <div><h2 id="previewTitle">Page preview</h2><div id="previewMeta" class="subtle"></div></div>
+    <button id="closePreviewBtn" type="button" aria-label="Close preview">Close</button>
+  </div>
+  <div class="modal-foot" style="border-top:0">
+    <button id="prevPreviewBtn" type="button">Previous</button><button id="nextPreviewBtn" type="button">Next</button>
+    <button id="zoomOutBtn" type="button" aria-label="Zoom out">−</button><button id="zoomInBtn" type="button" aria-label="Zoom in">+</button>
+    <button id="fitBtn" type="button">Fit to width</button><button id="actualBtn" type="button">Actual size</button>
+    <button id="fullscreenBtn" type="button">Fullscreen</button>
+  </div>
+  <div id="previewBody" class="preview-body"><canvas id="previewCanvas"></canvas></div>
+  <div id="previewMessage" class="subtle" role="status" aria-live="polite" style="padding:0 16px 12px"></div>
+</dialog>
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+"use strict";
+
+(() => {
+  const $ = id => document.getElementById(id);
+  const state = {
+    docs: [], refs: [], selected: new Set(), history: [], future: [],
+    nextDoc: 1, nextPage: 1, busy: false, previewRef: null, previewScale: 1,
+    previewTask: null, toastTimer: null
+  };
+  const MAX_HISTORY = 40;
+  const PDF = window.pdfjsLib;
+  if (PDF) PDF.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+  const announce = (message, kind = "") => {
+    const node = $("toast");
+    node.textContent = message;
+    node.className = kind;
+    node.classList.remove("hidden");
+    clearTimeout(state.toastTimer);
+    state.toastTimer = setTimeout(() => node.classList.add("hidden"), 4200);
+  };
+  const status = (id, message, kind = "") => {
+    const node = $(id); node.textContent = message; node.className = "status " + kind;
+  };
+  const escapeFilename = name => name.replace(/[\\/:*?"<>|]+/g, "-").trim() || "merged-document.pdf";
+  const getDoc = id => state.docs.find(doc => doc.id === id);
+  const formatSize = bytes => bytes < 1024 * 1024
+    ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+
+  function snapshot() {
+    return state.refs.map(ref => ({...ref}));
+  }
+  function commitHistory() {
+    state.history.push(snapshot());
+    if (state.history.length > MAX_HISTORY) state.history.shift();
+    state.future.length = 0;
+    render();
+  }
+  function undo() {
+    if (!state.history.length) return;
+    state.future.push(snapshot());
+    state.refs = state.history.pop();
+    state.selected.clear(); render(); announce("Change undone.");
+  }
+  function redo() {
+    if (!state.future.length) return;
+    state.history.push(snapshot());
+    state.refs = state.future.pop();
+    state.selected.clear(); render(); announce("Change redone.");
+  }
+  function updateRefPositions() {
+    state.refs.forEach((ref, i) => { ref.position = i + 1; });
+  }
+  function validRef(ref) {
+    const doc = getDoc(ref.docId);
+    return !!doc && Number.isInteger(ref.pageIndex) && ref.pageIndex >= 0 && ref.pageIndex < doc.pageCount;
+  }
+
+  async function addFiles(fileList) {
+    const files = [...fileList];
+    if (!files.length) { status("uploadStatus", "No files selected.", "warning"); return; }
+    if (!PDF || !window.PDFLib) {
+      status("uploadStatus", "PDF libraries could not be loaded. Check your connection and reload.", "error"); return;
+    }
+    $("fileInput").value = "";
+    for (const file of files) {
+      const label = file.name || "Untitled PDF";
+      if (!/\.pdf$/i.test(label) && file.type !== "application/pdf") {
+        status("uploadStatus", `${label}: this does not appear to be a PDF.`, "error"); continue;
+      }
+      if (!file.size) { status("uploadStatus", `${label}: the file is empty.`, "error"); continue; }
+      try {
+        status("uploadStatus", `Reading ${label}…`);
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        if (bytes.length < 5 || String.fromCharCode(...bytes.slice(0, 5)) !== "%PDF-") {
+          throw new Error("The file does not have a valid PDF signature.");
+        }
+        let pdf;
+        try {
+          pdf = await PDF.getDocument({data: bytes.slice(), isEvalSupported:false}).promise;
+        } catch (e) {
+          if (e?.name === "PasswordException") throw new Error("Password-protected PDFs are not supported.");
+          throw new Error("The PDF is unreadable, corrupted, or uses unsupported encryption.");
+        }
+        if (!pdf.numPages) { await pdf.destroy(); throw new Error("This PDF contains no pages."); }
+        const doc = {
+          id: "doc-" + state.nextDoc++, name: label, originalName: label,
+          bytes, pdf, pageCount: pdf.numPages, size: file.size, thumbnail: "",
+          thumbPromise: null
+        };
+        state.docs.push(doc);
+        for (let i = 0; i < doc.pageCount; i++) {
+          state.refs.push({id:"page-" + state.nextPage++, docId:doc.id, pageIndex:i, rotation:0});
+        }
+        updateRefPositions(); render();
+        makeDocThumbnail(doc);
+      } catch (error) {
+        status("uploadStatus", `${label}: ${error?.message || "Could not read this PDF."}`, "error");
+      }
+    }
+    if (state.docs.length) status("uploadStatus", `${state.docs.length} PDF${state.docs.length === 1 ? "" : "s"} in workspace.`, "success");
+  }
+
+  async function renderPage(ref, canvas, scale, dpr = 1) {
+    if (!validRef(ref)) throw new Error("This page reference is no longer available.");
+    const doc = getDoc(ref.docId);
+    const page = await doc.pdf.getPage(ref.pageIndex + 1);
+    const rotation = (page.rotate + ref.rotation + 360) % 360;
+    const viewport = page.getViewport({scale, rotation});
+    canvas.width = Math.max(1, Math.floor(viewport.width * dpr));
+    canvas.height = Math.max(1, Math.floor(viewport.height * dpr));
+    canvas.style.width = `${viewport.width}px`;
+    canvas.style.height = `${viewport.height}px`;
+    const ctx = canvas.getContext("2d", {alpha:false});
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const task = page.render({canvasContext:ctx, viewport});
+    await task.promise;
+    page.cleanup();
+  }
+
+  function canvasDataURL(canvas) {
+    const max = 420, ratio = Math.min(1, max / Math.max(canvas.width, canvas.height));
+    const out = document.createElement("canvas");
+    out.width = Math.max(1, Math.round(canvas.width * ratio));
+    out.height = Math.max(1, Math.round(canvas.height * ratio));
+    out.getContext("2d").drawImage(canvas, 0, 0, out.width, out.height);
+    return out.toDataURL("image/jpeg", .78);
+  }
+  async function makeDocThumbnail(doc) {
+    if (doc.thumbnail || doc.thumbPromise) return doc.thumbPromise;
+    doc.thumbPromise = (async () => {
+      try {
+        const c = document.createElement("canvas");
+        await renderPage({docId:doc.id,pageIndex:0,rotation:0}, c, .42);
+        doc.thumbnail = canvasDataURL(c); c.width = c.height = 0; render();
+      } catch { doc.thumbnail = ""; render(); }
+      finally { doc.thumbPromise = null; }
+    })();
+    return doc.thumbPromise;
+  }
+
+  function render() {
+    updateRefPositions();
+    renderDocs(); renderPages(); renderReview();
+    $("undoBtn").disabled = !state.history.length;
+    $("redoBtn").disabled = !state.future.length;
+    $("exportBtn").disabled = state.busy || state.refs.length === 0;
+  }
+  function renderDocs() {
+    const container = $("documents"); container.replaceChildren();
+    $("docCount").textContent = `(${state.docs.length})`;
+    state.docs.forEach((doc, index) => {
+      const card = document.createElement("article");
+      card.className = "doc-card"; card.draggable = true; card.dataset.docId = doc.id;
+      card.setAttribute("aria-label", `Document ${index + 1}: ${doc.name}, ${doc.pageCount} pages`);
+      const thumb = document.createElement("div"); thumb.className = "thumb";
+      if (doc.thumbnail) { const img = document.createElement("img"); img.src = doc.thumbnail; img.alt = `First page of ${doc.name}`; thumb.append(img); }
+      else thumb.textContent = "Generating preview…";
+      const title = document.createElement("div"); title.className = "doc-title";
+      const heading = document.createElement("h3"); heading.textContent = `${index + 1}. ${doc.name}`;
+      const meta = document.createElement("div"); meta.className = "meta"; meta.textContent = `${doc.pageCount} pages · ${formatSize(doc.size)}`;
+      title.append(heading, meta);
+      const actions = document.createElement("div"); actions.className = "card-actions";
+      const up = button("↑", `Move ${doc.name} up`, () => reorderDoc(index, -1), index === 0);
+      const down = button("↓", `Move ${doc.name} down`, () => reorderDoc(index, 1), index === state.docs.length - 1);
+      const rename = button("Rename", `Rename ${doc.name}`, () => renameDoc(doc));
+      const replace = button("Replace", `Replace ${doc.name}`, () => replaceDoc(doc));
+      const preview = button("Preview first page", `Preview ${doc.name}`, () => openPreview(state.refs.find(r => r.docId === doc.id)));
+      const remove = button("Remove", `Remove ${doc.name}`, () => removeDoc(doc), false, "danger");
+      actions.append(up, down, rename, replace, preview, remove);
+      card.append(thumb, title, actions);
+      card.addEventListener("dragstart", e => {
+        if (state.draggingPage) { e.preventDefault(); return; }
+        e.dataTransfer.setData("application/x-pdf-doc", doc.id);
+        e.dataTransfer.effectAllowed = "move"; card.classList.add("dragging");
+      });
+      card.addEventListener("dragend", () => card.classList.remove("dragging"));
+      card.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("application/x-pdf-doc")) { e.preventDefault(); card.classList.add("drop-target"); } });
+      card.addEventListener("dragleave", () => card.classList.remove("drop-target"));
+      card.addEventListener("drop", e => {
+        const id = e.dataTransfer.getData("application/x-pdf-doc");
+        if (!id) return; e.preventDefault(); card.classList.remove("drop-target");
+        const from = state.docs.findIndex(d => d.id === id), to = state.docs.findIndex(d => d.id === doc.id);
+        if (from >= 0 && to >= 0 && from !== to) {
+          commitHistory(); const [moved] = state.docs.splice(from, 1); state.docs.splice(to, 0, moved);
+          reorderRefsByDocuments();
+        }
+      });
+      container.append(card);
+    });
+  }
+  function button(text, label, action, disabled = false, cls = "") {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = text; b.setAttribute("aria-label", label);
+    b.disabled = disabled; if (cls) b.className = cls; b.addEventListener("click", action); return b;
+  }
+  function reorderDoc(index, delta) {
+    const to = index + delta; if (to < 0 || to >= state.docs.length) return;
+    commitHistory(); const [doc] = state.docs.splice(index, 1); state.docs.splice(to, 0, doc); reorderRefsByDocuments();
+  }
+  function reorderRefsByDocuments() {
+    const rank = new Map(state.docs.map((d, i) => [d.id, i]));
+    state.refs.sort((a, b) => rank.get(a.docId) - rank.get(b.docId) || a.pageIndex - b.pageIndex);
+    state.selected.clear(); render();
+  }
+  function renameDoc(doc) {
+    const dlg = $("renameDialog");
+    const inp = $("renameInput");
+    if (!dlg || !inp) return;
+    inp.value = doc.name;
+    $("renameConfirmBtn").onclick = () => {
+      const val = inp.value.trim();
+      if (val) {
+        doc.name = val.slice(0, 180);
+        render();
+        announce(`Renamed document to "${doc.name}"`);
+      }
+      dlg.close();
+    };
+    dlg.showModal();
+  }
+  function replaceDoc(doc) {
+    const input = document.createElement("input"); input.type = "file"; input.accept = ".pdf,application/pdf";
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0]; if (!file) return;
+      const before = state.docs.length; await addFiles([file]);
+      const added = state.docs[before]; if (!added) return;
+      const oldId = doc.id;
+      state.refs = state.refs.filter(ref => ref.docId !== oldId);
+      state.docs = state.docs.filter(item => item.id !== oldId);
+      render(); announce("Replacement added. Remove the old document and arrange pages as needed.");
+    });
+    input.click();
+  }
+  function removeDoc(doc) {
+    state.refs = state.refs.filter(ref => ref.docId !== doc.id);
+    state.docs = state.docs.filter(item => item.id !== doc.id);
+    state.selected.clear(); doc.pdf.destroy().catch(()=>{}); render();
+    announce(`Removed ${doc.name} from the workspace.`);
+  }
+
+  function renderPages() {
+    const container = $("pages"); container.replaceChildren();
+    $("pageCount").textContent = `(${state.refs.length} output pages)`;
+    state.refs.forEach((ref, index) => {
+      const doc = getDoc(ref.docId); if (!doc) return;
+      const card = document.createElement("article"); card.className = "page-card";
+      card.draggable = true; card.dataset.refId = ref.id;
+      if (state.selected.has(ref.id)) card.classList.add("selected");
+      card.setAttribute("aria-label", `Output page ${index + 1}, original page ${ref.pageIndex + 1} of ${doc.name}`);
+      const check = document.createElement("input"); check.type = "checkbox"; check.className = "page-select";
+      check.checked = state.selected.has(ref.id); check.setAttribute("aria-label", `Select output page ${index + 1}`);
+      check.addEventListener("click", e => e.stopPropagation());
+      check.addEventListener("change", () => toggleSelection(ref.id, check.checked));
+      const thumb = document.createElement("div"); thumb.className = "thumb"; thumb.textContent = "Rendering…";
+      const info = document.createElement("div"); info.className = "page-info";
+      info.textContent = `Output ${index + 1} · ${doc.name} · Original page ${ref.pageIndex + 1}${ref.rotation ? ` · +${ref.rotation}°` : ""}`;
+      card.append(check, thumb, info);
+      card.addEventListener("click", e => { if (e.target === check) return; openPreview(ref); });
+      card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPreview(ref); } });
+      card.tabIndex = 0;
+      card.addEventListener("dragstart", e => {
+        state.draggingPage = true;
+        if (!state.selected.has(ref.id)) { state.selected.clear(); state.selected.add(ref.id); }
+        e.dataTransfer.setData("application/x-pdf-pages", JSON.stringify([...state.selected]));
+        e.dataTransfer.effectAllowed = "move"; card.classList.add("dragging");
+      });
+      card.addEventListener("dragend", () => { state.draggingPage = false; card.classList.remove("dragging"); });
+      card.addEventListener("dragover", e => {
+        if (e.dataTransfer.types.includes("application/x-pdf-pages")) { e.preventDefault(); card.classList.add("drop-target"); }
+      });
+      card.addEventListener("dragleave", () => card.classList.remove("drop-target"));
+      card.addEventListener("drop", e => {
+        const ids = JSON.parse(e.dataTransfer.getData("application/x-pdf-pages") || "[]");
+        if (!ids.length) return; e.preventDefault(); card.classList.remove("drop-target"); moveRefsBefore(ids, ref.id);
+      });
+      container.append(card);
+      renderPageThumb(ref, thumb);
+    });
+    if (!state.refs.length) container.innerHTML = '<p class="subtle">Add a PDF to organize its pages.</p>';
+  }
+  function toggleSelection(id, checked) {
+    checked ? state.selected.add(id) : state.selected.delete(id);
+    const card = [...$("pages").children].find(el => el.dataset.refId === id);
+    if (card) card.classList.toggle("selected", checked);
+  }
+  async function renderPageThumb(ref, target) {
+    try {
+      const c = document.createElement("canvas");
+      await renderPage(ref, c, .32);
+      const img = document.createElement("img"); img.alt = `Preview of page ${ref.pageIndex + 1}`;
+      img.src = canvasDataURL(c); c.width = c.height = 0; target.replaceChildren(img);
+    } catch { target.textContent = "Preview unavailable"; }
+  }
+  function getSelectedRefs() {
+    return state.refs.filter(ref => state.selected.has(ref.id));
+  }
+  function moveRefsBefore(ids, targetId) {
+    const moving = state.refs.filter(ref => ids.includes(ref.id));
+    if (!moving.length || ids.includes(targetId)) return;
+    commitHistory();
+    state.refs = state.refs.filter(ref => !ids.includes(ref.id));
+    const target = state.refs.findIndex(ref => ref.id === targetId);
+    state.refs.splice(target < 0 ? state.refs.length : target, 0, ...moving);
+    state.selected = new Set(ids); render();
+  }
+  function moveSelectedTo(position) {
+    const chosen = getSelectedRefs(); if (!chosen.length) return;
+    commitHistory();
+    state.refs = state.refs.filter(ref => !state.selected.has(ref.id));
+    const at = Math.max(0, Math.min(state.refs.length, position));
+    state.refs.splice(at, 0, ...chosen); render();
+  }
+
+  function renderReview() {
+    const totalSources = state.docs.length;
+    const originalCount = state.docs.reduce((sum, d) => sum + d.pageCount, 0);
+    const originals = new Set();
+    let duplicates = 0, moved = 0;
+    state.refs.forEach((ref, i) => {
+      const key = `${ref.docId}:${ref.pageIndex}`;
+      if (originals.has(key)) duplicates++; else originals.add(key);
+      const doc = getDoc(ref.docId);
+      if (doc && ref.pageIndex + 1 !== i + 1) moved++;
+    });
+    const removed = Math.max(0, originalCount - new Set(state.refs.map(r => `${r.docId}:${r.pageIndex}`)).size);
+    $("summary").replaceChildren();
+    [
+      ["Source PDFs", totalSources], ["Output pages", state.refs.length],
+      ["Deleted pages", removed], ["Duplicated pages", duplicates], ["Position-changed pages", moved]
+    ].forEach(([label, value]) => {
+      const box = document.createElement("div"); box.className = "stat";
+      const n = document.createElement("b"); n.textContent = value;
+      const t = document.createElement("span"); t.className = "subtle"; t.textContent = label;
+      box.append(n, t); $("summary").append(box);
+    });
+    const list = $("sequence"); list.replaceChildren();
+    state.refs.forEach((ref, i) => {
+      const li = document.createElement("li"), doc = getDoc(ref.docId);
+      li.textContent = `${i + 1}. ${doc?.name || "Missing source"} — original page ${ref.pageIndex + 1}${ref.rotation ? ` (+${ref.rotation}°)` : ""}`;
+      list.append(li);
+    });
+    const valid = state.refs.every(validRef);
+    status("validation", state.refs.length ? (valid ? "Sequence validated: every output page has a valid source." : "One or more page references are invalid.") : "Add a PDF to begin.", valid && state.refs.length ? "success" : "warning");
+  }
+
+  async function openPreview(ref) {
+    if (!ref || !validRef(ref)) { announce("This page cannot be previewed.", "error"); return; }
+    state.previewRef = ref.id; state.previewScale = 1;
+    $("previewDialog").showModal(); await drawPreview();
+  }
+  async function drawPreview() {
+    const ref = state.refs.find(r => r.id === state.previewRef);
+    if (!ref || !validRef(ref)) return;
+    const doc = getDoc(ref.docId);
+    $("previewTitle").textContent = `Output page ${state.refs.indexOf(ref) + 1}`;
+    $("previewMeta").textContent = `${doc.name} · Original page ${ref.pageIndex + 1} of ${doc.pageCount}`;
+    $("previewMessage").textContent = "Rendering page…";
+    if (state.previewTask) { try { state.previewTask.cancel(); } catch {} }
+    try {
+      const page = await doc.pdf.getPage(ref.pageIndex + 1);
+      const base = page.getViewport({scale:1, rotation:(page.rotate + ref.rotation + 360) % 360});
+      let scale = state.previewScale;
+      if (scale === "fit") scale = Math.min(($("previewBody").clientWidth - 36) / base.width, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const canvas = $("previewCanvas"), ctx = canvas.getContext("2d", {alpha:false});
+      const viewport = page.getViewport({scale:typeof scale === "number" ? scale : 1, rotation:(page.rotate + ref.rotation + 360) % 360});
+      canvas.width = Math.floor(viewport.width * dpr); canvas.height = Math.floor(viewport.height * dpr);
+      canvas.style.width = `${viewport.width}px`; canvas.style.height = `${viewport.height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      state.previewTask = page.render({canvasContext:ctx, viewport});
+      await state.previewTask.promise; state.previewTask = null; page.cleanup();
+      $("previewMessage").textContent = `${Math.round(viewport.width)} × ${Math.round(viewport.height)} px`;
+    } catch (e) {
+      if (e?.name !== "RenderingCancelledException") $("previewMessage").textContent = `Preview failed: ${e.message || "render error"}`;
+    }
+  }
+
+  async function exportPDF() {
+    if (state.busy || !state.refs.length) return;
+    if (window.DpgUtilityQuota) {
+      const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('Multi-PDF Merger');
+      if (!allowed) return;
+    }
+    if (!window.PDFLib) { status("exportStatus", "PDF library is unavailable.", "error"); return; }
+    if (!state.refs.every(validRef)) { status("exportStatus", "Cannot export: a page reference is invalid.", "error"); return; }
+    state.busy = true; render(); const progress = $("progress");
+    progress.classList.remove("hidden"); progress.value = 0;
+    status("exportStatus", "Preparing output PDF…");
+    try {
+      const {PDFDocument, degrees} = window.PDFLib;
+      const out = await PDFDocument.create();
+      const cache = new Map();
+      for (let i = 0; i < state.refs.length; i++) {
+        const ref = state.refs[i], doc = getDoc(ref.docId);
+        let source = cache.get(doc.id);
+        if (!source) {
+          source = await PDFDocument.load(doc.bytes, {ignoreEncryption:false, updateMetadata:false});
+          cache.set(doc.id, source);
+        }
+        if (ref.pageIndex >= source.getPageCount()) throw new Error(`Page ${ref.pageIndex + 1} is no longer available in ${doc.name}.`);
+        const [copied] = await out.copyPages(source, [ref.pageIndex]);
+        if (ref.rotation) copied.setRotation(degrees((copied.getRotation().angle + ref.rotation) % 360));
+        out.addPage(copied);
+        progress.value = Math.round(((i + 1) / state.refs.length) * 90);
+        if (i % 8 === 0) await new Promise(resolve => setTimeout(resolve, 0));
+      }
+      status("exportStatus", "Writing PDF…");
+      const bytes = await out.save({useObjectStreams:true});
+      const blob = new Blob([bytes], {type:"application/pdf"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      let filename = escapeFilename($("filename").value);
+      if (!/\.pdf$/i.test(filename)) filename += ".pdf";
+      a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      progress.value = 100;
+      status("exportStatus", `Downloaded ${filename} (${state.refs.length} pages).`, "success");
+      announce("PDF export complete.");
+    } catch (error) {
+      status("exportStatus", `Export failed: ${error?.message || "PDF generation error. Try a smaller batch."}`, "error");
+    } finally {
+      state.busy = false; render();
+      setTimeout(() => progress.classList.add("hidden"), 1200);
+    }
+  }
+
+  $("fileInput").addEventListener("change", e => addFiles(e.target.files));
+  $("dropzone").addEventListener("dragover", e => { e.preventDefault(); $("dropzone").classList.add("over"); });
+  $("dropzone").addEventListener("dragleave", e => { if (!e.currentTarget.contains(e.relatedTarget)) $("dropzone").classList.remove("over"); });
+  $("dropzone").addEventListener("drop", e => {
+    e.preventDefault(); $("dropzone").classList.remove("over");
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  });
+  document.addEventListener("dragover", e => { if ([...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
+  document.addEventListener("drop", e => {
+    if ([...e.dataTransfer.types].includes("Files") && !e.target.closest("#dropzone")) {
+      e.preventDefault(); addFiles(e.dataTransfer.files);
+    }
+  });
+
+  $("selectAllBtn").addEventListener("click", () => { state.selected = new Set(state.refs.map(r => r.id)); render(); });
+  $("clearSelectionBtn").addEventListener("click", () => { state.selected.clear(); render(); });
+  $("moveStartBtn").addEventListener("click", () => moveSelectedTo(0));
+  $("moveEndBtn").addEventListener("click", () => moveSelectedTo(state.refs.length));
+  $("movePositionBtn").addEventListener("click", () => {
+    const pos = Number($("positionInput").value);
+    if (Number.isInteger(pos) && pos >= 1 && pos <= state.refs.length + 1) moveSelectedTo(pos - 1);
+    else status("pageStatus", `Enter a position from 1 to ${state.refs.length + 1}.`, "warning");
+  });
+  $("deletePagesBtn").addEventListener("click", () => {
+    if (!state.selected.size) { status("pageStatus", "Select one or more pages first.", "warning"); return; }
+    commitHistory(); state.refs = state.refs.filter(ref => !state.selected.has(ref.id));
+    state.selected.clear(); render(); status("pageStatus", "Selected pages removed from output; source PDFs are unchanged.", "success");
+  });
+  $("duplicateBtn").addEventListener("click", () => {
+    const chosen = getSelectedRefs(); if (!chosen.length) return;
+    commitHistory();
+    const lastIndex = Math.max(...chosen.map(ref => state.refs.findIndex(item => item.id === ref.id)));
+    const copies = chosen.map(ref => ({...ref, id:"page-" + state.nextPage++}));
+    state.refs.splice(lastIndex + 1, 0, ...copies);
+    state.selected = new Set(copies.map(ref => ref.id)); render();
+  });
+  $("rotateBtn").addEventListener("click", () => {
+    const chosen = getSelectedRefs(); if (!chosen.length) return;
+    commitHistory(); chosen.forEach(ref => { ref.rotation = (ref.rotation + 90) % 360; }); render();
+  });
+  $("undoBtn").addEventListener("click", undo); $("redoBtn").addEventListener("click", redo);
+  $("exportBtn").addEventListener("click", exportPDF);
+
+  $("themeSelect").value = document.documentElement.dataset.theme || "system";
+  $("themeSelect").addEventListener("change", e => {
+    document.documentElement.dataset.theme = e.target.value;
+    try { localStorage.setItem("pdf-organizer-theme", e.target.value); } catch {}
+  });
+  $("clearBtn").addEventListener("click", () => {
+    if (!state.docs.length) return;
+    state.docs.forEach(doc => doc.pdf.destroy().catch(()=>{}));
+    state.docs = []; state.refs = []; state.selected.clear(); state.history = []; state.future = [];
+    render(); status("uploadStatus", "Workspace cleared. Files are not persisted.", "success");
+  });
+
+  $("closePreviewBtn").addEventListener("click", () => $("previewDialog").close());
+  $("previewDialog").addEventListener("click", e => { if (e.target === $("previewDialog")) $("previewDialog").close(); });
+  $("zoomInBtn").addEventListener("click", () => { state.previewScale = Math.min(4, (typeof state.previewScale === "number" ? state.previewScale : 1) * 1.25); drawPreview(); });
+  $("zoomOutBtn").addEventListener("click", () => { state.previewScale = Math.max(.25, (typeof state.previewScale === "number" ? state.previewScale : 1) / 1.25); drawPreview(); });
+  $("fitBtn").addEventListener("click", () => { state.previewScale = "fit"; drawPreview(); });
+  $("actualBtn").addEventListener("click", () => { state.previewScale = 1; drawPreview(); });
+  $("fullscreenBtn").addEventListener("click", () => {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else $("previewDialog").requestFullscreen?.();
+  });
+  function navigatePreview(delta) {
+    const index = state.refs.findIndex(ref => ref.id === state.previewRef);
+    const next = index + delta; if (next >= 0 && next < state.refs.length) {
+      state.previewRef = state.refs[next].id; drawPreview();
+    }
+  }
+  $("prevPreviewBtn").addEventListener("click", () => navigatePreview(-1));
+  $("nextPreviewBtn").addEventListener("click", () => navigatePreview(1));
+  $("previewDialog").addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") navigatePreview(-1);
+    if (e.key === "ArrowRight") navigatePreview(1);
+  });
+  document.addEventListener("keydown", e => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key.toLowerCase() === "z") {
+      e.preventDefault(); e.shiftKey ? redo() : undo();
+    } else if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); }
+    else if (e.key === "Delete" && !["INPUT","TEXTAREA"].includes(document.activeElement.tagName) && state.selected.size) {
+      $("deletePagesBtn").click();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

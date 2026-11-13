@@ -32,6 +32,7 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
   <script src="/dpg-coins-passes.js"></script>
+  <script src="/study-hub-anticheat.js"></script>
 
   <style>
     /* ==========================================================================
@@ -2167,6 +2168,7 @@
 
           <div class="footer-nav-col">
             <span class="footer-col-title">Utilities</span>
+            <a href="MultiPdf-Merger.html" class="footer-link">Multi-PDF Merger</a>
             <a href="ImagetoPdfConverter.html" class="footer-link">Image to PDF</a>
             <a href="PdfMetaAnalyzer.html" class="footer-link">Metadata Analyzer</a>
             <a href="dashboard.html" class="footer-link">Contributor Desk</a>
@@ -3875,6 +3877,12 @@
             <span>${antiCheatStatus.isBlocked ? `Credit Locked (${formatLockoutRemaining(antiCheatStatus.remainingMs)} remaining) due to Anti-Cheat / Inspection (-1,800 penalty applied)` : 'Earn coins on every correct quiz answer: <strong>+8 Guest</strong> &bull; <strong>+12 Contributor</strong>'}</span>
           </div>
 
+          <div style="display:flex; justify-content:flex-end; margin-top:6px; margin-bottom:12px;">
+            <button type="button" onclick="window.openDpgDeductionReportModal()" style="display:inline-flex; align-items:center; gap:5px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.32); color:#fca5a5; padding:4px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Report any unfair coin deduction issue for Admin review">
+              <i class="ri-flag-2-line"></i> Report Deduction Issue
+            </button>
+          </div>
+
           <div class="dpg-wallet-tiers-title">
             <i class="ri-exchange-dollar-line"></i> Redemption Value &amp; Instant Upgrade
           </div>
@@ -3916,6 +3924,13 @@
             </div>
             <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
               <div>
+                <span class="dpg-wallet-tier-cost">15,000 Coins</span>
+                <div class="dpg-wallet-tier-desc">1-Month Go Ads Free (Native Ads)</div>
+              </div>
+              <button type="button" onclick="window.redeemHubWalletPass('ads_free_1mo', this)" style="align-self:flex-start; background:rgba(236,72,153,0.16); border:1px solid rgba(236,72,153,0.38); color:#f472b6; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; cursor:pointer;">Activate</button>
+            </div>
+            <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+              <div>
                 <span class="dpg-wallet-tier-cost">800 Coins</span>
                 <div class="dpg-wallet-tier-desc">₹1 Native Ads Bill Settlement</div>
               </div>
@@ -3942,6 +3957,166 @@
 
       overlay.style.display = "flex";
       requestAnimationFrame(() => overlay.classList.add("active"));
+    };
+
+    // Dispute / Report Unfair DPG Coins Deduction Modal
+    window.openDpgDeductionReportModal = function() {
+      const activeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid") || "";
+      const activeEmail = (currentUser && currentUser.email) || (activeContributorData && activeContributorData.email) || localStorage.getItem("dpgActiveUserEmail") || "";
+      const activeName = (currentUser && (currentUser.displayName || currentUser.name)) || (activeContributorData && (activeContributorData.displayName || activeContributorData.name)) || localStorage.getItem("dpgActiveUserName") || "Guest User";
+      const curBal = (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.getCoinsBalance === "function")
+        ? window.DPGCoinsPasses.getCoinsBalance()
+        : userCoins;
+      const antiCheatStatus = (window.DPGCoinsPasses && window.DPGCoinsPasses.getAntiCheatStatus)
+        ? window.DPGCoinsPasses.getAntiCheatStatus()
+        : { isBlocked: false, remainingMs: 0, reason: "" };
+
+      let reportOverlay = document.getElementById("dpgDeductionReportOverlay");
+      if (!reportOverlay) {
+        reportOverlay = document.createElement("div");
+        reportOverlay.id = "dpgDeductionReportOverlay";
+        reportOverlay.className = "dpg-wallet-overlay";
+        reportOverlay.style.zIndex = "2147483647";
+        reportOverlay.setAttribute("role", "dialog");
+        reportOverlay.setAttribute("aria-modal", "true");
+        reportOverlay.addEventListener("click", (e) => {
+          if (e.target === reportOverlay) window.closeDpgDeductionReportModal();
+        });
+        document.body.appendChild(reportOverlay);
+      }
+
+      reportOverlay.innerHTML = `
+        <div class="dpg-wallet-dialog" style="max-width:480px;">
+          <button type="button" class="dpg-wallet-close-btn" onclick="window.closeDpgDeductionReportModal()" aria-label="Close">
+            <i class="ri-close-line"></i>
+          </button>
+
+          <div class="dpg-wallet-header">
+            <div class="dpg-wallet-emblem" style="background:rgba(239,68,68,0.18); border-color:rgba(239,68,68,0.4); color:#ef4444;">
+              <i class="ri-shield-cross-fill"></i>
+            </div>
+            <h3 class="dpg-wallet-title" style="color:#f87171;">Report Unfair Deduction</h3>
+            <p class="dpg-wallet-subtitle">Dispute coin deductions or report anti-cheat lockout false positives</p>
+          </div>
+
+          <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:0.82rem; line-height:1.5;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="color:#94a3b8;">Account:</span>
+              <strong style="color:#f8fafc;">${escapeHtml(activeName)} ${activeEmail ? `(${escapeHtml(activeEmail)})` : ''}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="color:#94a3b8;">Current Balance:</span>
+              <strong style="color:${curBal < 0 ? '#ef4444' : '#fbbf24'};">${curBal.toLocaleString()} DPGCoins</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:#94a3b8;">Detection Flag:</span>
+              <span style="color:#fca5a5; font-size:0.75rem; text-align:right; max-width:260px;">${escapeHtml(antiCheatStatus.reason || "Anti-Cheat Penalty / Inspection Mode")}</span>
+            </div>
+          </div>
+
+          <form id="dpgDeductionReportForm" onsubmit="window.submitDpgDeductionReport(event)">
+            ${!activeEmail ? `
+              <div style="margin-bottom:10px;">
+                <label style="display:block; font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">Your Email (for notification):</label>
+                <input type="email" id="dpgReportUserEmail" required placeholder="your.email@example.com" style="width:100%; box-sizing:border-box; background:rgba(30,41,69,0.7); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; padding:8px 10px; font-size:0.82rem; outline:none;">
+              </div>
+            ` : ''}
+
+            <div style="margin-bottom:14px;">
+              <label style="display:block; font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">Detailed Explanation of the Issue *</label>
+              <textarea id="dpgReportUserMsg" required rows="4" placeholder="Describe what you were doing when the deduction happened (e.g. was reviewing solutions, pressed a key accidentally, browser window resize triggered anti-cheat)..." style="width:100%; box-sizing:border-box; background:rgba(30,41,69,0.7); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; padding:10px; font-size:0.82rem; font-family:inherit; resize:vertical; outline:none;"></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+              <button type="button" class="dpg-wallet-btn-close" onclick="window.closeDpgDeductionReportModal()">Cancel</button>
+              <button type="submit" id="dpgReportSubmitBtn" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#ef4444,#dc2626); border:none; color:#fff; padding:8px 16px; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer;">
+                <i class="ri-send-plane-fill"></i> Submit Report to Admin
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      reportOverlay.style.display = "flex";
+      requestAnimationFrame(() => reportOverlay.classList.add("active"));
+    };
+
+    window.closeDpgDeductionReportModal = function() {
+      const overlay = document.getElementById("dpgDeductionReportOverlay");
+      if (!overlay) return;
+      overlay.classList.remove("active");
+      setTimeout(() => {
+        if (!overlay.classList.contains("active")) overlay.style.display = "none";
+      }, 200);
+    };
+
+    window.submitDpgDeductionReport = async function(event) {
+      if (event) event.preventDefault();
+      const submitBtn = document.getElementById("dpgReportSubmitBtn");
+      const msgEl = document.getElementById("dpgReportUserMsg");
+      const emailInput = document.getElementById("dpgReportUserEmail");
+      const message = msgEl ? msgEl.value.trim() : "";
+      if (!message) return;
+
+      const activeUid = (currentUser && currentUser.uid) || (activeContributorData && activeContributorData.uid) || localStorage.getItem("dpgActiveUserUid") || "";
+      const activeEmail = (emailInput && emailInput.value.trim()) || (currentUser && currentUser.email) || (activeContributorData && activeContributorData.email) || localStorage.getItem("dpgActiveUserEmail") || "";
+      const activeName = (currentUser && (currentUser.displayName || currentUser.name)) || (activeContributorData && (activeContributorData.displayName || activeContributorData.name)) || localStorage.getItem("dpgActiveUserName") || "Guest User";
+      const curBal = (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.getCoinsBalance === "function")
+        ? window.DPGCoinsPasses.getCoinsBalance()
+        : userCoins;
+      const antiCheatStatus = (window.DPGCoinsPasses && window.DPGCoinsPasses.getAntiCheatStatus)
+        ? window.DPGCoinsPasses.getAntiCheatStatus()
+        : { isBlocked: false, remainingMs: 0, reason: "" };
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Submitting...';
+      }
+
+      try {
+        const fallbackApi = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+          ? "http://localhost:5000"
+          : "https://dpgnotes.onrender.com";
+        const apiBase = (typeof window.API_BASE_URL === "string" && window.API_BASE_URL && window.API_BASE_URL !== "undefined")
+          ? window.API_BASE_URL
+          : fallbackApi;
+
+        const res = await fetch(`${apiBase.replace(/\/+$/, "")}/api/coins/report-deduction`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uid: activeUid,
+            email: activeEmail,
+            contributorName: activeName,
+            coinsBalance: curBal,
+            penaltyReason: antiCheatStatus.reason || "Anti-Cheat Penalty / Inspection Mode",
+            message
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok && !data.success) {
+          throw new Error(data.error || "Failed to submit deduction dispute report.");
+        }
+
+        window.closeDpgDeductionReportModal();
+        if (typeof window.customAlert === "function") {
+          await window.customAlert(
+            "Your deduction dispute report has been registered and submitted to the Admin. Admin will review your balance in the Admin Dashboard 'Currency Analytics' and process any applicable coin refund from the Admin Vault.",
+            { title: "Report Submitted Successfully" }
+          );
+        } else {
+          alert("Report submitted successfully to Admin.");
+        }
+      } catch (err) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="ri-send-plane-fill"></i> Submit Report to Admin';
+        }
+        if (typeof window.customAlert === "function") {
+          await window.customAlert(err.message || "Could not submit report right now.", { title: "Submission Error", isDanger: true });
+        }
+      }
     };
 
     /* ==========================================================================
