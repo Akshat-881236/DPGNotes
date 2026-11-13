@@ -9121,19 +9121,6 @@ window.adminDeleteQuizDirect = async function(quizId, ownerUid) {
 // ============================================================================
 let currencyAnalyticsCache = null;
 
-if (typeof window.escapeHtml !== 'function') {
-  window.escapeHtml = function(str) {
-    if (!str) return "";
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  };
-}
-var escapeHtml = window.escapeHtml;
-
 window.loadCurrencyAnalyticsAdmin = async function() {
   const reportsTbody = document.getElementById("currencyReportsTableBody");
   const contribTbody = document.getElementById("currencyContributorsTableBody");
