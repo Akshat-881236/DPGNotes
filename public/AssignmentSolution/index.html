@@ -603,7 +603,7 @@
           </div>
           <div class="sol-meta-item">
             <i class="ri-user-star-line" style="color:#f59e0b;"></i>
-            <span>Faculty: <strong id="viewProfName">Dr. Rajesh Kumar</strong></span>
+            <span>Faculty: <strong id="viewProfName">-</strong></span>
           </div>
           <div class="sol-meta-item" id="solMetaContributorWrap" style="display:inline-flex; align-items:center; gap:5px;">
             <span id="viewContributorAvatarSlot" style="display:inline-flex; align-items:center;"></span>
@@ -958,7 +958,7 @@
             const subCode = (item.subjectCode || '').toLowerCase();
             const course = (item.course || item.courseSec || '').toLowerCase();
             const student = (item.studentName || '').toLowerCase();
-            const prof = (item.profName || '').toLowerCase();
+            const prof = (item.profName || item.submittedTo || item.facultyName || item.faculty || '').toLowerCase();
             const contrib = (item.contributorName || '').toLowerCase();
             const qTitles = Array.isArray(item.questions) ? item.questions.map(q => (q.title || '').toLowerCase()).join(' ') : '';
             return subName.includes(qLower) || subCode.includes(qLower) || course.includes(qLower) ||
@@ -1080,7 +1080,7 @@
               <div class="sol-serp-meta-pill">
                 <i class="ri-user-star-line" style="color:#f59e0b; font-size:1rem;"></i>
                 <span style="color:#94a3b8;">Faculty:</span>
-                <strong>${escapeHtml(item.profName || 'Faculty')}</strong>
+                <strong>${escapeHtml(item.profName || item.submittedTo || item.facultyName || item.faculty || 'Faculty')}</strong>
               </div>
               <div class="sol-serp-meta-pill">
                 <i class="ri-user-3-line" style="color:#38bdf8; font-size:1rem;"></i>
@@ -1383,6 +1383,11 @@
       document.getElementById('viewSubjectCodeBadge').textContent = data.subjectCode || 'ACADEMIC';
       document.getElementById('viewStudentName').textContent = data.studentName || 'Student';
       document.getElementById('viewStudentId').textContent = data.studentId || '-';
+      const facultyName = data.profName || data.submittedTo || data.facultyName || data.faculty || data.teacherName || data.instructorName || '-';
+      const viewProfEl = document.getElementById('viewProfName');
+      if (viewProfEl) {
+        viewProfEl.textContent = facultyName;
+      }
       const contribName = data.contributorName || 'Verified Contributor';
       const contribUid = data.contributorUid || '';
       const contribPhoto = data.contributorPhoto || data.userPhoto || (window.__dpgUserCache && window.__dpgUserCache[contribUid] && (window.__dpgUserCache[contribUid].profilePic || window.__dpgUserCache[contribUid].photoURL)) || 'https://dpgnotes.web.app/ANH.png';
