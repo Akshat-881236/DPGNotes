@@ -464,6 +464,61 @@
     return 13000 + Math.floor((n - 20) * 650);
   }
 
+  function calculatePdfUploadCoins(pageCount) {
+    const p = parseInt(pageCount, 10);
+    if (isNaN(p) || p <= 2) return 3000;
+    if (p <= 4) return 3700;
+    if (p <= 6) return 4500;
+    if (p <= 8) return 5500;
+    if (p <= 10) return 6500;
+    if (p <= 15) return 8000;
+    if (p <= 20) return 10000;
+    return 10000 + Math.floor((p - 20) * 250);
+  }
+
+  async function awardReward(params) {
+    const { uid, action, amount, reason, meta } = params || {};
+    const effectiveUid = uid || getActiveUid();
+    const rewardAmt = parseInt(amount, 10);
+    if (!effectiveUid || isNaN(rewardAmt) || rewardAmt <= 0) {
+      return { success: false, error: "Invalid reward parameters" };
+    }
+
+    try {
+      const res = await fetch(`${getBackendBaseUrl()}/api/coins/award-reward`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid: effectiveUid,
+          action: action || "reward",
+          amount: rewardAmt,
+          reason: reason || `Reward credited (+${rewardAmt} DPGCoins)`,
+          meta: meta || {}
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data && data.success) {
+        if (typeof data.newBalance === "number") {
+          setCoinsBalance(data.newBalance);
+        } else {
+          setCoinsBalance(getCoinsBalance() + rewardAmt);
+        }
+        localStorage.setItem("dpg_coins_local_updated_at", String(Date.now()));
+        syncFromCloud(effectiveUid).catch(() => {});
+        return { success: true, balance: getCoinsBalance(), amount: rewardAmt };
+      }
+    } catch (netErr) {
+      console.warn("Backend awardReward fetch notice, falling back to local/cloud sync:", netErr);
+    }
+
+    // Client-side fallback if backend route unavailable
+    const curBal = getCoinsBalance();
+    const newBal = setCoinsBalance(curBal + rewardAmt);
+    localStorage.setItem("dpg_coins_local_updated_at", String(Date.now()));
+    syncFromCloud(effectiveUid).catch(() => {});
+    return { success: true, balance: newBal, amount: rewardAmt };
+  }
+
   function getPlanStatus(passId) {
     const passes = getActivePasses();
     const now = Date.now();
@@ -977,6 +1032,8 @@
     hasAdsFreePass,
     getPlanStatus,
     calculateContentPublishCoins,
+    calculatePdfUploadCoins,
+    awardReward,
     clearGuestQuotaLockFlags,
     formatExpiry,
     syncFromCloud,

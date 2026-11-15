@@ -21,6 +21,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
+  <script src="/dpg-coins-passes.js"></script>
   <script src="custom-dialogs.js"></script>
   <script src="notes-handler.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -2544,7 +2545,10 @@
       btn.innerHTML = `<i class="ri-loader-4-line spin-icon"></i> Processing AI Knowledge Extraction & Generation...`;
       try {
         const currentUid = getActiveUserId() || activeUid || "contributor";
-        const res = await fetch((window.API_BASE_URL || '') + '/api/ai/train-model', {
+        const apiBase = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+          ? window.API_BASE_URL.replace(/\/+$/, '')
+          : (window.RENDER_BACKEND_URL || 'https://dpgnotes.onrender.com').replace(/\/+$/, '');
+        const res = await fetch(`${apiBase}/api/ai/train-model`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2576,23 +2580,33 @@
         });
         try {
           if (currentUid && currentUid !== "contributor") {
-            await updateDoc(doc(db, "users", currentUid), {
-              dpgCoins: increment(4700),
-              coinsLastUpdated: serverTimestamp()
-            });
-            await addDoc(collection(db, "users", currentUid, "coins_transactions"), {
-              type: "credit",
-              amount: 4700,
-              reason: `AI Model Training Reward for Resource ${targetId}`,
-              source: "ai_model_training",
-              resourceId: targetId,
-              timestamp: serverTimestamp()
-            });
-          }
-          if (window.DPGCoinsPasses) {
-            const b = window.DPGCoinsPasses.getCoinsBalance();
-            window.DPGCoinsPasses.setCoinsBalance(b + 4700);
-            window.DPGCoinsPasses.syncFromCloud(currentUid).catch(() => {});
+            if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.awardReward === "function") {
+              await window.DPGCoinsPasses.awardReward({
+                uid: currentUid,
+                action: "ai_model_training",
+                amount: 4700,
+                reason: `AI Model Training Reward for Resource ${targetId}`,
+                meta: { source: "ai_model_training", resourceId: targetId }
+              });
+            } else {
+              await updateDoc(doc(db, "users", currentUid), {
+                dpgCoins: increment(4700),
+                coinsLastUpdated: serverTimestamp()
+              });
+              await addDoc(collection(db, "users", currentUid, "coins_transactions"), {
+                type: "credit",
+                amount: 4700,
+                reason: `AI Model Training Reward for Resource ${targetId}`,
+                source: "ai_model_training",
+                resourceId: targetId,
+                timestamp: serverTimestamp()
+              });
+              if (window.DPGCoinsPasses) {
+                const b = window.DPGCoinsPasses.getCoinsBalance();
+                window.DPGCoinsPasses.setCoinsBalance(b + 4700);
+                window.DPGCoinsPasses.syncFromCloud(currentUid).catch(() => {});
+              }
+            }
           }
         } catch (cErr) {
           console.warn("Client coin balance sync notice:", cErr);

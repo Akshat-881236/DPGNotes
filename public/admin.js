@@ -2756,17 +2756,13 @@ window.approveResourceAdmin = async function(docId) {
   if (!confirmed) return;
   try {
     let approvedOk = false;
+    const token = localStorage.getItem("adminToken");
+    const baseApi = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+      ? window.API_BASE_URL.replace(/\/+$/, '')
+      : 'https://dpgnotes.onrender.com';
+
+    // 1. Invoke Backend Admin SDK to guarantee atomic Firestore doc approval +5,000 DPGCoins credit & logging
     try {
-      await updateDoc(doc(db, "documents", docId), {
-        status: "approved",
-        isApproved: true,
-        approvedAt: serverTimestamp()
-      });
-      approvedOk = true;
-    } catch (clientErr) {
-      console.warn("Client updateDoc failed, attempting backend Admin API fallback:", clientErr);
-      const token = localStorage.getItem("adminToken");
-      const baseApi = (window.API_BASE_URL || "").replace(/\/$/, "");
       const res = await fetch(`${baseApi}/api/admin/approve-resource`, {
         method: "POST",
         headers: {
@@ -2775,28 +2771,51 @@ window.approveResourceAdmin = async function(docId) {
         },
         body: JSON.stringify({ docId })
       });
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || clientErr.message);
+      if (res.ok) {
+        approvedOk = true;
       }
-      approvedOk = true;
+    } catch (backendErr) {
+      console.warn("Backend approve-resource fetch notice:", backendErr);
     }
+
+    // 2. Also update client Firestore doc & award reward as client-side fallback/sync
+    try {
+      await updateDoc(doc(db, "documents", docId), {
+        status: "approved",
+        isApproved: true,
+        approvedAt: serverTimestamp()
+      });
+      approvedOk = true;
+    } catch (clientErr) {
+      console.warn("Client updateDoc warning:", clientErr);
+    }
+
     if (approvedOk) {
       const uploaderUid = docItem?.userId || docItem?.uploaderId || docItem?.uploaderUid;
       if (uploaderUid) {
         try {
-          await updateDoc(doc(db, "users", uploaderUid), {
-            dpgCoins: increment(5000),
-            coinsLastUpdated: serverTimestamp()
-          });
-          await addDoc(collection(db, "users", uploaderUid, "coins_transactions"), {
-            type: "credit",
-            amount: 5000,
-            reason: `Admin Approved Resource: "${title}" (+5,000 DPGCoins)`,
-            source: "pdf_resource_approved",
-            docId: docId,
-            timestamp: serverTimestamp()
-          });
+          if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.awardReward === "function") {
+            await window.DPGCoinsPasses.awardReward({
+              uid: uploaderUid,
+              action: "pdf_resource_approved",
+              amount: 5000,
+              reason: `Admin Approved Resource: "${title}" (+5,000 DPGCoins)`,
+              meta: { source: "pdf_resource_approved", docId }
+            });
+          } else {
+            await updateDoc(doc(db, "users", uploaderUid), {
+              dpgCoins: increment(5000),
+              coinsLastUpdated: serverTimestamp()
+            });
+            await addDoc(collection(db, "users", uploaderUid, "coins_transactions"), {
+              type: "credit",
+              amount: 5000,
+              reason: `Admin Approved Resource: "${title}" (+5,000 DPGCoins)`,
+              source: "pdf_resource_approved",
+              docId: docId,
+              timestamp: serverTimestamp()
+            });
+          }
         } catch (coinErr) {
           console.warn("Client coin credit on approval notice:", coinErr);
         }
@@ -2836,13 +2855,13 @@ window.rejectResourceAdmin = async function(docId) {
   if (!confirmed) return;
   try {
     let deletedOk = false;
+    const token = localStorage.getItem("adminToken");
+    const baseApi = (typeof window.API_BASE_URL === 'string' && window.API_BASE_URL && window.API_BASE_URL !== 'undefined')
+      ? window.API_BASE_URL.replace(/\/+$/, '')
+      : 'https://dpgnotes.onrender.com';
+
+    // 1. Invoke Backend Admin SDK to guarantee atomic Firestore doc removal -1,500 DPGCoins penalty & audit logging
     try {
-      await deleteDoc(doc(db, "documents", docId));
-      deletedOk = true;
-    } catch (clientErr) {
-      console.warn("Client deleteDoc failed, attempting backend Admin API fallback:", clientErr);
-      const token = localStorage.getItem("adminToken");
-      const baseApi = (window.API_BASE_URL || "").replace(/\/$/, "");
       const res = await fetch(`${baseApi}/api/admin/reject-resource`, {
         method: "POST",
         headers: {
@@ -2851,12 +2870,21 @@ window.rejectResourceAdmin = async function(docId) {
         },
         body: JSON.stringify({ docId })
       });
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || clientErr.message);
+      if (res.ok) {
+        deletedOk = true;
       }
-      deletedOk = true;
+    } catch (backendErr) {
+      console.warn("Backend reject-resource fetch notice:", backendErr);
     }
+
+    // 2. Also delete from client Firestore as client-side fallback/sync
+    try {
+      await deleteDoc(doc(db, "documents", docId));
+      deletedOk = true;
+    } catch (clientErr) {
+      console.warn("Client deleteDoc warning:", clientErr);
+    }
+
     if (deletedOk) {
       const uploaderUid = docItem?.userId || docItem?.uploaderId || docItem?.uploaderUid;
       if (uploaderUid) {
@@ -9328,19 +9356,25 @@ window.renderCurrencyInflow = function(transactions) {
   }
 
   tbody.innerHTML = transactions.map(t => {
-    const isAds = t.source === "ads_bill_payment";
-    const isAdminTransfer = t.source === "admin_transfer" || t.source === "admin_vault_transfer" || t.source === "admin_refund" || t.type === "debit" || (t.reason && t.reason.toLowerCase().includes("transfer"));
+    const isAds = t.source === "ads_bill_payment" || t.category === "ads_bill_payment";
+    const isAdminTransfer = t.source === "admin_transfer" || t.source === "admin_vault_transfer" || t.source === "admin_refund" || t.source === "admin_vault_refund" || (t.reason && /transfer|refund|vault|admin/i.test(t.reason));
+    const isPassUpgrade = t.source === "pass_upgrade" || t.category === "pass_upgrade" || Boolean(t.passName) || Boolean(t.passId);
 
-    let badgeColor = "rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35);";
-    let label = t.passName ? `Plan Upgrade (${t.passName})` : "Plan Upgrade";
+    let badgeColor = "rgba(148,163,184,0.18); color:#cbd5e1; border:1px solid rgba(148,163,184,0.35);";
+    let label = "Vault Transaction";
     let isDebit = t.type === "debit";
 
     if (isAds) {
       badgeColor = "rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35);";
       label = "Ads Bill Payment";
-    } else if (isAdminTransfer) {
-      badgeColor = "rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35);";
-      label = t.reason ? `Admin Transfer: ${t.reason}` : "Admin DPG Coins Transfer";
+    } else if (isAdminTransfer || (!isPassUpgrade && !isAds)) {
+      badgeColor = isDebit
+        ? "rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35);"
+        : "rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35);";
+      label = t.reason || (isDebit ? "Admin Vault Transfer" : "Admin Vault Deposit");
+    } else if (isPassUpgrade) {
+      badgeColor = "rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35);";
+      label = t.passName ? `Plan Upgrade (${t.passName})` : "Plan Upgrade";
     }
 
     const amountColor = isDebit ? "#f87171" : "#34d399";

@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="solutions-style.css?v=2.3.1">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <script src="../config.js"></script>
+  <script src="/dpg-coins-passes.js"></script>
   <script src="/dpg-params.js"></script>
   <script src="../custom-dialogs.js"></script>
   <script src="../solutions-sandbox-engine.js?v=2.1.0"></script>
@@ -1513,8 +1514,12 @@
             timestamp: new Date().toISOString()
           });
         } catch (e) {}
+        const urlParamsCheck = new URLSearchParams(window.location.search);
+        const hasEditUrlParam = urlParamsCheck.get('edit') === 'true' || Boolean(urlParamsCheck.get('id')) || Boolean(urlParamsCheck.get('editId'));
+        const isEditing = Boolean(isEditMode || editingSolutionId || hasEditUrlParam);
+
         let coinsAwarded = 0;
-        if (!isEditMode && contribUid) {
+        if (!isEditing && contribUid) {
           const pCount = practicalsList ? practicalsList.length : 0;
           coinsAwarded = window.DPGCoinsPasses?.calculateContentPublishCoins
             ? window.DPGCoinsPasses.calculateContentPublishCoins(pCount)
@@ -1522,26 +1527,36 @@
 
           if (coinsAwarded > 0) {
             try {
-              if (window.solUpdateDoc && window.solIncrement) {
-                const uRef = window.solDoc(window.solDb, "users", contribUid);
-                await window.solUpdateDoc(uRef, {
-                  dpgCoins: window.solIncrement(coinsAwarded),
-                  coinsLastUpdated: window.solServerTimestamp ? window.solServerTimestamp() : new Date().toISOString()
-                });
-                const txRef = window.solDoc(window.solDb, "users", contribUid, "coins_transactions", `tx_${Date.now()}`);
-                await window.solSetDoc(txRef, {
-                  type: "credit",
+              if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.awardReward === "function") {
+                await window.DPGCoinsPasses.awardReward({
+                  uid: contribUid,
+                  action: "practical_publish",
                   amount: coinsAwarded,
                   reason: `Published Practical Solution: ${subCode} - ${subName} (${pCount} Programs)`,
-                  source: "practical_publish",
-                  solutionId: solutionId,
-                  timestamp: window.solServerTimestamp ? window.solServerTimestamp() : new Date().toISOString()
+                  meta: { source: "practical_publish", solutionId: solutionId, programCount: pCount }
                 });
-              }
-              if (window.DPGCoinsPasses) {
-                const b = window.DPGCoinsPasses.getCoinsBalance();
-                window.DPGCoinsPasses.setCoinsBalance(b + coinsAwarded);
-                window.DPGCoinsPasses.syncFromCloud(contribUid).catch(() => {});
+              } else {
+                if (window.solUpdateDoc && window.solIncrement) {
+                  const uRef = window.solDoc(window.solDb, "users", contribUid);
+                  await window.solUpdateDoc(uRef, {
+                    dpgCoins: window.solIncrement(coinsAwarded),
+                    coinsLastUpdated: window.solServerTimestamp ? window.solServerTimestamp() : new Date().toISOString()
+                  });
+                  const txRef = window.solDoc(window.solDb, "users", contribUid, "coins_transactions", `tx_${Date.now()}`);
+                  await window.solSetDoc(txRef, {
+                    type: "credit",
+                    amount: coinsAwarded,
+                    reason: `Published Practical Solution: ${subCode} - ${subName} (${pCount} Programs)`,
+                    source: "practical_publish",
+                    solutionId: solutionId,
+                    timestamp: window.solServerTimestamp ? window.solServerTimestamp() : new Date().toISOString()
+                  });
+                }
+                if (window.DPGCoinsPasses) {
+                  const b = window.DPGCoinsPasses.getCoinsBalance();
+                  window.DPGCoinsPasses.setCoinsBalance(b + coinsAwarded);
+                  window.DPGCoinsPasses.syncFromCloud(contribUid).catch(() => {});
+                }
               }
             } catch (coinErr) {
               console.warn("Practical publish coins reward error:", coinErr);

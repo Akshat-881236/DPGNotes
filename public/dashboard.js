@@ -1333,6 +1333,27 @@ if(uploadForm) {
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
         passwordHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
       }
+      let detectedPageCount = 1;
+      if (pdfFile) {
+        try {
+          if (window.PDFLib && window.PDFLib.PDFDocument) {
+            const arrayBuf = await pdfFile.arrayBuffer();
+            const loadedPdf = await window.PDFLib.PDFDocument.load(arrayBuf, { ignoreEncryption: true });
+            detectedPageCount = Math.max(1, loadedPdf.getPageCount());
+          } else {
+            const text = await pdfFile.slice(0, 80000).text();
+            const matches = text.match(/\/Type\s*\/Page[^s]/g);
+            if (matches && matches.length > 0) detectedPageCount = matches.length;
+          }
+        } catch (pageErr) {
+          console.warn("PDF page count detection notice:", pageErr);
+        }
+      }
+
+      const uploadRewardCoins = window.DPGCoinsPasses?.calculatePdfUploadCoins
+        ? window.DPGCoinsPasses.calculatePdfUploadCoins(detectedPageCount)
+        : 3000;
+
       const docData = {
         category: document.getElementById("category").value,
         discipline: document.getElementById("discipline").value,
@@ -1346,6 +1367,8 @@ if(uploadForm) {
         userName: currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Contributor'),
         uploaderEmail: currentUser.email || "",
         uploaderId: currentUser.uid,
+        pageCount: detectedPageCount,
+        submissionCoins: uploadRewardCoins,
         visibility: isPrivate ? "private" : "public",
         isPublic: !isPrivate,
         isPasswordProtected: isPrivate,
@@ -1358,23 +1381,33 @@ if(uploadForm) {
       };
       await addDoc(collection(db, "documents"), docData);
 
-      // Reward +3,000 DPGCoins on Submission
+      // Reward DPGCoins based on PDF page count
       try {
-        await updateDoc(doc(db, "users", currentUser.uid), {
-          dpgCoins: increment(3000),
-          coinsLastUpdated: serverTimestamp()
-        });
-        await addDoc(collection(db, "users", currentUser.uid, "coins_transactions"), {
-          type: "credit",
-          amount: 3000,
-          reason: `Contributed PDF Resource: "${title}" (+3,000 DPGCoins submission reward)`,
-          source: "pdf_resource_submission",
-          timestamp: serverTimestamp()
-        });
-        if (window.DPGCoinsPasses) {
-          const curBal = window.DPGCoinsPasses.getCoinsBalance();
-          window.DPGCoinsPasses.setCoinsBalance(curBal + 3000);
-          window.DPGCoinsPasses.syncFromCloud(currentUser.uid).catch(() => {});
+        if (window.DPGCoinsPasses && typeof window.DPGCoinsPasses.awardReward === "function") {
+          await window.DPGCoinsPasses.awardReward({
+            uid: currentUser.uid,
+            action: "pdf_resource_submission",
+            amount: uploadRewardCoins,
+            reason: `Contributed PDF Resource: "${title}" (+${uploadRewardCoins.toLocaleString()} DPGCoins for ${detectedPageCount} pages)`,
+            meta: { source: "pdf_resource_submission", title, pageCount: detectedPageCount }
+          });
+        } else {
+          await updateDoc(doc(db, "users", currentUser.uid), {
+            dpgCoins: increment(uploadRewardCoins),
+            coinsLastUpdated: serverTimestamp()
+          });
+          await addDoc(collection(db, "users", currentUser.uid, "coins_transactions"), {
+            type: "credit",
+            amount: uploadRewardCoins,
+            reason: `Contributed PDF Resource: "${title}" (+${uploadRewardCoins.toLocaleString()} DPGCoins for ${detectedPageCount} pages)`,
+            source: "pdf_resource_submission",
+            timestamp: serverTimestamp()
+          });
+          if (window.DPGCoinsPasses) {
+            const curBal = window.DPGCoinsPasses.getCoinsBalance();
+            window.DPGCoinsPasses.setCoinsBalance(curBal + uploadRewardCoins);
+            window.DPGCoinsPasses.syncFromCloud(currentUser.uid).catch(() => {});
+          }
         }
       } catch (coinErr) {
         console.warn("Error crediting resource submission coins:", coinErr);
@@ -1437,7 +1470,7 @@ if(uploadForm) {
         console.error("Follower notification notice:", e);
       }
       const uploadSuccessHtml = `Resource <strong>"${title}"</strong> submitted successfully! 🎓<br><br>
-      • Coins Reward: <strong style="color:#10b981;">🪙 +3,000 DPGCoins Credited!</strong> (+5,000 upon Admin approval)<br>
+      • Coins Reward: <strong style="color:#10b981;">🪙 +${uploadRewardCoins.toLocaleString()} DPGCoins Credited!</strong> (${detectedPageCount} page${detectedPageCount > 1 ? 's' : ''} document; +5,000 upon Admin approval)<br>
       • Status: <span style="color:#f59e0b;font-weight:700;">⏳ Pending Administrator Review</span><br>
       • Access Control: <strong>${isPrivate ? '🔒 Private (Password Protected)' : '🌐 Public'}</strong><br><br>
       To maintain academic quality, your document requires Administrator approval before it appears publicly in Explore, Home page, and Search Results.<br><br>
