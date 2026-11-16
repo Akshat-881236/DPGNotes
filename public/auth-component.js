@@ -1368,7 +1368,9 @@ window.activateVerifiedContributor = async function(customToken, data) {
   window._pendingSignup = null;
   allowAuthUnlock();
   window.closeAuthModals(true);
-  window.location.href = "dashboard.html?verified=1#settings";
+  const postSignupTarget = sessionStorage.getItem("dpg_auth_redirect") || "dashboard.html?verified=1#settings";
+  try { sessionStorage.removeItem("dpg_auth_redirect"); } catch (_) {}
+  window.location.href = postSignupTarget;
 };
 window.dpgOnSignupOtpInput = function(inp) {
   clearDpgError("dpgVerifyError");

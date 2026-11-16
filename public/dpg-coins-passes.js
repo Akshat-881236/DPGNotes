@@ -485,7 +485,7 @@
     }
 
     try {
-      const res = await fetch(`${getBackendBaseUrl()}/api/coins/award-reward`, {
+      const res = await fetch(`${getApiBase()}/api/coins/award-reward`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -527,18 +527,35 @@
     const aPass = passes.access && Number(passes.access.expiresAt) > now ? passes.access : null;
     const afPass = passes.ads_free && Number(passes.ads_free.expiresAt) > now ? passes.ads_free : null;
 
-    const isProActive = Boolean(uPass && uPass.passId === "utilities_pro");
-    const isBlazeActive = Boolean(uPass && uPass.passId === "utilities_blaze");
-    const isUtil1dActive = Boolean(uPass && uPass.passId === "utilities_1d");
+    const isProActive = Boolean(
+      (uPass && (uPass.passId === "utilities_pro" || uPass.id === "utilities_pro" || /pro/i.test(uPass.name || uPass.shortName || ""))) ||
+      (aPass && (aPass.passId === "utilities_pro" || aPass.id === "utilities_pro" || /pro/i.test(aPass.name || aPass.shortName || "")))
+    );
+    const proExpiry = (uPass && (uPass.passId === "utilities_pro" || /pro/i.test(uPass.name || "")))
+      ? uPass.expiresAt
+      : (aPass ? aPass.expiresAt : null);
 
-    const isAccess15dActive = Boolean(aPass && aPass.passId === "access_15d");
-    const isAccess1dActive = Boolean(aPass && aPass.passId === "access_1d");
+    const isBlazeActive = Boolean(
+      uPass && (uPass.passId === "utilities_blaze" || uPass.id === "utilities_blaze" || /blaze/i.test(uPass.name || uPass.shortName || ""))
+    );
+    const isUtil1dActive = Boolean(
+      uPass && (uPass.passId === "utilities_1d" || uPass.id === "utilities_1d" || /1-day/i.test(uPass.name || uPass.shortName || ""))
+    );
 
-    const isAdsFreeActive = Boolean(afPass && afPass.passId === "ads_free_1mo");
+    const isAccess15dActive = Boolean(
+      aPass && (aPass.passId === "access_15d" || aPass.id === "access_15d" || /15-day/i.test(aPass.name || aPass.shortName || ""))
+    );
+    const isAccess1dActive = Boolean(
+      aPass && (aPass.passId === "access_1d" || aPass.id === "access_1d" || /1-day/i.test(aPass.name || aPass.shortName || ""))
+    );
+
+    const isAdsFreeActive = Boolean(
+      afPass && (afPass.passId === "ads_free_1mo" || afPass.id === "ads_free_1mo" || /ads/i.test(afPass.name || afPass.shortName || ""))
+    );
 
     if (passId === "utilities_1d") {
       if (isProActive) {
-        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: proExpiry };
       }
       if (isBlazeActive) {
         return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Blaze)", expiresAt: uPass.expiresAt };
@@ -550,7 +567,7 @@
 
     if (passId === "utilities_blaze") {
       if (isProActive) {
-        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: proExpiry };
       }
       if (isBlazeActive) {
         return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: uPass.expiresAt };
@@ -559,13 +576,13 @@
 
     if (passId === "utilities_pro") {
       if (isProActive) {
-        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: uPass.expiresAt };
+        return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: proExpiry };
       }
     }
 
     if (passId === "access_1d") {
       if (isProActive) {
-        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: proExpiry };
       }
       if (isAccess15dActive) {
         return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in 15-Days)", expiresAt: aPass.expiresAt };
@@ -577,7 +594,7 @@
 
     if (passId === "access_15d") {
       if (isProActive) {
-        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: uPass.expiresAt };
+        return { disabled: true, isActive: false, isCovered: true, label: "Active (Included in Pro)", expiresAt: proExpiry };
       }
       if (isAccess15dActive) {
         return { disabled: true, isActive: true, isCovered: false, label: "Active", expiresAt: aPass.expiresAt };
@@ -983,41 +1000,85 @@
     overlay.querySelector("#dpgCpCloseBtn").onclick = closeUpgradeModal;
     overlay.querySelector("#dpgCpCancelBtn").onclick = closeUpgradeModal;
 
-    overlay.querySelectorAll("[data-dpg-redeem]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const pid = btn.getAttribute("data-dpg-redeem");
-        const msgEl = overlay.querySelector("#dpgCpStatusMsg");
-        const origHtml = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Upgrading...';
-        if (msgEl) msgEl.style.display = "none";
+    function bindModalRedeemButtons(rootEl) {
+      rootEl.querySelectorAll("[data-dpg-redeem]").forEach((btn) => {
+        btn.onclick = async () => {
+          const pid = btn.getAttribute("data-dpg-redeem");
+          const msgEl = rootEl.querySelector("#dpgCpStatusMsg");
+          const origHtml = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Upgrading...';
+          if (msgEl) msgEl.style.display = "none";
 
-        try {
-          const result = await redeemPass(pid);
-          if (msgEl) {
-            msgEl.style.display = "block";
-            msgEl.style.background = "rgba(16,185,129,0.15)";
-            msgEl.style.border = "1px solid rgba(16,185,129,0.35)";
-            msgEl.style.color = "#34d399";
-            msgEl.innerHTML = `<strong>Upgraded!</strong> ${result.pass.name} is now active. Remaining balance: ${result.newBalance.toLocaleString()} DPGCoins.`;
+          try {
+            const result = await redeemPass(pid);
+            if (msgEl) {
+              msgEl.style.display = "block";
+              msgEl.style.background = "rgba(16,185,129,0.15)";
+              msgEl.style.border = "1px solid rgba(16,185,129,0.35)";
+              msgEl.style.color = "#34d399";
+              msgEl.innerHTML = `<strong>Upgraded!</strong> ${result.pass.name} is now active. Remaining balance: ${result.newBalance.toLocaleString()} DPGCoins.`;
+            }
+            setTimeout(() => {
+              closeUpgradeModal();
+              if (typeof onSuccess === "function") onSuccess(result);
+            }, 900);
+          } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            if (msgEl) {
+              msgEl.style.display = "block";
+              msgEl.style.background = "rgba(239,68,68,0.15)";
+              msgEl.style.border = "1px solid rgba(239,68,68,0.35)";
+              msgEl.style.color = "#fca5a5";
+              msgEl.textContent = err.message || "Upgrade failed.";
+            }
           }
-          setTimeout(() => {
-            closeUpgradeModal();
-            if (typeof onSuccess === "function") onSuccess(result);
-          }, 900);
-        } catch (err) {
-          btn.disabled = false;
-          btn.innerHTML = origHtml;
-          if (msgEl) {
-            msgEl.style.display = "block";
-            msgEl.style.background = "rgba(239,68,68,0.15)";
-            msgEl.style.border = "1px solid rgba(239,68,68,0.35)";
-            msgEl.style.color = "#fca5a5";
-            msgEl.textContent = err.message || "Upgrade failed.";
+        };
+      });
+    }
+
+    bindModalRedeemButtons(overlay);
+
+    // Opportunistically sync from cloud to ensure freshest passes are reflected
+    const activeUid = getActiveUid();
+    if (activeUid) {
+      syncFromCloud(activeUid).then((synced) => {
+        const currentModal = document.getElementById("dpgCoinsUpgradeModal");
+        if (synced && currentModal) {
+          const updatedPasses = getPassesByCategory(category);
+          const updatedBal = getCoinsBalance();
+          const tierListEl = currentModal.querySelector(".dpg-cp-tier-list");
+          if (tierListEl) {
+            tierListEl.innerHTML = updatedPasses.map((p) => {
+              const canAfford = updatedBal >= p.cost;
+              const planStatus = getPlanStatus(p.id);
+              return `
+                <div class="dpg-cp-tier-row">
+                  <div style="flex:1 1 200px; min-width:0;">
+                    <div style="font-weight:700; font-size:0.94rem; display:flex; align-items:center; gap:6px;">
+                      <i class="${p.icon}" style="color:${p.accent};"></i>
+                      <span>${p.name}</span>
+                    </div>
+                    <div style="font-size:0.77rem; color:#94a3b8; margin-top:2px;">${p.desc}</div>
+                  </div>
+                  ${planStatus.disabled ? `
+                    <button type="button" class="dpg-cp-upgrade-btn dpg-cp-disabled" disabled style="opacity:0.65; cursor:not-allowed; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#94a3b8;" title="${planStatus.label} until ${formatExpiry(planStatus.expiresAt)}">
+                      <i class="ri-checkbox-circle-fill" style="color:#10b981;"></i> ${planStatus.label}
+                    </button>
+                  ` : `
+                    <button type="button" class="dpg-cp-upgrade-btn" data-dpg-redeem="${p.id}" ${!canAfford ? 'disabled title="Insufficient coins — earn in Study Hub" style="opacity:0.5; cursor:not-allowed;"' : ""}>
+                      <i class="ri-copper-coin-fill"></i> ${p.cost.toLocaleString()} Coins
+                    </button>
+                  `}
+                </div>
+              `;
+            }).join("");
+            bindModalRedeemButtons(currentModal);
           }
         }
-      });
-    });
+      }).catch(() => {});
+    }
   }
 
   window.DPGCoinsPasses = {

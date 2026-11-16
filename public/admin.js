@@ -9311,6 +9311,7 @@ window.renderCurrencyContributors = function(contributors) {
     if (passes.utilities && Number(passes.utilities.expiresAt) > now) passNames.push(passes.utilities.shortName || passes.utilities.name);
     if (passes.access && Number(passes.access.expiresAt) > now) passNames.push(passes.access.shortName || passes.access.name);
     if (passes.ads_free && Number(passes.ads_free.expiresAt) > now) passNames.push("Go Ads Free");
+    const uniquePassNames = Array.from(new Set(passNames));
 
     const nameSafe = (c.name || "Contributor").replace(/'/g, "\\'");
     const emailSafe = (c.email || "").replace(/'/g, "\\'");
@@ -9325,7 +9326,7 @@ window.renderCurrencyContributors = function(contributors) {
           </span>
         </td>
         <td>
-          ${passNames.length > 0 ? passNames.map(p => `<span style="background:rgba(99,102,241,0.18); color:#a5b4fc; border:1px solid rgba(99,102,241,0.35); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:4px;">${escapeHtml(p)}</span>`).join("") : '<span style="color:var(--admin-muted); font-size:0.75rem;">None</span>'}
+          ${uniquePassNames.length > 0 ? uniquePassNames.map(p => `<span style="background:rgba(99,102,241,0.18); color:#a5b4fc; border:1px solid rgba(99,102,241,0.35); padding:2px 6px; border-radius:4px; font-size:0.72rem; margin-right:4px;">${escapeHtml(p)}</span>`).join("") : '<span style="color:var(--admin-muted); font-size:0.75rem;">None</span>'}
         </td>
         <td>
           ${isLocked ? `
@@ -9357,8 +9358,8 @@ window.renderCurrencyInflow = function(transactions) {
 
   tbody.innerHTML = transactions.map(t => {
     const isAds = t.source === "ads_bill_payment" || t.category === "ads_bill_payment";
-    const isAdminTransfer = t.source === "admin_transfer" || t.source === "admin_vault_transfer" || t.source === "admin_refund" || t.source === "admin_vault_refund" || (t.reason && /transfer|refund|vault|admin/i.test(t.reason));
-    const isPassUpgrade = t.source === "pass_upgrade" || t.category === "pass_upgrade" || Boolean(t.passName) || Boolean(t.passId);
+    const isAdminTransfer = t.source === "admin_transfer" || t.source === "admin_vault_transfer" || t.source === "admin_refund" || t.source === "admin_vault_refund" || (t.reason && /transfer|refund|vault|admin|send coins|manual/i.test(t.reason));
+    const isPassUpgrade = (t.source === "pass_upgrade" || t.category === "pass_upgrade" || Boolean(t.passName) || Boolean(t.passId)) && !isAdminTransfer;
 
     let badgeColor = "rgba(148,163,184,0.18); color:#cbd5e1; border:1px solid rgba(148,163,184,0.35);";
     let label = "Vault Transaction";
@@ -9367,7 +9368,7 @@ window.renderCurrencyInflow = function(transactions) {
     if (isAds) {
       badgeColor = "rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35);";
       label = "Ads Bill Payment";
-    } else if (isAdminTransfer || (!isPassUpgrade && !isAds)) {
+    } else if (isAdminTransfer) {
       badgeColor = isDebit
         ? "rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35);"
         : "rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35);";
@@ -9375,6 +9376,11 @@ window.renderCurrencyInflow = function(transactions) {
     } else if (isPassUpgrade) {
       badgeColor = "rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.35);";
       label = t.passName ? `Plan Upgrade (${t.passName})` : "Plan Upgrade";
+    } else {
+      badgeColor = isDebit
+        ? "rgba(59,130,246,0.18); color:#60a5fa; border:1px solid rgba(59,130,246,0.35);"
+        : "rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.35);";
+      label = t.reason || (isDebit ? "Admin Vault Transfer" : "Admin Vault Inflow");
     }
 
     const amountColor = isDebit ? "#f87171" : "#34d399";

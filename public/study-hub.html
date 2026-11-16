@@ -3966,6 +3966,70 @@
 
       overlay.style.display = "flex";
       requestAnimationFrame(() => overlay.classList.add("active"));
+
+      if (activeUid && window.DPGCoinsPasses && typeof window.DPGCoinsPasses.syncFromCloud === "function") {
+        window.DPGCoinsPasses.syncFromCloud(activeUid).then((synced) => {
+          if (synced) {
+            const ov = document.getElementById("dpgWalletModalOverlay");
+            if (ov && ov.classList.contains("active")) {
+              const grid = ov.querySelector(".dpg-wallet-tiers-grid");
+              if (grid) {
+                grid.innerHTML = `
+                  <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+                    <div>
+                      <span class="dpg-wallet-tier-cost">650 Coins</span>
+                      <div class="dpg-wallet-tier-desc">1-Day Utilities Unlimited Pass</div>
+                    </div>
+                    ${renderTierBtn('utilities_1d', 'rgba(245,158,11,0.16)', '#f59e0b')}
+                  </div>
+                  <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+                    <div>
+                      <span class="dpg-wallet-tier-cost">2,500 Coins</span>
+                      <div class="dpg-wallet-tier-desc">1-Month Blaze Access Tier</div>
+                    </div>
+                    ${renderTierBtn('utilities_blaze', 'rgba(245,158,11,0.16)', '#f59e0b')}
+                  </div>
+                  <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+                    <div>
+                      <span class="dpg-wallet-tier-cost">4,500 Coins</span>
+                      <div class="dpg-wallet-tier-desc">1-Month Pro Tier (All-in-One)</div>
+                    </div>
+                    ${renderTierBtn('utilities_pro', 'rgba(168,85,247,0.18)', '#c084fc')}
+                  </div>
+                  <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+                    <div>
+                      <span class="dpg-wallet-tier-cost">500 Coins</span>
+                      <div class="dpg-wallet-tier-desc">1-Day Full Academic Access</div>
+                    </div>
+                    ${renderTierBtn('access_1d', 'rgba(16,185,129,0.16)', '#10b981')}
+                  </div>
+                  <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+                    <div>
+                      <span class="dpg-wallet-tier-cost">10,500 Coins</span>
+                      <div class="dpg-wallet-tier-desc">15-Days Full Academic Access</div>
+                    </div>
+                    ${renderTierBtn('access_15d', 'rgba(56,189,248,0.16)', '#38bdf8')}
+                  </div>
+                  <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+                    <div>
+                      <span class="dpg-wallet-tier-cost">15,000 Coins</span>
+                      <div class="dpg-wallet-tier-desc">1-Month Go Ads Free (Native Ads)</div>
+                    </div>
+                    ${renderTierBtn('ads_free_1mo', 'rgba(236,72,153,0.16)', '#f472b6')}
+                  </div>
+                  <div class="dpg-wallet-tier-card" style="justify-content:space-between; gap:6px;">
+                    <div>
+                      <span class="dpg-wallet-tier-cost">800 Coins</span>
+                      <div class="dpg-wallet-tier-desc">₹1 Native Ads Bill Settlement</div>
+                    </div>
+                    <a href="dashboard.html" style="align-self:flex-start; background:rgba(99,102,241,0.16); border:1px solid rgba(99,102,241,0.38); color:#818cf8; padding:3px 9px; border-radius:999px; font-size:0.72rem; font-weight:700; text-decoration:none;">Pay Bill</a>
+                  </div>
+                `;
+              }
+            }
+          }
+        }).catch(() => {});
+      }
     };
 
     // Dispute / Report Unfair DPG Coins Deduction Modal

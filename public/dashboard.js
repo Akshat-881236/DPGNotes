@@ -534,7 +534,11 @@ onAuthStateChanged(auth, async (user) => {
       subTxt.innerText = "No active contributor session found. Redirecting to Sign In...";
     }
     setTimeout(() => {
-      window.location.href = "index.html?action=signin";
+      if (typeof window.redirectToLogin === "function") {
+        window.redirectToLogin(window.location.href);
+      } else {
+        window.location.replace("index.html?action=signIn&go-to=" + encodeURIComponent(window.location.href));
+      }
     }, 1200);
   }
 });

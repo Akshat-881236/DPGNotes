@@ -274,14 +274,19 @@ async function handlePostOAuthLogin(user) {
         lastLoginAt: serverTimestamp()
       }, { merge: true });
     }
-    if (!isComplete) {
-      window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
+    const fallbackDest = !isComplete ? "dashboard.html?tab=settingsTab&profileIncomplete=true" : "dashboard.html";
+    if (typeof window.handleAuthRedirect === "function") {
+      window.handleAuthRedirect(user, fallbackDest);
     } else {
-      window.location.href = "dashboard.html";
+      window.location.href = fallbackDest;
     }
   } catch(e) {
     console.error("OAuth post-login hook failed:", e);
-    window.location.href = "dashboard.html";
+    if (typeof window.handleAuthRedirect === "function") {
+      window.handleAuthRedirect(user, "dashboard.html");
+    } else {
+      window.location.href = "dashboard.html";
+    }
   }
 }
 window.loginWithGoogle = async function() {
@@ -733,10 +738,11 @@ window.handlePasswordSignIn = async function(e) {
       const userData = snap.exists() ? snap.data() : null;
       if (userData && userData.twoFactorEnabled === false) {
         const isComplete = userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
-        if (!isComplete) {
-          window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
+        const fallbackDest = !isComplete ? "dashboard.html?tab=settingsTab&profileIncomplete=true" : "dashboard.html";
+        if (typeof window.handleAuthRedirect === "function") {
+          window.handleAuthRedirect(cred.user, fallbackDest);
         } else {
-          window.location.href = "dashboard.html";
+          window.location.href = fallbackDest;
         }
         return;
       }
@@ -789,10 +795,11 @@ window.verify2FACode = async function() {
     const snap = await getDoc(userDocRef);
     const userData = snap.exists() ? snap.data() : null;
     const isComplete = userData && userData.userType && (userData.studentIdOrEmployeeId || userData.studentId);
-    if (!isComplete) {
-      window.location.href = "dashboard.html?tab=settingsTab&profileIncomplete=true";
+    const fallbackDest = !isComplete ? "dashboard.html?tab=settingsTab&profileIncomplete=true" : "dashboard.html";
+    if (typeof window.handleAuthRedirect === "function") {
+      window.handleAuthRedirect(pendingSignInUser, fallbackDest);
     } else {
-      window.location.href = "dashboard.html";
+      window.location.href = fallbackDest;
     }
   } catch(err) {
     showScriptAuthError("twoFactorErrorAlert", err.message || "Verification failed.", "twoFactorInput");
@@ -1693,10 +1700,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
   const urlParams = new URLSearchParams(window.location.search);
-  const actionParam = urlParams.get("action") || urlParams.get("auth");
+  const actionParam = (urlParams.get("action") || urlParams.get("auth") || "").toLowerCase();
+  const rawGoTo = urlParams.get("go-to") || urlParams.get("goto") || urlParams.get("redirect");
+  if (rawGoTo && typeof window.setAuthRedirectTarget === "function") {
+    window.setAuthRedirectTarget(rawGoTo);
+  }
   if (actionParam === "signin" || actionParam === "login") {
     if (!window.isContributorModeActive || !window.isContributorModeActive()) {
       setTimeout(() => { if (window.openSignInModal) window.openSignInModal(); }, 350);
+    } else if (rawGoTo && typeof window.handleAuthRedirect === "function") {
+      window.handleAuthRedirect(null, "dashboard.html");
     }
   } else if (actionParam === "signup" || actionParam === "register") {
     if (!window.isContributorModeActive || !window.isContributorModeActive()) {
