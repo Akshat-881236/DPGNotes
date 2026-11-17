@@ -2166,15 +2166,8 @@
 
           const qzSnap = await getDocs(collection(db, "quizDirectory"));
           qzSnap.forEach(qzDoc => ingestQuizDoc(qzDoc.id, qzDoc.data()));
-
-          try {
-            const groupSnap = await getDocs(collectionGroup(db, "quizzes"));
-            groupSnap.forEach(gDoc => ingestQuizDoc(gDoc.id, gDoc.data()));
-          } catch(cgErr) {
-            console.warn("Quiz collectionGroup fetch fallback notice:", cgErr);
-          }
         } catch (qzErr) {
-          console.warn("Quiz directory load warning:", qzErr);
+          console.warn("Quiz directory load notice:", qzErr);
         }
 
         // Fetch registered users for Contributors tab

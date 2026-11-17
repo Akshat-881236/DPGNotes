@@ -219,10 +219,10 @@
   function initPageVisitDeduction() {
     if (isExcludedPage()) return;
     const pagePath = window.location.pathname || "/";
-    const sessionKey = "dpg_visited_" + pagePath;
-
-    if (!sessionStorage.getItem(sessionKey)) {
-      sessionStorage.setItem(sessionKey, "true");
+    const navKey = "dpg_nav_" + pagePath + "_" + window.location.search;
+    // Strictly deduct 20 coins once per distinct navigation
+    if (!window.__dpgPageVisitDeducted) {
+      window.__dpgPageVisitDeducted = true;
       deductPolicyCoins(20, `Page Visit Scope: ${pagePath}`);
     }
   }
@@ -232,18 +232,22 @@
     if (isExcludedPage()) return;
     const p = (window.location.pathname || "").toLowerCase();
     const isPdfViewer = p.includes("dpgnotes-pdf-viewer.html");
-    const isAssignment = p.includes("assignmentsolution");
-    const isPractical = p.includes("practicalsolution");
+    const isAssignment = p.includes("assignmentsolution") && !p.includes("generate");
+    const isPractical = p.includes("practicalsolution") && !p.includes("generate");
 
     if (!isPdfViewer && !isAssignment && !isPractical) return;
 
-    const resourceType = isPdfViewer ? "PDF Resource" : (isAssignment ? "Assignment Solution" : "Practical Solution");
-    let intervalCount = 0;
+    const resourceType = isPdfViewer ? "PDF Educational Resource" : (isAssignment ? "Assignment Solution" : "Practical Solution");
+    
+    // Strict Base Entry Deduction (starts from 20 DPGCoins)
+    deductPolicyCoins(20, `Resource Reading Access: ${resourceType} Initial Viewing`);
+    showPolicyToast(`📖 ${resourceType}: -20 DPGCoins base reading fee`, "#f59e0b");
 
-    // 5-Minute Gap Timer (300,000 ms)
+    let intervalCount = 0;
+    // 5-Minute Gap Automated Timer (300,000 ms)
     setInterval(() => {
       intervalCount++;
-      // Formula: 20 base + (intervalCount * 5) coins: 5min->25, 10min->30, 15min->35...
+      // Formula: 20 base + (intervalCount * 5) coins: 5min->25, 10min->30, 15min->35, 20min->40...
       const deduction = 20 + (intervalCount * 5);
       deductPolicyCoins(deduction, `Time-Scale Reading: ${resourceType} (${intervalCount * 5} Min Milestone)`, {
         resourceType,
@@ -251,8 +255,8 @@
         intervalCount
       });
 
-      // Brief toast notification of milestone deduction
-      showPolicyToast(`⏳ Active ${resourceType} Milestone: -${deduction} DPGCoins (${intervalCount * 5} min reading)`, "#f59e0b");
+      // Toast notification of milestone deduction
+      showPolicyToast(`⏳ ${resourceType} Milestone (${intervalCount * 5} min): -${deduction} DPGCoins`, "#f59e0b");
     }, 5 * 60 * 1000);
   }
 
@@ -287,16 +291,25 @@
       }
     }
 
-    // Manual Logout / Expiring Session Interception (-2,500 DPGCoins to Admin Vault)
+    // Manual Logout / Expiring Session Interception (-2,500 DPGCoins strictly to Admin Vault)
+    const executeLogoutDeduction = () => {
+      deductPolicyCoins(2500, "Manual Logout / Session Concluded (-2,500 DPGCoins)");
+    };
+
     document.addEventListener("click", (e) => {
-      const btn = e.target.closest("#logoutBtn, .logout-btn, [data-action='logout']");
+      const btn = e.target.closest("#logoutBtn, .logout-btn, [data-action='logout'], .nav-logout-btn, button[onclick*='logout']");
       if (btn) {
-        if (!sessionStorage.getItem("dpg_logout_deducted")) {
-          sessionStorage.setItem("dpg_logout_deducted", "true");
-          deductPolicyCoins(2500, "Manual Logout / Session Concluded (-2,500 DPGCoins)");
-        }
+        executeLogoutDeduction();
       }
     }, true);
+
+    if (typeof window.logoutUser === "function") {
+      const origLogout = window.logoutUser;
+      window.logoutUser = async function(...args) {
+        executeLogoutDeduction();
+        return origLogout.apply(this, args);
+      };
+    }
   }
 
   // 10. Lightweight Toast UI for Policy Feedback
