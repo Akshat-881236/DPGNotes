@@ -19,7 +19,9 @@
   <link rel="stylesheet" href="/reader-theme.css">
   <script src="/solutions-sandbox-engine.js?v=2.1.0"></script>
   <script src="/custom-dialogs.js"></script>
+  <script src="/auth-guard.js"></script>
   <script src="/dpg-coins-passes.js"></script>
+  <script src="/dpgcoins-policy-handler.js"></script>
   <script src="/reader-theme.js"></script>
   <style>
     :root {
@@ -2243,6 +2245,9 @@
       applyAntiCheatingQuestionEngine();
       renderExamNavGrid();
       renderCurrentQuestion();
+      if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.onQuizStarted === "function") {
+        window.DPGCoinsPolicy.onQuizStarted(quizData.quizId);
+      }
       if (quizData.liveCameraProctoring !== false) {
         startLiveProctorInspection();
       }
@@ -2801,6 +2806,13 @@
         } catch(tErr) {}
       } catch (err) {
         console.error("Attempt persistence error:", err);
+      }
+      if (!isUMCAutoSubmit && window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.onQuizSubmitted === "function") {
+        try {
+          await window.DPGCoinsPolicy.onQuizSubmitted(quizData, questionsList.length);
+        } catch (policyErr) {
+          console.warn("Quiz policy reward notice:", policyErr);
+        }
       }
       if (document.fullscreenElement && document.exitFullscreen) {
         try { document.exitFullscreen(); } catch(e) {}

@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DPGCoins Recovery Center | DPGNotes</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="ANH.png">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <script src="/auth-guard.js"></script>
+  <script src="/dpgcoins-policy-handler.js"></script>
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent-primary: #6366f1;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 65%),
+                        radial-gradient(circle at 10% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+      background: rgba(7, 11, 20, 0.85);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .balance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .main-container {
+      flex: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Session Recovery Progress Banner */
+    .recovery-banner {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .recovery-banner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+    }
+
+    .recovery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .recovery-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .recovery-goal-text {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #f59e0b;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f59e0b, #10b981);
+      border-radius: 999px;
+      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .recovery-footer-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* Destination Button (Disabled until 350 coins earned) */
+    .btn-destination {
+      padding: 9px 20px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: none;
+      cursor: not-allowed;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      background: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-destination.unlocked {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.45);
+      animation: pulseGreen 2s infinite;
+      border: 1px solid rgba(16, 185, 129, 0.6);
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 18px rgba(16, 185, 129, 0.45); }
+      50% { transform: scale(1.02); box-shadow: 0 6px 24px rgba(16, 185, 129, 0.7); }
+    }
+
+    /* Quiz Card */
+    .quiz-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 22px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .quiz-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .source-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(99, 102, 241, 0.16);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+    }
+
+    .reward-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .question-prompt {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .option-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .opt-letter {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .option-btn.correct {
+      background: rgba(16, 185, 129, 0.18) !important;
+      border-color: #10b981 !important;
+      color: #34d399 !important;
+    }
+    .option-btn.correct .opt-letter {
+      background: #10b981 !important;
+      color: #fff !important;
+    }
+
+    .option-btn.wrong {
+      background: rgba(239, 68, 68, 0.18) !important;
+      border-color: #ef4444 !important;
+      color: #fca5a5 !important;
+    }
+    .option-btn.wrong .opt-letter {
+      background: #ef4444 !important;
+      color: #fff !important;
+    }
+
+    .explanation-card {
+      display: none;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .btn-next {
+      padding: 10px 24px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      margin-left: auto;
+    }
+
+    /* Warning Modal Overlay */
+    .warning-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(3, 7, 18, 0.88);
+      backdrop-filter: blur(16px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .warning-modal {
+      background: #0f172a;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 24px;
+      max-width: 520px;
+      width: 100%;
+      padding: 2.2rem;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      text-align: center;
+      position: relative;
+    }
+
+    .warning-emblem {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #ef4444;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .warning-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .warning-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 1.5rem;
+    }
+
+    .warning-stats-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-around;
+      text-align: left;
+    }
+
+    .btn-start-recovery {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    /* Multimedia & Multi-Viewport Responsive Styles */
+    img, video, iframe, embed, object {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    pre, code {
+      max-width: 100%;
+      overflow-x: auto;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    table {
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      border-collapse: collapse;
+    }
+
+    /* Tablet & Medium Screens (<= 768px) */
+    @media (max-width: 768px) {
+      header {
+        padding: 0.75rem 1rem;
+      }
+      .brand-title {
+        font-size: 1.05rem;
+      }
+      .main-container {
+        padding: 1.25rem 0.85rem;
+        gap: 1.25rem;
+      }
+      .recovery-banner {
+        padding: 1.25rem 1rem;
+      }
+      .quiz-card {
+        padding: 1.5rem 1.15rem;
+        border-radius: 18px;
+      }
+      .question-prompt {
+        font-size: 1.15rem;
+      }
+      .warning-modal {
+        padding: 1.75rem 1.5rem;
+        max-width: 90vw;
+      }
+    }
+
+    /* Mobile Phones (<= 640px) */
+    @media (max-width: 640px) {
+      header {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0.65rem 0.85rem;
+      }
+      .header-actions {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .balance-badge {
+        padding: 4px 10px;
+        font-size: 0.76rem;
+      }
+      .btn-destination {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+      }
+      .recovery-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .recovery-title {
+        font-size: 1.08rem;
+      }
+      .recovery-goal-text {
+        font-size: 0.82rem;
+      }
+      .recovery-footer-strip {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        text-align: center;
+      }
+      .recovery-footer-strip .btn-destination {
+        width: 100%;
+        justify-content: center;
+      }
+      .quiz-card {
+        padding: 1.25rem 0.95rem;
+      }
+      .question-prompt {
+        font-size: 1.08rem;
+        line-height: 1.45;
+      }
+      .option-btn {
+        padding: 0.85rem 1rem;
+        font-size: 0.9rem;
+        gap: 10px;
+      }
+      .opt-letter {
+        width: 28px;
+        height: 28px;
+        font-size: 0.78rem;
+      }
+      .action-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .btn-next {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+      }
+      .warning-modal {
+        padding: 1.5rem 1.15rem;
+        border-radius: 18px;
+      }
+      .warning-title {
+        font-size: 1.25rem;
+      }
+      .warning-desc {
+        font-size: 0.84rem;
+      }
+      .warning-stats-card {
+        padding: 0.75rem;
+      }
+      .warning-stats-card div:last-child {
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+        padding-left: 10px;
+      }
+    }
+
+    /* Small Mobile Phones (<= 400px) */
+    @media (max-width: 400px) {
+      .brand-title {
+        display: none;
+      }
+      header {
+        justify-content: space-between;
+      }
+      .main-container {
+        padding: 1rem 0.65rem;
+      }
+      .warning-stats-card {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+      }
+      .warning-stats-card div:last-child {
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-left: 0;
+        padding-top: 8px;
+      }
+    }
+
+    /* Mobile Landscape Orientation (height <= 520px) */
+    @media (max-height: 520px) and (orientation: landscape) {
+      .warning-modal-overlay {
+        align-items: flex-start;
+        padding: 0.5rem;
+        overflow-y: auto;
+      }
+      .warning-modal {
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 1rem 1.25rem;
+      }
+      .warning-emblem {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+        margin-bottom: 0.4rem;
+      }
+      .warning-title {
+        font-size: 1.15rem;
+        margin-bottom: 0.25rem;
+      }
+      .warning-desc {
+        font-size: 0.78rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+      }
+      .warning-stats-card {
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .btn-start-recovery {
+        padding: 9px;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <a href="index.html" class="brand-link">
+      <img src="ANH.png" alt="DPGNotes" class="brand-logo">
+      <span class="brand-title">DPGNotes Recovery</span>
+    </a>
+    <div class="header-actions">
+      <div class="balance-badge" id="headerBalanceBadge">
+        <i class="ri-copper-coin-fill" style="color:#ef4444;"></i>
+        <span id="currentBalText">-5,000 DPGCoins</span>
+      </div>
+      <button type="button" class="btn-destination" id="topBtnGoTo" onclick="window.goToTargetDestination()">
+        <i class="ri-lock-fill" id="topLockIcon"></i>
+        <span>Go To Destination</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-container">
+    
+    <!-- Live Session Recovery Progress Banner -->
+    <div class="recovery-banner">
+      <div class="recovery-header">
+        <div class="recovery-title">
+          <i class="ri-flashlight-fill" style="color:#f59e0b;"></i>
+          <span>Session Coins Recovery Progress</span>
+        </div>
+        <div class="recovery-goal-text">
+          <span id="sessionEarnedText">0</span> / 350 DPGCoins Earned
+        </div>
+      </div>
+      
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="recovery-footer-strip">
+        <div><i class="ri-information-line"></i> Scoring: <strong>+8 Guest</strong> &bull; <strong>+12 Contributor</strong> per correct answer</div>
+        <button type="button" class="btn-destination" id="bannerBtnGoTo" onclick="window.goToTargetDestination()">
+          <i class="ri-lock-fill" id="bannerLockIcon"></i>
+          <span id="bannerBtnLabel">Locked: Earn 350 Coins</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Question Card -->
+    <div class="quiz-card" id="quizCard">
+      <div class="quiz-meta-row">
+        <span class="source-pill" id="sourcePill"><i class="ri-brain-line"></i> Computer Science Vault</span>
+        <span class="reward-pill" id="rewardPill"><i class="ri-copper-coin-fill"></i> +12 DPGCoins</span>
+      </div>
+
+      <h2 class="question-prompt" id="questionText">Loading challenge question...</h2>
+
+      <div class="options-grid" id="optionsGrid"></div>
+
+      <div class="explanation-card" id="explanationCard">
+        <strong>Explanation:</strong> <span id="explanationText"></span>
+      </div>
+
+      <div class="action-row">
+        <div style="font-size:0.8rem; color:var(--text-muted);" id="streakText"></div>
+        <button type="button" class="btn-next" id="btnNextQuestion" onclick="window.loadNextQuestion()" style="display:none;">
+          Next Challenge <i class="ri-arrow-right-line"></i>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Warning Modal Dialog (Negative Threshold Lockdown) -->
+  <div class="warning-modal-overlay" id="warningModalOverlay">
+    <div class="warning-modal">
+      <div class="warning-emblem">
+        <i class="ri-shield-cross-fill"></i>
+      </div>
+      <h2 class="warning-title">DPGCoins Policy Lockdown</h2>
+      <p class="warning-desc">
+        Your active vault balance has breached the <strong>-5,000 DPGCoins negative threshold</strong>. Standard browsing and open-source platform access are paused until you recover coins.
+      </p>
+
+      <div class="warning-stats-card">
+        <div>
+          <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Current Balance</div>
+          <div style="font-size:1.25rem; font-weight:800; color:#f87171;" id="modalBalVal">-5,000</div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Required Recovery</div>
+          <div style="font-size:1.25rem; font-weight:800; color:#10b981;">+350 Coins</div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-start-recovery" onclick="window.closeWarningModal()">
+        <i class="ri-play-fill"></i> Start Answering Challenges
+      </button>
+
+      <button type="button" class="btn-destination" id="modalBtnGoTo" onclick="window.goToTargetDestination()" style="width:100%; justify-content:center;">
+        <i class="ri-lock-fill" id="modalLockIcon"></i>
+        <span id="modalBtnLabel">Go To Destination (Locked)</span>
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    const firebaseConfig = window.firebaseConfig;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const REQUIRED_SESSION_COINS = 350;
+    let sessionCoinsEarned = 0;
+    let streakCount = 0;
+    let hasAnsweredCurrent = false;
+
+    // Read URL Parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawGoTo = urlParams.get("go-to") || urlParams.get("goto") || "/dashboard.html";
+    const targetDestination = decodeURIComponent(rawGoTo);
+
+    const isContributorUser = Boolean(localStorage.getItem("dpgActiveUserUid"));
+    const coinsPerCorrect = isContributorUser ? 12 : 8;
+
+    // 1. Comprehensive Question Banks
+    const technicalQuestions = [
+      {
+        quizTitle: "Computer Networks Fundamentals",
+        q: "Which layer of the ISO-OSI reference model is responsible for logical host-to-host addressing and optimal path packet routing?",
+        opts: ["Data Link Layer", "Network Layer", "Transport Layer", "Session Layer"],
+        a: 1,
+        exp: "The Network Layer manages IP addressing, packet routing, and subnet management."
+      },
+      {
+        quizTitle: "Computer Networks Fundamentals",
+        q: "In transport layer communications, which protocol provides connection-oriented, reliable byte-stream transmission with congestion control?",
+        opts: ["UDP", "TCP (Transmission Control Protocol)", "ICMP", "ARP"],
+        a: 1,
+        exp: "TCP is a connection-oriented protocol that guarantees sequencing, error recovery, and flow control."
+      },
+      {
+        quizTitle: "Operating Systems Fundamentals",
+        q: "Which condition is NOT one of Coffman's four necessary conditions for a resource deadlock to occur in an operating system?",
+        opts: ["Mutual Exclusion", "Hold and Wait", "Preemptive Scheduling", "Circular Wait"],
+        a: 2,
+        exp: "The Coffman conditions are Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait."
+      },
+      {
+        quizTitle: "Operating Systems Fundamentals",
+        q: "What is the primary phenomenon where frequent page faults cause an operating system to spend more time swapping pages than executing user processes?",
+        opts: ["Segmentation", "Thrashing", "Starvation", "Aging"],
+        a: 1,
+        exp: "Thrashing occurs when memory is over-committed, causing constant page swapping that stalls the CPU."
+      },
+      {
+        quizTitle: "Relational Database Management Systems",
+        q: "In relational database theory, which normal form requires eliminating partial functional dependencies of non-prime attributes on a candidate key?",
+        opts: ["First Normal Form (1NF)", "Second Normal Form (2NF)", "Third Normal Form (3NF)", "Boyce-Codd Normal Form (BCNF)"],
+        a: 1,
+        exp: "Second Normal Form (2NF) enforces 1NF and guarantees that no non-prime attribute depends on a partial candidate key."
+      },
+      {
+        quizTitle: "Relational Database Management Systems",
+        q: "Which ACID property guarantees that committed transactions will survive unexpected hardware or power failures?",
+        opts: ["Atomicity", "Consistency", "Isolation", "Durability"],
+        a: 3,
+        exp: "Durability ensures that once a transaction commits, modifications survive crashes via non-volatile write-ahead logs."
+      },
+      {
+        quizTitle: "Data Structures & Algorithms",
+        q: "What is the worst-case time complexity of searching for an element in an unbalanced Binary Search Tree (BST)?",
+        opts: ["O(log n)", "O(n)", "O(n log n)", "O(1)"],
+        a: 1,
+        exp: "In the worst case (skewed tree), a binary search tree degenerates into a linked list with O(n) search time."
+      },
+      {
+        quizTitle: "Software Engineering & Lifecycle",
+        q: "Which software development process model places the strongest emphasis on risk analysis in every recurring cycle?",
+        opts: ["Waterfall Model", "Spiral Model", "V-Model", "Agile Kanban"],
+        a: 1,
+        exp: "The Spiral Model combines iterative prototyping with systematic risk assessment in four distinct phases per cycle."
+      }
+    ];
+
+    const arithmeticQuestions = [
+      { q: "Calculate: 144 ÷ 12 + 25 × 2", opts: ["62", "58", "64", "52"], a: 0, exp: "144 ÷ 12 = 12; 25 × 2 = 50; 12 + 50 = 62.", quizTitle: "Arithmetic Speed Vault" },
+      { q: "What is 15% of 480?", opts: ["72", "68", "76", "64"], a: 0, exp: "10% is 48; 5% is 24; 48 + 24 = 72.", quizTitle: "Arithmetic Speed Vault" },
+      { q: "Solve: (7 × 8) - (36 ÷ 4)", opts: ["47", "49", "51", "45"], a: 0, exp: "56 - 9 = 47.", quizTitle: "Arithmetic Speed Vault" },
+      { q: "What is the square of 24?", opts: ["576", "526", "586", "566"], a: 0, exp: "24 × 24 = 576.", quizTitle: "Arithmetic Speed Vault" },
+      { q: "If x + 18 = 45, what is x?", opts: ["27", "29", "25", "31"], a: 0, exp: "45 - 18 = 27.", quizTitle: "Arithmetic Speed Vault" },
+      { q: "Calculate: 2^6 - 14", opts: ["50", "48", "52", "46"], a: 0, exp: "64 - 14 = 50.", quizTitle: "Arithmetic Speed Vault" },
+      { q: "What is 3/5 of 250?", opts: ["150", "125", "175", "140"], a: 0, exp: "250 ÷ 5 = 50; 50 × 3 = 150.", quizTitle: "Arithmetic Speed Vault" },
+      { q: "Find the average of 12, 18, and 30:", opts: ["20", "18", "22", "24"], a: 0, exp: "(12 + 18 + 30) ÷ 3 = 60 ÷ 3 = 20.", quizTitle: "Arithmetic Speed Vault" }
+    ];
+
+    const contributorMcqPool = [];
+
+    // Asynchronously fetch non-code public contributor quiz questions from Firestore
+    async function loadPublicContributorQuestions() {
+      try {
+        const qSnap = await getDocs(query(collection(db, "quizzes"), limit(10)));
+        qSnap.forEach(docSnap => {
+          const qd = docSnap.data();
+          if (Array.isArray(qd.questions)) {
+            qd.questions.forEach(qItem => {
+              if (qItem.question && Array.isArray(qItem.options) && qItem.options.length === 4) {
+                // Ensure non-code conceptual questions only
+                const text = qItem.question + " " + qItem.options.join(" ");
+                if (!text.includes("```") && !text.includes("<code") && !text.includes("int main") && !text.includes("public static")) {
+                  let correctIdx = typeof qItem.correctIndex === "number" ? qItem.correctIndex : 0;
+                  contributorMcqPool.push({
+                    quizTitle: qd.title || "Contributor Public Quiz",
+                    q: qItem.question,
+                    opts: qItem.options,
+                    a: correctIdx,
+                    exp: qItem.explanation || "Verified conceptual question from academic contributor community."
+                  });
+                }
+              }
+            });
+          }
+        });
+      } catch (e) {
+        console.warn("Contributor question fetch notice:", e);
+      }
+    }
+
+    // 2. UI Updates & Recovery Metric Sync
+    function updateProgressUI() {
+      const pct = Math.min(100, Math.round((sessionCoinsEarned / REQUIRED_SESSION_COINS) * 100));
+      const fill = document.getElementById("progressFill");
+      if (fill) fill.style.width = pct + "%";
+
+      const txt = document.getElementById("sessionEarnedText");
+      if (txt) txt.textContent = sessionCoinsEarned.toLocaleString();
+
+      const bal = window.DPGCoinsPolicy ? window.DPGCoinsPolicy.getBalance() : parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
+      const balEl = document.getElementById("currentBalText");
+      if (balEl) balEl.textContent = bal.toLocaleString() + " DPGCoins";
+      const modalBal = document.getElementById("modalBalVal");
+      if (modalBal) modalBal.textContent = bal.toLocaleString();
+
+      if (sessionCoinsEarned >= REQUIRED_SESSION_COINS) {
+        unlockDestinationButtons();
+      }
+    }
+
+    function unlockDestinationButtons() {
+      ["topBtnGoTo", "bannerBtnGoTo", "modalBtnGoTo"].forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.add("unlocked");
+        }
+      });
+      const topIcon = document.getElementById("topLockIcon");
+      if (topIcon) topIcon.className = "ri-checkbox-circle-fill";
+      const bannerIcon = document.getElementById("bannerLockIcon");
+      if (bannerIcon) bannerIcon.className = "ri-checkbox-circle-fill";
+      const bannerLbl = document.getElementById("bannerBtnLabel");
+      if (bannerLbl) bannerLbl.textContent = "Go To Destination (Unlocked!)";
+      const modalIcon = document.getElementById("modalLockIcon");
+      if (modalIcon) modalIcon.className = "ri-checkbox-circle-fill";
+      const modalLbl = document.getElementById("modalBtnLabel");
+      if (modalLbl) modalLbl.textContent = "Go To Destination (Unlocked!)";
+    }
+
+    window.goToTargetDestination = function() {
+      if (sessionCoinsEarned < REQUIRED_SESSION_COINS) {
+        alert(`Destination Locked: Please earn at least ${REQUIRED_SESSION_COINS} DPGCoins in this session (Current: ${sessionCoinsEarned} Coins).`);
+        return;
+      }
+      const dest = targetDestination || "/dashboard.html";
+      if (window.location.replace) {
+        window.location.replace(dest);
+      } else {
+        window.location.href = dest;
+      }
+    };
+
+    window.closeWarningModal = function() {
+      const modal = document.getElementById("warningModalOverlay");
+      if (modal) modal.style.display = "none";
+    };
+
+    // 3. Question Loader & Scoring
+    let currentQuestion = null;
+
+    window.loadNextQuestion = function() {
+      hasAnsweredCurrent = false;
+      document.getElementById("btnNextQuestion").style.display = "none";
+      document.getElementById("explanationCard").style.display = "none";
+
+      // Select category rotation (Contributor > Technical > Arithmetic)
+      let pool = technicalQuestions;
+      const roll = Math.random();
+      if (contributorMcqPool.length > 0 && roll < 0.45) {
+        pool = contributorMcqPool;
+      } else if (roll < 0.75) {
+        pool = technicalQuestions;
+      } else {
+        pool = arithmeticQuestions;
+      }
+
+      currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+
+      document.getElementById("sourcePill").innerHTML = `<i class="ri-lightbulb-line"></i> ${currentQuestion.quizTitle || "Academic Challenge"}`;
+      document.getElementById("rewardPill").innerHTML = `<i class="ri-copper-coin-fill"></i> +${coinsPerCorrect} DPGCoins`;
+      document.getElementById("questionText").textContent = currentQuestion.q;
+      document.getElementById("explanationText").textContent = currentQuestion.exp || "No explanation provided.";
+
+      const letters = ["A", "B", "C", "D"];
+      const grid = document.getElementById("optionsGrid");
+      grid.innerHTML = currentQuestion.opts.map((opt, idx) => `
+        <button type="button" class="option-btn" data-idx="${idx}" onclick="window.chooseOption(${idx}, this)">
+          <span class="opt-letter">${letters[idx]}</span>
+          <span>${opt}</span>
+        </button>
+      `).join("");
+    };
+
+    window.chooseOption = async function(chosenIdx, btnEl) {
+      if (hasAnsweredCurrent || !currentQuestion) return;
+      hasAnsweredCurrent = true;
+
+      const isCorrect = chosenIdx === currentQuestion.a;
+      const allBtns = document.querySelectorAll(".option-btn");
+      allBtns.forEach(b => b.disabled = true);
+
+      if (isCorrect) {
+        btnEl.classList.add("correct");
+        streakCount++;
+        sessionCoinsEarned += coinsPerCorrect;
+
+        // Credit to Vault via DPGCoinsPolicy
+        if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.awardPolicyCoins === "function") {
+          await window.DPGCoinsPolicy.awardPolicyCoins(coinsPerCorrect, "Recovery Center Challenge Correct Answer", "recovery_earn");
+        } else {
+          const cur = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
+          localStorage.setItem("dpg_user_coins_balance", String(cur + coinsPerCorrect));
+        }
+
+        updateProgressUI();
+        document.getElementById("streakText").textContent = streakCount > 1 ? `🔥 Streak: ${streakCount} in a row!` : "";
+      } else {
+        btnEl.classList.add("wrong");
+        streakCount = 0;
+        document.getElementById("streakText").textContent = "";
+        // Highlight correct option
+        allBtns.forEach(b => {
+          if (parseInt(b.getAttribute("data-idx"), 10) === currentQuestion.a) {
+            b.classList.add("correct");
+          }
+        });
+      }
+
+      document.getElementById("explanationCard").style.display = "block";
+      document.getElementById("btnNextQuestion").style.display = "inline-flex";
+
+      if (sessionCoinsEarned >= REQUIRED_SESSION_COINS) {
+        unlockDestinationButtons();
+      }
+    };
+
+    // Initial Setup
+    document.addEventListener("DOMContentLoaded", async () => {
+      updateProgressUI();
+      window.loadNextQuestion();
+      await loadPublicContributorQuestions();
+    });
+  </script>
+</body>
+</html>
