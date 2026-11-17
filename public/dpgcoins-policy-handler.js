@@ -130,6 +130,7 @@
   // 4. Negative Threshold (-5,000 DPGCoins) Lockdown Redirection
   function checkNegativeThreshold(currentBal) {
     if (isExcludedPage()) return;
+    if (sessionStorage.getItem("dpg_recovery_cleared") === "true") return;
     const bal = currentBal !== undefined ? currentBal : getBalance();
 
     if (bal < NEGATIVE_THRESHOLD) {

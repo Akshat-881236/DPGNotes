@@ -719,6 +719,9 @@
   <!-- Warning Modal Dialog (Negative Threshold Lockdown) -->
   <div class="warning-modal-overlay" id="warningModalOverlay">
     <div class="warning-modal">
+      <button type="button" class="modal-close-icon" onclick="window.closeWarningModal()" aria-label="Close" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; width:34px; height:34px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; font-size:1.25rem; cursor:pointer;">
+        <i class="ri-close-line"></i>
+      </button>
       <div class="warning-emblem">
         <i class="ri-shield-cross-fill"></i>
       </div>
@@ -749,12 +752,38 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+  <script>
+    // Immediate fallback bindings so inline clicks never throw before modules finish
+    window.closeWarningModal = function() {
+      const modal = document.getElementById("warningModalOverlay");
+      if (modal) modal.style.display = "none";
+    };
+    window.goToTargetDestination = window.goToTargetDestination || function() {
+      alert("Destination Locked: Please earn at least 350 DPGCoins in this session.");
+    };
+  </script>
 
-    const firebaseConfig = window.firebaseConfig;
-    const app = initializeApp(firebaseConfig);
+  <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+    import { firebaseConfig as importedConfig } from "/firebase-config.js";
+
+    const firebaseConfig = importedConfig || window.firebaseConfig || {
+      apiKey: "AIzaSyClhxuoGf7ELHD0srUBUPyQM6_CvYNafIE",
+      authDomain: "dpgnotes.firebaseapp.com",
+      projectId: "dpgnotes",
+      storageBucket: "dpgnotes.firebasestorage.app",
+      messagingSenderId: "910494426039",
+      appId: "1:910494426039:web:adeae5315caaf846c43e32"
+    };
+
+    let app;
+    try {
+      const existing = getApps();
+      app = existing.find(a => a.name === "dpgnotes") || (!existing.length ? initializeApp(firebaseConfig, "dpgnotes") : existing[0]);
+    } catch (_) {
+      app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    }
     const db = getFirestore(app);
 
     const REQUIRED_SESSION_COINS = 350;
@@ -846,22 +875,26 @@
     // Asynchronously fetch non-code public contributor quiz questions from Firestore
     async function loadPublicContributorQuestions() {
       try {
-        const qSnap = await getDocs(query(collection(db, "quizzes"), limit(10)));
+        const qSnap = await getDocs(query(collection(db, "quizDirectory"), limit(20)));
         qSnap.forEach(docSnap => {
           const qd = docSnap.data();
           if (Array.isArray(qd.questions)) {
             qd.questions.forEach(qItem => {
               if (qItem.question && Array.isArray(qItem.options) && qItem.options.length === 4) {
                 // Ensure non-code conceptual questions only
-                const text = qItem.question + " " + qItem.options.join(" ");
-                if (!text.includes("```") && !text.includes("<code") && !text.includes("int main") && !text.includes("public static")) {
+                const text = (qItem.question + " " + qItem.options.join(" ")).toLowerCase();
+                const hasCode = text.includes("```") || text.includes("<code") ||
+                                text.includes("int main") || text.includes("public static") ||
+                                text.includes("#include") || text.includes("console.log") ||
+                                text.includes("function") || text.includes("def ") || text.includes("void ");
+                if (!hasCode) {
                   let correctIdx = typeof qItem.correctIndex === "number" ? qItem.correctIndex : 0;
                   contributorMcqPool.push({
-                    quizTitle: qd.title || "Contributor Public Quiz",
+                    quizTitle: qd.title || "Academic Community Quiz",
                     q: qItem.question,
                     opts: qItem.options,
                     a: correctIdx,
-                    exp: qItem.explanation || "Verified conceptual question from academic contributor community."
+                    exp: qItem.explanation || "Verified conceptual question from contributor community."
                   });
                 }
               }
@@ -918,6 +951,7 @@
         alert(`Destination Locked: Please earn at least ${REQUIRED_SESSION_COINS} DPGCoins in this session (Current: ${sessionCoinsEarned} Coins).`);
         return;
       }
+      sessionStorage.setItem("dpg_recovery_cleared", "true");
       const dest = targetDestination || "/dashboard.html";
       if (window.location.replace) {
         window.location.replace(dest);
