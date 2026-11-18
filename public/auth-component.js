@@ -949,6 +949,9 @@ async function completeAuthSuccess(user) {
     displayName: user.displayName || user.email.split('@')[0]
   }));
   allowAuthUnlock();
+  if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
+    try { window.DPGCoinsPolicy.recordSignInReward(user.uid); } catch (_) {}
+  }
   window.closeAuthModals(true);
   const lockStyle = document.getElementById("quotaLockOverrideStyle");
   if (lockStyle) lockStyle.remove();
@@ -1367,6 +1370,9 @@ window.activateVerifiedContributor = async function(customToken, data) {
   }
   window._pendingSignup = null;
   allowAuthUnlock();
+  if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
+    try { window.DPGCoinsPolicy.recordSignInReward(user.uid); } catch (_) {}
+  }
   window.closeAuthModals(true);
   const postSignupTarget = sessionStorage.getItem("dpg_auth_redirect") || "dashboard.html?verified=1#settings";
   try { sessionStorage.removeItem("dpg_auth_redirect"); } catch (_) {}

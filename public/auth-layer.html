@@ -835,6 +835,9 @@
           universityName: uData ? (uData.universityName || "") : ""
         }));
         localStorage.removeItem("dpg_quota_locked");
+        if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
+          try { await window.DPGCoinsPolicy.recordSignInReward(user.uid); } catch (_) {}
+        }
         showAlert("Authentication successful! Redirecting to workspace...", "success");
         setTimeout(() => {
           window.location.replace(safeTarget);
@@ -883,6 +886,9 @@
           universityName: uData ? (uData.universityName || "") : ""
         }));
         localStorage.removeItem("dpg_quota_locked");
+        if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
+          try { await window.DPGCoinsPolicy.recordSignInReward(user.uid); } catch (_) {}
+        }
         showAlert("Welcome back! Loading authoring workspace...", "success");
         setTimeout(() => {
           window.location.replace(safeTarget);

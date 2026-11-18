@@ -127,20 +127,271 @@
     return clean;
   }
 
+  // ==========================================================================
+  // INDEXEDDB SUBSYSTEMS (dpg_policy_db & dpg_device_db)
+  // ==========================================================================
+
+  // 1. Visit Logs DB (4-Hour nominal 20-coin visit deduction interval)
+  function openPolicyDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) return resolve(null);
+      const req = indexedDB.open("dpg_policy_db", 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("resource_visit_logs")) {
+          db.createObjectStore("resource_visit_logs", { keyPath: "url" });
+        }
+      };
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = () => resolve(null);
+    });
+  }
+
+  async function checkAndLogNominalVisit(urlKey) {
+    const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+    const db = await openPolicyDB();
+    if (!db) {
+      // LocalStorage fallback if IndexedDB is unavailable
+      try {
+        const stored = localStorage.getItem("dpg_visit_" + urlKey);
+        const now = Date.now();
+        if (stored && (now - parseInt(stored, 10) < FOUR_HOURS_MS)) {
+          return false;
+        }
+        localStorage.setItem("dpg_visit_" + urlKey, String(now));
+      } catch (_) {}
+      return true;
+    }
+
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction("resource_visit_logs", "readwrite");
+        const store = tx.objectStore("resource_visit_logs");
+        const getReq = store.get(urlKey);
+        getReq.onsuccess = () => {
+          const record = getReq.result;
+          const now = Date.now();
+          if (record && record.timestamp && (now - record.timestamp < FOUR_HOURS_MS)) {
+            resolve(false); // Visited within past 4 hours, bypass 20-coin deduction
+          } else {
+            store.put({ url: urlKey, timestamp: now });
+            resolve(true); // First visit or 4-hour window passed, proceed to deduct
+          }
+        };
+        getReq.onerror = () => resolve(true);
+      } catch (_) {
+        resolve(true);
+      }
+    });
+  }
+
+  // 2. Device Management DB (Session Key Storage & Multi-Device Validation)
+  function openDeviceDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) return resolve(null);
+      const req = indexedDB.open("dpg_device_db", 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("session_store")) {
+          db.createObjectStore("session_store", { keyPath: "key" });
+        }
+      };
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = () => resolve(null);
+    });
+  }
+
+  async function getStoredDeviceSession() {
+    const db = await openDeviceDB();
+    if (!db) {
+      try {
+        const raw = localStorage.getItem("dpg_device_session");
+        return raw ? JSON.parse(raw) : null;
+      } catch (_) { return null; }
+    }
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction("session_store", "readonly");
+        const store = tx.objectStore("session_store");
+        const req = store.get("current_session");
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      } catch (_) {
+        resolve(null);
+      }
+    });
+  }
+
+  async function saveDeviceSession(sessionData) {
+    const db = await openDeviceDB();
+    try {
+      localStorage.setItem("dpg_device_session", JSON.stringify(sessionData));
+    } catch (_) {}
+    if (!db) return;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction("session_store", "readwrite");
+        const store = tx.objectStore("session_store");
+        store.put({ key: "current_session", ...sessionData });
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      } catch (_) {
+        resolve(false);
+      }
+    });
+  }
+
+  async function clearStoredDeviceSession() {
+    try {
+      localStorage.removeItem("dpg_device_session");
+    } catch (_) {}
+    const db = await openDeviceDB();
+    if (!db) return;
+    try {
+      const tx = db.transaction("session_store", "readwrite");
+      tx.objectStore("session_store").delete("current_session");
+    } catch (_) {}
+  }
+
+  function getClientDeviceInfo() {
+    let deviceId = localStorage.getItem("dpg_device_id");
+    if (!deviceId) {
+      deviceId = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 9);
+      try { localStorage.setItem("dpg_device_id", deviceId); } catch (_) {}
+    }
+
+    const ua = navigator.userAgent || "";
+    let type = "Desktop";
+    if (/tablet|ipad|playbook|silk/i.test(ua)) {
+      type = "Tablet";
+    } else if (/mobile|iphone|ipod|android|blackberry|iemobile|kindle/i.test(ua)) {
+      type = "Mobile";
+    }
+
+    let os = "Unknown OS";
+    if (/windows/i.test(ua)) os = "Windows PC";
+    else if (/macintosh|mac os x/i.test(ua)) os = "macOS";
+    else if (/android/i.test(ua)) os = "Android";
+    else if (/iphone|ipad|ipod/i.test(ua)) os = "iOS";
+    else if (/linux/i.test(ua)) os = "Linux";
+
+    let browser = "Browser";
+    if (/chrome|crios/i.test(ua) && !/edge|opr\//i.test(ua)) browser = "Chrome";
+    else if (/firefox|fxios/i.test(ua)) browser = "Firefox";
+    else if (/safari/i.test(ua)) browser = "Safari";
+    else if (/edge|edg/i.test(ua)) browser = "Edge";
+    else if (/opr\//i.test(ua)) browser = "Opera";
+
+    const deviceName = `${os} (${browser})`;
+    const geoLocation = Intl.DateTimeFormat().resolvedOptions().timeZone || "India";
+
+    return { deviceId, deviceName, type, geoLocation };
+  }
+
+  async function registerCurrentDeviceSession(uid) {
+    if (!uid) return;
+    const { deviceId, deviceName, type, geoLocation } = getClientDeviceInfo();
+    const sessionId = "ses_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 10);
+
+    try {
+      const res = await fetch(`${getApiBase()}/api/devices/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid,
+          deviceId,
+          deviceName,
+          type,
+          geoLocation,
+          sessionId
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        await saveDeviceSession({
+          uid,
+          deviceId,
+          sessionId: data.sessionId || sessionId,
+          timestamp: Date.now()
+        });
+        return { success: true, deviceId, sessionId: data.sessionId || sessionId };
+      }
+    } catch (err) {
+      console.warn("[DPGNotes Device Manager] Device register notice:", err.message);
+    }
+    return { success: false };
+  }
+
+  async function validateActiveDeviceSession() {
+    const uid = getEffectiveUid();
+    if (!uid) return;
+
+    const session = await getStoredDeviceSession();
+    if (!session || !session.sessionId || session.uid !== uid) {
+      // If no session stored yet for logged-in user, auto-register this current device
+      await registerCurrentDeviceSession(uid);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${getApiBase()}/api/devices/validate-session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid,
+          deviceId: session.deviceId,
+          sessionId: session.sessionId
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data && data.valid === false) {
+        console.warn("[DPGNotes Device Manager] Device session revoked from another device. Purging session...");
+        await clearStoredDeviceSession();
+        localStorage.removeItem("dpgActiveUserUid");
+        localStorage.removeItem("dpgActiveUser");
+        sessionStorage.clear();
+        alert("Your session on this device has been revoked from another device. Please sign in again.");
+        window.location.replace("/index.html?action=signIn");
+      }
+    } catch (err) {
+      console.warn("[DPGNotes Device Manager] Validation heartbeat notice:", err.message);
+    }
+  }
+
   // 4. Negative Threshold (-5,000 DPGCoins) Lockdown Redirection
-  function checkNegativeThreshold(currentBal) {
+  async function checkNegativeThreshold(currentBal) {
     if (isExcludedPage()) return;
     if (sessionStorage.getItem("dpg_recovery_cleared") === "true") return;
     const bal = currentBal !== undefined ? currentBal : getBalance();
 
     if (bal < NEGATIVE_THRESHOLD) {
+      if (window.__dpgRedirectingToRecovery) return;
+      window.__dpgRedirectingToRecovery = true;
       console.warn(`[DPGCoins Policy] Negative threshold breached (${bal} < ${NEGATIVE_THRESHOLD}). Redirecting to Recovery Center...`);
-      const sessionId = "ses_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 7);
+      
       const uid = getEffectiveUid();
       const guestId = getGuestId();
+      let sessionId = "rec_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 8);
+      
+      try {
+        const resp = await fetch(`${getApiBase()}/api/coins/create-recovery-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uid: uid || null,
+            guestId: uid ? null : guestId,
+            sessionId: sessionId
+          })
+        });
+        const d = await resp.json().catch(() => ({}));
+        if (d && d.sessionId) sessionId = d.sessionId;
+      } catch (e) {
+        console.warn("[DPGCoins Policy] Recovery session creation notice:", e);
+      }
+
       const idParam = uid ? `contributor-id=${encodeURIComponent(uid)}` : `guest-id=${encodeURIComponent(guestId)}`;
       const destination = window.location.pathname + window.location.search + window.location.hash;
-      const targetUrl = `/earnCoin.html?session-id=${sessionId}&${idParam}&go-to=${encodeURIComponent(destination)}`;
+      const targetUrl = `/earnCoin.html?session-id=${encodeURIComponent(sessionId)}&${idParam}&go-to=${encodeURIComponent(destination)}`;
       
       if (window.location.replace) {
         window.location.replace(targetUrl);
@@ -216,15 +467,21 @@
     return { success: true, balance: newBal };
   }
 
-  // 6. Automated Page Visit Deduction (-20 DPGCoins)
-  function initPageVisitDeduction() {
+  // 6. Automated Page Visit Deduction (-20 DPGCoins tracked via IndexedDB 4-Hour interval)
+  async function initPageVisitDeduction() {
     if (isExcludedPage()) return;
     const pagePath = window.location.pathname || "/";
-    const navKey = "dpg_nav_" + pagePath + "_" + window.location.search;
-    // Strictly deduct 20 coins once per distinct navigation
+    const urlKey = pagePath + (window.location.search || "");
+    
+    // Deduct only once per navigation and only if 4 hours have elapsed for this resource
     if (!window.__dpgPageVisitDeducted) {
       window.__dpgPageVisitDeducted = true;
-      deductPolicyCoins(20, `Page Visit Scope: ${pagePath}`);
+      const shouldDeduct = await checkAndLogNominalVisit(urlKey);
+      if (shouldDeduct) {
+        deductPolicyCoins(20, `Page Visit Scope (4h Interval): ${pagePath}`);
+      } else {
+        console.log(`[DPGCoins Policy] 20-coin visit fee bypassed (Visited within 4 hours: ${urlKey})`);
+      }
     }
   }
 
@@ -262,15 +519,12 @@
   }
 
   // 8. Quiz Attempt Reward Formula Calculation
-  // Base 30 DPGCoins for <= 10 questions. Scaled by 5-question pairs after first 10 questions:
-  // 1-10 Qs: 30 Coins | 11-15: 45 | 16-20: 65 | 21-25: 90 | 26-30: 120 | 31+: +30 per 5 Qs
   function calculateQuizReward(questionCount) {
     const q = Math.max(1, parseInt(questionCount, 10) || 10);
     if (q <= 10) return 30;
 
     const extra = q - 10;
     const brackets = Math.ceil(extra / 5);
-    // Cumulative brackets: +15, +20, +25, +30...
     let total = 30;
     for (let i = 1; i <= brackets; i++) {
       total += (10 + (i * 5));
@@ -278,23 +532,17 @@
     return total;
   }
 
-  // 9. Sign-In & Logout / Session Expiry Interceptors
+  // 9. Sign-In & Logout Interceptors
   function initAuthLifecycleInterceptors() {
-    const uid = getEffectiveUid();
+    // Validate active device session heartbeat
+    validateActiveDeviceSession().catch(() => {});
 
-    // Sign In Award (+1,000 DPGCoins once per authenticated session)
-    if (uid) {
-      const signinSessionKey = "dpg_signin_reward_" + uid;
-      if (!sessionStorage.getItem(signinSessionKey)) {
-        sessionStorage.setItem(signinSessionKey, "true");
-        awardPolicyCoins(1000, "Daily Authenticated Contributor Sign-In Bonus (+1,000 DPGCoins)", "signin_bonus");
-        showPolicyToast("🪙 Welcome Back! +1,000 DPGCoins credited to your vault.", "#10b981");
-      }
-    }
-
-    // Manual Logout / Expiring Session Interception (-2,500 DPGCoins strictly to Admin Vault)
+    // Manual Logout / Explicit Session Termination (-1,500 DPGCoins strictly to Admin Vault)
+    // Automated session expiry NEVER triggers this deduction.
     const executeLogoutDeduction = () => {
-      deductPolicyCoins(2500, "Manual Logout / Session Concluded (-2,500 DPGCoins)");
+      if (sessionStorage.getItem("dpg_logout_deducted")) return;
+      sessionStorage.setItem("dpg_logout_deducted", "true");
+      deductPolicyCoins(1500, "Manual Logout Action (-1,500 DPGCoins)");
     };
 
     document.addEventListener("click", (e) => {
@@ -353,7 +601,7 @@
     // 2. Check negative threshold lockdown
     checkNegativeThreshold(currentBal);
 
-    // 3. Page Visit deduction
+    // 3. Page Visit deduction (4-hour interval tracked via IndexedDB)
     initPageVisitDeduction();
 
     // 4. Time-spent deduction for resources/solutions
@@ -375,6 +623,28 @@
     deductPolicyCoins,
     awardPolicyCoins,
     calculateQuizReward,
+    // Explicit Sign-In action reward (+1,000 DPGCoins) & device session registration
+    recordSignInReward: async function(uid) {
+      const targetUid = uid || getEffectiveUid();
+      if (!targetUid) return;
+      const key = "dpg_signin_awarded_" + targetUid + "_" + new Date().toDateString();
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "true");
+      await awardPolicyCoins(1000, "Contributor Sign-In Bonus (+1,000 DPGCoins)", "signin_bonus");
+      showPolicyToast("🪙 Welcome! +1,000 DPGCoins credited to your vault on Sign-In.", "#10b981");
+      await registerCurrentDeviceSession(targetUid);
+    },
+    // Explicit manual logout execution (-1,500 DPGCoins)
+    executeLogoutDeduction: function() {
+      if (sessionStorage.getItem("dpg_logout_deducted")) return;
+      sessionStorage.setItem("dpg_logout_deducted", "true");
+      deductPolicyCoins(1500, "Manual Logout Action (-1,500 DPGCoins)");
+    },
+    getClientDeviceInfo,
+    registerCurrentDeviceSession,
+    validateActiveDeviceSession,
+    getStoredDeviceSession,
+    clearStoredDeviceSession,
     onQuizStarted: function(quizId) {
       sessionStorage.setItem("dpg_active_quiz_id", String(quizId || ""));
       sessionStorage.setItem("dpg_active_quiz_start", String(Date.now()));

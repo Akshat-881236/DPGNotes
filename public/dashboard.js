@@ -175,6 +175,10 @@ tabBtns.forEach(btn => {
       loadContributorManageResources();
     } else if (btn.dataset.target === "passwordVaultTab") {
       loadPasswordVaultData();
+    } else if (btn.dataset.target === "manageDevicesTab") {
+      loadManageDevicesData();
+    } else if (btn.dataset.target === "manageCoinsTab") {
+      loadManageCoinsData();
     } else if (btn.dataset.target === "ytVideosTab") {
       loadYtVideosData();
     } else if (btn.dataset.target === "uploadAdsTab") {
@@ -545,6 +549,9 @@ onAuthStateChanged(auth, async (user) => {
 const logoutBtn = document.getElementById("logoutBtn");
 if(logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
+    if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.executeLogoutDeduction === "function") {
+      try { window.DPGCoinsPolicy.executeLogoutDeduction(); } catch (_) {}
+    }
     localStorage.removeItem("dpgActiveUserUid");
     localStorage.removeItem("dpgActiveUserEmail");
     localStorage.removeItem("dpgActiveUserName");
@@ -2755,6 +2762,332 @@ window.removeVaultPasswordMakePublic = async function(id, type, title) {
       await window.customAlert("Failed to remove password: " + err.message, { title: "Error", isDanger: true });
     } else {
       alert("Failed to remove password: " + err.message);
+    }
+  }
+};
+
+// ============================================================================
+// MANAGE DEVICES SUB-SYSTEM
+// ============================================================================
+async function loadManageDevicesData() {
+  const tbody = document.getElementById("devicesTableBody");
+  if (!tbody) return;
+  const uid = currentUser?.uid || localStorage.getItem("dpgActiveUserUid");
+  if (!uid) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">Please sign in to view active devices.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">
+        <i class="ri-loader-4-line" style="font-size:1.5rem; display:inline-block; animation:spin 1s linear infinite;"></i>
+        <div style="margin-top:6px;">Retrieving registered workstation sessions...</div>
+      </td>
+    </tr>
+  `;
+
+  try {
+    const apiBase = (typeof getApiBase === "function") ? getApiBase() : (window.location.hostname.includes("localhost") ? "http://localhost:5000" : "https://dpgnotes.onrender.com");
+    const res = await fetch(`${apiBase}/api/devices/list?uid=${encodeURIComponent(uid)}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed fetching devices list.");
+    }
+
+    const currentDeviceId = localStorage.getItem("dpg_device_id");
+    const devices = data.devices || [];
+
+    if (devices.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">
+            No connected devices recorded yet. Your current device will be registered automatically.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = devices.map(dev => {
+      const isCurrent = dev.deviceId === currentDeviceId;
+      const isRevoked = dev.status === "revoked";
+
+      let iconClass = "ri-computer-line";
+      if ((dev.type || "").toLowerCase() === "mobile") iconClass = "ri-smartphone-line";
+      else if ((dev.type || "").toLowerCase() === "tablet") iconClass = "ri-tablet-line";
+
+      let actionHtml = "";
+      if (isCurrent) {
+        actionHtml = `<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; font-weight:700; font-size:0.75rem;"><i class="ri-checkbox-circle-fill"></i> Current Device</span>`;
+      } else if (isRevoked) {
+        actionHtml = `<span style="padding:3px 8px; border-radius:999px; background:rgba(255,255,255,0.06); color:#94a3b8; font-size:0.75rem;">Logged Out</span>`;
+      } else {
+        actionHtml = `
+          <button type="button" onclick="revokeDeviceSession('${escapeHtml(dev.deviceId)}')" style="padding:5px 12px; border-radius:8px; background:rgba(239,68,68,0.14); border:1px solid rgba(239,68,68,0.35); color:#f87171; font-size:0.78rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:background 0.2s ease;">
+            <i class="ri-logout-box-r-line"></i> Log Out
+          </button>
+        `;
+      }
+
+      return `
+        <tr style="border-bottom:1px solid var(--border); transition:background 0.15s ease;">
+          <td style="padding:14px 18px; color:white; font-weight:600; display:flex; align-items:center; gap:8px;">
+            <i class="${iconClass}" style="color:var(--primary-light,#818cf8); font-size:1.15rem;"></i>
+            <span>${escapeHtml(dev.deviceName || "Workstation")}</span>
+          </td>
+          <td style="padding:14px 18px;">
+            <span style="padding:3px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:#cbd5e1; font-size:0.75rem; font-weight:600;">
+              ${escapeHtml(dev.type || "Desktop")}
+            </span>
+          </td>
+          <td style="padding:14px 18px; color:#cbd5e1;">${escapeHtml(dev.geoLocation || "India")}</td>
+          <td style="padding:14px 18px; color:#94a3b8; font-family:monospace; font-size:0.82rem;">${escapeHtml(dev.ipAddress || "127.0.0.1")}</td>
+          <td style="padding:14px 18px; color:#94a3b8; font-size:0.8rem;">${escapeHtml(dev.createdAtFormatted || "Recently")}</td>
+          <td style="padding:14px 18px; text-align:right;">${actionHtml}</td>
+        </tr>
+      `;
+    }).join("");
+  } catch (err) {
+    console.error("loadManageDevicesData error:", err);
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:#ef4444;">Failed to load devices: ${err.message}</td></tr>`;
+  }
+}
+window.loadManageDevicesData = loadManageDevicesData;
+
+window.revokeDeviceSession = async function(targetDeviceId) {
+  const uid = currentUser?.uid || localStorage.getItem("dpgActiveUserUid");
+  const currentDeviceId = localStorage.getItem("dpg_device_id");
+
+  if (!uid || !targetDeviceId) return;
+  if (targetDeviceId === currentDeviceId) {
+    alert("You cannot revoke your current active device session from this action.");
+    return;
+  }
+
+  const confirmed = confirm("Are you sure you want to log out of this previous device? Its access will be terminated immediately.");
+  if (!confirmed) return;
+
+  try {
+    const apiBase = (typeof getApiBase === "function") ? getApiBase() : (window.location.hostname.includes("localhost") ? "http://localhost:5000" : "https://dpgnotes.onrender.com");
+    const res = await fetch(`${apiBase}/api/devices/revoke`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid,
+        targetDeviceId,
+        currentDeviceId
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed revoking device session.");
+    }
+
+    if (window.showPolicyToast) {
+      window.showPolicyToast("Device session terminated successfully.", "#10b981");
+    } else {
+      alert("Device session terminated successfully.");
+    }
+    loadManageDevicesData();
+  } catch (err) {
+    console.error("revokeDeviceSession error:", err);
+    alert("Failed to log out device: " + err.message);
+  }
+};
+
+// ============================================================================
+// MANAGE DPGCOINS & P2P TRANSFER SUB-SYSTEM
+// ============================================================================
+let currentContributorVaultCoins = 0;
+
+async function loadManageCoinsData() {
+  const balDisplay = document.getElementById("manageVaultBalanceDisplay");
+  const badgeEl = document.getElementById("transferEligibilityBadge");
+  const tbody = document.getElementById("coinsHistoryTableBody");
+  const btnP2P = document.getElementById("btnSubmitP2P");
+
+  const uid = currentUser?.uid || localStorage.getItem("dpgActiveUserUid");
+  if (!uid) return;
+
+  // 1. Fetch live balance from user document
+  try {
+    const userDocSnap = await getDoc(doc(db, "users", uid));
+    if (userDocSnap.exists()) {
+      const uData = userDocSnap.data() || {};
+      currentContributorVaultCoins = typeof uData.dpgCoins === 'number' ? uData.dpgCoins : 0;
+    } else {
+      currentContributorVaultCoins = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
+    }
+  } catch (_) {
+    currentContributorVaultCoins = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
+  }
+
+  if (balDisplay) {
+    balDisplay.innerHTML = `${currentContributorVaultCoins.toLocaleString()} <span style="font-size:1.1rem; color:var(--text-muted); font-weight:600;">Coins</span>`;
+    if (currentContributorVaultCoins < 0) balDisplay.style.color = "#f87171";
+    else balDisplay.style.color = "#fbbf24";
+  }
+
+  // Check P2P Eligibility: min balance 3,000 DPGCoins
+  if (badgeEl) {
+    if (currentContributorVaultCoins >= 3000) {
+      const maxTransfer = Math.floor(currentContributorVaultCoins * 0.5);
+      badgeEl.innerHTML = `<i class="ri-checkbox-circle-fill" style="color:#10b981;"></i> Eligible for P2P Exchange (Max: ${maxTransfer.toLocaleString()} Coins)`;
+      badgeEl.style.background = "rgba(16,185,129,0.12)";
+      badgeEl.style.color = "#34d399";
+      if (btnP2P) btnP2P.disabled = false;
+    } else {
+      badgeEl.innerHTML = `<i class="ri-lock-line" style="color:#f87171;"></i> Transfer Locked (Requires ≥ 3,000 DPGCoins)`;
+      badgeEl.style.background = "rgba(239,68,68,0.12)";
+      badgeEl.style.color = "#fca5a5";
+    }
+  }
+
+  // 2. Fetch Transaction History
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">
+          <i class="ri-loader-4-line" style="font-size:1.5rem; display:inline-block; animation:spin 1s linear infinite;"></i>
+          <div style="margin-top:6px;">Loading ledger transaction records...</div>
+        </td>
+      </tr>
+    `;
+
+    try {
+      const apiBase = (typeof getApiBase === "function") ? getApiBase() : (window.location.hostname.includes("localhost") ? "http://localhost:5000" : "https://dpgnotes.onrender.com");
+      const res = await fetch(`${apiBase}/api/coins/history?uid=${encodeURIComponent(uid)}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed fetching coin transactions.");
+      }
+
+      const txs = data.transactions || [];
+      if (txs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">
+              No transactions recorded in your vault yet.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = txs.map(tx => {
+        const isCredit = (tx.type || "").toUpperCase() === "CREDIT";
+        const typeBadge = isCredit
+          ? `<span style="padding:3px 9px; border-radius:999px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#34d399; font-weight:700; font-size:0.75rem;">Credit</span>`
+          : `<span style="padding:3px 9px; border-radius:999px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; font-weight:700; font-size:0.75rem;">Debit</span>`;
+
+        const amountFormatted = isCredit
+          ? `<span style="color:#34d399; font-weight:700;">+${tx.amount.toLocaleString()} Coins</span>`
+          : `<span style="color:#f87171; font-weight:700;">-${tx.amount.toLocaleString()} Coins</span>`;
+
+        const prevBalText = tx.previousBalance !== null ? `${tx.previousBalance.toLocaleString()} Coins` : "-";
+        const curBalText = tx.currentBalance !== null ? `${tx.currentBalance.toLocaleString()} Coins` : "-";
+
+        return `
+          <tr style="border-bottom:1px solid var(--border); transition:background 0.15s ease;">
+            <td style="padding:14px 18px; color:white; font-weight:500;">
+              ${escapeHtml(tx.particulars || "DPGNotes Transaction")}
+            </td>
+            <td style="padding:14px 18px;">${typeBadge}</td>
+            <td style="padding:14px 18px;">${amountFormatted}</td>
+            <td style="padding:14px 18px; color:#cbd5e1; font-family:monospace;">${prevBalText}</td>
+            <td style="padding:14px 18px; color:#cbd5e1; font-family:monospace; font-weight:600;">${curBalText}</td>
+            <td style="padding:14px 18px; color:#94a3b8; font-size:0.8rem; text-align:right;">${escapeHtml(tx.formattedDate || "Recently")}</td>
+          </tr>
+        `;
+      }).join("");
+    } catch (err) {
+      console.error("loadManageCoinsData history error:", err);
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:#ef4444;">Failed to load transaction history: ${err.message}</td></tr>`;
+    }
+  }
+}
+window.loadManageCoinsData = loadManageCoinsData;
+
+window.setP2PMaxAmount = function() {
+  const amtInput = document.getElementById("p2pAmountInput");
+  if (!amtInput) return;
+  const maxAllowed = Math.floor(currentContributorVaultCoins * 0.5);
+  amtInput.value = Math.max(500, maxAllowed);
+};
+
+window.handleP2PTransferSubmit = async function(event) {
+  if (event && event.preventDefault) event.preventDefault();
+
+  const uid = currentUser?.uid || localStorage.getItem("dpgActiveUserUid");
+  if (!uid) return;
+
+  if (currentContributorVaultCoins < 3000) {
+    alert(`Insufficient balance for P2P transfer. A minimum vault balance of 3,000 DPGCoins is required (Current: ${currentContributorVaultCoins.toLocaleString()} Coins).`);
+    return;
+  }
+
+  const recipient = (document.getElementById("p2pRecipientInput")?.value || "").trim();
+  const amount = parseInt(document.getElementById("p2pAmountInput")?.value || "0", 10);
+  const note = (document.getElementById("p2pNoteInput")?.value || "").trim();
+
+  if (!recipient) {
+    alert("Please enter recipient contributor's email or UID.");
+    return;
+  }
+
+  if (isNaN(amount) || amount < 500) {
+    alert("Minimum transfer amount is 500 DPGCoins.");
+    return;
+  }
+
+  const maxAllowed = Math.floor(currentContributorVaultCoins * 0.5);
+  if (amount > maxAllowed) {
+    alert(`Transfer amount cannot exceed 50% of your vault balance (Max: ${maxAllowed.toLocaleString()} DPGCoins).`);
+    return;
+  }
+
+  const confirmed = confirm(`Are you sure you want to transfer ${amount.toLocaleString()} DPGCoins to "${recipient}"? This transfer is atomic and non-refundable.`);
+  if (!confirmed) return;
+
+  const btn = document.getElementById("btnSubmitP2P");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="ri-loader-4-line" style="animation:spin 1s linear infinite;"></i> Transferring...`;
+  }
+
+  try {
+    const apiBase = (typeof getApiBase === "function") ? getApiBase() : (window.location.hostname.includes("localhost") ? "http://localhost:5000" : "https://dpgnotes.onrender.com");
+    const res = await fetch(`${apiBase}/api/coins/transfer-p2p`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        senderUid: uid,
+        recipientEmailOrUid: recipient,
+        amount,
+        note
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "P2P transfer failed.");
+    }
+
+    alert(`🎉 Success! ${amount.toLocaleString()} DPGCoins transferred to ${data.recipientName || recipient}.`);
+    
+    // Clear form inputs
+    const form = document.getElementById("p2pTransferForm");
+    if (form) form.reset();
+
+    // Reload coins data
+    await loadManageCoinsData();
+  } catch (err) {
+    console.error("handleP2PTransferSubmit error:", err);
+    alert("P2P Transfer Failed: " + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="ri-send-plane-fill"></i> Send DPGCoins`;
     }
   }
 };

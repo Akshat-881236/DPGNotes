@@ -763,6 +763,27 @@
     };
   </script>
 
+  <!-- Security & Regulation Violation Lockdown Modal -->
+  <div class="warning-modal-overlay" id="violationModalOverlay" style="display:none; z-index:999999;">
+    <div class="warning-modal" style="border-color:#ef4444; box-shadow:0 0 50px rgba(239, 68, 68, 0.45);">
+      <div class="warning-emblem" style="background:rgba(239, 68, 68, 0.2); color:#ef4444; border-color:rgba(239, 68, 68, 0.4);">
+        <i class="ri-alarm-warning-fill"></i>
+      </div>
+      <h2 class="warning-title" style="color:#f87171;">Regulation Violation Detected</h2>
+      <p class="warning-desc" style="color:#fca5a5;">
+        Direct access to <strong>earnCoin.html</strong> without a verified, unexpired Firestore recovery session violates DPGNotes Platform Regulations.
+      </p>
+      <div style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:12px; margin-bottom:1.5rem; text-align:center;">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:#fca5a5; font-weight:700;">Security Penalty Charged</div>
+        <div style="font-size:1.8rem; font-weight:800; color:#ef4444; font-family:'Outfit',sans-serif;">-5,000 DPGCoins</div>
+        <div style="font-size:0.75rem; color:#cbd5e1; margin-top:4px;" id="violationReasonText">Missing recovery session authorization credentials.</div>
+      </div>
+      <button type="button" class="btn-destination" onclick="window.location.replace('/index.html')" style="width:100%; justify-content:center; background:#ef4444; color:white; cursor:pointer; opacity:1;">
+        <i class="ri-home-4-line"></i> Return to Homepage
+      </button>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getFirestore, collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
@@ -1044,8 +1065,75 @@
       }
     };
 
+    // 0. Strict Recovery Session Validation & Regulation Penalty Enforcement
+    async function verifyRecoverySessionAccess() {
+      const sessionId = urlParams.get("session-id") || urlParams.get("sessionId");
+      const contributorId = urlParams.get("contributor-id") || urlParams.get("contributorId") || urlParams.get("guest-id") || urlParams.get("guestId");
+
+      let isViolation = false;
+      let violationReason = "";
+
+      if (!sessionId || !contributorId) {
+        isViolation = true;
+        violationReason = "Missing required recovery credentials (sessionId and contributorId/guestId parameters).";
+      } else {
+        try {
+          const apiBase = (window.location.hostname.includes("localhost") || window.location.hostname === "127.0.0.1") ? "http://localhost:5000" : "https://dpgnotes.onrender.com";
+          const resp = await fetch(`${apiBase}/api/coins/verify-recovery-session`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId, contributorId })
+          });
+          const result = await resp.json().catch(() => ({}));
+          if (!result || result.valid !== true) {
+            isViolation = true;
+            violationReason = (result && result.reason) || "Invalid, expired, or unregistered recovery session.";
+          }
+        } catch (err) {
+          console.warn("[Recovery Center] Session verify notice:", err);
+          if (!sessionId.startsWith("rec_") && !sessionId.startsWith("ses_")) {
+            isViolation = true;
+            violationReason = "Malformed recovery session ID.";
+          }
+        }
+      }
+
+      if (isViolation) {
+        console.error("[DPGNotes Regulation Violation] Unauthorized earnCoin.html access:", violationReason);
+        
+        // Hide standard warning modal
+        const warnModal = document.getElementById("warningModalOverlay");
+        if (warnModal) warnModal.style.display = "none";
+
+        // Show violation modal
+        const vModal = document.getElementById("violationModalOverlay");
+        const vReason = document.getElementById("violationReasonText");
+        if (vReason) vReason.textContent = violationReason;
+        if (vModal) vModal.style.display = "flex";
+
+        // Disable challenges
+        window.chooseOption = function() {
+          alert("Challenge disabled: Unauthorized access violation detected.");
+        };
+
+        // Deduct 5,000 DPGCoins violation penalty
+        if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.deductPolicyCoins === "function") {
+          await window.DPGCoinsPolicy.deductPolicyCoins(5000, "DPGNotes Regulation Violation: Unauthorized Recovery Access to earnCoin.html (-5,000 Coins)", {
+            sessionId: sessionId || "none",
+            contributorId: contributorId || "none",
+            violationReason
+          });
+        }
+        return false;
+      }
+
+      return true;
+    }
+
     // Initial Setup
     document.addEventListener("DOMContentLoaded", async () => {
+      const isValid = await verifyRecoverySessionAccess();
+      if (!isValid) return;
       updateProgressUI();
       window.loadNextQuestion();
       await loadPublicContributorQuestions();

@@ -91,6 +91,12 @@
       localStorage.removeItem("dpg_auth_redirect");
     } catch (_) {}
 
+    // Credit Sign-In Reward (+1,000 DPGCoins) and register device session on explicit SignIn
+    const uid = user ? (user.uid || user) : (localStorage.getItem("dpgActiveUserUid") || null);
+    if (uid && window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
+      try { window.DPGCoinsPolicy.recordSignInReward(uid); } catch (_) {}
+    }
+
     const finalTarget = (target && target !== "/" && !target.includes("index.html")) ? target : defaultFallback;
     if (window.location.replace) {
       window.location.replace(finalTarget);

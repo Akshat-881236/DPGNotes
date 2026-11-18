@@ -713,6 +713,8 @@
         <button class="tab-btn" data-target="contributionTab">Contribution</button>
         <button class="tab-btn" data-target="manageResourcesTab">Manage Resources</button>
         <button class="tab-btn" data-target="passwordVaultTab"><i class="ri-shield-keyhole-line" style="margin-right:6px;"></i> Password Vault <span id="vaultSidebarBadge" style="display:none; margin-left:6px; background:#ef4444; color:white; font-size:0.72rem; padding:1px 6px; border-radius:10px; font-weight:700;">0</span></button>
+        <button class="tab-btn" data-target="manageDevicesTab"><i class="ri-device-line" style="margin-right:6px;"></i> Manage Devices</button>
+        <button class="tab-btn" data-target="manageCoinsTab"><i class="ri-copper-coin-line" style="margin-right:6px; color:#f59e0b;"></i> Manage DPGCoins</button>
         <button class="tab-btn" data-target="ytVideosTab"><i class="ri-youtube-line" style="margin-right:6px; color:#ef4444;"></i> YT Videos</button>
         <button class="tab-btn" data-target="uploadAdsTab">Promote & Upload Ads</button>
         <button class="tab-btn" data-target="websiteTab">Website</button>
@@ -1076,6 +1078,136 @@
             </form>
           </div>
         </div>
+        <!-- Manage Devices Tab -->
+        <section id="manageDevicesTab" class="dashboard-tab">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+            <div style="flex:1 1 260px; min-width:0;">
+              <h2 style="margin:0 0 0.4rem 0; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:10px; font-size:clamp(1.2rem, 3.5vw, 1.8rem); word-break:break-word;">
+                <i class="ri-device-line" style="color:var(--primary-light,#818cf8);"></i> Manage Devices
+              </h2>
+              <p style="color:var(--text-muted); font-size:0.88rem; margin:0; word-break:break-word;">
+                Review all active and historical device sessions logged into your Contributor account. You can log out of previous devices at any time.
+              </p>
+            </div>
+            <button type="button" class="action-btn" onclick="loadManageDevicesData()" style="padding:0.6rem 1.2rem; border-radius:10px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#818cf8; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <i class="ri-refresh-line"></i> Refresh Devices
+            </button>
+          </div>
+
+          <div class="table-container" style="background:var(--bg-card, rgba(15,23,42,0.6)); border:1px solid var(--border); border-radius:14px; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.88rem; min-width:680px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border); background:rgba(255,255,255,0.02);">
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Device Name</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Type</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Geo Location</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">IP Address</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Time Stamp</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600; text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="devicesTableBody">
+                <tr>
+                  <td colspan="6" style="padding:30px; text-align:center; color:var(--text-muted);">
+                    <i class="ri-loader-4-line" style="font-size:1.5rem; display:inline-block; animation:spin 1s linear infinite;"></i>
+                    <div style="margin-top:8px;">Scanning registered devices...</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Manage DPGCoins Tab -->
+        <section id="manageCoinsTab" class="dashboard-tab">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+            <div style="flex:1 1 260px; min-width:0;">
+              <h2 style="margin:0 0 0.4rem 0; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:10px; font-size:clamp(1.2rem, 3.5vw, 1.8rem); word-break:break-word;">
+                <i class="ri-copper-coin-line" style="color:#f59e0b;"></i> Manage DPGCoins
+              </h2>
+              <p style="color:var(--text-muted); font-size:0.88rem; margin:0; word-break:break-word;">
+                Track complete ledger transaction history and exchange DPGCoins with peer verified contributors.
+              </p>
+            </div>
+            <button type="button" class="action-btn" onclick="loadManageCoinsData()" style="padding:0.6rem 1.2rem; border-radius:10px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <i class="ri-refresh-line"></i> Refresh Ledger
+            </button>
+          </div>
+
+          <!-- Vault Summary & P2P Transfer Cards -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.25rem; margin-bottom:2rem;">
+            <!-- Vault Status Card -->
+            <div style="background:linear-gradient(135deg, rgba(15,23,42,0.85), rgba(30,41,59,0.7)); border:1px solid rgba(245,158,11,0.25); border-radius:16px; padding:1.5rem; position:relative; overflow:hidden;">
+              <div style="position:absolute; right:-15px; bottom:-15px; font-size:6rem; color:rgba(245,158,11,0.05); pointer-events:none;">
+                <i class="ri-copper-coin-line"></i>
+              </div>
+              <div style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); font-weight:700;">Available Vault Balance</div>
+              <div style="font-size:2.2rem; font-weight:800; font-family:'Outfit',sans-serif; color:#fbbf24; margin:0.4rem 0 0.8rem 0; display:flex; align-items:center; gap:10px;" id="manageVaultBalanceDisplay">
+                Loading...
+              </div>
+              <div id="transferEligibilityBadge" style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:8px; font-size:0.78rem; font-weight:600; background:rgba(255,255,255,0.06); color:#cbd5e1;">
+                Checking P2P Transfer Eligibility...
+              </div>
+            </div>
+
+            <!-- Contributor P2P Transfer Card -->
+            <div style="background:var(--bg-card, rgba(15,23,42,0.6)); border:1px solid var(--border); border-radius:16px; padding:1.5rem;">
+              <h3 style="margin:0 0 0.4rem 0; font-size:1.05rem; font-family:'Outfit',sans-serif; color:white; display:flex; align-items:center; gap:8px;">
+                <i class="ri-exchange-dollar-line" style="color:var(--primary-light,#818cf8);"></i> P2P Contributor Transfer
+              </h3>
+              <p style="color:var(--text-muted); font-size:0.8rem; margin:0 0 1rem 0;">
+                Eligible Contributors (Balance ≥ 3,000 Coins) may transfer 500 to 50% of available coins.
+              </p>
+              <form id="p2pTransferForm" onsubmit="handleP2PTransferSubmit(event)" style="display:flex; flex-direction:column; gap:0.85rem;">
+                <div>
+                  <input type="text" id="p2pRecipientInput" required placeholder="Friend's Contributor Email or UID..." style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.3); color:white; font-size:0.88rem; outline:none;">
+                </div>
+                <div style="display:flex; gap:0.75rem;">
+                  <div style="flex:1;">
+                    <input type="number" id="p2pAmountInput" required min="500" step="1" placeholder="Amount (Min 500)" style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.3); color:white; font-size:0.88rem; outline:none;">
+                  </div>
+                  <button type="button" onclick="setP2PMaxAmount()" style="padding:0.65rem 0.9rem; border-radius:8px; border:1px solid rgba(245,158,11,0.3); background:rgba(245,158,11,0.12); color:#fbbf24; font-size:0.8rem; font-weight:700; cursor:pointer;">
+                    50% Max
+                  </button>
+                </div>
+                <div>
+                  <input type="text" id="p2pNoteInput" placeholder="Optional transfer note / message..." style="width:100%; box-sizing:border-box; padding:0.65rem 0.85rem; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.3); color:white; font-size:0.88rem; outline:none;">
+                </div>
+                <button type="submit" id="btnSubmitP2P" style="padding:0.75rem; border-radius:8px; border:none; background:linear-gradient(135deg, #f59e0b, #d97706); color:#1e1b4b; font-weight:700; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                  <i class="ri-send-plane-fill"></i> Send DPGCoins
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Transaction History Table -->
+          <h3 style="margin:0 0 0.8rem 0; font-size:1.1rem; font-family:'Outfit',sans-serif; color:white; display:flex; align-items:center; gap:8px;">
+            <i class="ri-history-line" style="color:var(--primary-light,#818cf8);"></i> DPGCoins Transaction History
+          </h3>
+          <div class="table-container" style="background:var(--bg-card, rgba(15,23,42,0.6)); border:1px solid var(--border); border-radius:14px; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.88rem; min-width:760px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border); background:rgba(255,255,255,0.02);">
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Particulars / Goods</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Type</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Amount</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Previous Balance</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600;">Current Balance</th>
+                  <th style="padding:14px 18px; color:var(--text-muted); font-weight:600; text-align:right;">Date & Time</th>
+                </tr>
+              </thead>
+              <tbody id="coinsHistoryTableBody">
+                <tr>
+                  <td colspan="6" style="padding:30px; text-align:center; color:var(--text-muted);">
+                    <i class="ri-loader-4-line" style="font-size:1.5rem; display:inline-block; animation:spin 1s linear infinite;"></i>
+                    <div style="margin-top:8px;">Loading ledger transaction records...</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section id="ytVideosTab" class="dashboard-tab">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
             <div style="flex:1 1 260px; min-width:0;">

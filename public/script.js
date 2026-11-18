@@ -251,6 +251,9 @@ function updateNavbarAuth(user) {
 }
 async function handlePostOAuthLogin(user) {
   try {
+    if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
+      try { window.DPGCoinsPolicy.recordSignInReward(user.uid); } catch (_) {}
+    }
     const userDocRef = doc(db, "users", user.uid);
     const snap = await getDoc(userDocRef);
     const userData = snap.exists() ? snap.data() : null;
