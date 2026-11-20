@@ -197,7 +197,7 @@ This module describes platform guidelines regarding Google AdSense integrations 
 ### MODULE 5.3: NATIVE ADS MONETIZATION, SUBSIDY DEDUCTIONS & BILLING CYCLE FINALIZATION
 1. Scope & Economics:
    - DPGNotes charges advertisers per genuine single engagement per calendar month (whichever happens first: hover or visit).
-   - Standard Unit Rates: Contributor = ₹12 / hover, ₹20 / visit. Guest = ₹6 / hover, ₹10 / visit (50% concession).
+   - Standard Unit Rates: Contributor = ₹24 / hover, ₹40 / visit. Guest = ₹12 / hover, ₹20 / visit (50% concession).
    - Self-Interaction Prohibition: Advertisers / contributors clicking or hovering on their own uploaded ads are 100% non-billable and bypassed automatically.
 2. Academic Portfolio Tier Concession:
    - Bronze Tier (≥3 Docs): 20% discount across all interaction charges.

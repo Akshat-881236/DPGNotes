@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/dpg-loader.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../ANH.png" type="image/png" />
+  <title>DPGCoins Governance & Virtual Economy Policy | DPGNotes Legal Center</title>
+  <meta name="description" content="Official DPGCoins Governance and Virtual Platform Economy Policy of DPGNotes. Detailed clauses covering the central admin treasury, initial grants, session bonuses, nominal deductions, 4-hour IndexedDB window, reading milestone scales, academic rewards, P2P exchange, device security, and 15-day auto-purge." />
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dark.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .legal-content-area {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .pricing-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1.4rem;
+      transition: all 0.25s ease;
+    }
+    .pricing-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    }
+    .pricing-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.5rem;
+      color: var(--primary, #6366f1);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .pricing-card .price-tag {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #f59e0b;
+      margin: 0.4rem 0;
+      font-family: 'Outfit', sans-serif;
+    }
+    .pricing-card p {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text-muted, #94a3b8);
+      margin: 0;
+    }
+    .tier-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+  </style>
+  <script src="../custom-dialogs.js"></script>
+  <script src="/history-monitoring.js" defer></script>
+</head>
+<body class="theme-auto">
+  <div class="reading-progress-container"><div id="readingProgress" class="reading-progress-bar"></div></div>
+  <header class="legal-header">
+    <div class="header-container">
+      <a href="../index.html" class="legal-logo">
+        <i class="ri-shield-user-fill logo-icon"></i>
+        <span>DPGNotes <span class="accent-text">Legal</span></span>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="nav-link" title="Main Platform"><i class="ri-home-4-line"></i> <span class="nav-link-text">Home</span></a>
+        <a href="index.html" class="nav-link" title="Legal Hub"><i class="ri-arrow-left-line"></i> <span class="nav-link-text">Legal Hub</span></a>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle theme"><i class="ri-sun-line light-icon"></i><i class="ri-moon-line dark-icon"></i></button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" title="Toggle navigation menu" aria-label="Toggle menu"><i class="ri-menu-4-line menu-icon"></i><i class="ri-close-line close-icon"></i></button>
+      </div>
+    </div>
+  </header>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="legal-layout-container">
+    <aside class="legal-sidebar" id="legalSidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-group">
+          <h3 class="group-title">Overview</h3>
+          <ul class="nav-list">
+            <li><a href="../index.html" class="nav-link"><i class="ri-home-4-line"></i> Main Platform</a></li>
+            <li><a href="index.html" class="nav-link"><i class="ri-dashboard-line"></i> Legal Hub Overview</a></li>
+            <li><a href="index.html#updates" class="nav-link"><i class="ri-history-line"></i> Policy Updates</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-group">
+          <h3 class="group-title">Standalone Policies</h3>
+          <ul class="nav-list">
+            <li><a href="privacy-policy.html" class="nav-link"><i class="ri-shield-keyhole-line"></i> Privacy Policy</a></li>
+            <li><a href="terms-conditions.html" class="nav-link"><i class="ri-article-line"></i> Terms &amp; Conditions</a></li>
+            <li><a href="cookie-policy.html" class="nav-link"><i class="bi bi-cookie"></i> Cookie Policy</a></li>
+            <li><a href="advertising-policy.html" class="nav-link"><i class="ri-advertisement-line"></i> Advertising Policy</a></li>
+            <li><a href="native-ads-monetization-policy.html" class="nav-link"><i class="ri-money-dollar-circle-line"></i> Native Ads Monetization</a></li>
+            <li><a href="dpgcoins-policy.html" class="nav-link active"><i class="ri-copper-coin-line"></i> DPGCoins Governance</a></li>
+            <li><a href="disclaimer.html" class="nav-link"><i class="ri-alert-line"></i> Legal Disclaimer</a></li>
+            <li><a href="drasa-policy.html" class="nav-link"><i class="ri-scales-line"></i> DRASA Regulations</a></li>
+            <li><a href="copyright-policy.html" class="nav-link"><i class="ri-copyright-line"></i> Copyright Policy</a></li>
+            <li><a href="dmca-policy.html" class="nav-link"><i class="ri-file-shield-2-line"></i> DMCA Policy</a></li>
+            <li><a href="analytics-policy.html" class="nav-link"><i class="ri-bar-chart-box-line"></i> Tracking &amp; Analytics</a></li>
+            <li><a href="security-policy.html" class="nav-link"><i class="ri-shield-check-line"></i> Security Policy</a></li>
+            <li><a href="retention-policy.html" class="nav-link"><i class="ri-database-2-line"></i> Data Retention</a></li>
+            <li><a href="links-policy.html" class="nav-link"><i class="ri-external-link-line"></i> External Links</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+    <main class="legal-content">
+      <div class="legal-container">
+        <div class="legal-content-area">
+          <header class="document-header">
+            <div class="doc-badge">
+              <span class="badge-dot"></span>
+              <span>Official Policy &bull; Virtual Utility Governance &amp; Platform Economy</span>
+            </div>
+            <h1 class="document-title">DPGNotes DPGCoins Governance &amp; Virtual Economy Policy</h1>
+            <div class="document-meta">
+              <span class="meta-item"><i class="ri-calendar-line"></i> Effective Date: November 20, 2026</span>
+              <span class="meta-item"><i class="ri-file-shield-line"></i> Reference: POL-DPG-COINS-GOV-2026-V1.0</span>
+              <span class="meta-item"><i class="ri-check-double-line"></i> Version: 1.0 (Comprehensive Edition)</span>
+            </div>
+          </header>
+          <div class="summary-back-callout">
+            <div class="summary-back-content">
+              <i class="ri-arrow-go-back-line"></i>
+              <div class="summary-back-text">
+                Looking for a quick executive summary? Visit the 
+                <a href="index.html#dpgcoins">Summary Version of this Policy in Legal Hub</a>.
+              </div>
+            </div>
+          </div>
+          <article class="legal-article">
+            <h2>1. Virtual Utility Charter &amp; Non-Fiat Recognition</h2>
+            <p>DPGNotes integrates an internal, closed-loop virtual utility token known as <strong>DPGCoins</strong>. The primary objective of DPGCoins is to sustain high-speed open-source educational computing, distribute bandwidth fairly, incentivize original academic peer publishing, deter aggressive automated crawling/scraping, and safeguard user account security across multiple devices.</p>
+            <p>DPGCoins constitute platform-exclusive utility points. They possess <strong>no fiat currency equivalent, cannot be cashed out, redeemed, or traded for real-world currencies</strong>, and exist solely as digital accounting entries within the DPGNotes cloud infrastructure.</p>
+
+            <h2>2. Central Admin Treasury Routing Architecture</h2>
+            <p>To preserve complete economic integrity, mathematical solvency, and centralized oversight across the platform, all virtual currency inflows and outflows are governed by sovereign routing rules:</p>
+            <div class="legal-callout-indigo">
+              <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <i class="ri-bank-line"></i> 100% Central Admin Treasury Inflow Routing
+              </h4>
+              <p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">
+                Every single coin deducted or penalized from any Guest or Contributor vault—including nominal page navigation tariffs, PDF reading milestones, manual session termination penalties, and regulatory breach assessments—is <strong>routed directly and securely into the Central Platform Admin Treasury account (<code>its.akshatnetworkhub23@gmail.com</code>)</strong>. No intermediary accounts, burned balances, or unallocated pools exist.
+              </p>
+            </div>
+            <p>Conversely, all welcome grants, authentic sign-in bonuses, academic publishing bounties, quiz submission rewards, and AI training bonuses are sovereignly minted and disbursed from this administrative authority.</p>
+
+            <h2>3. Vault Lifecycle, Welcome Grants &amp; Session Dynamics</h2>
+            <p>User accounts and guest sessions are provisioned with dedicated cloud-backed or local cryptographic vaults:</p>
+            <div class="pricing-grid">
+              <div class="pricing-card">
+                <h4><i class="ri-user-shared-line"></i> Guest First-Visit Grant</h4>
+                <div class="price-tag">+2,000 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">Coins</span></div>
+                <p>Automatically provisioned on first page visit to an anonymous visitor's browser vault, mapped directly to their persistent Guest ID.</p>
+              </div>
+              <div class="pricing-card">
+                <h4><i class="ri-user-star-line"></i> Contributor Account Grant</h4>
+                <div class="price-tag">+5,000 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">Coins</span></div>
+                <p>Awarded immediately upon successful registration and verification of a new Contributor account to facilitate educational exploration.</p>
+              </div>
+              <div class="pricing-card">
+                <h4><i class="ri-login-circle-line"></i> Sign-In Session Bonus</h4>
+                <div class="price-tag">+1,000 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">Coins</span></div>
+                <p>Awarded on every authentic Contributor sign-in via <code>index.html</code> or global login modals after a session expiry or logout.</p>
+              </div>
+              <div class="pricing-card">
+                <h4><i class="ri-logout-circle-line"></i> Manual Logout Penalty</h4>
+                <div class="price-tag" style="color:#ef4444;">-1,500 <span style="font-size:0.9rem; font-weight:500; color:var(--text-muted);">Coins</span></div>
+                <p>Deducted when a user deliberately clicks "Log Out" or kills an active session. Automated session expirations are 100% exempt.</p>
+              </div>
+            </div>
+
+            <h2>4. Scope Page Access, Nominal Deductions &amp; 4-Hour IndexedDB Window</h2>
+            <p>Accessing content within the DPGNotes platform is subject to a nominal maintenance deduction of <strong>-20 DPGCoins</strong>. To ensure fair access and prevent repeated charging during standard academic study sessions, the platform enforces client-side IndexedDB logging (<code>resource_visit_logs</code>) with a strict <strong>4-hour exemption window</strong>:</p>
+            <ul>
+              <li><strong>Standard Platform Pages:</strong> Identified by pathname (e.g. <code>page::/dashboard.html</code>). Visiting incurs -20 DPGCoins once per 4 hours.</li>
+              <li><strong>PDF Educational Resources:</strong> Identified by composite canonical key: <code>pdf::[DocID]::[Direct_PDF_URL]</code>. Switching from one PDF to another incurs <strong>-20 DPGCoins</strong>. Returning to the exact same PDF resource within 4 hours is logged as a duplicate visit and incurs <strong>zero deduction</strong>.</li>
+              <li><strong>Assignment Solutions:</strong> Identified by canonical query parameter: <code>solution_assign::[assign_id]</code> (e.g. <code>solution_assign::assign_1794721052637_c5p33</code>). Navigating to a new assignment solution incurs <strong>-20 DPGCoins</strong>; returning to the same assignment within 4 hours is completely exempt.</li>
+              <li><strong>Practical Solutions:</strong> Identified by canonical query parameter: <code>solution_prac::[prac_id]</code> (e.g. <code>solution_prac::prac_1795020824041_bq1os</code>). Navigating to a new practical solution incurs <strong>-20 DPGCoins</strong>; returning to the same practical solution within 4 hours is completely exempt.</li>
+            </ul>
+
+            <h2>5. Dwell Time-Scale Milestone Schedule</h2>
+            <p>When studying intensive educational materials (PDF Resources, Assignment Solutions, and Practical Lab Manuals), continuous engagement is tracked in 5-minute increments according to an automated time-scale formula:</p>
+            <div style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; padding: 1.25rem; margin: 1.2rem 0; font-size: 0.9rem;">
+              <table style="width:100%; border-collapse:collapse; color:#cbd5e1;">
+                <thead>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); text-align:left;">
+                    <th style="padding: 8px 12px; color: #a78bfa;">Time Dwell Milestone</th>
+                    <th style="padding: 8px 12px; color: #a78bfa;">Deduction Amount</th>
+                    <th style="padding: 8px 12px; color: #a78bfa;">Billing Policy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 8px 12px;">0 to 5 Minutes</td>
+                    <td style="padding: 8px 12px; color:#38bdf8; font-weight:700;">-20 Coins</td>
+                    <td style="padding: 8px 12px;">Nominal entry tariff (exempt within 4-hour window)</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 8px 12px;">5 Minutes Dwell</td>
+                    <td style="padding: 8px 12px; color:#f59e0b; font-weight:700;">-25 Coins</td>
+                    <td style="padding: 8px 12px;">Automated reading milestone trigger</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 8px 12px;">10 Minutes Dwell</td>
+                    <td style="padding: 8px 12px; color:#f59e0b; font-weight:700;">-30 Coins</td>
+                    <td style="padding: 8px 12px;">Automated reading milestone trigger</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 8px 12px;">15 Minutes Dwell</td>
+                    <td style="padding: 8px 12px; color:#f59e0b; font-weight:700;">-35 Coins</td>
+                    <td style="padding: 8px 12px;">Automated reading milestone trigger</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 12px;">20 Minutes &amp; Beyond</td>
+                    <td style="padding: 8px 12px; color:#ef4444; font-weight:700;">-40 Coins (+5 per 5m)</td>
+                    <td style="padding: 8px 12px;">Escalates by 5 DPGCoins for every subsequent 5-minute block</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2>6. Academic Assessment &amp; Publishing Rewards</h2>
+            <p>Users and Contributors can actively generate DPGCoins through authentic academic participation and original content publication:</p>
+            <ul>
+              <li><strong>Academic Quiz Submissions:</strong> Starting and successfully submitting an authorized academic quiz (<code>/Quizes/index.html?quizId=...</code>) awards starting from <strong>+30 DPGCoins</strong>, scaling upward by +10 DPGCoins for every 5 additional questions beyond the initial 10 questions.</li>
+              <li><strong>PDF Resource Contributions:</strong> Submitting verified academic resources awards <strong>+3,000 DPGCoins</strong> upon initial upload, progressively scaled upward according to verified PDF page count.</li>
+              <li><strong>Admin Review Rewards &amp; Penalties:</strong> Resources approved by administrator review receive an immediate <strong>+5,000 DPGCoins</strong> bounty. Submissions rejected for poor quality or copyright infractions incur a <strong>-1,500 DPGCoins</strong> penalty.</li>
+              <li><strong>AI Knowledge Model Training:</strong> Training an approved academic PDF resource through the DPGNotes AI training pipeline (<code>/api/ai/train-model</code>) automatically awards <strong>+4,700 DPGCoins</strong> to the contributor's vault.</li>
+              <li><strong>Question Scale Publishing Suite:</strong> Publishing original Assignment Solutions, Practical Lab Solutions, or Academic Quizzes awards progressive coin bounties based on question or program volume:
+                <ul style="margin-top:6px;">
+                  <li>&ge; 2 Questions/Programs: <strong>+2,000 DPGCoins</strong></li>
+                  <li>&ge; 4 Questions/Programs: <strong>+2,700 DPGCoins</strong></li>
+                  <li>&ge; 6 Questions/Programs: <strong>+4,000 DPGCoins</strong></li>
+                  <li>&ge; 8 Questions/Programs: <strong>+5,200 DPGCoins</strong></li>
+                  <li>&ge; 10 Questions/Programs: <strong>+6,500 DPGCoins</strong></li>
+                  <li>&ge; 12 Questions/Programs: <strong>+7,800 DPGCoins</strong></li>
+                  <li>&ge; 14 Questions/Programs: <strong>+9,100 DPGCoins</strong></li>
+                  <li>&ge; 16 Questions/Programs: <strong>+10,400 DPGCoins</strong></li>
+                  <li>&ge; 18 Questions/Programs: <strong>+11,700 DPGCoins</strong></li>
+                  <li>&ge; 20+ Questions/Programs: <strong>13,000 + 650 coins for every question above 20</strong></li>
+                </ul>
+                <em>Note: Updating or editing previously published solutions or quizzes strictly yields 0 additional DPGCoins.</em>
+              </li>
+            </ul>
+
+            <h2>7. Contributor Peer-to-Peer (P2P) Coin Exchange</h2>
+            <p>Contributors can transfer DPGCoins to fellow verified contributors via <strong>Dashboard &gt; Manage DPGCoins</strong> subject to strict anti-collusion guardrails:</p>
+            <div class="legal-callout-emerald">
+              <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <i class="ri-swap-line"></i> P2P Transfer Safeguards &amp; Quotas
+              </h4>
+              <p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">
+                1. <strong>Minimum Vault Balance:</strong> Senders must hold an active vault balance of at least <strong>3,000 DPGCoins</strong> to unlock transfer capabilities.<br>
+                2. <strong>Minimum Transfer Amount:</strong> <strong>500 DPGCoins</strong> per transaction.<br>
+                3. <strong>Maximum Transfer Limit:</strong> No single transaction may exceed <strong>50% of the sender's available balance</strong>.<br>
+                4. <strong>Recipient Validation:</strong> Recipient must be a registered, verified Contributor UID in good standing.
+              </p>
+            </div>
+
+            <h2>8. Multi-Device Management &amp; Cryptographic Session Security</h2>
+            <p>To prevent credential sharing, unauthorized proxying, and session hijacking, DPGNotes captures and maintains comprehensive device telemetry for every active Contributor login:</p>
+            <ul>
+              <li><strong>Logged Parameters:</strong> Device Name, Device Category (Desktop, Mobile, Tablet), Geographic Location, IP Address, Timestamp, and a cryptographically signed Session ID.</li>
+              <li><strong>Dual-Validation State:</strong> Session IDs are synchronized simultaneously in Firestore active sessions and client-side IndexedDB.</li>
+              <li><strong>Remote Session Revocation:</strong> Contributors can inspect all active and previous logins under <strong>Dashboard &gt; Manage Devices</strong>. Revoking a previous device deletes its session token from Firestore; any subsequent request from that device fails server-side validation and deletes local session storage immediately.</li>
+            </ul>
+
+            <h2>9. Negative Threshold (-5,000 Coins) &amp; Quarantine Recovery Center</h2>
+            <p>DPGNotes permits a maximum overdraft threshold of <strong>-5,000 DPGCoins</strong> before platform enforcement activates:</p>
+            <div class="legal-callout-amber">
+              <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <i class="ri-lock-line"></i> Quarantine Enforcement &amp; Recovery Threshold
+              </h4>
+              <p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">
+                When an active vault balance breaches <strong>-5,000 DPGCoins</strong>, all open-source reading pages, academic solutions, quizzes, and utilities enter automated lockdown and redirect the user to <code>earnCoin.html</code>.<br><br>
+                • <strong>Regulatory Integrity Fine:</strong> Direct navigation or tampering with <code>earnCoin.html</code> without valid server-issued <code>sessionId</code> and <code>contributorId</code>/<code>guestId</code> parameters violates platform terms and incurs an immediate, non-negotiable <strong>-5,000 DPGCoins deduction</strong>.<br>
+                • <strong>Recovery Requirement:</strong> The "Go To Destination" exit button remains locked until the user successfully earns at least <strong>+350 DPGCoins</strong> through arithmetic challenges, technical prompts, or contributor quiz modules.
+              </p>
+            </div>
+
+            <h2>10. Automated 15-Day Storage Lifecycle &amp; Ledger Purge</h2>
+            <p>To preserve database performance, minimize cloud storage overhead, and uphold strict user privacy standards, DPGNotes enforces an automated 15-day document lifecycle across all virtual economy logs:</p>
+            <ul>
+              <li><strong>Transaction Ledger (<code>coins_transactions</code>):</strong> All itemized credit and debit logs older than <strong>15 days</strong> from their creation timestamp are permanently batched and purged from Firestore storage during server health routines.</li>
+              <li><strong>Dispute Reports (<code>coins_deduction_reports</code>):</strong> All deduction dispute tickets and resolution records reaching <strong>15 days of age</strong> are automatically deleted.</li>
+              <li><strong>Currency Analytics:</strong> Administrator Currency Analytics displays only verified active transactions within the trailing 15-day rolling window.</li>
+            </ul>
+
+            <h2>11. Governance, Inquiries &amp; Dispute Redressal</h2>
+            <p>If you believe a coin deduction occurred erroneously due to network failure, or wish to dispute a transaction, you may submit a deduction report within 15 days or reach our administrative desk:</p>
+            <div class="legal-contact-card" style="margin-top:1rem;">
+              <p style="margin:0 0 0.5rem 0;"><strong>DPGCoins Administrative &amp; Treasury Desk:</strong></p>
+              <p style="margin:0; font-size:0.9rem;">Emails: <a href="mailto:akshatpsd2005@gmail.com" style="color:var(--primary); font-weight:600; text-decoration:underline;">akshatpsd2005@gmail.com</a> &bull; <a href="mailto:its.akshatnetworkhub23@gmail.com" style="color:var(--primary); font-weight:600; text-decoration:underline;">its.akshatnetworkhub23@gmail.com</a></p>
+              <p style="margin:0.3rem 0 0 0; font-size:0.9rem;">DPGNotes Treasury &amp; Platform Governance Office &bull; New Delhi, India</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script>
+    const savedTheme = localStorage.getItem('legal-theme') || 'auto';
+    const themeBtn = document.getElementById('themeToggleBtn');
+    applyTheme(savedTheme);
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const cur = document.body.classList.contains('theme-dark') ? 'dark' : (document.body.classList.contains('theme-light') ? 'light' : 'auto');
+        const next = cur === 'auto' ? 'light' : (cur === 'light' ? 'dark' : 'auto');
+        applyTheme(next);
+      });
+    }
+    function applyTheme(t) {
+      document.body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
+      if (t === 'dark') document.body.classList.add('theme-dark');
+      else if (t === 'light') document.body.classList.add('theme-light');
+      else document.body.classList.add('theme-auto');
+      localStorage.setItem('legal-theme', t);
+    }
+    const mobBtn = document.getElementById('mobileMenuBtn');
+    const sbar = document.getElementById('legalSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (mobBtn && sbar) {
+      mobBtn.addEventListener('click', () => { 
+        sbar.classList.toggle('active'); 
+        mobBtn.classList.toggle('active'); 
+        if (backdrop) backdrop.classList.toggle('active');
+      });
+    }
+    if (backdrop && sbar) {
+      backdrop.addEventListener('click', () => {
+        sbar.classList.remove('active');
+        if (mobBtn) mobBtn.classList.remove('active');
+        backdrop.classList.remove('active');
+      });
+    }
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement, b = document.body;
+      const st = 'scrollTop', sh = 'scrollHeight';
+      const percent = (h[st]||b[st]) / ((h[sh]||b[sh]) - h.clientHeight) * 100;
+      const bar = document.getElementById('readingProgress');
+      if (bar) bar.style.width = percent + '%';
+    });
+  </script>
+  <script src="../redirect.js"></script>
+</body>
+</html>

@@ -147,9 +147,75 @@
     });
   }
 
-  async function checkAndLogNominalVisit(urlKey) {
+  // Helper to extract canonical resource identity and uniqueness parameters
+  function getCanonicalResourceIdentity() {
+    const p = (window.location.pathname || "").toLowerCase();
+    const params = new URLSearchParams(window.location.search || "");
+
+    // 1. PDF Educational Resource (dpgnotes-pdf-viewer.html)
+    if (p.includes("dpgnotes-pdf-viewer.html")) {
+      const pdfUrl = (params.get("pdf") || params.get("file") || params.get("url") || "").trim();
+      const docId = (params.get("id") || params.get("docid") || params.get("resourceId") || params.get("resourceID") || "").trim();
+      const title = (params.get("title") || "").trim();
+      const token = (params.get("token") || params.get("share") || "").trim();
+
+      // Canonical key prioritizes actual targeted PDF URL or Doc ID
+      let uniqueIdentifier = pdfUrl || docId || token || title;
+      if (!uniqueIdentifier) {
+        uniqueIdentifier = window.location.search || "default_pdf";
+      }
+
+      return {
+        type: "pdf_viewer",
+        resourceKey: "pdf::" + (docId ? (docId + "::") : "") + (pdfUrl || uniqueIdentifier),
+        resourceName: title || docId || "PDF Educational Resource",
+        pdfUrl: pdfUrl,
+        docId: docId,
+        isEducationalResource: true
+      };
+    }
+
+    // 2. Assignment Solution (AssignmentSolution/index.html?id=assign_...)
+    if (p.includes("assignmentsolution") && !p.includes("generate")) {
+      const assignId = (params.get("id") || "").trim();
+      const solutionKey = assignId ? ("solution_assign::" + assignId) : ("solution_assign::" + (window.location.search || "default"));
+      return {
+        type: "assignment_solution",
+        resourceKey: solutionKey,
+        resourceName: assignId ? `Assignment Solution (${assignId})` : "Assignment Solution",
+        solutionId: assignId,
+        isEducationalResource: true
+      };
+    }
+
+    // 3. Practical Solution (PracticalSolution/index.html?id=prac_...)
+    if (p.includes("practicalsolution") && !p.includes("generate")) {
+      const pracId = (params.get("id") || "").trim();
+      const solutionKey = pracId ? ("solution_prac::" + pracId) : ("solution_prac::" + (window.location.search || "default"));
+      return {
+        type: "practical_solution",
+        resourceKey: solutionKey,
+        resourceName: pracId ? `Practical Solution (${pracId})` : "Practical Solution",
+        solutionId: pracId,
+        isEducationalResource: true
+      };
+    }
+
+    // 4. Standard Scope Pages
+    return {
+      type: "page_scope",
+      resourceKey: "page::" + p,
+      resourceName: `Page: ${p}`,
+      isEducationalResource: false
+    };
+  }
+
+  async function checkAndLogNominalVisit(resourceIdentity) {
+    const resInfo = resourceIdentity || getCanonicalResourceIdentity();
+    const urlKey = resInfo.resourceKey;
     const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
     const db = await openPolicyDB();
+
     if (!db) {
       // LocalStorage fallback if IndexedDB is unavailable
       try {
@@ -174,7 +240,15 @@
           if (record && record.timestamp && (now - record.timestamp < FOUR_HOURS_MS)) {
             resolve(false); // Visited within past 4 hours, bypass 20-coin deduction
           } else {
-            store.put({ url: urlKey, timestamp: now });
+            store.put({
+              url: urlKey,
+              resourceKey: urlKey,
+              type: resInfo.type,
+              resourceName: resInfo.resourceName,
+              pdfUrl: resInfo.pdfUrl || "",
+              docId: resInfo.docId || resInfo.solutionId || "",
+              timestamp: now
+            });
             resolve(true); // First visit or 4-hour window passed, proceed to deduct
           }
         };
@@ -470,17 +544,22 @@
   // 6. Automated Page Visit Deduction (-20 DPGCoins tracked via IndexedDB 4-Hour interval)
   async function initPageVisitDeduction() {
     if (isExcludedPage()) return;
-    const pagePath = window.location.pathname || "/";
-    const urlKey = pagePath + (window.location.search || "");
+    const resInfo = getCanonicalResourceIdentity();
     
-    // Deduct only once per navigation and only if 4 hours have elapsed for this resource
+    // Deduct only once per navigation and only if 4 hours have elapsed for this specific resource
     if (!window.__dpgPageVisitDeducted) {
       window.__dpgPageVisitDeducted = true;
-      const shouldDeduct = await checkAndLogNominalVisit(urlKey);
+      const shouldDeduct = await checkAndLogNominalVisit(resInfo);
       if (shouldDeduct) {
-        deductPolicyCoins(20, `Page Visit Scope (4h Interval): ${pagePath}`);
+        deductPolicyCoins(20, `${resInfo.resourceName} Access Fee (4h Interval)`, {
+          resourceType: resInfo.type,
+          resourceKey: resInfo.resourceKey,
+          pdfUrl: resInfo.pdfUrl || "",
+          docId: resInfo.docId || resInfo.solutionId || ""
+        });
+        showPolicyToast(`📖 ${resInfo.resourceName}: -20 DPGCoins access fee`, "#f59e0b");
       } else {
-        console.log(`[DPGCoins Policy] 20-coin visit fee bypassed (Visited within 4 hours: ${urlKey})`);
+        console.log(`[DPGCoins Policy] 20-coin fee bypassed (Visited within 4 hours: ${resInfo.resourceKey})`);
       }
     }
   }
@@ -488,27 +567,21 @@
   // 7. Automated Time-Spent Deduction for PDF Viewer & Solutions (5-Minute Scale)
   function initResourceTimeScaleTracking() {
     if (isExcludedPage()) return;
-    const p = (window.location.pathname || "").toLowerCase();
-    const isPdfViewer = p.includes("dpgnotes-pdf-viewer.html");
-    const isAssignment = p.includes("assignmentsolution") && !p.includes("generate");
-    const isPractical = p.includes("practicalsolution") && !p.includes("generate");
+    const resInfo = getCanonicalResourceIdentity();
+    if (!resInfo.isEducationalResource) return;
 
-    if (!isPdfViewer && !isAssignment && !isPractical) return;
+    const resourceType = resInfo.resourceName;
 
-    const resourceType = isPdfViewer ? "PDF Educational Resource" : (isAssignment ? "Assignment Solution" : "Practical Solution");
-    
-    // Strict Base Entry Deduction (starts from 20 DPGCoins)
-    deductPolicyCoins(20, `Resource Reading Access: ${resourceType} Initial Viewing`);
-    showPolicyToast(`📖 ${resourceType}: -20 DPGCoins base reading fee`, "#f59e0b");
-
+    // Time-based reading milestones (5-Minute intervals: 25, 30, 35, 40... coins)
+    // Note: The base entry fee (-20) is unified and handled by initPageVisitDeduction above.
     let intervalCount = 0;
-    // 5-Minute Gap Automated Timer (300,000 ms)
     setInterval(() => {
       intervalCount++;
       // Formula: 20 base + (intervalCount * 5) coins: 5min->25, 10min->30, 15min->35, 20min->40...
       const deduction = 20 + (intervalCount * 5);
       deductPolicyCoins(deduction, `Time-Scale Reading: ${resourceType} (${intervalCount * 5} Min Milestone)`, {
-        resourceType,
+        resourceType: resInfo.type,
+        resourceKey: resInfo.resourceKey,
         intervalMinutes: intervalCount * 5,
         intervalCount
       });

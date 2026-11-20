@@ -3648,12 +3648,12 @@ function showNativeAdsMonetizationModal() {
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem;">
             <div class="dpg-policy-inner" style="background: rgba(0, 0, 0, 0.3); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
               <div class="dpg-policy-label" style="color: #cbd5e1; font-weight: 600;">Genuine Hover (≥ 5s)</div>
-              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹12 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">(Contrib) / ₹6 (Guest)</span></div>
+              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹24 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">(Contrib) / ₹12 (Guest)</span></div>
               <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">Continuous 5s dwell required</div>
             </div>
             <div class="dpg-policy-inner" style="background: rgba(0, 0, 0, 0.3); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
               <div class="dpg-policy-label" style="color: #cbd5e1; font-weight: 600;">Genuine Visit</div>
-              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹20 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">(Contrib) / ₹10 (Guest)</span></div>
+              <div style="color: #f59e0b; font-weight: 700; font-size: 1rem; margin: 2px 0;">₹40 <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 400;">(Contrib) / ₹20 (Guest)</span></div>
               <div class="dpg-policy-subtext" style="color: #94a3b8; font-size: 0.74rem;">Via DPGNotes origin gateway</div>
             </div>
           </div>
