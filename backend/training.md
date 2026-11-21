@@ -215,7 +215,10 @@ This module describes platform guidelines regarding Google AdSense integrations 
 4. Monthly Billing Cycle Finalization on the 5th:
    - On the 5th day of every calendar month, the previous month's advertising cycle concludes and freezes permanently in the Firestore ledger (`ads_monetization_ledger`).
    - An automated, itemized email statement is dispatched to the advertiser detailing gross hovers/visits, tier discounts, subsidy deductions, and net payable dues.
-   - Advertisers settle dues offline via verified UPI (9953854901@ybl) within the 15-day grace period. Study notes and academic uploads remain 100% untouched regardless of ad billing status.
+   - Advertisers settle dues offline via verified UPI (9953854901@ybl) within the 15-day grace period, or settle using DPGCoins (1 INR = 800 Coins). Study notes and academic uploads remain 100% untouched regardless of ad billing status.
+5. DPGCoins Ads Settlement & Active Cycle Timing:
+   - DPGCoins settlement (1 INR = 800 DPGCoins) is disabled for the current active cycle while ad telemetry accumulates, unlocking upon cycle finalization on the 5th.
+   - Intelligent Reconciliation: If an advertiser made a partial pre-settlement (e.g. ₹12) and subsequent traffic accumulated (e.g. ₹116 total), the platform dynamically credits the ₹12 and bills only the remaining ₹104 difference on the 5th. Contributors are never double-charged.
 
 ---
 

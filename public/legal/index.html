@@ -730,17 +730,26 @@
                 <li><strong>Question Scale Publishing Suite:</strong> Publishing original Assignment Solutions, Practical Solutions, or Academic Quizzes awards progressive coin bounties based on question/program volume (2-3: +2,000; 4-5: +2,700; 6-7: +4,000; 8-9: +5,200; 10-11: +6,500; 12-13: +7,800; 14-15: +9,100; 16-17: +10,400; 18-19: +11,700; ≥20: 13,000 + 650 per question above 20). Updating or editing existing content yields 0 additional coins.</li>
               </ul>
 
-              <h2>6. Peer-to-Peer Contributor DPGCoins Transfer</h2>
+              <h2>6. Native Ads Settlement (1 INR = 800 DPGCoins) &amp; Cycle Concluded Timing</h2>
+              <p>Contributors can redeem earned DPGCoins to pay monthly native advertising charges under strict lifecycle timing rules:</p>
+              <ul>
+                <li><strong>Fixed Conversion Rate:</strong> <code>1 INR = 800 DPGCoins</code>.</li>
+                <li><strong>Cycle Concluded Payment Rule:</strong> Payment with DPGCoins is enabled exclusively for <strong>previous concluded billing cycles</strong> once finalized on the 5th. For the active ongoing monthly cycle, DPGCoins payment is disabled until the cycle officially concludes at month-end to ensure single-engagement and subsidy calculations remain 100% accurate while ad telemetry is active.</li>
+                <li><strong>Dynamic Reconciliation &amp; Credit Retention:</strong> When a contributor pre-settles a partial balance during an active cycle (e.g. ₹12) and subsequent engagements accrue additional charges (e.g. accumulating to ₹116), the earlier payment (₹12) is credited automatically against the total charges, leaving only the unbilled difference (₹104) due upon cycle finalization.</li>
+                <li><strong>Treasury Inflow:</strong> All coin deductions for ads settlement are credited directly to the Central Admin Treasury (<code>its.akshatnetworkhub23@gmail.com</code>).</li>
+              </ul>
+
+              <h2>7. Peer-to-Peer Contributor DPGCoins Transfer</h2>
               <p>Contributors can exchange DPGCoins with peer contributors under strict integrity guardrails:</p>
               <ul>
                 <li><strong>Eligibility Threshold:</strong> Only contributors with a minimum active vault balance of <strong>3,000 DPGCoins</strong> are eligible to initiate peer transfers.</li>
                 <li><strong>Transfer Limits:</strong> The minimum transfer amount is <strong>500 DPGCoins</strong>; the maximum allowable transfer per transaction cannot exceed <strong>50% of the sender's available balance</strong>.</li>
               </ul>
 
-              <h2>7. Multi-Device Management &amp; Remote Revocation</h2>
+              <h2>8. Multi-Device Management &amp; Remote Revocation</h2>
               <p>Every contributor login records telemetry including device name, device type, geographic location, IP address, timestamp, and a cryptographically signed session ID synchronized between Firestore and client IndexedDB. Contributors can audit active logins under <strong>Dashboard &gt; Manage Devices</strong> and remotely revoke prior device sessions. Revoked devices are denied access immediately upon server-side session validation.</p>
 
-              <h2>8. Negative Threshold (-5,000 Coins) &amp; Quarantine Recovery Center</h2>
+              <h2>9. Negative Threshold (-5,000 Coins) &amp; Quarantine Recovery Center</h2>
               <p>The platform permits a maximum overdraft of <strong>-5,000 DPGCoins</strong>. When a vault's balance drops below -5,000 coins:</p>
               <ul>
                 <li><strong>Automatic Quarantine:</strong> Access to open-source educational documents, solutions, quizzes, and utility tools is locked, and the user is redirected to <code>earnCoin.html</code> with signed session tokens and destination parameters.</li>
@@ -748,7 +757,7 @@
                 <li><strong>Recovery Mandate:</strong> The "Go To Destination" exit button remains disabled until the user successfully earns at least <strong>+350 DPGCoins</strong> by solving arithmetic, technical, or contributor quiz challenges in the Recovery Center.</li>
               </ul>
 
-              <h2>9. 15-Day Automated Storage Purge Policy</h2>
+              <h2>10. 15-Day Automated Storage Purge Policy</h2>
               <p>To preserve Firestore storage hygiene, protect user privacy, and prevent infinite ledger bloat, all transaction records in <code>coins_transactions</code> and all dispute submissions in <code>coins_deduction_reports</code> are permanently pruned and deleted from Firestore once they reach <strong>15 days of age</strong>.</p>
             </article>
             <article id="quiz-policySection" class="policy-section">

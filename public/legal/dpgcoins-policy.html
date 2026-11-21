@@ -263,7 +263,16 @@
               </li>
             </ul>
 
-            <h2>7. Contributor Peer-to-Peer (P2P) Coin Exchange</h2>
+            <h2>7. Native Ads Settlement (1 INR = 800 DPGCoins) &amp; Cycle Concluded Timing</h2>
+            <p>Verified contributors can redeem DPGCoins to settle their monthly native advertising balances under strict lifecycle timing:</p>
+            <ul>
+              <li><strong>Fixed Conversion Rate:</strong> <code>1 INR = 800 DPGCoins</code>.</li>
+              <li><strong>Cycle Concluded Payment Rule:</strong> Payment with DPGCoins is permitted <strong>only after the monthly billing cycle concludes and finalizes on the 5th</strong>. During the active calendar month, ad impressions, hovers, and clicks are actively accumulating in real time; therefore, DPGCoins settlement is disabled for the active cycle to prevent premature ledger closure while traffic is ongoing.</li>
+              <li><strong>Intelligent Reconciliation &amp; Credit Retention:</strong> In cases where a contributor pre-settled a partial balance during an active cycle (e.g. ₹12) and subsequent ad engagements accrue additional charges (e.g. accumulating to ₹116), the platform dynamically credits the earlier payment (₹12) against the total charges. Upon monthly finalization on the 5th, the contributor is billed only for the unbilled difference (₹104). Prior payments are never forfeited, and contributors are never double-charged.</li>
+              <li><strong>100% Treasury Routing:</strong> All coins deducted for native ads settlements are credited directly to the platform central administrative treasury (<code>its.akshatnetworkhub23@gmail.com</code>).</li>
+            </ul>
+
+            <h2>8. Contributor Peer-to-Peer (P2P) Coin Exchange</h2>
             <p>Contributors can transfer DPGCoins to fellow verified contributors via <strong>Dashboard &gt; Manage DPGCoins</strong> subject to strict anti-collusion guardrails:</p>
             <div class="legal-callout-emerald">
               <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
@@ -277,7 +286,7 @@
               </p>
             </div>
 
-            <h2>8. Multi-Device Management &amp; Cryptographic Session Security</h2>
+            <h2>9. Multi-Device Management &amp; Cryptographic Session Security</h2>
             <p>To prevent credential sharing, unauthorized proxying, and session hijacking, DPGNotes captures and maintains comprehensive device telemetry for every active Contributor login:</p>
             <ul>
               <li><strong>Logged Parameters:</strong> Device Name, Device Category (Desktop, Mobile, Tablet), Geographic Location, IP Address, Timestamp, and a cryptographically signed Session ID.</li>
@@ -285,7 +294,7 @@
               <li><strong>Remote Session Revocation:</strong> Contributors can inspect all active and previous logins under <strong>Dashboard &gt; Manage Devices</strong>. Revoking a previous device deletes its session token from Firestore; any subsequent request from that device fails server-side validation and deletes local session storage immediately.</li>
             </ul>
 
-            <h2>9. Negative Threshold (-5,000 Coins) &amp; Quarantine Recovery Center</h2>
+            <h2>10. Negative Threshold (-5,000 Coins) &amp; Quarantine Recovery Center</h2>
             <p>DPGNotes permits a maximum overdraft threshold of <strong>-5,000 DPGCoins</strong> before platform enforcement activates:</p>
             <div class="legal-callout-amber">
               <h4 style="margin: 0 0 0.4rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
@@ -298,7 +307,7 @@
               </p>
             </div>
 
-            <h2>10. Automated 15-Day Storage Lifecycle &amp; Ledger Purge</h2>
+            <h2>11. Automated 15-Day Storage Lifecycle &amp; Ledger Purge</h2>
             <p>To preserve database performance, minimize cloud storage overhead, and uphold strict user privacy standards, DPGNotes enforces an automated 15-day document lifecycle across all virtual economy logs:</p>
             <ul>
               <li><strong>Transaction Ledger (<code>coins_transactions</code>):</strong> All itemized credit and debit logs older than <strong>15 days</strong> from their creation timestamp are permanently batched and purged from Firestore storage during server health routines.</li>
@@ -306,7 +315,7 @@
               <li><strong>Currency Analytics:</strong> Administrator Currency Analytics displays only verified active transactions within the trailing 15-day rolling window.</li>
             </ul>
 
-            <h2>11. Governance, Inquiries &amp; Dispute Redressal</h2>
+            <h2>12. Governance, Inquiries &amp; Dispute Redressal</h2>
             <p>If you believe a coin deduction occurred erroneously due to network failure, or wish to dispute a transaction, you may submit a deduction report within 15 days or reach our administrative desk:</p>
             <div class="legal-contact-card" style="margin-top:1rem;">
               <p style="margin:0 0 0.5rem 0;"><strong>DPGCoins Administrative &amp; Treasury Desk:</strong></p>

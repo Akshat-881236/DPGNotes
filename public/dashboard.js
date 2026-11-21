@@ -3365,12 +3365,23 @@ async function loadContributorPayableAds(targetMonth) {
       finalBanner.style.display = isPastOrFinalized ? "flex" : "none";
     }
 
-    // 3. 60-Day Data Retention Policy Notice
+    // 3. 60-Day Data Retention Policy Notice & Active Reconciliation Notice
     const retNotice = document.getElementById("contribRetentionNotice");
     const retText = document.getElementById("contribRetentionNoticeText");
-    const isSettled = active.isClearedOrWaived || active.status === "Paid" || active.status === "Waived";
+    const amountPaid = typeof active.amountPaid === "number" ? active.amountPaid : (typeof active.inrEquivalent === "number" ? active.inrEquivalent : ((active.coinsPaid || 0) / 800));
+    const outstanding = active.outstandingBalance != null ? active.outstandingBalance : Math.max(0, (active.totalNetPayable || 0) - amountPaid);
+    const isCurrentCycle = Boolean(!isPastOrFinalized && (data.selectedMonth === data.currentMonth || active.month === data.currentMonth));
+    const isSettled = !isCurrentCycle && (active.isClearedOrWaived || active.status === "Paid" || active.status === "Waived" || ((active.totalNetPayable || 0) > 0 && outstanding <= 0));
+
     if (retNotice && retText) {
-      if (isSettled) {
+      if (isCurrentCycle) {
+        if (amountPaid > 0) {
+          retNotice.style.display = "flex";
+          retText.innerHTML = `<strong>⚡ Active Cycle Pre-Payment Reconciled:</strong> ₹${amountPaid.toLocaleString()} was pre-settled via DPGCoins (${Math.round(amountPaid * 800).toLocaleString()} coins). Current ad usage has accrued to ₹${(active.totalNetPayable || 0).toLocaleString()}, leaving an unbilled difference of ₹${outstanding.toLocaleString()}. Privacy retention auto-purge is paused until the cycle concludes on the 5th and is settled in full.`;
+        } else {
+          retNotice.style.display = "none";
+        }
+      } else if (isSettled && outstanding <= 0) {
         retNotice.style.display = "flex";
         let autoPurgeStr = "";
         let daysLeftStr = "";
@@ -3384,7 +3395,7 @@ async function loadContributorPayableAds(targetMonth) {
           autoPurgeStr = fallbackPurge.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
           daysLeftStr = `(~60 days remaining)`;
         }
-        retText.innerHTML = `<strong>60-Day Data Retention Policy:</strong> Marked as <strong>${active.status}</strong>. Per privacy compliance, all billing data & telemetry for cycle <strong>${data.selectedMonth || active.month}</strong> will be permanently auto-purged from Firestore on <strong>${autoPurgeStr}</strong> ${daysLeftStr}.`;
+        retText.innerHTML = `<strong>60-Day Data Retention Policy:</strong> Marked as <strong>${active.status || 'Paid'}</strong>. Per privacy compliance, all billing data & telemetry for cycle <strong>${data.selectedMonth || active.month}</strong> will be permanently auto-purged from Firestore on <strong>${autoPurgeStr}</strong> ${daysLeftStr}.`;
       } else {
         retNotice.style.display = "none";
       }
@@ -3424,7 +3435,11 @@ async function loadContributorPayableAds(targetMonth) {
       document.getElementById("contribDiscountPctSub").textContent = `${tier.discountPct || 0}% Off All Charges`;
     }
     if (document.getElementById("contribNetPayable")) {
-      document.getElementById("contribNetPayable").textContent = `₹${(active.totalNetPayable || 0).toLocaleString()}`;
+      if (amountPaid > 0 && outstanding > 0) {
+        document.getElementById("contribNetPayable").innerHTML = `₹${(active.totalNetPayable || 0).toLocaleString()} <div style="font-size:0.68rem; color:#fbbf24; font-weight:600; margin-top:3px;">₹${amountPaid.toLocaleString()} Pre-Paid · <span style="color:#f87171;">₹${outstanding.toLocaleString()} Due</span></div>`;
+      } else {
+        document.getElementById("contribNetPayable").textContent = `₹${(active.totalNetPayable || 0).toLocaleString()}`;
+      }
     }
     const itemizedBody = document.getElementById("contribAdsItemizedTableBody");
     if (itemizedBody) {
@@ -3469,15 +3484,31 @@ async function loadContributorPayableAds(targetMonth) {
     const statusSub = document.getElementById("contribPaymentStatusSub");
     if (statusSub) {
       const st = active.status || "Pending";
-      if (st === "Paid") {
-        statusSub.textContent = "✅ Paid / Settled";
-        statusSub.style.color = "#34d399";
-      } else if (st === "Waived") {
-        statusSub.textContent = "🎁 Waived Off";
-        statusSub.style.color = "#cbd5e1";
+      if (isCurrentCycle) {
+        if (amountPaid > 0 && outstanding > 0) {
+          statusSub.textContent = `⚡ Partially Settled (₹${amountPaid} Paid · ₹${outstanding} Accrued)`;
+          statusSub.style.color = "#fbbf24";
+        } else if (amountPaid > 0 && outstanding === 0) {
+          statusSub.textContent = `⚡ Pre-Paid (₹${amountPaid}) · Cycle Active`;
+          statusSub.style.color = "#38bdf8";
+        } else {
+          statusSub.textContent = "⏳ Active Cycle (Accruing Telemetry)";
+          statusSub.style.color = "#38bdf8";
+        }
       } else {
-        statusSub.textContent = "⏳ Pending";
-        statusSub.style.color = "#f87171";
+        if (st === "Paid" || (outstanding <= 0 && (active.totalNetPayable || 0) > 0)) {
+          statusSub.textContent = "✅ Paid / Settled";
+          statusSub.style.color = "#34d399";
+        } else if (st === "Waived") {
+          statusSub.textContent = "🎁 Waived Off";
+          statusSub.style.color = "#cbd5e1";
+        } else if (amountPaid > 0 && outstanding > 0) {
+          statusSub.textContent = `⚠️ Partially Paid (₹${amountPaid} Paid · ₹${outstanding} Due)`;
+          statusSub.style.color = "#f59e0b";
+        } else {
+          statusSub.textContent = "⏳ Pending";
+          statusSub.style.color = "#f87171";
+        }
       }
     }
     const portfolioStats = document.getElementById("contribPortfolioStats");
@@ -3546,7 +3577,13 @@ window.openFinalizedBillStatementModal = function() {
     document.getElementById("modalStatementSubsidy").textContent = `-₹${sub.toLocaleString()}`;
   }
   if (document.getElementById("modalStatementNet")) {
-    document.getElementById("modalStatementNet").textContent = `₹${(data.totalNetPayable || 0).toLocaleString()}`;
+    const amountPaid = typeof data.amountPaid === "number" ? data.amountPaid : (typeof data.inrEquivalent === "number" ? data.inrEquivalent : ((data.coinsPaid || 0) / 800));
+    const outstanding = data.outstandingBalance != null ? data.outstandingBalance : Math.max(0, (data.totalNetPayable || 0) - amountPaid);
+    if (amountPaid > 0 && outstanding > 0) {
+      document.getElementById("modalStatementNet").innerHTML = `₹${(data.totalNetPayable || 0).toLocaleString()} <span style="font-size:0.8rem; font-weight:600; color:#fbbf24;">(₹${amountPaid.toLocaleString()} Paid · ₹${outstanding.toLocaleString()} Due)</span>`;
+    } else {
+      document.getElementById("modalStatementNet").textContent = `₹${(data.totalNetPayable || 0).toLocaleString()}`;
+    }
   }
 
   // Populate Itemized Ad Breakdown
@@ -3735,32 +3772,67 @@ window.openRequestPaymentModal = function() {
 
   const monData = window.currentSelectedMonetizationData || {};
   const active = monData.activeMonetization || monData;
-  const netPayable = active.totalNetPayable || 0;
-  const isSettled = active.isClearedOrWaived || active.status === "Paid" || active.status === "Waived";
-  const requiredCoins = Math.round(netPayable * 800);
+  const currentMonthStr = monData.currentMonth || new Date().toISOString().substring(0, 7);
+  const selectedMonth = monData.selectedMonth || active.month || currentMonthStr;
+  const isCurrentActive = Boolean(!monData.isFinalized && selectedMonth === currentMonthStr && !active.billingCycleFinalized && !active.isLocked);
+  const totalNet = active.totalNetPayable || 0;
+  const amountPaid = typeof active.amountPaid === "number" ? active.amountPaid : (typeof active.inrEquivalent === "number" ? active.inrEquivalent : ((active.coinsPaid || 0) / 800));
+  const outstanding = active.outstandingBalance != null ? active.outstandingBalance : Math.max(0, totalNet - amountPaid);
+  const isSettled = !isCurrentActive && (active.isClearedOrWaived || active.status === "Paid" || active.status === "Waived" || (totalNet > 0 && outstanding <= 0));
+  const requiredCoins = Math.round(outstanding * 800);
 
   const inrSpan = document.getElementById("coinPayInrAmt");
-  if (inrSpan) inrSpan.textContent = `₹${netPayable.toLocaleString()}`;
   const coinsSpan = document.getElementById("coinPayCoinsAmt");
-  if (coinsSpan) coinsSpan.textContent = `${requiredCoins.toLocaleString()} DPGCoins`;
-
   const payBtn = document.getElementById("payWithCoinsBtn");
-  if (payBtn) {
-    if (isSettled || netPayable <= 0) {
+
+  if (isCurrentActive) {
+    if (inrSpan) inrSpan.textContent = `₹${totalNet.toLocaleString()} (Active)`;
+    if (coinsSpan) coinsSpan.textContent = `${Math.round(outstanding * 800).toLocaleString()} DPGCoins (On 5th)`;
+    if (payBtn) {
       payBtn.disabled = true;
       payBtn.style.opacity = "0.5";
       payBtn.style.cursor = "not-allowed";
-      payBtn.innerHTML = `<i class="ri-checkbox-circle-line"></i> Already Settled`;
-    } else if (storedCoins < requiredCoins) {
-      payBtn.disabled = true;
-      payBtn.style.opacity = "0.6";
-      payBtn.style.cursor = "not-allowed";
-      payBtn.innerHTML = `<i class="ri-error-warning-line"></i> Insufficient Coins (${(requiredCoins - storedCoins).toLocaleString()} needed)`;
-    } else {
-      payBtn.disabled = false;
-      payBtn.style.opacity = "1";
-      payBtn.style.cursor = "pointer";
-      payBtn.innerHTML = `<i class="ri-flashlight-line"></i> Pay & Settle Instantly`;
+      payBtn.innerHTML = `<i class="ri-lock-2-line"></i> Locked During Active Cycle`;
+    }
+    if (coinFb) {
+      coinFb.style.display = "block";
+      coinFb.style.background = "rgba(14,165,233,0.14)";
+      coinFb.style.border = "1px solid rgba(14,165,233,0.35)";
+      coinFb.style.color = "#7dd3fc";
+      if (amountPaid > 0) {
+        coinFb.innerHTML = `<i class="ri-shield-check-line" style="color:#38bdf8;"></i> <strong>Active Cycle In Progress (Reconciliation Active):</strong> You previously pre-paid ₹${amountPaid.toLocaleString()} (${Math.round(amountPaid * 800).toLocaleString()} coins). Current cycle charges have accrued to ₹${totalNet.toLocaleString()}, leaving an unbilled difference of ₹${outstanding.toLocaleString()}. Payment with DPGCoins unlocks upon cycle finalization on the 5th, where your ₹${amountPaid.toLocaleString()} credit will automatically apply and you will only settle the remaining ₹${outstanding.toLocaleString()} difference.`;
+      } else {
+        coinFb.innerHTML = `<i class="ri-time-line" style="color:#38bdf8;"></i> <strong>Active Cycle In Progress:</strong> Payment with DPGCoins is disabled until the current monthly cycle concludes and finalizes on the 5th. Real-time rates reflect strict single-engagement & subsidy telemetry until month closing. Previous finalized cycle bills remain immediately payable with DPGCoins.`;
+      }
+    }
+  } else {
+    // Previous or Finalized Cycle
+    if (inrSpan) inrSpan.textContent = `₹${outstanding.toLocaleString()}`;
+    if (coinsSpan) coinsSpan.textContent = `${requiredCoins.toLocaleString()} DPGCoins`;
+    if (payBtn) {
+      if (isSettled || outstanding <= 0) {
+        payBtn.disabled = true;
+        payBtn.style.opacity = "0.5";
+        payBtn.style.cursor = "not-allowed";
+        payBtn.innerHTML = `<i class="ri-checkbox-circle-line"></i> Already Settled`;
+      } else if (storedCoins < requiredCoins) {
+        payBtn.disabled = true;
+        payBtn.style.opacity = "0.6";
+        payBtn.style.cursor = "not-allowed";
+        payBtn.innerHTML = `<i class="ri-error-warning-line"></i> Insufficient Coins (${(requiredCoins - storedCoins).toLocaleString()} needed)`;
+      } else {
+        payBtn.disabled = false;
+        payBtn.style.opacity = "1";
+        payBtn.style.cursor = "pointer";
+        payBtn.innerHTML = `<i class="ri-flashlight-line"></i> Pay & Settle Instantly`;
+        if (amountPaid > 0 && coinFb) {
+          coinFb.style.display = "block";
+          coinFb.style.background = "rgba(16,185,129,0.15)";
+          coinFb.style.border = "1px solid rgba(16,185,129,0.35)";
+          coinFb.style.color = "#34d399";
+          coinFb.innerHTML = `✓ Prior payment of ₹${amountPaid.toLocaleString()} credited! Only outstanding balance of ₹${outstanding.toLocaleString()} (${requiredCoins.toLocaleString()} coins) is billed for settlement.`;
+        }
+      }
     }
   }
 };
@@ -3770,17 +3842,33 @@ window.payAdsBillWithCoins = async function() {
   const coinFb = document.getElementById("coinPayFeedback");
   const monData = window.currentSelectedMonetizationData || {};
   const active = monData.activeMonetization || monData;
-  const netPayable = active.totalNetPayable || 0;
-  const month = active.month || monData.selectedMonth || document.getElementById("contribMonthSelect")?.value || new Date().toISOString().substring(0, 7);
-  const storedCoins = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
-  const requiredCoins = Math.round(netPayable * 800);
+  const currentMonthStr = monData.currentMonth || new Date().toISOString().substring(0, 7);
+  const selectedMonth = monData.selectedMonth || active.month || currentMonthStr;
+  const isCurrentActive = Boolean(!monData.isFinalized && selectedMonth === currentMonthStr && !active.billingCycleFinalized && !active.isLocked);
 
-  if (netPayable <= 0) {
+  if (isCurrentActive) {
+    if (coinFb) {
+      coinFb.style.display = "block";
+      coinFb.style.background = "rgba(239,68,68,0.15)";
+      coinFb.style.color = "#f87171";
+      coinFb.textContent = "Payment with DPGCoins is disabled while the current monthly cycle is active. Payment unlocks once the cycle closes and finalizes on the 5th.";
+    }
+    return;
+  }
+
+  const totalNet = active.totalNetPayable || 0;
+  const amountPaid = typeof active.amountPaid === "number" ? active.amountPaid : (typeof active.inrEquivalent === "number" ? active.inrEquivalent : ((active.coinsPaid || 0) / 800));
+  const outstanding = active.outstandingBalance != null ? active.outstandingBalance : Math.max(0, totalNet - amountPaid);
+  const month = active.month || selectedMonth;
+  const storedCoins = parseInt(localStorage.getItem("dpg_user_coins_balance") || "0", 10);
+  const requiredCoins = Math.round(outstanding * 800);
+
+  if (outstanding <= 0) {
     if (coinFb) {
       coinFb.style.display = "block";
       coinFb.style.background = "rgba(16,185,129,0.15)";
       coinFb.style.color = "#34d399";
-      coinFb.textContent = "Net payable is ₹0. No payment required.";
+      coinFb.textContent = "Outstanding balance is ₹0. No payment required.";
     }
     return;
   }
@@ -3846,7 +3934,7 @@ window.payAdsBillWithCoins = async function() {
         coinFb.style.background = "rgba(16,185,129,0.18)";
         coinFb.style.border = "1px solid rgba(16,185,129,0.4)";
         coinFb.style.color = "#34d399";
-        coinFb.innerHTML = `✓ <strong>Bill Settled!</strong> Cycle ${month} (₹${netPayable}) paid with ${requiredCoins.toLocaleString()} DPGCoins. Transferred to <code>its.akshatnetworkhub23@gmail.com</code>.`;
+        coinFb.innerHTML = `✓ <strong>Bill Settled!</strong> Cycle ${month} (₹${outstanding.toLocaleString()}${amountPaid > 0 ? ` of ₹${totalNet.toLocaleString()}` : ''}) paid with ${requiredCoins.toLocaleString()} DPGCoins. Transferred to <code>its.akshatnetworkhub23@gmail.com</code>.`;
       }
       if (payBtn) {
         payBtn.innerHTML = `✓ Settled with Coins`;
