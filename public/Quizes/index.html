@@ -1,11 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/site-map-nav.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <title>DPGNotes Quiz Portal &amp; Examination Engine</title>
-  <meta name="description" content="DPGNotes unified Quiz Portal: Explore academic mock tests, subject assessments, and take secure online examinations." />
   <link rel="icon" href="/ANH.png" type="image/png" />
+  <!-- Dynamic SEO & Metadata Engine -->
+  <script>
+    (function() {
+      function setMetaTag(nameOrProperty, attrName, value) {
+        if (!value) return;
+        var tag = document.querySelector('meta[' + attrName + '="' + nameOrProperty + '"]');
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute(attrName, nameOrProperty);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', value);
+      }
+      function setCanonical(url) {
+        if (!url) return;
+        var link = document.querySelector('link[rel="canonical"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.setAttribute('rel', 'canonical');
+          document.head.appendChild(link);
+        }
+        link.setAttribute('href', url);
+      }
+      window.updateQuizSeoMeta = function(quizObj) {
+        try {
+          var sp = new URLSearchParams(window.location.search);
+          var quizId = (quizObj && (quizObj.quizId || quizObj.id)) || sp.get('quizId') || sp.get('id') || '';
+          if (quizId) {
+            var title = (quizObj && quizObj.title) || sp.get('title') || 'Academic Assessment Examination';
+            var desc = (quizObj && quizObj.description) || sp.get('description') || 'Take online academic examination and subject assessment on DPGNotes. Instant scoring, performance breakdown, and verified questions.';
+            var tagsRaw = (quizObj && (quizObj.topicTags || quizObj.tags)) || sp.get('tags') || sp.get('topicTags') || '';
+            var tags = Array.isArray(tagsRaw) ? tagsRaw.join(', ') : (tagsRaw || 'University Exam, Mock Test');
+            var uploader = (quizObj && (quizObj.ownerName || quizObj.creatorName)) || 'Verified Educator';
+
+            var pageTitle = title.trim() + ' | DPGNotes Examination Engine';
+            document.title = pageTitle;
+
+            setMetaTag('description', 'name', desc.trim());
+
+            var kwList = [tags, 'DPGNotes Quiz', 'Online Exam', 'Academic Assessment', 'Subject Mock Test', quizId];
+            setMetaTag('keywords', 'name', kwList.join(', '));
+
+            var canonicalUrl = 'https://dpgnotes.web.app/Quizes/index.html?quizId=' + encodeURIComponent(quizId);
+            setCanonical(canonicalUrl);
+
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', desc);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'article');
+            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+
+            setMetaTag('twitter:card', 'name', 'summary_large_image');
+            setMetaTag('twitter:title', 'name', pageTitle);
+            setMetaTag('twitter:description', 'name', desc);
+            setMetaTag('twitter:url', 'name', canonicalUrl);
+            setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
+          } else {
+            var pageTitle = 'DPGNotes Quiz Portal & Examination Engine';
+            document.title = pageTitle;
+            var metaDesc = 'DPGNotes unified Quiz Portal: Explore academic mock tests, subject assessments, and take secure online examinations.';
+            setMetaTag('description', 'name', metaDesc);
+            setMetaTag('keywords', 'name', 'DPGNotes Quiz Portal, Examination Engine, Online Mock Tests, Academic Assessments, Engineering Quizzes');
+            var canonicalUrl = 'https://dpgnotes.web.app/Quizes/index.html';
+            setCanonical(canonicalUrl);
+
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', metaDesc);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'website');
+            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+          }
+        } catch(e) {
+          console.warn("Quiz dynamic SEO error:", e);
+        }
+      };
+
+      // Initial synchronous render
+      window.updateQuizSeoMeta();
+    })();
+  </script>
   <meta name="robots" content="index, follow, noai, noimageai" />
   <meta name="googlebot" content="index, follow, noai, noimageai, notranslate" />
   <meta name="chatgpt-user" content="noindex, noai" />
@@ -2055,6 +2134,9 @@
           return;
         }
         quizData = fullSnap.data();
+        if (typeof window.updateQuizSeoMeta === 'function') {
+          window.updateQuizSeoMeta(Object.assign({ quizId: quizId }, meta, quizData));
+        }
         questionsList = [];
         let p = 1;
         while (true) {

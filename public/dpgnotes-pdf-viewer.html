@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/site-map-nav.js"></script>
   <script src="dpg-loader.js"></script>
   <script src="/auth-guard.js"></script>
   <script src="/dpgcoins-policy-handler.js"></script>
@@ -28,14 +29,79 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="ANH.png" type="image/png" />
-  <title>DPGNotes PDF Viewer | Read, Annotate & AI Ask Question</title>
-  <meta name="description" content="Secure, high-performance academic PDF viewer by DPGNotes. View university notes, practical files, study summaries, and interactive AI Q&A." />
-  <meta name="keywords" content="DPGNotes PDF Viewer, Online PDF Reader, Academic Notes Viewer, Study Material Reader, AI PDF Q&A, Akshat Network Hub" />
-  <meta name="author" content="DPGNotes / Akshat Network Hub" />
-  <meta property="og:title" content="DPGNotes PDF Viewer" />
-  <meta property="og:description" content="View university notes, textbooks, and study files with embedded AI summary and interactive tools." />
-  <meta property="og:image" content="ANH.png" />
-  <meta property="og:type" content="article" />
+  <!-- Dynamic SEO & Metadata Engine -->
+  <script>
+    (function() {
+      function setMetaTag(nameOrProperty, attrName, value) {
+        if (!value) return;
+        var tag = document.querySelector('meta[' + attrName + '="' + nameOrProperty + '"]');
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute(attrName, nameOrProperty);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', value);
+      }
+      function setCanonical(url) {
+        if (!url) return;
+        var link = document.querySelector('link[rel="canonical"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.setAttribute('rel', 'canonical');
+          document.head.appendChild(link);
+        }
+        link.setAttribute('href', url);
+      }
+      window.updateViewerSeoMeta = function(docData) {
+        try {
+          var sp = new URLSearchParams(window.location.search);
+          var resId = (docData && (docData.id || docData.resourceId || docData.documentId)) ||
+                      sp.get('resourceId') || sp.get('resourceID') || sp.get('docid') || sp.get('id') || '';
+          var title = (docData && (docData.title || docData.documentTitle)) || sp.get('title') || '';
+          var subject = (docData && (docData.subject || docData.discipline)) || sp.get('subject') || sp.get('discipline') || '';
+          var category = (docData && docData.category) || sp.get('category') || 'Academic Resource';
+          var desc = (docData && (docData.description || docData.desc)) || sp.get('description') || '';
+          var tags = (docData && (Array.isArray(docData.tags) ? docData.tags.join(', ') : docData.tags)) || sp.get('tags') || '';
+          var uploader = (docData && (docData.uploader || docData.userName || docData.author)) || sp.get('uploader') || 'DPGNotes Contributor';
+
+          var cleanTitle = title ? title.trim() : (subject ? subject.trim() + ' Notes' : 'Academic PDF Resource');
+          var pageTitle = cleanTitle + ' | DPGNotes PDF Viewer';
+          document.title = pageTitle;
+
+          var metaDesc = desc ? desc.trim() : ('Read, annotate, and ask AI questions on "' + cleanTitle + '" (' + category + ' - ' + (subject || 'General') + ') uploaded by ' + uploader + ' on DPGNotes.');
+          setMetaTag('description', 'name', metaDesc);
+
+          var kwList = [];
+          if (tags) kwList.push(tags);
+          if (subject) kwList.push(subject);
+          if (category) kwList.push(category);
+          kwList.push('DPGNotes PDF Viewer', 'University Notes', 'Academic Study Material', 'Online PDF Reader');
+          setMetaTag('keywords', 'name', kwList.join(', '));
+          setMetaTag('author', 'name', uploader + ' / DPGNotes');
+
+          var canonicalUrl = 'https://dpgnotes.web.app/dpgnotes-pdf-viewer.html' + (resId ? ('?resourceId=' + encodeURIComponent(resId)) : (title ? ('?title=' + encodeURIComponent(title)) : ''));
+          setCanonical(canonicalUrl);
+
+          setMetaTag('og:title', 'property', pageTitle);
+          setMetaTag('og:description', 'property', metaDesc);
+          setMetaTag('og:url', 'property', canonicalUrl);
+          setMetaTag('og:type', 'property', 'article');
+          setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+
+          setMetaTag('twitter:card', 'name', 'summary_large_image');
+          setMetaTag('twitter:title', 'name', pageTitle);
+          setMetaTag('twitter:description', 'name', metaDesc);
+          setMetaTag('twitter:url', 'name', canonicalUrl);
+          setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
+        } catch(e) {
+          console.warn("Viewer dynamic SEO generation error:", e);
+        }
+      };
+
+      // Initial synchronous extraction from URL parameters
+      window.updateViewerSeoMeta();
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
@@ -1852,6 +1918,9 @@ async function resolveAndRender() {
           if (d.trackId) window.resolvedTrackId = d.trackId;
           docId = d.documentId || window.firestoreDocId || targetSearchId;
           window.currentLoadedDocData = d;
+          if (typeof window.updateViewerSeoMeta === 'function') {
+            window.updateViewerSeoMeta(Object.assign({ id: docId }, d));
+          }
         }
       }
     } catch(err) {

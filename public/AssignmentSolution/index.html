@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/site-map-nav.js"></script>
   <script src="/dpg-loader.js"></script>
   <script src="/auth-guard.js"></script>
   <script src="/dpgcoins-policy-handler.js"></script>
@@ -8,13 +9,89 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DPGNotes Assignment Search Engine | Verified Academic Solutions &amp; Code Sandboxes</title>
-  <meta name="description" content="DPGNotes Assignment Search Engine. Search verified academic assignment solutions, university questions, interactive code sandboxes and test cases. Built for students &amp; educators.">
-  <meta property="og:title" content="DPGNotes Assignment Search Engine | Verified Academic Solutions &amp; Code Sandboxes">
-  <meta property="og:description" content="Search verified academic assignment solutions, questions, code sandboxes and test cases on DPGNotes.">
-  <link rel="canonical" href="https://dpgnotes.web.app/AssignmentSolution/index.html">
-  <meta name="robots" content="index, follow">
   <link rel="icon" href="../ANH.png" type="image/png">
+  <!-- Dynamic SEO & Metadata Engine -->
+  <script>
+    (function() {
+      function setMetaTag(nameOrProperty, attrName, value) {
+        if (!value) return;
+        var tag = document.querySelector('meta[' + attrName + '="' + nameOrProperty + '"]');
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute(attrName, nameOrProperty);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', value);
+      }
+      function setCanonical(url) {
+        if (!url) return;
+        var link = document.querySelector('link[rel="canonical"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.setAttribute('rel', 'canonical');
+          document.head.appendChild(link);
+        }
+        link.setAttribute('href', url);
+      }
+      window.updateAssignmentSeoMeta = function(solData) {
+        try {
+          var sp = new URLSearchParams(window.location.search);
+          var solId = (solData && solData.id) || sp.get('id') || sp.get('solId') || '';
+          if (solId) {
+            var subject = (solData && (solData.subjectName || solData.subjectCode)) || sp.get('subject') || 'Academic Subject';
+            var course = (solData && (solData.course || solData.courseSec)) || sp.get('course') || 'University Course';
+            var uploader = (solData && (solData.contributorName || solData.studentName)) || 'Verified Contributor';
+            var tags = (solData && (Array.isArray(solData.tags) ? solData.tags.join(', ') : solData.tags)) || '';
+
+            var pageTitle = subject + ' Assignment Solution (' + course + ') - DPGNotes';
+            document.title = pageTitle;
+
+            var metaDesc = 'Verified academic assignment solution for ' + subject + ' (' + course + ') by ' + uploader + ' on DPGNotes. Includes questions, step-by-step answers, and live interactive code sandboxes.';
+            setMetaTag('description', 'name', metaDesc);
+
+            var kwList = [subject, course, 'Assignment Solution', 'Academic Assignment', 'DPGNotes Solution', 'Interactive Code Sandbox'];
+            if (tags) kwList.unshift(tags);
+            setMetaTag('keywords', 'name', kwList.join(', '));
+
+            var canonicalUrl = 'https://dpgnotes.web.app/AssignmentSolution/index.html?id=' + encodeURIComponent(solId);
+            setCanonical(canonicalUrl);
+
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', metaDesc);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'article');
+            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+
+            setMetaTag('twitter:card', 'name', 'summary_large_image');
+            setMetaTag('twitter:title', 'name', pageTitle);
+            setMetaTag('twitter:description', 'name', metaDesc);
+            setMetaTag('twitter:url', 'name', canonicalUrl);
+            setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
+          } else {
+            var pageTitle = 'DPGNotes Assignment Search Engine | Verified Academic Solutions & Code Sandboxes';
+            document.title = pageTitle;
+            var metaDesc = 'Search verified academic assignment solutions, university questions, interactive code sandboxes and test cases on DPGNotes. Built for students & educators.';
+            setMetaTag('description', 'name', metaDesc);
+            setMetaTag('keywords', 'name', 'DPGNotes Assignment Search Engine, Academic Solutions, University Assignments, Code Sandboxes, Student Study Material');
+            var canonicalUrl = 'https://dpgnotes.web.app/AssignmentSolution/index.html';
+            setCanonical(canonicalUrl);
+
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', metaDesc);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'website');
+            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+          }
+        } catch(e) {
+          console.warn("Assignment dynamic SEO error:", e);
+        }
+      };
+
+      // Initial synchronous render
+      window.updateAssignmentSeoMeta();
+    })();
+  </script>
+  <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="solutions-style.css?v=2.3.1">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -1307,6 +1384,9 @@
           currentSolutionData.contributorUid = contributorUid;
         }
         renderSolutionShell(currentSolutionData);
+        if (typeof window.updateAssignmentSeoMeta === 'function') {
+          window.updateAssignmentSeoMeta(Object.assign({ id: solutionId }, currentSolutionData));
+        }
         if (!params.get('contributor') && contributorUid) {
           const newUrl = new URL(window.location.href);
           newUrl.searchParams.set('contributor', contributorUid);

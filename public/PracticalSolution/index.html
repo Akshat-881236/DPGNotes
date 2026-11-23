@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/site-map-nav.js"></script>
   <script src="/dpg-loader.js"></script>
   <script src="/auth-guard.js"></script>
   <script src="/dpgcoins-policy-handler.js"></script>
@@ -8,13 +9,89 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DPGNotes Practical Lab Search Engine | Lab Manuals, Interactive Sandboxes &amp; Viva Solutions</title>
-  <meta name="description" content="DPGNotes Practical Lab Search Engine. Search verified academic practical lab solutions, university experiment manuals, interactive code sandboxes and viva test cases.">
-  <meta property="og:title" content="DPGNotes Practical Lab Search Engine | Lab Manuals, Interactive Sandboxes &amp; Viva Solutions">
-  <meta property="og:description" content="Search verified academic practical lab solutions, experiment manuals and code sandboxes on DPGNotes.">
-  <link rel="canonical" href="https://dpgnotes.web.app/PracticalSolution/index.html">
-  <meta name="robots" content="index, follow">
   <link rel="icon" href="../ANH.png" type="image/png">
+  <!-- Dynamic SEO & Metadata Engine -->
+  <script>
+    (function() {
+      function setMetaTag(nameOrProperty, attrName, value) {
+        if (!value) return;
+        var tag = document.querySelector('meta[' + attrName + '="' + nameOrProperty + '"]');
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute(attrName, nameOrProperty);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', value);
+      }
+      function setCanonical(url) {
+        if (!url) return;
+        var link = document.querySelector('link[rel="canonical"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.setAttribute('rel', 'canonical');
+          document.head.appendChild(link);
+        }
+        link.setAttribute('href', url);
+      }
+      window.updatePracticalSeoMeta = function(solData) {
+        try {
+          var sp = new URLSearchParams(window.location.search);
+          var solId = (solData && solData.id) || sp.get('id') || sp.get('solId') || '';
+          if (solId) {
+            var subject = (solData && (solData.subjectName || solData.subjectCode)) || sp.get('subject') || 'Practical Lab Subject';
+            var course = (solData && (solData.course || solData.courseSec)) || sp.get('course') || 'Lab Manual';
+            var uploader = (solData && (solData.contributorName || solData.studentName)) || 'Verified Contributor';
+            var tags = (solData && (Array.isArray(solData.tags) ? solData.tags.join(', ') : solData.tags)) || '';
+
+            var pageTitle = subject + ' Practical Solution & Lab Experiments (' + course + ') - DPGNotes';
+            document.title = pageTitle;
+
+            var metaDesc = 'Verified practical lab experiments, algorithms, source code, and viva solutions for ' + subject + ' (' + course + ') by ' + uploader + ' on DPGNotes. Run and test code in real time.';
+            setMetaTag('description', 'name', metaDesc);
+
+            var kwList = [subject, course, 'Practical Lab Solution', 'Lab Manual', 'Viva Solutions', 'DPGNotes Experiments', 'Interactive Code Sandbox'];
+            if (tags) kwList.unshift(tags);
+            setMetaTag('keywords', 'name', kwList.join(', '));
+
+            var canonicalUrl = 'https://dpgnotes.web.app/PracticalSolution/index.html?id=' + encodeURIComponent(solId);
+            setCanonical(canonicalUrl);
+
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', metaDesc);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'article');
+            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+
+            setMetaTag('twitter:card', 'name', 'summary_large_image');
+            setMetaTag('twitter:title', 'name', pageTitle);
+            setMetaTag('twitter:description', 'name', metaDesc);
+            setMetaTag('twitter:url', 'name', canonicalUrl);
+            setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
+          } else {
+            var pageTitle = 'DPGNotes Practical Lab Search Engine | Lab Manuals, Interactive Sandboxes & Viva Solutions';
+            document.title = pageTitle;
+            var metaDesc = 'Search verified academic practical lab solutions, university experiment manuals, interactive code sandboxes and viva test cases on DPGNotes.';
+            setMetaTag('description', 'name', metaDesc);
+            setMetaTag('keywords', 'name', 'Practical Lab Search Engine, Lab Manuals, University Experiments, Viva Solutions, DPGNotes');
+            var canonicalUrl = 'https://dpgnotes.web.app/PracticalSolution/index.html';
+            setCanonical(canonicalUrl);
+
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', metaDesc);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'website');
+            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+          }
+        } catch(e) {
+          console.warn("Practical dynamic SEO error:", e);
+        }
+      };
+
+      // Initial synchronous render
+      window.updatePracticalSeoMeta();
+    })();
+  </script>
+  <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="solutions-style.css?v=2.3.1">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -1357,6 +1434,9 @@
           currentSolutionData.contributorUid = contributorUid;
         }
         renderSolutionShell(currentSolutionData);
+        if (typeof window.updatePracticalSeoMeta === 'function') {
+          window.updatePracticalSeoMeta(Object.assign({ id: solutionId }, currentSolutionData));
+        }
         if (!params.get('contributor') && contributorUid) {
           const newUrl = new URL(window.location.href);
           newUrl.searchParams.set('contributor', contributorUid);

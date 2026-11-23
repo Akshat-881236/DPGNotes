@@ -418,6 +418,8 @@
     let existingSolutionMetrics = {};
     let pendingEncryptedDoc = null;
     let mySolutionsCache = [];
+    let isEditLoadingInProgress = false;
+    let isEditModeLoaded = false;
     let questionsList = [
       {
         id: 'q_1',
@@ -428,16 +430,30 @@
     window.addEventListener('DOMContentLoaded', async () => {
       checkAuthentication();
       fetchTelemetry();
-      renderQuestionsList();
-      updateLivePreview();
+      const urlParams = new URLSearchParams(window.location.search);
+      const isEditRequest = (urlParams.get('edit') === 'true') || !!(urlParams.get('id') || urlParams.get('editId'));
+      if (isEditRequest) {
+        const container = document.getElementById('questionsContainer');
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:3.5rem 1.5rem; background:rgba(15,23,42,0.6); border:1px dashed rgba(56,189,248,0.3); border-radius:14px; margin:1rem 0;">
+              <i class="ri-loader-4-line ri-spin" style="font-size:2.4rem; color:var(--sol-primary); display:inline-block; margin-bottom:0.75rem;"></i>
+              <h4 style="color:#f8fafc; margin-bottom:0.35rem; font-weight:600;">Loading Assignment Solution Repository...</h4>
+              <p style="color:#94a3b8; font-size:0.88rem; margin:0;">Staging and decrypting solution questions for editing...</p>
+            </div>
+          `;
+        }
+      } else {
+        renderQuestionsList();
+        updateLivePreview();
+      }
       if (typeof window.applyAdsPreferenceToPage === 'function') {
         window.applyAdsPreferenceToPage('all');
       }
       if (typeof window.checkEditModeParam === 'function') {
         window.checkEditModeParam();
       }
-      const urlParams = new URLSearchParams(window.location.search);
-      if (!urlParams.get('id') && !urlParams.get('editId') && typeof window.restoreDraftFromLocalStorage === 'function') {
+      if (!isEditRequest && typeof window.restoreDraftFromLocalStorage === 'function') {
         window.restoreDraftFromLocalStorage();
       }
     });
@@ -563,7 +579,7 @@
           </div>
           <div class="sol-form-group" style="margin-bottom:1rem;">
             <label class="sol-label">Question Title / Prompt <span class="req">*</span></label>
-            <input type="text" class="sol-input" id="title_${q.id}" value="${escapeAttr(q.title)}" placeholder="e.g. Question 1: What is..." oninput="updateQuestionData('${q.id}')" required>
+            <input type="text" class="sol-input" id="title_${q.id}" value="${escapeHtml(q.title || '')}" placeholder="e.g. Question 1: What is..." oninput="updateQuestionData('${q.id}')" required>
           </div>
           <div class="sol-form-group">
             <label class="sol-label">
@@ -594,7 +610,7 @@
                 <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${q.id}', '<div class=&quot;adsense-slot-wrapper&quot;><!-- AdSense In-Article Slot --></div>\\n', '')">adsense-ad</button>
                 <button type="button" class="sol-palette-btn ad-btn" onclick="insertTag('${q.id}', '<div class=&quot;native-ad-wrapper&quot;><!-- Native Learning Ad --></div>\\n', '')">native-ad</button>
               </div>
-              <textarea class="sol-textarea" id="ans_${q.id}" oninput="updateQuestionData('${q.id}')" placeholder="Type solution explanation, code examples, lists..." required>${escapeText(q.answer)}</textarea>
+              <textarea class="sol-textarea" id="ans_${q.id}" oninput="updateQuestionData('${q.id}')" placeholder="Type solution explanation, code examples, lists..." required>${escapeHtml(q.answer || '')}</textarea>
             </div>
           </div>
           <div class="sol-q-preview-box" id="preview_box_${q.id}">
@@ -610,6 +626,18 @@
           </div>
         </div>
       `).join('');
+
+      // Explicitly hydrate form values to guarantee exact string fidelity
+      questionsList.forEach(q => {
+        const ansEl = document.getElementById(`ans_${q.id}`);
+        if (ansEl && ansEl.value !== (q.answer || '')) {
+          ansEl.value = q.answer || '';
+        }
+        const titleEl = document.getElementById(`title_${q.id}`);
+        if (titleEl && titleEl.value !== (q.title || '')) {
+          titleEl.value = q.title || '';
+        }
+      });
     };
     window.addNewQuestion = function() {
       const nextNum = questionsList.length + 1;
@@ -840,31 +868,47 @@
       if (!isEdit && !solId) {
         return; // Normal creation mode
       }
-      let activeUser = window.solAuth?.currentUser;
-      if (!activeUser && typeof window.getResolvedAuthUser === 'function') {
-        activeUser = await window.getResolvedAuthUser();
-      }
-      if (!activeUser) {
-        const authMsg = "Authentication Required: You must be logged into an active contributor account to edit this solution.";
-        if (typeof window.customAlert === 'function') {
-          await window.customAlert(authMsg, { title: "Authentication Required", isDanger: true });
-        } else {
-          alert(authMsg);
-        }
-        window.location.href = "index.html";
+      if (isEditModeLoaded && editingSolutionId === solId) {
         return;
       }
-      if (solId) {
-        await loadSpecificSolutionForEdit(solId, contrib, activeUser);
-      } else {
-        if (typeof window.openMySolutionsModal === 'function') {
-          window.openMySolutionsModal();
+      if (isEditLoadingInProgress) {
+        return;
+      }
+      isEditLoadingInProgress = true;
+      try {
+        let activeUser = window.solAuth?.currentUser;
+        if (!activeUser && typeof window.getResolvedAuthUser === 'function') {
+          activeUser = await window.getResolvedAuthUser();
         }
+        if (!activeUser) {
+          isEditLoadingInProgress = false;
+          const authMsg = "Authentication Required: You must be logged into an active contributor account to edit this solution.";
+          if (typeof window.customAlert === 'function') {
+            await window.customAlert(authMsg, { title: "Authentication Required", isDanger: true });
+          } else {
+            alert(authMsg);
+          }
+          window.location.href = "index.html";
+          return;
+        }
+        if (solId) {
+          await loadSpecificSolutionForEdit(solId, contrib, activeUser);
+        } else {
+          isEditLoadingInProgress = false;
+          if (typeof window.openMySolutionsModal === 'function') {
+            window.openMySolutionsModal();
+          }
+        }
+      } catch (err) {
+        isEditLoadingInProgress = false;
+        console.error("Error in checkEditModeParam:", err);
       }
     };
     window.loadSpecificSolutionForEdit = async function(solId, targetContribUid = null, verifiedAuthUser = null) {
+      isEditLoadingInProgress = true;
       const activeUser = verifiedAuthUser || window.solAuth?.currentUser || (typeof window.getResolvedAuthUser === 'function' ? await window.getResolvedAuthUser() : null);
       if (!activeUser) {
+        isEditLoadingInProgress = false;
         const authMsg = "Authentication Required: You must be logged in as an active contributor to edit this document.";
         if (typeof window.customAlert === 'function') {
           await window.customAlert(authMsg, { title: "Authentication Required", isDanger: true });
@@ -888,6 +932,7 @@
           }
         }
         if (!snap.exists()) {
+          isEditLoadingInProgress = false;
           if (typeof window.customAlert === 'function') {
             await window.customAlert("Solution document not found in your authoring repository.", { title: "Not Found", isDanger: true });
           }
@@ -899,6 +944,7 @@
         const uidMatch = !!(ownerUid && ownerUid === currentUid);
         const emailMatch = !!(ownerEmail && userEmail === ownerEmail);
         if (!uidMatch || !emailMatch) {
+          isEditLoadingInProgress = false;
           const mismatch = (!uidMatch && !emailMatch) ? "UID_AND_EMAIL_MISMATCH" : (!uidMatch ? "UID_MISMATCH" : "EMAIL_MISMATCH");
           const caseId = `CASE-AAV-${(solId || 'SOL').slice(0, 6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
           const violationData = {
@@ -976,6 +1022,16 @@
             encChk.checked = true;
             window.toggleEncryptionFields();
           }
+          const container = document.getElementById('questionsContainer');
+          if (container) {
+            container.innerHTML = `
+              <div style="text-align:center; padding:3.5rem 1.5rem; background:rgba(15,23,42,0.6); border:1px solid rgba(245,158,11,0.3); border-radius:14px; margin:1rem 0;">
+                <i class="ri-lock-2-line" style="font-size:2.4rem; color:#f59e0b; display:inline-block; margin-bottom:0.75rem;"></i>
+                <h4 style="color:#f8fafc; margin-bottom:0.35rem; font-weight:600;">Encrypted Solution Repository</h4>
+                <p style="color:#94a3b8; font-size:0.88rem; margin:0;">Enter your encryption password in the unlock dialog to stage and edit questions.</p>
+              </div>
+            `;
+          }
           document.getElementById('editUnlockModal').style.display = 'flex';
           const pwdInput = document.getElementById('inpEditUnlockPassword');
           if (pwdInput) {
@@ -993,6 +1049,8 @@
           ];
           renderQuestionsList();
           updateLivePreview();
+          isEditModeLoaded = true;
+          isEditLoadingInProgress = false;
         }
         const mySolModal = document.getElementById('mySolutionsModal');
         if (mySolModal) mySolModal.style.display = 'none';
@@ -1001,6 +1059,7 @@
         newUrl.searchParams.set('edit', 'true');
         window.history.replaceState({}, '', newUrl);
       } catch (err) {
+        isEditLoadingInProgress = false;
         console.error("Error loading solution for edit:", err);
         if (typeof window.customAlert === 'function') {
           await window.customAlert("Failed to load solution for editing: " + err.message, { title: "Error", isDanger: true });
@@ -1074,6 +1133,8 @@
         if (encPassConfirm) encPassConfirm.value = pass;
         renderQuestionsList();
         updateLivePreview();
+        isEditModeLoaded = true;
+        isEditLoadingInProgress = false;
         document.getElementById('editUnlockModal').style.display = 'none';
         if (typeof window.customAlert === 'function') {
           await window.customAlert("Decrypted successfully! You can now edit questions, update course, change password, or uncheck 'Enable Password Protection' to remove password encryption completely.", { title: "Decrypted for Editing" });
@@ -1091,7 +1152,7 @@
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = '<i class="ri-lock-unlock-line"></i> Unlock &amp; Edit';
+          submitBtn.innerHTML = 'Unlock &amp; Load Solution';
         }
       }
     };
@@ -1513,14 +1574,23 @@
         });
       }
     };
+    function escapeHtml(s) {
+      if (s == null) return '';
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
     function escapeAttr(s) {
-      return (s || '').replace(/"/g, '&quot;');
+      return escapeHtml(s);
     }
     function escapeText(s) {
-      return (s || '');
+      return escapeHtml(s);
     }
     function escapeAdminHtml(s) {
-      return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return escapeHtml(s);
     }
   </script>
 </body>
