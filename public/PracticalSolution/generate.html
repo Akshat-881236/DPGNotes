@@ -27,7 +27,7 @@
     (function() {
       const uid = localStorage.getItem("dpgActiveUserUid");
       if (!uid) {
-        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.pathname + window.location.search));
       }
     })();
   </script>
@@ -484,7 +484,7 @@
       const uid = localStorage.getItem("dpgActiveUserUid");
       const userRaw = localStorage.getItem("dpgActiveUser");
       if (!uid) {
-        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.href));
+        window.location.replace('/auth-layer.html?go-to=' + encodeURIComponent(window.location.pathname + window.location.search));
         return false;
       }
       try {

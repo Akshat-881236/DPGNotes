@@ -528,6 +528,12 @@ onAuthStateChanged(auth, async (user) => {
     });
   } else {
     currentUser = null;
+    localStorage.removeItem("dpgActiveUserUid");
+    localStorage.removeItem("dpgActiveUser");
+    localStorage.removeItem("dpgActiveUserEmail");
+    localStorage.removeItem("dpgActiveUserName");
+    localStorage.removeItem("dpgActiveUserPhoto");
+
     const statusTxt = document.getElementById("authStatusText");
     const subTxt = document.getElementById("authSubText");
     if (statusTxt) {
@@ -538,10 +544,22 @@ onAuthStateChanged(auth, async (user) => {
       subTxt.innerText = "No active contributor session found. Redirecting to Sign In...";
     }
     setTimeout(() => {
+      let cleanDestination = "/dashboard.html";
+      try {
+        const cur = new URL(window.location.href);
+        cur.searchParams.delete("action");
+        cur.searchParams.delete("auth");
+        cur.searchParams.delete("go-to");
+        cur.searchParams.delete("goto");
+        cur.searchParams.delete("redirect");
+        cur.searchParams.delete("redirect-to");
+        cleanDestination = cur.pathname + (cur.search ? cur.search : "") + (cur.hash || "");
+      } catch (_) {}
+
       if (typeof window.redirectToLogin === "function") {
-        window.redirectToLogin(window.location.href);
+        window.redirectToLogin(cleanDestination);
       } else {
-        window.location.replace("index.html?action=signIn&go-to=" + encodeURIComponent(window.location.href));
+        window.location.replace("/index.html?action=signIn&go-to=" + encodeURIComponent(cleanDestination));
       }
     }, 1200);
   }

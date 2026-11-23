@@ -603,12 +603,22 @@
       try {
         const parsed = new URL(target, window.location.origin);
         if (parsed.origin === window.location.origin) {
-          resolved = parsed.pathname + parsed.search + parsed.hash;
+          parsed.searchParams.delete('action');
+          parsed.searchParams.delete('auth');
+          parsed.searchParams.delete('go-to');
+          parsed.searchParams.delete('goto');
+          parsed.searchParams.delete('redirect');
+          parsed.searchParams.delete('returnUrl');
+          const search = parsed.searchParams.toString();
+          resolved = parsed.pathname + (search ? '?' + search : '') + parsed.hash;
         }
       } catch (e) {}
-      if (resolved === '/dashboard.html' && target.startsWith('/') && !target.startsWith('//')) {
-        resolved = target;
+
+      // Reject redirecting back into auth layer or index
+      if (!resolved || resolved === '/' || resolved.includes('auth-layer.html') || resolved.includes('index.html')) {
+        resolved = '/dashboard.html';
       }
+
       if (resolved && resolved !== '/dashboard.html') {
         try {
           sessionStorage.setItem('dpg_auth_redirect', resolved);

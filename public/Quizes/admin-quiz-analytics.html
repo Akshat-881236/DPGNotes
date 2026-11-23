@@ -11,7 +11,7 @@
     (function() {
       const adminToken = localStorage.getItem("adminToken");
       if (!adminToken) {
-        window.location.replace('/admin-login.html?go-to=' + encodeURIComponent(window.location.href));
+        window.location.replace('/admin-login.html?go-to=' + encodeURIComponent(window.location.pathname + window.location.search));
       }
     })();
   </script>
@@ -261,7 +261,7 @@
     let allPlatformQuizzes = [];
     const token = localStorage.getItem("adminToken");
     if (!token) {
-      window.location.replace('/admin-login.html?go-to=' + encodeURIComponent(window.location.href));
+      window.location.replace('/admin-login.html?go-to=' + encodeURIComponent(window.location.pathname + window.location.search));
     }
     onAuthStateChanged(auth, async (user) => {
       if (!user) {

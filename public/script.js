@@ -144,13 +144,23 @@ window.isContributorModeActive = function() {
   try {
     if (typeof currentUser !== "undefined" && currentUser) return true;
     if (typeof auth !== "undefined" && auth && auth.currentUser) return true;
-    if (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated")) return true;
-    if (localStorage.getItem("dpgActiveUserUid") || localStorage.getItem("dpgActiveUser")) return true;
+    if (document.documentElement && document.documentElement.classList.contains("dpg-user-authenticated") && localStorage.getItem("dpgActiveUserUid")) return true;
   } catch(e) {}
   return false;
 };
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
+  if (!user) {
+    document.documentElement.classList.remove("dpg-user-authenticated");
+    localStorage.removeItem("dpgActiveUserUid");
+    localStorage.removeItem("dpgActiveUser");
+    localStorage.removeItem("dpgActiveUserEmail");
+    localStorage.removeItem("dpgActiveUserName");
+    localStorage.removeItem("dpgActiveUserPhoto");
+  } else {
+    document.documentElement.classList.add("dpg-user-authenticated");
+    localStorage.setItem("dpgActiveUserUid", user.uid);
+  }
   updateNavbarAuth(user);
 });
 function updateNavbarAuth(user) {
@@ -1709,13 +1719,17 @@ document.addEventListener("DOMContentLoaded", () => {
     window.setAuthRedirectTarget(rawGoTo);
   }
   if (actionParam === "signin" || actionParam === "login") {
-    if (!window.isContributorModeActive || !window.isContributorModeActive()) {
+    const isLiveAuth = Boolean(auth && auth.currentUser && !auth.currentUser.isAnonymous);
+    if (!isLiveAuth) {
       setTimeout(() => { if (window.openSignInModal) window.openSignInModal(); }, 350);
-    } else if (rawGoTo && typeof window.handleAuthRedirect === "function") {
-      window.handleAuthRedirect(null, "dashboard.html");
+    } else {
+      if (rawGoTo && typeof window.handleAuthRedirect === "function") {
+        window.handleAuthRedirect(auth.currentUser, "dashboard.html");
+      }
     }
   } else if (actionParam === "signup" || actionParam === "register") {
-    if (!window.isContributorModeActive || !window.isContributorModeActive()) {
+    const isLiveAuth = Boolean(auth && auth.currentUser && !auth.currentUser.isAnonymous);
+    if (!isLiveAuth) {
       setTimeout(() => { if (window.openSignUpModal) window.openSignUpModal(); }, 350);
     }
   }

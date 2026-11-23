@@ -2,27 +2,47 @@
  * DPGNotes Global Unified Authentication Guard & Go-To Redirection Handler
  * Automatically manages:
  * 1. Safe capturing and persistence of destination URLs via '?go-to=' / '?goto=' params.
- * 2. Automatic interception of unauthenticated access on protected pages (like dashboard.html).
- * 3. Smooth post-login redirection for both index.html and in-page/built-in authentication components.
+ * 2. Robust loop prevention (no bouncing between index.html and protected pages).
+ * 3. Automatic interception of unauthenticated access on protected pages (like dashboard.html).
+ * 4. Clean post-login redirection for both index.html and in-page/built-in authentication components.
  */
 (function() {
   "use strict";
 
-  // Safe origin check to prevent open-redirect vulnerabilities
+  // Sanitize destination URL to prevent open-redirects and recursive redirect loops
   function sanitizeDestination(url) {
     if (!url || typeof url !== "string") return "";
     const trimmed = url.trim();
     if (!trimmed) return "";
 
     try {
-      // Relative path: e.g. /dashboard.html?tab=devToolsTab or AssignmentSolution/index.html?id=...
-      if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
-        return trimmed;
-      }
       const parsed = new URL(trimmed, window.location.origin);
-      if (parsed.origin === window.location.origin) {
-        return parsed.pathname + parsed.search + parsed.hash;
+      if (parsed.origin !== window.location.origin) {
+        return "";
       }
+
+      // Strip auth recursion and redirect parameters
+      parsed.searchParams.delete("action");
+      parsed.searchParams.delete("auth");
+      parsed.searchParams.delete("go-to");
+      parsed.searchParams.delete("goto");
+      parsed.searchParams.delete("redirect");
+      parsed.searchParams.delete("redirect-to");
+      parsed.searchParams.delete("returnUrl");
+      parsed.searchParams.delete("return_url");
+      parsed.searchParams.delete("dest");
+      parsed.searchParams.delete("target");
+      parsed.searchParams.delete("next");
+      parsed.searchParams.delete("continue");
+
+      const pathname = parsed.pathname || "";
+      // Reject any login / auth gateway pages as valid post-login destinations
+      if (!pathname || pathname === "/" || pathname === "/index.html" || pathname.endsWith("/index.html") || pathname.includes("auth-layer.html") || pathname.includes("admin-login.html")) {
+        return "";
+      }
+
+      const search = parsed.searchParams.toString();
+      return pathname + (search ? "?" + search : "") + (parsed.hash || "");
     } catch (_) {}
     return "";
   }
@@ -71,8 +91,37 @@
 
   // Global redirect to index.html with action=signIn and encoded go-to parameter
   function redirectToLogin(customTarget) {
-    const target = customTarget || (window.location.pathname + window.location.search + window.location.hash);
-    const sanitized = sanitizeDestination(target) || "/dashboard.html";
+    // If the current page is already index.html or an auth layer, never self-redirect
+    const currentPath = window.location.pathname;
+    if (currentPath === "/" || currentPath.endsWith("/index.html") || currentPath.includes("auth-layer.html")) {
+      return;
+    }
+
+    const rawTarget = customTarget || (window.location.pathname + window.location.search + window.location.hash);
+    const sanitized = sanitizeDestination(rawTarget) || "/dashboard.html";
+
+    // Loop Breaker: Detect rapid oscillation between protected page and login
+    try {
+      const lastTs = parseInt(sessionStorage.getItem("dpg_login_redirect_ts") || "0", 10);
+      const lastDest = sessionStorage.getItem("dpg_login_redirect_dest") || "";
+      const now = Date.now();
+      if (now - lastTs < 4000 && lastDest === sanitized) {
+        console.warn("[AuthGuard] Infinite redirect loop detected for", sanitized, "- breaking loop!");
+        sessionStorage.removeItem("dpg_auth_redirect");
+        sessionStorage.removeItem("dpg_login_redirect_dest");
+        localStorage.removeItem("dpgActiveUserUid");
+        localStorage.removeItem("dpgActiveUser");
+        if (window.location.replace) {
+          window.location.replace("/index.html?action=signIn");
+        } else {
+          window.location.href = "/index.html?action=signIn";
+        }
+        return;
+      }
+      sessionStorage.setItem("dpg_login_redirect_ts", now.toString());
+      sessionStorage.setItem("dpg_login_redirect_dest", sanitized);
+    } catch (_) {}
+
     setAuthRedirectTarget(sanitized);
 
     const destUrl = "/index.html?action=signIn&go-to=" + encodeURIComponent(sanitized);
@@ -85,19 +134,35 @@
 
   // Execute redirection upon successful authentication
   function handleAuthRedirect(user, defaultFallback = "/dashboard.html") {
+    // Require active authenticated user before redirecting
+    const uid = user ? (user.uid || user) : null;
+    if (!uid) {
+      console.warn("[AuthGuard] handleAuthRedirect aborted: user is not authenticated.");
+      return;
+    }
+
     const target = getAuthRedirectTarget(defaultFallback);
     try {
       sessionStorage.removeItem("dpg_auth_redirect");
       localStorage.removeItem("dpg_auth_redirect");
+      sessionStorage.removeItem("dpg_login_redirect_ts");
+      sessionStorage.removeItem("dpg_login_redirect_dest");
     } catch (_) {}
 
     // Credit Sign-In Reward (+1,000 DPGCoins) and register device session on explicit SignIn
-    const uid = user ? (user.uid || user) : (localStorage.getItem("dpgActiveUserUid") || null);
-    if (uid && window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
+    if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.recordSignInReward === "function") {
       try { window.DPGCoinsPolicy.recordSignInReward(uid); } catch (_) {}
     }
 
-    const finalTarget = (target && target !== "/" && !target.includes("index.html")) ? target : defaultFallback;
+    const cleaned = sanitizeDestination(target) || defaultFallback;
+    const finalTarget = (cleaned && cleaned !== "/" && !cleaned.includes("index.html")) ? cleaned : defaultFallback;
+
+    // Do not reload if destination matches current page
+    const currentLoc = window.location.pathname + window.location.search + window.location.hash;
+    if (finalTarget === currentLoc) {
+      return;
+    }
+
     if (window.location.replace) {
       window.location.replace(finalTarget);
     } else {
