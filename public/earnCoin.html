@@ -11,6 +11,20 @@
   <script src="config.js"></script>
   <script src="/auth-guard.js"></script>
   <script src="/dpgcoins-policy-handler.js"></script>
+  <script>
+    // Global immediate bindings so buttons never fail regardless of module loading state
+    window.closeWarningModal = function() {
+      const modal = document.getElementById("warningModalOverlay");
+      if (modal) modal.style.display = "none";
+    };
+    window.goToTargetDestination = function() {
+      if (window.canNavigateDestination && window.activeTargetDestination) {
+        window.location.href = window.activeTargetDestination;
+      } else {
+        alert("Destination Locked: Please earn at least 350 DPGCoins in this recovery challenge to unlock.");
+      }
+    };
+  </script>
   <style>
     :root {
       --bg-dark: #070b14;
@@ -566,6 +580,8 @@
       .warning-modal {
         padding: 1.5rem 1.15rem;
         border-radius: 18px;
+        max-height: 92vh;
+        overflow-y: auto;
       }
       .warning-title {
         font-size: 1.25rem;
