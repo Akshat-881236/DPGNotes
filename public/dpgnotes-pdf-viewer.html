@@ -52,7 +52,28 @@
         }
         link.setAttribute('href', url);
       }
+
+      var viewerFallbackTimer = null;
+
+      function applyViewerFallbackSeo() {
+        var sp = new URLSearchParams(window.location.search);
+        var pageTitle = 'Academic PDF Resource | DPGNotes PDF Viewer';
+        document.title = pageTitle;
+        setMetaTag('description', 'name', 'Read, annotate, and ask AI questions on academic PDF notes and educational materials on DPGNotes.');
+        setMetaTag('keywords', 'name', 'DPGNotes PDF Viewer, University Notes, Academic Study Material, Online PDF Reader');
+        var resId = sp.get('resourceId') || sp.get('resourceID') || sp.get('docid') || sp.get('id') || '';
+        var canonicalUrl = 'https://dpgnotes.web.app/dpgnotes-pdf-viewer.html' + (resId ? ('?resourceId=' + encodeURIComponent(resId)) : '');
+        setCanonical(canonicalUrl);
+        setMetaTag('og:title', 'property', pageTitle);
+        setMetaTag('og:description', 'property', 'Read, annotate, and ask AI questions on academic PDF notes and educational materials on DPGNotes.');
+        setMetaTag('og:url', 'property', canonicalUrl);
+      }
+
       window.updateViewerSeoMeta = function(docData) {
+        if (viewerFallbackTimer) {
+          clearTimeout(viewerFallbackTimer);
+          viewerFallbackTimer = null;
+        }
         try {
           var sp = new URLSearchParams(window.location.search);
           var resId = (docData && (docData.id || docData.resourceId || docData.documentId)) ||
@@ -64,41 +85,56 @@
           var tags = (docData && (Array.isArray(docData.tags) ? docData.tags.join(', ') : docData.tags)) || sp.get('tags') || '';
           var uploader = (docData && (docData.uploader || docData.userName || docData.author)) || sp.get('uploader') || 'DPGNotes Contributor';
 
-          var cleanTitle = title ? title.trim() : (subject ? subject.trim() + ' Notes' : 'Academic PDF Resource');
-          var pageTitle = cleanTitle + ' | DPGNotes PDF Viewer';
-          document.title = pageTitle;
+          if (docData || title || subject) {
+            var cleanTitle = title ? title.trim() : (subject ? subject.trim() + ' Notes' : 'Academic PDF Resource');
+            var pageTitle = cleanTitle + ' | DPGNotes PDF Viewer';
+            document.title = pageTitle;
 
-          var metaDesc = desc ? desc.trim() : ('Read, annotate, and ask AI questions on "' + cleanTitle + '" (' + category + ' - ' + (subject || 'General') + ') uploaded by ' + uploader + ' on DPGNotes.');
-          setMetaTag('description', 'name', metaDesc);
+            var metaDesc = desc ? desc.trim() : ('Read, annotate, and ask AI questions on "' + cleanTitle + '" (' + category + ' - ' + (subject || 'General') + ') uploaded by ' + uploader + ' on DPGNotes.');
+            setMetaTag('description', 'name', metaDesc);
 
-          var kwList = [];
-          if (tags) kwList.push(tags);
-          if (subject) kwList.push(subject);
-          if (category) kwList.push(category);
-          kwList.push('DPGNotes PDF Viewer', 'University Notes', 'Academic Study Material', 'Online PDF Reader');
-          setMetaTag('keywords', 'name', kwList.join(', '));
-          setMetaTag('author', 'name', uploader + ' / DPGNotes');
+            var kwList = [];
+            if (tags) kwList.push(tags);
+            if (subject) kwList.push(subject);
+            if (category) kwList.push(category);
+            kwList.push('DPGNotes PDF Viewer', 'University Notes', 'Academic Study Material', 'Online PDF Reader');
+            setMetaTag('keywords', 'name', kwList.join(', '));
+            setMetaTag('author', 'name', uploader + ' / DPGNotes');
 
-          var canonicalUrl = 'https://dpgnotes.web.app/dpgnotes-pdf-viewer.html' + (resId ? ('?resourceId=' + encodeURIComponent(resId)) : (title ? ('?title=' + encodeURIComponent(title)) : ''));
-          setCanonical(canonicalUrl);
+            var canonicalUrl = 'https://dpgnotes.web.app/dpgnotes-pdf-viewer.html' + (resId ? ('?resourceId=' + encodeURIComponent(resId)) : (title ? ('?title=' + encodeURIComponent(title)) : ''));
+            setCanonical(canonicalUrl);
 
-          setMetaTag('og:title', 'property', pageTitle);
-          setMetaTag('og:description', 'property', metaDesc);
-          setMetaTag('og:url', 'property', canonicalUrl);
-          setMetaTag('og:type', 'property', 'article');
-          setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', metaDesc);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'article');
+            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
 
-          setMetaTag('twitter:card', 'name', 'summary_large_image');
-          setMetaTag('twitter:title', 'name', pageTitle);
-          setMetaTag('twitter:description', 'name', metaDesc);
-          setMetaTag('twitter:url', 'name', canonicalUrl);
-          setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
+            setMetaTag('twitter:card', 'name', 'summary_large_image');
+            setMetaTag('twitter:title', 'name', pageTitle);
+            setMetaTag('twitter:description', 'name', metaDesc);
+            setMetaTag('twitter:url', 'name', canonicalUrl);
+            setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
+          } else if (resId || sp.get('pdf')) {
+            // Parameter is present in URL, wait for proper amount of time for Backend Firestore fetch
+            document.title = 'Loading Document... | DPGNotes PDF Viewer';
+            var canonicalUrl = 'https://dpgnotes.web.app/dpgnotes-pdf-viewer.html' + (resId ? ('?resourceId=' + encodeURIComponent(resId)) : '');
+            setCanonical(canonicalUrl);
+            viewerFallbackTimer = setTimeout(function() {
+              if (!window.currentLoadedDocData) {
+                applyViewerFallbackSeo();
+              }
+            }, 4000);
+          } else {
+            // No respective parameter, apply fallback immediately
+            applyViewerFallbackSeo();
+          }
         } catch(e) {
           console.warn("Viewer dynamic SEO generation error:", e);
         }
       };
 
-      // Initial synchronous extraction from URL parameters
+      // Initial execution
       window.updateViewerSeoMeta();
     })();
   </script>

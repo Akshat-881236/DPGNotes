@@ -9,16 +9,120 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="ANH.png" type="image/png" />
-  <link rel="canonical" href="https://dpgnotes.web.app/profile.html" />
   <meta name="robots" content="index, follow" />
-  <title>My Profile | DPGNotes Contributor &amp; Academic Network</title>
-  <meta name="description" content="View verified contributor profiles, published study materials, academic achievements, follower community, and AI knowledge contributions on DPGNotes." />
-  <meta name="keywords" content="DPGNotes Profile, Contributor Library, Academic Portfolio, Student Creator, Notes Publisher, Akshat Network Hub" />
-  <meta name="author" content="DPGNotes / Akshat Network Hub" />
-  <meta property="og:title" content="DPGNotes Contributor Profile" />
-  <meta property="og:description" content="Explore verified academic portfolios, published study guides, and educational materials on DPGNotes." />
-  <meta property="og:image" content="ANH.png" />
-  <meta property="og:type" content="profile" />
+  <script>
+    (function() {
+      function setMetaTag(nameOrProp, attrName, content) {
+        var el = document.querySelector('meta[' + attrName + '="' + nameOrProp + '"]');
+        if (!el) {
+          el = document.createElement('meta');
+          el.setAttribute(attrName, nameOrProp);
+          document.head.appendChild(el);
+        }
+        el.setAttribute('content', content);
+      }
+      function setCanonical(url) {
+        var link = document.querySelector('link[rel="canonical"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.setAttribute('rel', 'canonical');
+          document.head.appendChild(link);
+        }
+        link.setAttribute('href', url);
+      }
+      function setFavicon(url) {
+        if (!url) return;
+        var link = document.querySelector('link[rel="icon"]') || document.querySelector('link[rel="shortcut icon"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.setAttribute('rel', 'icon');
+          document.head.appendChild(link);
+        }
+        link.setAttribute('href', url);
+      }
+
+      var profileFallbackTimer = null;
+
+      function applyProfileFallbackSeo() {
+        var pageTitle = 'My Profile | DPGNotes Contributor & Academic Network';
+        document.title = pageTitle;
+        var metaDesc = 'View verified contributor profiles, published study materials, academic achievements, follower community, and AI knowledge contributions on DPGNotes.';
+        setMetaTag('description', 'name', metaDesc);
+        setMetaTag('keywords', 'name', 'DPGNotes Profile, Contributor Library, Academic Portfolio, Student Creator, Notes Publisher, Akshat Network Hub');
+        setMetaTag('author', 'name', 'DPGNotes / Akshat Network Hub');
+        var canonicalUrl = 'https://dpgnotes.web.app/profile.html';
+        setCanonical(canonicalUrl);
+
+        setMetaTag('og:title', 'property', pageTitle);
+        setMetaTag('og:description', 'property', metaDesc);
+        setMetaTag('og:url', 'property', canonicalUrl);
+        setMetaTag('og:type', 'property', 'profile');
+        setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+        setMetaTag('twitter:card', 'name', 'summary_large_image');
+        setMetaTag('twitter:title', 'name', pageTitle);
+        setMetaTag('twitter:description', 'name', metaDesc);
+        setMetaTag('twitter:url', 'name', canonicalUrl);
+        setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
+      }
+
+      window.updateDynamicProfileSeo = function(profile) {
+        if (profileFallbackTimer) {
+          clearTimeout(profileFallbackTimer);
+          profileFallbackTimer = null;
+        }
+        try {
+          var sp = new URLSearchParams(window.location.search);
+          var uid = (profile && profile.uid) || sp.get('uid') || localStorage.getItem('dpgActiveUserUid') || '';
+          if (profile && profile.name) {
+            var name = profile.name.trim();
+            var pageTitle = name + ' - Contributor Profile | DPGNotes';
+            document.title = pageTitle;
+            var cleanBio = (profile.bio || ('Explore ' + name + '\'s verified academic portfolio and shared resources on DPGNotes.')).replace(/<[^>]*>/g, '').substring(0, 160);
+            setMetaTag('description', 'name', cleanBio);
+            setMetaTag('keywords', 'name', name + ', DPGNotes Contributor, ' + (profile.discipline || 'Academic') + ' Student, Study Material, Akshat Network Hub');
+            setMetaTag('author', 'name', name + ' / DPGNotes');
+
+            var canonicalUrl = 'https://dpgnotes.web.app/profile.html?uid=' + encodeURIComponent(uid);
+            setCanonical(canonicalUrl);
+
+            var photo = profile.avatarUrl || profile.profilePic || profile.photoURL || 'https://dpgnotes.web.app/ANH.png';
+            if (photo && photo !== 'https://dpgnotes.web.app/ANH.png') {
+              setFavicon(photo);
+            }
+
+            setMetaTag('og:title', 'property', pageTitle);
+            setMetaTag('og:description', 'property', cleanBio);
+            setMetaTag('og:url', 'property', canonicalUrl);
+            setMetaTag('og:type', 'property', 'profile');
+            setMetaTag('og:image', 'property', photo);
+
+            setMetaTag('twitter:card', 'name', 'summary_large_image');
+            setMetaTag('twitter:title', 'name', pageTitle);
+            setMetaTag('twitter:description', 'name', cleanBio);
+            setMetaTag('twitter:url', 'name', canonicalUrl);
+            setMetaTag('twitter:image', 'name', photo);
+          } else if (uid) {
+            // UID present, wait for proper amount of time for Firestore profile fetch
+            document.title = 'Loading Contributor Profile... | DPGNotes';
+            var canonicalUrl = 'https://dpgnotes.web.app/profile.html?uid=' + encodeURIComponent(uid);
+            setCanonical(canonicalUrl);
+            profileFallbackTimer = setTimeout(function() {
+              if (!window.currentLoadedProfileData) {
+                applyProfileFallbackSeo();
+              }
+            }, 4000);
+          } else {
+            applyProfileFallbackSeo();
+          }
+        } catch(e) {
+          console.warn("Profile dynamic SEO error:", e);
+        }
+      };
+
+      // Initial execution
+      window.updateDynamicProfileSeo();
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
@@ -826,6 +930,10 @@
     }
     function updateDynamicSEOAndSchema(profile) {
       try {
+        window.currentLoadedProfileData = profile;
+        if (typeof window.updateDynamicProfileSeo === 'function') {
+          window.updateDynamicProfileSeo(profile);
+        }
         document.title = `${profile.name} - Contributor Profile | DPGNotes`;
         let metaDesc = document.querySelector('meta[name="description"]');
         if (!metaDesc) {

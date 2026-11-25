@@ -77,22 +77,26 @@
             overflow: visible;
         }
         .header {
-            height: 70px;
+            height: 60px;
             background: var(--bg-secondary);
             border-bottom: 2px solid var(--accent-primary);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 20px;
             box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
+            z-index: 1000;
+            gap: 10px;
+            white-space: nowrap;
         }
         .header-title {
-            font-size: 24px;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--accent-primary);
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
         .logo-icon {
             width: 30px;
@@ -107,40 +111,17 @@
         }
         .header-info {
             display: flex;
-            gap: 20px;
+            gap: 8px;
             align-items: center;
             font-size: 13px;
             color: var(--text-secondary);
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
         }
-        @media (max-width: 768px) {
-            .header {
-                height: auto;
-                min-height: 56px;
-                padding: 6px 12px;
-                gap: 6px;
-            }
-            .header-title {
-                font-size: 0.95rem;
-                gap: 6px;
-            }
-            .header-info {
-                gap: 6px;
-            }
-            .header-info a {
-                font-size: 0.75rem !important;
-                margin-right: 4px !important;
-            }
-            .native-ads[data-ad-variant="header"] {
-                margin-top: 72px !important;
-            }
-        }
-        @media (max-width: 480px) {
-            .header-title span {
-                font-size: 0.85rem;
-            }
-            #userHeaderPillAnalyzer {
-                margin-right: 2px !important;
-            }
+        .header-info::-webkit-scrollbar {
+            display: none;
         }
         .status-dot {
             width: 10px;
@@ -521,13 +502,47 @@
         }
         @media (max-width: 768px) {
             .header {
-                padding: 0 15px;
+                height: 52px;
+                padding: 0 10px;
+                gap: 6px;
             }
             .header-title {
-                font-size: 18px;
+                font-size: 0.92rem;
+                gap: 6px;
+            }
+            .header-title span {
+                max-width: 130px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .header-info {
+                display: flex !important;
+                gap: 5px;
+                flex-wrap: nowrap;
+                align-items: center;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+            .header-info::-webkit-scrollbar {
                 display: none;
+            }
+            /* Icon-only logic for header actions on small screens */
+            .header-info a .header-btn-text,
+            #userHeaderPillAnalyzer .header-btn-text,
+            #dpgUtilityCoinsPill span,
+            #dpgUtilityQuotaBadge span {
+                display: none !important;
+            }
+            #dpgUtilityCoinsPill,
+            #dpgUtilityQuotaBadge,
+            #userHeaderPillAnalyzer a,
+            #userHeaderPillAnalyzer span,
+            .header-legal-link {
+                padding: 5px 8px !important;
+                margin-right: 0 !important;
+                font-size: 0.85rem !important;
+                border-radius: 16px !important;
             }
             .content-area {
                 padding: 15px;
@@ -542,11 +557,12 @@
         }
         @media (max-width: 425px) {
             .header {
-                height: 60px;
-                padding: 0 10px;
+                height: 50px;
+                padding: 0 8px;
             }
             .header-title {
-                font-size: 16px;
+                font-size: 0.85rem;
+            }
             }
             .upload-zone {
                 padding: 20px;
@@ -639,7 +655,7 @@
             <span>ANH PDF Meta Analyzer</span>
         </div>
         <div class="header-info">
-            <a href="legal/index.html" style="color:var(--accent-primary); text-decoration:none; margin-right:15px; font-size:0.9rem;">Legal Policies</a>
+            <a href="legal/index.html" class="header-legal-link" title="Legal Policies" style="color:var(--accent-primary); text-decoration:none; margin-right:15px; font-size:0.9rem; display:inline-flex; align-items:center; gap:5px;"><i class="ri-scales-3-line"></i> <span class="header-btn-text">Legal Policies</span></a>
             <div id="userHeaderPillAnalyzer" style="display:inline-flex; align-items:center; margin-right:10px;"></div>
             <div class="status-dot"></div>
         </div>
@@ -961,6 +977,17 @@
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
                 analyzer.pdfDoc = pdf;
+                const pageCount = pdf.numPages || 1;
+                if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.executeUtilityDeduction === 'function') {
+                    try {
+                        await window.DPGCoinsPolicy.executeUtilityDeduction('PDF Meta Analyzer', pageCount, {
+                            fileName: file.name,
+                            pages: pageCount
+                        });
+                    } catch (e) {
+                        console.warn("Analyzer utility coins deduction error:", e);
+                    }
+                }
                 const metadata = await pdf.getMetadata();
                 const info = metadata.info || {};
                 const params = metadata.parameters || {};
@@ -1429,9 +1456,9 @@
             if (pill) {
                 const uid = localStorage.getItem("dpgActiveUserUid");
                 if (uid) {
-                    pill.innerHTML = `<a href="profile.html?uid=${uid}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:700;"><i class="ri-user-star-fill" style="color:#f59e0b;"></i> Contributor Profile</a>`;
+                    pill.innerHTML = `<a href="profile.html?uid=${uid}" target="_blank" title="Contributor Profile" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:700;"><i class="ri-user-star-fill" style="color:#f59e0b;"></i> <span class="header-btn-text">Contributor Profile</span></a>`;
                 } else {
-                    pill.innerHTML = `<span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">Guest Viewer</span>`;
+                    pill.innerHTML = `<span title="Guest Viewer" style="display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;"><i class="ri-user-line"></i> <span class="header-btn-text">Guest Viewer</span></span>`;
                 }
             }
             if (typeof window.renderNativeDPGAds === "function") {

@@ -80,23 +80,26 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 70px;
+            height: 60px;
             background: var(--bg-secondary);
             border-bottom: 2px solid var(--accent-primary);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 20px;
             z-index: 1000;
             box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
+            gap: 10px;
+            white-space: nowrap;
         }
         .header-title {
-            font-size: 24px;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--accent-primary);
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
         .logo-icon {
             width: 30px;
@@ -110,53 +113,23 @@
         }
         .header-status {
             display: flex;
-            gap: 15px;
+            gap: 8px;
             align-items: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .header-status::-webkit-scrollbar {
+            display: none;
         }
         .status-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: 6px;
+            font-size: 13px;
             color: var(--text-secondary);
-        }
-        @media (max-width: 768px) {
-            .header {
-                height: auto;
-                min-height: 56px;
-                padding: 6px 12px;
-                gap: 6px;
-            }
-            .header-title {
-                font-size: 0.95rem;
-                gap: 6px;
-            }
-            .logo-icon {
-                width: 24px;
-                height: 24px;
-                font-size: 0.8rem;
-            }
-            .header-status {
-                gap: 6px;
-            }
-            .header-status a {
-                font-size: 0.75rem !important;
-                margin-right: 4px !important;
-            }
-            .status-indicator span {
-                display: none;
-            }
-            .native-ads[data-ad-variant="header"] {
-                margin-top: 72px !important;
-            }
-        }
-        @media (max-width: 480px) {
-            .header-title span {
-                font-size: 0.85rem;
-            }
-            #userHeaderPillConverter {
-                margin-right: 2px !important;
-            }
+            flex-shrink: 0;
         }
         .status-dot {
             width: 10px;
@@ -565,10 +538,47 @@
         }
         @media (max-width: 768px) {
             .header {
-                padding: 0 15px;
+                height: 52px;
+                padding: 0 10px;
+                gap: 6px;
             }
             .header-title {
-                font-size: 18px;
+                font-size: 0.92rem;
+                gap: 6px;
+            }
+            .header-title span {
+                max-width: 130px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .header-status {
+                gap: 5px;
+                flex-wrap: nowrap;
+                align-items: center;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+            .header-status::-webkit-scrollbar {
+                display: none;
+            }
+            /* Icon-only logic on small screens */
+            .header-status a .header-btn-text,
+            #userHeaderPillConverter .header-btn-text,
+            .status-indicator span,
+            #dpgUtilityCoinsPill span,
+            #dpgUtilityQuotaBadge span {
+                display: none !important;
+            }
+            #dpgUtilityCoinsPill,
+            #dpgUtilityQuotaBadge,
+            #userHeaderPillConverter a,
+            #userHeaderPillConverter span,
+            .header-legal-link {
+                padding: 5px 8px !important;
+                margin-right: 0 !important;
+                font-size: 0.85rem !important;
+                border-radius: 16px !important;
             }
             .left-panel, .right-panel {
                 padding: 15px;
@@ -587,16 +597,14 @@
         }
         @media (max-width: 425px) {
             .header {
-                height: 60px;
-                padding: 0 10px;
+                height: 50px;
+                padding: 0 8px;
             }
             .header-title {
-                font-size: 16px;
+                font-size: 0.85rem;
             }
             .header-status {
-                flex-direction: column;
-                gap: 5px;
-                font-size: 12px;
+                gap: 4px;
             }
             .container {
                 flex-direction: column;
@@ -679,7 +687,7 @@
             <span>ANH PDF Converter</span>
         </div>
         <div class="header-status">
-            <a href="legal/index.html" style="color:var(--accent-primary); text-decoration:none; margin-right:15px; font-size:0.9rem;">Legal Policies</a>
+            <a href="legal/index.html" class="header-legal-link" title="Legal Policies" style="color:var(--accent-primary); text-decoration:none; margin-right:15px; font-size:0.9rem; display:inline-flex; align-items:center; gap:5px;"><i class="ri-scales-3-line"></i> <span class="header-btn-text">Legal Policies</span></a>
             <div id="userHeaderPillConverter" style="display:inline-flex; align-items:center; margin-right:10px;"></div>
             <div class="status-indicator">
                 <div class="status-dot"></div>
@@ -1042,6 +1050,18 @@
             if (window.DpgUtilityQuota) {
                 const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('Image to PDF Converter');
                 if (!allowed) return;
+            }
+            const imageCount = state.totalPages || (state.pages ? state.pages.length : 1);
+            if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.executeUtilityDeduction === 'function') {
+                try {
+                    await window.DPGCoinsPolicy.executeUtilityDeduction('Image to PDF Converter', imageCount, {
+                        paperID: state.metadata ? state.metadata.paperID : '',
+                        paperName: state.metadata ? state.metadata.paperName : '',
+                        imageCount: imageCount
+                    });
+                } catch (e) {
+                    console.warn("Converter utility coins deduction error:", e);
+                }
             }
             updateMetadata();
             const progressContainer = document.getElementById('progressContainer');
@@ -1465,9 +1485,9 @@
             if (pill) {
                 const uid = localStorage.getItem("dpgActiveUserUid");
                 if (uid) {
-                    pill.innerHTML = `<a href="profile.html?uid=${uid}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:700;"><i class="ri-user-star-fill" style="color:#f59e0b;"></i> Contributor Profile</a>`;
+                    pill.innerHTML = `<a href="profile.html?uid=${uid}" target="_blank" title="Contributor Profile" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:700;"><i class="ri-user-star-fill" style="color:#f59e0b;"></i> <span class="header-btn-text">Contributor Profile</span></a>`;
                 } else {
-                    pill.innerHTML = `<span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">Guest Viewer</span>`;
+                    pill.innerHTML = `<span title="Guest Viewer" style="display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;"><i class="ri-user-line"></i> <span class="header-btn-text">Guest Viewer</span></span>`;
                 }
             }
             if (typeof window.renderNativeDPGAds === "function") {

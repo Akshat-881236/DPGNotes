@@ -684,6 +684,11 @@
     initAuthLifecycleInterceptors();
   }
 
+  function calculateUtilityCost(count) {
+    const p = Math.max(1, parseInt(count, 10) || 1);
+    return p <= 10 ? 50 : (50 + (p - 10) * 5);
+  }
+
   window.DPGCoinsPolicy = {
     ADMIN_TREASURY_EMAIL,
     NEGATIVE_THRESHOLD,
@@ -696,6 +701,20 @@
     deductPolicyCoins,
     awardPolicyCoins,
     calculateQuizReward,
+    calculateUtilityCost,
+    executeUtilityDeduction: async function(serviceName, itemCount, meta = {}) {
+      const count = Math.max(1, parseInt(itemCount, 10) || 1);
+      const cost = calculateUtilityCost(count);
+      const reason = `Utility Service Fee: ${serviceName} (${count} ${count === 1 ? 'page/item' : 'pages/items'}) - ${cost} DPGCoins`;
+      await deductPolicyCoins(cost, reason, {
+        service: serviceName,
+        itemCount: count,
+        cost: cost,
+        ...meta
+      });
+      showPolicyToast(`🪙 -${cost} DPGCoins deducted for ${serviceName}.`, "#f59e0b");
+      return cost;
+    },
     // Explicit Sign-In action reward (+1,000 DPGCoins) & device session registration
     recordSignInReward: async function(uid) {
       const targetUid = uid || getEffectiveUid();

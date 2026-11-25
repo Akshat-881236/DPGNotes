@@ -74,23 +74,38 @@
             flex-direction: column;
         }
         .header {
-            height: 70px;
+            height: 60px;
             background: var(--bg-secondary);
             border-bottom: 2px solid var(--accent-primary);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 20px;
             box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
             z-index: 1000;
+            gap: 10px;
+            white-space: nowrap;
         }
         .header-title {
-            font-size: 22px;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--accent-primary);
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
+        }
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .header-status::-webkit-scrollbar {
+            display: none;
         }
         .logo-icon {
             width: 32px;
@@ -105,40 +120,10 @@
         }
         .header-info {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
             font-size: 13px;
             color: var(--text-secondary);
-        }
-        @media (max-width: 768px) {
-            .header {
-                height: auto;
-                min-height: 56px;
-                padding: 6px 12px;
-                gap: 6px;
-            }
-            .header-title {
-                font-size: 0.95rem;
-                gap: 6px;
-            }
-            .header-info {
-                gap: 6px;
-            }
-            .header-info a {
-                font-size: 0.75rem !important;
-                margin-right: 4px !important;
-            }
-            .native-ads[data-ad-variant="header"] {
-                margin-top: 72px !important;
-            }
-        }
-        @media (max-width: 480px) {
-            .header-title span {
-                font-size: 0.85rem;
-            }
-            #userHeaderPillAdder {
-                margin-right: 2px !important;
-            }
         }
         .status-dot {
             width: 10px;
@@ -602,48 +587,106 @@
             margin-top: 2px;
             word-break: break-all;
         }
-        @media (max-width: 1024px) {
+        /* Tablet Devices (e.g. iPad Mini 768px - 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header {
+                padding: 0 16px;
+                height: 58px;
+            }
+            .header-title {
+                font-size: 1.05rem;
+            }
+            .main-container {
+                flex-direction: row;
+                height: calc(100vh - 60px);
+                overflow: hidden;
+            }
+            .left-panel {
+                width: 48%;
+                max-height: 100%;
+                overflow-y: auto;
+                padding: 18px;
+                border-right: 2px solid rgba(0, 212, 255, 0.15);
+            }
+            .right-panel {
+                width: 52%;
+                max-height: 100%;
+                overflow-y: auto;
+                padding: 18px;
+            }
+            .form-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .form-section {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+            .upload-zone {
+                padding: 24px;
+            }
+        }
+
+        /* Mobile Screens (<= 768px) */
+        @media (max-width: 768px) {
+            .header {
+                height: 52px;
+                padding: 0 10px;
+                gap: 6px;
+            }
+            .header-title {
+                font-size: 0.92rem;
+                gap: 6px;
+            }
+            .header-title span {
+                max-width: 130px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .header-status {
+                gap: 5px;
+                flex-wrap: nowrap;
+            }
+            /* Icon-only mode for action badges/buttons on small screens */
+            .header-status a .header-btn-text,
+            #userHeaderPillAdder .header-btn-text,
+            #dpgUtilityCoinsPill span,
+            #dpgUtilityQuotaBadge span {
+                display: none !important;
+            }
+            #dpgUtilityCoinsPill,
+            #dpgUtilityQuotaBadge,
+            #userHeaderPillAdder a,
+            #userHeaderPillAdder span,
+            .header-legal-link {
+                padding: 5px 8px !important;
+                margin-right: 0 !important;
+                font-size: 0.85rem !important;
+                border-radius: 16px !important;
+            }
             .main-container {
                 flex-direction: column;
+                overflow-y: auto;
             }
             .left-panel {
                 width: 100%;
+                max-height: none;
                 border-right: none;
-                border-bottom: 2px solid rgba(0, 212, 255, 0.1);
-                max-height: 40%;
+                border-bottom: 2px solid rgba(0, 212, 255, 0.15);
+                padding: 14px;
             }
             .right-panel {
                 width: 100%;
-                flex: 1;
+                min-height: 480px;
+                padding: 14px;
             }
             .form-row {
                 grid-template-columns: 1fr;
             }
-        }
-        @media (max-width: 768px) {
-            .header {
-                padding: 0 15px;
-                height: 60px;
-            }
-            .header-title {
-                font-size: 18px;
-            }
-            .header-status {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .header-status a {
-                display: none;
-            }
-            .left-panel, .right-panel {
-                padding: 15px;
-            }
-            .form-section {
-                padding: 15px;
-            }
             .upload-zone {
-                padding: 30px;
+                padding: 24px;
             }
         }
         @media (max-width: 425px) {
@@ -742,7 +785,7 @@
             <span>ANH PDF Meta Adder</span>
         </div>
         <div class="header-status">
-            <a href="legal/index.html" style="color:var(--accent-primary); text-decoration:none; margin-right:15px; font-size:0.9rem;">Legal Policies</a>
+            <a href="legal/index.html" class="header-legal-link" title="Legal Policies" style="color:var(--accent-primary); text-decoration:none; margin-right:15px; font-size:0.9rem; display:inline-flex; align-items:center; gap:5px;"><i class="ri-scales-3-line"></i> <span class="header-btn-text">Legal Policies</span></a>
             <div id="userHeaderPillAdder" style="display:inline-flex; align-items:center; margin-right:10px;"></div>
             <div class="status-dot"></div>
         </div>
@@ -1036,8 +1079,25 @@
             currentFile: null,
             processedPDF: null,
             logoImage: null,
-            trackingID: generateUUID()
+            trackingID: generateUUID(),
+            docDeductionDone: false
         };
+
+        async function deductDocumentUtilityFee() {
+            if (AppState.docDeductionDone) return;
+            AppState.docDeductionDone = true;
+            const pages = AppState.totalPages || (AppState.pdfDoc ? AppState.pdfDoc.getPageCount() : 1);
+            if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.executeUtilityDeduction === 'function') {
+                try {
+                    await window.DPGCoinsPolicy.executeUtilityDeduction('PDF Meta Adder', pages, {
+                        fileName: AppState.currentFile ? AppState.currentFile.name : 'document.pdf',
+                        pages: pages
+                    });
+                } catch (e) {
+                    console.warn("Utility coins deduction failed:", e);
+                }
+            }
+        }
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0;
@@ -1145,6 +1205,7 @@
                 return;
             }
             AppState.currentFile = file;
+            AppState.docDeductionDone = false;
             updateProgress(10, 'Loading PDF...');
             try {
                 const arrayBuffer = await file.arrayBuffer();
@@ -1282,6 +1343,7 @@
                 const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('PDF Meta Adder');
                 if (!allowed) return;
             }
+            await deductDocumentUtilityFee();
             updateProgress(5, 'Starting PDF processing...');
             try {
                 const newPdfDoc = await PDFLib.PDFDocument.create();
@@ -1583,6 +1645,9 @@
                 showMessage('No processed PDF available', 'error');
                 return;
             }
+            if (typeof deductDocumentUtilityFee === 'function') {
+                deductDocumentUtilityFee();
+            }
             const paperID = document.getElementById('paperID').value || 'Document';
             const subjectCode = document.getElementById('subjectCode').value || 'PDF';
             const filename = `${paperID}_${subjectCode}_${getDateTimeString()}.pdf`;
@@ -1605,9 +1670,9 @@
             if (pill) {
                 const uid = localStorage.getItem("dpgActiveUserUid");
                 if (uid) {
-                    pill.innerHTML = `<a href="profile.html?uid=${uid}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:700;"><i class="ri-user-star-fill" style="color:#f59e0b;"></i> Contributor Profile</a>`;
+                    pill.innerHTML = `<a href="profile.html?uid=${uid}" target="_blank" title="Contributor Profile" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; color:#a5b4fc; text-decoration:none; font-size:0.78rem; font-weight:700;"><i class="ri-user-star-fill" style="color:#f59e0b;"></i> <span class="header-btn-text">Contributor Profile</span></a>`;
                 } else {
-                    pill.innerHTML = `<span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">Guest Viewer</span>`;
+                    pill.innerHTML = `<span title="Guest Viewer" style="display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#94a3b8; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;"><i class="ri-user-line"></i> <span class="header-btn-text">Guest Viewer</span></span>`;
                 }
             }
             if (typeof window.renderNativeDPGAds === "function") {

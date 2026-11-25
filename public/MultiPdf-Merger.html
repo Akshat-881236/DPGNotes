@@ -68,16 +68,19 @@
   .danger { color:var(--danger); }
   input, select { color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:.6rem .7rem; }
   .app { max-width:1440px; margin:auto; padding:clamp(14px,3vw,34px); }
-  header { display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:22px; }
-  h1 { font-size:clamp(1.45rem,3vw,2rem); margin:0; letter-spacing:-.03em; }
+  header { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:nowrap; margin-bottom:22px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
+  header::-webkit-scrollbar { display:none; }
+  h1 { font-size:clamp(1.2rem,2.5vw,1.8rem); margin:0; letter-spacing:-.03em; }
   h2 { font-size:1.2rem; margin:0; }
   h3 { font-size:1rem; margin:.2rem 0; overflow-wrap:anywhere; }
   p { margin:.3rem 0; }
   button, input, select { font:inherit; }
-  .brand { display:flex; gap:12px; align-items:center; }
+  .brand { display:flex; gap:12px; align-items:center; flex-shrink:0; }
   .logo { width:42px; height:42px; display:grid; place-items:center; background:var(--accent); color:var(--accent-contrast); border-radius:12px; font-size:1.35rem; font-weight:800; }
   .subtle, .meta { color:var(--muted); font-size:.9rem; }
-  .header-actions, .row, .toolbar, .card-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .header-actions, .row, .card-actions { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+  .header-status { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
+  .header-status::-webkit-scrollbar { display:none; }
   .section { margin:18px 0; padding:clamp(14px,2.4vw,24px); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
   .section-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
   .dropzone { border:2px dashed var(--border); border-radius:14px; background:var(--surface-2); padding:clamp(22px,5vw,44px) 16px; text-align:center; transition:.15s ease; }
@@ -101,8 +104,22 @@
   .page-card .thumb img { max-height:100%; }
   .page-info { font-size:.85rem; margin-top:7px; overflow-wrap:anywhere; }
   .page-select { position:absolute; z-index:1; top:12px; left:12px; width:24px; height:24px; accent-color:var(--accent); }
-  .toolbar { padding:10px; background:var(--surface-2); border-radius:10px; margin-bottom:12px; }
-  .toolbar label { display:flex; align-items:center; gap:6px; }
+  .toolbar { padding:8px 10px; background:var(--surface-2); border-radius:12px; margin-bottom:12px; display:flex; align-items:center; gap:6px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+  .toolbar::-webkit-scrollbar { display:none; }
+  .toolbar button { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; padding:6px 10px; font-size:0.85rem; border-radius:8px; flex-shrink:0; }
+  .toolbar label { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; flex-shrink:0; font-size:0.85rem; }
+  @media (max-width: 640px) {
+    .brand .subtle { display:none; }
+    .brand h1 { font-size:1.05rem; }
+    .header-actions label { display:none; }
+    .header-status a .btn-text,
+    #clearBtn .btn-text,
+    #dpgUtilityCoinsPill span,
+    #dpgUtilityQuotaBadge span { display:none !important; }
+    #clearBtn, .header-status a, #dpgUtilityCoinsPill, #dpgUtilityQuotaBadge { padding:5px 8px !important; border-radius:14px !important; font-size:0.85rem !important; }
+    .toolbar button .btn-text, .toolbar label .btn-text { display:none !important; }
+    .toolbar button { padding:6px 9px !important; font-size:0.95rem !important; }
+  }
   .status { min-height:1.5em; color:var(--muted); }
   .status.error { color:var(--danger); }
   .status.success { color:var(--success); }
@@ -132,24 +149,24 @@
   <header>
     <div class="brand">
       <a href="index.html" style="text-decoration:none; display:flex; align-items:center; gap:12px; color:inherit;">
-        <img src="ANH.png" alt="DPGNotes Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain;">
+        <img src="ANH.png" alt="DPGNotes Logo" style="width:40px; height:40px; border-radius:10px; object-fit:contain; flex-shrink:0;">
         <div>
-          <h1 style="font-size:clamp(1.2rem,2.5vw,1.65rem);">Multi-PDF Merger &amp; Organizer</h1>
+          <h1 style="font-size:clamp(1.1rem,2.2vw,1.65rem); white-space:nowrap;">Multi-PDF Merger &amp; Organizer</h1>
           <div class="subtle">Client-side offline processing &bull; Zero server upload</div>
         </div>
       </a>
     </div>
-    <div class="header-status" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-      <a href="study-hub.html" style="display:inline-flex; align-items:center; gap:5px; background:rgba(99,102,241,0.14); border:1px solid rgba(99,102,241,0.38); color:#818cf8; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; text-decoration:none;">
-        <i class="ri-book-read-line"></i> Study Hub
+    <div class="header-status" style="display:flex; align-items:center; gap:8px; flex-wrap:nowrap;">
+      <a href="study-hub.html" title="Study Hub" style="display:inline-flex; align-items:center; gap:5px; background:rgba(99,102,241,0.14); border:1px solid rgba(99,102,241,0.38); color:#818cf8; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; text-decoration:none; white-space:nowrap; flex-shrink:0;">
+        <i class="ri-book-read-line"></i> <span class="btn-text">Study Hub</span>
       </a>
     </div>
-    <div class="header-actions">
+    <div class="header-actions" style="display:flex; align-items:center; gap:8px; flex-wrap:nowrap; flex-shrink:0;">
       <label for="themeSelect" class="subtle">Theme</label>
-      <select id="themeSelect" aria-label="Color theme">
+      <select id="themeSelect" aria-label="Color theme" style="padding:4px 8px; font-size:0.85rem;">
         <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option><option value="oled">OLED black</option>
       </select>
-      <button id="clearBtn" type="button">Clear workspace</button>
+      <button id="clearBtn" type="button" title="Clear workspace" style="display:inline-flex; align-items:center; gap:5px; white-space:nowrap;"><i class="ri-delete-bin-line"></i> <span class="btn-text">Clear workspace</span></button>
     </div>
   </header>
 
@@ -172,17 +189,17 @@
   <section class="section" aria-labelledby="pagesTitle">
     <div class="section-heading"><h2 id="pagesTitle">Page organizer <span id="pageCount" class="subtle"></span></h2><span class="subtle">Drag pages to set the final output sequence.</span></div>
     <div class="toolbar" role="toolbar" aria-label="Selected page actions">
-      <button id="selectAllBtn" type="button">Select all</button>
-      <button id="clearSelectionBtn" type="button">Clear selection</button>
-      <button id="moveStartBtn" type="button">Move to beginning</button>
-      <button id="moveEndBtn" type="button">Move to end</button>
-      <button id="duplicateBtn" type="button">Duplicate</button>
-      <button id="rotateBtn" type="button">Rotate 90°</button>
-      <button id="deletePagesBtn" class="danger" type="button">Delete from output</button>
-      <button id="undoBtn" type="button" aria-label="Undo">↶ Undo</button>
-      <button id="redoBtn" type="button" aria-label="Redo">↷ Redo</button>
-      <label>Move to position <input id="positionInput" type="number" min="1" value="1" style="width:82px" aria-label="Target position"></label>
-      <button id="movePositionBtn" type="button">Move</button>
+      <button id="selectAllBtn" type="button" title="Select all"><i class="ri-checkbox-multiple-line"></i> <span class="btn-text">Select all</span></button>
+      <button id="clearSelectionBtn" type="button" title="Clear selection"><i class="ri-checkbox-blank-line"></i> <span class="btn-text">Clear selection</span></button>
+      <button id="moveStartBtn" type="button" title="Move to beginning"><i class="ri-skip-back-line"></i> <span class="btn-text">Move to start</span></button>
+      <button id="moveEndBtn" type="button" title="Move to end"><i class="ri-skip-forward-line"></i> <span class="btn-text">Move to end</span></button>
+      <button id="duplicateBtn" type="button" title="Duplicate"><i class="ri-file-copy-line"></i> <span class="btn-text">Duplicate</span></button>
+      <button id="rotateBtn" type="button" title="Rotate 90°"><i class="ri-anticlockwise-2-line"></i> <span class="btn-text">Rotate 90°</span></button>
+      <button id="deletePagesBtn" class="danger" type="button" title="Delete from output"><i class="ri-delete-bin-line"></i> <span class="btn-text">Delete</span></button>
+      <button id="undoBtn" type="button" aria-label="Undo" title="Undo"><i class="ri-arrow-go-back-line"></i> <span class="btn-text">Undo</span></button>
+      <button id="redoBtn" type="button" aria-label="Redo" title="Redo"><i class="ri-arrow-go-forward-line"></i> <span class="btn-text">Redo</span></button>
+      <label title="Target position"><span class="btn-text">Pos</span> <input id="positionInput" type="number" min="1" value="1" style="width:55px; padding:4px 6px;" aria-label="Target position"></label>
+      <button id="movePositionBtn" type="button" title="Move to position"><i class="ri-arrow-right-line"></i> <span class="btn-text">Move</span></button>
     </div>
     <div id="pages" class="page-grid"></div>
     <p id="pageStatus" class="status" role="status" aria-live="polite"></p>
@@ -620,6 +637,17 @@
     if (window.DpgUtilityQuota) {
       const allowed = await window.DpgUtilityQuota.requestTokenOrLockdown('Multi-PDF Merger');
       if (!allowed) return;
+    }
+    const totalOutputPages = state.refs.length;
+    if (window.DPGCoinsPolicy && typeof window.DPGCoinsPolicy.executeUtilityDeduction === 'function') {
+      try {
+        await window.DPGCoinsPolicy.executeUtilityDeduction('Multi-PDF Merger', totalOutputPages, {
+          outputFilename: escapeFilename($("filename").value || "merged-document.pdf"),
+          outputPages: totalOutputPages
+        });
+      } catch (e) {
+        console.warn("Merger utility coins deduction error:", e);
+      }
     }
     if (!window.PDFLib) { status("exportStatus", "PDF library is unavailable.", "error"); return; }
     if (!state.refs.every(validRef)) { status("exportStatus", "Cannot export: a page reference is invalid.", "error"); return; }

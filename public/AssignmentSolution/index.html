@@ -33,11 +33,34 @@
         }
         link.setAttribute('href', url);
       }
+      var assignmentFallbackTimer = null;
+
+      function applyAssignmentFallbackSeo() {
+        var pageTitle = 'DPGNotes Assignment Search Engine | Verified Academic Solutions & Code Sandboxes';
+        document.title = pageTitle;
+        var metaDesc = 'Search verified academic assignment solutions, university questions, interactive code sandboxes and test cases on DPGNotes. Built for students & educators.';
+        setMetaTag('description', 'name', metaDesc);
+        setMetaTag('keywords', 'name', 'DPGNotes Assignment Search Engine, Academic Solutions, University Assignments, Code Sandboxes, Student Study Material');
+        var canonicalUrl = 'https://dpgnotes.web.app/AssignmentSolution/index.html';
+        setCanonical(canonicalUrl);
+
+        setMetaTag('og:title', 'property', pageTitle);
+        setMetaTag('og:description', 'property', metaDesc);
+        setMetaTag('og:url', 'property', canonicalUrl);
+        setMetaTag('og:type', 'property', 'website');
+        setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+      }
+
       window.updateAssignmentSeoMeta = function(solData) {
+        if (assignmentFallbackTimer) {
+          clearTimeout(assignmentFallbackTimer);
+          assignmentFallbackTimer = null;
+        }
         try {
           var sp = new URLSearchParams(window.location.search);
-          var solId = (solData && solData.id) || sp.get('id') || sp.get('solId') || '';
-          if (solId) {
+          var solId = (solData && solData.id) || sp.get('id') || sp.get('solId') || sp.get('assignId') || '';
+
+          if (solData || (sp.get('subject') && sp.get('course'))) {
             var subject = (solData && (solData.subjectName || solData.subjectCode)) || sp.get('subject') || 'Academic Subject';
             var course = (solData && (solData.course || solData.courseSec)) || sp.get('course') || 'University Course';
             var uploader = (solData && (solData.contributorName || solData.studentName)) || 'Verified Contributor';
@@ -67,27 +90,26 @@
             setMetaTag('twitter:description', 'name', metaDesc);
             setMetaTag('twitter:url', 'name', canonicalUrl);
             setMetaTag('twitter:image', 'name', 'https://dpgnotes.web.app/ANH.png');
-          } else {
-            var pageTitle = 'DPGNotes Assignment Search Engine | Verified Academic Solutions & Code Sandboxes';
-            document.title = pageTitle;
-            var metaDesc = 'Search verified academic assignment solutions, university questions, interactive code sandboxes and test cases on DPGNotes. Built for students & educators.';
-            setMetaTag('description', 'name', metaDesc);
-            setMetaTag('keywords', 'name', 'DPGNotes Assignment Search Engine, Academic Solutions, University Assignments, Code Sandboxes, Student Study Material');
-            var canonicalUrl = 'https://dpgnotes.web.app/AssignmentSolution/index.html';
+          } else if (solId) {
+            // Respective parameter present in URL, wait for proper amount of time for Firestore fetch
+            document.title = 'Loading Assignment Solution... | DPGNotes';
+            var canonicalUrl = 'https://dpgnotes.web.app/AssignmentSolution/index.html?id=' + encodeURIComponent(solId);
             setCanonical(canonicalUrl);
-
-            setMetaTag('og:title', 'property', pageTitle);
-            setMetaTag('og:description', 'property', metaDesc);
-            setMetaTag('og:url', 'property', canonicalUrl);
-            setMetaTag('og:type', 'property', 'website');
-            setMetaTag('og:image', 'property', 'https://dpgnotes.web.app/ANH.png');
+            assignmentFallbackTimer = setTimeout(function() {
+              if (!window.currentLoadedAssignmentData) {
+                applyAssignmentFallbackSeo();
+              }
+            }, 4000);
+          } else {
+            // No parameter in URL, apply fallback immediately
+            applyAssignmentFallbackSeo();
           }
         } catch(e) {
           console.warn("Assignment dynamic SEO error:", e);
         }
       };
 
-      // Initial synchronous render
+      // Initial execution
       window.updateAssignmentSeoMeta();
     })();
   </script>
