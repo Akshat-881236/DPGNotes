@@ -601,7 +601,7 @@
     const list = $("sequence"); list.replaceChildren();
     state.refs.forEach((ref, i) => {
       const li = document.createElement("li"), doc = getDoc(ref.docId);
-      li.textContent = `${i + 1}. ${doc?.name || "Missing source"} — original page ${ref.pageIndex + 1}${ref.rotation ? ` (+${ref.rotation}°)` : ""}`;
+      li.textContent = `${doc?.name || "Missing source"} — original page ${ref.pageIndex + 1}${ref.rotation ? ` (+${ref.rotation}°)` : ""}`;
       list.append(li);
     });
     const valid = state.refs.every(validRef);
