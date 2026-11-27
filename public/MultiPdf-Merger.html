@@ -78,7 +78,7 @@
   .brand { display:flex; gap:12px; align-items:center; flex-shrink:0; }
   .logo { width:42px; height:42px; display:grid; place-items:center; background:var(--accent); color:var(--accent-contrast); border-radius:12px; font-size:1.35rem; font-weight:800; }
   .subtle, .meta { color:var(--muted); font-size:.9rem; }
-  .header-actions, .row, .card-actions { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+  .header-actions { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
   .header-status { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
   .header-status::-webkit-scrollbar { display:none; }
   .section { margin:18px 0; padding:clamp(14px,2.4vw,24px); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
@@ -87,16 +87,22 @@
   .dropzone.over, .drop-target { border-color:var(--accent)!important; box-shadow:inset 0 0 0 2px var(--accent); }
   .dropzone strong { display:block; font-size:1.1rem; margin-bottom:5px; }
   .dropzone input { display:none; }
-  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,235px),1fr)); gap:14px; }
-  .doc-card, .page-card { border:1px solid var(--border); background:var(--surface); border-radius:12px; padding:12px; min-width:0; }
-  .doc-card { cursor:grab; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr)); gap:16px; }
+  .doc-card, .page-card { border:1px solid var(--border); background:var(--surface); border-radius:12px; padding:12px; min-width:0; box-sizing:border-box; overflow:hidden; }
+  .doc-card { cursor:grab; display:flex; flex-direction:column; }
   .doc-card:active, .page-card:active { cursor:grabbing; }
   .doc-card.dragging, .page-card.dragging { opacity:.48; }
   .thumb { width:100%; aspect-ratio:1.35; display:grid; place-items:center; overflow:hidden; background:var(--surface-2); border-radius:8px; color:var(--muted); }
   .thumb img { display:block; max-width:100%; max-height:100%; object-fit:contain; }
-  .doc-title { margin-top:10px; min-height:2.8em; }
-  .card-actions { margin-top:10px; }
-  .card-actions button { padding:.45rem .6rem; min-height:38px; }
+  .doc-title { margin-top:10px; margin-bottom:8px; overflow-wrap:anywhere; word-break:break-word; }
+  .doc-title h3 { font-size:0.98rem; margin:0 0 4px 0; overflow-wrap:anywhere; word-break:break-word; line-height:1.35; }
+  .card-actions { margin-top:auto; padding-top:10px; display:flex; align-items:center; gap:6px; flex-wrap:wrap !important; width:100%; box-sizing:border-box; }
+  .card-actions button { display:inline-flex; align-items:center; justify-content:center; gap:4px; padding:6px 10px; min-height:34px; font-size:0.82rem; font-weight:500; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); cursor:pointer; transition:background 0.15s ease, border-color 0.15s ease; flex:1 1 auto; white-space:nowrap; box-sizing:border-box; }
+  .card-actions button:hover:not(:disabled) { background:var(--surface); border-color:var(--accent); color:var(--accent); }
+  .card-actions button:disabled { opacity:0.45; cursor:not-allowed; }
+  .card-actions button.btn-move { flex:0 0 34px; min-width:34px; padding:6px; font-weight:700; }
+  .card-actions button.danger { color:var(--danger); border-color:rgba(239,68,68,0.3); }
+  .card-actions button.danger:hover:not(:disabled) { background:rgba(239,68,68,0.12); border-color:var(--danger); }
   .page-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr)); gap:12px; }
   .page-card { padding:9px; cursor:grab; position:relative; }
   .page-card.selected { border:2px solid var(--accent); background:var(--surface-2); }
@@ -119,6 +125,8 @@
     #clearBtn, .header-status a, #dpgUtilityCoinsPill, #dpgUtilityQuotaBadge { padding:5px 8px !important; border-radius:14px !important; font-size:0.85rem !important; }
     .toolbar button .btn-text, .toolbar label .btn-text { display:none !important; }
     .toolbar button { padding:6px 9px !important; font-size:0.95rem !important; }
+    .card-actions button { font-size:0.78rem; padding:5px 8px; min-height:32px; }
+    .card-actions button.btn-move { flex:0 0 30px; min-width:30px; padding:5px; }
   }
   .status { min-height:1.5em; color:var(--muted); }
   .status.error { color:var(--danger); }
@@ -418,12 +426,12 @@
       const meta = document.createElement("div"); meta.className = "meta"; meta.textContent = `${doc.pageCount} pages · ${formatSize(doc.size)}`;
       title.append(heading, meta);
       const actions = document.createElement("div"); actions.className = "card-actions";
-      const up = button("↑", `Move ${doc.name} up`, () => reorderDoc(index, -1), index === 0);
-      const down = button("↓", `Move ${doc.name} down`, () => reorderDoc(index, 1), index === state.docs.length - 1);
-      const rename = button("Rename", `Rename ${doc.name}`, () => renameDoc(doc));
-      const replace = button("Replace", `Replace ${doc.name}`, () => replaceDoc(doc));
-      const preview = button("Preview first page", `Preview ${doc.name}`, () => openPreview(state.refs.find(r => r.docId === doc.id)));
-      const remove = button("Remove", `Remove ${doc.name}`, () => removeDoc(doc), false, "danger");
+      const up = button('<i class="ri-arrow-up-line"></i>', `Move ${doc.name} up`, () => reorderDoc(index, -1), index === 0, "btn-move");
+      const down = button('<i class="ri-arrow-down-line"></i>', `Move ${doc.name} down`, () => reorderDoc(index, 1), index === state.docs.length - 1, "btn-move");
+      const rename = button('<i class="ri-edit-line"></i> <span>Rename</span>', `Rename ${doc.name}`, () => renameDoc(doc));
+      const replace = button('<i class="ri-refresh-line"></i> <span>Replace</span>', `Replace ${doc.name}`, () => replaceDoc(doc));
+      const preview = button('<i class="ri-eye-line"></i> <span>Preview</span>', `Preview first page of ${doc.name}`, () => openPreview(state.refs.find(r => r.docId === doc.id)));
+      const remove = button('<i class="ri-delete-bin-line"></i> <span>Remove</span>', `Remove ${doc.name}`, () => removeDoc(doc), false, "danger");
       actions.append(up, down, rename, replace, preview, remove);
       card.append(thumb, title, actions);
       card.addEventListener("dragstart", e => {
@@ -447,7 +455,7 @@
     });
   }
   function button(text, label, action, disabled = false, cls = "") {
-    const b = document.createElement("button"); b.type = "button"; b.textContent = text; b.setAttribute("aria-label", label);
+    const b = document.createElement("button"); b.type = "button"; b.innerHTML = text; b.setAttribute("aria-label", label); b.title = label;
     b.disabled = disabled; if (cls) b.className = cls; b.addEventListener("click", action); return b;
   }
   function reorderDoc(index, delta) {
